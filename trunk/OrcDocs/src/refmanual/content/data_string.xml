@@ -25,7 +25,7 @@ Orc <type>String</type>s have an explicit length and are not zero-terminated.
 <section xml:id="ref.data.string.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>String</replaceable> ::= <code>"</code> <replaceable>TODO</replaceable> <code>"</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>String</replaceable> ::= <code>"</code> <replaceable>Some string</replaceable> <code>"</code></para>
 
 <para>String literals are enclosed in quotation marks (U+0022).
 Any Unicode character can be placed between the quotation marks, except:

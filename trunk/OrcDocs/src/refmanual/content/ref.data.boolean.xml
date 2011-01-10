@@ -23,8 +23,6 @@
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Boolean</replaceable> ::= <code>false</code> | <code>true</code></para>
 
-<para>TODO:anything to say here?</para>
-
 </section>
 
 <section xml:id="ref.data.boolean.operations">

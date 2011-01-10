@@ -25,8 +25,6 @@ function publishes every 100 milliseconds, since it has no other data of interes
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Signal</replaceable> ::= <code>signal</code></para>
 
-<para>TODO:anything to say here?</para>
-
 </section>
 
 <section xml:id="ref.data.signal.operations">

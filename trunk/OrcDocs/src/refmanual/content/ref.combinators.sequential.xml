@@ -15,7 +15,7 @@
       <title>Sequential Combinator</title>
 	  <section xml:id="ref.combinators.sequential.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis><code><![CDATA[E >P> E]]></code></emphasis></para>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E >P> E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
 			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 

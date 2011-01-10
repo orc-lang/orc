@@ -66,7 +66,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-chunk,rm-build-pdf,build-html-single" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	
@@ -82,7 +82,7 @@
 			<include name="root.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="ugtargets.db"/>
+			<param name="targets.filename" expression="targets.userguide.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- Create database of links for reference manual -->
@@ -92,24 +92,229 @@
 			<include name="root_ref.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="rmtargets.db"/>
+			<param name="targets.filename" expression="targets.refmanual.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
-		<!-- Create database of links for ref.combinators.otherwise (section) -->
-		<!--
+
+		<!-- Create olink databases for modular chapters/sections -->
+		<!-- ref.combinators.otherwise -->
+<xslt style="${src.dir}/xsl/orc.xsl" 
+		basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+		processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+	<include name="ref.combinators.otherwise.xml" />
+	<classpath refid="xalan.classpath" />
+	<param name="collect.xref.targets" expression="only" />
+	<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+	<param name="user.dir" expression="${user.dir}" />
+</xslt>
+		<!-- ref.combinators.parallel -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="combinators_otherwise.xml" />
+			<include name="ref.combinators.parallel.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.combinators.parallel.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
-		-->
-
+		<!-- ref.combinators.pruning -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.pruning.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.pruning.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.combinators.sequential -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.sequential.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.sequential.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.combinators -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.class -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.class.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.class.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.data.boolean -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.ref.data.boolean.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.data.boolean.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.data.datatype -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.data.datatype.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.data.datatype.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.data.external -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.data.external.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.data.external.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
 	</target>
 		
+	<!--
+		  - target:  x-olinks
+		  -->
+		<target name="x-olinks" depends="ref-xinclude" description="Builds the olink databases for mutual linking between documents">
+			<echo message="Creating olink databases..."/>
+			<!-- Create database of links for user guide -->
+			<xslt style="${src.dir}/xsl/orc.xsl"
+					basedir="${src.dir}" destdir="${build.dir}/html"
+					processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+				<include name="root.xml" />
+				<classpath refid="xalan.classpath" />
+				<param name="collect.xref.targets" expression="only" />
+				<param name="targets.filename" expression="ugtargets.db"/>
+				<param name="user.dir" expression="${user.dir}" />
+			</xslt>
+			<!-- Create database of links for reference manual -->
+			<xslt style="${src.dir}/xsl/orc.xsl" 
+					basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+					processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+				<include name="root_ref_all.xml" />
+				<classpath refid="xalan.classpath" />
+				<param name="collect.xref.targets" expression="only" />
+				<param name="targets.filename" expression="rmtargets.db"/>
+				<param name="user.dir" expression="${user.dir}" />
+			</xslt>
+		</target>
+	
 	<!--
       - target:  depends
       -->
@@ -136,9 +341,9 @@
 	</target>
 
 	<!--
-      - target:  xinclude-ref
+      - target:  ref-xinclude
       -->
-	<target name="xinclude-ref" depends="depends">
+	<target name="ref-xinclude" depends="depends">
 		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
 			<classpath>
 				<fileset dir="lib">
@@ -146,7 +351,7 @@
 				</fileset>
 			</classpath>
 		</taskdef>
-		<xinclude in="${src.dir}/refmanual/root_ref.xml" out="${src.dir}/all.xml" />
+		<xinclude in="${src.dir}/refmanual/root_ref.xml" out="${src.dir}/refmanual/root_ref_all.xml" />
 	</target>
 	
 	<!--
@@ -203,9 +408,8 @@
       -->
 	<target name="rm-build-html-chunk" depends="xinclude" description="Generates chunked Reference Manual HTML doc">
 		<!-- Hack to make sure the ref manual builds every time -->
-		<!--<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual_chunk.xml"/>-->
-		<!-- Hack to make sure the ref manual builds every time -->
 		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
+		
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">

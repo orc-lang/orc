@@ -36,9 +36,9 @@ tuple elements.
 <section xml:id="ref.data.tuple.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Tuple</replaceable> ::= <code>(</code> <replaceable>E</replaceable><code>,</code> ... <code>,</code> <replaceable>E</replaceable> <code>)</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Tuple</replaceable> ::= <code>(E, ..., E)</code></para>
 
-<para>Tuple are constructed simply with parenthesis-enclosed comma-separated lists of expressions.</para>
+<para>Tuples are constructed simply with parenthesis-enclosed comma-separated lists of expressions.</para>
 
 <para>Construction proceeds by evaluating all the expressions in parallel, and using the
 first publication of each, as if each was under a pruning combinator.

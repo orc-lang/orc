@@ -35,14 +35,14 @@ CP::=                            Class Declaration
 		  <title>Behavior</title>
 <para>
 It is required for the class to have at least one internal definition. 
-It can have zero or more value declaration. The role of the goal expression 
+It can have zero or more value declarations. The role of the goal expression 
 is to do the necessary initialization for the class. It is analogous to 
-constructors in the object oriented languages. Note that the goal expression 
-merely initialize and construct the class. No value is published from goal 
+constructors in object oriented languages. Note that the goal expression 
+merely initializes and constructs the class. No value is published from the goal 
 expression. In fact, any value published from the goal expression is suppressed 
 from publication. All the functions and classes defined inside a class are 
-accessible from outside the class and can be called (They are considered public 
-as in object oriented languages). However, no val declaration is accessible 
+accessible from outside the class and can be called (they are considered public 
+as in object oriented languages). However, no <code>val</code> declaration is accessible 
 from outside the class. (They are considered private as in object oriented 
 languages). The internal definitions of the class can be called by specifying 
 their name and list of parameters after the name of the class instance followed 

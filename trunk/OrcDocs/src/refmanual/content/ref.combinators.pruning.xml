@@ -15,7 +15,7 @@
       <title>Pruning Combinator</title>
 	  <section xml:id="ref.combinators.pruning.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E <code><![CDATA[ <P< ]]></code> E</emphasis></para>
+		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E <P< E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
 			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
@@ -27,9 +27,9 @@
 	  <section xml:id="ref.combinators.pruning.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist>
-			  <listitem>F <code><![CDATA[ <x< ]]></code> G
+			  <listitem><code><![CDATA[F <x< G]]></code>
 				  <para>
-				  The execution of F <code><![CDATA[ <x< ]]></code> G starts by executing F and G in parallel. Whenever
+				  The execution of <code><![CDATA[F <x< G]]></code> starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes its first value, that
 value is bound to x in F, and then the execution of G is immediately terminated. A terminated expression
 cannot call any sites or publish any values. During the execution of F, any part of the execution that depends on x will be suspended until x is bound (to

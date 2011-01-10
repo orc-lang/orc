@@ -40,7 +40,7 @@ of F if F publishes, or those of G otherwise.
 				  We determine when an expression completes using the following rules.
 		  <itemizedlist>
 <listitem>
-A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.
+An expression completes when it is fully evaluated; if it is silent, it completes immediately.
 </listitem>
 <listitem>
 A site call completes when it has published a value or halted.
@@ -61,7 +61,7 @@ they will never be able to proceed.
 have both completed.
 </listitem>
 <listitem>
-stop completes immediately.
+<code>stop</code> completes immediately.
 </listitem>
 		  </itemizedlist>
 				  </para>
@@ -75,9 +75,9 @@ stop completes immediately.
 <programlisting><![CDATA[
 {- 
  Attempt to retrieve search results from Google.
- 
  If Google does not respond, then use Yahoo.
 -}  
+
 Google("cupcake") ; Yahoo("cupcake")
 ]]></programlisting>
 		  </example>
