@@ -98,15 +98,15 @@
 
 		<!-- Create olink databases for modular chapters/sections -->
 		<!-- ref.combinators.otherwise -->
-<xslt style="${src.dir}/xsl/orc.xsl" 
-		basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-		processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-	<include name="ref.combinators.otherwise.xml" />
-	<classpath refid="xalan.classpath" />
-	<param name="collect.xref.targets" expression="only" />
-	<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
-	<param name="user.dir" expression="${user.dir}" />
-</xslt>
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.combinators.otherwise.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
 		<!-- ref.combinators.parallel -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
@@ -161,7 +161,7 @@
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.ref.data.boolean.xml" />
+			<include name="ref.data.boolean.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.boolean.db"/>
@@ -187,103 +187,394 @@
 			<param name="targets.filename" expression="targets.ref.data.external.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.list -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.list.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.list.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.mutable -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.mutable.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.mutable.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.numeric -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.numeric.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.numeric.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.record -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.record.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.record.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!--  ref.data.signal -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.signal.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.signal.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.string -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.string.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.string.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data.tuple -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.tuple.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.tuple.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.data -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.data.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.data.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.declarations.class -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.declarations.class.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.declarations.class.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.declarations.include -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.declarations.include.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.declarations.include.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.declarations.site -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
+			<include name="ref.declarations.site.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
+			<param name="targets.filename" expression="targets.ref.declarations.site.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.declarations.type -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.declarations.type.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.declarations.type.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.declarations -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.declarations.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.declarations.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.examples.concept -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.examples.concept.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.examples.concept.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.expressions.ifthenelse -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.expressions.ifthenelse.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.expressions.ifthenelse.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.expressions.lambda -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.expressions.lambda.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.expressions.lambda.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.expressions.operators -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.expressions.operators.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.expressions.operators.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.expressions.val -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.expressions.val.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.expressions.val.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.expressions -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.expressions.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.expressions.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.functions.clausal -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.functions.clausal.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.functions.clausal.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.functions.closure -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.functions.closure.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.functions.closure.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.functions.lambda -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.functions.lambda.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.functions.lambda.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.functions.recursion -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.functions.recursion.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.functions.recursion.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.functions -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.functions.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.functions.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.as -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.as.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.as.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.call -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.call.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.call.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.cons -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.cons.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.cons.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.constant -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.constant.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.constant.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.equality -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.equality.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.equality.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.list -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.list.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.list.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.tuple -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.tuple.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.tuple.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.variable -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.variable.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.variable.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns.wildcard -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.wildcard.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.wildcard.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.patterns -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.syntax.EBNF -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.syntax.EBNF.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.syntax.EBNF.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.syntax.keywords -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.syntax.keywords.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.syntax.keywords.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.syntax -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.syntax.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.syntax.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.time.rtimer -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.time.rtimer.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.time.rtimer.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.time -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.time.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.time.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 	</target>

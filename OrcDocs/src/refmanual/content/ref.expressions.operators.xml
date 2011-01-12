@@ -82,7 +82,7 @@ Here is the full set of operators that Cor supports:
 <entry><code><![CDATA[*]]></code></entry>
 <entry>multiplication</entry>
 
-<entry><code><![CDATA[:<]]></code></entry>
+<entry><code><![CDATA[<:]]></code></entry>
 <entry>less than</entry>
 
 <entry><code><![CDATA[~]]></code></entry>

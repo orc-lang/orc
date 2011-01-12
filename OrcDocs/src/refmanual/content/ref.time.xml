@@ -25,6 +25,6 @@ services which take time to respond. However, Orc can also explicitly
 wait for some amount of time, using the special site <code>Rtimer</code>. 
 </para>
 
-<xi:include href="time_rtimer.xml"/>
+<xi:include href="ref.time.rtimer.xml"/>
 
 </chapter>
