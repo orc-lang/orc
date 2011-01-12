@@ -22,8 +22,10 @@ import scala.xml._
  *
  * @author dkitchin
  */
-object DocMaker {
+class DocMaker {
   
+	val claimedIdentifiers = new scala.collection.mutable.HashSet[String]()
+	
   def nonblank(line: String): Boolean = !line.trim().isEmpty
   
   /* Split a chunk of text into paragraphs */
@@ -67,13 +69,14 @@ object DocMaker {
         case _ => "" 
       }
     }
+    val optionalSectionName = """\w+""".r.findPrefixOf(f.getName())
     <section> 
       <title>{ f.getName() + optionalHeader }</title>
-      { renderItems(docItemList)("") }
+      { renderItems(docItemList)("", optionalSectionName) }
     </section>
   }
   
-  def renderItems(items: List[DocItem])(implicit nextCode: String): List[Node] = {
+  def renderItems(items: List[DocItem])(implicit nextCode: String, optionalSectionName: Option[String]): List[Node] = {
     items match {
       case DocText(s) :: rest => {
         val paraNodes = paragraphs(s) map { p: String => <para>{ Unparsed(p) }</para> }
@@ -91,7 +94,7 @@ object DocMaker {
           <variablelist>
             <?dbfo list-presentation="list"?>
             <?dbhtml list-presentation="table"?>
-            { decls map { d: DocItem => renderDecl(d.asInstanceOf[DocDecl])(newNextCode) } }
+            { decls map { d: DocItem => renderDecl(d.asInstanceOf[DocDecl])(newNextCode, optionalSectionName) } }
           </variablelist>  
         }
         declChunk :: renderItems(rest)
@@ -109,14 +112,45 @@ object DocMaker {
   }
   
     
-  def renderDecl(decl: DocDecl)(implicit nextCode: String) = {
-    <varlistentry>
+  def renderDecl(decl: DocDecl)(implicit nextCode: String, optionalSectionName: Option[String]) = {
+  	val content = {
       <term><code>{ decl.name }</code></term>
       <listitem>
         <para><code>{ decl.keyword + decl.typeDeclaration }</code></para>
         { renderItems(decl.body) }
       </listitem>
-    </varlistentry>
+  	}
+  	
+  	val optionalId = {
+  		"""^\w+$""".r.findPrefixOf(decl.name) match {
+  			case Some(ident) => {
+  				val path = "library" :: optionalSectionName.toList ::: List(ident)
+  			  val longId = path.mkString(".")
+  			  if (claimedIdentifiers contains longId) {
+  			  	None
+  			  }
+  			  else {
+  			  	claimedIdentifiers += longId
+  			  	Some(longId)
+  			  }
+  			}
+  			case None => None
+  		}
+  	}
+  	
+  	optionalId match {
+  		case Some(id) => {
+  			<varlistentry xml:id={id}>
+  			  {content}
+  			</varlistentry>
+  		}
+  		case None => {
+  			<varlistentry>
+  			  {content}
+  			</varlistentry>
+  		}
+  	}
+  	
   }  
   
   

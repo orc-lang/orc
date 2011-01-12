@@ -35,7 +35,17 @@ object DocParsers extends RegexParsers {
   val padding = """\s*""".r
   
   def getLeadingName(line: String) = {
-    """\s*[^\[\(]+""".r.findPrefixOf(line).getOrElse("").trim()
+  	// Note: matches only letter/number/_ identifiers. Does not yet handle Unicode identifiers.
+    """\s*\w+""".r.findPrefixOf(line) match {
+    	case Some(ident) => ident.trim()
+    	case None => {
+    		"""\([+*/%&|~<>=:.?\-]+\)""".r.findPrefixOf(line) match {
+    			case Some(opname) => opname
+    			case None => ""
+    		}
+    	}
+    }
+    
   }
   
   def parseFullLine: Parser[String] = """[^\n]+""".r <~ "\n"
