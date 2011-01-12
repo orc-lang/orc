@@ -30,7 +30,8 @@ object Main {
 	  val target = new File(args(1))
 	  
 	  val files = sourcedir.listFiles().toList filter { isDocFile(_) }
-    val xml = DocMaker.makeDoc(files)
+	  val maker = new DocMaker()
+    val xml = maker.makeDoc(files)
     
     val writer = new java.io.FileWriter(target)
     XML.write(writer, xml, "UTF-8", true, null)
