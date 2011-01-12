@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.syntax.lexical.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.syntax.keywords.xml 2323 2011-01-12 00:32:19Z bmccord09@gmail.com $
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Syntax: Lexical Specifications -->
+	<section xml:id="ref.syntax.lexical">
+		<title>Lexical Specifications</title>
+		<section xml:id="ref.syntax.lexical.body">
+			<para>
+				This page specifies Orc's processing of an input byte stream into an Orc lexical token sequence. 
+				This token sequence is the input to the Orc parsing procedure. 
+			</para>
+			<section xml:id="ref.syntax.lexical.body.inputstream">
+				<title>Input Byte Stream</title>
+				<para>
+					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
+					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
+				</para>
+			</section>
+			<section xml:id="ref.syntax.lexical.body.tokens">
+				<title>Lexical Tokens</title>
+				<para>
+					Orc lexical scanning reads Unicode characters and emits corresponding Orc lexical tokens. 
+					Orc uses 7 lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
+				</para>
+				<section xml:id="ref.syntax.lexical.body.tokens.identifier">
+					<title>Identifier</title>
+					<para>
+						Orc scans identifiers per <ulink url="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</ulink>, namely: 
+					</para>
+					<para>
+						<itemizedlist>
+							<listitem><para>Identifiers start with "Characters having the Unicode General_Category of uppercase letters (Lu), lowercase letters (Ll), titlecase letters (Lt), modifier letters (Lm), other letters (Lo), letter numbers (Nl)". </para></listitem>
+							<listitem><para>Identifiers can continue with "All of the above, plus characters having the Unicode General_Category of nonspacing marks (Mn), spacing combining marks (Mc), decimal number (Nd), connector punctuations (Pc)", plus Orc's addition of apostrophe as a "prime" mark. </para></listitem>
+							<listitem><para>All identifiers are normalized to Unicode Normalization Form C as they are parsed. </para></listitem>
+						</itemizedlist>
+					</para>
+					<para>
+						Examples of allowed Orc identifiers: orchestrate, iscenesætte, ενορχηστρώνω, الانسجام, 編排, 練り上げる, 관현악으로_편곡하다, оркестровать, आर्केस्ट्रा_करना. (These are all translations of "orchestrate" using Google translate, but it's often comically wrong.) 
+					</para>
+					<para>
+						Also, mathematical letter-like characters are allowed, such as ℤ, ℏ, ℵ0, and, of course, greek letters. 
+					</para>
+					<para>
+						Orc also treats an operator (defined below) placed in parenthesis, such as (+), as an identifier with the name of the operator (without the parenthesis). 
+					</para>
+					<para>
+						An identifier cannot match a keyword; see the following section. 
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.keyword">
+					<title>Keyword</title>
+					<para>
+						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a keyword instead. 
+					</para>
+					<para>
+						<code>true false signal stop null lambda if then else as _ val def type site class include Top Bot</code>
+					</para>
+					<para>
+						Note that <code>_</code> is a special case: Identifiers cannot start with an underscore, but <code>_</code> scans as a keyword nonetheless. 
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.operator">
+					<title>Operator</title>
+					<para>
+						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to 2 * operators, if possible.) 
+					</para>
+					<para>
+						<!-- <code>+ - * / % ** && || ~ < >  = <: :> <= >= /= : . ? := </code> -->
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.delimiters">
+					<title>Delimiters</title>
+					<para>
+						An Orc delimiter is a character sequence that matches one of the following.
+					</para>
+					<para>
+						<code>( ) {. .} , | ; :: :!: </code>
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.numericliteral">
+					<title>Numeric Literal</title>
+					<para>
+						Numeric literals are matched per the following regular expression: ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?
+					</para>
+					<para>
+						If the matched string contains a decimal point, an e, or an E, it is a floating point literal, otherwise it is an integer literal. 
+					</para>
+					<para>
+						All Orc numeric literals are decimal (radix 10). 
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.stringliteral">
+					<title>String Literal</title>
+					<para>
+						Double quotes demarcate a string literal. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
+					</para>
+					<para>
+						The backslash escape convention is recognized as follows:
+					</para>
+					<para>
+						<itemizedlist>
+							<listitem><para>\f U+000C FF Form Feed</para></listitem>
+							<listitem><para>\n U+000A LF Line Feed</para></listitem>
+							<listitem><para>\r U+000D CR Carriage Return</para></listitem>
+							<listitem><para>\t U+0009 HT Character Tabulation</para></listitem>
+							<listitem><para>Other escaped chars (like \\ or  \" ) are treated as themselves without the backslash.</para></listitem>
+						</itemizedlist>
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.comment">
+					<title>Comments</title>
+					<para>
+						Orc comments take two forms: 
+					</para>
+					<para>
+						<orderedlist>
+							<listitem><para><code>--</code> to end of the line (see newlines, below) </para></listitem>
+							<listitem><para><code>{-  multi-line comment body  -}</code></para></listitem>
+						</orderedlist>
+					</para>
+					<para>
+						A multi-line comment body is any character sequence (possibly empty), where  {-  and  -}  have lexical significance. 
+						Orc comments can be nested, so  {-  starts a nested multi-line comment, and -}  ends the current multi-line comment. 
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.whitespace">
+					<title>Whitespace</title>
+					<para>
+						Per <ulink url="http://unicode.org/reports/tr31/#Pattern_Syntax">Unicode Standard Annex #31, section 4, recommendation R3</ulink>, Orc treats all Unicode Pattern_White_Space characters as whitespace. 
+					</para>
+					<para>
+						<itemizedlist>
+							<listitem><para>U+0009 HT Character Tabulation</para></listitem>
+							<listitem><para>U+000B VT Line Tabulation</para></listitem>
+							<listitem><para>U+0020 Space</para></listitem>
+							<listitem><para>U+200E Left-to-Right Mark</para></listitem>
+							<listitem><para>U+200F Right-to-Left Mark</para></listitem>
+							<listitem><para>And the six newline characters (below)</para></listitem>
+						</itemizedlist>
+					</para>
+				</section>
+				<section xml:id="ref.syntax.lexical.body.tokens.newline">
+					<title>Newlines</title>
+					<para>
+						Orc follows the newline definition of <ulink url="http://unicode.org/versions/Unicode5.2.0/ch05.pdf">Unicode standard section 5.8, Newline Guidelines, recommendation R4</ulink>. 
+					</para>
+					<para>
+						Namely, Orc stops reading a line when it encounters one of the following characters: 
+					</para>
+					<para>
+						<itemizedlist>
+							<listitem><para>U+000D CR Carriage Return</para></listitem>
+							<listitem><para>U+000A LF Line Feed</para></listitem>
+							<listitem><para>U+0085 NEL Next Line</para></listitem>
+							<listitem><para>U+2028 LS Line Separator</para></listitem>
+							<listitem><para>U+000C FF Form Feed</para></listitem>
+							<listitem><para>U+2029 PS Paragraph Separator</para></listitem>
+						</itemizedlist>
+					</para>
+				</section>
+			</section>
+		</section>
+		
+		<section xml:id="ref.syntax.keywords.links">
+		  <title>Related Links</title>
+		  <informaltable frame='all'>
+			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+			<colspec colname='c1'/>
+			<colspec colname='c2'/>
+			<thead>
+			<row>
+			  <entry align="center">Related Reference Topics</entry>
+			  <entry align="center">Related Tutorial Sections</entry>
+			</row>
+			</thead>
+			<tbody>
+			<row>
+			  <entry><olink targetdoc="refmanual" targetptr="ref.syntax">Syntax</olink></entry>
+			  <entry><olink targetdoc="root" targetptr="orc-ebnf-table">Basic Orc Syntax</olink></entry>
+			</row>
+			<row>
+			  <entry><olink targetdoc="refmanual" targetptr="ref.syntax.EBNF">Syntax EBNF</olink></entry>
+			  <entry><olink targetdoc="root" targetptr="orc-keyword-table">Keywords</olink></entry>
+			</row>
+			</tbody>
+			</tgroup>
+		  </informaltable>
+	  </section>
+	</section>

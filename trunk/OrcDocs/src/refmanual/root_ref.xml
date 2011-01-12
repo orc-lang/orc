@@ -10,17 +10,13 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Keep in mind that for olinks to work now that we're using xinclude, we may have to
-	change the targetdoc pointers in the user guide to point to the smaller content documents,
-	rather than the root_ref as a whole -->
-
 <!-- xmlns="http://docbook.org/ns/docbook" -->
 
 <book 
 	xml:id="refmanual"
 	version="5.0" xml:lang="en"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="ref.toc.html" ?>
+	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="root_ref.html" ?>
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
@@ -33,6 +29,6 @@
 <xi:include href="content/ref.patterns.xml"/>
 <xi:include href="content/ref.syntax.xml"/>
 <xi:include href="content/ref.time.xml"/>
-<!--  inc the stdlib_alt here -->
+<xi:include href="../stdlib.xml"/>
 
 </book>

@@ -48,6 +48,7 @@
    <!ENTITY targets.ref.patterns SYSTEM "../build/html/refmanual/targets.ref.patterns.db">
    <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/html/refmanual/targets.ref.syntax.EBNF.db">
    <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/html/refmanual/targets.ref.syntax.keywords.db">
+   <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/html/refmanual/targets.ref.syntax.lexical.db">
    <!ENTITY targets.ref.syntax SYSTEM "../build/html/refmanual/targets.ref.syntax.db">
    <!ENTITY targets.ref.time.rtimer SYSTEM "../build/html/refmanual/targets.ref.time.rtimer.db">
    <!ENTITY targets.ref.time SYSTEM "../build/html/refmanual/targets.ref.time.db">
@@ -203,6 +204,9 @@
 					  </document>
 					  <document targetdoc="ref.syntax.keywords" baseuri="ref.syntax.keywords.html">
 					  	&targets.ref.syntax.keywords;
+					  </document>
+					  <document targetdoc="ref.syntax.lexical" baseuri="ref.syntax.lexical.html">
+					  	&targets.ref.syntax.lexical;
 					  </document>
 					  <document targetdoc="ref.syntax" baseuri="ref.syntax.html">
 					  	&targets.ref.syntax;

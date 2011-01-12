@@ -90,19 +90,12 @@ signal
     <tbody valign="top">
       <row>
         <entry><itemizedlist>
-          <listitem><para><xref linkend="types.Boolean"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Not"/></para></listitem>
-          <listitem><para><xref linkend="library.core.And"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Or"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Less"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Leq"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Greater"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Geq"/></para></listitem>
+          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
+          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
+          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>
