@@ -132,6 +132,7 @@ signal
     </thead>
     <tbody valign="top">
       <row>
+      <!-- 
         <entry><itemizedlist>
           <listitem><para><xref linkend="types.Integer"/></para></listitem>
           <listitem><para><xref linkend="types.Number"/></para></listitem>
@@ -151,6 +152,15 @@ signal
           <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
           <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
           <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+        </itemizedlist></entry>
+        -->
+        <entry><itemizedlist>
+          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
+          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
+        </itemizedlist></entry>
+        <entry><itemizedlist>
+          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
+          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
         </itemizedlist></entry>
       </row>
     </tbody>

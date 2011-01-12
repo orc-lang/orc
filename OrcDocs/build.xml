@@ -547,6 +547,16 @@
 			<param name="targets.filename" expression="targets.ref.syntax.keywords.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.syntax.lexical -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.syntax.lexical.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.syntax.lexical.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
 		<!-- ref.syntax -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"

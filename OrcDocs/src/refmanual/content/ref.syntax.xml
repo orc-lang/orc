@@ -21,5 +21,6 @@
 
 <xi:include href="ref.syntax.EBNF.xml"/>
 <xi:include href="ref.syntax.keywords.xml"/>
+<xi:include href="ref.syntax.lexical.xml"/>
 
 </chapter>
