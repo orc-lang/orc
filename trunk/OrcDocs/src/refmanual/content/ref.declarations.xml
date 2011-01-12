@@ -22,9 +22,9 @@ A variable can be bound to a value. A declaration binds one or more variables to
 Declarations follow the rules of lexical scoping.
 </para>
 
-<xi:include href="declarations_class.xml"/>	
-<xi:include href="declarations_include.xml"/>
-<xi:include href="declarations_site.xml"/> 
-<xi:include href="declarations_type.xml"/> 
+<xi:include href="ref.declarations.class.xml"/>	
+<xi:include href="ref.declarations.include.xml"/>
+<xi:include href="ref.declarations.site.xml"/> 
+<xi:include href="ref.declarations.type.xml"/> 
 
 </chapter>

@@ -26,9 +26,9 @@ may call different services, may receive different responses from the same site,
 values. Expressions in the functional subset, though, will display the same behavior in all executions.
 </para>
 
-<xi:include href="expressions_ifthenelse.xml"/>	
-<xi:include href="expressions_lambda.xml"/>
-<xi:include href="expressions_operators.xml"/> 
-<xi:include href="expressions_val.xml"/> 
+<xi:include href="ref.expressions.ifthenelse.xml"/>	
+<xi:include href="ref.expressions.lambda.xml"/>
+<xi:include href="ref.expressions.operators.xml"/> 
+<xi:include href="ref.expressions.val.xml"/> 
 
 </chapter>

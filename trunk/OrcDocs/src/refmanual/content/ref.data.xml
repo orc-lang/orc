@@ -19,17 +19,17 @@
 
 <para>TODO:Introduction paragraph about data values.</para>
 
-<xi:include href="data_boolean.xml"/>
-<xi:include href="data_numeric.xml"/>
-<xi:include href="data_string.xml"/>
-<xi:include href="data_signal.xml"/>
+<xi:include href="ref.data.boolean.xml"/>
+<xi:include href="ref.data.numeric.xml"/>
+<xi:include href="ref.data.string.xml"/>
+<xi:include href="ref.data.signal.xml"/>
 
-<xi:include href="data_list.xml"/>
-<xi:include href="data_tuple.xml"/>
-<xi:include href="data_record.xml"/>
-<xi:include href="data_datatype.xml"/>
+<xi:include href="ref.data.list.xml"/>
+<xi:include href="ref.data.tuple.xml"/>
+<xi:include href="ref.data.record.xml"/>
+<xi:include href="ref.data.datatype.xml"/>
 
-<xi:include href="data_external.xml"/>
-<xi:include href="data_mutable.xml"/>
+<xi:include href="ref.data.external.xml"/>
+<xi:include href="ref.data.mutable.xml"/>
 
 </chapter>

@@ -1,8 +1,8 @@
-#Mon Jan 10 17:10:43 CST 2011
+#Tue Jan 11 10:53:12 CST 2011
 eclipse.preferences.version=1
-encoding//src/refmanual/content/data.xml=UTF-8
-encoding//src/refmanual/content/data_numeric.xml=UTF-8
-encoding//src/refmanual/content/data_signal.xml=UTF-8
-encoding//src/refmanual/content/data_string.xml=UTF-8
 encoding//src/refmanual/content/ref.data.boolean.xml=UTF-8
+encoding//src/refmanual/content/ref.data.numeric.xml=UTF-8
+encoding//src/refmanual/content/ref.data.signal.xml=UTF-8
+encoding//src/refmanual/content/ref.data.string.xml=UTF-8
+encoding//src/refmanual/content/ref.data.xml=UTF-8
 encoding/<project>=UTF-8

@@ -23,9 +23,9 @@ which are expressions that have a defined name, and have some number of paramete
 using the keyword <code>def</code>.
 </para>
 
-<xi:include href="functions_clausal.xml"/>
-<xi:include href="functions_recursion.xml"/>
-<xi:include href="functions_closures.xml"/>
-<xi:include href="functions_lambda.xml"/>
+<xi:include href="ref.functions.clausal.xml"/>
+<xi:include href="ref.functions.recursion.xml"/>
+<xi:include href="ref.functions.closure.xml"/>
+<xi:include href="ref.functions.lambda.xml"/>
 
 </chapter>
