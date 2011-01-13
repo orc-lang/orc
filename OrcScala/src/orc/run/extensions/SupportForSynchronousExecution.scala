@@ -17,7 +17,7 @@ package orc.run.extensions
 import orc.OrcRuntime
 import orc.OrcEvent
 import orc.HaltedEvent
-import orc.OrcOptions
+import orc.OrcExecutionOptions
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.ExecutionException
 
@@ -33,7 +33,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
    * The continuation takes only values, not events.
    */
   @throws(classOf[ExecutionException])
-  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
+  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
       event match {
@@ -48,7 +48,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
 
   /** If no continuation is given, discard published values and run silently to completion. */
   @throws(classOf[ExecutionException])
-  def runSynchronous(node: Expression, options: OrcOptions) {
+  def runSynchronous(node: Expression, options: OrcExecutionOptions) {
     runSynchronous(node, { _: OrcEvent => }, options)
   }
  
