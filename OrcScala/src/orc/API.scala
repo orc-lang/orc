@@ -30,7 +30,7 @@ import orc.progress.ProgressMonitor
  */
 trait OrcCompilerProvides {
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
 
@@ -39,7 +39,7 @@ trait OrcCompilerProvides {
  */
 trait OrcCompilerRequires {
   @throws(classOf[IOException])
-  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext
+  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext
   @throws(classOf[ClassNotFoundException])
   def loadClass(className: String): Class[_]
 }
@@ -56,7 +56,7 @@ trait OrcRuntimeProvides {
   type Token <: TokenAPI
 
   @throws(classOf[ExecutionException])
-  def run(e: Expression, k: OrcEvent => Unit, options: OrcOptions): Unit
+  def run(e: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions): Unit
   def stop: Unit
 }
 
@@ -135,6 +135,8 @@ trait OrcOptions extends OrcCompilationOptions with OrcExecutionOptions
 trait OrcCommonOptions {
   def filename: String
   def filename_=(newVal: String)
+  def classPath: java.util.List[String]
+  def classPath_=(newVal: java.util.List[String])
   def logLevel: String
   def logLevel_=(newVal: String)
 }
@@ -159,8 +161,6 @@ trait OrcCompilationOptions extends OrcCommonOptions {
 }
 
 trait OrcExecutionOptions extends OrcCommonOptions {
-  def classPath: java.util.List[String]
-  def classPath_=(newVal: java.util.List[String])
   def showJavaStackTrace: Boolean
   def showJavaStackTrace_=(newVal: Boolean)
   def disableTailCallOpt: Boolean
