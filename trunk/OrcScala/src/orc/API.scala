@@ -125,21 +125,21 @@ class OrcEventAction {
 }
 
 
-
-
-
 /**
  * Options for Orc compilation and execution.
  *
  * @author jthywiss
  */
-trait OrcOptions {
+trait OrcOptions extends OrcCompilationOptions with OrcExecutionOptions
+
+trait OrcCommonOptions {
   def filename: String
   def filename_=(newVal: String)
   def logLevel: String
   def logLevel_=(newVal: String)
+}
 
-  // Compile options
+trait OrcCompilationOptions extends OrcCommonOptions {
   def usePrelude: Boolean
   def usePrelude_=(newVal: Boolean)
   def includePath: java.util.List[String]
@@ -156,8 +156,9 @@ trait OrcOptions {
   def oilOutputFile_=(newVal: Option[File])
   def compileOnly: Boolean
   def compileOnly_=(newVal: Boolean)
+}
 
-  // Execution options
+trait OrcExecutionOptions extends OrcCommonOptions {
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
   def showJavaStackTrace: Boolean
@@ -173,4 +174,3 @@ trait OrcOptions {
   def hasRight(rightName: String): Boolean
   def setRight(rightName: String, newVal: Boolean)
 }
-

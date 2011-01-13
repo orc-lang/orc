@@ -17,7 +17,7 @@ package orc.compile
 
 import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer}
 import java.net.URI
-import orc.{ OrcOptions, OrcCompiler }
+import orc.{ OrcCompilationOptions, OrcCompiler }
 import orc.compile.optimize._
 import orc.compile.parse.{ OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
 import orc.compile.translate.Translator
@@ -35,7 +35,7 @@ import orc.ast.oil.xml.OrcXML
 /**
  * Represents a configuration state for a compiler.
  */
-class CompilerOptions(val options: OrcOptions, val logger: CompileLogger) {
+class CompilerOptions(val options: OrcCompilationOptions, val logger: CompileLogger) {
   
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
     logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
@@ -242,7 +242,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   ////////
 
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
     //Logger.config(options)
     Logger.config("Begin compile "+options.filename)
     compileLogger.beginProcessing(options.filename)
@@ -269,7 +269,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
  */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException])
-  override def apply(source: OrcInputContext, options: OrcOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
     SiteClassLoading.initWithClassPathStrings(options.classPath)
     super.apply(source, options, compileLogger, progress)
   }
@@ -282,7 +282,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   }
 
   @throws(classOf[IOException])
-  def apply(source: java.io.Reader, options: OrcOptions, err: Writer): orc.ast.oil.nameless.Expression = {
+  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): orc.ast.oil.nameless.Expression = {
     this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   }
 
@@ -294,7 +294,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   }
 
   @throws(classOf[IOException])
-  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcOptions): OrcInputContext = {
+  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
     Logger.finer("openInclude "+includeFileName+", relative to "+Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName)+"("+baseIC.descr+")")
 

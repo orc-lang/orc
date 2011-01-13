@@ -15,7 +15,7 @@
 
 package orc.run
 
-import orc.{ OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime }
+import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, TokenAPI, OrcRuntime }
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException }
@@ -27,7 +27,7 @@ import scala.actors.Actor._
 trait Orc extends OrcRuntime {
   
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
-  def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
+  def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val exec = new Execution(node, k, options)
     val t = new Token(node, exec)
     schedule(t)
@@ -188,7 +188,7 @@ trait Orc extends OrcRuntime {
    * An execution is a special toplevel group, 
    * associated with the entire program.
    */
-  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcOptions) extends Group {
+  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcExecutionOptions) extends Group {
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))

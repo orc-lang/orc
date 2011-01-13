@@ -22,7 +22,7 @@ import scala.util.parsing.input.Position
 import java.io.IOException
 
 import orc.ast.AST
-import orc.OrcOptions
+import orc.OrcCompilationOptions
 import orc.OrcCompilerRequires
 import orc.ast.ext._
 
@@ -70,8 +70,8 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
  *
  * @author jthywiss
  */
-object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
-  def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
+object OrcProgramParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
+  def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
     val parsers = new OrcParsers(ic, options, envServices)
     val tokens = new parsers.lexical.Scanner(ic.reader)
     parsers.enhanceErrorMsg(parsers.phrase(parsers.parseProgram)(tokens))
@@ -85,8 +85,8 @@ object OrcProgramParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequir
  *
  * @author jthywiss
  */
-object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
-  def apply(ic: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires): ParseResult = {
+object OrcIncludeParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
+  def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
     val newParsers = new OrcParsers(ic, options, envServices)
     val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
     val tokens = new newParsers.lexical.Scanner(ic.reader)
@@ -104,7 +104,7 @@ object OrcIncludeParser extends ((OrcInputContext, OrcOptions, OrcCompilerRequir
  *
  * @author dkitchin, amshali, srosario, jthywiss
  */
-class OrcParsers(inputContext: OrcInputContext, options: OrcOptions, envServices: OrcCompilerRequires) 
+class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires) 
 extends StandardTokenParsers 
 with EnhancedErrorMessages
 with CustomParserCombinators
