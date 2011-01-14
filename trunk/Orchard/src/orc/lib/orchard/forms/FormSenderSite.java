@@ -31,7 +31,7 @@ import orc.orchard.AbstractExecutorService;
 import orc.orchard.OrchardProperties;
 import orc.orchard.Job.JobEngine;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 import org.apache.commons.fileupload.FileUploadException;
@@ -62,7 +62,7 @@ public class FormSenderSite extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		final JobEngine engine = (JobEngine) caller.runtime();
 		try {
 			caller.publish(new FormReceiver(engine, (Form) args.getArg(0)));

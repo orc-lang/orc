@@ -28,7 +28,7 @@ import orc.lib.net.MailerFactory.OrcMessage;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Job.JobEngine;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
@@ -71,7 +71,7 @@ public class MailListenerFactory extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		try {
 			caller.publish(new MailListener((JobEngine) caller.runtime(), (Mailer) args.getArg(0)));
 		} catch (final AddressException e) {

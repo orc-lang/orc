@@ -20,7 +20,7 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.OrcRuntime;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
@@ -38,7 +38,7 @@ public class Redirect extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		final OrcRuntime engine = caller.runtime();
 		final String url = args.stringArg(0);
 		if (!(engine instanceof Redirectable)) {

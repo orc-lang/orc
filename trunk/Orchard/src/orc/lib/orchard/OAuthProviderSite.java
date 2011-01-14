@@ -28,7 +28,7 @@ import orc.orchard.OrchardOAuthServlet;
 import orc.orchard.Job.JobEngine;
 import orc.values.sites.compatibility.Args;
 import orc.OrcRuntime;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 public class OAuthProviderSite extends SiteAdaptor {
@@ -68,7 +68,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		final OrcRuntime engine = caller.runtime();
 		if (!(engine instanceof JobEngine)) {
 			throw new UnsupportedOperationException("This site is not supported on the engine " + engine.getClass().toString());
