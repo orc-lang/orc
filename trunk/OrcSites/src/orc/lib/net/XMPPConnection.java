@@ -15,7 +15,7 @@ package orc.lib.net;
 
 import java.util.LinkedList;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -148,7 +148,7 @@ public class XMPPConnection extends EvalSite {
 		/** Buffer for received messages. */
 		private final LinkedList<Object> received = new LinkedList<Object>();
 		/** Queue of tokens waiting to receive messages. */
-		private final LinkedList<TokenAPI> receivers = new LinkedList<TokenAPI>();
+		private final LinkedList<Handle> receivers = new LinkedList<Handle>();
 		private final XMPPConnectionSite xmppConnectionSite;
 
 		public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String account) {
@@ -169,7 +169,7 @@ public class XMPPConnection extends EvalSite {
 				if (receivers.isEmpty()) {
 					received.add(v);
 				} else {
-					final TokenAPI receiver = receivers.removeFirst();
+					final Handle receiver = receivers.removeFirst();
 					receiver.publish(v);
 				}
 			}
@@ -197,7 +197,7 @@ public class XMPPConnection extends EvalSite {
 			 */
 			addMember("receive", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI receiver) {
+				public void callSite(final Args args, final Handle receiver) {
 					System.out.println(getClass().getSimpleName()+" receive ihc="+System.identityHashCode(this));
 					synchronized (received) {
 						if (received.isEmpty()) {
