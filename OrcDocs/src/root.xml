@@ -13,12 +13,6 @@
 <preface><title>Introduction</title>
 	
 <para>
-	<olink targetdoc="refmanual" targetptr="ref.combinators.otherwise">
-	Test olink
-	</olink>.
-</para>
-	
-<para>
 Orc is a programming language designed to make distributed and
 concurrent programs simple and intuitive to write. Orc expresses
 orchestration, a type of structured concurrency. It emphasizes the
