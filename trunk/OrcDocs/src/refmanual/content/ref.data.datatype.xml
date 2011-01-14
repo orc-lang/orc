@@ -13,57 +13,73 @@
 <section xml:id="ref.data.datatype">
 <title>Datatype Values</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>TODO</code></para>
+<para>An Orc <firstterm>datatype</firstterm> is an algebraic data type, or "tagged union" data type,
+where each instance of a datatype has a tag along with a sequence of values.
+The set of allowed tags is fixed by the definition of the datatype.
+Each tag has a defined number of associated values, similar to a tuple, but, unlike an Orc tuple, the
+number of associated values may be zero or more.</para>
 
-<para>TODO.</para>
+<para>Enumerations found in other languages are algebraic data types where all tags are associated
+with zero values.</para>
+
+<para>When using the Orc type system, datatypes may be polymorphic (taking type parameters).</para>
+
+<para>Datatypes can be recursive; namely, a datatype instance may contain an instance of the same type.</para>
+
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>DataTypeDecl</replaceable> ::= <code>type </code><replaceable>TypeVar</replaceable><code>[</code><replaceable>TypeVar</replaceable>...<code>] = </code><replaceable>Constructor</replaceable><code> | </code><replaceable>Constructor</replaceable>...</para>
 
 <section xml:id="ref.data.datatype.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
+<para>Each tag name is declared as a data constructor, which is used to create values of the datatype.</para>
+
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Constructor</replaceable> ::= <replaceable>ident</replaceable><code>(_, </code>...<code>)</code> | <replaceable>ident</replaceable><code>(</code><replaceable>Type</replaceable><code>, </code>...<code>)</code></para>
 
 <para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
-
-</section>
-
-<section xml:id="ref.data.datatype.operations">
-<title>Operations</title>
-
-<para>Notable datatype operations include:
-<itemizedlist>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-</itemizedlist>
-</para>
-
-</section>
-
-<section xml:id="ref.data.datatype.javacalls">
-<title>Java calls</title>
-
-<para>TODO.</para>
 
 </section>
 
 <section xml:id="ref.data.datatype.examples">
 <title>Examples</title>
 
+<example xml:id="ref.data.datatypes.examples.shapes">
+<title>Geometric shape datatype</title>
+<programlisting><![CDATA[
+-- A Shape type with three data constructors
+type Shape = Rectangle(_, _) | Circle (_) | Triangle(_, _, _)
 
-<example xml:id="ref.data.datatypes.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+-- Create a rectangle
+Rectangle(2, 3)
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.datatypes.examples.two">
-<title>TODO:Example2</title>
-<programlisting><![CDATA[
---TODO
-signal
+<example xml:id="ref.data.datatypes.examples.binarytree">
+<title>Binary tree node</title>
+<programlisting language="orc-demo"><![CDATA[
+--This is a binary tree datatype
+--Leaf nodes carry integer values
+type Node = LeafNode(Integer) | InnerNode(Node, Node)
+
+--Constructing a simple tree
+--    /\
+--   1 /\
+--    2  3
+InnerNode(LeafNode(1),InnerNode(LeafNode(2),LeafNode(3)))
+]]></programlisting>
+</example>
+
+<example xml:id="ref.data.datatypes.examples.binarytreepoly">
+<title>Polymorphic binary tree node</title>
+<programlisting language="orc-demo"><![CDATA[
+--This is a binary tree datatype
+--Leaf nodes carry values of type T
+type Node[T] = LeafNode(T) | InnerNode(Node, Node)
+
+--Constructing a simple tree
+--      /\
+--   "A" /\
+--    "B"  "C"
+InnerNode[String](LeafNode("A"),InnerNode(LeafNode("B"),LeafNode("C")))
 ]]></programlisting>
 </example>
 
@@ -85,15 +101,10 @@ signal
       <!-- 
         <entry><itemizedlist>
           <listitem><para><xref linkend="types.Datatype"/></para></listitem>
-          <listitem><para><xref linkend="library.core.If"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
-          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
-          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
+          <listitem><para><xref linkend="library.state.Option"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
         </itemizedlist></entry>
         -->
         <entry><itemizedlist>

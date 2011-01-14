@@ -4,7 +4,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -21,15 +21,17 @@
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	
-<xi:include href="content/ref.class.xml"/>
 <xi:include href="content/ref.combinators.xml"/>
+<xi:include href="content/ref.sites.xml"/> 
 <xi:include href="content/ref.data.xml"/> 
+<xi:include href="content/ref.patterns.xml"/>
+<xi:include href="content/ref.functions.xml"/>
+<xi:include href="content/ref.class.xml"/>
 <xi:include href="content/ref.declarations.xml"/>
 <xi:include href="content/ref.expressions.xml"/> 
-<xi:include href="content/ref.functions.xml"/>
-<xi:include href="content/ref.patterns.xml"/>
-<xi:include href="content/ref.syntax.xml"/>
 <xi:include href="content/ref.time.xml"/>
+<xi:include href="content/ref.syntax.xml"/>
+<xi:include href="content/ref.types.xml"/>
 <xi:include href="../stdlib.xml"/>
 
 </book>
