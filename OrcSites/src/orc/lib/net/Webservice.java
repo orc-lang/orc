@@ -20,7 +20,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 import java.util.UUID;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -107,7 +107,7 @@ public class Webservice extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) {
+	public void callSite(final Args args, final Handle caller) {
 		try {
 			// Create a temporary directory to host compilation of stubs
 			final File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());

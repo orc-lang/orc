@@ -53,7 +53,7 @@ import javax.mail.search.RecipientTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SubjectTerm;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -825,7 +825,7 @@ public class MailerFactory extends SiteAdaptor {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		//FIXME:Implement:  caller.requireRight("send mail", true);
 		try {
 			caller.publish(new Mailer("/" + args.stringArg(0)));
