@@ -43,7 +43,7 @@ User Guide.
             <varlistentry>
       <term><code>If</code></term>
       <listitem>
-        <para><code>site If(Boolean) :: Signal</code></para>
+        <para><code>site If(Boolean) :: Signal</code></para>       
         <para>Fail silently if the argument is false. Otherwise return a signal.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -51,7 +51,7 @@ User Guide.
   If(false) >> "Never publishes"
 | If(true) >> "Always publishes"]]></programlisting>
 </para>
-      </listitem>
+      </listitem> 
     </varlistentry>
           </variablelist><variablelist>
             <?dbfo list-presentation="list"?>

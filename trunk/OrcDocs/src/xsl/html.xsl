@@ -68,7 +68,7 @@ function toggle(link, divId) { var lText = link.innerHTML; var d = document.getE
 </script>
 </xsl:template>
 
-<!--  Add quick tags for stdlib site properties (idempotent, blocking, etc.) -->
+<!--  Add quick tags for stdlib site properties (idempotent, blocking, etc.) 
 <xsl:template match="siteprop">
 	<table border="1">
 		<tr>
@@ -82,6 +82,30 @@ function toggle(link, divId) { var lText = link.innerHTML; var d = document.getE
 </xsl:template>
 <xsl:template match="blocking">
 	<td bgcolor="#0000CC"><font color="#FFFFFF">Blocking</font></td>
+</xsl:template>
+-->
+
+<!--  Add site properties for the site library using the <sitepropset> tag -->
+<xsl:template match="sitepropset">
+	<table class="proptable">
+		<tr>
+    		<xsl:for-each select="siteprop">
+    			<xsl:if test="@propname='blocking'">
+    				<td bgcolor="#00CC00"><font color="#FFFFFF">Blocking</font></td>
+    			</xsl:if>
+    			<xsl:if test="@propname='nonblocking'">
+    				<td bgcolor="#CC0000"><font color="#FFFFFF">Nonblocking</font></td>
+    			</xsl:if>
+    			<xsl:if test="@propname='idempotent'">
+    				<td bgcolor="#0000CC"><font color="#FFFFFF">Idempotent</font></td>
+    			</xsl:if>
+    			<xsl:if test="@propname='pure'">
+    				<td bgcolor="#6600FF"><font color="#FFFFFF">Pure</font></td>
+    			</xsl:if>
+			</xsl:for-each>
+    	</tr>
+	</table>
+	<br/>
 </xsl:template>
 
 <!--
