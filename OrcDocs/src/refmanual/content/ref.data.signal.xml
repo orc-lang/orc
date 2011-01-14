@@ -18,7 +18,7 @@
 <para>A <literal>signal</literal> represents the instance of the Orc unit type, <type>Signal</type>.
 <literal>signal</literal>s are most commonly used to provide for control flow
 when there is no associated data to propagate.  For example, <code>metronome(100)</code>
-function publishes every 100 milliseconds, since it has no other data of interest to publish.</para>
+function publishes a <literal>signal</literal> every 100 milliseconds, since it has no other data of interest to publish.</para>
 
 <section xml:id="ref.data.signal.literals">
 <title>Literals</title>
