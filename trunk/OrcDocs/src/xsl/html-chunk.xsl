@@ -4,8 +4,14 @@
     exclude-result-prefixes="xslthl"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	
+<!-- Unedited docbook .xsl -->
 <xsl:import href="../../docbook-xsl/html/chunk.xsl"/>
+
+<!--  Customization layer imports -->
 <xsl:import href="html.xsl"/>
+	
+<!--  Add DOCTYPE to the top of HTML output to make it Internet Explorer compatible (no quirks mode) -->
+<xsl:output doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" doctype-system="http://www.w3.org/TR/html4/loose.dtd"/>
 	
 <!-- Customization for the Orc Reference manual -->
 
@@ -298,25 +304,3 @@
 </xsl:template>
 	
 </xsl:stylesheet>
-
-<!--
-	<xsl:choose>
-                  <xsl:when test="count($up) > 0
-                                  and generate-id($up) != generate-id($home)
-                                  and $navig.showtitles != 0">
-                    <a accesskey="u">
-                      <xsl:attribute name="href">
-                        <xsl:call-template name="href.target">
-                          <xsl:with-param name="object" select="$up"/>
-                        </xsl:call-template>
-                      </xsl:attribute>
-						<xsl:apply-templates select="$up" mode="object.title.markup"/>
-                    </a>
-                  </xsl:when>
-                  <xsl:otherwise>&#160;</xsl:otherwise>
-                </xsl:choose>
-	-->
-
-<!--
-	<xsl:apply-templates select="." mode="object.title.markup"/>
-	-->

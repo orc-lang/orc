@@ -42,6 +42,5 @@ Orc language implementation version
 	
 <!-- Appendices -->
 <xi:include href="content/syntax.xml"/>
-<xi:include href="content/library.xml"/>
 	
 </book>
