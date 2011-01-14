@@ -2,7 +2,7 @@
 // Orc.scala -- Scala class Orc
 // Project OrcScala
 //
-// $Id$
+// $Id: Orc.scala 2233 2010-12-08 00:39:44Z amshali $
 //
 // Created by dkitchin on May 10, 2010.
 //
@@ -15,7 +15,7 @@
 
 package orc.run
 
-import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
+import orc.{ OrcOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException }
@@ -25,9 +25,8 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 trait Orc extends OrcRuntime {
-  
-  val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
-  def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
+
+  def run(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
     val exec = new Execution(node, k, options)
     val t = new Token(node, exec)
     schedule(t)
@@ -49,8 +48,6 @@ trait Orc extends OrcRuntime {
     def resume(): Unit
     def notify(event: OrcEvent): Unit
   }
-  
-  sealed trait Blocker
 
   object Killer extends Actor {
     def act() {
@@ -99,7 +96,7 @@ trait Orc extends OrcRuntime {
       }
 
     /* Find the root of this group tree. By default, a group is its own root. */
-    def root: Execution;
+    def root: Group = this
 
   }
 
@@ -121,7 +118,7 @@ trait Orc extends OrcRuntime {
   case object Dead extends GroupcellState
 
   /** A Groupcell is the group associated with expression g in (f <x< g) */
-  class Groupcell(parent: Group) extends Subgroup(parent) with Blocker {
+  class Groupcell(parent: Group) extends Subgroup(parent) {
 
     var state: GroupcellState = Unbound(Nil)
 
@@ -131,7 +128,7 @@ trait Orc extends OrcRuntime {
           state = Bound(v)
           t.halt
           this.kill
-          for (t <- waitlist) { t.publish(Some(v)) }
+          for (t <- waitlist) { t.publish(v) }
         }
         case _ => t.halt
       }
@@ -142,7 +139,7 @@ trait Orc extends OrcRuntime {
         case Unbound(waitlist) => {
           state = Dead
           parent.remove(this)
-          for (t <- waitlist) { t.publish(None) }
+          for (t <- waitlist) { t.novalue }
         }
         case _ => {}
       }
@@ -152,26 +149,24 @@ trait Orc extends OrcRuntime {
     def read(t: Token) = synchronized {
       state match {
         case Unbound(waitlist) => {
-          t.blockOn(this)
           state = Unbound(t :: waitlist)
         }
-        case Bound(v) => t.publish(Some(v))
-        case Dead => t.publish(None)
+        case Bound(v) => t.publish(v)
+        case Dead => t.novalue
       }
     }
 
   }
 
   /** A Region is the group associated with expression f in (f ; g) */
-  class Region(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
+  class Region(parent: Group, t: Token) extends Subgroup(parent) {
 
     /* Some(t): No publications have left this region.
      *          If the group halts silently, t will be scheduled.
      *
      *    None: One or more publications has left this region.
      */
-    t.blockOn(this)
-    
+    t.state = Pending
     var pending: Option[Token] = Some(t)
 
     def publish(t: Token, v: AnyRef) = synchronized {
@@ -181,7 +176,8 @@ trait Orc extends OrcRuntime {
     }
 
     def onHalt = synchronized {
-      pending foreach { _.unblock }
+      t.state = Live
+      pending foreach { schedule(_) }
       parent.remove(this)
     }
 
@@ -191,7 +187,7 @@ trait Orc extends OrcRuntime {
    * An execution is a special toplevel group, 
    * associated with the entire program.
    */
-  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcExecutionOptions) extends Group {
+  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcOptions) extends Group {
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
@@ -205,8 +201,6 @@ trait Orc extends OrcRuntime {
     def notify(event: OrcEvent) {
       k(event)
     }
-
-    override def root = this
 
   }
 
@@ -257,7 +251,7 @@ trait Orc extends OrcRuntime {
   // Frames
   ////////
 
-  abstract class Frame {
+  trait Frame {
     def apply(t: Token, v: AnyRef): Unit
   }
 
@@ -274,21 +268,15 @@ trait Orc extends OrcRuntime {
       schedule(t.bind(BoundValue(v)).move(node))
     }
   }
+    
+  case class ResolveTargetFrame extends Frame
+  case class ResolveArgsFrame extends Frame
 
   case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding]) extends Frame {
     def callpoint = _callpoint
     def apply(t: Token, v: AnyRef) {
-      t.functionFramesPushed = t.functionFramesPushed - 1
       t.env = env
       t.move(callpoint).publish(v)
-    }
-  }
-
-  case class KFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
-    def k = _k
-    def apply(t: Token, v: AnyRef) {
-      val _v = v.asInstanceOf[Option[AnyRef]]
-      k(_v)
     }
   }
 
@@ -304,69 +292,24 @@ trait Orc extends OrcRuntime {
 
   sealed trait TokenState
   case object Live extends TokenState
-  
-  case class Blocked(blocker: Blocker) extends TokenState
-  
+  case object Pending extends TokenState
   case class Suspending(prevState: TokenState) extends TokenState
   case class Suspended(prevState: TokenState) extends TokenState
   case object Halted extends TokenState
   case object Killed extends TokenState
   case class Published(v: AnyRef) extends TokenState
 
-  class SiteCallHandle(caller: Token, calledSite: AnyRef) extends Handle with Blocker {
-    
-    caller.blockOn(this)
-   
-    var listener: Option[Token] = Some(caller)
-    
-    def publish(v: AnyRef) = 
-      synchronized { 
-        listener foreach { _ publish v }
-      }
-    
-    def halt = 
-      synchronized { 
-        listener foreach { _.halt }
-      }
-    
-    def !!(e: OrcException) = 
-      synchronized { 
-        listener foreach { _ !! e }
-      }
-    
-    def notify(event: orc.OrcEvent) = 
-      synchronized { 
-        listener foreach { _ notify event }
-      }
-    
-    def isLive = 
-      synchronized { 
-        listener.isDefined
-      }
-    
-    def kill = 
-      synchronized { 
-        listener = None
-      }
-    
-  }  
-  
   class Token private (
     var node: Expression,
     var stack: List[Frame] = Nil,
     var env: List[Binding] = Nil,
     var group: Group,
-    var state: TokenState = Live) extends GroupMember {
+    var state: TokenState = Live) extends Handle with GroupMember {
 
-    def token = this
-    var functionFramesPushed : Int = 0;
     /** Public constructor */
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
-    if (group.root.options.maxTokens > 0 && 
-        tokenCount.incrementAndGet > group.root.options.maxTokens)
-      throw new AssertionError("Reached maximum number of tokens allowed.") 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -375,13 +318,12 @@ trait Orc extends OrcRuntime {
       env: List[Binding] = env,
       group: Group = group,
       state: TokenState = state): Token = {
-      
       new Token(node, stack, env, group, state)
     }
 
     // A live token is added to its group when it is created
     state match {
-      case Published(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
+      case Published(_) | Live | Pending | Suspending(_) | Suspended(_) => group.add(this)
       case Halted | Killed => {}
     }
 
@@ -389,41 +331,18 @@ trait Orc extends OrcRuntime {
 
     def kill {
       state match {
-        case Published(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => {
-          state match {
-            case Blocked(handle: SiteCallHandle) => handle.kill
-            case _ => { }
-          }
-          
+        case Published(_) | Live | Pending | Suspending(_) | Suspended(_) => {
           state = Killed
           group.halt(this)
         }
         case Halted | Killed => {}
       }
-      tokenCount.decrementAndGet()
     }
-    
-    def blockOn(blocker: Blocker) = synchronized {
-      state match {
-        case Live => state = Blocked(blocker)
-        case _ => throw new AssertionError("Only live tokens may be blocked")
-      }
-    }
-      
-    def unblock = synchronized {
-      state match {
-        case Blocked(_ : Region) => {
-          state = Live
-          schedule(this)
-        }
-        case _ => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
-      }
-    }
-    
+
     def suspend() = synchronized {
       state match {
         case Live => state = Suspending(state)
-        case Published(_) | Blocked(_) | Suspending(_) | Suspended(_) | Halted | Killed => {}
+        case Published(_) | Pending | Suspending(_) | Suspended(_) | Halted | Killed => {}
       }
     }
 
@@ -434,7 +353,7 @@ trait Orc extends OrcRuntime {
           state = prevState
           schedule(this)
         }
-        case Published(_) | Live | Blocked(_) | Halted | Killed => {}
+        case Published(_) | Live | Pending | Halted | Killed => {}
       }
     }
 
@@ -459,7 +378,7 @@ trait Orc extends OrcRuntime {
         case BindingFrame(n) :: fs => { stack = (new BindingFrame(n + 1)) :: fs }
 
         /* Tail call optimization (part 1 of 2) */
-        case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
+        case FunctionFrame(_, _) :: fs => { /* Do not push a binding frame over a tail call.*/ }
 
         case fs => { stack = BindingFrame(1) :: fs }
       }
@@ -473,104 +392,43 @@ trait Orc extends OrcRuntime {
         case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
       }
 
-    /**
-     * Attempt to resolve a binding to a value.
-     * When the binding resolves to v, call k(v).
-     * (If it is already resolved, k is called immediately)
-     * 
-     * If the binding resolves to a halt, halt this token.
-     */
-    def resolve(b: Binding)(k: AnyRef => Unit) {
-      resolveOptional(b) {
-        case Some(v) => k(v)
-        case None => halt
-      }
-    }
-
-    /** 
-     * Attempt to resolve a binding to a value.
-     * When the binding resolves to v, call k(Some(v)).
-     * (If it is already resolved, k is called immediately)
-     * 
-     * If the binding resolves to a halt, call k(None).
-     * 
-     * Note that resolving a closure also encloses its context.
-     */
-    def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
-      b match {
-        case BoundValue(v) =>
-          v match {
-            case c: Closure =>
-              enclose(c.lexicalContext) { newContext: List[Binding] =>
-                k(Some(Closure(c.defs, c.pos, newContext)))
-              }
-            case u => k(Some(u))
-          }
-        case BoundStop => k(None)
-        case BoundCell(g) => stack = KFrame(k) :: stack; g read this // TODO: push k on stack before calling read
-      }
-    }
-
-    /** 
-     * Create a new Closure object whose lexical bindings are all resolved and replaced.
-     * Such a closure will have no references to any Groupcell.
-     * This object is then passed to the continuation.
-     */
-    def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
-      def resolveBound(b: Binding)(k: Binding => Unit) =
-        resolveOptional(b) {
-          case Some(v) => k(BoundValue(v))
-          case None => k(BoundStop)
-        }
-      leftToRight(resolveBound, bs)(k)
-    }
 
     def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
       if (params.size != d.arity) {
         this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
       }
-      else {
-      
-        /* 1) If this is not a tail call, push a function frame referring to the current environment.
-         * 2) Change the current environment to the closure's saved environment.
-         * 3) Add bindings for the arguments to the new current environment.
-         * 
-         * Caution: The ordering of these operations is very important;
-         *          do not permute them.    
+
+      /* 1) If this is not a tail call, push a function frame referring to the current environment.
+       * 2) Change the current environment to the closure's saved environment.
+       * 3) Add bindings for the arguments to the new current environment.
+       * 
+       * Caution: The ordering of these operations is very important;
+       *          do not permute them.    
+       */
+
+      /* Tail call optimization (part 2 of 2) */
+      stack match {
+        /*
+         * Push a new FunctionFrame 
+         * only if the call is not a tail call.
          */
-  
-        /* Tail call optimization (part 2 of 2) */
-        stack match {
-          /*
-           * Push a new FunctionFrame 
-           * only if the call is not a tail call.
-           */
-          case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
-          case _ => {            
-            functionFramesPushed = functionFramesPushed + 1
-            if (this.group.root.options.stackSize > 0 && 
-                functionFramesPushed > this.group.root.options.stackSize)
-              throw new AssertionError("Reached maximum stack-size allowed.")
-            push(new FunctionFrame(node, env))
-          }
-        }
-  
-        /* Jump into the function context */
-        this.env = context
-  
-        /* Bind the args */
-        for (p <- params) { bind(p) }
-  
-        /* Jump into the function body */
-        schedule(this.move(d.body))
+        case FunctionFrame(_, _) :: fs => {}
+        case _ => push(new FunctionFrame(node, env))
       }
+
+      /* Jump into the function context */
+      this.env = context
+
+      /* Bind the args */
+      for (p <- params) { bind(p) }
+
+      /* Jump into the function body */
+      schedule(this.move(d.body))
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       try {
-        val sh = new SiteCallHandle(this, s)
-        state = Blocked(sh)
-        invoke(sh, s, actuals)
+        invoke(this, s, actuals)
       } catch {
         case e: OrcException => this !! e
         case e => { halt; notify(CaughtEvent(e)) }
@@ -580,30 +438,26 @@ trait Orc extends OrcRuntime {
     def isLive = state = Live
 
     def run {
-      var runNode = false
-      synchronized {
-        state match {
-          case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
-          case Blocked(_) => throw new AssertionError("blocked token scheduled")
-          case Suspending(prevState) => state = Suspended(prevState)
-          case Suspended(_) => throw new AssertionError("suspended token scheduled")
-          case Halted => throw new AssertionError("halted token scheduled")
-          case Killed => {} // This token was killed while it was on the schedule queue; ignore it
-          case Published(v) => {
-            state = Live
-            stack match {
-              case f :: fs => {
-                stack = fs
-                f(this, v)
-              }
-              case List() => {
-                throw new AssertionError("publish on an empty stack")
-              }
+      state match {
+        case Live => eval(node) // Run this token's current AST node, ouside this synchronized block
+        case Pending => throw new AssertionError("pending token scheduled")
+        case Suspending(prevState) => state = Suspended(prevState)
+        case Suspended(_) => throw new AssertionError("suspended token scheduled")
+        case Halted => throw new AssertionError("halted token scheduled")
+        case Killed => {} // This token was killed while it was on the schedule queue; ignore it
+        case Published(v) => {
+          state = Live
+          stack match {
+            case f :: fs => {
+              stack = fs
+              f(this, v)
+            }
+            case List() => {
+              throw new AssertionError("publish on an empty stack")
             }
           }
         }
       }
-      if (runNode) eval(node)
     }
 
     def eval(node: orc.ast.oil.nameless.Expression) {
@@ -616,13 +470,17 @@ trait Orc extends OrcRuntime {
 
         case Call(target, args, _) => {
           val params = args map lookup
+          val newTarget = lookup(target)
           lookup(target) match {
             case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
-            case b =>
-              resolve(b) {
-                case c: Closure => functionCall(c.code, c.context, params)
-                case s => leftToRight(resolve, params) { siteCall(s, _) }
-              }
+            case _ =>              
+              push(CallFrame(params))
+              move(target)
+              
+              //resolve(b) {
+              //  case c: Closure => functionCall(c.code, c.context, params)
+              //  case s => leftToRight(resolve, params) { siteCall(s, _) }
+              //}
           }
         }
 
@@ -665,30 +523,81 @@ trait Orc extends OrcRuntime {
         case DeclareType(_, expr) => this.move(expr).run
       }
     }
+    
+    /** 
+     * Attempt to resolve a binding to a value.
+     * 
+     * When the binding resolves to v, publish v.
+     * (If it is already resolved, k is called immediately)
+     * 
+     * If the binding resolves to a halt, call k(None).
+     * 
+     * Note that resolving a closure also encloses its context.
+     */
+    def resolve(b: Binding): Unit = {
+      b match {
+        case BoundValue(v) =>
+          v match {
+            case c: Closure => enclose //push(ClosureFrame...)
+            
+              //enclose(c.lexicalContext) { newContext: List[Binding] =>
+              //  k(Some(Closure(c.defs, c.pos, newContext)))
+              //}
+            case u => publish(u)
+          }
+        case BoundStop => novalue
+          
+          novalue = { 
+            val (f :: newstack) = stack
+            stack = newstack
+            f.novalue(this)
+          }
+        }
+        case BoundCell(g) => g read this // TODO: push k on stack before calling read
+      }
+    }
+
+    /** 
+     * Create a new Closure object whose lexical bindings are all resolved and replaced.
+     * Such a closure will have no references to any Groupcell.
+     * This object is then passed to the continuation.
+     */
+    def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
+      def resolveBound(b: Binding)(k: Binding => Unit) =
+        resolveOptional(b) {
+          case Some(v) => k(BoundValue(v))
+          case None => k(BoundStop)
+        }
+      leftToRight(resolveBound, bs)(k)
+    }
+    
+    
 
     // Publicly accessible methods
 
     def publish(v: AnyRef) {
       state match {
-        case Blocked(_ : Region) => throw new AssertionError("publish on a pending Token")
-        case Live | Suspending(_) | Blocked(_) => {
+        case Live | Suspending(_) => {
           state = Published(v)
           schedule(this)
         }
         case Published(_) => throw new AssertionError("Already published!")
+        case Pending => throw new AssertionError("publish on a pending Token")
         case Suspended(_) => throw new AssertionError("publish on a suspended Token")
         case Halted | Killed => {}
+      }
+    }
+    
+    def novalue {
+      stack match {
+        case (f : ClosureFrame) :: _ =>
+        
       }
     }
 
     def halt {
       state match {
-        case Published(_) | Live | Blocked(_) | Suspending(_) => {
-          state match {
-            case Blocked(handle: SiteCallHandle) => handle.kill
-            case _ => { }
-          }
-          
+        case Published(_) | Live | Pending | Suspending(_) => {
           state = Halted
           group.halt(this)
         }
@@ -697,7 +606,7 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def !!(e: OrcException) {
+    override def !!(e: OrcException) {
       e.setPosition(node.pos)
       e match {
         case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {

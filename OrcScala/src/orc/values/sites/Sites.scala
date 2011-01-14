@@ -16,7 +16,7 @@
 package orc.values.sites
 
 import orc.values.OrcValue
-import orc.TokenAPI
+import orc.Handle
 import orc.error.OrcException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
@@ -35,7 +35,7 @@ trait SiteMetadata {
 }
 
 trait Site extends OrcValue with SiteMetadata {
-  def call(args: List[AnyRef], callingToken: TokenAPI): Unit
+  def call(args: List[AnyRef], h: Handle): Unit
   
   override def toOrcSyntax() = this.name
 }
@@ -51,11 +51,11 @@ trait UntypedSite extends TypedSite {
 }
 
 trait PartialSite extends Site {
-  def call(args: List[AnyRef], token: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
-      case Some(v) => token.publish(v)
-      case None => token.halt
+      case Some(v) => h.publish(v)
+      case None => h.halt
     }
   }
 
@@ -63,12 +63,12 @@ trait PartialSite extends Site {
 }
 
 trait TotalSite extends Site {
-  def call(args: List[AnyRef], token: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
   	try { 
-  	  token.publish(evaluate(args)) 
+  	  h.publish(evaluate(args)) 
   	} catch { 
-  	  case (e : OrcException) => token !! e 
+  	  case (e : OrcException) => h !! e 
   	}
   }
   
@@ -80,7 +80,7 @@ trait UnimplementedSite extends Site {
   def orcType(argTypes: List[Type]): Nothing = {
 	  throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
-  def call(args: List[AnyRef], token: TokenAPI): Nothing = {
+  def call(args: List[AnyRef], h: Handle): Nothing = {
 	  throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
 }

@@ -12,12 +12,11 @@
 //
 package orc.lib.builtin
 
-import orc.TokenAPI
-import orc.ast.oil.nameless.{Constant, Call}
-import orc.error.runtime.{RuntimeSupportException, ArityMismatchException}
-import orc.run.extensions.SupportForClasses
+import orc.Handle
+import orc.error.runtime.ArityMismatchException
 import orc.values._
 import orc.values.sites._
+import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
@@ -36,12 +35,8 @@ class RunLikeSite(closure: AnyRef) extends UntypedSite {
   
   override def name = "class " + Format.formatValue(closure)
    
-  def call(args: List[AnyRef], caller: TokenAPI) {
-    val node = Call(Constant(closure), args map Constant, Some(Nil))
-    caller.runtime match {
-      case r: SupportForClasses => r.runEncapsulated(node, caller.token.asInstanceOf[r.Token])
-      case _ => caller !! new RuntimeSupportException("encapsulated execution")
-    }
+  def call(args: List[AnyRef], caller: Handle) {
+    caller.notify(InstanceEvent(closure, args, caller))
   }
   
 }

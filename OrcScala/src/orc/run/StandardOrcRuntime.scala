@@ -16,17 +16,17 @@
 package orc.run
 
 import orc.OrcRuntime
+import orc.OrcOptions
 import orc.run.extensions._
 
-class StandardOrcRuntime extends OrcRuntime
-with Orc
+class StandardOrcRuntime extends Orc
 with StandardInvocationBehavior
-with CappedActorBasedScheduler
+with ManyActorBasedScheduler
 with SupportForClasses
 with SupportForSynchronousExecution
 with SupportForRtimer
 with SupportForStdout
-with SwappableASTs
+with SwappableASTs 
 
 
 /* The first behavior in the trait list will be tried last */

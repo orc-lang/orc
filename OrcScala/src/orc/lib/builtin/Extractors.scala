@@ -21,7 +21,7 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.compiletime.typing._
 import orc.util.OptionMapExtension._
 import orc.types._
-import orc.TokenAPI
+import orc.Handle
 
 trait Extractable extends Site {
   def extract: PartialSite
@@ -155,7 +155,7 @@ object TupleArityChecker extends PartialSite with TypedSite {
 
 object FindExtractor extends Site {
   override def name = "FindExtractor"
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: Handle) {
     args match {
       case List(s: Extractable) => callingToken.publish(s.extract)
       case List(s: Site) => s.call(List(Field("unapply")), callingToken)

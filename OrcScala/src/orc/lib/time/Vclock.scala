@@ -14,7 +14,7 @@
 //
 package orc.lib.time
 
-import orc.TokenAPI
+import orc.Handle
 import orc.values.sites.TypedSite
 import orc.values.sites.Site
 import orc.types.SimpleFunctionType
@@ -25,7 +25,7 @@ import orc.types.IntegerType
  * @author amshali
  */
 class Vclock extends Site with TypedSite {
-  def call(args: List[AnyRef], token: TokenAPI) {
+  def call(args: List[AnyRef], token: Handle) {
     token.publish(BigInt(0))//FIXME
   }
 

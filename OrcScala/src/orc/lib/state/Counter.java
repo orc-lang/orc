@@ -18,7 +18,7 @@ import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.PartialSite;
@@ -39,7 +39,7 @@ public class Counter extends EvalSite implements TypedSite {
 		final int init = args.size() == 0 ? 0 : args.intArg(0);
 		return new DotSite() {
 			protected int count = init;
-			protected final LinkedList<TokenAPI> waiters = new LinkedList<TokenAPI>();
+			protected final LinkedList<Handle> waiters = new LinkedList<Handle>();
 
 			@Override
 			protected void addMembers() {
@@ -59,7 +59,7 @@ public class Counter extends EvalSite implements TypedSite {
 						if (count > 0) {
 							--count;
 							if (count == 0) {
-								for (final TokenAPI waiter : waiters) {
+								for (final Handle waiter : waiters) {
 									//FIXME:waiter.unsetQuiescent();
 									waiter.publish(signal());
 								}
@@ -74,7 +74,7 @@ public class Counter extends EvalSite implements TypedSite {
 				});
 				addMember("onZero", new SiteAdaptor() {
 					@Override
-					public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+					public void callSite(final Args args, final Handle caller) throws TokenException {
                       synchronized(Counter.this) {
 						if (count == 0) {
 							caller.publish(signal());

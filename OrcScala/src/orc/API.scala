@@ -24,6 +24,7 @@ import orc.error.compiletime.{CompilationException, CompileLogger}
 import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
+import orc.values.Signal
 
 /**
  * The interface from a caller to the Orc compiler
@@ -53,8 +54,6 @@ trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
  * The interface from a caller to an Orc runtime
  */
 trait OrcRuntimeProvides {
-  type Token <: TokenAPI
-
   @throws(classOf[ExecutionException])
   def run(e: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions): Unit
   def stop: Unit
@@ -64,14 +63,14 @@ trait OrcRuntimeProvides {
  *  The interface from an Orc runtime to its environment
  */
 trait OrcRuntimeRequires {
-  def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit
 }
 
 /**
  * An Orc runtime 
  */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
-  type Token <: TokenAPI
+  type Token
 
   def schedule(ts: List[Token]): Unit
 
@@ -81,28 +80,30 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 }
 
 /**
- * The interface from the environment to tokens of an Orc runtime
+ * The interface through which the environment response to site calls.
  */
-trait TokenAPI {
+trait Handle {
+  
+  def notify(event: OrcEvent): Unit
+  
   def publish(v: AnyRef): Unit
+  def publish(): Unit = { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
-  def notify(event: OrcEvent): Unit
-  val runtime: OrcRuntime
-  def token : TokenAPI
+  
+  def isLive: Boolean
 }
 
 /**
  * An event reported by an Orc execution
  */
-//TODO: Move this to be part of an engine's signature
 trait OrcEvent
-// Not all executions will support all four of these events
+
 case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedEvent extends OrcEvent
-case class PrintedEvent(s: String) extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
-// If this list grows, maybe it should become a sub-package
+
+case class PrintedEvent(s: String) extends OrcEvent
 
 /**
  * An action for a few major events reported by an Orc execution.

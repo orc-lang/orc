@@ -15,7 +15,7 @@
 package orc.lib.web
 
 import scala.collection.immutable.List
-import orc.TokenAPI
+import orc.Handle
 import orc.values.sites.{TotalSite, UntypedSite}
 import orc.values.OrcRecord
 import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException}
@@ -52,7 +52,7 @@ case class RESTfulSite(baseUrl: URL) extends UntypedSite {
     nameValuePairs reduceLeft { _ + "&" + _ }
   }
   
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: Handle) {
     args match {
       case List(OrcRecord(entries)) => {
         val url = new URL(baseUrl + "?" + convertToQuery(entries))

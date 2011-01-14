@@ -16,6 +16,7 @@ package orc.run.extensions
 
 import orc.values.Signal
 import orc.OrcRuntime
+import orc.Handle
 import scala.collection.SortedSet
 /**
  * 
@@ -24,11 +25,11 @@ import scala.collection.SortedSet
  */
 trait SupportForVtimer extends OrcRuntime {
   
-  val tokensRunning : java.util.concurrent.atomic.AtomicInteger = 
+  val handlesRunning : java.util.concurrent.atomic.AtomicInteger = 
     new java.util.concurrent.atomic.AtomicInteger(0)
   
-  def decTokensRunning() {
-    val it = tokensRunning.decrementAndGet()
+  def decHandlesRunning() {
+    val it = handlesRunning.decrementAndGet()
     val iz = zSet.size
     if ((it + iz) == 0) {
       scheduleMinVtimer()
@@ -38,12 +39,12 @@ trait SupportForVtimer extends OrcRuntime {
   val vTime : java.util.concurrent.atomic.AtomicInteger = 
     new java.util.concurrent.atomic.AtomicInteger(0)
 
-  case class VTEntry(token: Token, vtime : Int) extends scala.math.Ordered[VTEntry] { 
+  case class VTEntry(handle: Handle, vtime : Int) extends scala.math.Ordered[VTEntry] { 
     def getVtime = vtime;
-    def getToken = token
+    def getHandle = handle
     def compare(o2 : VTEntry) = {
       val d = this.vtime - o2.getVtime
-      if (d == 0 && this.getToken == o2.getToken) 0      
+      if (d == 0 && this.getHandle == o2.getHandle) 0      
       else if (d == 0 || d < 0) -1
       else 1
     } 
@@ -51,34 +52,34 @@ trait SupportForVtimer extends OrcRuntime {
   
   var vtSet : SortedSet[VTEntry] = SortedSet[VTEntry]()
   
-  var zSet : java.util.Set[Token] = 
+  var zSet : java.util.Set[Handle] = 
     java.util.Collections.synchronizedSet(new java.util.HashSet());
   
-  var nzSet : java.util.Set[Token] = 
+  var nzSet : java.util.Set[Handle] = 
     java.util.Collections.synchronizedSet(new java.util.HashSet());
   
-  def addVtimer(token: Token, n : Int) = synchronized {
+  def addVtimer(handle: Handle, n : Int) = synchronized {
     if (n == 0)
-      zSet.add(token)
+      zSet.add(handle)
     if (n > 0) {
-      nzSet.add(token)
-      vtSet = vtSet + VTEntry(token, n)
+      nzSet.add(handle)
+      vtSet = vtSet + VTEntry(handle, n)
     }
   }
-  def removeVtimer(token: Token) = synchronized {
-    zSet.remove(token)
-    nzSet.remove(token)
+  def removeVtimer(handle: Handle) = synchronized {
+    zSet.remove(handle)
+    nzSet.remove(handle)
   }
 
   def scheduleMinVtimer() = synchronized {
     if (vtSet.size > 0) {
       vtSet.firstKey match {
-        case VTEntry(token, vtime : Int) => {
+        case VTEntry(handle, vtime : Int) => {
           vtSet = vtSet - vtSet.firstKey
-          if (nzSet.contains(token)) {
+          if (nzSet.contains(handle)) {
             vtSet = vtSet map {case VTEntry(t1, n1) => VTEntry(t1, n1-vtime)}
             vTime.addAndGet(vtime)
-            token.publish(Signal)
+            handle.publish(Signal)
           }
         }
       }

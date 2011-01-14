@@ -36,7 +36,6 @@ trait ManyActorBasedScheduler extends Orc with SupportForVtimer {
 
   // distribute the work between actors in a round-robin fashion
   override def schedule(ts: List[Token]) {
-    tokensRunning.addAndGet(ts.size)
     for (t <- ts) {
       ActorPool.get ! Some(t)
     }
@@ -88,7 +87,6 @@ trait ManyActorBasedScheduler extends Orc with SupportForVtimer {
             if (Thread.interrupted()) // Note: Clears thread's interrupted status bit
               throw new InterruptedException()
             x.run
-            decTokensRunning()
             ActorPool.store(this)
           }
           // machine has stopped

@@ -15,7 +15,7 @@
 package orc.values.sites
 
 import scala.collection.immutable.List
-import orc.TokenAPI
+import orc.Handle
 import orc.values.Signal
 import orc.values.{Field => OrcField}
 import orc.run.Logger
@@ -40,12 +40,12 @@ import orc.compile.typecheck.Typeloader._
  *
  * @author jthywiss
  */
-object JavaCall extends Function3[Object, List[AnyRef], TokenAPI, Unit] {
-  def apply(target: Object, args: List[AnyRef], callingToken: TokenAPI) {
+object JavaCall extends Function3[Object, List[AnyRef], Handle, Unit] {
+  def apply(target: Object, args: List[AnyRef], h: Handle) {
     args match {
-      case List(OrcField(memberName)) => callingToken.publish(new JavaMemberProxy(target, memberName))
-      case _ if (!target.getClass.isArray) => callingToken.publish(JavaObjectProxy(target).invoke(target, "apply", args))
-      case List(i: BigInt) if (target.getClass.isArray) => callingToken.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
+      case List(OrcField(memberName)) => h.publish(new JavaMemberProxy(target, memberName))
+      case _ if (!target.getClass.isArray) => h.publish(JavaObjectProxy(target).invoke(target, "apply", args))
+      case List(i: BigInt) if (target.getClass.isArray) => h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
       // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
       case _ if (target.getClass.isArray) => throw new MalformedArrayAccessException(args)
     }
@@ -113,10 +113,10 @@ case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy with TypedS
 
   override lazy val name = javaClass.getName()
 
-  override def call(args: List[AnyRef], callingToken: TokenAPI) {
+  override def call(args: List[AnyRef], h: Handle) {
     args match {
-      case List(OrcField(memberName)) => callingToken.publish(new JavaStaticMemberProxy(javaClass, memberName))
-      case _ => callingToken.publish(invoke(null, "<init>", args))
+      case List(OrcField(memberName)) => h.publish(new JavaStaticMemberProxy(javaClass, memberName))
+      case _ => h.publish(invoke(null, "<init>", args))
     }
   }
   
@@ -136,7 +136,7 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
   
   override lazy val name = javaClass.getName()
 
-  override def call(args: List[AnyRef], callingToken: TokenAPI) = JavaCall(theObject, args, callingToken)
+  override def call(args: List[AnyRef], h: Handle) = JavaCall(theObject, args, h)
   
   def orcType = liftJavaType(javaClass)
   
@@ -155,21 +155,21 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
 
   override def javaClass = theObject.getClass()
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
       case List(OrcField(submemberName)) => {
         // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
         if (memberName.equals("length") && submemberName.equals("read") && javaClass.isArray())
-          return callingToken.publish(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
+          return h.publish(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
 
         val javaField = javaClass.getField(memberName)
-        callingToken.publish(submemberName match {
+        h.publish(submemberName match {
           case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
           case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
           case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
         })
       }
-      case _ => callingToken.publish(invoke(theObject, memberName, args))
+      case _ => h.publish(invoke(theObject, memberName, args))
     }
   }
 }
@@ -200,9 +200,9 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
-      case List() => callingToken.publish(java2orc(javaField.get(theObject)))
+      case List() => h.publish(java2orc(javaField.get(theObject)))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -221,11 +221,11 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
 
   override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
       case List(a) => {
         javaField.set(theObject, orc2java(a))
-        callingToken.publish(Signal)
+        h.publish(Signal)
       }
       case _ => throw new ArityMismatchException(1, args.size)
     }
@@ -245,11 +245,11 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
 
   override def javaClass = theArray.getClass()
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
-      case List(OrcField("read")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
-      case List(OrcField("readnb")) => callingToken.publish(new JavaArrayDerefSite(theArray, index))
-      case List(OrcField("write")) => callingToken.publish(new JavaArrayAssignSite(theArray, index))
+      case List(OrcField("read")) => h.publish(new JavaArrayDerefSite(theArray, index))
+      case List(OrcField("readnb")) => h.publish(new JavaArrayDerefSite(theArray, index))
+      case List(OrcField("write")) => h.publish(new JavaArrayAssignSite(theArray, index))
       case List(OrcField(fieldname)) => throw new NoSuchMethodException(fieldname + " in Ref") //A "white lie"
       case List(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.length) //Is there a better exception to throw?
@@ -269,9 +269,9 @@ case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends 
 
   override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
-      case List() => callingToken.publish(java2orc(theArray(index).asInstanceOf[AnyRef]))
+      case List() => h.publish(java2orc(theArray(index).asInstanceOf[AnyRef]))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -290,11 +290,11 @@ case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends
 
   override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
       case List(a) => {
         theArray(index) = orc2java(a)
-        callingToken.publish(Signal)
+        h.publish(Signal)
       }
       case _ => throw new ArityMismatchException(1, args.size)
     }
@@ -314,9 +314,9 @@ case class JavaArrayLengthPseudofield(val theArray: Array[Any]) extends JavaProx
 
   override lazy val name = this.getClass().getCanonicalName()+"("+theArray+")"
 
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     args match {
-      case List() => callingToken.publish(java2orc(theArray.length.asInstanceOf[AnyRef]))
+      case List() => h.publish(java2orc(theArray.length.asInstanceOf[AnyRef]))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
