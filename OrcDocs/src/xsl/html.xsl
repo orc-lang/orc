@@ -68,23 +68,6 @@ function toggle(link, divId) { var lText = link.innerHTML; var d = document.getE
 </script>
 </xsl:template>
 
-<!--  Add quick tags for stdlib site properties (idempotent, blocking, etc.) 
-<xsl:template match="siteprop">
-	<table border="1">
-		<tr>
-    	<xsl:apply-templates />
-    	</tr>
-	</table>
-	<br/>
-</xsl:template>
-<xsl:template match="idempotent">
-	<td bgcolor="#CC0000"><font color="#FFFFFF">Idempotent</font></td>
-</xsl:template>
-<xsl:template match="blocking">
-	<td bgcolor="#0000CC"><font color="#FFFFFF">Blocking</font></td>
-</xsl:template>
--->
-
 <!--  Add site properties for the site library using the <sitepropset> tag -->
 <xsl:template match="sitepropset">
 	<table class="proptable">

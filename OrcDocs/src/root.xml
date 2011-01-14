@@ -7803,7 +7803,7 @@ arbitrary element type <code>A</code>, it will return a value of the same type.
  
 </section>
 
-<xi:include href="stdlib.xml"/>
+<!--  <xi:include href="stdlib.xml"/> -->
 
 </appendix>
 
