@@ -18,7 +18,7 @@ import java.util.Queue;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -37,7 +37,7 @@ import orc.types.Type;
 public class Cell extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
@@ -51,7 +51,7 @@ public class Cell extends EvalSite implements TypedSite {
 
 	protected class CellInstance extends DotSite {
 
-		protected Queue<TokenAPI> readQueue;
+		protected Queue<Handle> readQueue;
 		Object contents;
 
 		CellInstance() {
@@ -64,7 +64,7 @@ public class Cell extends EvalSite implements TypedSite {
 			 * This allows the cell to contain a null value if needed, and it also
 			 * frees the memory associated with the read queue once the cell has been assigned.
 			 */
-			this.readQueue = new LinkedList<TokenAPI>();
+			this.readQueue = new LinkedList<Handle>();
 		}
 
 		@Override
@@ -73,7 +73,7 @@ public class Cell extends EvalSite implements TypedSite {
 			addMember("write", new writeMethod());
 			addMember("readnb", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+				public void callSite(final Args args, final Handle caller) throws TokenException {
 				  synchronized(CellInstance.this) {
 				    if (readQueue != null) {
 						caller.halt();
@@ -87,7 +87,7 @@ public class Cell extends EvalSite implements TypedSite {
 
 		protected class readMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI reader) {
+			public void callSite(final Args args, final Handle reader) {
               synchronized(CellInstance.this) {
 				/* If the read queue is not null, the cell has not been set.
 				 * Add this caller to the read queue.
@@ -106,7 +106,7 @@ public class Cell extends EvalSite implements TypedSite {
 
 		protected class writeMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+			public void callSite(final Args args, final Handle writer) throws TokenException {
               synchronized(CellInstance.this) {
 
 				final Object val = args.getArg(0);
@@ -117,7 +117,7 @@ public class Cell extends EvalSite implements TypedSite {
 					contents = val;
 
 					/* Wake up all queued readers and report the written value to them. */
-					for (final TokenAPI reader : readQueue) {
+					for (final Handle reader : readQueue) {
 						//FIXME:reader.unsetQuiescent();
 						reader.publish(object2value(val));
 					}

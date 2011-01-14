@@ -17,7 +17,7 @@ import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -35,7 +35,7 @@ import orc.types.Type;
 public class SyncChannel extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
@@ -49,10 +49,10 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 	private class SenderItem {
 
-		TokenAPI sender;
+		Handle sender;
 		Object sent;
 
-		SenderItem(final TokenAPI sender, final Object sent) {
+		SenderItem(final Handle sender, final Object sent) {
 			this.sender = sender;
 			this.sent = sent;
 		}
@@ -62,11 +62,11 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 		// Invariant: senderQueue is empty or receiverQueue is empty
 		protected final LinkedList<SenderItem> senderQueue;
-		protected final LinkedList<TokenAPI> receiverQueue;
+		protected final LinkedList<Handle> receiverQueue;
 
 		SyncChannelInstance() {
 			senderQueue = new LinkedList<SenderItem>();
-			receiverQueue = new LinkedList<TokenAPI>();
+			receiverQueue = new LinkedList<Handle>();
 		}
 
 		@Override
@@ -77,7 +77,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 		protected class getMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI receiver) {
+			public void callSite(final Args args, final Handle receiver) {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
@@ -87,7 +87,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
 				// If there is a waiting sender, both sender and receiver return
 				else {
 					final SenderItem si = senderQueue.removeFirst();
-					final TokenAPI sender = si.sender;
+					final Handle sender = si.sender;
 					final Object item = si.sent;
 
 					receiver.publish(object2value(item));
@@ -100,7 +100,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 		protected class putMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI sender) throws TokenException {
+			public void callSite(final Args args, final Handle sender) throws TokenException {
 
 				final Object item = args.getArg(0);
 
@@ -112,7 +112,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 				// If there is a waiting receiver, both receiver and sender return
 				else {
-					final TokenAPI receiver = receiverQueue.removeFirst();
+					final Handle receiver = receiverQueue.removeFirst();
 
 					//FIXME:receiver.unsetQuiescent();
 					receiver.publish(object2value(item));

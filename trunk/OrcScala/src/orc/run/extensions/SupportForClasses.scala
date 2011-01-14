@@ -15,7 +15,8 @@
 package orc.run.extensions
 
 import orc.run.Orc
-import orc.ast.oil.nameless.Expression
+import orc.ast.oil.nameless.{Expression, Call, Constant}
+import orc.{ OrcOptions, OrcEvent, Handle }
 import orc.error.runtime.ExecutionException
 
 /**
@@ -23,19 +24,32 @@ import orc.error.runtime.ExecutionException
  *
  * @author dkitchin
  */
-trait SupportForClasses extends Orc {
 
-  @throws(classOf[ExecutionException])
-  def runEncapsulated(node: Expression, caller: Token) = {
-    val host = caller.group.root
-    val exec = new ClassExecution(caller, host)
-    val t = new Token(node, exec)
-    schedule(t)
+case class InstanceEvent(c: AnyRef, args: List[AnyRef], caller: Handle) extends OrcEvent
+
+trait SupportForClasses extends Orc { self =>
+ 
+  class Execution(_node: Expression, k: OrcEvent => Unit, _options: OrcOptions) extends super.Execution(_node,k,_options) { 
+    override def notify(event: OrcEvent) {
+      event match {
+        case InstanceEvent(closure, args, caller) => {
+          assert(closure.isInstanceOf[self.Closure])
+          val node = Call(Constant(closure), args map Constant, Some(Nil))
+          val exec = new ClassExecution(caller, Execution.this)
+          val t = new Token(node, exec)
+          schedule(t)
+        }
+        case _ => {
+          super.notify(event)
+        }
+      }
+    }
   }
 
-  class ClassExecution(caller: Token, host: Group) extends Subgroup(host) {
+  
+  class ClassExecution(caller: Handle, host: Group) extends Subgroup(host) {
 
-    var listener: Option[Token] = Some(caller)
+    var listener: Option[Handle] = Some(caller)
 
     override def publish(t: Token, v: AnyRef) = synchronized {
       listener match {

@@ -15,7 +15,7 @@
 
 package orc.values.sites.compatibility;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.TokenException;
 
 /**
@@ -26,7 +26,7 @@ import orc.error.runtime.TokenException;
 public abstract class EvalSite extends SiteAdaptor {
 
   @Override
-  public void callSite(Args args, TokenAPI caller) throws TokenException {
+  public void callSite(Args args, Handle caller) throws TokenException {
     caller.publish(object2value(evaluate(args)));
   }
 

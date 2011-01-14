@@ -15,7 +15,7 @@
 package orc.run.extensions
 
 import orc.OrcRuntime
-import orc.TokenAPI
+import orc.Handle
 import orc.error.runtime.UncallableValueException
 import orc.error.OrcException
 import orc.error.runtime.JavaException
@@ -31,24 +31,24 @@ import orc.values.sites.Site
  */
 trait InvocationBehavior extends OrcRuntime {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]): Unit = { t.halt }
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
 }
 
 trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   /* This replaces the default behavior because it does not call super */
-  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
+  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
     val error = "You can't call the "+(if (v != null) v.getClass().toString() else "null")+" \" "+Format.formatValue(v)+" \""
-    t !! new UncallableValueException(error)
+    h !! new UncallableValueException(error)
   }
 }
 
 
 trait SupportForJavaObjectInvocation extends InvocationBehavior {
   
-  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
+  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { 
     v match {
-      case v : OrcValue => super.invoke(t, v, vs)
-      case _ => JavaCall(v, vs, t)
+      case v : OrcValue => super.invoke(h, v, vs)
+      case _ => JavaCall(v, vs, h)
     }
   }
 
@@ -56,41 +56,41 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
   
 
 trait SupportForSiteInvocation extends InvocationBehavior {  
-  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) {
+  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
     v match {
       case (s: Site) => 
         try {
-          s.call(vs, t)
+          s.call(vs, h)
         }
         catch {
-          case e: OrcException => t !! e
+          case e: OrcException => h !! e
           case e: InterruptedException => throw e
-          case e: Exception => t !! new JavaException(e) //FIXME: This seems risky
+          case e: Exception => h !! new JavaException(e) //FIXME: This seems risky
         }
-      case _ => super.invoke(t, v, vs)
+      case _ => super.invoke(h, v, vs)
     }
   }
 }
 
 trait SupportForXMLInvocation extends InvocationBehavior {
   
-  override def invoke(t: TokenAPI, v: AnyRef, vs: List[AnyRef]) { 
+  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { 
     v match {
       case xml: scala.xml.Elem => {
         vs match {
           case List(orc.values.Field(f)) => {
             xml.attributes.get(f) match {
-              case Some(v) => t.publish(v)
-              case None => t.halt
+              case Some(v) => h.publish(v)
+              case None => h.halt
             }
           }
           case List(s: String) => {
-            t.publish((xml \ s).toList)
+            h.publish((xml \ s).toList)
           }
-          case _ => super.invoke(t, v, vs)
+          case _ => super.invoke(h, v, vs)
         }
       }
-      case _ => super.invoke(t, v, vs)
+      case _ => super.invoke(h, v, vs)
     }
   }
 

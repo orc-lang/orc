@@ -15,7 +15,7 @@
 package orc.lib.web
 
 import scala.collection.immutable.List
-import orc.TokenAPI
+import orc.Handle
 import orc.values.sites.{TotalSite, Site}
 import orc.values.OrcRecord
 import orc.lib.xml.{XmlElementSite, XmlTextSite}
@@ -43,7 +43,7 @@ class HTTPPost extends TotalSite with Site {
 
 case class ConnectionSite(url: URL) extends Site {
   
-  def call(args: List[AnyRef], callingToken: TokenAPI) {
+  def call(args: List[AnyRef], callingToken: Handle) {
     args match {
       case List(post: String) => {
         

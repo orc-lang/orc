@@ -18,7 +18,7 @@ import java.util.LinkedList;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
+import orc.Handle;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -36,7 +36,7 @@ import orc.types.Type;
 public class BoundedBuffer extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
@@ -51,9 +51,9 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 	protected class BufferInstance extends DotSite {
 
 		protected final LinkedList<Object> buffer;
-		protected final LinkedList<TokenAPI> readers;
-		protected final LinkedList<TokenAPI> writers;
-		protected TokenAPI closer;
+		protected final LinkedList<Handle> readers;
+		protected final LinkedList<Handle> writers;
+		protected Handle closer;
 		/** The number of open slots in the buffer. */
 		protected int open;
 		protected boolean closed = false;
@@ -61,15 +61,15 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 		BufferInstance(final int bound) {
 			open = bound;
 			buffer = new LinkedList<Object>();
-			readers = new LinkedList<TokenAPI>();
-			writers = new LinkedList<TokenAPI>();
+			readers = new LinkedList<Handle>();
+			writers = new LinkedList<Handle>();
 		}
 
 		@Override
 		protected void addMembers() {
 			addMember("get", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI reader) {
+				public void callSite(final Args args, final Handle reader) {
                   synchronized(BufferInstance.this) {
 					if (buffer.isEmpty()) {
 						if (closed) {
@@ -83,7 +83,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							final TokenAPI writer = writers.removeFirst();
+							final Handle writer = writers.removeFirst();
 							//FIXME:writer.unsetQuiescent();
 							writer.publish(signal());
 						}
@@ -98,7 +98,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			});
 			addMember("getnb", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI reader) {
+				public void callSite(final Args args, final Handle reader) {
                   synchronized(BufferInstance.this) {
 					if (buffer.isEmpty()) {
 						reader.halt();
@@ -107,7 +107,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 						if (writers.isEmpty()) {
 							++open;
 						} else {
-							final TokenAPI writer = writers.removeFirst();
+							final Handle writer = writers.removeFirst();
 							//FIXME:writer.unsetQuiescent();
 							writer.publish(signal());
 						}
@@ -122,13 +122,13 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			});
 			addMember("put", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+				public void callSite(final Args args, final Handle writer) throws TokenException {
                   synchronized(BufferInstance.this) {
                     final Object item = args.getArg(0);
 					if (closed) {
 						writer.halt();
 					} else if (!readers.isEmpty()) {
-						final TokenAPI reader = readers.removeFirst();
+						final Handle reader = readers.removeFirst();
 						//FIXME:reader.unsetQuiescent();
 						reader.publish(object2value(item));
 						writer.publish(signal());
@@ -146,13 +146,13 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			});
 			addMember("putnb", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI writer) throws TokenException {
+				public void callSite(final Args args, final Handle writer) throws TokenException {
                   synchronized(BufferInstance.this) {
 					final Object item = args.getArg(0);
 					if (closed) {
 						writer.halt();
 					} else if (!readers.isEmpty()) {
-						final TokenAPI reader = readers.removeFirst();
+						final Handle reader = readers.removeFirst();
 						//FIXME:reader.unsetQuiescent();
 						reader.publish(object2value(item));
 						writer.publish(signal());
@@ -176,7 +176,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					final Object out = buffer.clone();
 					buffer.clear();
 					// resume all writers
-					for (final TokenAPI writer : writers) {
+					for (final Handle writer : writers) {
 						//FIXME:writer.unsetQuiescent();
 						writer.publish(signal());
 					}
@@ -211,10 +211,10 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			});
 			addMember("close", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI token) {
+				public void callSite(final Args args, final Handle token) {
                   synchronized(BufferInstance.this) {
 					closed = true;
-					for (final TokenAPI reader : readers) {
+					for (final Handle reader : readers) {
 						//FIXME:reader.unsetQuiescent();
 						reader.halt();
 					}
@@ -229,10 +229,10 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			});
 			addMember("closenb", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI token) {
+				public void callSite(final Args args, final Handle token) {
                   synchronized(BufferInstance.this) {
 					closed = true;
-					for (final TokenAPI reader : readers) {
+					for (final Handle reader : readers) {
 						//FIXME:reader.unsetQuiescent();
 						reader.halt();
 					}

@@ -13,7 +13,7 @@
 
 package orc.lib.str;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.TokenException;
 import orc.values.Format;
 import orc.values.sites.compatibility.Args;
@@ -30,7 +30,7 @@ import orc.types.Type;
  */
 public class Print extends SiteAdaptor implements TypedSite {
 	@Override
-	public void callSite(final Args args, final TokenAPI caller) throws TokenException {
+	public void callSite(final Args args, final Handle caller) throws TokenException {
 		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < args.size(); i++) {
 			Object arg = args.getArg(i);

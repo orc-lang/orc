@@ -15,18 +15,41 @@
 package orc.run.extensions
 
 import orc.run.Orc
+import orc.Handle
+import orc.OrcEvent
+import orc.OrcOptions
+import java.util.Timer
+import java.util.TimerTask
+import orc.ast.oil.nameless.Expression
 
 /**
  * 
  *
  * @author dkitchin
  */
+
+case class RtimerEvent(delay: BigInt, caller: Handle) extends OrcEvent
+
 trait SupportForRtimer extends Orc {
   
-  val timer: java.util.Timer = new java.util.Timer()
-  
-  def getTimer() = timer
+  val timer: Timer = new Timer()
   
   override def stop = { timer.cancel() ; super.stop }
+  
+  class Execution(_node: Expression, k: OrcEvent => Unit, _options: OrcOptions) extends super.Execution(_node,k,_options) {
+    override def notify(event: OrcEvent) {
+      event match {
+        case RtimerEvent(delay, caller) => {
+          val callback =  
+            new TimerTask() {
+              @Override
+              override def run() { caller.publish() }
+            }
+          timer.schedule(callback, delay.toLong)
+        }
+        case _ => super.notify(event)
+      }
+    }
+  }
   
 }

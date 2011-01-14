@@ -17,7 +17,7 @@ package orc.values.sites.compatibility
 
 import orc.values.sites.Site
 import orc.values.sites.UntypedSite
-import orc.TokenAPI
+import orc.Handle
 import orc.values.Signal
 import orc.values.OrcTuple
 import orc.error.runtime.TokenException
@@ -30,14 +30,14 @@ import orc.types.Type
  */
 abstract class SiteAdaptor extends Site {
 
-  def call(args: List[AnyRef], token: TokenAPI) {
+  def call(args: List[AnyRef], h: Handle) {
     val jl = new java.util.ArrayList[Object](args.size)
     for (arg <- args) arg match {
       case i: scala.math.BigInt => jl.add(i.bigInteger)
       case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
       case _ => jl.add(arg)
     }
-    callSite(new Args(jl), token)
+    callSite(new Args(jl), h)
   }
 
   /**
@@ -45,7 +45,8 @@ abstract class SiteAdaptor extends Site {
    * @param args          list of argument values
    * @param caller    where the result should be sent
    */
-  @throws(classOf[TokenException]) def callSite(args: Args, caller: TokenAPI): Unit
+  @throws(classOf[TokenException]) 
+  def callSite(args: Args, h: Handle): Unit
 
 }
 
