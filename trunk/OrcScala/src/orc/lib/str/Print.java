@@ -15,13 +15,12 @@ package orc.lib.str;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import orc.types.Type;
 import orc.values.Format;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
-
 
 /**
  * Print arguments, converted to strings, in sequence.
@@ -33,7 +32,7 @@ public class Print extends SiteAdaptor implements TypedSite {
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < args.size(); i++) {
-			Object arg = args.getArg(i);
+			final Object arg = args.getArg(i);
 			if (arg instanceof String) {
 				sb.append((String) arg);
 			} else {

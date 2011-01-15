@@ -25,10 +25,10 @@ import orc.error.runtime.TokenException;
  */
 public abstract class EvalSite extends SiteAdaptor {
 
-  @Override
-  public void callSite(Args args, Handle caller) throws TokenException {
-    caller.publish(object2value(evaluate(args)));
-  }
+	@Override
+	public void callSite(final Args args, final Handle caller) throws TokenException {
+		caller.publish(object2value(evaluate(args)));
+	}
 
-  public abstract Object evaluate(Args args) throws TokenException;
+	public abstract Object evaluate(Args args) throws TokenException;
 }

@@ -93,7 +93,7 @@ public class Ref extends EvalSite implements TypedSite {
 			addMember("readnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle caller) throws TokenException {
-					synchronized(RefInstance.this) {
+					synchronized (RefInstance.this) {
 						if (readQueue != null) {
 							caller.halt();
 						} else {
@@ -107,7 +107,7 @@ public class Ref extends EvalSite implements TypedSite {
 		protected class readMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final Handle reader) {
-				synchronized(RefInstance.this) {
+				synchronized (RefInstance.this) {
 					/*
 					 * If the read queue is not null, the ref has not been set.
 					 * Add this caller to the read queue.
@@ -127,7 +127,7 @@ public class Ref extends EvalSite implements TypedSite {
 		protected class writeMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final Handle writer) throws TokenException {
-				synchronized(RefInstance.this) {
+				synchronized (RefInstance.this) {
 
 					final Object val = args.getArg(0);
 

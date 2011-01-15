@@ -16,16 +16,15 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.Args;
 import orc.Handle;
+import orc.error.runtime.TokenException;
+import orc.lib.state.types.CellType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
+import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.lib.state.types.CellType;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
-
 
 /**
  * Write-once cell. 
@@ -45,9 +44,9 @@ public class Cell extends EvalSite implements TypedSite {
 	}
 
 	@Override
-    public Type orcType() {
-      return CellType.getBuilder();
-    }
+	public Type orcType() {
+		return CellType.getBuilder();
+	}
 
 	protected class CellInstance extends DotSite {
 
@@ -74,13 +73,13 @@ public class Cell extends EvalSite implements TypedSite {
 			addMember("readnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle caller) throws TokenException {
-				  synchronized(CellInstance.this) {
-				    if (readQueue != null) {
-						caller.halt();
-					} else {
-						caller.publish(object2value(contents));
+					synchronized (CellInstance.this) {
+						if (readQueue != null) {
+							caller.halt();
+						} else {
+							caller.publish(object2value(contents));
+						}
 					}
-				  }
 				}
 			});
 		}
@@ -88,53 +87,53 @@ public class Cell extends EvalSite implements TypedSite {
 		protected class readMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final Handle reader) {
-              synchronized(CellInstance.this) {
-				/* If the read queue is not null, the cell has not been set.
-				 * Add this caller to the read queue.
-				 */
-				if (readQueue != null) {
-					//FIXME:reader.setQuiescent();
-					readQueue.add(reader);
+				synchronized (CellInstance.this) {
+					/* If the read queue is not null, the cell has not been set.
+					 * Add this caller to the read queue.
+					 */
+					if (readQueue != null) {
+						//FIXME:reader.setQuiescent();
+						readQueue.add(reader);
+					}
+					/* Otherwise, return the contents of the cell */
+					else {
+						reader.publish(object2value(contents));
+					}
 				}
-				/* Otherwise, return the contents of the cell */
-				else {
-					reader.publish(object2value(contents));
-				}
-              }
 			}
 		}
 
 		protected class writeMethod extends SiteAdaptor {
 			@Override
 			public void callSite(final Args args, final Handle writer) throws TokenException {
-              synchronized(CellInstance.this) {
+				synchronized (CellInstance.this) {
 
-				final Object val = args.getArg(0);
+					final Object val = args.getArg(0);
 
-				/* If the read queue is not null, the cell has not yet been set. */
-				if (readQueue != null) {
-					/* Set the contents of the cell */
-					contents = val;
+					/* If the read queue is not null, the cell has not yet been set. */
+					if (readQueue != null) {
+						/* Set the contents of the cell */
+						contents = val;
 
-					/* Wake up all queued readers and report the written value to them. */
-					for (final Handle reader : readQueue) {
-						//FIXME:reader.unsetQuiescent();
-						reader.publish(object2value(val));
+						/* Wake up all queued readers and report the written value to them. */
+						for (final Handle reader : readQueue) {
+							//FIXME:reader.unsetQuiescent();
+							reader.publish(object2value(val));
+						}
+
+						/* Null out the read queue. 
+						 * This indicates that the cell has been written.
+						 * It also allowed the associated memory to be reclaimed.
+						 */
+						readQueue = null;
+
+						/* A successful write publishes a signal. */
+						writer.publish(signal());
+					} else {
+						/* A failed write kills the writer. */
+						writer.halt();
 					}
-
-					/* Null out the read queue. 
-					 * This indicates that the cell has been written.
-					 * It also allowed the associated memory to be reclaimed.
-					 */
-					readQueue = null;
-
-					/* A successful write publishes a signal. */
-					writer.publish(signal());
-				} else {
-					/* A failed write kills the writer. */
-					writer.halt();
 				}
-              }
 			}
 		}
 

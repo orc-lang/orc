@@ -14,22 +14,22 @@
 package orc.lib.str;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
 
 /**
  * Convert an Orc literal to a String.
  * @author quark
  */
 public class Write extends EvalSite implements TypedSite {
-  
+
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-      Object v = args.getArg(0);
-      return orc.values.Format.formatValue(v);
+		final Object v = args.getArg(0);
+		return orc.values.Format.formatValue(v);
 	}
 
 	@Override

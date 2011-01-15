@@ -18,14 +18,13 @@ import java.util.Queue;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import orc.lib.state.types.SemaphoreType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.lib.state.types.SemaphoreType;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
-
 
 /**
  * @author quark
@@ -39,10 +38,10 @@ public class Semaphore extends EvalSite implements TypedSite {
 	}
 
 	@Override
-    public Type orcType() {
-      return SemaphoreType.getBuilder();
-    }
-	
+	public Type orcType() {
+		return SemaphoreType.getBuilder();
+	}
+
 	protected class SemaphoreInstance extends DotSite {
 
 		protected final Queue<Handle> waiters = new LinkedList<Handle>();
@@ -58,75 +57,75 @@ public class Semaphore extends EvalSite implements TypedSite {
 			addMember("acquire", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle waiter) {
-				  synchronized(SemaphoreInstance.this) {
-					if (0 == n) {
-						//FIXME:waiter.setQuiescent();
-						waiters.offer(waiter);
-						if (!snoopers.isEmpty()) {
-							for (final Handle snooper : snoopers) {
-								//FIXME:snooper.unsetQuiescent();
-								snooper.publish(signal());
+					synchronized (SemaphoreInstance.this) {
+						if (0 == n) {
+							//FIXME:waiter.setQuiescent();
+							waiters.offer(waiter);
+							if (!snoopers.isEmpty()) {
+								for (final Handle snooper : snoopers) {
+									//FIXME:snooper.unsetQuiescent();
+									snooper.publish(signal());
+								}
+								snoopers.clear();
 							}
-							snoopers.clear();
+						} else {
+							--n;
+							waiter.publish(signal());
 						}
-					} else {
-						--n;
-						waiter.publish(signal());
 					}
-				  }
 				}
 			});
 			addMember("acquirenb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle waiter) {
-                  synchronized(SemaphoreInstance.this) {
-					if (0 == n) {
-						waiter.halt();
-					} else {
-						--n;
-						waiter.publish(signal());
+					synchronized (SemaphoreInstance.this) {
+						if (0 == n) {
+							waiter.halt();
+						} else {
+							--n;
+							waiter.publish(signal());
+						}
 					}
-                  }
 				}
 			});
 			addMember("release", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle sender) throws TokenException {
-                  synchronized(SemaphoreInstance.this) {
-					if (waiters.isEmpty()) {
-						++n;
-					} else {
-						final Handle waiter = waiters.poll();
-						//FIXME:waiter.unsetQuiescent();
-						waiter.publish(signal());
+					synchronized (SemaphoreInstance.this) {
+						if (waiters.isEmpty()) {
+							++n;
+						} else {
+							final Handle waiter = waiters.poll();
+							//FIXME:waiter.unsetQuiescent();
+							waiter.publish(signal());
+						}
+						sender.publish(signal());
 					}
-					sender.publish(signal());
-                  }
 				}
 			});
 			addMember("snoop", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle snooper) throws TokenException {
-                  synchronized(SemaphoreInstance.this) {
-					if (waiters.isEmpty()) {
-						//FIXME:snooper.setQuiescent();
-						snoopers.offer(snooper);
-					} else {
-						snooper.publish(signal());
+					synchronized (SemaphoreInstance.this) {
+						if (waiters.isEmpty()) {
+							//FIXME:snooper.setQuiescent();
+							snoopers.offer(snooper);
+						} else {
+							snooper.publish(signal());
+						}
 					}
-                  }
 				}
 			});
 			addMember("snoopnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) throws TokenException {
-                  synchronized(SemaphoreInstance.this) {
-					if (waiters.isEmpty()) {
-						token.halt();
-					} else {
-						token.publish(signal());
+					synchronized (SemaphoreInstance.this) {
+						if (waiters.isEmpty()) {
+							token.halt();
+						} else {
+							token.publish(signal());
+						}
 					}
-                  }
 				}
 			});
 		}
