@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.orchard.AbstractExecutorService;
+import orc.orchard.Job;
 import orc.orchard.OrchardProperties;
-import orc.orchard.Job.JobEngine;
 import orc.values.sites.compatibility.Args;
 import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -43,9 +43,9 @@ public class FormSenderSite extends SiteAdaptor {
 		private final Form form;
 		private final String key;
 
-		public FormReceiver(final JobEngine globals, final Form form) {
+		public FormReceiver(final Job job, final Form form) {
 			this.form = form;
-			this.key = globals.addGlobal(this);
+			this.key = AbstractExecutorService.globals.add(job, this);
 		}
 
 		public String getURL() {
@@ -63,9 +63,8 @@ public class FormSenderSite extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final JobEngine engine = (JobEngine) caller.runtime();
 		try {
-			caller.publish(new FormReceiver(engine, (Form) args.getArg(0)));
+			caller.publish(new FormReceiver(Job.getJobFromHandle(caller), (Form) args.getArg(0)));
 		} catch (final ClassCastException e) {
 			throw new ArgumentTypeMismatchException(0, "orc.lib.orchard.forms.Form", args.getArg(0).getClass().getCanonicalName());
 		}

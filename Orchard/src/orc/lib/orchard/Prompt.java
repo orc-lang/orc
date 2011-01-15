@@ -15,6 +15,7 @@ package orc.lib.orchard;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
 import orc.OrcRuntime;
 import orc.Handle;
@@ -44,7 +45,7 @@ public class Prompt extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final OrcRuntime engine = caller.runtime();
+		final OrcRuntime engine = ((Orc.Token)caller).runtime();  //FIXME:Use OrcEvents, not subclassing for Prompts
 		final String prompt = args.stringArg(0);
 		if (!(engine instanceof Promptable)) {
 			caller.$bang$bang(new JavaException(new UnsupportedOperationException("This Orc engine does not support the Prompt site.")));

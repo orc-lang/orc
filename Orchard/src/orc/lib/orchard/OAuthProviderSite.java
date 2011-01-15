@@ -24,8 +24,9 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Redirect.Redirectable;
 import orc.oauth.OAuthProvider;
+import orc.orchard.Job;
 import orc.orchard.OrchardOAuthServlet;
-import orc.orchard.Job.JobEngine;
+import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
 import orc.OrcRuntime;
 import orc.Handle;
@@ -42,12 +43,12 @@ public class OAuthProviderSite extends SiteAdaptor {
 	 * and prompt the user to confirm authorization.
 	 */
 	public static class WebOAuthProvider extends OAuthProvider {
-		private final JobEngine globals;
+		private final Job job;
 		private final Redirectable redirectable;
 
-		public WebOAuthProvider(final JobEngine globals, final Redirectable redirectable, final String properties) throws IOException {
+		public WebOAuthProvider(final Job job, final Redirectable redirectable, final String properties) throws IOException {
 			super(properties);
-			this.globals = globals;
+			this.job = job;
 			this.redirectable = redirectable;
 		}
 
@@ -55,7 +56,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 		public OAuthAccessor authenticate(final String consumer, final List<OAuth.Parameter> request) throws Exception {
 			final OAuthAccessor accessor = oauth.newAccessor(consumer);
 			final LinkedBlockingQueue ready = new LinkedBlockingQueue();
-			final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, globals);
+			final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, job);
 			// get a request token
 			oauth.obtainRequestToken(accessor, request, callbackURL);
 			// request authorization and wait for response
@@ -69,15 +70,15 @@ public class OAuthProviderSite extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final OrcRuntime engine = caller.runtime();
-		if (!(engine instanceof JobEngine)) {
+		final OrcRuntime engine = ((Orc.Token)caller).runtime(); //FIXME:Use OrcEvents, not subclassing for Redirects
+		if (!(engine instanceof Redirectable)) {
 			throw new UnsupportedOperationException("This site is not supported on the engine " + engine.getClass().toString());
 		}
 		try {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			caller.publish(new WebOAuthProvider((JobEngine) engine, (Redirectable) engine,
+			caller.publish(new WebOAuthProvider(Job.getJobFromHandle(caller), (Redirectable) engine,
 			// force root-relative resource path
 					"/" + args.stringArg(0)));
 		} catch (final IOException e) {

@@ -27,7 +27,6 @@ import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import net.oauth.OAuthMessage;
 import net.oauth.server.OAuthServlet;
-import orc.orchard.Job.JobEngine;
 
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
@@ -38,13 +37,13 @@ public class OrchardOAuthServlet extends HttpServlet {
 	 * 
 	 * @param accessor Accessor to be autorized
 	 * @param mbox Mailbox to be signaled when authorization is received
-	 * @param globals Orc engine that will reveive the callback
+	 * @param job Orchard job that will reveive the callback
 	 * @return Callback URL string
 	 * @throws IOException
 	 */
-	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue mbox, final JobEngine globals) throws IOException {
+	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue mbox, final Job job) throws IOException {
 		accessor.setProperty(MAILBOX, mbox);
-		final String key = globals.addGlobal(accessor);
+		final String key = AbstractExecutorService.globals.add(job, accessor);
 		// FIXME: we should figure out the callback URL automatically from the servlet context
 		return OAuth.addParameters(accessor.consumer.callbackURL, "k", key);
 	}

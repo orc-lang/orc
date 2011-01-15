@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import orc.Handle;
 import orc.OrcEventAction;
 import orc.OrcOptions;
 import orc.ast.oil.nameless.Expression;
@@ -38,6 +39,7 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.RedirectEvent;
 import orc.orchard.events.TokenErrorEvent;
+import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
 import scala.util.parsing.input.Positional;
 
@@ -188,10 +190,6 @@ public final class Job implements JobMBean {
 			return Job.this;
 		}
 
-		public final String addGlobal(final Object value) {
-			return AbstractExecutorService.globals.add(this.getJob(), value);
-		}
-
 		/* (non-Javadoc)
 		 * @see java.lang.Runnable#run()
 		 */
@@ -294,6 +292,18 @@ public final class Job implements JobMBean {
 		this.id = id;
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config);
+	}
+
+	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
+		try {
+			return ((JobEngine) ((Orc.Token)callHandle).runtime()).getJob();
+		} catch (ClassCastException e) {
+			throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
+		}
+	}
+
+	public String getId() {
+		return id;
 	}
 
 	public synchronized void start() throws InvalidJobStateException {

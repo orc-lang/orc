@@ -18,6 +18,7 @@ import java.net.URL;
 
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
 import orc.OrcRuntime;
 import orc.Handle;
@@ -39,7 +40,7 @@ public class Redirect extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final OrcRuntime engine = caller.runtime();
+		final OrcRuntime engine = ((Orc.Token)caller).runtime(); //FIXME:Use OrcEvents, not subclassing for Redirects
 		final String url = args.stringArg(0);
 		if (!(engine instanceof Redirectable)) {
 			caller.$bang$bang(new JavaException(new UnsupportedOperationException("This Orc engine does not support the Redirect site.")));
