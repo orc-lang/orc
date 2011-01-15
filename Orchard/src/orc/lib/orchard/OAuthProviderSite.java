@@ -20,6 +20,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
+import orc.Handle;
+import orc.OrcRuntime;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.lib.orchard.Redirect.Redirectable;
@@ -28,8 +30,6 @@ import orc.orchard.Job;
 import orc.orchard.OrchardOAuthServlet;
 import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
-import orc.OrcRuntime;
-import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 public class OAuthProviderSite extends SiteAdaptor {
@@ -70,7 +70,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final OrcRuntime engine = ((Orc.Token)caller).runtime(); //FIXME:Use OrcEvents, not subclassing for Redirects
+		final OrcRuntime engine = ((Orc.Token) caller).runtime(); //FIXME:Use OrcEvents, not subclassing for Redirects
 		if (!(engine instanceof Redirectable)) {
 			throw new UnsupportedOperationException("This site is not supported on the engine " + engine.getClass().toString());
 		}
@@ -88,6 +88,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 
 	@SuppressWarnings("unused")
 	private static class MockRedirectable implements Redirectable {
+		@Override
 		public void redirect(final URL url) {
 			System.out.println(url.toExternalForm());
 		}

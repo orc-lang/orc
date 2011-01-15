@@ -75,10 +75,12 @@ public class ExecutorService extends AbstractExecutorService {
 	private class JettyContinuationWaiter implements Waiter {
 		private Continuation continuation;
 
+		@Override
 		public void resume() {
 			continuation.resume();
 		}
 
+		@Override
 		public void suspend(final Object monitor) throws InterruptedException {
 			continuation = ContinuationSupport.getContinuation(getServletRequest(), monitor);
 			continuation.suspend(0);

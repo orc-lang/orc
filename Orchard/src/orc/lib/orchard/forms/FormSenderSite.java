@@ -25,13 +25,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import orc.Handle;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Job;
 import orc.orchard.OrchardProperties;
 import orc.values.sites.compatibility.Args;
-import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 import org.apache.commons.fileupload.FileUploadException;
@@ -119,9 +119,9 @@ public class FormSenderSite extends SiteAdaptor {
 				AbstractExecutorService.globals.remove(key);
 				try {
 					f.send();
-				} catch (InterruptedException e) {
-		             // Restore the interrupted status
-		             Thread.currentThread().interrupt();
+				} catch (final InterruptedException e) {
+					// Restore the interrupted status
+					Thread.currentThread().interrupt();
 				}
 				send(response, "Thank you for your response.");
 				return;

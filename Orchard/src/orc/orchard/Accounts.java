@@ -122,16 +122,19 @@ public abstract class Accounts implements AccountsMBean {
 	 */
 	public abstract Account getAccount(String devKey);
 
+	@Override
 	public synchronized Set<Integer> getAccountIDs() {
 		return accounts.keySet();
 	}
 
+	@Override
 	public synchronized void finishOldJobs() {
 		for (final Account a : accounts.values()) {
 			a.finishOldJobs();
 		}
 	}
 
+	@Override
 	public synchronized int getNumActiveAccounts() {
 		return accounts.size() + 1;
 	}
@@ -194,6 +197,7 @@ class DbAccounts extends Accounts {
 		}
 	}
 
+	@Override
 	public boolean changeDeveloperKey(final String username) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET developer_key = ?::uuid" + " WHERE username = ?");
@@ -210,6 +214,7 @@ class DbAccounts extends Accounts {
 		}
 	}
 
+	@Override
 	public boolean changePassword(final String username, final String password) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET salt = ?, password_md5 = md5(?)" + " WHERE username = ?");
@@ -234,6 +239,7 @@ class DbAccounts extends Accounts {
 		return new String(bytes);
 	}
 
+	@Override
 	public boolean createAccount(final int accountTypeID, final String username, final String password, final String email) {
 		PreparedStatement sql;
 		try {
@@ -262,6 +268,7 @@ class DbAccounts extends Accounts {
 		}
 	}
 
+	@Override
 	public boolean dropAccount(final String username) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("DELETE FROM account WHERE username = ?");
@@ -292,18 +299,22 @@ class GuestOnlyAccounts extends Accounts {
 		return guest;
 	}
 
+	@Override
 	public boolean changeDeveloperKey(final String username) {
 		return false;
 	}
 
+	@Override
 	public boolean changePassword(final String username, final String password) {
 		return false;
 	}
 
+	@Override
 	public boolean createAccount(final int accountTypeID, final String username, final String password, final String email) {
 		return false;
 	}
 
+	@Override
 	public boolean dropAccount(final String username) {
 		return false;
 	}

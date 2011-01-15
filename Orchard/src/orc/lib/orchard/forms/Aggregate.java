@@ -29,6 +29,7 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 		this.key = key;
 	}
 
+	@Override
 	public Map<String, Object> getValue() {
 		final HashMap<String, Object> out = new HashMap<String, Object>();
 		for (final Part<?> part : parts) {
@@ -41,22 +42,26 @@ public abstract class Aggregate implements Part<Map<String, Object>> {
 		parts.add(part);
 	}
 
+	@Override
 	public void readRequest(final FormData request, final List<String> errors) {
 		for (final Part<?> part : parts) {
 			part.readRequest(request, errors);
 		}
 	}
 
+	@Override
 	public void render(final PrintWriter out, final Set<String> flags) throws IOException {
 		for (final Part<?> part : parts) {
 			part.render(out, flags);
 		}
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
 
+	@Override
 	public boolean needsMultipartEncoding() {
 		for (final Part<?> part : parts) {
 			if (part.needsMultipartEncoding()) {

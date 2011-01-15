@@ -37,6 +37,7 @@ public abstract class SingleField<V> extends Field<V> {
 		this.posted = posted;
 	}
 
+	@Override
 	public void readRequest(final FormData request, final List<String> errors) {
 		try {
 			posted = request.getParameter(key);

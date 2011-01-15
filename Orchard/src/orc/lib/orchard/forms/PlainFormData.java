@@ -35,10 +35,12 @@ public class PlainFormData implements FormData {
 		this.request = request;
 	}
 
+	@Override
 	public FileItem getItem(final String key) {
 		return new PlainFileItem(key, request.getParameter(key));
 	}
 
+	@Override
 	public FileItem[] getItems(final String key) {
 		final String[] values = request.getParameterValues(key);
 		final FileItem[] out = new FileItem[values.length];
@@ -48,6 +50,7 @@ public class PlainFormData implements FormData {
 		return out;
 	}
 
+	@Override
 	public List<FileItem> getItems() {
 		final LinkedList<FileItem> out = new LinkedList<FileItem>();
 		for (final Enumeration<String> names = request.getParameterNames(); names.hasMoreElements();) {
@@ -59,10 +62,12 @@ public class PlainFormData implements FormData {
 		return out;
 	}
 
+	@Override
 	public String getParameter(final String key) {
 		return request.getParameter(key);
 	}
 
+	@Override
 	public String[] getParameterValues(final String key) {
 		return request.getParameterValues(key);
 	}
@@ -78,62 +83,77 @@ class PlainFileItem implements FileItem {
 		this.value = value;
 	}
 
+	@Override
 	public void delete() {
 		// do nothing
 	}
 
+	@Override
 	public byte[] get() {
 		return value.getBytes();
 	}
 
+	@Override
 	public String getContentType() {
 		return null;
 	}
 
+	@Override
 	public String getFieldName() {
 		return name;
 	}
 
+	@Override
 	public InputStream getInputStream() throws IOException {
 		return new ByteArrayInputStream(value.getBytes());
 	}
 
+	@Override
 	public String getName() {
 		return null;
 	}
 
+	@Override
 	public OutputStream getOutputStream() throws IOException {
 		return null;
 	}
 
+	@Override
 	public long getSize() {
 		return value.getBytes().length;
 	}
 
+	@Override
 	public String getString() {
 		return value;
 	}
 
+	@Override
 	public String getString(final String arg0) throws UnsupportedEncodingException {
 		return value;
 	}
 
+	@Override
 	public boolean isFormField() {
 		return false;
 	}
 
+	@Override
 	public boolean isInMemory() {
 		return true;
 	}
 
+	@Override
 	public void setFieldName(final String arg0) {
 		name = arg0;
 	}
 
+	@Override
 	public void setFormField(final boolean arg0) {
 		// do nothing
 	}
 
+	@Override
 	public void write(final File arg0) throws Exception {
 		throw new UnsupportedOperationException("write not supported for plain form data");
 	}

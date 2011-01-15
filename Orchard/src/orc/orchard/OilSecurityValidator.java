@@ -21,7 +21,6 @@ import java.util.Set;
 import orc.ast.AST;
 import orc.ast.oil.nameless.Constant;
 import orc.ast.oil.nameless.NamelessAST;
-
 import scala.collection.JavaConversions;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
@@ -154,7 +153,7 @@ public class OilSecurityValidator {
 		 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
 		 */
 		@Override
-		public void pos_$eq(Position newpos) {
+		public void pos_$eq(final Position newpos) {
 			position = newpos;
 		}
 
@@ -162,15 +161,17 @@ public class OilSecurityValidator {
 		 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
 		 */
 		@Override
-		public Positional setPos(Position newpos) {
-		    if (position == null || position instanceof NoPosition$) position = newpos;
-		    return this;
+		public Positional setPos(final Position newpos) {
+			if (position == null || position instanceof NoPosition$) {
+				position = newpos;
+			}
+			return this;
 		}
 	}
 
-	public void validate(NamelessAST astNode) {
-		for (AST node : JavaConversions.asIterable(astNode.subtrees())) {
-			NamelessAST child = (NamelessAST) node;
+	public void validate(final NamelessAST astNode) {
+		for (final AST node : JavaConversions.asIterable(astNode.subtrees())) {
+			final NamelessAST child = (NamelessAST) node;
 			if (child instanceof Constant) {
 				final Object value = ((Constant) child).value();
 				if (!(value instanceof orc.values.sites.Site)) {

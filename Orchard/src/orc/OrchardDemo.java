@@ -60,7 +60,6 @@ public class OrchardDemo {
 			return;
 		}
 
-
 		// System.setProperty("DEBUG", "true");
 
 		final Server server = new Server();
@@ -87,7 +86,7 @@ public class OrchardDemo {
 		orchardInitParms.put("orc.orchard.Accounts.url", "");
 		orchardInitParms.put("orc.orchard.GuestAccount.canImportJava", "true");
 		webappContext.setInitParams(orchardInitParms);
-		
+
 		new WebAppContext(contexts, warLocation.resolve("demo-root.war").getPath(), "/");
 
 		server.setStopAtShutdown(true);

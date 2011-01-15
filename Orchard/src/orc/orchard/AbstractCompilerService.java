@@ -44,35 +44,36 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 	protected AbstractCompilerService() {
 		this(getDefaultLogger());
 	}
-	
+
 	private static List orchardIncludePath = new java.util.ArrayList<String>(0);
 	private static List orchardAdditionalIncludes = Arrays.asList("orchard.inc");
 
+	@Override
 	public String compile(final String devKey, final String program) throws InvalidProgramException {
 		logger.info("compile(" + devKey + ", " + program + ")");
 		if (program == null) {
 			throw new InvalidProgramException("Null program!");
 		}
 		try {
-			OrcBindings options = new OrcBindings(/*FIXME:From OrchardProperties*/);
+			final OrcBindings options = new OrcBindings(/*FIXME:From OrchardProperties*/);
 			// Disable file resources for includes
 			options.includePath_$eq(orchardIncludePath);
 			// Include sites specifically for orchard services
 			options.additionalIncludes_$eq(orchardAdditionalIncludes);
-			List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
-			CompileLogger cl = new OrchardCompileLogger(compileMsgs);
+			final List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
+			final CompileLogger cl = new OrchardCompileLogger(compileMsgs);
 			final orc.ast.oil.nameless.Expression result = getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
 			if (cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
 				if (compileMsgs.isEmpty()) {
 					throw new InvalidProgramException("Compilation failed");
 				} else {
 					//FIXME:Report multiple messages in a less ugly manner -- maybe in a JobEvent style
-					StringBuilder sb = new StringBuilder();
-					for (CompileMessage msg : compileMsgs) {
+					final StringBuilder sb = new StringBuilder();
+					for (final CompileMessage msg : compileMsgs) {
 						sb.append(msg.longMessage());
 						sb.append("\n");
 					}
-					sb.deleteCharAt(sb.length()-1); // Remove trailing newline
+					sb.deleteCharAt(sb.length() - 1); // Remove trailing newline
 					throw new InvalidProgramException(sb.toString());
 				}
 				//FIXME:Report warnings
