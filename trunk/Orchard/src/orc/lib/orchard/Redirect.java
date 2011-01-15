@@ -20,6 +20,7 @@ import orc.Handle;
 import orc.OrcRuntime;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
+import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 
