@@ -39,7 +39,6 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.RedirectEvent;
 import orc.orchard.events.TokenErrorEvent;
-import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
 import scala.util.parsing.input.Positional;
 
@@ -177,10 +176,10 @@ public final class Job implements JobMBean {
 
 	public class JobEngine extends StandardOrcRuntime implements Runnable, Promptable, Redirectable {
 		private StringBuffer printBuffer = new StringBuffer();
-		private Expression expression;
-		private OrcOptions config;
+		private final Expression expression;
+		private final OrcOptions config;
 
-		public JobEngine(Expression expression, OrcOptions config) {
+		public JobEngine(final Expression expression, final OrcOptions config) {
 			super();
 			this.expression = expression;
 			this.config = config;
@@ -195,10 +194,10 @@ public final class Job implements JobMBean {
 		 */
 		@Override
 		public void run() {
-			JobEventActions jea = new JobEventActions();
+			final JobEventActions jea = new JobEventActions();
 			try {
 				runSynchronous(expression, jea.asFunction(), config);
-            } catch (final OrcException e) {
+			} catch (final OrcException e) {
 				jea.caught(e);
 			} finally {
 				stop(); // kill threads and reclaim resources
@@ -262,6 +261,7 @@ public final class Job implements JobMBean {
 			}
 		}
 
+		@Override
 		public void prompt(final String message, final PromptCallback callback) {
 			int promptID;
 			synchronized (pendingPrompts) {
@@ -271,6 +271,7 @@ public final class Job implements JobMBean {
 			events.add(new PromptEvent(promptID, message));
 		}
 
+		@Override
 		public void redirect(final URL url) {
 			events.add(new RedirectEvent(url));
 		}
@@ -286,9 +287,9 @@ public final class Job implements JobMBean {
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 	/** Thread in which the main engine is run. */
 	private Thread worker;
-	private String id;
+	private final String id;
 
-	protected Job(String id, Expression expression, final OrcOptions config) throws ExecutionException {
+	protected Job(final String id, final Expression expression, final OrcOptions config) throws ExecutionException {
 		this.id = id;
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config);
@@ -296,8 +297,8 @@ public final class Job implements JobMBean {
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
 		try {
-			return ((JobEngine) ((Orc.Token)callHandle).runtime()).getJob();
-		} catch (ClassCastException e) {
+			return ((JobEngine) ((Orc.Token) callHandle).runtime()).getJob();
+		} catch (final ClassCastException e) {
 			throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
 		}
 	}
@@ -310,10 +311,11 @@ public final class Job implements JobMBean {
 		if (worker != null) {
 			throw new InvalidJobStateException(getState());
 		}
-		worker = new Thread(engine, "Orchard Job "+id);
+		worker = new Thread(engine, "Orchard Job " + id);
 		worker.start();
 	}
 
+	@Override
 	public synchronized void finish() {
 		halt();
 		for (final FinishListener finisher : finishers) {
@@ -334,6 +336,7 @@ public final class Job implements JobMBean {
 		finishers.add(f);
 	}
 
+	@Override
 	public synchronized void halt() {
 		if (worker == null) {
 			return;
@@ -358,6 +361,7 @@ public final class Job implements JobMBean {
 		events.purge();
 	}
 
+	@Override
 	public synchronized String getState() {
 		if (worker == null) {
 			return "NEW";
@@ -374,6 +378,7 @@ public final class Job implements JobMBean {
 		this.startDate = startDate;
 	}
 
+	@Override
 	public Date getStartDate() {
 		return (Date) startDate.clone();
 	}
@@ -400,6 +405,7 @@ public final class Job implements JobMBean {
 		callback.cancelPrompt();
 	}
 
+	@Override
 	public int getTotalNumEvents() {
 		return events.getTotalNumEvents();
 	}

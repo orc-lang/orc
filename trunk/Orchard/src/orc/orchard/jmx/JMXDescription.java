@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { CONSTRUCTOR, METHOD, PARAMETER, TYPE })
+@Target({ CONSTRUCTOR, METHOD, PARAMETER, TYPE })
 public @interface JMXDescription {
 	String value();
 }

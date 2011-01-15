@@ -28,22 +28,27 @@ public class Button implements Part<Boolean> {
 		this.label = label;
 	}
 
+	@Override
 	public void render(final PrintWriter out, final Set<String> flags) throws IOException {
 		out.write("<input type='submit'" + " name='" + key + "'" + " value='" + label + "'" + ">");
 	}
 
+	@Override
 	public String getKey() {
 		return key;
 	}
 
+	@Override
 	public Boolean getValue() {
 		return clicked;
 	}
 
+	@Override
 	public boolean needsMultipartEncoding() {
 		return false;
 	}
 
+	@Override
 	public void readRequest(final FormData request, final List<String> errors) {
 		clicked = request.getParameter(key) != null;
 	}

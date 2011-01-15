@@ -59,10 +59,10 @@ public class OrchardCompileLogger implements CompileLogger {
 			this.astNode = astNode;
 			this.exception = exception;
 		}
+
 		public String longMessage() {
 			if (position != null) {
-				return position.toString() + ": " + message + "\n" +
-					   position.longString();
+				return position.toString() + ": " + message + "\n" + position.longString();
 			} else {
 				return "<undefined argPosition>: " + message;
 			}

@@ -54,26 +54,32 @@ public abstract class Account implements AccountMBean {
 	public Account() {
 	}
 
+	@Override
 	public void setLifespan(final Integer lifespan) {
 		this.lifespan = lifespan;
 	}
 
+	@Override
 	public void setQuota(final Integer quota) {
 		this.quota = quota;
 	}
 
+	@Override
 	public boolean getCanSendMail() {
 		return canSendMail;
 	}
 
+	@Override
 	public void setCanSendMail(final boolean canSendMail) {
 		this.canSendMail = canSendMail;
 	}
 
+	@Override
 	public boolean getCanImportJava() {
 		return canImportJava;
 	}
 
+	@Override
 	public void setCanImportJava(final boolean canImportJava) {
 		this.canImportJava = canImportJava;
 	}
@@ -114,6 +120,7 @@ public abstract class Account implements AccountMBean {
 		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
 		JMXUtilities.registerMBean(job, jmxid);
 		job.onFinish(new Job.FinishListener() {
+			@Override
 			public void finished(final Job job) {
 				removeJob(id);
 				JMXUtilities.unregisterMBean(jmxid);
@@ -134,6 +141,7 @@ public abstract class Account implements AccountMBean {
 		return new LinkedList<Job>(jobs.values());
 	}
 
+	@Override
 	public synchronized Set<String> getJobIDs() {
 		return new HashSet<String>(jobs.keySet());
 	}
@@ -147,8 +155,10 @@ public abstract class Account implements AccountMBean {
 
 	protected abstract void onNoMoreJobs();
 
+	@Override
 	public abstract boolean getIsGuest();
 
+	@Override
 	public synchronized void finishOldJobs() {
 		if (lifespan == null) {
 			return;
@@ -172,6 +182,7 @@ public abstract class Account implements AccountMBean {
 		}
 	}
 
+	@Override
 	public synchronized int getNumNewJobs() {
 		int out = 0;
 		for (final Job job : jobs.values()) {
@@ -182,6 +193,7 @@ public abstract class Account implements AccountMBean {
 		return out;
 	}
 
+	@Override
 	public synchronized int getNumRunningJobs() {
 		int out = 0;
 		for (final Job job : jobs.values()) {
@@ -202,6 +214,7 @@ public abstract class Account implements AccountMBean {
 		return out;
 	}
 
+	@Override
 	public synchronized int getNumDeadJobs() {
 		int out = 0;
 		for (final Job job : jobs.values()) {
@@ -212,10 +225,12 @@ public abstract class Account implements AccountMBean {
 		return out;
 	}
 
+	@Override
 	public Integer getLifespan() {
 		return lifespan;
 	}
 
+	@Override
 	public Integer getQuota() {
 		return quota;
 	}

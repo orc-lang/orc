@@ -66,17 +66,17 @@ public class OrchardOAuthServlet extends HttpServlet {
 		if (accessor == null) {
 			return;
 		}
-		
+
 		if (!accessor.requestToken.equalsIgnoreCase(requestMessage.getParameter(OAuth.OAUTH_TOKEN))) {
 			System.err.println("OrchardOAuthServlet: token mismatch: received " + requestMessage.getParameter(OAuth.OAUTH_TOKEN) + ", but expected " + accessor.requestToken);
 			throw new OAuthException("OrchardOAuthServlet: token mismatch");
 		}
-		
-		final String verifier = requestMessage.getParameter("oauth_verifier"); 
+
+		final String verifier = requestMessage.getParameter("oauth_verifier");
 		if (verifier != null) {
 			accessor.setProperty("oauth_verifier", verifier);
 		}
-		
+
 		final LinkedBlockingQueue mbox = (LinkedBlockingQueue) accessor.getProperty(MAILBOX);
 		if (mbox == null) {
 			return;
@@ -94,9 +94,9 @@ public class OrchardOAuthServlet extends HttpServlet {
 			receiveAuthorization(request);
 		} catch (final OAuthException e) {
 			throw new ServletException(e);
-		} catch (InterruptedException e) {
-            // Restore the interrupted status
-            Thread.currentThread().interrupt();
+		} catch (final InterruptedException e) {
+			// Restore the interrupted status
+			Thread.currentThread().interrupt();
 		}
 		final PrintWriter out = response.getWriter();
 		out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

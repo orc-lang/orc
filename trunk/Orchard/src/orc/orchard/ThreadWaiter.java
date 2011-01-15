@@ -21,11 +21,13 @@ package orc.orchard;
 public class ThreadWaiter implements Waiter {
 	private Object monitor;
 
+	@Override
 	public void suspend(final Object monitor) throws InterruptedException {
 		this.monitor = monitor;
 		this.monitor.wait();
 	}
 
+	@Override
 	public void resume() {
 		this.monitor.notify();
 	}

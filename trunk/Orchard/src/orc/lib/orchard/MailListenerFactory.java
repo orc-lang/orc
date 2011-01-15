@@ -20,6 +20,7 @@ import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
+import orc.Handle;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
@@ -28,7 +29,6 @@ import orc.lib.net.MailerFactory.OrcMessage;
 import orc.orchard.AbstractExecutorService;
 import orc.orchard.Job;
 import orc.values.sites.compatibility.Args;
-import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**

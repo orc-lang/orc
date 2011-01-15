@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * @author quark
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { PARAMETER })
+@Target({ PARAMETER })
 public @interface JMXParam {
 	String value();
 }

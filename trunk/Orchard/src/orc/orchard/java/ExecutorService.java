@@ -58,11 +58,13 @@ public class ExecutorService extends AbstractExecutorService {
 			executor.purgeJobEvents("", job);
 			for (final JobEvent event : events) {
 				event.accept(new Visitor<Void>() {
+					@Override
 					public Void visit(final PrintlnEvent event) {
 						System.out.println(event.line);
 						return null;
 					}
 
+					@Override
 					public Void visit(final PromptEvent event) {
 						final String response = JOptionPane.showInputDialog(event.message);
 						try {
@@ -77,16 +79,19 @@ public class ExecutorService extends AbstractExecutorService {
 						return null;
 					}
 
+					@Override
 					public Void visit(final PublicationEvent event) {
 						System.out.println(event.value.toString());
 						return null;
 					}
 
+					@Override
 					public Void visit(final RedirectEvent event) {
 						System.err.println("REDIRECT: " + event.url);
 						return null;
 					}
 
+					@Override
 					public Void visit(final TokenErrorEvent event) {
 						System.err.println("ERROR: " + event.message);
 						return null;
