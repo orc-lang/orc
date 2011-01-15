@@ -26,7 +26,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.net.MailerFactory.Mailer;
 import orc.lib.net.MailerFactory.OrcMessage;
 import orc.orchard.AbstractExecutorService;
-import orc.orchard.Job.JobEngine;
+import orc.orchard.Job;
 import orc.values.sites.compatibility.Args;
 import orc.Handle;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -47,10 +47,10 @@ public class MailListenerFactory extends SiteAdaptor {
 		// FIXME: should this allow multiple listeners?
 		private final LinkedBlockingQueue<OrcMessage> inbox = new LinkedBlockingQueue<OrcMessage>();
 
-		public MailListener(final JobEngine engine, final Mailer mailer) throws AddressException {
+		public MailListener(final Job job, final Mailer mailer) throws AddressException {
 			this.mailer = mailer;
 			this.address = mailer.newFromAddress();
-			AbstractExecutorService.globals.put(engine.getJob(), address.toString(), this);
+			AbstractExecutorService.globals.put(job, address.toString(), this);
 		}
 
 		public boolean put(final InputStream stream) throws MessagingException {
@@ -73,7 +73,7 @@ public class MailListenerFactory extends SiteAdaptor {
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		try {
-			caller.publish(new MailListener((JobEngine) caller.runtime(), (Mailer) args.getArg(0)));
+			caller.publish(new MailListener(Job.getJobFromHandle(caller), (Mailer) args.getArg(0)));
 		} catch (final AddressException e) {
 			throw new JavaException(e);
 		} catch (final ClassCastException e) {
