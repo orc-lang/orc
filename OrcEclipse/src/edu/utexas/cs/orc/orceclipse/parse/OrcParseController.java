@@ -17,7 +17,7 @@ package edu.utexas.cs.orc.orceclipse.parse;
 
 import java.util.Iterator;
 
-import orc.OrcOptions;
+import orc.OrcCompilationOptions;
 import orc.ast.AST;
 import orc.compile.parse.OrcIncludeParser;
 import orc.compile.parse.OrcInputContext;
@@ -231,7 +231,7 @@ public class OrcParseController extends ParseControllerBase {
 		final OrcStringInputContext ic = new OrcStringInputContext(contents);
 
 		final orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
-			public OrcInputContext openInclude(final String includeName, final OrcInputContext orcinputcontext, final OrcOptions orcoptions) {
+			public OrcInputContext openInclude(final String includeName, final OrcInputContext orcinputcontext, final OrcCompilationOptions orcoptions) {
 				return new OrcStringInputContext("") { //$NON-NLS-1$
 					@Override
 					public String descr() {
