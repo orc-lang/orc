@@ -18,7 +18,7 @@ package orc.run
 import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
 import orc.ast.oil.nameless._
 import orc.error.OrcException
-import orc.error.runtime.{ ArityMismatchException, TokenException }
+import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
 import scala.collection.mutable.Set
 
 import scala.actors.Actor
@@ -366,7 +366,7 @@ trait Orc extends OrcRuntime {
     }
     if (group.root.options.maxTokens > 0 && 
         tokenCount.incrementAndGet > group.root.options.maxTokens)
-      throw new AssertionError("Reached maximum number of tokens allowed.") 
+      throw new TokenLimitReachedError(group.root.options.maxTokens) 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -550,7 +550,7 @@ trait Orc extends OrcRuntime {
             functionFramesPushed = functionFramesPushed + 1
             if (this.group.root.options.stackSize > 0 && 
                 functionFramesPushed > this.group.root.options.stackSize)
-              throw new AssertionError("Reached maximum stack-size allowed.")
+              throw new StackLimitReachedError(this.group.root.options.stackSize)
             push(new FunctionFrame(node, env))
           }
         }
