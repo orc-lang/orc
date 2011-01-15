@@ -15,16 +15,15 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.Args;
 import orc.Handle;
+import orc.error.runtime.TokenException;
+import orc.lib.state.types.BufferType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
+import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.lib.state.types.BufferType;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
-
 
 /**
  * Implements the local site Buffer, which creates buffers (asynchronous channels).
@@ -43,15 +42,15 @@ public class Buffer extends EvalSite implements TypedSite {
 
 	@Override
 	public Type orcType() {
-	  return BufferType.getBuilder();
+		return BufferType.getBuilder();
 	}
-	
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type BufferOfX = new BufferType().instance(X);
-//		return new ArrowType(BufferOfX, 1);
-//	}
+
+	//	@Override
+	//	public Type type() throws TypeException {
+	//		final Type X = new TypeVariable(0);
+	//		final Type BufferOfX = new BufferType().instance(X);
+	//		return new ArrowType(BufferOfX, 1);
+	//	}
 
 	protected class BufferInstance extends DotSite {
 
@@ -74,79 +73,79 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("get", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-				  synchronized(BufferInstance.this) {
-				    if (buffer.isEmpty()) {
-						if (closed) {
-							reader.halt();
+					synchronized (BufferInstance.this) {
+						if (buffer.isEmpty()) {
+							if (closed) {
+								reader.halt();
+							} else {
+								//FIXME:reader.setQuiescent();
+								readers.addLast(reader);
+							}
 						} else {
-							//FIXME:reader.setQuiescent();
-							readers.addLast(reader);
-						}
-					} else {
-						// If there is an item available, pop it and return it.
-						reader.publish(object2value(buffer.removeFirst()));
-						if (closer != null && buffer.isEmpty()) {
-							//FIXME:closer.unsetQuiescent();
-							closer.publish(signal());
-							closer = null;
+							// If there is an item available, pop it and return it.
+							reader.publish(object2value(buffer.removeFirst()));
+							if (closer != null && buffer.isEmpty()) {
+								//FIXME:closer.unsetQuiescent();
+								closer.publish(signal());
+								closer = null;
+							}
 						}
 					}
-				  }
 				}
 			});
 			addMember("put", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
-                  synchronized(BufferInstance.this) {
-					final Object item = args.getArg(0);
-					if (closed) {
-						writer.halt();
-						return;
+					synchronized (BufferInstance.this) {
+						final Object item = args.getArg(0);
+						if (closed) {
+							writer.halt();
+							return;
+						}
+						if (readers.isEmpty()) {
+							// If there are no waiting callers, buffer this item.
+							buffer.addLast(item);
+						} else {
+							// If there are callers waiting, give this item to the top caller.
+							final Handle receiver = readers.removeFirst();
+							//FIXME:receiver.unsetQuiescent();
+							receiver.publish(object2value(item));
+						}
+						// Since this is an asynchronous buffer, a put call always returns.
+						writer.publish(signal());
 					}
-					if (readers.isEmpty()) {
-						// If there are no waiting callers, buffer this item.
-						buffer.addLast(item);
-					} else {
-						// If there are callers waiting, give this item to the top caller.
-						final Handle receiver = readers.removeFirst();
-						//FIXME:receiver.unsetQuiescent();
-						receiver.publish(object2value(item));
-					}
-					// Since this is an asynchronous buffer, a put call always returns.
-					writer.publish(signal());
-                  }
 				}
 			});
 			addMember("getnb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-                  synchronized(BufferInstance.this) {
-					if (buffer.isEmpty()) {
-						reader.halt();
-					} else {
-						reader.publish(object2value(buffer.removeFirst()));
-						if (closer != null && buffer.isEmpty()) {
-							//FIXME:closer.unsetQuiescent();
-							closer.publish(signal());
-							closer = null;
+					synchronized (BufferInstance.this) {
+						if (buffer.isEmpty()) {
+							reader.halt();
+						} else {
+							reader.publish(object2value(buffer.removeFirst()));
+							if (closer != null && buffer.isEmpty()) {
+								//FIXME:closer.unsetQuiescent();
+								closer.publish(signal());
+								closer = null;
+							}
 						}
 					}
-                  }
 				}
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-                  synchronized(BufferInstance.this) {
-					final Object out = buffer.clone();
-					buffer.clear();
-					if (closer != null) {
-						//FIXME:closer.unsetQuiescent();
-						closer.publish(signal());
-						closer = null;
+					synchronized (BufferInstance.this) {
+						final Object out = buffer.clone();
+						buffer.clear();
+						if (closer != null) {
+							//FIXME:closer.unsetQuiescent();
+							closer.publish(signal());
+							closer = null;
+						}
+						return out;
 					}
-					return out;
-                  }
 				}
 			});
 			addMember("isClosed", new EvalSite() {
@@ -158,32 +157,32 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("close", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-                  synchronized(BufferInstance.this) {
-					closed = true;
-					for (final Handle reader : readers) {
-						//FIXME:reader.unsetQuiescent();
-						reader.halt();
+					synchronized (BufferInstance.this) {
+						closed = true;
+						for (final Handle reader : readers) {
+							//FIXME:reader.unsetQuiescent();
+							reader.halt();
+						}
+						if (buffer.isEmpty()) {
+							token.publish(signal());
+						} else {
+							closer = token;
+							//FIXME:closer.setQuiescent();
+						}
 					}
-					if (buffer.isEmpty()) {
-						token.publish(signal());
-					} else {
-						closer = token;
-						//FIXME:closer.setQuiescent();
-					}
-                  }
 				}
 			});
 			addMember("closenb", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-                  synchronized(BufferInstance.this) {
-					closed = true;
-					for (final Handle reader : readers) {
-						//FIXME:reader.unsetQuiescent();
-						reader.halt();
+					synchronized (BufferInstance.this) {
+						closed = true;
+						for (final Handle reader : readers) {
+							//FIXME:reader.unsetQuiescent();
+							reader.halt();
+						}
+						token.publish(signal());
 					}
-					token.publish(signal());
-                  }
 				}
 			});
 		}

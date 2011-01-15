@@ -20,5 +20,5 @@ package orc.values.sites.compatibility;
  * @author quark
  */
 public abstract class ThreadedPartialSite extends PartialSite {
-  //FIXME: Run evaluate in a separate thread
+	//FIXME: Run evaluate in a separate thread
 }

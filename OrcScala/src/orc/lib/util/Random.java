@@ -16,11 +16,11 @@ package orc.lib.util;
 import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.Types;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
 
 public class Random extends PartialSite implements TypedSite {
 
@@ -47,10 +47,7 @@ public class Random extends PartialSite implements TypedSite {
 
 	@Override
 	public Type orcType() {
-		return Types.overload(
-		         Types.function(Types.integer()), 
-		         Types.function(Types.integer(), Types.integer())
-		       ); 
+		return Types.overload(Types.function(Types.integer()), Types.function(Types.integer(), Types.integer()));
 	}
 
 }

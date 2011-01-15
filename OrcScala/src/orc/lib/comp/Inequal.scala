@@ -28,7 +28,7 @@ object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(a,b) => new java.lang.Boolean(!(a == b))
+      case List(a, b) => new java.lang.Boolean(!(a == b))
       case _ => throw new ArityMismatchException(2, args.size)
-  }
+    }
 }

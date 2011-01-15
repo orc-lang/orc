@@ -32,7 +32,7 @@ import orc.error.runtime.UncallableValueException;
  * 
  * @author dkitchin
  */
-public abstract class DotSite extends SiteAdaptor  {
+public abstract class DotSite extends SiteAdaptor {
 
 	Map<String, Object> methodMap;
 

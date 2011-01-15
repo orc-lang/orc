@@ -16,17 +16,16 @@ package orc.lib.state;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-import orc.error.runtime.TokenException;
-import orc.values.sites.compatibility.Args;
 import orc.Handle;
+import orc.error.runtime.TokenException;
+import orc.lib.state.types.CounterType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
+import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.lib.state.types.CounterType;
-import orc.values.sites.TypedSite;
-import orc.types.Type;
-
 
 /**
  * Factory for counters. 
@@ -46,43 +45,43 @@ public class Counter extends EvalSite implements TypedSite {
 				addMember("inc", new EvalSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
-	                  synchronized(Counter.this) {
-						++count;
-                      }
-	                  return signal();
+						synchronized (Counter.this) {
+							++count;
+						}
+						return signal();
 					}
 				});
 				addMember("dec", new PartialSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
-                      synchronized(Counter.this) {
-						if (count > 0) {
-							--count;
-							if (count == 0) {
-								for (final Handle waiter : waiters) {
-									//FIXME:waiter.unsetQuiescent();
-									waiter.publish(signal());
+						synchronized (Counter.this) {
+							if (count > 0) {
+								--count;
+								if (count == 0) {
+									for (final Handle waiter : waiters) {
+										//FIXME:waiter.unsetQuiescent();
+										waiter.publish(signal());
+									}
+									waiters.clear();
 								}
-								waiters.clear();
+								return signal();
+							} else {
+								return null;
 							}
-							return signal();
-						} else {
-							return null;
 						}
-                      }
 					}
 				});
 				addMember("onZero", new SiteAdaptor() {
 					@Override
 					public void callSite(final Args args, final Handle caller) throws TokenException {
-                      synchronized(Counter.this) {
-						if (count == 0) {
-							caller.publish(signal());
-						} else {
-							//FIXME:caller.setQuiescent();
-							waiters.add(caller);
+						synchronized (Counter.this) {
+							if (count == 0) {
+								caller.publish(signal());
+							} else {
+								//FIXME:caller.setQuiescent();
+								waiters.add(caller);
+							}
 						}
-                      }
 					}
 				});
 				addMember("value", new EvalSite() {
@@ -94,10 +93,10 @@ public class Counter extends EvalSite implements TypedSite {
 			}
 		};
 	}
-	
+
 	@Override
-    public Type orcType() {
-      return CounterType.getBuilder();
-    }
+	public Type orcType() {
+		return CounterType.getBuilder();
+	}
 
 }
