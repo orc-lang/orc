@@ -37,6 +37,15 @@ with zero values.</para>
 
 <para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
 
+<section xml:id="ref.data.datatype.patterns">
+<title>Patterns</title>
+
+<para>Datatype values are inspected by using Orc's pattern matching facility.
+This extensive facility is described in the <olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink> chapter of this reference manual.</para>
+
+<para>(In the mathematical context of coalgebras, patterns are called "destructors" or "observers",
+but those mathematical terms should not be confused with their usage in many object-oriented programming languages.)</para>
+
 </section>
 
 <section xml:id="ref.data.datatype.examples">
@@ -83,6 +92,16 @@ InnerNode[String](LeafNode("A"),InnerNode(LeafNode("B"),LeafNode("C")))
 ]]></programlisting>
 </example>
 
+<example xml:id="ref.data.datatypes.examples.option">
+<title>Orc built-in Option type</title>
+<programlisting language="orc-demo"><![CDATA[
+--Option is built in to Orc, but if it were
+--declared, the declaration would be:
+type Option[T] = Some(T) | None
+
+]]></programlisting>
+</example>
+
 </section>
 
 <section xml:id="ref.data.datatype.links">
@@ -100,11 +119,14 @@ InnerNode[String](LeafNode("A"),InnerNode(LeafNode("B"),LeafNode("C")))
       <row>
       <!-- 
         <entry><itemizedlist>
+          <listitem><para><xref linkend="ref.patterns"/></para></listitem>
           <listitem><para><xref linkend="types.Datatype"/></para></listitem>
           <listitem><para><xref linkend="library.state.Option"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
           <listitem><para><olink targetdoc="root" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="section.cor.patterns">Patterns</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="section.orc.?????">Extensions to pattern matching</olink></para></listitem>
         </itemizedlist></entry>
         -->
         <entry><itemizedlist>
