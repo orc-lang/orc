@@ -15,55 +15,39 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>TODO</code></para>
 
-<para>TODO.</para>
+<para>Orc's value set is "open" &#8212; any value returned from a site call can be used in Orc expressions.
+Combined with Orc's ability to invoke arbitrary functions of the environment in with the Orc runtime engine is running,
+this permits Orc programs to use any expressible value in its environment.
+For example, Orc programs running on a Java virtual machine (JVM) can interact with any Java object.</para>
 
-<section xml:id="ref.data.external.constructors">
-<title>Constructors</title>
+<para>Additionally, the Orc type system can be extended with user-declared types.  See TODO.</para>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
-
-<para>TODO.</para>
-
-</section>
-
-<section xml:id="ref.data.external.operations">
-<title>Operations</title>
-
-<para>Notable external value operations include:
-<itemizedlist>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-</itemizedlist>
-</para>
-
-</section>
-
-<section xml:id="ref.data.external.javacalls">
-<title>Java calls</title>
-
-<para>TODO.</para>
-
-</section>
 
 <section xml:id="ref.data.external.examples">
 <title>Examples</title>
 
 
-<example xml:id="ref.data.external.examples.one">
-<title>TODO:Example1</title>
+<example xml:id="ref.data.external.examples.javabitset">
+<title>Java BitSet</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+-- Using the Java class java.util.BitSet,
+-- construct a new instance, and then
+-- set bits 2 and 4 in the BitSet instance
+
+class BitSet = "java.util.BitSet"
+
+BitSet() >b> b.set(2) >> b.set(4) >> b.toString()
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.external.examples.two">
-<title>TODO:Example2</title>
+<example xml:id="ref.data.external.examples.javahashmap">
+<title>Java HashMap</title>
 <programlisting><![CDATA[
---TODO
-signal
+-- Using the Java class java.util.HashMap, construct a new instance, and then put and get some entries
+
+class HashMap = "java.util.HashMap"
+
+HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> m.put("Donald", "Daisy") >> m.get("Mickey")
 ]]></programlisting>
 </example>
 
@@ -84,16 +68,10 @@ signal
       <row>
       <!-- 
         <entry><itemizedlist>
-          <listitem><para><xref linkend="types.TODO"/></para></listitem>
-          <listitem><para><xref linkend="library.core.If"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
-          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
-          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
+          <listitem><para><xref linkend="ref.sites.java"/></para></listitem>
         </itemizedlist></entry>
         <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
+          <listitem><para><olink targetdoc="root" targetptr="section.services.java.values">Java Values in Orc</olink></para></listitem>
         </itemizedlist></entry>
         -->
         <entry><itemizedlist>
