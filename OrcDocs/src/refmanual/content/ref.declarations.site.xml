@@ -33,11 +33,28 @@ class to provide the service.
 		
 		<example xml:id="ref.declarations.site.examples.one"><title>Site Declaration</title>
 <programlisting><![CDATA[
-{-  Define the Buffer site  -}
+{-  
+Define the Buffer site by instantiating a Java object,
+specifically an object that provides an asynchronous 
+buffer service.
+-}
 site Buffer = orc.lib.state.Buffer
+
+{- 
+The object can now be used as a site in an Orc program
+The following publishes: 10
+-}
+val b = Buffer()
+b.put(10) >> b.get()
 ]]></programlisting> 
 		  </example>
-		  
+
+<para>
+See the Standard Library appendix 
+for more information on the Buffer site
+and its available methods.
+</para>
+
 		</section>
 		
 		<section xml:id="ref.declarations.site.links">
