@@ -39,7 +39,7 @@ public class Print extends SiteAdaptor implements TypedSite {
 				sb.append(Format.formatValueR(arg));
 			}
 		}
-		caller.notify(new orc.PrintedEvent(sb.toString()));
+		caller.notifyOrc(new orc.PrintedEvent(sb.toString()));
 		caller.publish(signal());
 	}
 

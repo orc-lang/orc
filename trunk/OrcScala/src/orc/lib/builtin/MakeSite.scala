@@ -36,7 +36,7 @@ class RunLikeSite(closure: AnyRef) extends UntypedSite {
   override def name = "class " + Format.formatValue(closure)
    
   def call(args: List[AnyRef], caller: Handle) {
-    caller.notify(InstanceEvent(closure, args, caller))
+    caller.notifyOrc(InstanceEvent(closure, args, caller))
   }
   
 }
