@@ -99,7 +99,7 @@ trait Orc extends OrcRuntime {
       }
 
     /* Find the root of this group tree. */
-    val root: Group
+    val root: Execution
 
   }
 
@@ -384,9 +384,12 @@ trait Orc extends OrcRuntime {
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
-    if (group.root.asInstanceOf[Execution].options.maxTokens > 0 && 
-        tokenCount.incrementAndGet > group.root.asInstanceOf[Execution].options.maxTokens)
-      throw new TokenLimitReachedError(group.root.asInstanceOf[Execution].options.maxTokens) 
+    
+    def options = group.root.options
+    
+    if (options.maxTokens > 0 && 
+        tokenCount.incrementAndGet > options.maxTokens)
+      throw new TokenLimitReachedError(options.maxTokens) 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -479,7 +482,7 @@ trait Orc extends OrcRuntime {
         case BindingFrame(n) :: fs => { stack = (new BindingFrame(n + 1)) :: fs }
 
         /* Tail call optimization (part 1 of 2) */
-        case FunctionFrame(_, _) :: fs if (!group.root.asInstanceOf[Execution].options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
+        case FunctionFrame(_, _) :: fs if (!options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
 
         case fs => { stack = BindingFrame(1) :: fs }
       }
@@ -565,12 +568,12 @@ trait Orc extends OrcRuntime {
            * Push a new FunctionFrame 
            * only if the call is not a tail call.
            */
-          case FunctionFrame(_, _) :: fs if (!group.root.asInstanceOf[Execution].options.disableTailCallOpt) => {}
+          case FunctionFrame(_, _) :: fs if (!options.disableTailCallOpt) => {}
           case _ => {            
             functionFramesPushed = functionFramesPushed + 1
-            if (this.group.root.asInstanceOf[Execution].options.stackSize > 0 && 
-                functionFramesPushed > this.group.root.asInstanceOf[Execution].options.stackSize)
-              throw new StackLimitReachedError(this.group.root.asInstanceOf[Execution].options.stackSize)
+            if (options.stackSize > 0 && 
+                functionFramesPushed > options.stackSize)
+              throw new StackLimitReachedError(options.stackSize)
             push(new FunctionFrame(node, env))
           }
         }
