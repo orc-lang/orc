@@ -36,11 +36,18 @@ cannot call any sites or publish any values. During the execution of F, any part
 the first value published by G). If G never publishes a value, that part of the execution is suspended forever.
 				  </para>
 			  </listitem>
-			  <listitem>F <code><![CDATA[ <P< ]]></code> G
+			  <listitem><code><![CDATA[F <P< G]]></code>
 				  <para>
 				  The pruning combinator may include a full pattern P instead of just a variable name. Any value published
 by G is matched against the pattern P. If this match is successful, then G terminates and all of the bindings
-of the pattern P are made in F. Otherwise, the published value is simply ignored and G continues to execute.
+of pattern P are made in F. Otherwise, the published value is simply ignored and G continues to execute.
+				  </para>
+			  </listitem>
+			  <listitem><code><![CDATA[F << G]]></code>
+				  <para>
+				  This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>. Any value published
+by G will match the pattern. After the successful match, G terminates, but no bindings are made in F. G continues to execute 
+until it publishes a value.
 				  </para>
 			  </listitem>
 		  </itemizedlist>
@@ -50,8 +57,8 @@ of the pattern P are made in F. Otherwise, the published value is simply ignored
 
 		  <example xml:id="ref.combinators.pruning.examples.one"><title>Exclusive Publication</title>
 <programlisting language="orc-demo"><![CDATA[
--- Publish either 5 or 6, but not both
-x+2 <x< (3 | 4)
+-- Simulate a coin toss by publishing either "heads" or "tails" arbitrarily
+x <x< ("heads" | "tails")
 ]]></programlisting>
 		  </example>
 
@@ -68,6 +75,12 @@ println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 {-
 This example actually prints both "true" and "false" to the
 console, regardless of which call responds first.
+
+Each call to the println() site will print its argument
+to the console then publish a signal.  The first signal
+to be published will be bound to x in the evaluation of
+stop.  Both println() calls will continue to execute
+until they publish a value.
 -}
 stop <x< println("true") | println("false")
 ]]></programlisting>

@@ -16,7 +16,7 @@
 <para><emphasis role="strong">Type</emphasis>: <code>(T1, T2...)</code></para>
 
 <para>
-Orc's <type>Tuple</type> data type is a sequence of values of a specific length, greater than one.
+Orc's <type>Tuple</type> data type is a sequence of values, whose number of values is at least two.
 (Orc does not provide for the construction of "0-tuples" or "1-tuples".)
 Tuples vary from lists in two significant ways:
 <itemizedlist>
@@ -38,12 +38,28 @@ tuple elements.
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Tuple</replaceable> ::= <code>(E, ..., E)</code></para>
 
-<para>Tuples are constructed simply with parenthesis-enclosed comma-separated lists of expressions.</para>
+<para>
+	A tuple is written as two or more expressions, separated by commas
+	and enclosed within parentheses.  A tuple constructor is applied
+	to a tuple written in this form to create the tuple value, as follows:
+</para>
 
-<para>Construction proceeds by evaluating all the expressions in parallel, and using the
-first publication of each, as if each was under a pruning combinator.
-The tuple is published when all expressions have published a value.
-If any expression is silent, the tuple constructor is silent.</para>
+<para>
+	The value of tuple <code>(e_1, e_2, ..., e_n)</code>, where <code>e_1, e_2, ..., e_n</code> are expressions, is
+	<![CDATA[
+(x_1, x_2, ..., x_n)
+   <x_1< e_1
+   <x_2< e_2
+   ...
+   <x_n< e_n
+]]>
+</para>
+
+<para>
+	That is, all expressions are concurrently evaluated, and the first published value
+	from each expression is used for construction of the tuple.  If any expression is silent, the tuple
+	constructor is silent.
+</para>
 
 </section>
 

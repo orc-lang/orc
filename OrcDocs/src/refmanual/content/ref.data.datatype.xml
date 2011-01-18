@@ -143,5 +143,5 @@ type Option[T] = Some(T) | None
 </informaltable>
 
 </section>
-
+</section>
 </section>
