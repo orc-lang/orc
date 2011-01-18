@@ -47,7 +47,9 @@
 			  </listitem>
 			  <listitem><code><![CDATA[F >> G]]></code> 
 				  <para>
-				  This is equivalent to using a wildcard pattern:  <code><![CDATA[>_>]]></code> 
+				  This is equivalent to using a wildcard pattern:  <code><![CDATA[>_>]]></code>.  Every publication
+				  of F will match the combinator pattern, causing an evaluation of G for every individual
+				  publication of F.  No bindings will be made in G from these publications.
 				  </para>
 			  </listitem>		  
 		  </itemizedlist>
@@ -91,6 +93,15 @@
 {- 
   Print two strings to the console,
   but don't publish the return values of the calls.
+  
+  Each println() site will print its argument
+  string to the console and then publish a signal.
+  Each site publication will match the sequential
+  combinator wildcard pattern and cause stop to be
+  evaluated.  Since stop ceases evaluation and
+  publishes nothing, neither of the two signals
+  published internally by the println() site calls
+  will be published as a result of the full expression.
 -}
 ( println("goodbye") | println("world") ) >> stop
 ]]></programlisting>

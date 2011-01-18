@@ -15,8 +15,7 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>Boolean</code></para>
 
-<para>Orc's representation of two-valued logical values are the usual
-<literal>false</literal> and <literal>true</literal>.</para>
+<para>Orc supports boolean values, <code>false</code> and <code>true</code>.</para>
 
 <section xml:id="ref.data.boolean.literals">
 <title>Literals</title>
@@ -34,13 +33,22 @@
 <listitem><para>Logical and: <code>&amp;&amp;</code></para></listitem>
 <listitem><para>Logical or: <code>||</code></para></listitem>
 </itemizedlist>
-as well as the comparison operations:
+as well as the arithmetic relations that yield boolean results:
 <itemizedlist>
 <listitem><para>Less than: <code>&lt;:</code></para></listitem>
 <listitem><para>Greater than: <code>:></code></para></listitem>
 <listitem><para>Less than or equal to: <code>&lt;=</code></para></listitem>
 <listitem><para>Greater than or equal to: <code>>=</code></para></listitem>
+<listitem><para>Equal to: <code>=</code></para></listitem>
+<listitem><para>Not equal to: <code>/=</code></para></listitem>
 </itemizedlist>
+</para>
+
+<para>
+	Note:  Unlike the typical symbols <code>&lt;</code> and <code>&gt;</code>
+	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:></code>
+	respectively.  This usage avoids ambiguity with the 
+	<olink targetdoc="ref.combinators.sequential" targetptr="ref.combinators.sequential">sequential composition combinator</olink>.
 </para>
 
 </section>
