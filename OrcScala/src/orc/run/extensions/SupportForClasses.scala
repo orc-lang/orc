@@ -16,7 +16,7 @@ package orc.run.extensions
 
 import orc.run.Orc
 import orc.ast.oil.nameless.{Expression, Call, Constant}
-import orc.{ OrcOptions, OrcEvent, Handle }
+import orc.{ OrcExecutionOptions, OrcEvent, Handle }
 import orc.error.runtime.ExecutionException
 
 /**
@@ -29,21 +29,18 @@ case class InstanceEvent(c: AnyRef, args: List[AnyRef], caller: Handle) extends 
 
 trait SupportForClasses extends Orc { self =>
  
-  class Execution(_node: Expression, k: OrcEvent => Unit, _options: OrcOptions) extends super.Execution(_node,k,_options) { 
-    override def notify(event: OrcEvent) {
-      event match {
-        case InstanceEvent(closure, args, caller) => {
-          assert(closure.isInstanceOf[self.Closure])
-          val node = Call(Constant(closure), args map Constant, Some(Nil))
-          val exec = new ClassExecution(caller, Execution.this)
-          val t = new Token(node, exec)
-          schedule(t)
-        }
-        case _ => {
-          super.notify(event)
-        }
+  override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
+    val thisHandler = {
+      case InstanceEvent(closure, args, caller) => {
+        assert(closure.isInstanceOf[self.Closure])
+        val node = Call(Constant(closure), args map Constant, Some(Nil))
+        val exec = new ClassExecution(caller, host)
+        val t = new Token(node, exec)
+        schedule(t)
       }
-    }
+    } : PartialFunction[OrcEvent, Unit]
+    
+    thisHandler :: super.generateOrcHandlers(host)
   }
 
   

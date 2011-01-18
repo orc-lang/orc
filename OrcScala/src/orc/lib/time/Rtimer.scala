@@ -37,7 +37,7 @@ class Rtimer extends Site with TypedSite {
   def call(args: List[AnyRef], caller: Handle) {
     args match {
       case List(delay: BigInt) => {
-        caller.notify(RtimerEvent(delay, caller))
+        caller.notifyOrc(RtimerEvent(delay, caller))
       }
       case List(Field("time")) => Rclock
       case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")

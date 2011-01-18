@@ -28,8 +28,8 @@ trait Orc extends OrcRuntime {
   
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
-    val exec = new Execution(node, k, options)
-    val t = new Token(node, exec)
+    val root = new Orc.this.Execution(node, k, options)
+    val t = new Token(node, root)
     schedule(t)
   }
 
@@ -47,7 +47,7 @@ trait Orc extends OrcRuntime {
     def kill: Unit
     def suspend(): Unit
     def resume(): Unit
-    def notify(event: OrcEvent): Unit
+    def notifyOrc(event: OrcEvent): Unit
   }
   
   sealed trait Blocker
@@ -98,17 +98,17 @@ trait Orc extends OrcRuntime {
         case g: Group => g.inhabitants
       }
 
-    /* Find the root of this group tree. By default, a group is its own root. */
-    def root: Execution;
+    /* Find the root of this group tree. */
+    val root: Group
 
   }
 
   abstract class Subgroup(parent: Group) extends Group {
 
     override def kill = synchronized { super.kill; parent.remove(this) }
-    def notify(event: OrcEvent) = parent.notify(event)
+    def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
 
-    override def root = parent.root
+    override val root = parent.root
 
     parent.add(this)
 
@@ -187,11 +187,26 @@ trait Orc extends OrcRuntime {
 
   }
 
+  
+  /* A type alias for orc event handlers */
+  type OrcHandler = PartialFunction[OrcEvent, Unit]
+  
+  
+  
+  
+  /* Generate the list of event handlers for an execution
+   * Traits which add support for more events will override this
+   * method and introduce more handlers.
+   */
+  def generateOrcHandlers(host: Execution): List[OrcHandler] = Nil
+  
+  
+  
   /**
    * An execution is a special toplevel group, 
    * associated with the entire program.
    */
-  class Execution(var node: Expression, k: OrcEvent => Unit, var options: OrcExecutionOptions) extends Group {
+  class Execution(val node: Expression, k: OrcEvent => Unit, val options: OrcExecutionOptions) extends Group {
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
@@ -202,11 +217,16 @@ trait Orc extends OrcRuntime {
       k(HaltedEvent)
     }
 
-    def notify(event: OrcEvent) {
-      k(event)
+    val eventHandler: OrcEvent => Unit = {
+      val handlers = generateOrcHandlers(this)
+      val baseHandler = { case e => k(e) } : PartialFunction[OrcEvent, Unit]
+      def composeOrcHandlers(f: OrcHandler, g: OrcHandler) = f orElse g
+      handlers.foldRight(baseHandler)(composeOrcHandlers)
     }
-
-    override def root = this
+    
+    def notifyOrc(event: OrcEvent) = eventHandler(event)
+    
+    override val root = this
 
   }
 
@@ -334,9 +354,9 @@ trait Orc extends OrcRuntime {
         listener foreach { _ !! e }
       }
     
-    def notify(event: orc.OrcEvent) = 
+    def notifyOrc(event: orc.OrcEvent) = 
       synchronized { 
-        listener foreach { _ notify event }
+        listener foreach { _ notifyOrc event }
       }
     
     def isLive = 
@@ -364,9 +384,9 @@ trait Orc extends OrcRuntime {
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
-    if (group.root.options.maxTokens > 0 && 
-        tokenCount.incrementAndGet > group.root.options.maxTokens)
-      throw new TokenLimitReachedError(group.root.options.maxTokens) 
+    if (group.root.asInstanceOf[Execution].options.maxTokens > 0 && 
+        tokenCount.incrementAndGet > group.root.asInstanceOf[Execution].options.maxTokens)
+      throw new TokenLimitReachedError(group.root.asInstanceOf[Execution].options.maxTokens) 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -385,7 +405,7 @@ trait Orc extends OrcRuntime {
       case Halted | Killed => {}
     }
 
-    def notify(event: OrcEvent) { group.notify(event) }
+    def notifyOrc(event: OrcEvent) { group.notifyOrc(event) }
 
     def kill {
       state match {
@@ -459,7 +479,7 @@ trait Orc extends OrcRuntime {
         case BindingFrame(n) :: fs => { stack = (new BindingFrame(n + 1)) :: fs }
 
         /* Tail call optimization (part 1 of 2) */
-        case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
+        case FunctionFrame(_, _) :: fs if (!group.root.asInstanceOf[Execution].options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
 
         case fs => { stack = BindingFrame(1) :: fs }
       }
@@ -545,12 +565,12 @@ trait Orc extends OrcRuntime {
            * Push a new FunctionFrame 
            * only if the call is not a tail call.
            */
-          case FunctionFrame(_, _) :: fs if (!group.root.options.disableTailCallOpt) => {}
+          case FunctionFrame(_, _) :: fs if (!group.root.asInstanceOf[Execution].options.disableTailCallOpt) => {}
           case _ => {            
             functionFramesPushed = functionFramesPushed + 1
-            if (this.group.root.options.stackSize > 0 && 
-                functionFramesPushed > this.group.root.options.stackSize)
-              throw new StackLimitReachedError(this.group.root.options.stackSize)
+            if (this.group.root.asInstanceOf[Execution].options.stackSize > 0 && 
+                functionFramesPushed > this.group.root.asInstanceOf[Execution].options.stackSize)
+              throw new StackLimitReachedError(this.group.root.asInstanceOf[Execution].options.stackSize)
             push(new FunctionFrame(node, env))
           }
         }
@@ -573,7 +593,7 @@ trait Orc extends OrcRuntime {
         invoke(sh, s, actuals)
       } catch {
         case e: OrcException => this !! e
-        case e => { halt; notify(CaughtEvent(e)) }
+        case e => { halt; notifyOrc(CaughtEvent(e)) }
       }
     }
 
@@ -706,7 +726,7 @@ trait Orc extends OrcRuntime {
         }
         case _ => {} // Not a TokenException; no need to collect backtrace
       }
-      notify(CaughtEvent(e))
+      notifyOrc(CaughtEvent(e))
       halt
     }
 

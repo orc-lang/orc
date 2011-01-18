@@ -84,7 +84,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
  */
 trait Handle {
   
-  def notify(event: OrcEvent): Unit
+  def notifyOrc(event: OrcEvent): Unit
   
   def publish(v: AnyRef): Unit
   def publish(): Unit = { publish(Signal) }

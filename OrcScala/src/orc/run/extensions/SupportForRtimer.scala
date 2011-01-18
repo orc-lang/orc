@@ -17,7 +17,7 @@ package orc.run.extensions
 import orc.run.Orc
 import orc.Handle
 import orc.OrcEvent
-import orc.OrcOptions
+import orc.OrcExecutionOptions
 import java.util.Timer
 import java.util.TimerTask
 import orc.ast.oil.nameless.Expression
@@ -36,20 +36,24 @@ trait SupportForRtimer extends Orc {
   
   override def stop = { timer.cancel() ; super.stop }
   
-  class Execution(_node: Expression, k: OrcEvent => Unit, _options: OrcOptions) extends super.Execution(_node,k,_options) {
-    override def notify(event: OrcEvent) {
-      event match {
-        case RtimerEvent(delay, caller) => {
-          val callback =  
-            new TimerTask() {
-              @Override
-              override def run() { caller.publish() }
-            }
-          timer.schedule(callback, delay.toLong)
-        }
-        case _ => super.notify(event)
-      }
-    }
-  }
+  /* Note that all executions in a runtime with Rtimer support
+   * will share the same timer queue, so that we can stop the
+   * timer when the runtime is shut down.
+   */
   
+  override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
+    val thisHandler = { 
+      case RtimerEvent(delay, caller) => {
+        val callback =  
+          new TimerTask() {
+            @Override
+            override def run() { caller.publish() }
+          }
+        timer.schedule(callback, delay.toLong)
+      }
+    } : PartialFunction[OrcEvent, Unit]
+    
+    thisHandler :: super.generateOrcHandlers(host)
+  }
+    
 }
