@@ -19,7 +19,7 @@
 
 <para>
 A variable can be bound to a value. A declaration binds one or more variables to values.  
-Declarations follow the rules of <lexical scoping.
+Declarations follow the rules of <ulink url="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</ulink>.
 </para>
 
 <xi:include href="ref.declarations.class.xml"/>	

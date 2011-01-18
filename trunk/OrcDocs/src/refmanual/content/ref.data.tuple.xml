@@ -46,13 +46,13 @@ tuple elements.
 
 <para>
 	The value of tuple <code>(e_1, e_2, ..., e_n)</code>, where <code>e_1, e_2, ..., e_n</code> are expressions, is
-	<![CDATA[
+	<programlisting><![CDATA[
 (x_1, x_2, ..., x_n)
    <x_1< e_1
    <x_2< e_2
    ...
    <x_n< e_n
-]]>
+]]></programlisting>
 </para>
 
 <para>
