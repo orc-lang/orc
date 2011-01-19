@@ -21,6 +21,9 @@ There is a special keyword <code>lambda</code> for this purpose. By writing a fu
 definition without the keyword <code>def</code> and replacing the function name with
 the keyword <code>lambda</code>, that definition becomes an expression which evaluates to a closure. 
 </para>
+<para>
+Limitation:  we can use <code>lambda</code> to create a closure only for a function that is not recursive.
+</para>
 	  </section>
 	  <section xml:id="ref.functions.lambda.examples">
 		  <title>Examples</title>

@@ -15,14 +15,40 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>List[T]</code></para>
 
-<para>TODO -- Prof. Misra is working on this section.</para>
+<para>
+A list consists of a finite sequence of values, all of the same type. The
+list may have no item; in that case it is an empty list. An empty list
+is written as [].
+</para>
 
 <section xml:id="ref.data.list.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis> where all expressions are of the same type.</para>
 
-<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
+<para>
+A list is constructed by square-bracket-enclosed comma-separated sequence
+of expressions, provided all the expressions publish values of the
+same type.
+</para>
+
+<para>
+A list construction proceeds by evaluating all the expressions in parallel,
+and using the first publication of each, as if each was under a
+pruning combinator. The list is published when all expressions have
+published a value. If any expression is silent, the list constructor
+is silent. Thus, <code><![CDATA[[e_1, e_2, ..., e_n]]]></code> is equivalent to
+</para>
+
+<para>
+<programlisting language="orc"><![CDATA[
+ [x_1, x_2, ..., x_n]
+  <x_1< e_1
+  <x_2< e_2
+  ...
+  <x_n< e_n
+]]></programlisting>
+</para>
 
 </section>
 
@@ -31,10 +57,11 @@
 
 <para>Notable list operations include:
 <itemizedlist>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para><code>head</code>: applied to a non-empty list, it returns the first item of the list.</para></listitem>
+<listitem><para><code>tail</code>: applied to a non-empty list, it returns the original list without its head.</para></listitem>
+<listitem><para><code>cons</code>: applied to an item h and a list t returns a list whose head is h and tail
+  								   is t. Either t has to be empty or the elements of t have the same
+  								   type as that of h. cons is written as a colon (:) separating h and t.</para></listitem>
 </itemizedlist>
 </para>
 
@@ -52,18 +79,34 @@
 
 
 <example xml:id="ref.data.list.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+<title>Sample Lists</title>
+<programlisting language="orc"><![CDATA[
+[] -- empty list
+[1,2,3] -- a list of integers
+[(1,2),(2,3),(3,4)] -- a list of tuples of integers
+[fib(1),fib(2),fib(3)] -- the list of first 3 fibonacci numbers
+[[1],[2,2],[3,3,3]] -- a list of lists of integers
+
+-- The following are not lists because their elements are not of the
+-- same type.
+  [[2],3,5,7]         [(3,5), 8]          [(3,5), (3,8,2)]    [0,"misra"]
+
+-- The order and number of elements in a list matter. So,
+[2,3] is not the same as  [3,2]
+[2] is not the same as    [2,2]
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.data.list.examples.two">
-<title>TODO:Example2</title>
-<programlisting><![CDATA[
---TODO
-signal
+<title>List Operations</title>
+<programlisting language="orc"><![CDATA[
+head([3]) = 3
+tail([3]) = []
+head([3,2,5]) = 3
+tail([3,2,5]) = [2,5]
+3:[] = [3]
+3:[2,5] = [3,2,5]
+[2,3]: [[1],[2,3,4]] = [[2,3],[1],[2,3,4]]
 ]]></programlisting>
 </example>
 

@@ -16,13 +16,13 @@
 	  <section xml:id="ref.functions.clausal.behavior">
 		  <title>Behavior</title>
 		  <para>
-		  The combination of functions and pattern matching offers a powerful capability: clausal definition of
-functions. We can define expressions which execute different code depending on the structure of their
-arguments.
+		  A function can be defined by a sequence of clauses, where each clause specifies
+		  a pattern of arguments and the code to be executed in case the arguments match
+		  the pattern.
 		  </para>
 		  <para>
 		  A function may have multiple clauses, each of which has a sequence of patterns to match each argument,
-and a body expression. Naturally, all clauses of a function must have the same number of arguments. Any
+and a body expression. All clauses of a function are required to have the same number of arguments. Any
 contiguous sequence of definitions with the same name and different arguments is interpreted as a clausal
 definition, where each individual declaration is a clause of the larger function.
 		  </para>
@@ -50,12 +50,41 @@ def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.functions.clausal.examples.three"><title>Clauses of mutually recursive functions</title>
+		  <example xml:id="ref.functions.clausal.examples.three"><title>Parity</title>
 <programlisting language="orc-demo"><![CDATA[
-def even(0) = true
-def odd(0) = false
-def even(n) = odd(if n > 0 then n-1 else n+1)
-def odd(n) = even(if n > 0 then n-1 else n+1)
+{- Return true if parity of 1s in a binary string is even -}
+def even([]) = true
+def odd([]) = false
+def even("1":xs) = odd(xs)
+def odd("1":xs) = even(xs)
+def even("_":xs) = even(xs)
+def odd("_":xs) = odd(xs)
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.functions.clausal.examples.four"><title>Area</title>
+<programlisting language="orc-demo"><![CDATA[
+{-
+Find the area of a rectangle, square, or circle
+based on the form (="shape", ...)
+-}
+def area(("rect",x,y)) = x*y
+def area(("sq",s)) = area(("rect",s,s))
+def area(("cir",r)) = 3.14 * (r * r)
+
+area(("sq",1))
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.functions.clausal.examples.five"><title>Currying</title>
+<programlisting language="orc-demo"><![CDATA[
+def sum(d,l)(h,p,v) = parts(d,l,h,p,v)
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.functions.clausal.examples.six"><title>Wild-Card</title>
+<programlisting language="orc-demo"><![CDATA[
+def parts23(_,s,h,0,m,n) = 1
 ]]></programlisting>
 		  </example>
 
