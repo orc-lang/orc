@@ -25,11 +25,21 @@ of variable name <code>x</code>).
 		<section xml:id="ref.expressions.val.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.val.examples.one"><title>One Two Sum</title>
+		  <example xml:id="ref.expressions.val.examples.one"><title>Bindings</title>
 <programlisting><![CDATA[
-{- Assign 3 to x and 6 to y -}
-val x = 1 + 2
-val y = x + x
+{- 
+Bind x to true or false arbitrarily 
+Bind y to 2 or 3
+  Note that in the Orc calculus y will always
+  be bound to 2 since Rtimer(2) always publishes
+  before Rtimer(3) and combinators/publications
+  occur instantaneously.  However, depending
+  on the real world implementation and hardware of
+  distributed executions of Orc it is possible that
+  y may be bound to 3. 
+-}
+val x = true | false
+val y = Rtimer(2) >> 2 | Rtimer(3) >> 3
 ]]></programlisting>
 		  </example>
 	  </section>

@@ -74,7 +74,7 @@
 						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to 2 * operators, if possible.) 
 					</para>
 					<para>
-						<code>+ - * / % ** &amp;&amp; || ~ $lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
+						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.body.tokens.delimiters">
@@ -123,7 +123,7 @@
 					</para>
 					<para>
 						<orderedlist>
-							<listitem><para><code>--</code> to end of the line (see newlines, below) </para></listitem>
+							<listitem><para><code>--to end of the line (see newlines, below)</code></para></listitem>
 							<listitem><para><code>{-  multi-line comment body  -}</code></para></listitem>
 						</orderedlist>
 					</para>

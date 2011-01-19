@@ -15,7 +15,7 @@
 		<title>If Then Else</title>
 		<section xml:id="ref.expressions.ifthenelse.body">
 			<para>
-A conditional expression in Cor is of the form 
+A conditional expression in Orc is of the form 
 <code>if</code> E <code>then</code> F <code>else</code> G. 
 Its meaning is similar to that in other languages: the value
 of the expression is the value of F if and only if E evaluates to true, 

@@ -17,11 +17,22 @@
 	
 <title>Patterns</title>
 
-<para>A pattern is a powerful way to bind variables. When writing <code>val</code> declarations, instead of just
+<para>
+A pattern is a tuple whose components may be variables, constants,
+wild cards, or "=N" where N is a variable, or a pattern.
+</para>
+
+<para>
+Patterns may be used in declarations, clausal definitions of functions, etc.
+</para>
+
+<para>
+A pattern is a powerful way to bind variables. When writing <code>val</code> declarations, instead of just
 binding one variable, we can replace the variable name with a more complex pattern that follows the structure of the
 value, and matches its components. A pattern's structure is called its <firstterm>shape</firstterm>; a
 pattern may take the shape of any structured value except a record. A pattern can hierarchically match a value, going deep into its 
-structure. It can also bind an entire structure to a variable.</para>
+structure. It can also bind an entire structure to a variable.
+</para>
 
 <para>
 Patterns are <firstterm>linear</firstterm>; that is, a pattern may mention a variable name at most once. 
