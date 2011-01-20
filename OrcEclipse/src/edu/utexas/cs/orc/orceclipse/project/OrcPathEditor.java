@@ -45,27 +45,37 @@ import org.eclipse.ui.views.navigator.ResourceComparator;
 import edu.utexas.cs.orc.orceclipse.Messages;
 
 /**
+ * A preference field editor for Java path lists. For a preference setting that
+ * is a string composed of file paths separated by the path separator character,
+ * OrcPathEditor presents a UI for adding and removing path list elements. When
+ * a list element is added, the user may choose to add one of four types:
+ * <ol>
+ * <li>A folder located in the current Eclipse workspace</li>
+ * <li>A JAR file located in the current Eclipse workspace</li>
+ * <li>A folder external to the current Eclipse workspace</li>
+ * <li>A JAR file external to the current Eclipse workspace</li>
+ * </ol>
  * 
- *
  * @author jthywiss
  */
-@SuppressWarnings("restriction") //Using three JDT internal classes.
+@SuppressWarnings("restriction") // Using three JDT internal classes.
 public class OrcPathEditor extends PathEditor {
 
-	private static final String[] TYPE_DIALOG_BUTTON_LABELS = {Messages.OrcPathEditor_Folder, Messages.OrcPathEditor_JarFile, Messages.OrcPathEditor_ExternalFolder, Messages.OrcPathEditor_ExternalJarFile};
+	private static final String[] TYPE_DIALOG_BUTTON_LABELS = { Messages.OrcPathEditor_Folder, Messages.OrcPathEditor_JarFile, Messages.OrcPathEditor_ExternalFolder, Messages.OrcPathEditor_ExternalJarFile };
 	private static final String WORKSPACE_PATH_PREFIX = "${workspace_loc}"; //$NON-NLS-1$
-	private String pathDescriptionForDialogMessage;
+	private final String pathDescriptionForDialogMessage;
 	private String lastJarPath;
 
 	/**
 	 * Constructs an object of class OrcPathEditor.
-	 *
-     * @param name the name of the preference this field editor works on
-     * @param labelText the label text of the field editor
-     * @param pathDescriptionForDialogMessage text describing the path (used in UI after "add xxx to ")
-     * @param parent the parent of the field editor's control
+	 * 
+	 * @param name the name of the preference this field editor works on
+	 * @param labelText the label text of the field editor
+	 * @param pathDescriptionForDialogMessage text describing the path (used in
+	 *            UI after "add xxx to ")
+	 * @param parent the parent of the field editor's control
 	 */
-	public OrcPathEditor(String name, String labelText, String pathDescriptionForDialogMessage, Composite parent) {
+	public OrcPathEditor(final String name, final String labelText, final String pathDescriptionForDialogMessage, final Composite parent) {
 		super(name, labelText, Messages.OrcPathEditor_ChooseFolder + pathDescriptionForDialogMessage, parent);
 		this.pathDescriptionForDialogMessage = pathDescriptionForDialogMessage;
 	}
@@ -75,46 +85,47 @@ public class OrcPathEditor extends PathEditor {
 	 */
 	@Override
 	protected String getNewInputObject() {
-		// propmpt dir or JAR
-		MessageDialog typeDialog = new MessageDialog(getShell(), Messages.OrcPathEditor_TypeDialogTitle, null, Messages.OrcPathEditor_TypeDialogMessage1 + pathDescriptionForDialogMessage + Messages.OrcPathEditor_TypeDialogMessage2, MessageDialog.QUESTION, TYPE_DIALOG_BUTTON_LABELS, SWT.DEFAULT);
+		// prompt dir or JAR
+		final MessageDialog typeDialog = new MessageDialog(getShell(), Messages.OrcPathEditor_TypeDialogTitle, null, Messages.OrcPathEditor_TypeDialogMessage1 + pathDescriptionForDialogMessage + Messages.OrcPathEditor_TypeDialogMessage2, MessageDialog.QUESTION, TYPE_DIALOG_BUTTON_LABELS, SWT.DEFAULT);
 		switch (typeDialog.open()) {
-		case 0: //workspace dir:
+		case 0: // workspace dir:
 			return chooseWorkspaceFolder();
-		case 1: //workspace JAR:
+		case 1: // workspace JAR:
 			return chooseWorkspaceJarFile();
-		case 2: //external dir:
-			String selectedFolder = super.getNewInputObject();
+		case 2: // external dir:
+			final String selectedFolder = super.getNewInputObject();
 			if (selectedFolder != null) {
 				return Path.fromOSString(selectedFolder).toPortableString();
 			} else {
 				return null;
 			}
-		case 3: //external JAR:
+		case 3: // external JAR:
 			return chooseExternalJarFile();
-		default: //canceled
+		default: // canceled
 			return null;
 		}
 	}
 
 	private String chooseWorkspaceFolder() {
-		Class[] acceptedClasses = new Class[] { IProject.class, IFolder.class };
+		final Class[] acceptedClasses = new Class[] { IProject.class, IFolder.class };
 
-		ArrayList usedContainers = new ArrayList(getList().getItemCount());
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final ArrayList usedContainers = new ArrayList(getList().getItemCount());
+		final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		for (String pathEntry : getList().getItems()) {
-			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX))
+			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX)) {
 				pathEntry = pathEntry.substring(WORKSPACE_PATH_PREFIX.length());
-			IPath usedEntry = Path.fromPortableString(pathEntry);
-			IResource resource = root.findMember(usedEntry);
+			}
+			final IPath usedEntry = Path.fromPortableString(pathEntry);
+			final IResource resource = root.findMember(usedEntry);
 			if (resource instanceof IContainer) {
 				usedContainers.add(resource);
 			}
 		}
 
-		Object[] used = usedContainers.toArray();
+		final Object[] used = usedContainers.toArray();
 
-		FolderSelectionDialog dialog = new FolderSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
-		//dialog.setExisting(used);
+		final FolderSelectionDialog dialog = new FolderSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
+		// dialog.setExisting(used);
 		dialog.setTitle(Messages.OrcPathEditor_AddFolderTitle);
 		dialog.setMessage(Messages.OrcPathEditor_AddFolderMessage1 + pathDescriptionForDialogMessage + Messages.OrcPathEditor_AddFolderMessage2);
 		dialog.setHelpAvailable(false);
@@ -123,27 +134,28 @@ public class OrcPathEditor extends PathEditor {
 		dialog.setInitialSelection(null);
 
 		if (dialog.open() == Window.OK) {
-			return WORKSPACE_PATH_PREFIX + ((IResource) (dialog.getResult()[0])).getFullPath().toPortableString();
+			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().toPortableString();
 		}
 		return null;
 	}
 
 	private String chooseWorkspaceJarFile() {
-		Class[] acceptedClasses = new Class[] { IFile.class };
-		TypedElementSelectionValidator validator = new TypedElementSelectionValidator(acceptedClasses, true);
-		ArrayList usedJars = new ArrayList(getList().getItemCount());
-		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final Class[] acceptedClasses = new Class[] { IFile.class };
+		final TypedElementSelectionValidator validator = new TypedElementSelectionValidator(acceptedClasses, true);
+		final ArrayList usedJars = new ArrayList(getList().getItemCount());
+		final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		for (String pathEntry : getList().getItems()) {
-			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX))
+			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX)) {
 				pathEntry = pathEntry.substring(WORKSPACE_PATH_PREFIX.length());
-			IPath usedEntry = Path.fromPortableString(pathEntry);
-			IResource resource = root.findMember(usedEntry);
+			}
+			final IPath usedEntry = Path.fromPortableString(pathEntry);
+			final IResource resource = root.findMember(usedEntry);
 			if (resource instanceof IFile) {
 				usedJars.add(resource);
 			}
 		}
 
-		FilteredElementTreeSelectionDialog dialog = new FilteredElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
+		final FilteredElementTreeSelectionDialog dialog = new FilteredElementTreeSelectionDialog(getShell(), new WorkbenchLabelProvider(), new WorkbenchContentProvider());
 		dialog.setHelpAvailable(false);
 		dialog.setValidator(validator);
 		dialog.setTitle(Messages.OrcPathEditor_JarFileDialogTitle);
@@ -156,28 +168,28 @@ public class OrcPathEditor extends PathEditor {
 		dialog.setAllowMultiple(false);
 
 		if (dialog.open() == Window.OK) {
-			return WORKSPACE_PATH_PREFIX + ((IResource) (dialog.getResult()[0])).getFullPath().toPortableString();
+			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().toPortableString();
 		}
 		return null;
 	}
 
 	private String chooseExternalJarFile() {
-		FileDialog jarDialog = new FileDialog(getShell(), SWT.SHEET);
+		final FileDialog jarDialog = new FileDialog(getShell(), SWT.SHEET);
 		if (lastJarPath != null) {
-		    if (new File(lastJarPath).exists()) {
-		    	jarDialog.setFilterPath(lastJarPath);
+			if (new File(lastJarPath).exists()) {
+				jarDialog.setFilterPath(lastJarPath);
 			}
 		}
-		jarDialog.setText(Messages.OrcPathEditor_JarFileDialogTitle); 
+		jarDialog.setText(Messages.OrcPathEditor_JarFileDialogTitle);
 		jarDialog.setFilterExtensions(ArchiveFileFilter.ALL_ARCHIVES_FILTER_EXTENSIONS);
 		jarDialog.setFilterPath(lastJarPath);
 		String file = jarDialog.open();
 		if (file != null) {
-		    file = file.trim();
-		    if (file.length() == 0) {
+			file = file.trim();
+			if (file.length() == 0) {
 				return null;
 			}
-		    lastJarPath = file;
+			lastJarPath = file;
 			return Path.fromOSString(file).toPortableString();
 		} else {
 			return null;
