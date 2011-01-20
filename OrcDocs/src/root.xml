@@ -569,7 +569,7 @@ respect it is silent.
 </section>
 
 
-<section><title>Conditionals</title>
+<section id="cor.conditionals"><title>Conditionals</title>
 
 <para>
 A conditional expression in Cor is of the form 
@@ -2971,7 +2971,7 @@ def class gen_seq(init) =
 	
 </section>
 	
-<section><title>More Class Examples</title>
+<section id="section.language.class.examples"><title>More Class Examples</title>
 
 <para>
 Here we show a few more examples of class usage.
@@ -5501,7 +5501,7 @@ instead varargs may be passed as an array of the appropriate type.
 
 </section>
 
-<section><title>Orc values in Scala</title>
+<section id="section.values.scala"><title>Orc values in Scala</title>
 
 <para>
 Orc values are implemented by Scala objects, so in general any Orc value may be

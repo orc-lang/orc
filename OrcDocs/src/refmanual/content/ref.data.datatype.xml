@@ -107,40 +107,43 @@ type Option[T] = Some(T) | None
 <section xml:id="ref.data.datatype.links">
 <title>Related Links</title>
 
-<informaltable frame="none">
-  <tgroup cols="2" align="left">
-    <thead>
-      <row>
-        <entry align="center">Related Reference Topics</entry>
-        <entry align="center">Related Tutorial Sections</entry>
-      </row>
-    </thead>
-    <tbody valign="top">
-      <row>
-      <!-- 
-        <entry><itemizedlist>
-          <listitem><para><xref linkend="ref.patterns"/></para></listitem>
-          <listitem><para><xref linkend="types.Datatype"/></para></listitem>
-          <listitem><para><xref linkend="library.state.Option"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="section.cor.patterns">Patterns</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="section.orc.?????">Extensions to pattern matching</olink></para></listitem>
-        </itemizedlist></entry>
-        -->
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
-          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
-          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
-        </itemizedlist></entry>
-      </row>
-    </tbody>
-  </tgroup>
-</informaltable>
+	<informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="center">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="root" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="section.orc.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
 
 </section>
 </section>

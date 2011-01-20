@@ -46,3 +46,29 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
       For example:
          <xi:include href="new.xml"/> in "mydocument.xml"
          
+
+PROCEDURES FOR LINKING BETWEEN REFERENCE MANUAL PAGES:
+
+(I assume you have always followed the instructions above for your additional content)
+
+0) Use an olink tag with the targetdoc as the xml:id of the section or
+   chapter to which you are referring and a targetptr as the xml:id of
+   the particular part of the document to which you are referring
+      For example:
+         <olink targetdoc="ref.combinators" targetptr="ref.combinators">TEXT</olink>
+         
+         or
+         
+         <olink targetdoc="ref.combinators.parallel" targetptr="ref.combinators.parallel.behavior">TEXT</olink>
+         
+         
+         
+PROCEDURES FOR LINKING FROM THE REFERENCE MANUAL TO THE USER GUIDE:
+
+(I assume you desire to link to the "all-in-one" single .html user guide)
+
+0) Use an olink tag with the targetdoc as the "root" document and a
+   targetptr as the xml:id of the particular part of the document to
+   which you are referring
+      For example:
+         <olink targetdoc="root" targetptr="section.orc.datatypes">TEXT</olink>

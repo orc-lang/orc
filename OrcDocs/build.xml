@@ -58,7 +58,7 @@
 	<!--
 	  - target:  test
 	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-chunk" description="Test build for modifications.">
+	<target name="test" depends="clean,olinks,rm-build-html-chunk,build-html-single" description="Test build for modifications.">
 		<echo message="Test build complete" />
 	</target>
 	

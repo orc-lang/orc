@@ -76,24 +76,43 @@ g.next() >y> println(y) >> g.next() >y> println(y) >> stop
 	  </section>
 	  <section xml:id="ref.class.links">
 		  <title>Related Links</title>
-		  <informaltable frame='all'>
-			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-			<colspec colname='c1'/>
-			<colspec colname='c2'/> 
-			<thead>
-			<row>
-			  <entry align="center">Related Reference Topics</entry>
-			  <entry align="center">Related Tutorial Sections</entry>
-			</row>
-			</thead>
-			<tbody>
-			<row>
-			  <entry>Combinators</entry>
-			  <entry><olink targetdoc="root" targetptr="special.dot">The . notation</olink></entry>
-			</row>
-			</tbody>
-			</tgroup>
-		  </informaltable>
+		  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="center">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="ref.declarations.class" targetptr="ref.declarations.class">Class Declaration</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF Grammar</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="root" targetptr="section.language.class">Classes</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="section.language.class.examples">Class Examples</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
 	  </section>
 	</section>
    </chapter>
