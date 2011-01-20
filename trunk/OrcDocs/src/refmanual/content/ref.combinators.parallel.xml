@@ -79,7 +79,6 @@ Google("cupcake") | Yahoo("cupcake")
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="ref.combinators" targetptr="ref.combinators">Combinators</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.class" targetptr="ref.class">Class</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

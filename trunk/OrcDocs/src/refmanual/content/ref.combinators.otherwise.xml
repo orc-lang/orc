@@ -85,31 +85,43 @@ Google("cupcake") ; Yahoo("cupcake")
 	  </section>
 	  <section xml:id="ref.combinators.otherwise.links">
 		  <title>Related Links</title>
-		  <informaltable frame='all'>
-			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-			<colspec colname='c1'/>
-			<colspec colname='c2'/> 
-			<thead>
-			<row>
-			  <entry align="center">Related Reference Topics</entry>
-			  <entry align="center">Related Tutorial Sections</entry>
-			</row>
-			</thead>
-			<tbody>
-			<row>
-			  <entry><olink targetdoc="refmanual" targetptr="ref.combinators">Combinators</olink></entry>
-			  <entry><olink targetdoc="root" targetptr="combinators.otherwise">Otherwise Combinator</olink></entry>
-			</row>
-			<row>
-			  <entry><olink targetdoc="refmanual" targetptr="ref.patterns">Patterns</olink></entry>
-			  <entry><olink targetdoc="root" targetptr="patterns.extensions">Pattern Matching Extensions</olink></entry>
-			</row>
-			<row>
-			  <entry><olink targetdoc="refmanual" targetptr="ref.class">Class</olink></entry>
-			  <entry><olink targetdoc="root" targetptr="orc.sites">Sites</olink></entry>
-			</row>
-			</tbody>
-			</tgroup>
-		  </informaltable>
+		  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="center">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="ref.combinators" targetptr="ref.combinators">Combinators</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="root" targetptr="combinators.otherwise">Otherwise Combinator</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="orc.sites">Sites</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+		  
 	  </section>
    </section>

@@ -43,8 +43,7 @@ Orc examples must use the "orc" CSS class.
 		</div>
 	</div>	
 	<noscript>
-		<p>"WARNING:  This example requires Javascript to be rendered correctly."</p>
-		<xsl:apply-templates/>  <!-- Attempt to show the text, even if Javascript not present -->
+		<p>"WARNING:  This example requires Javascript to be rendered correctly.  Please enable it in your browser."</p>
 	</noscript>
 	<!-- Start the box collapsed -->
 	<script type="text/javascript">toggle(document.getElementById('<xsl:value-of select="$ex_link"/>'), '<xsl:value-of select="$ex_content"/>');</script>

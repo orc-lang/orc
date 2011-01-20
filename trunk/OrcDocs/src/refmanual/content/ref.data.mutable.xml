@@ -43,16 +43,43 @@ See the reference manual entries for each of these types for details and example
 <section xml:id="ref.data.mutable.links">
 <title>Related Links</title>
 
-<informaltable frame="none">
-  <tgroup cols="2" align="left">
-    <thead>
-      <row>
-        <entry align="center">Related Reference Topics</entry>
-        <entry align="center">Related Tutorial Sections</entry>
-      </row>
-    </thead>
-    <tbody valign="top">
-      <row>
+	<informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="center">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
+          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+          			<listitem><para><olink targetdoc="root" targetptr="methodology.mutable">Mutable References</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="methodology.channels">Channels</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+
       <!-- 
         <entry><itemizedlist>
           <listitem><para><xref linkend="library.state.Ref"/></code></para></listitem>
@@ -69,18 +96,6 @@ See the reference manual entries for each of these types for details and example
           <listitem><para><olink targetdoc="root" targetptr="methodology.channels">Channels</olink></para></listitem>
         </itemizedlist></entry>
        -->
-       <entry><itemizedlist>
-          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
-          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="ref.data.list" targetptr="ref.data.list">Example:lists</olink></para></listitem>
-          <listitem><para><olink targetdoc="ref.data" targetptr="ref.data">Example:data</olink></para></listitem>
-        </itemizedlist></entry>
-      </row>
-    </tbody>
-  </tgroup>
-</informaltable>
 
 </section>
 
