@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -206,7 +206,10 @@ trait Orc extends OrcRuntime {
    * An execution is a special toplevel group, 
    * associated with the entire program.
    */
-  class Execution(val node: Expression, k: OrcEvent => Unit, val options: OrcExecutionOptions) extends Group {
+  class Execution(private[run] var _node: Expression, k: OrcEvent => Unit, private[run] var _options: OrcExecutionOptions) extends Group {
+
+    def node = _node;
+    def options = _options;
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
