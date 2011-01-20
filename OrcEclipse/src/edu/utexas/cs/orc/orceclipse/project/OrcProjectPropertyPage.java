@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PathEditor;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
@@ -77,8 +76,8 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_TypeCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(OrcConfigSettings.RECURSION_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_RecursionCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(OrcConfigSettings.PRELUDE_ATTR_NAME, Messages.OrcProjectPropertyPage_UseStdPreludeLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new PathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathMessage, getFieldEditorParent()));
-		addField(new PathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SiteClassPathMessage, getFieldEditorParent()));
+		addField(new OrcPathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathDescription, getFieldEditorParent()));
+		addField(new OrcPathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SitePathDescription, getFieldEditorParent()));
 	}
 
 	/* (non-Javadoc)

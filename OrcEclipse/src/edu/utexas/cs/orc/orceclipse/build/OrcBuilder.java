@@ -204,8 +204,7 @@ public class OrcBuilder extends BuilderBase {
 	 */
 	@Override
 	protected boolean isOutputFolder(final IResource resource) {
-		//TODO: This template code from IMP is bogus
-		return resource.getFullPath().lastSegment().equals("bin"); //$NON-NLS-1$
+		return false; // No output folders in Orc projects (for now)
 	}
 
 	/* (non-Javadoc)
