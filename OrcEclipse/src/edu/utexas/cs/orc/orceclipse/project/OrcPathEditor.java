@@ -62,7 +62,7 @@ import edu.utexas.cs.orc.orceclipse.Messages;
 public class OrcPathEditor extends PathEditor {
 
 	private static final String[] TYPE_DIALOG_BUTTON_LABELS = { Messages.OrcPathEditor_Folder, Messages.OrcPathEditor_JarFile, Messages.OrcPathEditor_ExternalFolder, Messages.OrcPathEditor_ExternalJarFile };
-	private static final String WORKSPACE_PATH_PREFIX = "${workspace_loc}"; //$NON-NLS-1$
+	private static final String WORKSPACE_PATH_PREFIX = "${workspaceLoc}"; //$NON-NLS-1$
 	private final String pathDescriptionForDialogMessage;
 	private String lastJarPath;
 
