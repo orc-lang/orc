@@ -68,7 +68,7 @@ they are not essential to the understanding of the language.
 </section> 
 
 
-<section><title>Cor: A Functional Subset</title>
+<section id="cor"><title>Cor: A Functional Subset</title>
 
  
 <para>
@@ -835,7 +835,7 @@ This use of <code>+</code> is left-associative and does not commute.
 </section>
 
 
-<section><title>Patterns</title>
+<section id="section.orc.patterns"><title>Patterns</title>
 
 <para>
 We have seen how to construct data structures. But how do we examine them, and use them? We use <firstterm>patterns</firstterm>.
@@ -954,7 +954,7 @@ def Zero() = 0
 </para>
 
 
-<section><title>Recursion</title>
+<section id="section.orc.recursion"><title>Recursion</title>
 
 <para>
 Functions can be recursive; that is, the name of a function may be used in its own body.
@@ -1024,7 +1024,7 @@ stored variable bindings.
 
 </section>
 
-<section><title>Lambda</title>
+<section id="section.orc.lambda"><title>Lambda</title>
 
 <para>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
@@ -1054,7 +1054,7 @@ a recursive function in this way. Only <code>def</code> can create a recursive f
 </section>
 
 
-<section><title>Clauses</title>
+<section id="section.orc.clauses"><title>Clauses</title>
 
 <para>
 The combination of functions and pattern matching offers a powerful capability: 
@@ -1878,7 +1878,7 @@ of an execution.
 
 
 
-<section><title>Revisiting Cor expressions</title>
+<section id="cor.revisiting"><title>Revisiting Cor expressions</title>
 
 <para>
 Some Cor expressions have new behaviors in the context of Orc, due to the introduction
@@ -2393,7 +2393,7 @@ will recognize this technique as <emphasis>currying</emphasis>.
 </section>
 
 
-<section><title>Currying</title>
+<section id="section.orc.currying"><title>Currying</title>
 
 <para>
 It is sometimes useful to <emphasis>stage</emphasis> the arguments to a function; that is,
@@ -3226,7 +3226,7 @@ in Java.  For complete details of how Orc interacts with Java and Scala, see
 </section>
 
 
-<section><title><code>include</code> declaration</title>
+<section id="section.orc.include"><title><code>include</code> declaration</title>
 
 <para>
 It is often convenient to group related declarations into units that can be

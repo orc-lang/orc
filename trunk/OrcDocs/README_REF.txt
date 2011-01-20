@@ -1,3 +1,21 @@
+TO BUILD THE REFERENCE MANUAL:
+
+(Note it currently only builds on Unix machines)
+
+0) Enter the OrcDocs directory and type the following:
+	
+	ANT_OPTS=-Xmx2G ant rm-build-html-chunk
+	
+   This increases the memory allotted for ANT to 2GB.
+   Also, for a fresh build that updates the links, etc.
+   build the following targets in order:
+     clean
+     olinks
+     rm-build-html-chunk
+   or use the 'test' target and make it depend on the above.
+
+
+
 PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
 
 0) Create and populate a new .xml document
@@ -47,6 +65,7 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
          <xi:include href="new.xml"/> in "mydocument.xml"
          
 
+
 PROCEDURES FOR LINKING BETWEEN REFERENCE MANUAL PAGES:
 
 (I assume you have always followed the instructions above for your additional content)
@@ -72,3 +91,6 @@ PROCEDURES FOR LINKING FROM THE REFERENCE MANUAL TO THE USER GUIDE:
    which you are referring
       For example:
          <olink targetdoc="root" targetptr="section.orc.datatypes">TEXT</olink>
+         
+GOOD RESOURCES:
+The Complete Docbook Guide <http://www.sagehill.net/docbookxsl/>
