@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.3.0",
  org.eclipse.ui.ide,
  org.eclipse.ui.navigator,
  org.eclipse.jface.text,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.eclipse.jdt.ui
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Eclipse-LazyStart: true
@@ -28,6 +29,7 @@ Import-Package: com.ibm.icu.text,
  org.eclipse.jdt.core,
  org.eclipse.jdt.debug.ui.launchConfigurations,
  org.eclipse.jdt.launching,
+ org.eclipse.jdt.ui.wizards,
  org.eclipse.jface.text,
  org.eclipse.jface.text.source,
  org.eclipse.ui.console,
