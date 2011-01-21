@@ -18,12 +18,6 @@ combinators borrowed from Haskell or Scheme.
 --}
 
 {--
-@site apply[A, ..., B](lambda (A, ...) :: B, List[A]) :: B
-Apply a function to a list of arguments.
---}
---FIXME:site apply = "orc.lib.util.Apply"
-
-{--
 @def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C
 Curry a function of two arguments.
 

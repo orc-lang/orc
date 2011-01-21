@@ -17,9 +17,19 @@ Real and logical time.
 
 {--
 @site Rtimer(Integer) :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Publish a signal after the given number of milliseconds.
 
 @method Rtimer.time() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return the current real time in milliseconds, as
 measured from midnight January 1, 1970 UTC.
 Ranges from 0 to <code>Long.MAX_VALUE</code>.
@@ -46,12 +56,22 @@ def Clock() =
 
 {--
 @site Ltimer(Integer) :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Publish a signal after the given number of logical timesteps,
 as measured by the current logical clock.
 The logical time advances whenever the computation controlled
 by the logical clock is quiescent (i.e. cannot advance on its own).
 
 @method Ltimer.time() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return the current logical time, as measured by logical
 clock which was current when <code>Ltimer.time</code> was evaluated.
 Ranges from 0 to <code>Integer.MAX_VALUE</code>.
