@@ -35,7 +35,7 @@ import orc.orchard.events.JobEvent;
 import orc.orchard.events.PrintlnEvent;
 import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
-import orc.orchard.events.RedirectEvent;
+import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.orchard.events.Visitor;
 
@@ -86,7 +86,7 @@ public class ExecutorService extends AbstractExecutorService {
 					}
 
 					@Override
-					public Void visit(final RedirectEvent event) {
+					public Void visit(final BrowseEvent event) {
 						System.err.println("REDIRECT: " + event.url);
 						return null;
 					}

@@ -20,7 +20,7 @@ import java.net.UnknownHostException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.ThreadedPartialSite;
+import orc.values.sites.compatibility.PartialSite;
 
 /**
  * Implement ping using {@link InetAddress#isReachable(int)}. Accepts the host
@@ -34,7 +34,7 @@ import orc.values.sites.compatibility.ThreadedPartialSite;
  * 
  * @author quark
  */
-public class Ping extends ThreadedPartialSite {
+public class Ping extends PartialSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		try {

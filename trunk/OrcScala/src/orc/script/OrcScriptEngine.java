@@ -32,6 +32,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
 import orc.OrcEventAction;
+import orc.OrcEvent;
+import orc.lib.str.PrintEvent;
 import orc.compile.StandardOrcCompiler;
 import orc.run.StandardOrcRuntime;
 import orc.error.OrcException;
@@ -86,16 +88,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			final OrcEventAction addPubToList = new OrcEventAction() {
                 @Override
 				public void published(Object value) { pubs.add(value); }
-                @Override
-				public void printed(String output) {
-					try {
-						ctx.getWriter().write(output);
-						ctx.getWriter().flush();
-					} catch (IOException e) {
-						//Can't happen, according to API spec
-						throw new AssertionError(e);
-					}
-				}
+                
 				@Override
 				public void caught(Throwable e) {
 					//TODO: Consider saving the exception and throwing it out of this eval() invocation.  Can't throw here, because we're in engine when this OrcEventAction is called.
@@ -113,6 +106,20 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				}
 				@Override
 				public void halted() { /* Do nothing */ }
+				
+				@Override
+                public void other(OrcEvent event) {
+                  if (event instanceof PrintEvent) {
+				    try {
+				        PrintEvent pe = (PrintEvent)event;
+				        ctx.getWriter().write(pe.text());
+                        ctx.getWriter().flush();
+                    } catch (IOException e) {
+                        //Can't happen, according to API spec
+                        throw new AssertionError(e);
+                    }
+                  }
+                }
 			};
 			run(ctx, addPubToList);
 			return pubs;

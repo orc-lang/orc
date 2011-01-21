@@ -103,8 +103,6 @@ case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedEvent extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
 
-case class PrintedEvent(s: String) extends OrcEvent
-
 /**
  * An action for a few major events reported by an Orc execution.
  * This is an alternative to receiving <code>OrcEvents</code> for a client
@@ -113,16 +111,16 @@ case class PrintedEvent(s: String) extends OrcEvent
 class OrcEventAction {
   val asFunction: (OrcEvent => Unit) = _ match {
     case PublishedEvent(v) => published(v)
-    case PrintedEvent(s) => printed(s)
     case CaughtEvent(e) => caught(e)
     case HaltedEvent => halted()
-    case _ => {}
+    case event => other(event)
   }
 
   def published(value: AnyRef) {}
-  def printed(output: String) {}
   def caught(e: Throwable) {}
   def halted() {}
+  
+  def other(event: OrcEvent) {}
 }
 
 

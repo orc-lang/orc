@@ -20,7 +20,7 @@ public interface Visitor<E> {
 
 	public E visit(PublicationEvent event);
 
-	public E visit(RedirectEvent event);
+	public E visit(BrowseEvent event);
 
 	public E visit(TokenErrorEvent event);
 }

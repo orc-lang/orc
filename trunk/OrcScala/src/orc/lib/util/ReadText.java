@@ -20,7 +20,7 @@ import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.ThreadedSite;
+import orc.values.sites.compatibility.EvalSite;
 
 /**
  * Read an InputStreamReader into a String. Reads all remaining characters from
@@ -28,7 +28,7 @@ import orc.values.sites.compatibility.ThreadedSite;
  * 
  * @author quark
  */
-public class ReadText extends ThreadedSite {
+public class ReadText extends EvalSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		try {

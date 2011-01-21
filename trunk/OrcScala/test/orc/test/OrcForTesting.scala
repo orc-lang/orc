@@ -28,9 +28,11 @@ import javax.script.ScriptContext.ENGINE_SCOPE
 import javax.script.ScriptException
 import orc.script.OrcBindings
 import orc.script.OrcScriptEngine
+import orc.OrcEvent
 import orc.OrcEventAction
+import orc.lib.str.PrintEvent
 import orc.values.Format
-import orc.error.OrcException
+import orc.error.OrcException 
 
 
 /**
@@ -71,8 +73,24 @@ object OrcForTesting {
           println(Format.formatValue(value))
           Console.out.flush()
         }
-        override def printed(s: String) { print(s); Console.out.flush(); output.append(s) }
-        override def caught(e: Throwable) { println("Error: "+Option(e.getClass.getCanonicalName).getOrElse(e.getClass.getName)+": "+e.getMessage()); Console.out.flush(); output.append("Error: "+e.getClass().getName()+": "+e.getMessage()+"\n") }
+        override def caught(e: Throwable) {
+          val name = Option(e.getClass.getCanonicalName).getOrElse(e.getClass.getName)
+          val msg = "Error: "+name+": "+e.getMessage()
+          println(msg)
+          Console.out.flush()
+          output.append(msg+"\n") 
+        }
+        override def other(event: OrcEvent) {
+          event match {
+            case PrintEvent(text) => {
+              print(text)
+              Console.out.flush()
+              output.append(text)
+            }
+            case e => super.other(e)
+          }
+        }
+        
       }
 
       // run the engine with a fixed timeout

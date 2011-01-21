@@ -14,21 +14,17 @@
 package orc.lib.orchard;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import orc.Handle;
-import orc.OrcRuntime;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
-import orc.lib.orchard.Redirect.Redirectable;
 import orc.oauth.OAuthProvider;
 import orc.orchard.Job;
 import orc.orchard.OrchardOAuthServlet;
-import orc.run.Orc;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 
@@ -44,12 +40,12 @@ public class OAuthProviderSite extends SiteAdaptor {
 	 */
 	public static class WebOAuthProvider extends OAuthProvider {
 		private final Job job;
-		private final Redirectable redirectable;
+		private final Handle caller;
 
-		public WebOAuthProvider(final Job job, final Redirectable redirectable, final String properties) throws IOException {
+		public WebOAuthProvider(final Job job, final Handle caller, final String properties) throws IOException {
 			super(properties);
 			this.job = job;
-			this.redirectable = redirectable;
+			this.caller = caller;
 		}
 
 		@Override
@@ -60,7 +56,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 			// get a request token
 			oauth.obtainRequestToken(accessor, request, callbackURL);
 			// request authorization and wait for response
-			redirectable.redirect(oauth.getAuthorizationURL(accessor, callbackURL));
+			caller.notifyOrc(new orc.lib.web.BrowseEvent(oauth.getAuthorizationURL(accessor, callbackURL)));
 			ready.take();
 			// get the access token
 			oauth.obtainAccessToken(accessor);
@@ -70,15 +66,11 @@ public class OAuthProviderSite extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		final OrcRuntime engine = ((Orc.Token) caller).runtime(); //FIXME:Use OrcEvents, not subclassing for Redirects
-		if (!(engine instanceof Redirectable)) {
-			throw new UnsupportedOperationException("This site is not supported on the engine " + engine.getClass().toString());
-		}
 		try {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			caller.publish(new WebOAuthProvider(Job.getJobFromHandle(caller), (Redirectable) engine,
+			caller.publish(new WebOAuthProvider(Job.getJobFromHandle(caller), caller,
 			// force root-relative resource path
 					"/" + args.stringArg(0)));
 		} catch (final IOException e) {
@@ -86,11 +78,4 @@ public class OAuthProviderSite extends SiteAdaptor {
 		}
 	}
 
-	@SuppressWarnings("unused")
-	private static class MockRedirectable implements Redirectable {
-		@Override
-		public void redirect(final URL url) {
-			System.out.println(url.toExternalForm());
-		}
-	}
 }

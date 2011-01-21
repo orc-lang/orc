@@ -14,13 +14,23 @@
 //
 package orc.run.extensions
 
-import orc.OrcRuntime
+import orc.run.Orc
+import orc.OrcEvent
+import orc.lib.str.PrintEvent
 
 /**
  * 
+ * Direct printed strings to standard output.
  *
  * @author dkitchin
  */
-trait SupportForStdout extends OrcRuntime {
-  //TODO: This should add PrintedEvent to this runtime's event type
+trait SupportForPrintUsingStdout extends Orc {
+  
+  override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
+    val thisHandler = { 
+      case PrintEvent(text) => System.out.print(text)
+    } : PartialFunction[OrcEvent, Unit]
+    
+    thisHandler :: super.generateOrcHandlers(host)
+  }
 }

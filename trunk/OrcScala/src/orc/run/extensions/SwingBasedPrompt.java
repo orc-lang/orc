@@ -2,7 +2,7 @@
 // Prompt.java -- Java class Prompt
 // Project OrcScala
 //
-// $Id$
+// $Id: Prompt.java 2280 2010-12-19 16:47:03Z jthywissen $
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.lib.util;
+package orc.run.extensions;
 
 import java.awt.Dialog.ModalityType;
 import java.awt.event.ComponentAdapter;
@@ -23,46 +23,24 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import orc.error.runtime.JavaException;
-import orc.error.runtime.TokenException;
-import orc.types.Type;
-import orc.values.sites.TypedSite;
-import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.ThreadedPartialSite;
-import orc.values.sites.compatibility.Types;
-
 /**
  * A prompt dialog. Publishes the user's response. If the user hits Cancel,
  * publishes nothing.
  */
-public class Prompt extends ThreadedPartialSite implements TypedSite {
+public class SwingBasedPrompt {
 	protected static final String promptIconName = "orcPromptIcon.png";
-	protected static final Icon promptIcon = new ImageIcon(Prompt.class.getResource(promptIconName));
+	protected static final Icon promptIcon = new ImageIcon(SwingBasedPrompt.class.getResource(promptIconName));
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		final String message = args.stringArg(0);
-		try {
-			return runPromptDialog("Orc", message, promptIcon);
-		} catch (final InterruptedException e) {
-			throw new JavaException(e);
-		}
-	}
-
-	@Override
-	public Type orcType() {
-		return Types.function(Types.string(), Types.string());
-	}
-
-	public String runPromptDialog(final String title, final String message, final Icon icon) throws InterruptedException {
-		final PromptWindowController pwc = new PromptWindowController(title, message, icon);
+	public static String runPromptDialog(final String title, final String message) throws InterruptedException {
+		final PromptWindowController pwc = new PromptWindowController(title, message, promptIcon);
 		// Runs pwc.run on the AWT/Swing event dispatch thread
 		SwingUtilities.invokeLater(pwc);
 		// Blocks until dialog done
 		return pwc.getResult();
 	}
+}
 
-	protected class PromptWindowController implements Runnable {
+class PromptWindowController implements Runnable {
 		private final String title;
 		private final String message;
 		private String result;
@@ -128,5 +106,4 @@ public class Prompt extends ThreadedPartialSite implements TypedSite {
 		public void run() {
 			startDialog();
 		}
-	}
 }

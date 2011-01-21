@@ -23,21 +23,20 @@ import java.util.List;
 import java.util.Map;
 
 import orc.Handle;
+import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.OrcOptions;
 import orc.ast.oil.nameless.Expression;
 import orc.error.OrcException;
 import orc.error.runtime.ExecutionException;
-import orc.lib.orchard.Prompt.PromptCallback;
-import orc.lib.orchard.Prompt.Promptable;
-import orc.lib.orchard.Redirect.Redirectable;
+import orc.lib.util.PromptCallback;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.events.JobEvent;
 import orc.orchard.events.PrintlnEvent;
 import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
-import orc.orchard.events.RedirectEvent;
+import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
@@ -175,7 +174,7 @@ public final class Job implements JobMBean {
 
 	private Date startDate;
 
-	public class JobEngine extends StandardOrcRuntime implements Runnable, Promptable, Redirectable {
+	public class JobEngine extends StandardOrcRuntime implements Runnable {
 		private StringBuffer printBuffer = new StringBuffer();
 		private final Expression expression;
 		private final OrcOptions config;
@@ -209,26 +208,7 @@ public final class Job implements JobMBean {
 			@Override
 			public void published(final Object v) {
 				events.add(new PublicationEvent(v));
-			}
-
-			/** 
-			 * Save prints in a buffer.
-			 * Send completed lines to the event stream.
-			 */
-			@Override
-			public void printed(final String output) {
-				String out = null;
-				synchronized (printBuffer) {
-					printBuffer.append(output);
-					if (output.endsWith("\n")) {
-						out = printBuffer.toString();
-						printBuffer = new StringBuffer();
-					}
-				}
-				if (output.endsWith("\n")) {
-					events.add(new PrintlnEvent(out));
-				}
-			}
+			}			
 
 			/** Send token errors to the event stream. */
 			@Override
@@ -260,9 +240,27 @@ public final class Job implements JobMBean {
 				}
 				events.close();
 			}
+			
+			
+			/** 
+			 * Save prints in a buffer.
+			 * Send completed lines to the event stream.
+			 */
+			@Override
+			public void other(final OrcEvent event) {
+		        if (event instanceof orc.lib.util.PromptEvent) {
+		        	orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent)event;
+		        	prompt(pe.prompt(), pe.callback());
+		        }
+		        else if (event instanceof orc.lib.web.BrowseEvent) {
+		        	orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent)event;
+		        	browse(be.url());
+		        }
+			}
+			
+			
 		}
 
-		@Override
 		public void prompt(final String message, final PromptCallback callback) {
 			int promptID;
 			synchronized (pendingPrompts) {
@@ -272,9 +270,8 @@ public final class Job implements JobMBean {
 			events.add(new PromptEvent(promptID, message));
 		}
 
-		@Override
-		public void redirect(final URL url) {
-			events.add(new RedirectEvent(url));
+		public void browse(final URL url) {
+			events.add(new BrowseEvent(url));
 		}
 	}
 

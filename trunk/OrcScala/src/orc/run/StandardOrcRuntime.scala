@@ -25,7 +25,8 @@ with ManyActorBasedScheduler
 with SupportForRtimer
 with SupportForClasses
 with SupportForSynchronousExecution
-with SupportForStdout
+//with SupportForBrowseUsingSystemBrowser // TODO: Use this in orc.Main and the plugin
+//with SupportForPromptUsingSwing // TODO: Use this in orc.Main and the plugin
 with SwappableASTs 
 
 
