@@ -29,7 +29,7 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.Site;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.ThreadedSite;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -57,7 +57,7 @@ import scala.collection.immutable.List;
  * @author quark
  */
 public class GoogleSearchFactory extends EvalSite {
-	private static class GoogleSearch extends ThreadedSite {
+	private static class GoogleSearch extends EvalSite {
 		private final static String apiURL = "http://ajax.googleapis.com/ajax/services/search/web";
 		private final String apiKey;
 		private final String httpReferer;
@@ -104,7 +104,7 @@ public class GoogleSearchFactory extends EvalSite {
 				final String page;
 				try {
 					page = pages.getJSONObject(i).getString("start");
-					out = makeCons(new ThreadedSite() {
+					out = makeCons(new EvalSite() {
 						@Override
 						public Object evaluate(final Args args) throws TokenException {
 							JSONObject root;

@@ -86,6 +86,50 @@ trait UnimplementedSite extends Site {
 }
 
 
+
+/* Enforce arity, but don't assume totality */
+trait Site0 extends Site {
+  
+  def call(args: List[AnyRef], h: Handle) {
+    args match {
+      case Nil => call(h)
+      case _ => throw new ArityMismatchException(0, args.size)
+    }
+  }
+  
+  def call(h: Handle): Unit
+
+}
+
+trait Site1 extends Site {
+  
+  def call(args: List[AnyRef], h: Handle) {
+    args match {
+      case List(a) => call(a, h)
+      case _ => throw new ArityMismatchException(1, args.size)
+    }
+  }
+  
+  def call(a: AnyRef, h: Handle): Unit
+  
+}
+
+trait Site2 extends Site {
+  
+  def call(args: List[AnyRef], h: Handle) {
+    args match {
+      case List(a,b) => call(a,b,h)
+      case _ => throw new ArityMismatchException(2, args.size)
+    }
+  }
+  
+  def call(a: AnyRef, b: AnyRef, h: Handle): Unit
+  
+}
+
+
+
+/* Enforce arity and totality */
 trait TotalSite0 extends TotalSite {
   
   def evaluate(args: List[AnyRef]): AnyRef = {

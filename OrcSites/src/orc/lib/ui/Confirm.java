@@ -17,13 +17,13 @@ import javax.swing.JOptionPane;
 
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.ThreadedPartialSite;
+import orc.values.sites.compatibility.PartialSite;
 
 /**
  * A Yes/No/Cancel confirmation dialog. "Yes" = true, "No" = false,
  * and "Cancel" = null.
  */
-public class Confirm extends ThreadedPartialSite {
+public class Confirm extends PartialSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final String message = args.stringArg(0);

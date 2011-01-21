@@ -282,7 +282,7 @@ object FoldedCall {
   }
   
   def apply(targetExpression: Expression, argExpressions: List[Expression], typeArgs: Option[List[Type]]): Expression = {
-    Conversions.unfold(targetExpression :: argExpressions, { case target :: args => Call(target, args, typeArgs) })
+    Conversions.unfold(targetExpression :: argExpressions, { x => Call(x.head, x.tail, typeArgs) })
   }
   
 }

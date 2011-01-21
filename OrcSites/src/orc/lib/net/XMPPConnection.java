@@ -22,7 +22,7 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.ThreadedSite;
+import orc.values.sites.compatibility.EvalSite;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -79,7 +79,7 @@ public class XMPPConnection extends EvalSite {
 
 		@Override
 		protected void addMembers() {
-			addMember("connect", new ThreadedSite() {
+			addMember("connect", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					System.out.println(getClass().getSimpleName()+" connect ihc="+System.identityHashCode(this));
@@ -91,7 +91,7 @@ public class XMPPConnection extends EvalSite {
 					return signal();
 				}
 			});
-			addMember("disconnect", new ThreadedSite() {
+			addMember("disconnect", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					System.out.println(getClass().getSimpleName()+" disconnect ihc="+System.identityHashCode(this));
@@ -99,7 +99,7 @@ public class XMPPConnection extends EvalSite {
 					return signal();
 				}
 			});
-			addMember("login", new ThreadedSite() {
+			addMember("login", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					System.out.println(getClass().getSimpleName()+" login ihc="+System.identityHashCode(this));
@@ -121,7 +121,7 @@ public class XMPPConnection extends EvalSite {
 					return signal();
 				}
 			});
-			addMember("chat", new ThreadedSite() {
+			addMember("chat", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					System.out.println(getClass().getSimpleName()+" chat ihc="+System.identityHashCode(this));
@@ -180,7 +180,7 @@ public class XMPPConnection extends EvalSite {
 			/**
 			 * Send a message.
 			 */
-			addMember("send", new ThreadedSite() {
+			addMember("send", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					System.out.println(getClass().getSimpleName()+" send ihc="+System.identityHashCode(this));

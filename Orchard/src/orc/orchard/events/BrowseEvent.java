@@ -15,13 +15,13 @@ package orc.orchard.events;
 
 import java.net.URL;
 
-public class RedirectEvent extends JobEvent {
+public class BrowseEvent extends JobEvent {
 	public URL url;
 
-	public RedirectEvent() {
+	public BrowseEvent() {
 	}
 
-	public RedirectEvent(final URL url) {
+	public BrowseEvent(final URL url) {
 		this.url = url;
 	}
 

@@ -442,7 +442,7 @@ trait Orc extends OrcRuntime {
           state = Live
           schedule(this)
         }
-        case _ => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
+        case _ => { }
       }
     }
     
