@@ -44,6 +44,17 @@ class DocMaker {
     groupLines(s.linesWithSeparators.toList)
   }
   
+	/* Optionally add an xml:id tag to an xml element */
+	def addId(xml: Elem, optionalID: Option[String]): Elem = {
+		optionalID match {
+			case None => xml
+			case Some(id) => {
+			  val idAttribute = new PrefixedAttribute("xml", "id", id, scala.xml.Null)
+        xml.copy(attributes = xml.attributes.append(idAttribute))
+			}
+		}
+	}
+	
   
   def makeDoc(files: List[File]): Node = {
     val leadingComment = {
@@ -54,7 +65,7 @@ class DocMaker {
       { java.text.DateFormat.getDateTimeInstance().format(new java.util.Date()) }
       )
     }
-    <section>
+    <section id="ref.stdlib">
       { leadingComment }
       <title>Reference</title>
       { files map renderSection }
@@ -70,10 +81,13 @@ class DocMaker {
       }
     }
     val optionalSectionName = """\w+""".r.findPrefixOf(f.getName())
-    <section> 
-      <title>{ f.getName() + optionalHeader }</title>
-      { renderItems(docItemList)("", optionalSectionName) }
-    </section>
+    val content = {
+    	<section> 
+        <title>{ f.getName() + optionalHeader }</title>
+        { renderItems(docItemList)("", optionalSectionName) }
+      </section>
+    }
+    addId(content, optionalSectionName map { "ref.stdlib." + _ })
   }
   
   def renderItems(items: List[DocItem])(implicit nextCode: String, optionalSectionName: Option[String]): List[Node] = {
@@ -113,13 +127,6 @@ class DocMaker {
   
     
   def renderDecl(decl: DocDecl)(implicit nextCode: String, optionalSectionName: Option[String]) = {
-  	val content = {
-      <term><code>{ decl.name }</code></term>
-      <listitem>
-        <para><code>{ decl.keyword + decl.typeDeclaration }</code></para>
-        { renderItems(decl.body) }
-      </listitem>
-  	}
   	
   	val optionalId = {
   		"""^\w+$""".r.findPrefixOf(decl.name) match {
@@ -138,19 +145,17 @@ class DocMaker {
   		}
   	}
   	
-  	optionalId match {
-  		case Some(id) => {
-  			<varlistentry xml:id={id}>
-  			  {content}
-  			</varlistentry>
-  		}
-  		case None => {
-  			<varlistentry>
-  			  {content}
-  			</varlistentry>
-  		}
+  	val content = {
+  		<varlistentry>
+  		  <term><code>{ decl.name }</code></term>
+        <listitem>
+  		 	  <para><code>{ decl.keyword + decl.typeDeclaration }</code></para>
+  			  { renderItems(decl.body) }
+  			</listitem>
+  		</varlistentry>
   	}
   	
+  	addId(content, optionalId)
   }  
   
   
