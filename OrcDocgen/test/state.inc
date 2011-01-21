@@ -53,12 +53,30 @@ val c = Cell()
 | Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting>
 
 @method Cell[A].read() :: A
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 Read a value from the cell. If the cell does not yet have a value, block until it receives one.
 
 @method Cell[A].readnb() :: A
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 Read a value from the cell. If the cell does not yet have a value, halt.
 
-@method Cell[A].write() :: Signal
+@method Cell[A].write(A) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 Write a value to the cell. If the cell already has a value, halt.
 --}
 site Cell = orc.lib.state.Cell
@@ -115,23 +133,49 @@ println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
 @method Semaphore.acquire() :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
 
 @method Semaphore.acquirenb() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, halt.
 
 @method Semaphore.release() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
+
 If any calls to <code>acquire</code> are blocked, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
 @method Semaphore.snoop() :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, block until some call to <code>acquire</code> blocks.
 
 @method Semaphore.snoopnb() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 If any calls to <code>acquire</code> are blocked, return a signal.
 Otherwise, halt.
 --}
@@ -159,18 +203,39 @@ val b = Buffer()
 | b.get()]]></programlisting>
 
 @method Buffer[A].get() :: A
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
 
 @method Buffer[A].getnb() :: A
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Get an item from the buffer. If no items are available, halt.
 
 @method Buffer[A].put(A) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Put an item in the buffer. If the buffer is <link
 linkend="orc.lib.Buffer.close">closed</link>, halt.
 
 @method Buffer[A].close() :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 Close the buffer and block until it is empty.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -178,6 +243,13 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.
 
 @method Buffer[A].closenb() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
+
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -185,9 +257,19 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will halt.
 
 @method Buffer[A].isClosed() :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 If the buffer is currently closed, return true, otherwise return false.
 
 @method Buffer[A].getAll() :: List[A]
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
@@ -200,8 +282,7 @@ type Buffer = orc.lib.state.types.BufferType
 @site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
 Create a new buffer (FIFO channel) with the given number of slots.
 Putting an item into the buffer fills a slot, and getting an item opens a slot.
-A buffer with zero slots is equivalent to a
-<link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.
+A buffer with zero slots is equivalent to a synchronous channel.
 
 A bounded buffer may be empty, partly filled, or full, and either open or
 closed.  When empty and open, calls to <code>get</code> block.  When empty and
@@ -221,22 +302,48 @@ val c = BoundedBuffer(1)
   )]]></programlisting>
 
 @method BoundedBuffer[A].get() :: A
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Get an item from the buffer. If the buffer is open and no items are available,
 block until one becomes available. If the buffer is <link
 linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, halt.
 
 @method BoundedBuffer[A].getnb() :: A
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Get an item from the buffer. If no items are available, halt.
 
 @method BoundedBuffer[A].put(A) :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Put an item in the buffer. If no slots are open, block until one becomes open.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
 @method BoundedBuffer[A].putnb(A) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Put an item in the buffer. If no slots are open, halt.
 If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
 
 @method BoundedBuffer[A].close() :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 <!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.BoundedBuffer.close">
 Close the buffer and block until it is empty.
@@ -248,6 +355,12 @@ initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 
 @method BoundedBuffer[A].closenb() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="idempotent"/>
+</sitepropset>
+
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any blocked calls to
 <code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
@@ -256,17 +369,38 @@ will halt, and once the buffer becomes empty, any subsequent calls to
 initiated prior to closing the buffer may still be allowed to return as usual.
 
 @method BoundedBuffer[A].isClosed() :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 If the buffer is currently closed, return true, otherwise return false.
 
 @method BoundedBuffer[A].getOpen() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return the number of open slots in the buffer. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.
 
 @method BoundedBuffer[A].getBound() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Return the total number of slots (open or filled) in the buffer.
 
 @method BoundedBuffer[A].getAll() :: [A]
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Get all of the items currently in the buffer or waiting to be added, emptying
 the buffer and returning a list of the items in the order they were added. If
 there are no items in the buffer or waiting to be added, return an empty list.
@@ -282,7 +416,7 @@ to contain <code>null</code>s.
 
 The resulting array can be called directly with an index, as if
 its type were <code>lambda (Integer) :: Ref[A]</code>.
-In this case, it returns a <link linkend="orc.lib.state.Ref">Ref</link>
+In this case, it returns a <olink targetdoc="root" targetptr="library.state.Ref">Ref</olink>
 pointing to the element of the array specified by an index,
 counting from 0. Changes to the array are reflected immediately
 in the ref and visa versa.
@@ -315,21 +449,48 @@ constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.
 
 @method Array[A].get(Integer) :: A
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
 @method Array[A].set(Integer, A) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
 @method Array[A].slice(Integer, Integer) :: Array[A]
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.
 
 @method Array[A].length? :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Return the size of the array.
 
 @method Array[A].fill(A) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Set every element of the array to the given value. The given value is not
 copied, but is shared by every element of the array, so for example
 <code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
@@ -405,23 +566,53 @@ and only if <code>a=b</code>. This site conforms to the Java interface
 elements rather than Java rules.
 
 @method Set[A].add(A) :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.
 
 @method Set[A].remove(Signal) :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Remove a value from the set, returning true if the set contained the value,
 and false otherwise.
 
 @method Set[A].contains(Signal) :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return true if the set contains the given value, and false otherwise.
 
 @method Set[A].isEmpty() :: Boolean
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return true if the set contains no values.
 
 @method Set[A].clear() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Remove all values from the set.
 
 @method Set[A].size() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return the number of unique values currently contained in the set.
 --}
 class Set = "orc.lib.state.Set"
@@ -435,17 +626,37 @@ Create a new counter initialized to the given value.
 Create a new counter initialized to zero.
 
 @method Counter.inc() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Increment the counter.
 
 @method Counter.dec() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 If the counter is already at zero, halt. Otherwise, decrement
 the counter and return a signal.
 
 @method Counter.onZero() :: Signal
+
+<sitepropset>
+   <siteprop propname="blocking"/>
+</sitepropset>
+
 If the counter is at zero, return a signal. Otherwise
 block until the counter reaches zero.
 
 @method Counter.value() :: Integer
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Return the current value of the counter.
 
 Example:
@@ -461,8 +672,8 @@ type Counter = "orc.lib.state.types.CounterType"
 @site Dictionary() :: Dictionary
 Create a new dictionary (a mutable map from field names to values), initially
 empty.  The first time each field of the dictionary is accessed (using dot
-notation), the dictionary creates and returns a new empty <link
-linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
+notation), the dictionary creates and returns a new empty 
+<olink targetdoc="root" targetptr="library.state.Ref">Ref</olink> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
 object-like data structures.
 
