@@ -65,11 +65,14 @@ class DocMaker {
       { java.text.DateFormat.getDateTimeInstance().format(new java.util.Date()) }
       )
     }
-    <section id="ref.stdlib">
+    <appendix id="ref.stdlib">
       { leadingComment }
       <title>Reference</title>
-      { files map renderSection }
-    </section>
+
+        <xi:include href="ref.stdlib.intro.xml"/>
+
+        { files map renderSection }
+    </appendix>
   } 
     
   def renderSection(f: File) = {
