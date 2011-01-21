@@ -208,12 +208,12 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Cor <olink targetdoc="root" targetptr="cor.constants>constant values</olink> and
+In addition, Cor <olink targetdoc="root" targetptr="cor.constants">constant values</olink> and
 <olink targetdoc="root" targetptr="cor.data">data structures</olink> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
-Note that although values of dUnlesserent types may be compared with
+Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
