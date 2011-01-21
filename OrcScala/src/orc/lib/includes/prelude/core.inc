@@ -20,7 +20,7 @@ followed by the operands.  When the site name is surrounded in parentheses, as
 in <code>(+)</code>, it denotes an infix operator.
 
 For a more complete description of the built-in operators and their syntax, see
-the <link linkend="language.base.operators">Operators</link> section of the
+the <olink targetdoc="root" targetptr="language.base.operators">Operators</olink> section of the
 User Guide.
 --}
 
@@ -35,7 +35,14 @@ type Signal = "orc.types.SignalType"
 
 {--
 @site let() :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 When applied to no arguments, return a signal.
+
 
 @site let(A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
@@ -47,6 +54,12 @@ site let = "orc.lib.builtin.Let"
 
 {--
 @site If(Boolean) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Fail silently if the argument is false. Otherwise return a signal.
 
 Example:
@@ -54,11 +67,18 @@ Example:
 -- Publishes: "Always publishes"
   If(false) >> "Never publishes"
 | If(true) >> "Always publishes"]]></programlisting>
+
 --}
 site If = "orc.lib.builtin.If"
 
 {--
 @site Unless(Boolean) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Fail silently if the argument is true. Otherwise return a signal.
 
 Example:
@@ -80,6 +100,11 @@ site IfFalse = "orc.lib.builtin.Unless"
 
 {--
 @site error(String) :: Bot
+
+<sitepropset>   
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Halt with the given error message.
 
 Example, using <code>error</code> to implement assertions:
@@ -183,8 +208,8 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Cor <link linkend="cor.constants">constant values</link> and <link
-linkend="cor.data">data structures</link> are considered equal if their
+In addition, Cor <olink targetdoc="root" targetptr="cor.constants>constant values</olink> and
+<olink targetdoc="root" targetptr="cor.data">data structures</olink> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 

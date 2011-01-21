@@ -53,6 +53,11 @@ Example:
 
 {--
 @site print(Top) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
 Print a value as a string to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
@@ -64,6 +69,12 @@ def println(s) = print(s + "\n")
 
 {--
 @site read[A](String) :: A
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
 the argument does not conform to Orc literal syntax,
@@ -80,6 +91,12 @@ site read = "orc.lib.str.Read"
 
 {--
 @site write(Top) :: String
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+   <siteprop propname="pure"/>
+</sitepropset>
+
 Given an Orc value, return its string representation
 using standard Orc literal syntax.  If the value is
 of a type with no literal syntax,
