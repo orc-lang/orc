@@ -3,7 +3,7 @@
 	<name>OrcSites</name>
 	<comment></comment>
 	<projects>
-		<project>OrcJava</project>
+		<project>OrcScala</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
