@@ -31,11 +31,11 @@ import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.InvalidProgramException;
 import orc.orchard.errors.InvalidPromptException;
 import orc.orchard.errors.QuotaException;
+import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.JobEvent;
 import orc.orchard.events.PrintlnEvent;
 import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
-import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.orchard.events.Visitor;
 

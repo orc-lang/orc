@@ -29,7 +29,6 @@ import orc.error.runtime.TokenException;
 import orc.values.sites.Site;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.EvalSite;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;

@@ -30,6 +30,7 @@ public class OrcLaunchConfigurationTabGroup extends AbstractLaunchConfigurationT
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchConfigurationTabGroup#createTabs(org.eclipse.debug.ui.ILaunchConfigurationDialog, java.lang.String)
 	 */
+	@Override
 	public void createTabs(final ILaunchConfigurationDialog dialog, final String mode) {
 		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { 
 				new OrcGeneralLaunchConfigurationTab(),
