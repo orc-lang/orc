@@ -272,7 +272,7 @@ public final class Job implements JobMBean {
 		}
 	}
 
-	private final int nextPromptID = 1;
+	private int nextPromptID = 1;
 	private final Map<Integer, PromptCallback> pendingPrompts = new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
 	private final JobEngine engine;
