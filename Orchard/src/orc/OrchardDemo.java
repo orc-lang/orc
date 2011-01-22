@@ -13,6 +13,7 @@
 
 package orc;
 
+import java.awt.Desktop;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +27,6 @@ import org.mortbay.jetty.handler.HandlerCollection;
 import org.mortbay.jetty.j2se6.JettyHttpServerProvider;
 import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.jetty.webapp.WebAppContext;
-
-import com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
  * Run this from the command line to start a standalone Orchard demonstration.
@@ -92,6 +91,6 @@ public class OrchardDemo {
 		server.setStopAtShutdown(true);
 		server.start();
 
-		BareBonesBrowserLaunch.openURL("http://localhost:" + PORT + "/demo.shtml");
+		Desktop.getDesktop().browse(new URI("http://localhost:" + PORT + "/demo.shtml"));
 	}
 }

@@ -13,9 +13,11 @@
 
 package orc.oauth;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -41,8 +43,6 @@ import net.oauth.OAuthProblemException;
 import net.oauth.client.OAuthClient;
 import net.oauth.http.HttpResponseMessage;
 import net.oauth.signature.RSA_SHA1;
-
-import com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
  * Wrapper around the OAuth libraries which should simplify using them.
@@ -149,7 +149,7 @@ public class SimpleOAuth {
 	 * @throws OAuthException
 	 * @throws URISyntaxException
 	 */
-	private OAuthMessage invoke(final OAuthAccessor accessor, final String url, final Collection<? extends Map.Entry<?,?>> parameters, final int maxRedirects) throws IOException, OAuthException, URISyntaxException {
+	private OAuthMessage invoke(final OAuthAccessor accessor, final String url, final Collection<? extends Map.Entry<?, ?>> parameters, final int maxRedirects) throws IOException, OAuthException, URISyntaxException {
 		if (maxRedirects < 0) {
 			throw new OAuthException("Maximum number of redirects reached");
 		}
@@ -381,15 +381,16 @@ public class SimpleOAuth {
 	 * @param args
 	 * @throws IOException
 	 * @throws OAuthException
+	 * @throws URISyntaxException 
 	 */
-	public static void main(final String[] args) throws IOException, OAuthException {
+	public static void main(final String[] args) throws IOException, OAuthException, URISyntaxException {
 		// create a request token
 		SimpleOAuth oauth;
 		oauth = new SimpleOAuth("/oauth.properties");
 		final OAuthAccessor accessor = oauth.newAccessor("google");
 		oauth.obtainRequestToken(accessor, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"), null);
 		// prompt the user for authorization
-		BareBonesBrowserLaunch.openURL(oauth.getAuthorizationURL(accessor).toExternalForm());
+		Desktop.getDesktop().browse(new URI(oauth.getAuthorizationURL(accessor).toExternalForm()));
 		final int ok = JOptionPane.showConfirmDialog(null, "Did you authorize the token?");
 		if (ok != 0) {
 			System.exit(1);

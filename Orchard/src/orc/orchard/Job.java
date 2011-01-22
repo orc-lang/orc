@@ -32,11 +32,11 @@ import orc.error.runtime.ExecutionException;
 import orc.lib.util.PromptCallback;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
+import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.JobEvent;
 import orc.orchard.events.PrintlnEvent;
 import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
-import orc.orchard.events.BrowseEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
@@ -175,7 +175,7 @@ public final class Job implements JobMBean {
 	private Date startDate;
 
 	public class JobEngine extends StandardOrcRuntime implements Runnable {
-		private StringBuffer printBuffer = new StringBuffer();
+		private final StringBuffer printBuffer = new StringBuffer();
 		private final Expression expression;
 		private final OrcOptions config;
 
@@ -208,7 +208,7 @@ public final class Job implements JobMBean {
 			@Override
 			public void published(final Object v) {
 				events.add(new PublicationEvent(v));
-			}			
+			}
 
 			/** Send token errors to the event stream. */
 			@Override
@@ -240,29 +240,26 @@ public final class Job implements JobMBean {
 				}
 				events.close();
 			}
-			
-			
+
 			/** 
 			 * Save prints in a buffer.
 			 * Send completed lines to the event stream.
 			 */
 			@Override
 			public void other(final OrcEvent event) {
-		        if (event instanceof orc.lib.util.PromptEvent) {
-		        	orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent)event;
-		        	prompt(pe.prompt(), pe.callback());
-		        }
-		        else if (event instanceof orc.lib.web.BrowseEvent) {
-		        	orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent)event;
-		        	browse(be.url());
-		        }
+				if (event instanceof orc.lib.util.PromptEvent) {
+					final orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent) event;
+					prompt(pe.prompt(), pe.callback());
+				} else if (event instanceof orc.lib.web.BrowseEvent) {
+					final orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent) event;
+					browse(be.url());
+				}
 			}
-			
-			
+
 		}
 
 		public void prompt(final String message, final PromptCallback callback) {
-			int promptID;
+			final int promptID;
 			synchronized (pendingPrompts) {
 				promptID = nextPromptID++;
 				pendingPrompts.put(promptID, callback);
@@ -275,7 +272,7 @@ public final class Job implements JobMBean {
 		}
 	}
 
-	private int nextPromptID = 1;
+	private final int nextPromptID = 1;
 	private final Map<Integer, PromptCallback> pendingPrompts = new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
 	private final JobEngine engine;

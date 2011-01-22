@@ -13,7 +13,9 @@
 
 package orc.lib.ui;
 
+import java.awt.Desktop;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -22,8 +24,6 @@ import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import orc.oauth.OAuthProvider;
-
-import com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
  * This provider uses Java UI stuff to launch a browser
@@ -41,7 +41,7 @@ public class GuiOAuthProvider extends OAuthProvider {
 		// prompt the user for authorization;
 		// do not provide a callback URL
 		final String authURL = oauth.getAuthorizationURL(accessor, null).toExternalForm();
-		BareBonesBrowserLaunch.openURL(authURL);
+		Desktop.getDesktop().browse(new URI(authURL));
 		final int ok = JOptionPane.showConfirmDialog(null, "Your browser should open and ask you to" + " confirm authorization.\n\nPlease click Yes once" + " you have confirmed authorization.");
 		if (ok != 0) {
 			throw new OAuthException("Authorization refused by user.");
