@@ -326,15 +326,20 @@ trait Orc extends OrcRuntime {
   ////////
 
   sealed trait TokenState
+  /** Token is ready to make progress */
   case object Live extends TokenState
-  
+  /** Token is waiting on another task */
   case class Blocked(blocker: Blocker) extends TokenState
-  
+  /** Token has been told to suspend, but it's still in the scheduler queue */
   case class Suspending(prevState: TokenState) extends TokenState
+  /** Suspended Tokens must be re-scheduled upon resume */
   case class Suspended(prevState: TokenState) extends TokenState
+  /** Token halted itself */
   case object Halted extends TokenState
-  case object Killed extends TokenState
-  case class Published(v: AnyRef) extends TokenState
+  /** Token killed by engine */
+  case object Killed extends TokenState 
+  /** Live Token with a value to propagate */
+  case class Published(v: AnyRef) extends TokenState 
 
   class SiteCallHandle(caller: Token, calledSite: AnyRef) extends Handle with Blocker {
     
@@ -432,7 +437,7 @@ trait Orc extends OrcRuntime {
     def blockOn(blocker: Blocker) = synchronized {
       state match {
         case Live => state = Blocked(blocker)
-        case _ => throw new AssertionError("Only live tokens may be blocked")
+        case _ => throw new AssertionError("Only live tokens may be blocked: state="+state)
       }
     }
       
@@ -442,14 +447,23 @@ trait Orc extends OrcRuntime {
           state = Live
           schedule(this)
         }
-        case _ => { }
+        case Suspending(Blocked(_ : Region)) => {
+          state = Suspending(Live)
+          schedule(this)
+        }
+        case Suspended(Blocked(_ : Region)) => {
+          state = Suspended(Live)
+        }
+        case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
+        case Killed => {}
+        case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state="+state) }
       }
     }
     
     def suspend() = synchronized {
       state match {
-        case Live => state = Suspending(state)
-        case Published(_) | Blocked(_) | Suspending(_) | Suspended(_) | Halted | Killed => {}
+        case Live | Blocked(_) | Published(_) => state = Suspending(state)
+        case Suspending(_) | Suspended(_) | Halted | Killed => {}
       }
     }
 
@@ -697,12 +711,18 @@ trait Orc extends OrcRuntime {
     def publish(v: AnyRef) {
       state match {
         case Blocked(_ : Region) => throw new AssertionError("publish on a pending Token")
-        case Live | Suspending(_) | Blocked(_) => {
+        case Live | Blocked(_) => {
           state = Published(v)
           schedule(this)
         }
+        case Suspending(_) => {
+          state = Suspending(Published(v))
+          schedule(this)
+        }
+        case Suspended(_) => {
+          state = Suspended(Published(v))
+        }
         case Published(_) => throw new AssertionError("Already published!")
-        case Suspended(_) => throw new AssertionError("publish on a suspended Token")
         case Halted | Killed => {}
       }
     }
