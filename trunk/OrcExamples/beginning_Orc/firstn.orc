@@ -7,9 +7,13 @@ def firstN[A](Integer, Buffer[A]) :: List[A]
 def firstN(0, c) = []
 def firstN(n, c) = c.get() >x> x:firstN(n-1, c)
 
+def putn(c, n) =
+  def putni(c, n, i) = if (i <: n) then c.put(i) >> putni(c, n, i+1) else stop
+  putni(c, n, 0)
+
 val c = Buffer[Integer]()
   firstN(5, c)
-| upto(10) >n> c.put(n) >> stop
+| putn(c, 10) >> stop
 
 {-
 OUTPUT:
