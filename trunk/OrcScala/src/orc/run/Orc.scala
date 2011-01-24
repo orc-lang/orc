@@ -25,15 +25,14 @@ import scala.actors.Actor
 import scala.actors.Actor._
 
 trait Orc extends OrcRuntime {
-  
-  val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
+
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val root = new Orc.this.Execution(node, k, options)
     val t = new Token(node, root)
     schedule(t)
   }
 
-  def stop = { Killer ! "exit" /* By default, do nothing on stop. */ }
+  def stop() = { Killer ! "exit" /* By default, do nothing on stop. */ }
 
   ////////
   // Groups
@@ -44,19 +43,19 @@ trait Orc extends OrcRuntime {
   // Different combinators make use of different Group subclasses.
 
   sealed trait GroupMember {
-    def kill: Unit
+    def kill(): Unit
     def suspend(): Unit
     def resume(): Unit
     def notifyOrc(event: OrcEvent): Unit
   }
-  
+
   sealed trait Blocker
 
   object Killer extends Actor {
     def act() {
       loop {
         react {
-          case x: GroupMember => x.kill
+          case x: GroupMember => x.kill()
           case "exit" => this.exit
         }
       }
@@ -66,14 +65,14 @@ trait Orc extends OrcRuntime {
 
   trait Group extends GroupMember {
     def publish(t: Token, v: AnyRef): Unit
-    def onHalt: Unit
+    def onHalt(): Unit
 
     var members: Set[GroupMember] = Set()
 
     def halt(t: Token) = synchronized { remove(t) }
 
     /* Note: this is _not_ lazy termination */
-    def kill = synchronized {
+    def kill() = synchronized {
       for (m <- members) Killer ! m
     }
 
@@ -85,11 +84,28 @@ trait Orc extends OrcRuntime {
       for (m <- members) m.resume()
     }
 
-    def add(m: GroupMember) = synchronized { members.add(m) }
+    def add(m: GroupMember) {
+      synchronized {
+        members.add(m)
+      }
+      m match {
+        case t: Token if (root.options.maxTokens > 0) => {
+          if (root.tokenCount.incrementAndGet() > root.options.maxTokens)
+                  throw new TokenLimitReachedError(root.options.maxTokens)
+        }
+        case _ => {}
+      }
+    }
 
-    def remove(m: GroupMember) = synchronized {
-      members.remove(m)
-      if (members.isEmpty) { onHalt }
+    def remove(m: GroupMember) {
+      synchronized {
+        members.remove(m)
+        if (members.isEmpty) { onHalt }
+      }
+      m match {
+        case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
+        case _ => {}
+      }
     }
 
     def inhabitants: List[Token] =
@@ -105,7 +121,7 @@ trait Orc extends OrcRuntime {
 
   abstract class Subgroup(parent: Group) extends Group {
 
-    override def kill = synchronized { super.kill; parent.remove(this) }
+    override def kill() = synchronized { super.kill(); parent.remove(this) }
     def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
 
     override val root = parent.root
@@ -129,15 +145,15 @@ trait Orc extends OrcRuntime {
       state match {
         case Unbound(waitlist) => {
           state = Bound(v)
-          t.halt
-          this.kill
+          t.halt()
+          this.kill()
           for (t <- waitlist) { t.publish(Some(v)) }
         }
-        case _ => t.halt
+        case _ => t.halt()
       }
     }
 
-    def onHalt = synchronized {
+    def onHalt() = synchronized {
       state match {
         case Unbound(waitlist) => {
           state = Dead
@@ -171,39 +187,34 @@ trait Orc extends OrcRuntime {
      *    None: One or more publications has left this region.
      */
     t.blockOn(this)
-    
+
     var pending: Option[Token] = Some(t)
 
     def publish(t: Token, v: AnyRef) = synchronized {
-      pending foreach { _.halt } // Remove t from its group
+      pending foreach { _.halt() } // Remove t from its group
       pending = None
       t.migrate(parent).publish(v)
     }
 
-    def onHalt = synchronized {
+    def onHalt() = synchronized {
       pending foreach { _.unblock }
       parent.remove(this)
     }
 
   }
 
-  
-  /* A type alias for orc event handlers */
+  /** A type alias for Orc event handlers */
   type OrcHandler = PartialFunction[OrcEvent, Unit]
-  
-  
-  
-  
-  /* Generate the list of event handlers for an execution
+
+  /**
+   * Generate the list of event handlers for an execution
    * Traits which add support for more events will override this
    * method and introduce more handlers.
    */
   def generateOrcHandlers(host: Execution): List[OrcHandler] = Nil
-  
-  
-  
+
   /**
-   * An execution is a special toplevel group, 
+   * An execution is a special toplevel group,
    * associated with the entire program.
    */
   class Execution(private[run] var _node: Expression, k: OrcEvent => Unit, private[run] var _options: OrcExecutionOptions) extends Group {
@@ -211,24 +222,26 @@ trait Orc extends OrcRuntime {
     def node = _node;
     def options = _options;
 
+    val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
+
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
-      t.halt
+      t.halt()
     }
 
-    def onHalt = synchronized {
+    def onHalt() = synchronized {
       k(HaltedEvent)
     }
 
     val eventHandler: OrcEvent => Unit = {
       val handlers = generateOrcHandlers(this)
-      val baseHandler = { case e => k(e) } : PartialFunction[OrcEvent, Unit]
+      val baseHandler = { case e => k(e) }: PartialFunction[OrcEvent, Unit]
       def composeOrcHandlers(f: OrcHandler, g: OrcHandler) = f orElse g
       handlers.foldRight(baseHandler)(composeOrcHandlers)
     }
-    
+
     def notifyOrc(event: OrcEvent) = eventHandler(event)
-    
+
     override val root = this
 
   }
@@ -262,15 +275,15 @@ trait Orc extends OrcRuntime {
     //      val subdef = defs(pos).subst(context map { Some(_) })
     //      }
     //    val myName = new BoundVar()
-    //    val defNames = 
-    //      for (d <- defs) yield 
+    //    val defNames =
+    //      for (d <- defs) yield
     //        if (d == this) { myName } else { new BoundVar() }
     //    val namedDef = namelessToNamed(myName, subdef, defNames, Nil)
     //    val pp = new PrettyPrint()
     //    "lambda" +
-    //      pp.reduce(namedDef.name) + 
-    //        pp.paren(namedDef.formals) + 
-    //          " = " + 
+    //      pp.reduce(namedDef.name) +
+    //        pp.paren(namedDef.formals) +
+    //          " = " +
     //            pp.reduce(namedDef.body)
     //    }
 
@@ -337,48 +350,48 @@ trait Orc extends OrcRuntime {
   /** Token halted itself */
   case object Halted extends TokenState
   /** Token killed by engine */
-  case object Killed extends TokenState 
+  case object Killed extends TokenState
   /** Live Token with a value to propagate */
-  case class Published(v: AnyRef) extends TokenState 
+  case class Published(v: AnyRef) extends TokenState
 
   class SiteCallHandle(caller: Token, calledSite: AnyRef) extends Handle with Blocker {
-    
+
     caller.blockOn(this)
-   
+
     var listener: Option[Token] = Some(caller)
-    
-    def publish(v: AnyRef) = 
-      synchronized { 
+
+    def publish(v: AnyRef) =
+      synchronized {
         listener foreach { _ publish v }
       }
-    
-    def halt = 
-      synchronized { 
-        listener foreach { _.halt }
+
+    def halt() =
+      synchronized {
+        listener foreach { _.halt() }
       }
-    
-    def !!(e: OrcException) = 
-      synchronized { 
+
+    def !!(e: OrcException) =
+      synchronized {
         listener foreach { _ !! e }
       }
-    
-    def notifyOrc(event: orc.OrcEvent) = 
-      synchronized { 
+
+    def notifyOrc(event: orc.OrcEvent) =
+      synchronized {
         listener foreach { _ notifyOrc event }
       }
-    
-    def isLive = 
-      synchronized { 
+
+    def isLive =
+      synchronized {
         listener.isDefined
       }
-    
-    def kill = 
-      synchronized { 
+
+    def kill() =
+      synchronized {
         listener = None
       }
-    
-  }  
-  
+
+  }
+
   class Token private (
     var node: Expression,
     var stack: List[Frame] = Nil,
@@ -386,18 +399,16 @@ trait Orc extends OrcRuntime {
     var group: Group,
     var state: TokenState = Live) extends GroupMember {
 
-    def token = this
-    var functionFramesPushed : Int = 0;
+    var functionFramesPushed: Int = 0;
+
     /** Public constructor */
     def this(start: Expression, g: Group) = {
       this(node = start, group = g, stack = List(GroupFrame))
     }
-    
+
+    def runtime = Orc.this
+
     def options = group.root.options
-    
-    if (options.maxTokens > 0 && 
-        tokenCount.incrementAndGet > options.maxTokens)
-      throw new TokenLimitReachedError(options.maxTokens) 
 
     /** Copy constructor with defaults */
     private def copy(
@@ -406,7 +417,7 @@ trait Orc extends OrcRuntime {
       env: List[Binding] = env,
       group: Group = group,
       state: TokenState = state): Token = {
-      
+
       new Token(node, stack, env, group, state)
     }
 
@@ -418,40 +429,39 @@ trait Orc extends OrcRuntime {
 
     def notifyOrc(event: OrcEvent) { group.notifyOrc(event) }
 
-    def kill {
+    def kill() = synchronized {
       state match {
         case Published(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => {
           state match {
-            case Blocked(handle: SiteCallHandle) => handle.kill
+            case Blocked(handle: SiteCallHandle) => handle.kill()
             case _ => { }
           }
-          
+
           state = Killed
           group.halt(this)
         }
         case Halted | Killed => {}
       }
-      tokenCount.decrementAndGet()
     }
-    
+
     def blockOn(blocker: Blocker) = synchronized {
       state match {
         case Live => state = Blocked(blocker)
         case _ => throw new AssertionError("Only live tokens may be blocked: state="+state)
       }
     }
-      
-    def unblock = synchronized {
+
+    def unblock() = synchronized {
       state match {
-        case Blocked(_ : Region) => {
+        case Blocked(_: Region) => {
           state = Live
           schedule(this)
         }
-        case Suspending(Blocked(_ : Region)) => {
+        case Suspending(Blocked(_: Region)) => {
           state = Suspending(Live)
           schedule(this)
         }
-        case Suspended(Blocked(_ : Region)) => {
+        case Suspended(Blocked(_: Region)) => {
           state = Suspended(Live)
         }
         case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
@@ -459,7 +469,7 @@ trait Orc extends OrcRuntime {
         case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state="+state) }
       }
     }
-    
+
     def suspend() = synchronized {
       state match {
         case Live | Blocked(_) | Published(_) => state = Suspending(state)
@@ -478,7 +488,7 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def fork = (this, copy())
+    def fork() = (this, copy())
 
     def move(e: Expression) = { node = e; this }
 
@@ -517,23 +527,23 @@ trait Orc extends OrcRuntime {
      * Attempt to resolve a binding to a value.
      * When the binding resolves to v, call k(v).
      * (If it is already resolved, k is called immediately)
-     * 
+     *
      * If the binding resolves to a halt, halt this token.
      */
     def resolve(b: Binding)(k: AnyRef => Unit) {
       resolveOptional(b) {
         case Some(v) => k(v)
-        case None => halt
+        case None => halt()
       }
     }
 
-    /** 
+    /**
      * Attempt to resolve a binding to a value.
      * When the binding resolves to v, call k(Some(v)).
      * (If it is already resolved, k is called immediately)
-     * 
+     *
      * If the binding resolves to a halt, call k(None).
-     * 
+     *
      * Note that resolving a closure also encloses its context.
      */
     def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
@@ -551,7 +561,7 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    /** 
+    /**
      * Create a new Closure object whose lexical bindings are all resolved and replaced.
      * Such a closure will have no references to any Groupcell.
      * This object is then passed to the continuation.
@@ -568,39 +578,38 @@ trait Orc extends OrcRuntime {
     def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
       if (params.size != d.arity) {
         this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
-      }
-      else {
-      
+      } else {
+
         /* 1) If this is not a tail call, push a function frame referring to the current environment.
          * 2) Change the current environment to the closure's saved environment.
          * 3) Add bindings for the arguments to the new current environment.
-         * 
+         *
          * Caution: The ordering of these operations is very important;
-         *          do not permute them.    
+         *          do not permute them.
          */
-  
+
         /* Tail call optimization (part 2 of 2) */
         stack match {
           /*
-           * Push a new FunctionFrame 
+           * Push a new FunctionFrame
            * only if the call is not a tail call.
            */
           case FunctionFrame(_, _) :: fs if (!options.disableTailCallOpt) => {}
-          case _ => {            
+          case _ => {
             functionFramesPushed = functionFramesPushed + 1
-            if (options.stackSize > 0 && 
+            if (options.stackSize > 0 &&
                 functionFramesPushed > options.stackSize)
               throw new StackLimitReachedError(options.stackSize)
             push(new FunctionFrame(node, env))
           }
         }
-  
+
         /* Jump into the function context */
         this.env = context
-  
+
         /* Bind the args */
         for (p <- params) { bind(p) }
-  
+
         /* Jump into the function body */
         schedule(this.move(d.body))
       }
@@ -613,13 +622,13 @@ trait Orc extends OrcRuntime {
         invoke(sh, s, actuals)
       } catch {
         case e: OrcException => this !! e
-        case e => { halt; notifyOrc(CaughtEvent(e)) }
+        case e => { halt(); notifyOrc(CaughtEvent(e)) }
       }
     }
 
     def isLive = state = Live
 
-    def run {
+    def run() {
       var runNode = false
       synchronized {
         state match {
@@ -648,9 +657,9 @@ trait Orc extends OrcRuntime {
 
     def eval(node: orc.ast.oil.nameless.Expression) {
       node match {
-        case Stop() => halt
+        case Stop() => halt()
 
-        case Hole(_, _) => halt
+        case Hole(_, _) => halt()
 
         case (a: Argument) => resolve(lookup(a)) { publish }
 
@@ -691,8 +700,8 @@ trait Orc extends OrcRuntime {
 
         case decldefs@DeclareDefs(openvars, defs, body) => {
           /* Closure compaction: Bind only the free variables
-             * of the defs in this lexical context. 
-             */
+           * of the defs in this lexical context.
+           */
           val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
           for (i <- defs.indices) {
             bind(BoundValue(Closure(defs, i, lexicalContext)))
@@ -710,7 +719,7 @@ trait Orc extends OrcRuntime {
 
     def publish(v: AnyRef) {
       state match {
-        case Blocked(_ : Region) => throw new AssertionError("publish on a pending Token")
+        case Blocked(_: Region) => throw new AssertionError("publish on a pending Token")
         case Live | Blocked(_) => {
           state = Published(v)
           schedule(this)
@@ -727,14 +736,14 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def halt {
+    def halt() {
       state match {
         case Published(_) | Live | Blocked(_) | Suspending(_) => {
           state match {
-            case Blocked(handle: SiteCallHandle) => handle.kill
+            case Blocked(handle: SiteCallHandle) => handle.kill()
             case _ => { }
           }
-          
+
           state = Halted
           group.halt(this)
         }
@@ -753,10 +762,8 @@ trait Orc extends OrcRuntime {
         case _ => {} // Not a TokenException; no need to collect backtrace
       }
       notifyOrc(CaughtEvent(e))
-      halt
+      halt()
     }
-
-    val runtime = Orc.this
 
   }
 
