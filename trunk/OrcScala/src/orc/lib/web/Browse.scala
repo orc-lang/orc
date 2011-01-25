@@ -1,5 +1,5 @@
 //
-// Print.scala -- Scala class/trait/object Print
+// Browse.scala -- Scala class/trait/object Browse
 // Project OrcScala
 //
 // $Id$
