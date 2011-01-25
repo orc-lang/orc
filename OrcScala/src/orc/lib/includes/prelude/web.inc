@@ -2,7 +2,7 @@
 -- web.inc -- Orc standard prelude include, web section
 -- Project OrcScala
 --
--- $Id: util.inc 2364 2011-01-24 07:16:15Z dkitchin $
+-- $Id$
 --
 -- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
