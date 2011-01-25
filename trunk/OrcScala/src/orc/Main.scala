@@ -25,7 +25,7 @@ import orc.values.Format
 import orc.util.CmdLineParser
 import orc.util.CmdLineUsageException
 import orc.util.PrintVersionAndMessageException
-import orc.lib.str.PrintEvent
+import orc.run.OrcDesktopEventAction
 
 /**
  * A command-line tool invocation of the Orc compiler and runtime engine
@@ -50,18 +50,9 @@ object Main {
       
       if (options.compileOnly) { return }
       
-      val printPubs = new OrcEventAction() {
+      val printPubs = new OrcDesktopEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
         override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err, options.showJavaStackTrace); Console.err.flush() }
-        override def other(event: OrcEvent) {
-          event match {
-            case PrintEvent(text) => {
-              print(text)
-              Console.out.flush()
-            }
-            case e => super.other(e)
-          }
-        }
       }
       compiledOrc.run(printPubs)
       

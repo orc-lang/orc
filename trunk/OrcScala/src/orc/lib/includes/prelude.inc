@@ -19,3 +19,5 @@ include "prelude/list.inc"
 include "prelude/text.inc"
 include "prelude/util.inc"
 include "prelude/reflect.inc"
+include "prelude/web.inc"
+

@@ -186,4 +186,3 @@ on the lock. Similar to Java's synchronized keyword.
 
 def synchronized[A](Semaphore, lambda () :: A)() :: A
 def synchronized(s,f)() = withLock(s, f)
-

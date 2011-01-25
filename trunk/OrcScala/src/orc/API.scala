@@ -79,6 +79,13 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def schedule(t: Token, u: Token) { schedule(List(t, u)) }
 }
 
+/* Define invocation behaviors for a runtime */
+trait InvocationBehavior extends OrcRuntime {
+  /* By default, an invocation halts silently. This will be overridden by other traits. */
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
+}
+
+
 /**
  * The interface through which the environment response to site calls.
  */
@@ -120,6 +127,7 @@ class OrcEventAction {
   def caught(e: Throwable) {}
   def halted() {}
   
+  @throws(classOf[Exception])
   def other(event: OrcEvent) {}
 }
 
