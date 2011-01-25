@@ -1,10 +1,10 @@
 //
-// Prompt.java -- Java class Prompt
+// SwingBasedPrompt.java -- Java class SwingBasedPrompt
 // Project OrcScala
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
