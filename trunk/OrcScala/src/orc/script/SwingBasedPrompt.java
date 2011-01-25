@@ -2,7 +2,7 @@
 // Prompt.java -- Java class Prompt
 // Project OrcScala
 //
-// $Id: Prompt.java 2280 2010-12-19 16:47:03Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
