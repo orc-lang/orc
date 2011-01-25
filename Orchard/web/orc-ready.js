@@ -62,10 +62,9 @@ function escapeHtml(v) {
 }
 
 /**
- * Despite the name this doesn't actually redirect,
- * it justs opens a new window.
+ * Opens a new browser window.
  */
-function redirect(url) {
+function browse(url) {
 	if (!open(url)) {
 		if (currentWidget) currentWidget.stopOrc();
 		alert("This Orc program needs to open a browser window.\n\n"+
@@ -478,8 +477,8 @@ function orcify(code, defaultConfig) {
 				case "ns2:promptEvent":
 					onPrompt(v);
 					break;
-				case "ns2:redirectEvent":
-					redirect(v.url);
+				case "ns2:browseEvent":
+					browse(v.url);
 					break;
 				}
 			});

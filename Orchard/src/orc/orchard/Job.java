@@ -13,7 +13,6 @@
 
 package orc.orchard;
 
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Date;
 import java.util.HashMap;
@@ -246,30 +245,34 @@ public final class Job implements JobMBean {
 			 * Send completed lines to the event stream.
 			 */
 			@Override
-			public void other(final OrcEvent event) {
-				if (event instanceof orc.lib.util.PromptEvent) {
-					final orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent) event;
-					prompt(pe.prompt(), pe.callback());
-				} else if (event instanceof orc.lib.web.BrowseEvent) {
-					final orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent) event;
-					browse(be.url());
-				}
+			public void other(final OrcEvent event) throws Exception {
+		        if (event instanceof orc.lib.util.PromptEvent) {
+		        	orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent)event;
+		        	int promptID;
+					synchronized (pendingPrompts) {
+						promptID = nextPromptID++;
+						pendingPrompts.put(promptID, pe.callback());
+					}
+					System.out.println("Queueing prompt event with " + promptID + " " + pe.prompt());
+					events.add(new PromptEvent(promptID, pe.prompt()));
+		        }
+		        else if (event instanceof orc.lib.web.BrowseEvent) {
+		        	orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent)event;
+		        	System.out.println("Queueing browse event with " + be.url());
+		        	events.add(new BrowseEvent(be.url()));
+		        }
+		        else if (event instanceof orc.lib.str.PrintEvent) {
+		        	orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent)event;
+		        	System.out.println("Queueing print event with " + pe.text());
+		        	events.add(new PrintlnEvent(pe.text()));
+		        }
+		        else {
+		        	super.other(event);
+		        }
 			}
 
 		}
 
-		public void prompt(final String message, final PromptCallback callback) {
-			final int promptID;
-			synchronized (pendingPrompts) {
-				promptID = nextPromptID++;
-				pendingPrompts.put(promptID, callback);
-			}
-			events.add(new PromptEvent(promptID, message));
-		}
-
-		public void browse(final URL url) {
-			events.add(new BrowseEvent(url));
-		}
 	}
 
 	private int nextPromptID = 1;

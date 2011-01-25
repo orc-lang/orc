@@ -22,6 +22,6 @@ def WebPrompt(title, fields) =
   map(group.addPart, fields) >>
   form.addPart(group) >>
   SendForm(form) >receiver>
-  Redirect(receiver.getURL()) >>
+  Browse(receiver.getURL()) >>
   receiver.get() >>
   form.getValue().get("main")

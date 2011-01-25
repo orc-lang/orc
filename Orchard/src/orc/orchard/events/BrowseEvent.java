@@ -1,5 +1,5 @@
 //
-// RedirectEvent.java -- Java class RedirectEvent
+// BrowseEvent.java -- Java class BrowseEvent
 // Project Orchard
 //
 // $Id$
