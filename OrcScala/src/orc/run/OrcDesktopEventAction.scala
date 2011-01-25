@@ -1,10 +1,10 @@
 //
-// SupportForPromptUsingSwing.scala -- Scala class/trait/object SupportForPromptUsingSwing
+// OrcDesktopEventAction.scala -- Scala class/trait/object OrcDesktopEventAction
 // Project OrcScala
 //
 // $Id$
 //
-// Created by dkitchin on Jan 20, 2011.
+// Created by dkitchin on Jan 24, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
@@ -12,22 +12,32 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.run.extensions
+package orc.run
 
-import orc.run.Orc
+import orc.OrcEventAction
 import orc.OrcEvent
-import orc.lib.util.PromptEvent
 import orc.script.SwingBasedPrompt
+import orc.lib.util.PromptEvent
+import orc.lib.str.PrintEvent
+import orc.lib.web.BrowseEvent
 
 /**
  * 
  *
  * @author dkitchin
  */
-trait SupportForPromptUsingSwing extends Orc {
 
-  override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
-    val thisHandler = { 
+class OrcDesktopEventAction extends OrcEventAction with OrcDesktopActions
+
+trait OrcDesktopActions extends OrcEventAction {
+
+  @throws(classOf[Exception])
+  override def other(event: OrcEvent) {
+    event match {
+      case PrintEvent(text) => {
+        Console.out.print(text)
+        Console.out.flush()
+      }
       case PromptEvent(prompt, callback) => {
         val response = SwingBasedPrompt.runPromptDialog("Orc", prompt)
         if (response != null) {
@@ -37,9 +47,11 @@ trait SupportForPromptUsingSwing extends Orc {
           callback.cancelPrompt()
         }
       }
-    } : PartialFunction[OrcEvent, Unit]
-    
-    thisHandler :: super.generateOrcHandlers(host)
+      case BrowseEvent(url) => {
+        java.awt.Desktop.getDesktop().browse(url.toURI())
+      }
+      case e => super.other(e)
+    }
   }
   
   

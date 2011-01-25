@@ -240,7 +240,7 @@ trait Orc extends OrcRuntime {
       handlers.foldRight(baseHandler)(composeOrcHandlers)
     }
 
-    def notifyOrc(event: OrcEvent) = eventHandler(event)
+    def notifyOrc(event: OrcEvent) = { eventHandler(event) }
 
     override val root = this
 
@@ -488,7 +488,7 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def fork() = (this, copy())
+    def fork() = { (this, copy()) }
 
     def move(e: Expression) = { node = e; this }
 
@@ -516,12 +516,13 @@ trait Orc extends OrcRuntime {
       this
     }
 
-    def lookup(a: Argument): Binding =
+    def lookup(a: Argument): Binding = {
       a match {
         case Constant(v) => BoundValue(v)
         case Variable(n) => env(n)
         case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
       }
+    }
 
     /**
      * Attempt to resolve a binding to a value.
@@ -626,7 +627,7 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def isLive = state = Live
+    def isLive = { state = Live }
 
     def run() {
       var runNode = false

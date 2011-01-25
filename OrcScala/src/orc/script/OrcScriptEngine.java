@@ -15,10 +15,10 @@
 
 package orc.script;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.PrintWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,12 +31,13 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
-import orc.OrcEventAction;
 import orc.OrcEvent;
-import orc.lib.str.PrintEvent;
+import orc.OrcEventAction;
 import orc.compile.StandardOrcCompiler;
-import orc.run.StandardOrcRuntime;
 import orc.error.OrcException;
+import orc.lib.str.PrintEvent;
+import orc.run.OrcDesktopEventAction;
+import orc.run.StandardOrcRuntime;
 
 /**
  * @author jthywiss
@@ -85,7 +86,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		@Override
 		public Object eval(final ScriptContext ctx) throws ScriptException {
 			final List<Object> pubs = new ArrayList<Object>();
-			final OrcEventAction addPubToList = new OrcEventAction() {
+			final OrcEventAction addPubToList = new OrcDesktopEventAction() {
                 @Override
 				public void published(Object value) { pubs.add(value); }
                 
@@ -108,7 +109,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				public void halted() { /* Do nothing */ }
 				
 				@Override
-                public void other(OrcEvent event) {
+                public void other(OrcEvent event) throws Exception {
                   if (event instanceof PrintEvent) {
 				    try {
 				        PrintEvent pe = (PrintEvent)event;
@@ -118,6 +119,9 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
                         //Can't happen, according to API spec
                         throw new AssertionError(e);
                     }
+                  }
+                  else {
+                    super.other(event);
                   }
                 }
 			};

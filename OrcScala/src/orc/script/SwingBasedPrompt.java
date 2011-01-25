@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.extensions;
+package orc.script;
 
 import java.awt.Dialog.ModalityType;
 import java.awt.event.ComponentAdapter;

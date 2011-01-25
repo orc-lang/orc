@@ -25,14 +25,5 @@ with ManyActorBasedScheduler
 with SupportForRtimer
 with SupportForClasses
 with SupportForSynchronousExecution
-//with SupportForBrowseUsingSystemBrowser // TODO: Use this in orc.Main and the plugin
-//with SupportForPromptUsingSwing // TODO: Use this in orc.Main and the plugin
 with SwappableASTs 
 
-
-/* The first behavior in the trait list will be tried last */
-trait StandardInvocationBehavior extends InvocationBehavior
-with ErrorOnUndefinedInvocation
-with SupportForSiteInvocation
-with SupportForJavaObjectInvocation
-with SupportForXMLInvocation
