@@ -60,6 +60,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def oilOutputFile_=(newVal: Option[File]) = putString("orc.oilOutputFile", newVal.map(_.toString).getOrElse(""))
   def compileOnly: Boolean = getBoolean("orc.onlyCompile", false)
   def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
+  def runOil: Boolean = getBoolean("orc.runOil", false)
+  def runOil_=(newVal: Boolean) = putBoolean("orc.runOil", newVal)
   
   // Execution options
   def classPath: java.util.List[String] = getPathList("orc.classPath", List())

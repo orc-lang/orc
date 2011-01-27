@@ -165,6 +165,8 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def oilOutputFile_=(newVal: Option[File])
   def compileOnly: Boolean
   def compileOnly_=(newVal: Boolean)
+  def runOil: Boolean
+  def runOil_=(newVal: Boolean)
 }
 
 trait OrcExecutionOptions extends OrcCommonOptions {

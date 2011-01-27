@@ -63,9 +63,7 @@ For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
 --}
 site print = "orc.lib.str.Print"
-
-def println(String) :: Signal
-def println(s) = print(s + "\n")
+site println = "orc.lib.str.Println"
 
 {--
 @site read[A](String) :: A

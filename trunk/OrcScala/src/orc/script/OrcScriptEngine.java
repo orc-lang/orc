@@ -43,7 +43,7 @@ import orc.run.StandardOrcRuntime;
  * @author jthywiss
  */
 public class OrcScriptEngine extends AbstractScriptEngine implements Compilable {
-
+  
 	private OrcScriptEngineFactory factory;
 	private StandardOrcCompiler compiler;
 	private StandardOrcRuntime executor;
@@ -193,7 +193,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	public CompiledScript compile(final String script) throws ScriptException {
 		return compile(new StringReader(script));
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see javax.script.Compilable#compile(java.io.Reader)
 	 */
@@ -303,5 +303,14 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			return new OrcBindings(b);
 		}
 	}
+
+	/** 
+	 * Pass an AST directly, skipping compilation.
+	 * Used when loading OIL rather than compiling from source. 
+	 */
+	public OrcCompiledScript loadDirectly(final orc.ast.oil.nameless.Expression oilAstRoot) {
+      return new OrcCompiledScript(oilAstRoot);
+    }
+
 
 }
