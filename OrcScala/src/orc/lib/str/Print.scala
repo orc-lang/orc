@@ -31,7 +31,7 @@ import orc.OrcEvent
 
 case class PrintEvent(val text: String) extends OrcEvent
 
-object Print extends Site1 with TypedSite {
+abstract class PrintSite extends Site1 with TypedSite {
 
   def call(a: AnyRef, h: Handle) = {
     h.notifyOrc(PrintEvent(a.toString()))
@@ -39,5 +39,14 @@ object Print extends Site1 with TypedSite {
   }
   
   def orcType = SimpleFunctionType(Top, SignalType)
+  
+}
+
+object Print extends PrintSite
+object Println extends PrintSite {
+  
+  override def call(a: AnyRef, h: Handle) {
+    super.call(a.toString() + "\n", h)
+  }
   
 }

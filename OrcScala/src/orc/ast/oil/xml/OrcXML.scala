@@ -24,6 +24,7 @@ import scala.collection.immutable.HashMap
 import scala.math.BigInt
 import scala.math.BigDecimal
 import orc.ast.hasOptionalVariableName
+import orc.error.compiletime.LoadingException
 
 
 object OrcXML {
@@ -112,9 +113,10 @@ object OrcXML {
   }
   
   def xmlToAst(xml: Node): Expression = {
-    xml match {
-      case <oil>{body}</oil> => fromXML(body)
-      // If the file has been schema-validated, this match will always succeed.
+    val root: Seq[Elem] = xml collect { case e: Elem => trimElem(e) }
+    root.toList match {
+      case List(<oil>{body}</oil>) => fromXML(body)
+      case _ => throw new LoadingException("Root element must be <oil>...</oil> and must be unique")
     }
   }
   
@@ -128,14 +130,26 @@ object OrcXML {
     XML.write(writer, xml, "UTF-8", true, null)
     writer.close()
   }
-  
+   
   
   def trimElem(x: Elem): Elem =  {
-      val nc = x.child filter {a => 
-          if (a.isInstanceOf[Text] && a.text.trim == "") false
-          else true
-      } map {a => if (a.isInstanceOf[Elem]) trimElem(a.asInstanceOf[Elem]) else a}
-      x.copy(child=nc)
+    x match {
+      /* Strings are protected from trim operations */
+      case <string>{_*}</string> => x
+      case _ => {
+        val noWhitespace = x.child filter
+          {
+            case t: Text if t.text.trim == "" => false
+            case _ => true 
+          }
+        val newchild = noWhitespace map
+          {
+            case e: Elem => trimElem(e)
+            case y => y 
+          }
+        x.copy(child=newchild)
+      }
+    }
   }
   
   
@@ -266,9 +280,9 @@ object OrcXML {
   
   def anyToXML(a: Any): Elem = {
     a match {
-      case i@ (_:Int | _:Short | _:Long | _:Char | _:BigInt) => <integer>{i}</integer> 
-      case n@ (_:Float | _:Double | _:BigDecimal) => <number>{n}</number> 
-      case s:String => <string>{a}</string>
+      case i@ (_:Int | _:Short | _:Long | _:Char | _:BigInt) => <integer>{i.toString()}</integer> 
+      case n@ (_:Float | _:Double | _:BigDecimal) => <number>{n.toString()}</number> 
+      case s:String => <string>{s}</string>
       case true => <true/>
       case false => <false/>
       case orc.values.Signal => <signal/>
@@ -299,7 +313,7 @@ object OrcXML {
       case <site>{c@ _*}</site> => {
         orc.values.sites.OrcSiteForm.resolve(c.text.trim)
       }
-      case _ =>  throw new Error("Could not interpret " + inxml.toString + " as an Orc value.")
+      case other => throw new LoadingException("XML fragment " + other + " could not be converted to an Orc value")
     }
   }
   
@@ -315,7 +329,6 @@ object OrcXML {
   
   def fromXML(xml: scala.xml.Node): Expression = {
     xml --> {
-      case <orc>{prog}</orc> => fromXML(prog)
       case <stop/> => Stop()
       case <parallel><left>{left}</left><right>{right}</right></parallel> => 
         Parallel(fromXML(left), fromXML(right))
@@ -325,7 +338,7 @@ object OrcXML {
         Prune(fromXML(left), fromXML(right))
       case <otherwise><left>{left}</left><right>{right}</right></otherwise> => 
         Otherwise(fromXML(left), fromXML(right))
-      case <declaredefs><unclosedvars>{uvars}</unclosedvars><defs>{defs@ _*}</defs><body>{body}</body></declaredefs> => {
+      case <declaredefs><unclosedvars>{uvars@ _*}</unclosedvars><defs>{defs@ _*}</defs><body>{body}</body></declaredefs> => {
           val t1 = {
             uvars.text.split(" ").toList match {
               case List("") => Nil
@@ -367,6 +380,7 @@ object OrcXML {
       }
       case <constant>{c}</constant> => Constant(anyRefFromXML(c))
       case x@ <variable/> => Variable((x \ "@index").text.toInt)
+      case other => throw new LoadingException("XML fragment " + other + " could not be converted to an Orc expression")
     }  
   }
   
@@ -374,6 +388,7 @@ object OrcXML {
     xml --> {
       case <constant>{c}</constant> => Constant(anyRefFromXML(c))
       case x@ <variable/> => Variable((x \ "@index").text.toInt)
+      case other => throw new LoadingException("XML fragment " + other + " could not be converted to an Orc argument")
     }
   }
   
@@ -392,6 +407,7 @@ object OrcXML {
         }
         Def(typeFormalArity, arity, fromXML(body), argTypes, returnType)
       }   
+      case other => throw new LoadingException("XML fragment " + other + " could not be converted to an Orc definition")
     }
   }
   
@@ -436,6 +452,7 @@ object OrcXML {
            }
         VariantType(typeFormalArity, newVariants.toList)
       }
+      case other => throw new LoadingException("XML fragment " + other + " could not be converted to an Orc type")
     }
   }
   

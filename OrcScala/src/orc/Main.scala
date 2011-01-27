@@ -26,6 +26,7 @@ import orc.util.CmdLineParser
 import orc.util.CmdLineUsageException
 import orc.util.PrintVersionAndMessageException
 import orc.run.OrcDesktopEventAction
+import orc.ast.oil.xml.OrcXML
 
 /**
  * A command-line tool invocation of the Orc compiler and runtime engine
@@ -45,10 +46,26 @@ object Main {
       if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
       engine.setBindings(options, ENGINE_SCOPE)
       
-      val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
-      val compiledOrc = engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+      val stream = new FileInputStream(options.filename)
       
-      if (options.compileOnly) { return }
+      val compiledOrc = 
+        if (options.runOil) {
+          /* Read precompiled OIL */
+          val ast = OrcXML.readOilFromStream(stream)
+          engine.asInstanceOf[OrcScriptEngine].loadDirectly(ast)
+        }
+        else {
+          /* Read and compile Orc source */
+          val reader = new InputStreamReader(stream, "UTF-8")
+          engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+        }
+      
+      if (options.compileOnly) { 
+        if (options.runOil) { 
+          Console.err.println("Warning: run-oil ignored since compile-only was also set.") 
+        }
+        return 
+      }
       
       val printPubs = new OrcDesktopEventAction() {
         override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
@@ -125,6 +142,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   FileOpt(()=>oilOutputFile.getOrElse(null), f => oilOutputFile=Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
+  UnitOpt(()=>runOil, ()=>runOil=true, ' ', "run-oil", usage = "Attempt to parse the given program as an OIL file and run it. This performs no compilation steps.")
+  
   UnitOpt(()=>compileOnly, ()=>compileOnly=true, 'c', "compile-only", usage = "Compile this program, but do not run it.")
 
   UnitOpt(()=>showJavaStackTrace, ()=>showJavaStackTrace=true, ' ', "java-stack-trace", usage = "Show Java stack traces on thrown Java exceptions.")

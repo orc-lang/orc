@@ -60,6 +60,11 @@ class ParsingException(val message: String, val errorPos: Position)
   extends SyntacticException(message) 
   with SeverityFatal { this.resetPosition(errorPos) }
   
+/**
+ * Problem loading a compiled representation of an Orc program (such as OIL). 
+ */
+class LoadingException(val message: String) extends SyntacticException(message) with SeverityFatal
+
 
 /**
  * A pattern, or set of pattern arguments, mentions the same variable more than once.
