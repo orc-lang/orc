@@ -17,6 +17,15 @@ def makeSet(items) =
   map(s.add, items) >> s
 
 {-
+Map a function over a Java set.
+-}
+def mapSet(f, s) =
+  val t = Set()
+  val it = s.iterator()
+  repeat(If(it.hasNext()) >> t.add(f(it.next())))
+
+
+{-
 Start a philosopher process; never publishes.
 
 name: identify this process in status messages
@@ -51,7 +60,7 @@ def philosopher(name, mbox, missing) =
   def thinking() =
     def on(("rumble", _)) =
       Println(name + " hungry") >>
-      map(requestFork, missing) >>
+      mapSet(requestFork, missing) >>
       hungry()
     def on(("request", p)) =
       sendFork(p) >>
