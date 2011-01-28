@@ -28,7 +28,7 @@ def balance(in, out, ps) =
 val in = Buffer[inType]()
 val out = Buffer[outType]()
 def compute(Integer) :: siteType
-def compute(n)(x) = println("Site " + n) >> x*x
+def compute(n)(x) = Println("Site " + n) >> x*x
 
 signal >>
 ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])

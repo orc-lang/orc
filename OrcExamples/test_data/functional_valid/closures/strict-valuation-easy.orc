@@ -10,11 +10,11 @@
  -}
 val x = Rtimer(500) >> 23
 
-Rtimer(250) >> println("250ms") >> stop
+Rtimer(250) >> Println("250ms") >> stop
 |
 (
   def f() = x
-  f >> println("closure of f created") >> stop
+  f >> Println("closure of f created") >> stop
 )
 
 {-

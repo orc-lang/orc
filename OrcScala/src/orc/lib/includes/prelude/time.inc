@@ -12,7 +12,7 @@
 --
 
 {--
-Real and logical time.
+Real and virtual time.
 --}
 
 {--
@@ -55,55 +55,27 @@ def Clock() =
   lambda () = Rtimer.time() - time
 
 {--
-@site Ltimer(Integer) :: Signal
+@site Vtimer(Integer) :: Signal
 
 <sitepropset>
    <siteprop propname="blocking"/>
 </sitepropset>
 
-Publish a signal after the given number of logical timesteps,
-as measured by the current logical clock.
-The logical time advances whenever the computation controlled
-by the logical clock is quiescent (i.e. cannot advance on its own).
+Publish a signal after the given amount of virtual time.
 
-@method Ltimer.time() :: Integer
+@site Vclock() :: Integer
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
 
-Return the current logical time, as measured by logical
-clock which was current when <code>Ltimer.time</code> was evaluated.
-Ranges from 0 to <code>Integer.MAX_VALUE</code>.
+Return the current virtual time.
 --}
---site Ltimer = "orc.lib.time.Ltimer"
+-- site Vtimer = "orc.lib.time.Vtimer"
+-- site Vclock = "orc.lib.time.Vclock"
+def Vtimer(_) = Error("Vtimer not yet implemented")
+def Vclock() = Error("Vclock not yet implemented")
 
-{-
-  Ltimer is not yet implemented in OrcScala
-  Currently we use Rtimer as a stub for Ltimer, 
-  increasing the granularity to avoid mis-ordering on small inputs.
--}
-def Ltimer(i :: Integer) = Rtimer(100 * i)
-
-{--
-@def withLtimer[A](lambda () :: A) :: A
-Run the given thunk in the context of a new inner logical clock.
-Within the computation represented by the thunk, calls to
-<code>Ltimer</code> refer to the new clock. The
-outer clock can only advance when the inner clock becomes
-quiescent.
---}
-{-
-def withLtimer[A](lambda () :: A) :: A
-def withLtimer(thunk) =
-  site pushLtimer = "orc.lib.time.PushLtimer"
-  site popLtimer = "orc.lib.time.PopLtimer"
-  thunk >> -- wait for free variables to become bound
-  pushLtimer() >>
-  thunk() >x>
-  popLtimer() >>
-  x
--}
 {--
 @def metronome(Integer) :: Signal
 Publish a signal at regular intervals, indefinitely. The period is given by the
@@ -120,9 +92,4 @@ If it does become bound to a value v, publish Some(v).
 If instead the timeout is reached, publish None().
 -}
 def timeout[A](A, Integer) :: Option[A]
-def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
-
-
-site Vtimer = "orc.lib.time.Vtimer"
-site Vclock = "orc.lib.time.Vclock"
-
+def timeout(x, t) = Let(Some(x) | Rtimer(t) >> None())

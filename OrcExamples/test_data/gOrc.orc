@@ -48,8 +48,8 @@ def popList() =
    wordlist.put(20, "\"")
 
 def randToken() = 
-   val num = random(wordlist.size())
-   print(wordlist.get(num) + " ") >> stop
+   val num = Random(wordlist.size())
+   Print(wordlist.get(num) + " ") >> stop
 
 def gib(0) = stop
 def gib(times) = randToken() | gib(times - 1)

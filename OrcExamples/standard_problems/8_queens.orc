@@ -19,5 +19,5 @@ def queens(N) =
 
 val clock = Clock()
 collect(defer(queens, 6)) >x>
-println("Time elapsed: " + clock() + "ms") >>
+Println("Time elapsed: " + clock() + "ms") >>
 each(x)

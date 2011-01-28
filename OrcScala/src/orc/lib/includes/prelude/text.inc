@@ -52,7 +52,7 @@ Example:
 --}
 
 {--
-@site print(Top) :: Signal
+@site Print(Top) :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -61,12 +61,20 @@ Example:
 Print a value as a string to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
+
+@site Println(Top) :: Signal
+
+<sitepropset>
+   <siteprop propname="nonblocking"/>
+</sitepropset>
+
+Same as <code>Print</code>, appending a newline.
 --}
-site print = "orc.lib.str.Print"
-site println = "orc.lib.str.Println"
+site Print = "orc.lib.str.Print"
+site Println = "orc.lib.str.Println"
 
 {--
-@site read[A](String) :: A
+@site Read[A](String) :: A
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -85,10 +93,10 @@ Example:
 | read("(3.0, [])") -- publishes the tuple (3.0, [])
 | read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
-site read = "orc.lib.str.Read"
+site Read = "orc.lib.str.Read"
 
 {--
-@site write(Top) :: String
+@site Write(Top) :: String
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -108,7 +116,7 @@ Example:
 | write((3.0, [])) -- publishes "(3.0, [])"
 | write("hi") -- publishes "\"hi\""]]></programlisting>
 --}
-site write = "orc.lib.str.Write"
+site Write = "orc.lib.str.Write"
 
 {--
 @def lines(String) :: List[String]

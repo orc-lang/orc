@@ -6,7 +6,7 @@
  -}
 
 val y = Cell()
-y.write(5) >> y.read() >q> println(q) >> y.write(6) >> y.read() >t> println(t)
+y.write(5) >> y.read() >q> Println(q) >> y.write(6) >> y.read() >t> Println(t)
 
 {-
 OUTPUT:

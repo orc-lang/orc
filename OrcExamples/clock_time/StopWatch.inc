@@ -82,7 +82,7 @@ stop
 val sw = Stopwatch()
 def test() = sw.reset() >> 
              sw.start() >> Rtimer(100) >> sw.halt() >v>
-             println(v-100) >> test()
+             Println(v-100) >> test()
 
 test()
 -}

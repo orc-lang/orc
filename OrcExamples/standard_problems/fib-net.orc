@@ -43,8 +43,8 @@ def userin(Integer) :: Top
 def userin(n) = upto(n) >v> in1.put(v+1) >> stop
 def userout(Integer) :: Top
 def userout(0) = signal
-def userout(n) = out1.get() >z> println(z) >> userout(n-1)
-let(fib(in1,out1,15) >> stop | userin(13) >> stop | userout(13)) >> stop
+def userout(n) = out1.get() >z> Println(z) >> userout(n-1)
+Let(fib(in1,out1,15) >> stop | userin(13) >> stop | userout(13)) >> stop
 
 {-
 OUTPUT:PERMUTABLE:

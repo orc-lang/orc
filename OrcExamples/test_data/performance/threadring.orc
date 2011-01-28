@@ -27,7 +27,7 @@ def threadRingRunner(p) =
   val ring = Table(N, lambda(_ :: Integer) = Buffer[Integer]()) 
   val _ = ring(0).put(0)
   val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
-  println(lastid)
+  Println(lastid)
 
 threadRingRunner(1000) >> 
 threadRingRunner(10000) >> stop 

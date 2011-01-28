@@ -7,6 +7,6 @@
  - Created by brian on Jun 24, 2010 3:14:33 PM
  -}
 
-println("Oops, too early")
+Println("Oops, too early")
 def f(a) = a + 1
 a()

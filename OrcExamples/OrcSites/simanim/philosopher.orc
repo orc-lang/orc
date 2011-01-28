@@ -16,7 +16,7 @@ val canvas =
 def makeFork(n) =
   Buffer() >f>
   f.put(true) >>
-  print("Made fork ",n,"\n") >>
+  Print("Made fork ",n,"\n") >>
   f
 
 def releaseAnimate(p,s,i) =
@@ -36,12 +36,12 @@ def grabAnimate(p,s,i) =
     grabAnimate(p,s,i-1)
 
 def getForks(n,fl,fr) =
-  let(
-    getFork(n,1,fl) >> let(
+  Let(
+    getFork(n,1,fl) >> Let(
       getFork(n,0,fr)
       ; releaseFork(n, 1, fl) >> stop
     )
-    ; Ltimer(random(100)*10+1) >>
+    ; Ltimer(Random(100)*10+1) >>
       getForks(n, fl, fr)
   )
 
@@ -62,7 +62,7 @@ def eatAnimate(p,i,speed) =
     eatAnimate(p,i-1,speed)
 
 def eat(n) = 
-  eatAnimate(n,10,index([100,200,300,500],random(4))) >>
+  eatAnimate(n,10,index([100,200,300,500],Random(4))) >>
   canvas.setEat(n,0)
 
 def thinkAnimate(p,i) =
@@ -72,14 +72,14 @@ def thinkAnimate(p,i) =
   thinkAnimate(p,x+1)
 
 def think(n) =
-  let(
+  Let(
     thinkAnimate(n,1)
-    | Ltimer(index([500,1000,2000,10000],random(4)))
+    | Ltimer(index([500,1000,2000,10000],Random(4)))
   ) >>
   canvas.setThink(n,0)
 
 def letGo(n,fl,fr) =
-  let(releaseFork(n, 1, fl), releaseFork(n, 0, fr))
+  Let(releaseFork(n, 1, fl), releaseFork(n, 0, fr))
 
 def philosopher(n,fl,fr) =
   think(n) >>

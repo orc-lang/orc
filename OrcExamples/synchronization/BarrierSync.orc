@@ -33,6 +33,6 @@ manager()
      
 val barrier = BarrierSync(3).go
 
-  println(0.1) >> barrier() >> println(0.2) >> barrier() >> println(0.3)>> stop 
-| println(1.1) >> barrier() >> println(1.2) >> barrier() >> stop 
-| println(2.1) >> barrier() >> println(2.2) >> stop
+  Println(0.1) >> barrier() >> Println(0.2) >> barrier() >> Println(0.3)>> stop 
+| Println(1.1) >> barrier() >> Println(1.2) >> barrier() >> stop 
+| Println(2.1) >> barrier() >> Println(2.2) >> stop

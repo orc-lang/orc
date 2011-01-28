@@ -8,7 +8,7 @@ def forkjoin(List[lambda() :: Signal]) :: Signal
 def forkjoin([]) = signal
 def forkjoin(f:rest) = (f(), forkjoin(rest)) >> signal
 
-def example() = println("called")
+def example() = Println("called")
 forkjoin([example, example, example, example])
 
 {-

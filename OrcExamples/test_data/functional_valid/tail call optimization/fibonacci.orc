@@ -9,7 +9,7 @@ def helpfib(n, (a,b)) = (b,a+b) >p> helpfib(n-1, p)
 def fib(Integer) :: Integer
 def fib(n) = helpfib(n, (1,1))
 
-upto(10) >i> fib(floor(2 ** i))
+upto(10) >i> fib(Floor(2 ** i))
 
 {-
 OUTPUT:PERMUTABLE:

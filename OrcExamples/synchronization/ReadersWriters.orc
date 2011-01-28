@@ -59,7 +59,7 @@ def class RelaxedBuffer() =
   def chooseone(0,_) = removewriter()
   def chooseone(_,0) = removereader()
   def chooseone(_,_) =      
-      if (random(2) = 0) then removereader() else removewriter()
+      if (Random(2) = 0) then removereader() else removewriter()
 
  stop
 
@@ -85,9 +85,9 @@ main()
 
 val rw = ReadersWriters()
 
-  rw.start(true) >> println("1 read") >> Rtimer(75) >> rw.end()
-| Rtimer(50) >> rw.start(true)  >> println("2 read") >> rw.end()
-| Rtimer(60) >>  rw.start(false) >> println("3 write") >> rw.end()
+  rw.start(true) >> Println("1 read") >> Rtimer(75) >> rw.end()
+| Rtimer(50) >> rw.start(true)  >> Println("2 read") >> rw.end()
+| Rtimer(60) >>  rw.start(false) >> Println("3 write") >> rw.end()
 
 
 ----------------------------------------------------

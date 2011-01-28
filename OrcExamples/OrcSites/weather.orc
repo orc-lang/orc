@@ -13,5 +13,5 @@ val date = LocalDate().plusDays(1)
 Geocoder("google.properties") >geo>
 Prompt("Address:") >addr>
 geo(addr) >(lat, lon)>
-println(NOAAWeather.getDailyForecast(lat, lon, date, 1)) >>
+Println(NOAAWeather.getDailyForecast(lat, lon, date, 1)) >>
 stop

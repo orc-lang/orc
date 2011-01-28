@@ -1,9 +1,9 @@
 val r = Ref[Integer]()
 
 r := 5 >>
-println("r=" + r?) >>
+Println("r=" + r?) >>
 r := 6 >>
-println("r=" + r?) >>
+Println("r=" + r?) >>
 stop
 {-
 OUTPUT:
