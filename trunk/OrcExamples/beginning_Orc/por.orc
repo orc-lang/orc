@@ -7,12 +7,12 @@ minimum value returned by any site.
 --}
 
 def f(List[lambda() :: Number]) :: Number
-def f([]) = error("Non-empty list")
+def f([]) = Error("Non-empty list")
 def f(g:[]) = g()
 def f(g:rest) =
   val x = g()
   val y = f(rest)
-  let(
+  Let(
       If(x <: 100) >> x
     | If(y <: 100) >> y
     | min(x, y)

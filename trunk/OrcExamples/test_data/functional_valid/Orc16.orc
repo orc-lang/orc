@@ -5,11 +5,11 @@
  - Created by Brian on Jun 3, 2010 1:07:10 PM
  -}
 
-def u() = println("U ran")
-def v() = println("V ran")
-def f() = println("F ran") >> stop
-def g() = println("G ran") >> stop
-let(u(),v()) >> (f() | g())
+def u() = Println("U ran")
+def v() = Println("V ran")
+def f() = Println("F ran") >> stop
+def g() = Println("G ran") >> stop
+Let(u(),v()) >> (f() | g())
 
 {-
 OUTPUT:

@@ -42,15 +42,15 @@ def philosopher(name, mbox, missing) =
   -- While thinking, start a timer which
   -- will tell us when we're hungry
   def digesting() =
-      println(name + " thinking") >>
+      Println(name + " thinking") >>
       thinking()
-    | Rtimer(random(30)) >>
+    | Rtimer(Random(30)) >>
       send(("rumble", send)) >>
       stop
 
   def thinking() =
     def on(("rumble", _)) =
-      println(name + " hungry") >>
+      Println(name + " hungry") >>
       map(requestFork, missing) >>
       hungry()
     def on(("request", p)) =
@@ -63,7 +63,7 @@ def philosopher(name, mbox, missing) =
       missing.remove(p) >>
       if missing.isEmpty()
       then
-        println(name + " eating") >>
+        Println(name + " eating") >>
         eating()
       else hungry()
     def on(("request", p)) =
@@ -79,7 +79,7 @@ def philosopher(name, mbox, missing) =
 
   def eating() =
     clean.clear() >>
-    Rtimer(random(10)) >>
+    Rtimer(Random(10)) >>
     map(sendFork, deferred.getAll()) >>
     digesting()
 

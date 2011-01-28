@@ -27,10 +27,10 @@ GoogleCalendar.authenticate() >>
 (Google(phrase1) | Google(phrase2)) >pages>
 each(pages) >page>
 each(page()) >result>
-println("Scraping " + result.url) >>
+Println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
-println("   " + musicShow) >>
+Println("   " + musicShow) >>
 IfT(musicShow.getCity().toLowerCase().contains("austin")) >>
 GoogleCalendar.addMusicShow(musicShow) >>
 stop

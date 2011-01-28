@@ -9,11 +9,11 @@
  -}
 val x = Rtimer(500) >> 23
 
-Rtimer(250) >> println("250ms") >> stop
+Rtimer(250) >> Println("250ms") >> stop
 |
 (
-  def f(0) = println("f(0)") >> x
-  def f(n) = println("f(" + n + ")") >> Rtimer(83) >> f(n-1)
+  def f(0) = Println("f(0)") >> x
+  def f(n) = Println("f(" + n + ")") >> Rtimer(83) >> f(n-1)
   f(2) >> stop
 ) 
 

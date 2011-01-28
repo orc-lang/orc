@@ -14,8 +14,8 @@ def nbPut(mb,v) =
 	
 def nbTry(mb) =
 	mb 	>(cnt,q)> cnt.get() 
-		>size> 	( (IfT(size>=1) >> q.get() >v> cnt.put(size-1) >> let(v,true))
-				| (IfT(size<=0) >> cnt.put(size) >> let(signal,false))
+		>size> 	( (IfT(size>=1) >> q.get() >v> cnt.put(size-1) >> Let(v,true))
+				| (IfT(size<=0) >> cnt.put(size) >> Let(signal,false))
 				)
 
 def nbGet(mb) =
@@ -36,7 +36,7 @@ def nbGet(mb) =
 	  Interspersed with spurts of something 
 ---------------------------------------------------------------------}
 def randRange(mn,mx) =
-	random(mx+1-mn)+mn
+	Random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
 	( IfT(n>=1) 
@@ -100,7 +100,7 @@ def animateTransition(tt,n,d) =
 def tryToEnterShop(cID) =
 	nbTry(shop)
 	>(x,ok)> 	(	IfT(ok)
-					>>print("Cst ",cID," enters\n")
+					>>Print("Cst ",cID," enters\n")
 					>>disp.pushFloor(cID) 
 					>>stop
 				| Ltimer(5) >> ok
@@ -108,14 +108,14 @@ def tryToEnterShop(cID) =
 	
 -- Put the customer's place back in the buffer
 def leaveShop(cID) =
-	print("Cst ",cID," leaves happy\n")
+	Print("Cst ",cID," leaves happy\n")
 	>> disp.popRegister()
 	>> Ltimer(25)
 	>> nbPut(shop,true)
 
 -- Nothing to do here, unless we want to animate it
 def leaveAngry(cID) =
-	print("Cst ",cID," can't fit\n")
+	Print("Cst ",cID," can't fit\n")
 	>> cID 
 
 def tryToGetBarberChair(cID) =
@@ -163,7 +163,7 @@ def freeWaitChair(cID,chair,wt) =
 
 -- ch has the chairID and the associated barber.
 def signalBarber(cID,ch) =
-	print("Cst ",cID," wants a haircut\n")
+	Print("Cst ",cID," wants a haircut\n")
 	>> Ltimer(10)
 	>> ch >(chID,chDone,bJob)> bJob.put((true,cID))
 	
@@ -171,7 +171,7 @@ def waitForHairCut(cID,ch) =
 	ch >(chID,chDone,bJob)> chDone.get()
 
 def waitForCashRegister(cID,chair) =
-	print("Cst ",cID," at cashReg\n")
+	Print("Cst ",cID," at cashReg\n")
 	>> chair 
 	>(chID,chDone,bJob)> disp.bChairToLine(chID,cID)
 	>tt> animateTransition(tt,1,cID)
@@ -235,18 +235,18 @@ def customer(cID) =
 ------------------------------------------------------------------
 -- Sleep until something needs to be done
 def waitForJob(bID,jobQ) =
-	print("Barber ",bID," waits\n") 
+	Print("Barber ",bID," waits\n") 
 	>> disp.setBarberState(bID,0)
 	>> jobQ.get() 
-	>jb> print("Barber ",bID," got job\n")
-	>> Ltimer(lswitch(random(4),[10,20,40,50]))
+	>jb> Print("Barber ",bID," got job\n")
+	>> Ltimer(lswitch(Random(4),[10,20,40,50]))
 	>> jb
 	
 -- The chair holds the hair semaphore
 def cutHair(bID,cID,chDone) =
 	disp.setBarberState(bID,1)
-	>> Ltimer(random(300)+50) 
-	>> print("Barber ",bID," cut hair",cID,"\n") 
+	>> Ltimer(Random(300)+50) 
+	>> Print("Barber ",bID," cut hair",cID,"\n") 
 	>> chDone.put(true)
 	
 -- Answer the ringing bell of a customer at the cash register
@@ -263,7 +263,7 @@ def takePayment(bID,ding) =
 	>> disp.setReg(true) 
 	>> hand.get()
 	>h> Ltimer(50)
-	>> print("Barber ",bID," got cash\n") 
+	>> Print("Barber ",bID," got cash\n") 
 	>> h
 
 -- Once we get the cash deliver a receipt and always say 'thank-you'
@@ -275,7 +275,7 @@ def giveReceipt(bID,cash) =
 	>> disp.barberFromReg(bID)
 	>tt> animateTransition(tt,1,5)
 	>> disp.endTransition(tt)
-	>> print("Barber ",bID," gave receipt\n") 
+	>> Print("Barber ",bID," gave receipt\n") 
 
 {----------------------------------------------------------------
 	Barber keeps a job queue.  When work needs to be done, he

@@ -7,7 +7,7 @@
  - Created by brian on Jun 24, 2010 3:26:41 PM
  -}
 
-println("Let's add some numbers")
+Println("Let's add some numbers")
 val a = 1
 val b = 2
 a + b

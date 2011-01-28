@@ -49,7 +49,7 @@ expr(n)
 
 def is_expr() = 
  Prompt("Write an expression")  >r> stringtoarray(r) >n> 
-(parse(n) >0> println("true"); println("false")) >> 
+(parse(n) >0> Println("true"); Println("false")) >> 
 is_expr()
 
 is_expr()

@@ -2,9 +2,9 @@ val s = Semaphore(1)
 
 signals(50) >>
 s.acquire() >>
-println("Entering critical section") >>
+Println("Entering critical section") >>
 Rtimer(1) >>
-println("Leaving critical section") >>
+Println("Leaving critical section") >>
 s.release() >> stop
 
 {-

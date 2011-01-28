@@ -29,7 +29,7 @@ def stringtolist(s) = -- convert a string to a list omitting white space
 
 def calculate() = 
  Prompt("Write an expression")  >r> stringtolist(r) >xs>
- (expr(xs) >(n,[])> println(r + " = " +n); println(r +" is illegal")) >> 
+ (expr(xs) >(n,[])> Println(r + " = " +n); Println(r +" is illegal")) >> 
   calculate()
 
 def expr(xs) = term(xs) >(n,ys)> 
@@ -59,7 +59,7 @@ def ufactor(xs) =  integer(xs)  >(Some((n,_)),ys)>     (n,ys)
 def integer([]) = (None(),[])
 def integer(x:xs) =
   if "0" <= x && x <= "9" then
-        read(x) >d> integer(xs) >(t,ys)>
+        Read(x) >d> integer(xs) >(t,ys)>
         (  t >None()>    (Some((d,10)),ys)
          | t >Some((v,m))> (Some((m * d+v, 10*m)),ys)
         )

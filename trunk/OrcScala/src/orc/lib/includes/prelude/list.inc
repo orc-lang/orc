@@ -292,7 +292,7 @@ def take[A](Integer, List[A]) :: List[A]
 def take(0, _) = []
 def take(n, x:xs) =
   if n :> 0 then x:take(n-1, xs)
-  else error("Cannot take(" + n + ", _)")
+  else Error("Cannot take(" + n + ", _)")
 
 {--
 @def drop[A](Integer, List[A]) :: List[A]
@@ -307,7 +307,7 @@ def drop[A](Integer, List[A]) :: List[A]
 def drop(0, xs) = xs
 def drop(n, x:xs) =
   if n :> 0 then drop(n-1, xs)
-  else error("Cannot drop(" + n + ", _)")
+  else Error("Cannot drop(" + n + ", _)")
 
 {--
 @def member[A](A, List[A]) :: Boolean
@@ -374,7 +374,7 @@ def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
 def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
 def sortBy(lt, xs) =
-  val half = floor(length(xs)/2)
+  val half = Floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
@@ -437,7 +437,7 @@ def sortUniqueBy[A](lambda (A,A) :: Boolean,
 def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
 def sortUniqueBy(eq, lt, xs) =
-  val half = floor(length(xs)/2)
+  val half = Floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeUniqueBy(eq, lt,
@@ -514,7 +514,7 @@ terminated.
 def any[A](lambda (A) :: Boolean, List[A]) :: Boolean
 def any(p, []) = false
 def any(p, x:xs) =
-  let(
+  Let(
     val b1 = p(x)
     val b2 = any(p, xs)
     If(b1) >> true | If(b2) >> true | (b1 || b2)
@@ -532,7 +532,7 @@ terminated.
 def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
 def all(p, []) = true
 def all(p, x:xs) =
-  let(
+  Let(
     val b1 = p(x)
     val b2 = all(p, xs)
     Unless(b1) >> false | Unless(b2) >> false | (b1 && b2)

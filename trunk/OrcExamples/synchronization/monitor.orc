@@ -26,7 +26,7 @@ def actor(n, waiters) =
     else actor(n, callback:waiters)
   on(m.get())
 
-def dec() = println("Decrementing") >> m.put(Dec())
+def dec() = Println("Decrementing") >> m.put(Dec())
 def wait() =
   val b = Semaphore(0)
   b.acquire() | m.put(Wait(b.release)) >> stop
@@ -37,7 +37,7 @@ def wait() =
 | dec() >> stop
 | dec() >> stop
 | Rtimer(100) >> dec() >> stop
-| wait() >> println("Zero!") >> stop
+| wait() >> Println("Zero!") >> stop
 
 {-
 OUTPUT:

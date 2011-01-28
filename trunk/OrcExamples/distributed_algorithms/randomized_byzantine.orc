@@ -6,7 +6,7 @@ val p = 8*t+1
 val channels = collect(lambda () = upto(p) >> Buffer())
 
 -- Return a random boolean
-def coin() = random(2) :> 0
+def coin() = Random(2) :> 0
 
 -- Return a default value if the first argument is null
 def default(null, v) = v
@@ -29,7 +29,7 @@ def good(maj, tally) =
   if tally :> threshold then maj else 0
   
 -- decision algorithm for a bad process
-def bad(_, _) = random(2)
+def bad(_, _) = Random(2)
 
 val nRounds = Ref(0)
 
@@ -48,10 +48,10 @@ def process(pick)(out) =
     pick(maj, tally) >newValue>
     vote(newValue) >>
     if tally :> 7*t then newValue else round(newValue, n+1)
-  random(2) >value>
+  Random(2) >value>
   vote(value) >>
   round(value, 1)
 
-  println("Bad: " + map(process(bad), take(t, channels))) >> stop
-| println("Good: " + map(process(good), drop(t, channels))) >> stop
-; println("Rounds: " + nRounds?) >> stop
+  Println("Bad: " + map(process(bad), take(t, channels))) >> stop
+| Println("Good: " + map(process(good), drop(t, channels))) >> stop
+; Println("Rounds: " + nRounds?) >> stop

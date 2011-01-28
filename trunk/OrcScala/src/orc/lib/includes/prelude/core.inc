@@ -34,7 +34,7 @@ type Integer = "orc.types.IntegerType"
 type Signal = "orc.types.SignalType"
 
 {--
-@site let() :: Signal
+@site Let() :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -44,13 +44,13 @@ type Signal = "orc.types.SignalType"
 When applied to no arguments, return a signal.
 
 
-@site let(A) :: A
+@site Let(A) :: A
 When applied to a single argument, return that argument (behaving as the identity function).
 
-@site let(A, ...) :: (A, ...)
+@site Let(A, ...) :: (A, ...)
 When applied to two or more arguments, return the arguments as a tuple.
 --}
-site let = "orc.lib.builtin.Let"
+site Let = "orc.lib.builtin.Let"
 
 {--
 @site If(Boolean) :: Signal
@@ -67,6 +67,9 @@ Example:
 -- Publishes: "Always publishes"
   If(false) >> "Never publishes"
 | If(true) >> "Always publishes"]]></programlisting>
+
+Note: <code>Ift</code>, <code>IfT</code>, and <code>IfTrue</code>
+are all aliases for <code>If</code>.
 
 --}
 site If = "orc.lib.builtin.If"
@@ -86,6 +89,10 @@ Example:
 -- Publishes: "Always publishes"
   Unless(false) >> "Always publishes"
 | Unless(true) >> "Never publishes"]]></programlisting>
+
+Note: <code>Iff</code>, <code>IfF</code>, and <code>IfFalse</code>
+are all aliases for <code>Unless</code>.
+
 --}
 site Unless = "orc.lib.builtin.Unless"
 
@@ -99,7 +106,7 @@ site IfF = "orc.lib.builtin.Unless"
 site IfFalse = "orc.lib.builtin.Unless"
 
 {--
-@site error(String) :: Bot
+@site Error(String) :: Bot
 
 <sitepropset>   
    <siteprop propname="nonblocking"/>
@@ -107,15 +114,15 @@ site IfFalse = "orc.lib.builtin.Unless"
 
 Halt with the given error message.
 
-Example, using <code>error</code> to implement assertions:
+Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
-  if b then signal else error("assertion failed")
+  if b then signal else Error("assertion failed")
 
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
-site error = "orc.lib.util.Error"
+site Error = "orc.lib.util.Error"
 
 
 {--
@@ -314,15 +321,15 @@ def max(x,y) = if x :> y then x else y
 
 
 {--
-@site floor(Number) :: Integer
+@site Floor(Number) :: Integer
 Return the greatest integer less than
 or equal to this number.
 --}
-site floor = "orc.lib.math.Floor"
+site Floor = "orc.lib.math.Floor"
 
 {--
-@site ceil(Number) :: Integer
+@site Ceil(Number) :: Integer
 Return the least integer greater than
 or equal to this number.
 --}
-site ceil = "orc.lib.math.Ceil"
+site Ceil = "orc.lib.math.Ceil"

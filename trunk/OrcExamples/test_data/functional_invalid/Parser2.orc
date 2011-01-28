@@ -7,4 +7,4 @@
  - Created by brian on Jun 23, 2010 2:29:28 PM
  -}
 
-println(Hello world!)
+Println(Hello world!)

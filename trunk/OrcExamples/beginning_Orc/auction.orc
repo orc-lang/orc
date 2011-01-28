@@ -23,7 +23,7 @@ def auction(bidders, max) =
       bidder(max) >bid>
       If(bid :> max) >>
       (false, bid)
-  println("Current bid: " +  max) >>
+  Println("Current bid: " +  max) >>
   if done then max else auction(bidders, bid)
   
 

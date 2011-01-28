@@ -1,9 +1,9 @@
 {-
 Added by amshali
 -}
-Rtimer(500) >> Vtimer(2) >> Vclock() >x> println("500:"+x) >> stop
-| println("test") >> Vclock()
-| Rtimer(1000) >> Vtimer(3)  >> Vclock() >x> println("1000:"+x) >> stop
+Rtimer(500) >> Vtimer(2) >> Vclock() >x> Println("500:"+x) >> stop
+| Println("test") >> Vclock()
+| Rtimer(1000) >> Vtimer(3)  >> Vclock() >x> Println("1000:"+x) >> stop
 
 
 {-

@@ -32,7 +32,7 @@ def class fast_sieve(n) =
       else next.read() >s> s.in(v)
     )) >> main()
 
-  println(n) | main()
+  Println(n) | main()
 
 -- the first prime number is 2 
 val s2 = fast_sieve(2)

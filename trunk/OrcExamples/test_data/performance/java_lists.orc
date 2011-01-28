@@ -4,7 +4,7 @@ val r = Ref()
 
 def Counter(n) = n | Rtimer(1) >> Counter(n+1)
 
-let(
+Let(
     Counter(1) >n>
     l.add(n) >>
     l.remove() >n>

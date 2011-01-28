@@ -32,7 +32,7 @@ def partition(n, d) =
   aux(n, d, [], 0)
 
 
-println("(10, 3):") >> partition(10, 3)
+Println("(10, 3):") >> partition(10, 3)
 
 
 {-

@@ -22,7 +22,7 @@ def lswitch(n,l) =
 	  Interspersed with spurts of something 
 ---------------------------------------------------------------------}
 def randRange(mn,mx) =
-	random(mx+1-mn)+mn
+	Random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
 	( IfT(n>=1) 
@@ -54,20 +54,20 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 	that allows the rope to change sides.
 -}
 def freeSideLock() =
-	println("Changing sides") >> sideLock.put(true)
+	Println("Changing sides") >> sideLock.put(true)
 
 {-
 	Sporadically emit a number between 10 and 49
 	[i.e., a monkey comes]
 -}
 def timeSource(tMin,tMax) =
-	Ltimer(random(tMax-tMin)+tMin)>> ((random(32)+1) | timeSource(tMin,tMax))
+	Ltimer(Random(tMax-tMin)+tMin)>> ((Random(32)+1) | timeSource(tMin,tMax))
 
 def leftDone() =
-	print("Left Done\n")
+	Print("Left Done\n")
 
 def rightDone() =
-	print("Right Done\n")
+	Print("Right Done\n")
 
 {-
 	Create a bidirectional linked list of semaphores.
@@ -75,12 +75,12 @@ def rightDone() =
 	link.  Once you own the next link, you release the first.
 -}
 def makeRope(len,lb,ls) =
-	(IfT(len=0) >> let(signal,false,lb,ls)
+	(IfT(len=0) >> Let(signal,false,lb,ls)
 	|	(  IfT(1<=len) 
 		>> Buffer()
 		>b> makeRope(len-1,b,true)
 		>(rb,rs,eb,es)> b.put((lb,ls,rb,rs,len))
-		>> let(b,true,eb,es)
+		>> Let(b,true,eb,es)
 		)
 	)
 
@@ -90,7 +90,7 @@ def makeRope(len,lb,ls) =
 	Between links, we logically delay for d units. 
 -}
 def followRight(b,s,f,d) =
-	(	( IfT(~s) >> (let() | f()>>stop)
+	(	( IfT(~s) >> (Let() | f()>>stop)
 		)
 	|	(  IfT(s) 
 		>> b.get()
@@ -114,7 +114,7 @@ def followRight(b,s,f,d) =
 	Between links, we logically delay for d units. 
 -}
 def followLeft(b,s,f,d) =
-	(	( IfT(~s) >> (let() | f()>>stop)
+	(	( IfT(~s) >> (Let() | f()>>stop)
 		)
 	|	(  IfT(s) 
 		>> b.get()
@@ -189,8 +189,8 @@ disp.open() >>
  | bGuide(rightQ,rightDeck,rightFlag,rightAck,mainLine)
  | bManager(mainLine,aPack,oPack)
  )
-< aPack < let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
-< oPack < let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
+< aPack < Let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
+< oPack < Let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
 <(lb,ls,rb,rs)< makeRope(10,signal,false)
 < mainLine < Buffer()
 < leftDeck < Buffer()

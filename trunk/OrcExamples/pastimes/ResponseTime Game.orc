@@ -12,18 +12,18 @@ val (id,dd) = (3000,100)
 
 val sw = Stopwatch()
 
-def rand_seq() = random(10) |  Rtimer(dd) >> rand_seq()
+def rand_seq() = Random(10) |  Rtimer(dd) >> rand_seq()
 
 def game() =
 {- game() conducts one game and returns a pair (b,w).
    b is true iff user responds only after v is printed; 
    then the response time is w 
 -}
-   val v = random(10) -- v is a random digit for one game
+   val v = Random(10) -- v is a random digit for one game
 
    val (b,w) = 
  
-       sw.reset() >> Rtimer(id) >> rand_seq() >x> println(x) >>
+       sw.reset() >> Rtimer(id) >> rand_seq() >x> Println(x) >>
        If(x = v) >> sw.start() >> stop
 
      | Prompt("Press ENTER/OK for "+v) >> 
@@ -40,8 +40,8 @@ def games() =
 -}
   game() >(b,w)> 
   if b then
-   (println("Response time = " +w) >> games())
-   else (println("Game Over") >> stop)
+   (Println("Response time = " +w) >> games())
+   else (Println("Game Over") >> stop)
 
 games()
 

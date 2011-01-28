@@ -39,7 +39,7 @@ def prod(i)(h,p,v) =    (exp(v,2), exp(v,3),exp(v,5),exp(v,7)) >(a,b,c,d)>
 def interface(msg,f,h) =
   Prompt(msg + " : write value followed by number of cells for board size " + h)  >r>
     read(r) >s> (s%10,s/10) >(p,v)>
-  (  println(msg + v + " into " + p + " parts in board size " + h) >> f(h,p,v)
+  (  Println(msg + v + " into " + p + " parts in board size " + h) >> f(h,p,v)
    | interface(msg,f,h)
   )
 

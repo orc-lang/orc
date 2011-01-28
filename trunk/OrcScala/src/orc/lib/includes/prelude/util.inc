@@ -16,23 +16,23 @@ Miscellaneous utility functions.
 --}
 
 {--
-@site random() :: Integer
+@site Random() :: Integer
 Return a random Integer value
 chosen from the range of all possible 32-bit Integer values.
 
-@site random(Integer) :: Integer
+@site Random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, halt.
 --}
-site random = "orc.lib.util.Random"
+site Random = "orc.lib.util.Random"
 
 {--
-@site urandom() :: Number
+@site URandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
 between 0.0 (inclusive) and 1.0 (exclusive).
 --}
-site urandom = "orc.lib.util.URandom"
+site URandom = "orc.lib.util.URandom"
 
 {--
 @site UUID() :: String
@@ -151,7 +151,7 @@ def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
   val out = Buffer[A]()
   val c = Counter(n)
-  let(
+  Let(
     f() >x>
     If(c.dec() >> out.put(x) >> false
        ; out.closenb() >> true)
@@ -169,7 +169,7 @@ thunk and releases the semaphore.
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
-    let(f()) >x>
+    Let(f()) >x>
     s.release() >>
     x
     ; s.release() >> stop
