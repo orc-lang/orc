@@ -75,27 +75,40 @@
 		
 		<section xml:id="ref.syntax.keywords.links">
 		  <title>Related Links</title>
-		  <informaltable frame='all'>
-			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-			<colspec colname='c1'/>
-			<colspec colname='c2'/>
-			<thead>
-			<row>
-			  <entry align="center">Related Reference Topics</entry>
-			  <entry align="center">Related Tutorial Sections</entry>
-			</row>
-			</thead>
-			<tbody>
-			<row>
-			  <entry><olink targetdoc="refmanual" targetptr="ref.syntax">Syntax</olink></entry>
-			  <entry><olink targetdoc="root" targetptr="orc-ebnf-table">Basic Orc Syntax</olink></entry>
-			</row>
-			<row>
-			  <entry><olink targetdoc="refmanual" targetptr="ref.syntax.EBNF">Syntax EBNF</olink></entry>
-			  <entry><olink targetdoc="root" targetptr="orc-keyword-table">Keywords</olink></entry>
-			</row>
-			</tbody>
-			</tgroup>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
 		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+          				<listitem><para><olink targetdoc="root" targetptr="orc">Orchestrating Services</olink></para></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
 	  </section>
 	</section>

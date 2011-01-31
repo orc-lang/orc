@@ -47,7 +47,7 @@
 			  </listitem>
 			  <listitem><code><![CDATA[F >> G]]></code> 
 				  <para>
-				  This is equivalent to using a wildcard pattern:  <code><![CDATA[>_>]]></code>.  Every publication
+				  This is equivalent to using a wildcard pattern:  <code><![CDATA[F >_> G]]></code>.  Every publication
 				  of F will match the combinator pattern, causing an evaluation of G for every individual
 				  publication of F.  No bindings will be made in G from these publications.
 				  </para>

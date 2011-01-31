@@ -26,12 +26,13 @@
 <xi:include href="content/ref.data.xml"/> 
 <xi:include href="content/ref.patterns.xml"/>
 <xi:include href="content/ref.functions.xml"/>
+<xi:include href="content/ref.class2.xml"/>
 <xi:include href="content/ref.class.xml"/>
 <xi:include href="content/ref.declarations.xml"/>
 <xi:include href="content/ref.expressions.xml"/> 
 <xi:include href="content/ref.time.xml"/>
 <xi:include href="content/ref.syntax.xml"/>
 <xi:include href="content/ref.types.xml"/>
-<xi:include href="../stdlib.xml"/>
+<xi:include href="content/ref.stdlib.xml"/>
 
 </book>
