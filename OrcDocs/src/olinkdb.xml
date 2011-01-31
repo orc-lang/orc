@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Double check these file paths are correct if you're having problems -->
+<!-- I would also keep them alphabetical for ease of navigation -->
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
    <!ENTITY targets.userguide SYSTEM "../build/html/targets.userguide.db">
    <!ENTITY targets.refmanual SYSTEM "../build/html/refmanual/targets.refmanual.db">
    <!ENTITY targets.ref.class SYSTEM "../build/html/refmanual/targets.ref.class.db">
+   <!ENTITY targets.ref.class2 SYSTEM "../build/html/refmanual/targets.ref.class2.db">
    <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/html/refmanual/targets.ref.combinators.otherwise.db">
    <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/html/refmanual/targets.ref.combinators.parallel.db">
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
@@ -46,6 +48,15 @@
    <!ENTITY targets.ref.patterns.variable SYSTEM "../build/html/refmanual/targets.ref.patterns.variable.db">
    <!ENTITY targets.ref.patterns.wildcard SYSTEM "../build/html/refmanual/targets.ref.patterns.wildcard.db">
    <!ENTITY targets.ref.patterns SYSTEM "../build/html/refmanual/targets.ref.patterns.db">
+   <!ENTITY targets.ref.stdlib SYSTEM "../build/html/refmanual/targets.ref.stdlib.db">
+   <!ENTITY targets.ref.stdlib.core SYSTEM "../build/html/refmanual/targets.ref.stdlib.core.db">
+   <!ENTITY targets.ref.stdlib.idioms SYSTEM "../build/html/refmanual/targets.ref.stdlib.idioms.db">
+   <!ENTITY targets.ref.stdlib.list SYSTEM "../build/html/refmanual/targets.ref.stdlib.list.db">
+   <!ENTITY targets.ref.stdlib.reflect SYSTEM "../build/html/refmanual/targets.ref.stdlib.reflect.db">
+   <!ENTITY targets.ref.stdlib.state SYSTEM "../build/html/refmanual/targets.ref.stdlib.state.db">
+   <!ENTITY targets.ref.stdlib.text SYSTEM "../build/html/refmanual/targets.ref.stdlib.text.db">
+   <!ENTITY targets.ref.stdlib.time SYSTEM "../build/html/refmanual/targets.ref.stdlib.time.db">
+   <!ENTITY targets.ref.stdlib.util SYSTEM "../build/html/refmanual/targets.ref.stdlib.util.db">
    <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/html/refmanual/targets.ref.syntax.EBNF.db">
    <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/html/refmanual/targets.ref.syntax.keywords.db">
    <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/html/refmanual/targets.ref.syntax.lexical.db">
@@ -78,6 +89,9 @@
 					  </document>
 					  <document targetdoc="ref.class" baseuri="ref.class.html">
 					  	&targets.ref.class;
+					  </document>
+					  <document targetdoc="ref.class2" baseuri="ref.class2.html">
+					  	&targets.ref.class2;
 					  </document>
 					  <document targetdoc="ref.combinators.otherwise" baseuri="ref.combinators.otherwise.html">
 					  	&targets.ref.combinators.otherwise;
@@ -198,6 +212,33 @@
 					  </document>
 					  <document targetdoc="ref.patterns" baseuri="ref.patterns.html">
 					  	&targets.ref.patterns;
+					  </document>
+					  <document targetdoc="ref.stdlib" baseuri="ref.stdlib.html">
+					  	&targets.ref.stdlib;
+					  </document>
+					  <document targetdoc="ref.stdlib.core" baseuri="ref.stdlib.core.html">
+					  	&targets.ref.stdlib.core;
+					  </document>
+					  <document targetdoc="ref.stdlib.idioms" baseuri="ref.stdlib.idioms.html">
+					  	&targets.ref.stdlib.idioms;
+					  </document>
+					  <document targetdoc="ref.stdlib.list" baseuri="ref.stdlib.list.html">
+					  	&targets.ref.stdlib.list;
+					  </document>
+					  <document targetdoc="ref.stdlib.reflect" baseuri="ref.stdlib.reflect.html">
+					  	&targets.ref.stdlib.reflect;
+					  </document>
+					  <document targetdoc="ref.stdlib.state" baseuri="ref.stdlib.state.html">
+					  	&targets.ref.stdlib.state;
+					  </document>
+					  <document targetdoc="ref.stdlib.text" baseuri="ref.stdlib.text.html">
+					  	&targets.ref.stdlib.text;
+					  </document>
+					  <document targetdoc="ref.stdlib.time" baseuri="ref.stdlib.time.html">
+					  	&targets.ref.stdlib.time;
+					  </document>
+					  <document targetdoc="ref.stdlib.util" baseuri="ref.stdlib.util.html">
+					  	&targets.ref.stdlib.util;
 					  </document>
 					  <document targetdoc="ref.syntax.EBNF" baseuri="ref.syntax.EBNF.html">
 					  	&targets.ref.syntax.EBNF;

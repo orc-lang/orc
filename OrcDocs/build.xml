@@ -114,6 +114,26 @@
 		</xslt>
 
 		<!-- Create olink databases for modular chapters/sections -->
+		<!-- ref.class -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.class.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.class.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.class2 -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.class2.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.class2.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
 		<!-- ref.combinators.otherwise -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
@@ -162,16 +182,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.db"/>
-			<param name="user.dir" expression="${user.dir}" />
-		</xslt>
-		<!-- ref.class -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.class.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.class.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.boolean -->
@@ -544,6 +554,119 @@
 			<param name="targets.filename" expression="targets.ref.patterns.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		
+		<!-- Hacky hack to mesh olinks with ref.stdlib.xml structure -->
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.core.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.idioms.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.list.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.reflect.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.state.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.text.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.time.xml"/>
+			<copy file="${src.dir}/refmanual/content/ref.stdlib.xml" tofile="${src.dir}/refmanual/ref.stdlib.util.xml"/>
+		
+		<!-- ref.stdlib -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.core -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.core.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.core.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.idioms -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.idioms.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.idioms.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.list -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.list.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.list.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.reflect -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.reflect.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.reflect.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.state -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.state.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.state.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.text -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.text.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.text.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.time -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.time.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.time.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		<!-- ref.stdlib.util -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.stdlib.util.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.stdlib.util.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
+		
+		<!-- Undo the hacky hack for ref.stdlib.xml -->
+		<delete file="${src.dir}/refmanual/ref.stdlib.core.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.idioms.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.list.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.reflect.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.state.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.text.xm"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.time.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.util.xml"/>
+		<delete file="${src.dir}/refmanual/ref.stdlib.core.xml"/>
+		
 		<!-- ref.syntax.EBNF -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"

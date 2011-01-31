@@ -1209,7 +1209,7 @@ Multi-line comments may be nested. They may appear anywhere, even in the middle 
 
 
 
-<section><title>Orc: Orchestrating services</title>
+<section id="orc"><title>Orc: Orchestrating services</title>
 
 <para>
 Cor is a pure declarative language. It has no state, since variables are bound at most once 
@@ -2059,7 +2059,7 @@ that has not yet been bound suspends until that parameter is bound to a value.
 </section>
 
 
-<section><title>Time</title>
+<section id="section.orc.time"><title>Time</title>
 
 <para>
 Orc is designed to communicate with the external world, and one of the
@@ -4214,7 +4214,7 @@ publish only the first result.
 </section>
 
 
-<section><title>Timeout</title>
+<section id="section.orc.timeout"><title>Timeout</title>
 
 <para>
 <firstterm>Timeout</firstterm>, the ability to execute an expression for at most a specified
@@ -7764,6 +7764,7 @@ any of the combinators, which in turn have higher precedence than conditionals.
 
 </appendix>
 
+<!-- 
 <appendix id="appendix.library"><title>Standard Library</title>
 <section><title>Overview</title>
 <para>
@@ -7802,10 +7803,13 @@ arbitrary element type <code>A</code>, it will return a value of the same type.
 </para>
  
 </section>
+-->
 
 <!--  <xi:include href="stdlib.xml"/> -->
 
+<!--
 </appendix>
+-->
 
 <!-- 
 <appendix><title>FAQ</title>
