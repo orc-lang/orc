@@ -20,23 +20,36 @@ import scala.xml._
 object Main {
 
 	def isDocFile(f: File): Boolean = {
-		// TODO: Make more permissive (currently allows only .inc files)
 		f.isFile() && """\.inc$""".r.findFirstIn(f.getName()).isDefined
 	}
 	
   def main(args: Array[String]) {
 	  
 	  val sourcedir = new File(args(0))
-	  val target = new File(args(1))
+	  val targetdir = new File(args(1))
 	  
 	  val files = sourcedir.listFiles().toList filter { isDocFile(_) }
-	  val maker = new DocMaker()
-    val xml = maker.makeDoc(files)
+	  val prefix = "ref.stdlib"
+	  val maker = new DocMaker(prefix)
+	  
+	  val targets = files map { f =>
+	    val sectionName = """\w+""".r.findPrefixOf(f.getName()).get
+	    val xml = maker.renderSection(f)(sectionName)
+	    val target = new File(targetdir, prefix + "." + sectionName + ".xml")
+	    xmlwrite(xml, target)
+	    target
+	  }
     
-    val writer = new java.io.FileWriter(target)
+	  val xml = maker.renderChapter(targets)
+	  val target = new File(targetdir, prefix + ".xml")
+	  xmlwrite(xml, target)
+	  
+  }
+  
+  def xmlwrite(xml: Node, target: File) {
+  	val writer = new java.io.FileWriter(target)
     XML.write(writer, xml, "UTF-8", true, null)
     writer.close()
-  
   }
 	
 }
