@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Double check these file paths are correct if you're having problems -->
-<!-- I would also keep them alphabetical for ease of navigation -->
+<!-- Keep them alphabetical for ease of navigation -->
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
    <!ENTITY targets.userguide SYSTEM "../build/html/targets.userguide.db">
    <!ENTITY targets.refmanual SYSTEM "../build/html/refmanual/targets.refmanual.db">
    <!ENTITY targets.ref.class SYSTEM "../build/html/refmanual/targets.ref.class.db">
-   <!ENTITY targets.ref.class2 SYSTEM "../build/html/refmanual/targets.ref.class2.db">
    <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/html/refmanual/targets.ref.combinators.otherwise.db">
    <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/html/refmanual/targets.ref.combinators.parallel.db">
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
@@ -89,9 +88,6 @@
 					  </document>
 					  <document targetdoc="ref.class" baseuri="ref.class.html">
 					  	&targets.ref.class;
-					  </document>
-					  <document targetdoc="ref.class2" baseuri="ref.class2.html">
-					  	&targets.ref.class2;
 					  </document>
 					  <document targetdoc="ref.combinators.otherwise" baseuri="ref.combinators.otherwise.html">
 					  	&targets.ref.combinators.otherwise;
