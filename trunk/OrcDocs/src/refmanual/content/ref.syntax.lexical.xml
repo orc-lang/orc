@@ -29,7 +29,7 @@
 				<title>Lexical Tokens</title>
 				<para>
 					Orc lexical scanning reads Unicode characters and emits corresponding Orc lexical tokens. 
-					Orc uses 7 lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
+					Orc uses seven lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
 				</para>
 				<section xml:id="ref.syntax.lexical.body.tokens.identifier">
 					<title>Identifier</title>
@@ -50,7 +50,7 @@
 						Also, mathematical letter-like characters are allowed, such as ℤ, ℏ, ℵ0, and, of course, greek letters. 
 					</para>
 					<para>
-						Orc also treats an operator (defined below) placed in parenthesis, such as (+), as an identifier with the name of the operator (without the parenthesis). 
+						Orc also treats an operator (defined below) placed in parenthesis, such as <code>(+)</code>, as an identifier with the name of the operator (without the parenthesis). 
 					</para>
 					<para>
 						An identifier cannot match a keyword; see the following section. 
@@ -71,7 +71,7 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.operator">
 					<title>Operator</title>
 					<para>
-						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to 2 * operators, if possible.) 
+						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to two * operators, if possible.) 
 					</para>
 					<para>
 						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>

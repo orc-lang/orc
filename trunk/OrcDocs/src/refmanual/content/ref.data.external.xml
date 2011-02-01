@@ -20,7 +20,7 @@ Combined with Orc's ability to invoke arbitrary functions of the environment in 
 this permits Orc programs to use any expressible value in its environment.
 For example, Orc programs running on a Java virtual machine (JVM) can interact with any Java object.</para>
 
-<para>Additionally, the Orc type system can be extended with user-declared types.  See TODO.</para>
+<para>Additionally, the Orc type system can be extended with user-declared types.  See <olink targetdoc="ref.declarations.type" targetptr="ref.declarations.type"><code>type</code> declarations</olink>.</para>
 
 
 <section xml:id="ref.data.external.examples">
