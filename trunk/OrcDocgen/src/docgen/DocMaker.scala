@@ -65,9 +65,9 @@ class DocMaker(toplevelName: String) {
 	
   
   def renderChapter(targets: List[File]): Node = {
-    <chapter id={toplevelName}>
+    <chapter id={toplevelName} xmlns:xi="http://www.w3.org/2001/XInclude">
       { generateHeaderComment(None) }
-      <title>Reference</title>
+      <title>Standard Library</title>
         <xi:include href={toplevelName + ".intro" + ".xml"}/>
         { targets map { t => <xi:include href={t.getName()}/> } }
     </chapter>
