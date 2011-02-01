@@ -26,7 +26,6 @@
 <xi:include href="content/ref.data.xml"/> 
 <xi:include href="content/ref.patterns.xml"/>
 <xi:include href="content/ref.functions.xml"/>
-<xi:include href="content/ref.class2.xml"/>
 <xi:include href="content/ref.class.xml"/>
 <xi:include href="content/ref.declarations.xml"/>
 <xi:include href="content/ref.expressions.xml"/> 

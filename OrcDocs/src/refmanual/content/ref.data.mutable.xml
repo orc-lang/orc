@@ -27,16 +27,17 @@ Most of Orc's value types are immutable.</para>
 
 <para>Orc provides the following standard mutable value types:
 <itemizedlist>
-<listitem><para><code><xref linkend="library.state.Ref"/></code>: Reference to a value that can be changed</para></listitem>
-<listitem><para><code><xref linkend="library.state.Cell"/></code>: A write-once Ref</para></listitem>
-<listitem><para><code><xref linkend="library.state.Buffer"/></code>: A queue of values</para></listitem>
-<listitem><para><code><xref linkend="library.state.BoundedBuffer"/></code>: A queue of values with a maximum size</para></listitem>
-<listitem><para><code><xref linkend="library.state.Array"/></code>: A mutable integer-indexed sequence of values</para></listitem>
-<listitem><para><code><xref linkend="library.state.Set"/></code>: A mutable set of values</para></listitem>
-<listitem><para><code><xref linkend="library.state.Counter"/></code>: A value that can be incremented and decremented atomically </para></listitem>
-<listitem><para><code><xref linkend="library.state.Dictionary"/></code>: A mutable Record</para></listitem>
+<listitem><para><code>Ref</code>: Reference to a value that can be changed</para></listitem>
+<listitem><para><code>Cell</code>: A write-once Ref</para></listitem>
+<listitem><para><code>Buffer</code>: A queue of values</para></listitem>
+<listitem><para><code>BoundedBuffer</code>: A queue of values with a maximum size</para></listitem>
+<listitem><para><code>BoundedBuffer</code>: A queue of values with a maximum size</para></listitem>
+<listitem><para><code>Array</code>: A mutable integer-indexed sequence of values</para></listitem>
+<listitem><para><code>Set</code>: A mutable set of values</para></listitem>
+<listitem><para><code>Counter</code>: A value that can be incremented and decremented atomically</para></listitem>
+<listitem><para><code>Dictionary</code>: A mutable Record</para></listitem>
 </itemizedlist>
-See the reference manual entries for each of these types for details and examples.
+See the <olink targetdoc="ref.stdlib.state">Standard Library</olink> section for more details on the value types.
 </para>
 
 
