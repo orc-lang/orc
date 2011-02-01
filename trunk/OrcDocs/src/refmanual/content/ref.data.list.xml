@@ -70,7 +70,8 @@ is silent. Thus, <code><![CDATA[[e_1, e_2, ..., e_n]]]></code> is equivalent to
 <section xml:id="ref.data.list.javacalls">
 <title>Java calls</title>
 
-<para>TODO.</para>
+<para>Orc <type>List</type>s don't correspond to any Java value, so if a <type>List</type>
+is passed to Java code, it will be as an <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 
@@ -150,22 +151,6 @@ tail([3,2,5]) = [2,5]
     	</tbody>
   		</tgroup>
 	  </informaltable>
-
-        <!--
-          <entry><itemizedlist> 
-          <listitem><para><xref linkend="types.List"/></para></listitem>
-          <listitem><para><xref linkend="library.core.If"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
-          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
-          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-        </itemizedlist></entry>
-       -->
-
 </section>
 
 </section>

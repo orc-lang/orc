@@ -85,9 +85,11 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.types.Signal" targetptr="ref.types.Signal"><code>Signal</code> type</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.If"><code>If</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Unless"><code>Unless</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.time" targetptr="ref.stdlib.time.metronome"><code>metronome</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.util" targetptr="ref.stdlib.util.signals"><code>signals</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -104,29 +106,12 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="section.services.site">site Sites</olink></para></listitem>
-          			<listitem><para><olink targetdoc="root" targetptr="orc.sites">Calling a Site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="orc.sites.calling">Calling a site</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
   		</tgroup>
 	  </informaltable>
-	  
-      <!-- 
-        <entry><itemizedlist>
-          <listitem><para><xref linkend="types.Signal"/></para></listitem>
-          <listitem><para><xref linkend="library.core.If"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
-          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
-          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-        </itemizedlist></entry>
-        -->
-
 </section>
 
 </section>

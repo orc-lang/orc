@@ -120,9 +120,9 @@ Rtimer(100) >> (f(), g())
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.types.Tuple" targetptr="types.Tuple"><code>Tuple</code> type</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="library.state.fst"><code>fst</code> function</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="library.state.snd"><code>snd</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -139,27 +139,13 @@ Rtimer(100) >> (f(), g())
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="cor.data">Data Structures</olink></para></listitem>
-          			<listitem><para><olink targetdoc="root" targetptr="section.values.scala">Orc Values in Scala</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="cor.data.tuple">Tuple</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="section.idioms.forkjoin">Fork-Join</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
   		</tgroup>
 	  </informaltable>
-
-      <!-- 
-        <entry><itemizedlist>
-          <listitem><para><xref linkend="types.Tuple"/></para></listitem>
-          <listitem><para><xref linkend="library.state.fst"/></para></listitem>
-          <listitem><para><xref linkend="library.state.snd"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-        </itemizedlist></entry>
-        -->
-
 </section>
 
 </section>
