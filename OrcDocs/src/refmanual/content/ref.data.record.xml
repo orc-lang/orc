@@ -107,22 +107,6 @@ signal
     	</tbody>
   		</tgroup>
 	  </informaltable>
-
-      <!-- 
-        <entry><itemizedlist>
-          <listitem><para><xref linkend="types.Record"/></para></listitem>
-          <listitem><para><xref linkend="library.core.If"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Unless"/></para></listitem>
-          <listitem><para><xref linkend="library.time.metronome"/></para></listitem>
-          <listitem><para><xref linkend="library.util.signals"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-        </itemizedlist></entry>
-        -->
-
 </section>
 
 </section>

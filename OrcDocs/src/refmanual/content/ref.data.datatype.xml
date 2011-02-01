@@ -35,7 +35,9 @@ with zero values.</para>
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Constructor</replaceable> ::= <replaceable>ident</replaceable><code>(_, </code>...<code>)</code> | <replaceable>ident</replaceable><code>(</code><replaceable>Type</replaceable><code>, </code>...<code>)</code></para>
 
-<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
+<para>Constructor arguments are evaluated in parallel, and the first published value of each argument
+expression is used as the actual argument to the consructor.  If any argument expression is silent,
+the construtor invocation is silent.</para>
 
 <section xml:id="ref.data.datatype.patterns">
 <title>Patterns</title>
@@ -117,9 +119,7 @@ type Option[T] = Some(T) | None
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

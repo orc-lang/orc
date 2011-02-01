@@ -13,8 +13,6 @@
 <section xml:id="ref.data.external">
 <title>External Values</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>TODO</code></para>
-
 <para>Orc's value set is "open" &#8212; any value returned from a site call can be used in Orc expressions.
 Combined with Orc's ability to invoke arbitrary functions of the environment in with the Orc runtime engine is running,
 this permits Orc programs to use any expressible value in its environment.
@@ -66,9 +64,9 @@ HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> m.put("Donald", "Dais
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para><olink targetdoc="ref.sites" targetptr="ref.sites">Sites</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java Sites</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web Services</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom Sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -91,7 +89,6 @@ HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> m.put("Donald", "Dais
     	</tbody>
   		</tgroup>
 	  </informaltable>
-
 </section>
 
 </section>

@@ -142,9 +142,19 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.types.Integer" targetptr="ref.types.Integer"><code>Integer</code> type</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.types.Number" targetptr="ref.types.Number"><code>Number</code> type</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Add"><code>Add</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Sub"><code>Sub</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.UMinus"><code>UMinus</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Mult"><code>Mult</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Exponent"><code>Exponent</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Div"><code>Div</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Mod"><code>Mod</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.abs"><code>abs</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.signum"><code>signum</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.floor"><code>floor</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.ceil"><code>ceil</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -161,36 +171,13 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="section.services.java.method">Method Resolution</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="cor.constants">Constants</olink></para></listitem>
+          			<listitem><para><olink targetdoc="root" targetptr="language.base.operators">Operators</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
   		</tgroup>
 	  </informaltable>
-
-      <!-- 
-        <entry><itemizedlist>
-          <listitem><para><xref linkend="types.Integer"/></para></listitem>
-          <listitem><para><xref linkend="types.Number"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Add"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Sub"/></para></listitem>
-          <listitem><para><xref linkend="library.core.UMinus"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Mult"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Exponent"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Div"/></para></listitem>
-          <listitem><para><xref linkend="library.core.Mod"/></para></listitem>
-          <listitem><para><xref linkend="library.core.abs"/></para></listitem>
-          <listitem><para><xref linkend="library.core.signum"/></para></listitem>
-          <listitem><para><xref linkend="library.core.floor"/></para></listitem>
-          <listitem><para><xref linkend="library.core.ceil"/></para></listitem>
-        </itemizedlist></entry>
-        <entry><itemizedlist>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-          <listitem><para><olink targetdoc="root" targetptr="TODO">TODO</olink></para></listitem>
-        </itemizedlist></entry>
-        -->
-
 </section>
 
 </section>

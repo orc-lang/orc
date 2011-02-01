@@ -97,9 +97,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.expressions.ifthenelse" targetptr="ref.expressions.ifthenelse">If Then Else</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
