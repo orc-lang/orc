@@ -15,16 +15,48 @@
 		<title>Type</title>
 		<section xml:id="ref.declarations.type.body">
 			<para>
-David?
+			A type declaration binds a type variable to a type. There are three kinds of 
+			type declarations: aliases, imports, and 
+			<olink targetdoc="ref.data" targetptr="ref.data.datatypes">datatypes</olink>.
+			This section discusses only aliases and imports.
 			</para>
+			
+			<para>
+			A type alias gives an existing type a new name, for the programmer's ease of use.
+			There is no distinction between the alias and the aliased type; they can be used
+			interchangeably. A type alias may be polymorphic, in which case the alias defines
+			a type operator. 
+			</para>
+			
+			<para>
+			A type import gives a name to a type described by some external entity, typically
+			by the host language. This allows new types to be added to the Orc type system.
+			Typically, these new types are used to describe new structures created by sites,
+			for example a <code>Buffer</code> type or a <code>URL</code> type. 
+			</para>
+			
+			<para>
+			Type aliases and imports use the same keyword, but they are easy to differentiate:
+			the right hand side of a type alias is always a valid Orc type, whereas the right
+			hand side of a type import is always a fully specified Java or Scala class name.
+			</para>
+			
 		</section>
 		
 		<section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.type.examples.one"><title>Need Title</title>
+		<example xml:id="ref.declarations.type.examples.one"><title>Aliases</title>
 <programlisting><![CDATA[
---need examples
+type vector = {. x :: Number, y :: Number, z :: Number .}
+type relation[R] = (R,R) => Boolean
+]]></programlisting>
+		  </example>
+		  
+		<example xml:id="ref.declarations.type.examples.two"><title>Imports</title>
+<programlisting><![CDATA[
+type Signal = "orc.types.SignalType"
+type Cell = orc.lib.state.types.CellType
 ]]></programlisting>
 		  </example>
 		</section>
@@ -42,7 +74,7 @@ David?
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para>TODO</para></listitem>
+	          			<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.datatypes">Datatypes</olink></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
