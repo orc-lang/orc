@@ -63,8 +63,14 @@ class ParsingException(val message: String, val errorPos: Position)
 /**
  * Problem loading a compiled representation of an Orc program (such as OIL). 
  */
-class LoadingException(val message: String) extends SyntacticException(message) with SeverityFatal
+case class LoadingException(val message: String) extends SyntacticException(message) with SeverityFatal
 
+/**
+ * A record expression maps the same key more than once.
+ */
+case class DuplicateKeyException(val duplicateKey: String) 
+  extends SyntacticException("Duplicate mapping for key " + duplicateKey + " in record. The rightmost mapping will be used.")
+  with SeverityWarning
 
 /**
  * A pattern, or set of pattern arguments, mentions the same variable more than once.
