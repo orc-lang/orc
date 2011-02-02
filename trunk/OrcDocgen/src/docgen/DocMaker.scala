@@ -109,7 +109,6 @@ class DocMaker(toplevelName: String) {
         val declChunk = {
           <variablelist>
             <?dbfo list-presentation="list"?>
-            <?dbhtml list-presentation="table"?>
             { decls map { d: DocItem => renderDecl(d.asInstanceOf[DocDecl], newNextCode) } }
           </variablelist>  
         }
