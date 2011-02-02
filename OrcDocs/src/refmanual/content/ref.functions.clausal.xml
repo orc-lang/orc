@@ -35,7 +35,7 @@ If no clause matches, the call remains silent.
 		  <title>Examples</title>
 
 		  <example xml:id="ref.functions.clausal.examples.one"><title>Simple example of a clausal function</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def sum([]) = 0
 def sum(h:t) = h + sum(t)
 ]]></programlisting>
@@ -47,11 +47,13 @@ def sum(h:t) = h + sum(t)
 def fib(0) = 1
 def fib(1) = 1
 def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+
+fib(5)  -- Should publish 8
 ]]></programlisting>
 		  </example>
 
 		  <example xml:id="ref.functions.clausal.examples.three"><title>Parity</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Return true if parity of 1s in a binary string is even -}
 def even([]) = true
 def odd([]) = false
@@ -77,13 +79,13 @@ area(("sq",1))
 		  </example>
 		  
 		  <example xml:id="ref.functions.clausal.examples.five"><title>Currying</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def sum(d,l)(h,p,v) = parts(d,l,h,p,v)
 ]]></programlisting>
 		  </example>
 		  
 		  <example xml:id="ref.functions.clausal.examples.six"><title>Wild-Card</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def parts23(_,s,h,0,m,n) = 1
 ]]></programlisting>
 		  </example>

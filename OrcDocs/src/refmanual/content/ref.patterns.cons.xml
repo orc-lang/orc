@@ -15,17 +15,19 @@
 		<title>Cons Pattern</title>
 		<section xml:id="ref.patterns.cons.body">
 			<para>
-				Fill in more about the cons pattern.
+				The <code>cons</code> pattern is used to decompose a list into the first element and a list that contains the remaining elements.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= P : P</emphasis></para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>P : P</code></emphasis></para>
 		</section>
 		
 		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.cons.examples.one"><title>Example Needed</title>
+		  <example xml:id="ref.patterns.cons.examples.one"><title>Print List Head</title>
 <programlisting><![CDATA[
-{- Example needed -}
+-- Publishes the integer 1
+val a = [1,2,3]
+a >x:y> x
 ]]></programlisting>
 		  </example>
 		</section>

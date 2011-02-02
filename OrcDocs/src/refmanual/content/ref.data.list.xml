@@ -94,8 +94,8 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
   [[2],3,5,7]         [(3,5), 8]          [(3,5), (3,8,2)]    [0,"misra"]
 
 -- The order and number of elements in a list matter. So,
-[2,3] is not the same as  [3,2]
-[2] is not the same as    [2,2]
+[2,3] {- is not the same as -}  [3,2]
+[2] {- is not the same as -}    [2,2]
 ]]></programlisting>
 </example>
 

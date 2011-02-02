@@ -25,7 +25,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.call.examples.one"><title>Associative Folding</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Match and unwrap the arguments using a datatype (call) pattern -}
 
 type Tree = Node(_,_,_) | Empty()

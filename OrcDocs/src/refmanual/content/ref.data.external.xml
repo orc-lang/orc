@@ -40,7 +40,7 @@ BitSet() >b> b.set(2) >> b.set(4) >> b.toString()
 
 <example xml:id="ref.data.external.examples.javahashmap">
 <title>Java HashMap</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 -- Using the Java class java.util.HashMap, construct a new instance, and then put and get some entries
 
 class HashMap = "java.util.HashMap"

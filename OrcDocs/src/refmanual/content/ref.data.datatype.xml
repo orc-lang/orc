@@ -26,14 +26,14 @@ with zero values.</para>
 
 <para>Datatypes can be recursive; namely, a datatype instance may contain an instance of the same type.</para>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>DataTypeDecl</replaceable> ::= <code>type </code><replaceable>TypeVar</replaceable><code>[</code><replaceable>TypeVar</replaceable>...<code>] = </code><replaceable>Constructor</replaceable><code> | </code><replaceable>Constructor</replaceable>...</para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>DataTypeDecl</replaceable> ::= <code>type </code><replaceable>TypeVar</replaceable><code>[</code><replaceable>TypeVar</replaceable>...<code>] = </code><replaceable>Constructor</replaceable><code> &#10073; </code><replaceable>Constructor</replaceable>...</para>
 
 <section xml:id="ref.data.datatype.constructors">
 <title>Constructors</title>
 
 <para>Each tag name is declared as a data constructor, which is used to create values of the datatype.</para>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Constructor</replaceable> ::= <replaceable>ident</replaceable><code>(_, </code>...<code>)</code> | <replaceable>ident</replaceable><code>(</code><replaceable>Type</replaceable><code>, </code>...<code>)</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Constructor</replaceable> ::= <replaceable>ident</replaceable><code>(_, </code>...<code>)</code> &#10073; <replaceable>ident</replaceable><code>(</code><replaceable>Type</replaceable><code>, </code>...<code>)</code></para>
 
 <para>Constructor arguments are evaluated in parallel, and the first published value of each argument
 expression is used as the actual argument to the consructor.  If any argument expression is silent,
@@ -55,7 +55,7 @@ but those mathematical terms should not be confused with their usage in many obj
 
 <example xml:id="ref.data.datatypes.examples.shapes">
 <title>Geometric shape datatype</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 -- A Shape type with three data constructors
 type Shape = Rectangle(_, _) | Circle (_) | Triangle(_, _, _)
 
@@ -66,7 +66,7 @@ Rectangle(2, 3)
 
 <example xml:id="ref.data.datatypes.examples.binarytree">
 <title>Binary tree node</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 --This is a binary tree datatype
 --Leaf nodes carry integer values
 type Node = LeafNode(Integer) | InnerNode(Node, Node)
@@ -81,7 +81,7 @@ InnerNode(LeafNode(1),InnerNode(LeafNode(2),LeafNode(3)))
 
 <example xml:id="ref.data.datatypes.examples.binarytreepoly">
 <title>Polymorphic binary tree node</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 --This is a binary tree datatype
 --Leaf nodes carry values of type T
 type Node[T] = LeafNode(T) | InnerNode(Node, Node)
@@ -96,7 +96,7 @@ InnerNode[String](LeafNode("A"),InnerNode(LeafNode("B"),LeafNode("C")))
 
 <example xml:id="ref.data.datatypes.examples.option">
 <title>Orc built-in Option type</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 --Option is built in to Orc, but if it were
 --declared, the declaration would be:
 type Option[T] = Some(T) | None

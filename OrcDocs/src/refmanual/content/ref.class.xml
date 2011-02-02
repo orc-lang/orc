@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ref.class.xml - DocBook source for an Orc reference manual chapter
 
-     $Id:$
+     $Id$
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -22,10 +22,13 @@
 		executions may be based on time or other external stimulus, not
 		necessarily explicitly called methods.
       </para>
-      <section xml:id="ref.class.syntax">
+	  <section xml:id="ref.class.body">
+	  <title>Class</title>
+	  <section xml:id="ref.class.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>:</para>
 		  <para>
+		  <!-- 
 <programlisting language="orc"><![CDATA[
 D::=                             Declaration     
   val P = E                      Value Declaration
@@ -36,9 +39,105 @@ CP::=                            Class Declaration
     def X( P , ... , P ) = E
     E                            Goal Expression    
 ]]></programlisting>
+			-->
+			<table frame="none" rowsep="0" colsep="0">
+			<title>Class Syntax</title>
+			<?dbhtml table-width="80%" ?>
+			<?dbfo table-width="100%" ?>
+			<!--  <?dbfo keep-together="always" ?>  -->
+			<tgroup cols="5" >
+			<colspec colnum="1" colwidth="1*" align="right"/>
+			<colspec colnum="2" colwidth="1*" align="center"/>
+			<colspec colnum="3" colwidth="10*" align="left"/>
+			<colspec colnum="4" colwidth="5*" align="left"/>
+			<colspec colnum="5" colwidth="7*" align="left"/>
+			<tbody>
+			
+			<row>
+			<entry>D</entry>
+			<entry>::=</entry>
+			
+			<entry></entry>
+			
+			<entry><emphasis>Declaration</emphasis></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry></entry>
+			
+			<entry><code>val P = E</code></entry>
+			
+			<entry><emphasis>Value Declaration</emphasis></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry>&#10073;</entry>
+			
+			<entry><code>def X( P , ... , P ) = E</code></entry>
+			
+			<entry></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry>CP</entry>
+			<entry>::=</entry>
+			
+			<entry></entry>
+			
+			<entry><emphasis>Class Declaration</emphasis></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry></entry>
+			
+			<entry><code>def class C( P , ... , P ) =</code></entry>
+			
+			<entry></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry></entry>
+			
+			<entry><code>    (D </code>&#10073;<code> CP)*</code></entry>
+			
+			<entry></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry></entry>
+			
+			<entry><code>    def X( P , ... , P ) = E</code></entry>
+			
+			<entry></entry>
+			<entry></entry>
+			</row>
+			
+			<row>
+			<entry></entry>
+			<entry></entry>
+			
+			<entry><code>    E</code></entry>
+			
+			<entry>Goal Expression</entry>
+			<entry></entry>
+			</row>
+			
+			</tbody>
+			</tgroup>
+			</table>
 		  </para>
 	  </section>
-	  <section xml:id="ref.class.body"><title>Class</title>
 	  <section xml:id="ref.class.declaration">
 		  <title>Declaration</title>
 		  <para> A class is defined much like a a function, as shown below. </para>
@@ -62,7 +161,7 @@ def class Newset(n) =
 			classes.
 		  </para>
 		  <example xml:id="ref.class.declaration.example"><title>Defining a Set</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 -- Define a set of maximum length n.
 -- Export methods "add", "remove" and "size".
 
@@ -202,7 +301,7 @@ A(-1, 2) := 5 >> A(-1, 2) := 3 >> A(-1, 2)?
 			value has been written) and <code>Ref</code> to store the value.
 		  </para>
 		  <example xml:id="ref.class.semantics.examples.two"><title>Create a Site</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def class Cell() =
  val s = Semaphore(1)
  val r = Ref ()
@@ -222,7 +321,7 @@ stop
 			assign a name different from "Buffer", "Channel", to this class.
 		  </para>
 		  <example xml:id="ref.class.semantics.examples.three"><title>Extend Functionality of an Existing Site</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def class Channel() =
  val ch = Buffer()
  val chlen = Counter(0)
@@ -245,7 +344,7 @@ stop
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
 		  <example xml:id="ref.class.semantics.examples.four"><title>Managing Concurrent Access</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def class Newset(n) =
  val b = BoundedBuffer(n)
  val (s , ne) = (semaphore(1) , Ref(0))
@@ -280,7 +379,7 @@ stop
 			publications of the goal expression are ignored.
 		  </para>
 		  <example xml:id="ref.class.semantics.examples.five"><title>Computing with the Goal Expression</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def class metro() =
 
  def metronome() = signal | Rtimer(1000) >> metronome()
@@ -295,7 +394,7 @@ val _ = metro()
 		  <section>
 		  <title>Stopwatch</title>
 		  <example xml:id="ref.class.semantics.examples.six"><title>Stopwatch</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {-
 A stopwatch allows the following operations:
  start(): (re)starts the stopwatch and publishes a signal

@@ -15,13 +15,13 @@
 		<title>Operators</title>
 		<section xml:id="ref.expressions.operators.body">
 			<para>
-				Cor has a standard set of arithmetic, logical, and comparison operators.
+				Orc has a standard set of arithmetic, logical, and comparison operators.
 				As in most other programming languages, they are written in the usual 
 				infix style. They have Java-like operator precedence, which can be
 				overridden by adding parentheses.  
 			</para>
 			<para>
-Here is the full set of operators that Cor supports:
+Here is the full set of operators that Orc supports:
 
 <table xml:id="ref.ops.table" frame="none" rowsep="0" colsep="0"> 
 <?dbhtml table-width="80%" ?>

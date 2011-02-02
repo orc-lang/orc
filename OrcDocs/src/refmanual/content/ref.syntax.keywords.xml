@@ -42,10 +42,10 @@
 		<entry><code>true</code></entry>
 		<entry><code>false</code></entry>
 		<entry><code>signal</code></entry>
-		<entry><code>stop</code></entry>
+		<entry><code>_</code></entry>
 		<entry><code>null</code></entry>
 		<entry><code>lambda</code></entry>
-		<entry><code>_</code></entry>
+		<entry><code>stop</code></entry>
 </row>
 	
 <row>

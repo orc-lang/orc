@@ -45,15 +45,14 @@ declaration, this has the same effect as evaluating a silent expression. No vari
 if any one of those variables is later evaluated, it is silent.
 </para>
 
-<xi:include href="ref.patterns.as.xml"/>
+<xi:include href="ref.patterns.constant.xml"/>
+<xi:include href="ref.patterns.variable.xml"/>
+<xi:include href="ref.patterns.tuple.xml"/>
+<xi:include href="ref.patterns.list.xml"/>
 <xi:include href="ref.patterns.call.xml"/>
 <xi:include href="ref.patterns.cons.xml"/>
-<xi:include href="ref.patterns.constant.xml"/>
+<xi:include href="ref.patterns.as.xml"/>
 <xi:include href="ref.patterns.equality.xml"/>
-<xi:include href="ref.patterns.list.xml"/>
-<xi:include href="ref.patterns.record.xml"/>
-<xi:include href="ref.patterns.tuple.xml"/>
-<xi:include href="ref.patterns.variable.xml"/>
 <xi:include href="ref.patterns.wildcard.xml"/>
 
 </chapter>

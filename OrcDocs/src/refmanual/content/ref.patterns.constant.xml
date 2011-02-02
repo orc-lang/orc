@@ -26,7 +26,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.constant.examples.one"><title>Base Case Definition</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Use the format function(CONSTANT) = value for later pattern matching on the constant -}
 
 {- Fibonacci numbers -}

@@ -29,27 +29,28 @@
 		  <itemizedlist>
 			  <listitem><code><![CDATA[F >x> G]]></code>
 				  <para>
-					  The execution of <code><![CDATA[F >x> G]]></code> starts by executing F. Whenever F 
-					  publishes a value, a new copy of G is executed in parallel with F (and with any previous 
-					  copies of G); in that copy of G, variable x is bound to the value published by F. Values 
-					  published by copies of G are published by the whole expression, but the values published 
-					  by F are not published by the whole expression; they are consumed by the variable binding. 
+					  The execution of <code><![CDATA[F >x> G]]></code> starts by executing <code><![CDATA[F]]></code>. Whenever <code><![CDATA[F]]></code> 
+					  publishes a value, a new copy of <code><![CDATA[G]]></code> is executed in parallel with <code><![CDATA[F]]></code> (and with any previous 
+					  copies of <code><![CDATA[G]]></code>); in that copy of <code><![CDATA[G]]></code>, variable <code><![CDATA[x]]></code> is bound to the value
+					  published by <code><![CDATA[F]]></code>. Values 
+					  published by copies of <code><![CDATA[G]]></code> are published by the whole expression, but the values published 
+					  by <code><![CDATA[F]]></code> are not published by the whole expression; they are consumed by the variable binding. 
 				  </para>
 			  </listitem>
 			  <listitem><code><![CDATA[F >P> G]]></code>
 				  <para>
-					  The sequential combinator may be written as <code><![CDATA[F >P> G]]></code>, where P is a pattern instead of 
-					  just a variable name. Any value published by F is matched against the pattern P. 
-					  If this match is successful, a new copy of G is started with all of the bindings 
+					  The sequential combinator may be written as <code><![CDATA[F >P> G]]></code>, where <code><![CDATA[P]]></code> is a pattern instead of 
+					  just a variable name. Any value published by <code><![CDATA[F]]></code> is matched against the pattern <code><![CDATA[P]]></code>. 
+					  If this match is successful, a new copy of <code><![CDATA[G]]></code> is started with all of the bindings 
 					  from the match. Otherwise, the published value is simply ignored, and no new copy 
-					  of G is executed. 
+					  of <code><![CDATA[G]]></code> is executed. 
 				  </para>
 			  </listitem>
 			  <listitem><code><![CDATA[F >> G]]></code> 
 				  <para>
 				  This is equivalent to using a wildcard pattern:  <code><![CDATA[F >_> G]]></code>.  Every publication
-				  of F will match the combinator pattern, causing an evaluation of G for every individual
-				  publication of F.  No bindings will be made in G from these publications.
+				  of <code><![CDATA[F]]></code> will match the combinator pattern, causing an evaluation of <code><![CDATA[G]]></code> for every individual
+				  publication of <code><![CDATA[F]]></code>.  No bindings will be made in <code><![CDATA[G]]></code> from these publications.
 				  </para>
 			  </listitem>		  
 		  </itemizedlist>
@@ -65,7 +66,7 @@
 		  </example>
 
 		  <example xml:id="ref.combinators.sequential.examples.two"><title>Variable Binding 2</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 -- Prepend the site name to each published search result
 -- The cat site concatenates any number of arguments into one string  
   Google("cupcake") >s> cat("Google: ", s)
@@ -74,14 +75,14 @@
 		  </example>
 		  
 		  <example xml:id="ref.combinators.sequential.examples.three"><title>Pattern Publication</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 -- Publish 3, 6, and 9 in arbitrary order.
 (3,6,9)  >(x,y,z)>  ( x | y | z )
 ]]></programlisting>
 		  </example>
 		  
 		  <example xml:id="ref.combinators.sequential.examples.four"><title>Filtering</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 -- Filter out values of the form (_,false)
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
 -- Publishes 4 and 6 
@@ -89,7 +90,7 @@
 		  </example>
 		  
 		  <example xml:id="ref.combinators.sequential.examples.five"><title>Suppressed Publication</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   Print two strings to the console,
   but don't publish the return values of the calls.

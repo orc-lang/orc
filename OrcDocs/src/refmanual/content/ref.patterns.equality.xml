@@ -27,7 +27,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.equality.examples.one"><title>Equality Definition</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Consider the following definition, which compares its 
 argument to the value bound to variable x, returning true 
 if they are equal and false otherwise.  -}
@@ -38,7 +38,7 @@ def isx(_) = false
 		  </example>
 		
 		<example xml:id="ref.patterns.equality.examples.two"><title>Equality Definition II</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- The equality pattern becomes much more useful when 
 it is embedded within other patterns. For example, consider 
 this definition withz. If one of the arguments passed to it 

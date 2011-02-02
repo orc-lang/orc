@@ -28,9 +28,9 @@
 	chapter shows how various expressions are executed within Orc.
 </para>
 
-<xi:include href="ref.expressions.ifthenelse.xml"/>	
-<xi:include href="ref.expressions.lambda.xml"/>
 <xi:include href="ref.expressions.operators.xml"/> 
+<xi:include href="ref.expressions.ifthenelse.xml"/>	
 <xi:include href="ref.expressions.val.xml"/> 
+<xi:include href="ref.expressions.lambda.xml"/>
 
 </chapter>

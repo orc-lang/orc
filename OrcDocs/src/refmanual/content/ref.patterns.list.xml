@@ -25,7 +25,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.list.examples.one"><title>Associative Folding</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Define an associative folding function based on list pattern matching -}
 def afold(_, [x]) = x
 def afold(f, xs) =

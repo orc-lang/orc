@@ -26,7 +26,7 @@ of variable name <code>x</code>).
 		  <title>Examples</title>
 
 		  <example xml:id="ref.expressions.val.examples.one"><title>Bindings</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
 Bind x to true or false arbitrarily 
 Bind y to 2 or 3

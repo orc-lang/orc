@@ -32,7 +32,7 @@ println("red") >> Rtimer(3000) >> println("green") >> stop
 		  </example>
 
 		  <example xml:id="ref.time.rtimer.examples.two"><title>Timeout</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {-
   Publish the result of a Google search.
   If it takes more than 5 seconds, time out.

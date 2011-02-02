@@ -32,7 +32,7 @@ class to provide the service.
 		<title>Examples</title>
 		
 		<example xml:id="ref.declarations.site.examples.one"><title>Site Declaration</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {-  
 Define the Buffer site by instantiating a Java object,
 specifically an object that provides an asynchronous 
