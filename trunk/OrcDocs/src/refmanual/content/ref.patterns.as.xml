@@ -25,7 +25,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.as.one"><title>Simplified Fragment</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}
 val (a,b) = ((1,2),(3,4))
 val (ax,ay) = a

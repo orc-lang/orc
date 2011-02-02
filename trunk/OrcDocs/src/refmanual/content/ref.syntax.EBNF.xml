@@ -54,7 +54,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>X</entry>
 
@@ -65,7 +65,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>stop</code></entry>
 
@@ -76,7 +76,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
 
@@ -86,7 +86,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>[</code> E <code>,</code> ... <code>,</code> E <code>]</code></entry>
 
@@ -106,7 +106,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E G+</entry>
 
@@ -116,7 +116,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><emphasis>op</emphasis> E</entry>
 
@@ -126,7 +126,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E <emphasis>op</emphasis> E</entry>
 
@@ -136,7 +136,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
 
@@ -146,7 +146,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E <code>FATBAR</code> E</entry>
 
@@ -156,7 +156,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
 
@@ -167,7 +167,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E <code>;</code> E</entry>
 
@@ -177,7 +177,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>lambda (</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
 
@@ -188,7 +188,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>lambda</code><code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code><code>::</code> T <code>=</code> E </entry>
 
@@ -199,7 +199,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
 
@@ -209,7 +209,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>D E</entry>
 
@@ -219,7 +219,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E <code>::</code> T</entry>
 
@@ -229,7 +229,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>E <code>:!:</code> T</entry>
 
@@ -259,7 +259,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry> <code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
 
@@ -270,7 +270,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry> <code>.</code><emphasis>field</emphasis> </entry>
 
@@ -281,7 +281,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry> <code>?</code> </entry>
 
@@ -294,7 +294,7 @@
 <entry>C</entry>
 <entry>::=</entry>
 
-<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis> | <code>signal</code> | <code>null</code></entry>
+<entry><emphasis>Boolean</emphasis> &#10073; <emphasis>Number</emphasis> &#10073; <emphasis>String</emphasis> &#10073; <code>signal</code> &#10073; <code>null</code></entry>
 
 <entry><emphasis>Constant</emphasis></entry>
 <entry></entry>
@@ -333,7 +333,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>site</code> X <code>=</code> <emphasis>address</emphasis></entry>
 
@@ -343,7 +343,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>class</code> X <code>=</code> <emphasis>classname</emphasis></entry>
 
@@ -353,7 +353,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>include</code> <code>"</code> <emphasis>filename</emphasis> <code>"</code></entry>
 
@@ -363,7 +363,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>def</code> X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code>+ <code>::</code> T <code>=</code> E</entry>
 
@@ -373,7 +373,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>def</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code>+ <code>::</code> T</entry>
 
@@ -383,7 +383,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>type</code> X <code>=</code> <emphasis>classname</emphasis></entry>
 
@@ -394,7 +394,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> T</entry>
 
@@ -404,9 +404,9 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
-<entry><code>type</code> X <code>=</code> UC | ... | UC </entry>
+<entry><code>type</code> X <code>=</code> UC &#10073; ... &#10073; UC </entry>
 
 <entry></entry>
 <entry><emphasis>datatype declaration (untyped)</emphasis></entry>
@@ -415,7 +415,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> TC | ... | TC </entry>
 
@@ -466,7 +466,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>C</entry>
 
@@ -477,7 +477,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>_</code></entry>
 
@@ -487,7 +487,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>X <code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
@@ -497,7 +497,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
 
@@ -507,7 +507,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>[</code> P <code>,</code> ... <code>,</code> P <code>]</code></entry>
 
@@ -517,7 +517,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>P <code>:</code> P</entry>
 
@@ -527,7 +527,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>{.</code> X <code>=</code> P <code>,</code> ... <code>,</code> X <code>=</code> P <code>.}</code></entry>
 
@@ -548,7 +548,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>=</code>X</entry>
 
@@ -558,7 +558,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>P <code>::</code> T</entry>
 
@@ -589,9 +589,9 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
-<entry><code>Integer</code> | <code>Boolean</code> | <code>String</code> | <code>Number</code> | <code>Signal</code> | <code>Top</code> | <code>Bot</code></entry>
+<entry><code>Integer</code> &#10073; <code>Boolean</code> &#10073; <code>String</code> &#10073; <code>Number</code> &#10073; <code>Signal</code> &#10073; <code>Top</code> &#10073; <code>Bot</code></entry>
 
 <entry></entry>
 <entry><emphasis>Ground type</emphasis></entry>
@@ -600,7 +600,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code></entry>
 
@@ -610,7 +610,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>{.</code> X <code>::</code> T <code>,</code> ... <code>,</code> X <code>::</code> T <code>.}</code></entry>
 
@@ -631,7 +631,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry>X<code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code></entry>
 

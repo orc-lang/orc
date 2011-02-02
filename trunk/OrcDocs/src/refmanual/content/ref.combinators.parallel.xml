@@ -28,8 +28,8 @@
 		  <title>Behavior</title>
 		  <itemizedlist><listitem><code><![CDATA[F | G]]></code></listitem></itemizedlist>
 		  <para>
-			  Orc executes the expression <code><![CDATA[F | G]]></code> by executing F 
-			  and G concurrently. Whenever F or G communicates with a service or 
+			  Orc executes the expression <code><![CDATA[F | G]]></code> by executing <code><![CDATA[F]]></code> 
+			  and <code><![CDATA[G]]></code> concurrently. Whenever <code><![CDATA[F]]></code> or <code><![CDATA[G]]></code> communicates with a service or 
 			  publishes a value, <code><![CDATA[F | G]]></code> does so as well. The 
 			  resulting publications of <code><![CDATA[F | G]]></code> may be published 
 			  in arbitrary order. 
@@ -49,7 +49,7 @@
 		  </example>
 
 		  <example xml:id="ref.combinators.parallel.examples.two"><title>Parallel Sites</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- 
  Access two search sites, Google and Yahoo, in parallel.
 

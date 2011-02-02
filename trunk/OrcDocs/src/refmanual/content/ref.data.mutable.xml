@@ -52,7 +52,7 @@ See the <olink targetdoc="ref.stdlib.state">Standard Library</olink> section for
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Ref"><code>Ref</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>Ref</code> site</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Cell"><code>Cell</code> site</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Buffer"><code>Buffer</code> site</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</olink></para></listitem>

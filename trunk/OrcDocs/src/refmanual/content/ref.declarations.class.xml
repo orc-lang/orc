@@ -14,6 +14,50 @@
 	<section xml:id="ref.declarations.class">
 		<title>Class</title>
 		<section xml:id="ref.declarations.class.body">
+		<para>TODO rewrite Class declaration section</para>
+		<section xml:id="ref.declarations.class.examples">
+		<title>Examples</title>
+		</section>
+		<section xml:id="ref.declarations.class.links">
+		  <title>Related Links</title>
+		  
+		<informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem><para><olink targetdoc="ref.class" targetptr="ref.class">Class</olink></para></listitem>
+	          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF Grammar</olink></para></listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+          				<listitem><para><olink targetdoc="root" targetptr="section.language.class">Classes</olink></para></listitem>
+          				<listitem><para><olink targetdoc="root" targetptr="section.language.class.examples">Class Examples</olink></para></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  </section>
+<!--
 			<para> TODO: Integrate Dr. Misra's writeup on Class </para>
 			<para>
 A <code>class</code> is an abstraction mechanism in Orc, much like the
@@ -66,7 +110,7 @@ A class has the following properties:
 <programlisting><![CDATA[
 def class Stack(n) =
   val store = Table(n, Ref)
-  val len = Ref (0) -- len is the current stack length
+  val len = Ref (0) {- len is the current stack length -}
 
   def push(x) = ift(len? <: n) >> store(len?) := x >> len := len? + 1
 
@@ -74,7 +118,7 @@ def class Stack(n) =
 
   {- class goal -} stop
 
------------ Test
+{- Test -}
 val st = Stack(5)
 st.push(3) >> st.push(5) >> st.pop() >> st.pop()
 ]]></programlisting>
@@ -119,6 +163,6 @@ st.push(3) >> st.push(5) >> st.pop() >> st.pop()
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
-
+-->
 	  </section>
 	</section>

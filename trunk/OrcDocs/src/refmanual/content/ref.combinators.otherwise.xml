@@ -29,12 +29,12 @@
 		  <itemizedlist>
 			  <listitem><code><![CDATA[F ; G]]></code>
 				  <para>
-The execution of
-<code><![CDATA[F ; G]]></code> proceeds as follows. First, F is executed. 
-If F completes, and has not published any values, then
-G executes. If F did publish one or more values, then G is ignored. 
-The publications of <code><![CDATA[F ; G]]></code> are those
-of F if F publishes, or those of G otherwise.
+					The execution of
+					<code><![CDATA[F ; G]]></code> proceeds as follows. First, <code><![CDATA[F]]></code> is executed. 
+					If <code><![CDATA[F]]></code> completes, and has not published any values, then
+					<code><![CDATA[G]]></code> executes. If <code><![CDATA[F]]></code> did publish one or more values, 
+					then <code><![CDATA[G]]></code> is ignored. The publications of <code><![CDATA[F ; G]]></code> are those
+					of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code> otherwise.
 				  </para>
 				  <para>
 				  We determine when an expression completes using the following rules.
@@ -46,19 +46,19 @@ An expression completes when it is fully evaluated; if it is silent, it complete
 A site call completes when it has published a value or halted.
 </listitem>
 <listitem>
-<code><![CDATA[F | G]]></code> completes when its subexpressions F and G have both completed.
+<code><![CDATA[F | G]]></code> completes when its subexpressions <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have both completed.
 </listitem>
 <listitem>
-<code><![CDATA[F >x> G]]></code> completes when F has completed and all instantiated copies of G have completed.
+<code><![CDATA[F >x> G]]></code> completes when <code><![CDATA[F]]></code> has completed and all instantiated copies of <code><![CDATA[G]]></code> have completed.
 </listitem>
 <listitem>
-<code><![CDATA[F <x< G]]></code> completes when F has completed, and G has either completed or published a value. Also,
-if G completes without publishing a value, then all expressions in F which use x also complete, since
+<code><![CDATA[F <x< G]]></code> completes when <code><![CDATA[F]]></code> has completed, and <code><![CDATA[G]]></code> has either completed or published a value. Also,
+if <code><![CDATA[G]]></code> completes without publishing a value, then all expressions in <code><![CDATA[F]]></code> which use <code><![CDATA[x]]></code> also complete, since
 they will never be able to proceed.
 </listitem>
 <listitem>
-<code><![CDATA[F ; G]]></code> completes either when F has published a value and subsequently completed, or when F and G
-have both completed.
+<code><![CDATA[F ; G]]></code> completes either when <code><![CDATA[F]]></code> has published a value and subsequently completed, 
+or when <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code>have both completed.
 </listitem>
 <listitem>
 <code>stop</code> completes immediately.
@@ -72,7 +72,7 @@ have both completed.
 		  <title>Examples</title>
 
 		  <example xml:id="ref.combinators.otherwise.examples.one"><title>Fallback Search</title>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- 
  Attempt to retrieve search results from Google.
  If Google does not respond, then use Yahoo.

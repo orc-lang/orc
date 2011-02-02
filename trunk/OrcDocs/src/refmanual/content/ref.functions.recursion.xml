@@ -27,13 +27,13 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.functions.recursion.examples.one"><title>Simple example of a recursive function</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
 ]]></programlisting>
 		  </example>
 
 		  <example xml:id="ref.functions.recursion.examples.two"><title>Mutually Recursive Parity v1</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- 
 Return true if parity of 1s in a binary string is even 
 Equivalent to Mutually Recursive Parity v1
@@ -48,7 +48,7 @@ def odd("_":xs) = odd(xs)
 		  </example>
 		  
 		  <example xml:id="ref.functions.recursion.examples.three"><title>Mutually Recursive Parity v2</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- 
 Return true if parity of 1s in a binary string is even
 Equivalent to Mutually Recursive Parity v1

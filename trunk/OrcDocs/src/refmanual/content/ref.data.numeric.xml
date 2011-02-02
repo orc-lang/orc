@@ -144,17 +144,17 @@ signal
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="ref.types.Integer" targetptr="ref.types.Integer"><code>Integer</code> type</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.types.Number" targetptr="ref.types.Number"><code>Number</code> type</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Add"><code>Add</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Sub"><code>Sub</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.UMinus"><code>UMinus</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Mult"><code>Mult</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Exponent"><code>Exponent</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Div"><code>Div</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Mod"><code>Mod</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.abs"><code>abs</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.signum"><code>signum</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.floor"><code>floor</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.ceil"><code>ceil</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Add</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Sub</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>UMinus</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Mult</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Exponent</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Div</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>Mod</code> site</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>abs</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>signum</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>floor</code> function</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core"><code>ceil</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

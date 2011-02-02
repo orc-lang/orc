@@ -53,7 +53,7 @@ tuple elements.
 
 <para>
 	That is, all expressions are concurrently evaluated, and the first published value
-	from each expression is used for construction of the tuple.  If any expression is silent, the tuple
+	from each expression is used for the corresponding value of the tuple.  If any expression is silent, the tuple
 	constructor is silent.
 </para>
 
@@ -93,7 +93,7 @@ signal
 </example>
 
 <example xml:id="ref.data.tuple.examples.forkjoin"><title>Fork-Join</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 def f() = println("f starting") >> Rtimer(450) >> println("f is done") >> "f"
 def g() = println("g starting") >> Rtimer(900) >> println("g is done") >> "g"
 
@@ -117,8 +117,8 @@ Rtimer(100) >> (f(), g())
      		<row>
         		<entry><itemizedlist>
 					<listitem><para><olink targetdoc="ref.types.Tuple" targetptr="types.Tuple"><code>Tuple</code> type</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="library.state.fst"><code>fst</code> function</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="library.state.snd"><code>snd</code> function</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>fst</code> function</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>snd</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

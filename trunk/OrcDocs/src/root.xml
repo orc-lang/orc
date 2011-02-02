@@ -728,7 +728,7 @@ Cor.
 Cor supports three basic data structures, <firstterm>tuples</firstterm>, <firstterm>lists</firstterm>, and <firstterm>records</firstterm>.
 </para>
 
-<section><title>Tuples</title>
+<section id="cor.data.tuple"><title>Tuples</title>
 <para>
 A <firstterm>tuple expression</firstterm> is a comma-separated sequence of at least two 
 expressions, enclosed by parentheses. Each expression is evaluated; the value of the whole 
@@ -1432,7 +1432,7 @@ function call, but with a slightly different meaning. Sites are introduced and b
 to variables by a special declaration.  
 </para>
 
-<section><title>Calling a site</title>
+<section id="orc.sites.calling"><title>Calling a site</title>
 
 <para>
 Suppose that the variable <code>Google</code> is bound to a site which invokes the
@@ -1528,7 +1528,7 @@ through some protocol like SOAP or REST, or even a primitive operation like addi
 We will discuss the particulars of these declarations, and the guidelines for accessing 
 web-based services or creating one's own services, in <link linkend="chapter.services">Chapter 3</link>.
 Also, Many useful sites are already defined in the Orc standard library, documented
-in <link linkend="appendix.library">Appendix B</link>. For now, we present a simple 
+in the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink> found in the reference manual. For now, we present a simple 
 type of site declaration: using an object in the host language as a site.  
 </para>
 
@@ -2713,7 +2713,7 @@ A class has the following properties:
 
 <para>
 A class definition can be translated to pure Orc calculus, making
-use of the site <code>makesite</code>. (See <xref linkend="appendix.library"/> for details of <code>makesite</code>.)
+use of the site <code>makesite</code>. (See the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink> for details of <code>makesite</code>.)
 </para>
 
 <section><title>Object Definition</title>
@@ -3183,7 +3183,7 @@ the stopwatch is already running, and <code>halt</code> in a state where the
 stopwatch is already halted. Additionally, an operation to determine
 the staus of the stopwatch (running or not) should be provided. Such
 an implementation is given for the library site, <code>Stopwatch</code>; see
- the <code>Stopwatch</code> site in <xref linkend="appendix.library"/>.  
+ the <code>Stopwatch</code> site in the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink>.  
 </para>
 </section>
 
@@ -3581,7 +3581,7 @@ concurrent and functional programming. Despite the austerity of Orc's four
 combinators, we are able to encode a variety of idioms straightforwardly.
 </para>
 
-<section><title>Channels</title>
+<section id="methodology.channels"><title>Channels</title>
 
 <para>
 Orc has no communication primitives like pi-calculus
@@ -3697,7 +3697,7 @@ repeat(c.get)
 </section>
 
 
-<section><title>Mutable References</title>
+<section id="methodology.mutable"><title>Mutable References</title>
 
 <para>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
@@ -4005,7 +4005,7 @@ publishing both <code>1</code> and <code>2</code>.
 
 </section>
 
-<section><title>Fork-join</title>
+<section id="section.idioms.forkjoin"><title>Fork-join</title>
 
 <para>
 One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,
@@ -5378,8 +5378,7 @@ method is selected and called depending on the number and type of arguments, as
 described in <link linkend="section.services.java.method">Method Resolution</link>
 below.</listitem>
 <listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
-the object's field is returned, encapsulated in a <link
-	linkend="orc.lib.state.Ref"><code>Ref</code> object</link>. The
+the object's field is returned, encapsulated in a <code>Ref</code> object. The
 <code>Ref</code> object has <code>read</code> and <code>write</code> methods
 which are used to get and set the value of the field.</listitem>
 </itemizedlist>

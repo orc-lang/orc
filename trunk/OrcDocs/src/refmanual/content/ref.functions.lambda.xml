@@ -38,7 +38,6 @@ onetwosum( lambda(x) = x * 3 )
   def triple(x) = x * 3
   onetwosum(triple)
 -}
--- evaluates to 9
 ]]></programlisting>
 		  </example>
 
