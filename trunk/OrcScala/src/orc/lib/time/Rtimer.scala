@@ -21,6 +21,8 @@ import orc.types.SimpleFunctionType
 import orc.types.NumberType
 import orc.types.IntegerType
 import orc.types.SignalType
+import orc.types.FieldType
+import orc.types.OverloadedType
 import orc.run.extensions.RtimerEvent
 import orc.Handle
 import orc.values.Field
@@ -46,7 +48,10 @@ class Rtimer extends Site with TypedSite {
   
   }
   
-  def orcType = SimpleFunctionType(IntegerType, SignalType)
+  def orcType = OverloadedType(List(
+    SimpleFunctionType(IntegerType, SignalType),
+    SimpleFunctionType(FieldType("time"), Rclock.orcType)
+  ))
   
 }
 

@@ -49,7 +49,7 @@ Example:
 val c = Clock()
 Rtimer(1000) >> c()]]></programlisting>
 --}
-def Clock()() :: Integer
+def Clock()() :: Number
 def Clock() =
   val time = Rtimer.time()
   lambda () = Rtimer.time() - time
@@ -72,8 +72,11 @@ Publish a signal after the given amount of virtual time.
 Return the current virtual time.
 --}
 -- site Vtimer = "orc.lib.time.Vtimer"
--- site Vclock = "orc.lib.time.Vclock"
+def Vtimer(Integer) :: Bot
 def Vtimer(_) = Error("Vtimer not yet implemented")
+
+-- site Vclock = "orc.lib.time.Vclock"
+def Vclock() :: Bot
 def Vclock() = Error("Vclock not yet implemented")
 
 {--
