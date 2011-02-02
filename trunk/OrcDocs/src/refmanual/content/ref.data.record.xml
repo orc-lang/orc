@@ -62,7 +62,7 @@ be used in the resulting record value.</para>
 Record extension, written <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, evaluates to
 a new record with all of the bindings of <replaceable>S</replaceable>, plus all of the bindings in <replaceable>R</replaceable>
 which do not bind keys mentioned in <replaceable>S</replaceable>. In other words, <replaceable>S</replaceable>
-overrides <replaceable>R</replaceable>. Record extension is associate, but not commutative. 
+overrides <replaceable>R</replaceable>. Record extension is associative, but not commutative. 
 </para>
 
 <para>
