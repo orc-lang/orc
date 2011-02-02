@@ -40,12 +40,8 @@ tuple elements.
 
 <para>
 	A tuple is written as two or more expressions, separated by commas
-	and enclosed within parentheses.  A tuple constructor is applied
-	to a tuple written in this form to create the tuple value, as follows:
-</para>
-
-<para>
-	The value of tuple <code>(e_1, e_2, ..., e_n)</code>, where <code>e_1, e_2, ..., e_n</code> are expressions, is
+	and enclosed within parentheses. The value of the tuple expression 
+	<code>(e_1, e_2, ..., e_n)</code> is the same as the value of
 	<programlisting><![CDATA[
 (x_1, x_2, ..., x_n)
    <x_1< e_1
@@ -80,7 +76,7 @@ tuple elements.
 <title>Java calls</title>
 
 <para>Orc <type>Tuple</type>s don't correspond to any Java value, so if a <type>Tuple</type>
-is passed to Java code, it will be as an <type>java.lang.Object</type> of a type not specified here.</para>
+is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 

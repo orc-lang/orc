@@ -94,6 +94,15 @@
 <entry><emphasis>list</emphasis></entry>
 </row>
 
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>{.</code> X <code>=</code> E <code>,</code> ... <code>,</code> X <code>=</code> E <code>.}</code></entry>
+
+<entry></entry>
+<entry><emphasis>record</emphasis></entry>
+</row>
 
 <row>
 <entry></entry>
@@ -227,76 +236,6 @@
 <entry></entry>
 <entry><emphasis>type assertion</emphasis></entry>
 </row>
-
-<!--
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>D <code>within</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>goal expression w/declarations</emphasis></entry>
-</row>
--->
-
-<!-- 
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>T</entry>
-
-<entry></entry>
-<entry><emphasis>throw expression</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>TC</entry>
-
-<entry></entry>
-<entry><emphasis>try/catch block</emphasis></entry>
-</row>
-
--->
-
-<!--  
- 
-<row>
-<entry>T</entry>
-<entry>::=</entry>
-
-<entry> <code>throw </code> E</entry>
-
-<entry><emphasis>Throw</emphasis></entry>
-<entry></entry>
-</row>
-
-
-<row>
-<entry>TC</entry>
-<entry>::=</entry>
-
-<entry> <code>try ( </code> E <code> ) </code> C+</entry>
-
-<entry><emphasis>Try/Catch</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>C</entry>
-<entry>::=</entry>
-
-<entry> <code>catch ( </code> P <code> ) </code> E</entry>
-
-<entry><emphasis>Exception Handler</emphasis></entry>
-<entry></entry>
-</row>
- -->
-
 
 <row>
 <entry>G</entry>
@@ -590,6 +529,17 @@
 <entry></entry>
 <entry>|</entry>
 
+<entry><code>{.</code> X <code>=</code> P <code>,</code> ... <code>,</code> X <code>=</code> P <code>.}</code></entry>
+
+<entry></entry>
+<entry><emphasis>record pattern</emphasis></entry>
+</row>
+
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
 <entry>P <code>as</code> X</entry>
 
 <entry></entry>
@@ -657,6 +607,17 @@
 <entry></entry>
 <entry><emphasis>Tuple type</emphasis></entry>
 </row>
+
+<row>
+<entry></entry>
+<entry>|</entry>
+
+<entry><code>{.</code> X <code>::</code> T <code>,</code> ... <code>,</code> X <code>::</code> T <code>.}</code></entry>
+
+<entry></entry>
+<entry><emphasis>Record type</emphasis></entry>
+</row>
+
 
 <row>
 <entry></entry>
