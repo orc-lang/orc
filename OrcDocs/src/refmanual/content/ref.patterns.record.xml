@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- patterns_list.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.patterns.list.xml 2385 2011-01-31 19:30:40Z bmccord09@gmail.com $
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Record Pattern -->
+	<section xml:id="ref.patterns.record">
+		<title>Record Pattern</title>
+		<section xml:id="ref.patterns.record.body">
+			<para>
+				In Orc pattern matching, when a record value is compared to a record pattern, each key mentioned
+				in the record pattern must have a mapping in the record value, and each such mapped
+				value must match its corresponding pattern. The record value may contain additional
+				keys not mentioned by the record pattern.
+			</para>
+			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>{.</code> X<code> = </code>P , ... , X<code> = </code>P <code>.}</code></emphasis></para>
+		</section>
+		
+		 <section xml:id="ref.patterns.record.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.patterns.record.examples.one"><title>Student Applications</title>
+<programlisting><![CDATA[
+val applicants = 
+[
+  {. name = "Harry Q. Bovik", college = "Carnegie Mellon University", status = "accepted" .},
+  {. name = "Fred Hacker", college = "Massachusetts Institute of Technology", status = "rejected" .},
+  {. name = "D. F. Automaton", college = "Initial State College", status = "accepted" .}
+]
+each(applicants) >a>
+(
+    a >{. name = n, status = "accepted" .}> Println(n + "'s application was accepted") >> stop
+  | a >{. name = n, status = "rejected" .}> Println(n + "'s application was not accepted") >> stop
+)
+]]></programlisting>
+		  </example>
+		</section>
+		
+		<section xml:id="ref.patterns.record.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+          				<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+	  </section>
+	</section>

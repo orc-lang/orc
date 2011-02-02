@@ -13,16 +13,38 @@
 <section xml:id="ref.data.record">
 <title>Record Values</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>TODO</code></para>
+<para><emphasis role="strong">Type</emphasis>: <code>{. x1 :: T1, x2 :: T2, ... .}</code></para>
 
-<para>TODO -- David is working on this section.</para>
+<para>
+Orc's <type>Record</type> data type is an unordered finite map from keys to values. It may be empty; the empty
+record is written <code>{..}</code>. 
+</para>
 
 <section xml:id="ref.data.record.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>NONTERM</replaceable> ::= <code>TODO</code> <replaceable>TODO</replaceable> <code>TODO</code></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Record</replaceable> ::= <code>{. x1 = E1, x2 = E2, ... .}</code></para>
 
-<para>TODO. Cover, as appropriate: Preconditions Required/Postconditions Asserted/Invariants Maintained; Side-Effects of Invocation/State Maintained; Abnormal Outcomes; External Dependencies; Performance Characteristics.</para>
+<para>A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
+associates a key with an expression. The value of the record expression <code>{. x_1 = e_1, x_2 = e_2, ..., x_n = e_n .}</code> 
+is the same as the value of
+	<programlisting><![CDATA[
+{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}
+   <y_1< e_1
+   <y_2< e_2
+   ...
+   <y_n< e_n
+]]></programlisting>
+</para>
+
+<para>
+	That is, all expressions are concurrently evaluated, and the first published value
+	from each expression is used for construction of the record.  If any expression is silent, 
+	the record constructor is silent.
+</para>
+
+<para>Duplicate bindings for the same key are allowed, but only the rightmost binding will
+be used in the resulting record value.</para>
 
 </section>
 
@@ -31,11 +53,21 @@
 
 <para>Notable record operations include:
 <itemizedlist>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
-<listitem><para>TODO: <code>TODO</code></para></listitem>
+<listitem><para>Projection: <replaceable>record</replaceable><code>.</code><replaceable>key</replaceable></para></listitem>
+<listitem><para>Extension: <replaceable>record</replaceable><code> + </code><replaceable>record</replaceable></para></listitem>
 </itemizedlist>
+</para>
+
+<para>
+Record extension, written <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, evaluates to
+a new record with all of the bindings of <replaceable>S</replaceable>, plus all of the bindings in <replaceable>R</replaceable>
+which do not bind keys mentioned in <replaceable>S</replaceable>. In other words, <replaceable>S</replaceable>
+overrides <replaceable>R</replaceable>. Record extension is associate, but not commutative. 
+</para>
+
+<para>
+The expression <code>{. x_1 = e_1, x_2 = e_2, ..., x_n = e_n .}</code> is equivalent to the expression
+<code>{. x_1 = e_1. } + {. x_2 = e_2 .} + ... + {. x_n = e_n .}</code>.
 </para>
 
 </section>
@@ -43,7 +75,8 @@
 <section xml:id="ref.data.record.javacalls">
 <title>Java calls</title>
 
-<para>TODO.</para>
+<para>Orc <type>Record</type>s don't correspond to any Java value, so if a <type>Record</type>
+is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 
@@ -52,18 +85,29 @@
 
 
 <example xml:id="ref.data.record.examples.one">
-<title>TODO:Example1</title>
+<title>Normalizing Vectors</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+def magnitude(v) = 
+  v.x * v.x + 
+  v.y * v.y + 
+  v.z * v.z
+  
+def norm(v) = 
+  val m = magnitude(v)
+  {. x = v.x / m, 
+     y = v.y / m, 
+     z = v.z / m .}
+     
+val velocity = {. x = 3, y = 0, z = 4 .}      
+norm(velocity) 
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.data.record.examples.two">
-<title>TODO:Example2</title>
+<title>Record Expansion</title>
 <programlisting><![CDATA[
---TODO
-signal
+val rgb = {. red = 60, green = 230, blue = 5 .}
+rgb + {. alpha = 128 .}
 ]]></programlisting>
 </example>
 
@@ -83,8 +127,8 @@ signal
      		<row>
         		<entry><itemizedlist>
         			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+          	  <listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
+          		<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

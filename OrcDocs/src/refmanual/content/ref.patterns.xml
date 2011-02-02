@@ -30,7 +30,7 @@ Patterns may be used in declarations, clausal definitions of functions, etc.
 A pattern is a powerful way to bind variables. When writing <code>val</code> declarations, instead of just
 binding one variable, we can replace the variable name with a more complex pattern that follows the structure of the
 value, and matches its components. A pattern's structure is called its <firstterm>shape</firstterm>; a
-pattern may take the shape of any structured value except a record. A pattern can hierarchically match a value, going deep into its 
+pattern may take the shape of any structured value. A pattern can hierarchically match a value, going deep into its 
 structure. It can also bind an entire structure to a variable.
 </para>
 
@@ -51,6 +51,7 @@ if any one of those variables is later evaluated, it is silent.
 <xi:include href="ref.patterns.constant.xml"/>
 <xi:include href="ref.patterns.equality.xml"/>
 <xi:include href="ref.patterns.list.xml"/>
+<xi:include href="ref.patterns.record.xml"/>
 <xi:include href="ref.patterns.tuple.xml"/>
 <xi:include href="ref.patterns.variable.xml"/>
 <xi:include href="ref.patterns.wildcard.xml"/>
