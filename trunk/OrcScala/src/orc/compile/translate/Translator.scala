@@ -55,9 +55,11 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
       case ext.ListExpr(es) => unfold(es map convert, makeList)
       case ext.RecordExpr(es) => {
+        val seen = new scala.collection.mutable.HashSet[String]()
         val tuples = es map 
           { 
-            case (s, e) => { 
+            case (s, e) => {
+              if (seen contains s) { reportProblem(DuplicateKeyException(s) at e) } else { seen += s }
               val f = Constant(Field(s))
               unfold(List(f, convert(e)), makeTuple)
             }
