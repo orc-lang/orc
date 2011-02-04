@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- sites.xml - DocBook source for an Orc reference manual chapter
+<!-- ref.sites.xml - DocBook source for an Orc reference manual chapter
 
      $Id$
 
@@ -19,10 +19,10 @@
 
 <para>TODO:Introduction paragraph about sites and services.</para>
 
-<para>TODO: Add "Operators" section.</para>
-<para>TODO: Add "Library sites" section.</para>
-<para>TODO: Add "Java sites" section.</para>
-<para>TODO: Add "Web Services" section.</para>
-<para>TODO: Add "Custom sites" section.</para>
+<xi:include href="ref.sites.operators.xml"/>
+<xi:include href="ref.sites.library.xml"/>
+<xi:include href="ref.sites.java.xml"/>
+<xi:include href="ref.sites.web.xml"/>
+<xi:include href="ref.sites.custom.xml"/>
 
 </chapter>
