@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.sites.java.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<section xml:id="ref.sites.java">
+<title>Java sites</title>
+
+<para>
+TODO
+</para>
+
+
+<section xml:id="ref.sites.java.examples">
+<title>Examples</title>
+
+<example xml:id="ref.sites.java.examples.one">
+<title>TODO:Example1</title>
+<programlisting language="orc-demo"><![CDATA[
+--TODO
+signal
+]]></programlisting>
+</example>
+
+<example xml:id="ref.sites.java.examples.two">
+<title>TODO:Example2</title>
+<programlisting><![CDATA[
+--TODO
+signal
+]]></programlisting>
+</example>
+		  
+</section>
+
+
+<section xml:id="ref.sites.java.links">
+<title>Related Links</title>
+
+	<informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="center">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">TODO</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">TODO</olink></para></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+</section>
+
+</section>
