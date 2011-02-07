@@ -534,6 +534,16 @@
 			<param name="targets.filename" expression="targets.ref.patterns.wildcard.db"/>
 			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
+		<!-- ref.patterns.reap -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.patterns.reap.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.patterns.reap.db"/>
+			<param name="user.dir" expression="${user.dir}" />
+		</xslt>
 		<!-- ref.patterns -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"

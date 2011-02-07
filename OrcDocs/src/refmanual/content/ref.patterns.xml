@@ -54,5 +54,6 @@ if any one of those variables is later evaluated, it is silent.
 <xi:include href="ref.patterns.as.xml"/>
 <xi:include href="ref.patterns.equality.xml"/>
 <xi:include href="ref.patterns.wildcard.xml"/>
+<xi:include href="ref.patterns.reap.xml"/>
 
 </chapter>

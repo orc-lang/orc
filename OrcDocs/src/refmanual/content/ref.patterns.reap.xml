@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.patterns.reap.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Reap Pattern -->
+	<section xml:id="ref.patterns.reap">
+		<title>Reaping/Sublimation/Aggregation</title>
+		<section xml:id="ref.patterns.reap.body">
+			<para>TODO:  rewrite/replace/move section</para>
+			<para>
+			The value of the list expression [e_1, e_2, ..., e_n] is the same as the value of
+<programlisting><![CDATA[
+[x_1, x_2, ..., x_n]
+   <x_1< e_1
+   <x_2< e_2
+   ...
+   <x_n< e_n
+]]></programlisting>
+			</para>
+
+			<para>
+				That is, all expressions are concurrently evaluated, and the first published value
+				from each expression is used for construction of the list.  If any expression is silent, 
+				the list constructor is silent.
+			</para>
+		</section>
+		
+		 <section xml:id="ref.patterns.reap.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.patterns.reap.examples.one"><title>Search Comparison</title>
+<programlisting><![CDATA[
+-- Return the first published value from 3 major search engines
+-- in the form of a tuple.  Ignore all published values from
+-- each engine after its first.
+val results = (Google("grim reaper"), Yahoo("grim reaper"), Bing("grim reaper"))
+results
+]]></programlisting>
+		  </example>
+		</section>
+		
+		<section xml:id="ref.patterns.reap.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+          				<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+	  </section>
+	</section>

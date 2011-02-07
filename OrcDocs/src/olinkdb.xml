@@ -43,6 +43,7 @@
    <!ENTITY targets.ref.patterns.constant SYSTEM "../build/html/refmanual/targets.ref.patterns.constant.db">
    <!ENTITY targets.ref.patterns.equality SYSTEM "../build/html/refmanual/targets.ref.patterns.equality.db">
    <!ENTITY targets.ref.patterns.list SYSTEM "../build/html/refmanual/targets.ref.patterns.list.db">
+   <!ENTITY targets.ref.patterns.reap SYSTEM "../build/html/refmanual/targets.ref.patterns.reap.db">
    <!ENTITY targets.ref.patterns.tuple SYSTEM "../build/html/refmanual/targets.ref.patterns.tuple.db">
    <!ENTITY targets.ref.patterns.variable SYSTEM "../build/html/refmanual/targets.ref.patterns.variable.db">
    <!ENTITY targets.ref.patterns.wildcard SYSTEM "../build/html/refmanual/targets.ref.patterns.wildcard.db">
@@ -196,6 +197,9 @@
 					  </document>
 					  <document targetdoc="ref.patterns.list" baseuri="ref.patterns.list.html">
 					  	&targets.ref.patterns.list;
+					  </document>
+					  <document targetdoc="ref.patterns.reap" baseuri="ref.patterns.reap.html">
+					  	&targets.ref.patterns.reap;
 					  </document>
 					  <document targetdoc="ref.patterns.tuple" baseuri="ref.patterns.tuple.html">
 					  	&targets.ref.patterns.tuple;
