@@ -25,22 +25,11 @@ record is written <code>{..}</code>.
 
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>Record</replaceable> ::= <code>{. x1 = E1, x2 = E2, ... .}</code></para>
 
-<para>A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
-associates a key with an expression. The value of the record expression <code>{. x_1 = e_1, x_2 = e_2, ..., x_n = e_n .}</code> 
-is the same as the value of
-	<programlisting><![CDATA[
-{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}
-   <y_1< e_1
-   <y_2< e_2
-   ...
-   <y_n< e_n
-]]></programlisting>
-</para>
-
 <para>
-	That is, all expressions are concurrently evaluated, and the first published value
-	from each expression is used for construction of the record.  If any expression is silent, 
-	the record constructor is silent.
+A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
+associates a key with an expression. Evaluation of the record expression {. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .} 
+<olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+each yi to a value vi and publishes the record value {. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .} .
 </para>
 
 <para>Duplicate bindings for the same key are allowed, but only the rightmost binding will

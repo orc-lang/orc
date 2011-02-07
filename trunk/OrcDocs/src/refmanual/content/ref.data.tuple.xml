@@ -40,23 +40,10 @@ tuple elements.
 
 <para>
 	A tuple is written as two or more expressions, separated by commas
-	and enclosed within parentheses. The value of the tuple expression 
-	<code>(e_1, e_2, ..., e_n)</code> is the same as the value of
-	<programlisting><![CDATA[
-(x_1, x_2, ..., x_n)
-   <x_1< e_1
-   <x_2< e_2
-   ...
-   <x_n< e_n
-]]></programlisting>
+	and enclosed within parentheses.  Evaluation of the tuple expression (e_1, ..., e_n)
+	<olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+	each ei to a value vi and publishes the tuple value (v_1, ..., v_n).
 </para>
-
-<para>
-	That is, all expressions are concurrently evaluated, and the first published value
-	from each expression is used for the corresponding value of the tuple.  If any expression is silent, the tuple
-	constructor is silent.
-</para>
-
 </section>
 
 <section xml:id="ref.data.tuple.operations">

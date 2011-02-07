@@ -15,10 +15,11 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>List[T]</code></para>
 
+<!--  Change [] to [ ] for HTML readability? -->
 <para>
-A list consists of a finite sequence of values, all of the same type. The
-list may have no item; in that case it is an empty list. An empty list
-is written as [].
+A list consists of a finite sequence of values. The
+list may have no item; in that case it is an empty list. 
+An empty list is written as [].
 </para>
 
 <para>
@@ -27,30 +28,15 @@ of the types of each of its elements. In particular, if all of the elements
 have type <code>T</code>, then the list will have type <code>List[T]</code>.
 </para>
 
-<section xml:id="ref.data.list.co
-nstructors">
+<section xml:id="ref.data.list.constructors">
 <title>Constructors</title>
 
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-A list is constructed by enclosing a comma-separated sequence of expressions in square brackets.
-The value of the list expression [e_1, e_2, ..., e_n] is the same as the value of
-<programlisting><![CDATA[
-[x_1, x_2, ..., x_n]
-   <x_1< e_1
-   <x_2< e_2
-   ...
-   <x_n< e_n
-]]></programlisting>
+Evaluation of the list expression [e_1, ..., e_n] <olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+each ei to a value vi and publishes the list value [v_1, ..., v_n].
 </para>
-
-<para>
-	That is, all expressions are concurrently evaluated, and the first published value
-	from each expression is used for construction of the list.  If any expression is silent, 
-	the list constructor is silent.
-</para>
-
 </section>
 
 <section xml:id="ref.data.list.operations">
@@ -60,12 +46,18 @@ The value of the list expression [e_1, e_2, ..., e_n] is the same as the value o
 <itemizedlist>
 <listitem><para><code>head</code>: applied to a non-empty list, it returns the first item of the list.</para></listitem>
 <listitem><para><code>tail</code>: applied to a non-empty list, it returns the original list without its head.</para></listitem>
-<listitem><para><code>cons</code>: applied to an item h and a list t returns a list whose head is h and tail
-  								   is t. Either t has to be empty or the elements of t have the same
-  								   type as that of h. cons is written as a colon (:) separating h and t.</para></listitem>
+<listitem><para><code>cons</code>: cons: applied to an item h and a list t returns a list whose head is
+										h and tail is t. cons is written as a colon (:) separating
+										h and t.</para></listitem>
 </itemizedlist>
 </para>
 
+</section>
+
+<section xml:id="ref.data.list.types">
+<title>Types</title>
+<para>The values in a list may be of different types. The type of the list
+items is the join of the types of its individual values.</para>
 </section>
 
 <section xml:id="ref.data.list.javacalls">
@@ -89,9 +81,10 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
 [fib(1),fib(2),fib(3)] -- the list of first 3 fibonacci numbers
 [[1],[2,2],[3,3,3]] -- a list of lists of integers
 
--- The following are valid lists, but they all have type List[Top],
--- since their elements have incompatible types.
-  [[2],3,5,7]         [(3,5), 8]          [(3,5), (3,8,2)]    [0,"misra"]
+-- The element type of a list is the join of the types of each of its elements.
+-- The following list has type List[Top], because the individual elements
+-- have different types, and Top is their only common supertype.
+   [[2],3,(5,7),"misra"]
 
 -- The order and number of elements in a list matter. So,
 [2,3] {- is not the same as -}  [3,2]
