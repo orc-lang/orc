@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ref.concepts.xml - DocBook source for an Orc reference manual chapter
 
-     $Id: ref.combinators.xml 2403 2011-02-04 20:24:58Z jthywissen $
+     $Id$
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -26,8 +26,8 @@ other parts of the reference manual.
 <xi:include href="ref.concepts.publish.xml"/>
 <xi:include href="ref.concepts.silent.xml"/>
 <xi:include href="ref.concepts.lenient.xml"/>
-<xi:include href="ref.concepts.halt.xml"/>
  -->
+<xi:include href="ref.concepts.halt.xml"/>
 <xi:include href="ref.concepts.reap.xml"/>
 
 </chapter>

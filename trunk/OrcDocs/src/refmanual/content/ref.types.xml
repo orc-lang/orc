@@ -699,5 +699,6 @@ not find the least common ancestor of two classes as the join.
 
 </section>
 
+<xi:include href="ref.types.lattice.xml"/>
 
 </chapter>

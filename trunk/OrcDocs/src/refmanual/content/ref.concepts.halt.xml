@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.concepts.halt.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.concepts.halt.xml 2411 2011-02-09 19:46:09Z dkitchin $
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Halt Concept -->
+	<section xml:id="ref.concepts.halt">
+		<title>Halting</title>
+		<section xml:id="ref.concepts.halt.body">
+			<para>
+			An expression <emphasis>halts</emphasis> when its evaluation is complete. It will
+			call no more sites, publish no more values, and perform no more actions of any kind.
+			</para>
+			<para>
+		  We can determine whether an expression has halted using the following rules.
+		  <itemizedlist>
+		  <listitem>
+			  A site call halts immediately after it publishes any value. A site call may also choose to halt
+			  prematurely, indicating that it will never publish a value.
+      </listitem>
+			<listitem>
+        <code><![CDATA[F | G]]></code> halts when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have halted.
+      </listitem>
+      <listitem>
+        <code><![CDATA[F >x> G]]></code> halts when <code><![CDATA[F]]></code> has halted and all instantiated copies of <code><![CDATA[G]]></code> have also halted.
+      </listitem>
+      <listitem>
+        <code><![CDATA[F <x< G]]></code> halts when <code><![CDATA[F]]></code> halts, and <code><![CDATA[G]]></code> has either halted or published a value. Also,
+				if <code><![CDATA[G]]></code> halts without publishing a value, then all expressions in <code><![CDATA[F]]></code> which use <code><![CDATA[x]]></code> also halt, since
+				they will never be able to proceed.
+			</listitem>
+			<listitem>
+				<code><![CDATA[F ; G]]></code> halts either when <code><![CDATA[F]]></code> has published a value and subsequently halted, 
+				or if <code><![CDATA[F]]></code> is silent, when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code>have halted.
+				</listitem>
+			<listitem>
+				<code>stop</code> halts immediately.
+			</listitem>
+		  </itemizedlist>
+				  </para>
+		</section>
+		
+		 <section xml:id="ref.concepts.halt.examples">
+		  <title>Examples</title>
+		</section>
+		
+		<section xml:id="ref.concepts.halt.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	        				<listitem><olink targetdoc="ref.combinators" targetptr="ref.combinators.otherwise">Otherwise</olink></listitem>
+	        				<listitem><olink targetdoc="ref.concepts" targetptr="ref.concepts.reap">Reaping</olink></listitem>
+	          			<!-- <listitem><olink targetdoc="ref.expressions" targetptr="ref.expressions.stop"><code>stop</code></olink></listitem>  -->
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	        		<listitem><olink targetdoc="root" targetptr="section.idioms.forkjoin">Fork-join</olink></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+	  </section>
+	</section>
