@@ -14,26 +14,246 @@
 <title>Java sites</title>
 
 <para>
-TODO
+Essential to Orc's role as an orchestration language is Orc's interaction with its host environment,
+which in this implementation is the Java virtual machine (JVM).
+In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
+arbitrary Java classes using the <keyword>class</keyword> declaration.
+Values in Java fields, values returned from Java methods, and values returned from Java constructors
+may be used in Orc programs just as any other Orc value.
 </para>
+
+
+<section xml:id="ref.sites.java.classes">
+<title>Java classes</title>
+
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassImport</replaceable> ::= <code>class </code><replaceable>Identifier</replaceable><code> = </code><replaceable>ClassName</replaceable></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassName</replaceable> ::= <replaceable>StringLiteral</replaceable> | <replaceable>QualifiedIdentifier</replaceable></para>
+<para><emphasis role="strong">EBNF</emphasis>: <replaceable>QualifiedIdentifier</replaceable> ::= <replaceable>Identifier</replaceable> | <replaceable>Identifier</replaceable> <code>.</code> <replaceable>QualifiedIdentifier</replaceable></para>
+
+<para>
+Java classes are named in an Orc program using the <keyword>class</keyword> declaration.
+In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
+This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
+The class proxy also presents the class static methods and class static fields in the same manner as
+an Orc record with keys corresponding to the Java class members' names.
+Methods appear as record elements that are sites, and are invoked by projecting the record element
+using the dot notation and calling the site.
+Fields appear as record elements that are references, and are accessed and assigned
+by projecting the record element using the dot notation and
+using Orc's <code>?</code> and <code>:=</code> operators.
+</para>
+
+<para>
+Note that Java allows fields and methods with identical names to be members of the same class.
+In this case, Orc's Java class proxy attempts to resolve from the usage of a record element
+whether to access the field or method.
+</para>
+
+<para>
+Orc Java class proxies are not true Orc record values, although they appear syntactically as if they were.
+</para>
+
+<para>
+Java classes are loaded from the Orc site classpath, which may be specified as setting to the Orc
+runtime engine, for example via a command-line option or an Eclipse project property.
+If the class is not found on the Orc site
+classpath, the loading attempt continues using the normal Java classpath.
+</para>
+
+</section>
+
+
+<section xml:id="ref.sites.java.objects">
+<title>Java objects</title>
+
+<para>
+Java objects may be returned by any Orc site call, including constructor or class static method
+invocations of an Orc Java class proxy.
+Java objects' methods and fields appear in the same manner as
+an Orc record with keys corresponding to the members' names.
+Methods appear as record elements that are sites, and are invoked by projecting the record element
+using the dot notation and calling the site.
+Fields appear as record elements that are references, and are accessed and assigned
+by projecting the record element using the dot notation and
+using Orc's <code>?</code> and <code>:=</code> operators.
+If a Java object is called as a site without projecting a member, the method name "apply" is implicity used.
+</para>
+
+<para>
+Note that Java allows fields and methods with identical names to be members of the same class.
+In this case, Orc's Java object proxy attempts to resolve from the usage of a record element
+whether to access the field or method.
+</para>
+
+<para>
+If a field's value is a class with a member named "read", this member will be
+invoked when an Orc program access that field with the <code>?</code> operator.
+Similarly, if a field's value is a class with a member named "write", this member will be
+invoked when an Orc program assinges a new value to that field with the <code>:=</code> operator.
+This "read"/"write" override also applies to array component accesses.
+Note that this is a potential surprising naming conflict.
+</para>
+
+</section>
+
+
+<section xml:id="ref.sites.java.conversion">
+<title>Java value conversions</title>
+
+<para>
+When interacting with Java classes and objects, Orc performs some conversions of values passed to and from the Java code.
+Specifically, Orc applies conversions to the following:
+<itemizedlist>
+<listitem>Arguments of invoked constructors and methods</listitem>
+<listitem>Return values of invoked constructors and methods</listitem>
+<listitem>Accessed values from fields</listitem>
+<listitem>Assigned values to fields</listitem>
+<listitem>Accessed values from array components</listitem>
+<listitem>Assigned values to array components</listitem>
+</itemizedlist>
+</para>
+
+<para>
+The conversions applied are the following:
+<itemizedlist>
+<listitem><code>void</code> Java methods return <code>signal</code> in Orc.</listitem>
+<listitem>Orc integer values are converted to Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, or <code>Double</code>, as needed.</listitem>
+<listitem>Orc floating-point values are converted to Java <code>Float</code> or <code>Double</code>, as needed.</listitem>
+<listitem>Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, and <code>Long</code> are converted to Orc integers.</listitem>
+<listitem>Java <code>Float</code> and <code>Double</code> are converted to Orc floating-point numbers.</listitem>
+<listitem>Java primitive values are boxed and unboxed as needed, per JLS §5.1.7 and §5.1.8.</listitem>
+<listitem>Java widening primitive conversions are applied as needed, per JLS §5.1.2.</listitem>
+</itemizedlist>
+Note that Orc integers and floating-point numbers represent a larger range of values than the standard Java numeric types.
+If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
+This will change the magnitude of the number and may change its sign.
+If a floating-point conversion is applied to an out-of-range value, the results is positive or negative infinity, as appropriate.
+</para>
+
+</section>
+
+
+<section xml:id="ref.sites.java.overloading">
+<title>Java method and constructor invocation</title>
+
+<para>
+Orc invokes a Java method or constructor by closely approximating the Java method
+invocation rules specified in JLS §15.12.
+This is only an approximation, because Orc performs Java compile-time steps at
+run time using Java's reflection facilities, and therefore has a different
+view of the types of values than the Java compiler would have.
+However, in most cases, this difference has no effect.
+At present, Orc does not recognize Java variable arity methods.
+(In practice this is a very rarely used feature of Java.
+Please let the Orc team know if this is a desired feature of Orc.)
+</para>
+
+<para>
+Orc has a Java stack trace option which may be specified as setting to the Orc
+runtime engine, for example via a command-line option or an Eclipse run configuration setting.
+This may be helpfule when debugging Java invocations.
+</para>
+
+</section>
+
+
+<section xml:id="ref.sites.java.array">
+<title>Java arrays</title>
+
+<para>
+Java arrays are accessible in Orc.
+To refer to an component of a Java array, follow the array value with an
+nonnegative integer-valued expression in parenthesis.
+Java arrays are zero-origin.
+Array components appear as references in Orc.
+Their values may be accessed and assigned using Orc's <code>?</code> and <code>:=</code> operators.
+The Java <code>length</code> pseudo-field of arrays is available in Orc as <code>length?</code>.
+</para>
+
+</section>
 
 
 <section xml:id="ref.sites.java.examples">
 <title>Examples</title>
 
 <example xml:id="ref.sites.java.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+<title>Construct a Java object, and invoke methods</title>
+-- Name a Java class
+class URL = java.net.URL
+
+-- Create an instance
+val googleUrl = URL("http://www.google.com/")
+
+-- Invoke some methods
+googleUrl.openConnection().getResponseMessage()
+{-
+OUTPUT:
+"OK"
+-}
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.sites.java.examples.two">
-<title>TODO:Example2</title>
+<title>Static field access, Constructor invocation, static method access, overloading, and Orc-Java conversion</title>
+class JavaBoolean = "java.lang.Boolean"
+class JavaString = "java.lang.String"
+
+-- Static field access
+JavaBoolean.TRUE? |
+
+-- Constructor invocation
+JavaBoolean("true") |
+
+-- Static method access
+JavaBoolean.parseBoolean("true") |
+
+-- Overloading and Orc-Java conversion -- String.valueOf(double) is invoked
+JavaString.valueOf(2e108)
+
+{-
+OUTPUT:PERMUTABLE
+true
+true
+true
+"2E+108"
+-}
+]]></programlisting>
+</example>
+
+<example xml:id="ref.sites.java.examples.three">
+<title>No-arg constructor invocation, field assignment, and field dereference</title>
+class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
+
+-- No-arg constructor invocation
+FieldTestClass() >testInstance>
+
+-- Field assignment
+testInstance.servant := "test 4" >>
+
+-- Field derefence
+testInstance.servant?
+
+{-
+OUTPUT:
+"test 4"
+-}
+]]></programlisting>
+</example>
+
+<example xml:id="ref.sites.java.examples.intoverflow">
+<title>Integer conversion overflow</title>
 <programlisting><![CDATA[
---TODO
-signal
+--Demonstrate an Orc-to-Java integer conversion of an out-of-range value
+class JavaInteger = java.lang.Integer
+
+val x = 1230000000000000000456789
+
+JavaInteger.valueOf(x)
+
+{-
+OUTPUT:
+-1530464171
+-}
 ]]></programlisting>
 </example>
 		  
@@ -53,7 +273,10 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="TODO" targetptr="TODO">TODO</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.declarations.class" targetptr="ref.declarations.class"><keyword>class</keyword> declaration</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.data.external" targetptr="ref.data.external">External data values</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom sites</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.sites.library" targetptr="ref.sites.library">Library sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -70,7 +293,10 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="TODO" targetptr="TODO">TODO</olink></para></listitem>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">Interacting with Java</olink></para></listitem>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">class declaration</olink></para></listitem>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">Orc values in Java</olink></para></listitem>
+					<listitem><para><olink targetdoc="TODO" targetptr="TODO">Java Values in Orc</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
