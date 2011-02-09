@@ -76,7 +76,7 @@ using the dot notation and calling the site.
 Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
-If a Java object is called as a site without projecting a member, the method name "apply" is implicity used.
+If a Java object is called as a site without projecting a member, the method name "apply" is implicitly used.
 </para>
 
 <para>
@@ -89,7 +89,7 @@ whether to access the field or method.
 If a field's value is a class with a member named "read", this member will be
 invoked when an Orc program access that field with the <code>?</code> operator.
 Similarly, if a field's value is a class with a member named "write", this member will be
-invoked when an Orc program assinges a new value to that field with the <code>:=</code> operator.
+invoked when an Orc program assigns a new value to that field with the <code>:=</code> operator.
 This "read"/"write" override also applies to array component accesses.
 Note that this is a potential surprising naming conflict.
 </para>
@@ -151,7 +151,7 @@ Please let the Orc team know if this is a desired feature of Orc.)
 <para>
 Orc has a Java stack trace option which may be specified as setting to the Orc
 runtime engine, for example via a command-line option or an Eclipse run configuration setting.
-This may be helpfule when debugging Java invocations.
+This may be helpful when debugging Java invocations.
 </para>
 
 </section>

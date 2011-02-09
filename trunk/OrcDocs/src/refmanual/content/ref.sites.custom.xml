@@ -34,16 +34,16 @@ For information on Scala, see <link xlink:href="http://www.scala-lang.org/">http
 </para>
 
 <para>
-The Orc runtime engine provides a basic <code>Site</code> interface which a site must implement.
-This interface specifies an abstract <code>call</code> method that receives a call handle
-for the site to respond to the site call.  The <code>Handle</code> interface provides methods
+The Orc runtime engine provides a basic <code language="java">Site</code> interface which a site must implement.
+This interface specifies an abstract <code language="java">call</code> method that receives a call handle
+for the site to respond to the site call.  The <code language="java">Handle</code> interface provides methods
 to respond by either:
 <itemizedlist>
 <listitem>Publishing a value</listitem>
 <listitem>Halting</listitem>
 <listitem>Throwing an exception</listitem>
 </itemizedlist>
-Additionally, sites may notify the Orc runtime engine of events via the <code>Handle</code>,
+Additionally, sites may notify the Orc runtime engine of events via the <code language="java">Handle</code>,
 such as the need to write a string to the standard output stream.
 </para>
 
@@ -54,36 +54,47 @@ arity and type requirements on the argument lists of calls.
 </para>
 
 <para>
-orc.values.sites.Site
-orc.values.sites.TypedSite
-orc.values.sites.UntypedSite
-orc.values.sites.PartialSite
-orc.values.sites.TotalSite
-orc.values.sites.UnimplementedSite
+Orc provides a number of convenience mix-in traits for site implementors:
+<variablelist><title>Site interface mix-in traits</title>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.Site</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.TypedSite</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.UntypedSite</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.PartialSite</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.TotalSite</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.UnimplementedSite</code></term>
+    <listitem>
+      <para>TODO</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
 </para>
 
-</section>
-
-
-<section xml:id="ref.sites.custom.examples">
-<title>Examples</title>
-
-<example xml:id="ref.sites.custom.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
-]]></programlisting>
-</example>
-
-<example xml:id="ref.sites.custom.examples.two">
-<title>TODO:Example2</title>
-<programlisting><![CDATA[
---TODO
-signal
-]]></programlisting>
-</example>
-		  
 </section>
 
 
