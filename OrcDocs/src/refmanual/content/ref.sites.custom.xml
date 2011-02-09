@@ -59,40 +59,44 @@ Orc provides a number of convenience mix-in traits for site implementors:
   <varlistentry>
     <term><code language="java">orc.values.sites.Site</code></term>
     <listitem>
-      <para>TODO</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code language="java">orc.values.sites.TypedSite</code></term>
-    <listitem>
-      <para>TODO</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code language="java">orc.values.sites.UntypedSite</code></term>
-    <listitem>
-      <para>TODO</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code language="java">orc.values.sites.PartialSite</code></term>
-    <listitem>
-      <para>TODO</para>
+      <para>The basic site trait -- a site that can be called.</para>
     </listitem>
   </varlistentry>
   <varlistentry>
     <term><code language="java">orc.values.sites.TotalSite</code></term>
     <listitem>
-      <para>TODO</para>
+      <para>A site that always publishes.  Implement the <code language="java">evaluate</code> method instead of the <code language="java">call</code> method.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.PartialSite</code></term>
+    <listitem>
+      <para>A site that sometimes publishes and sometimes halts.  Implement the <code language="java">evaluate</code> method instead of the <code language="java">call</code> method.  <code language="java">evaluate</code> should return an <code language="java">Option</code>, <code language="java">Some(x)</code> to publish <code language="java">x</code>, or <code language="java">None</code> to halt.</para>
     </listitem>
   </varlistentry>
   <varlistentry>
     <term><code language="java">orc.values.sites.UnimplementedSite</code></term>
     <listitem>
-      <para>TODO</para>
+      <para>A site that throws <code language="java">orc.error.NotYetImplementedException</code> when called or type checked.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.TypedSite</code></term>
+    <listitem>
+      <para>A site that declares its type to the Orc type checker.</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code language="java">orc.values.sites.UntypedSite</code></term>
+    <listitem>
+      <para>A site that does not have a type. Use sparingly.</para>
     </listitem>
   </varlistentry>
 </variablelist>
+</para>
+
+<para>
+For a detailed description of the Orc-site interface, refer to the <link xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/index.html">Orc implementation Javadoc</link>.
 </para>
 
 </section>
