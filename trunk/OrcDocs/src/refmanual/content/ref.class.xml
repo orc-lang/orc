@@ -12,6 +12,8 @@
 
 <!-- Class -->
    <chapter xml:id="ref.class">
+
+   	  <?dbhtml stop-chunking?> <!--  Don't chunk this chapter -->
       <title>Class</title>
       <para>
       	Class is an abstraction mechanism in Orc, much like function. It
@@ -22,8 +24,6 @@
 		executions may be based on time or other external stimulus, not
 		necessarily explicitly called methods.
       </para>
-	  <section xml:id="ref.class.body">
-	  <title>Class</title>
 	  <section xml:id="ref.class.syntax">
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>:</para>
@@ -464,5 +464,4 @@ stop
 	  </informaltable>
 	  
 	  </section>
-	</section>
    </chapter>
