@@ -18,8 +18,8 @@
 <title>Patterns</title>
 
 <para>
-A pattern is a tuple whose components may be variables, constants,
-wild cards, or "=N" where N is a variable, or a pattern.
+A pattern is a structure whose components may be variables, constants,
+wild cards, or other patterns.
 </para>
 
 <para>
@@ -52,8 +52,6 @@ if any one of those variables is later evaluated, it is silent.
 <xi:include href="ref.patterns.call.xml"/>
 <xi:include href="ref.patterns.cons.xml"/>
 <xi:include href="ref.patterns.as.xml"/>
-<xi:include href="ref.patterns.equality.xml"/>
 <xi:include href="ref.patterns.wildcard.xml"/>
-<xi:include href="ref.patterns.reap.xml"/>
 
 </chapter>

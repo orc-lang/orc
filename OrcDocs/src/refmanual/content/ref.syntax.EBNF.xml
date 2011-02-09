@@ -148,7 +148,7 @@
 <entry></entry>
 <entry>&#10073;</entry>
 
-<entry>E <code>FATBAR</code> E</entry>
+<entry>E <code>|</code> E</entry>
 
 <entry></entry>
 <entry><emphasis>parallel combinator</emphasis></entry>
@@ -544,16 +544,6 @@
 
 <entry></entry>
 <entry><emphasis>as pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>=</code>X</entry>
-
-<entry></entry>
-<entry><emphasis>equality pattern</emphasis></entry>
 </row>
 
 <row>
