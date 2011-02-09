@@ -64,6 +64,14 @@ Google("cupcake") | Yahoo("cupcake")
 		  </example>
 		  
 	  </section>
+	  
+	  <section xml:id="ref.combinators.parallel.type">
+	    <title>Type</title>
+			<para>
+				The type of F <code>|</code> G is the <olink targetdoc="ref.types" targetptr="ref.types.lattice">join</olink> of the types of F and G.
+			</para>
+		</section>
+	  
 	  <section xml:id="ref.combinators.parallel.links">
 		  <title>Related Links</title>
  

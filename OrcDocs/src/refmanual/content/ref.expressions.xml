@@ -32,5 +32,7 @@
 <xi:include href="ref.expressions.ifthenelse.xml"/>	
 <xi:include href="ref.expressions.val.xml"/> 
 <xi:include href="ref.expressions.lambda.xml"/>
+<!--  <xi:include href="ref.expressions.stop.xml"/>  -->
+<!--  <xi:include href="ref.expressions.call.xml"/>  -->
 
 </chapter>

@@ -31,43 +31,25 @@
 				  <para>
 					The execution of
 					<code><![CDATA[F ; G]]></code> proceeds as follows. First, <code><![CDATA[F]]></code> is executed. 
-					If <code><![CDATA[F]]></code> completes, and has not published any values, then
-					<code><![CDATA[G]]></code> executes. If <code><![CDATA[F]]></code> did publish one or more values, 
+					If <code><![CDATA[F]]></code> <olink targetdoc="ref.concepts" targetptr="ref.concepts.halt">halts</olink>, 
+					and has not published any values, then <code><![CDATA[G]]></code> executes. 
+					If <code><![CDATA[F]]></code> did publish one or more values, 
 					then <code><![CDATA[G]]></code> is ignored. The publications of <code><![CDATA[F ; G]]></code> are those
-					of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code> otherwise.
+					of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code>
+					if <code><![CDATA[F]]></code> is silent.
 				  </para>
-				  <para>
-				  We determine when an expression completes using the following rules.
-		  <itemizedlist>
-<listitem>
-An expression completes when it is fully evaluated; if it is silent, it completes immediately.
-</listitem>
-<listitem>
-A site call completes when it has published a value or halted.
-</listitem>
-<listitem>
-<code><![CDATA[F | G]]></code> completes when its subexpressions <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have both completed.
-</listitem>
-<listitem>
-<code><![CDATA[F >x> G]]></code> completes when <code><![CDATA[F]]></code> has completed and all instantiated copies of <code><![CDATA[G]]></code> have completed.
-</listitem>
-<listitem>
-<code><![CDATA[F <x< G]]></code> completes when <code><![CDATA[F]]></code> has completed, and <code><![CDATA[G]]></code> has either completed or published a value. Also,
-if <code><![CDATA[G]]></code> completes without publishing a value, then all expressions in <code><![CDATA[F]]></code> which use <code><![CDATA[x]]></code> also complete, since
-they will never be able to proceed.
-</listitem>
-<listitem>
-<code><![CDATA[F ; G]]></code> completes either when <code><![CDATA[F]]></code> has published a value and subsequently completed, 
-or when <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code>have both completed.
-</listitem>
-<listitem>
-<code>stop</code> completes immediately.
-</listitem>
-		  </itemizedlist>
-				  </para>
+				  
 			  </listitem>
 		  </itemizedlist>
 	  </section>
+	  
+	  <section xml:id="ref.combinators.otherwise.type">
+		  <title>Type</title>
+			<para>
+				The type of F <code>;</code> G is the <olink targetdoc="ref.types" targetptr="ref.types.lattice">join</olink> of the types of F and G.
+			</para>
+		</section>
+	  
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
 
@@ -97,7 +79,7 @@ Google("cupcake") ; Yahoo("cupcake")
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="ref.combinators" targetptr="ref.combinators">Combinators</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.concepts" targetptr="ref.concepts.halt">Halting</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

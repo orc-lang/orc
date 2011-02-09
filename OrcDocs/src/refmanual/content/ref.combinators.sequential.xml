@@ -109,6 +109,14 @@
 		  </example>
 		  
 	  </section>
+	  
+	  <section xml:id="ref.combinators.sequential.type">
+	    <title>Type</title>
+			<para>
+				The type of F <code><![CDATA[>x>]]></code> G is the type of G using the assumption x :: T, where T is the type of F.
+			</para>
+		</section>
+	  
 	  <section xml:id="ref.combinators.sequential.links">
 		  <title>Related Links</title>
 		  

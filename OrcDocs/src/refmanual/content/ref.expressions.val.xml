@@ -44,6 +44,14 @@ val y = Rtimer(2) >> 2 | Rtimer(3) >> 3
 		  </example>
 	  </section>
 		
+	  <section xml:id="ref.expressions.val.type">
+	    <title>Type</title>
+			<para>
+				When a declaration <code>val x = </code> F occurs, the expression in scope for the declaration
+				is typechecked using the assumption x :: T, where T is the type of F.
+			</para>
+		</section>
+		
 		<section xml:id="ref.expressions.val.links">
 		  <title>Related Links</title>
 		  

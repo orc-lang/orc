@@ -115,6 +115,15 @@ stop << (f >x> println(x) >> stop | Rtimer(100) )
 		  </example>
 		  		  
 	  </section>
+	  
+	  <section xml:id="ref.combinators.pruning.type">
+	    <title>Type</title>
+			<para>
+				The type of F <code><![CDATA[<x<]]></code> G is the type of F using the assumption x :: T, where T is the type of G.
+			</para>
+
+		</section>
+	  
 	  <section xml:id="ref.combinators.pruning.links">
 		  <title>Related Links</title>
 		  
