@@ -25,7 +25,7 @@ The standard prelude declarations are documented in the <olink targetdoc="ref.st
 
 <para>
 Orc programs are expected to rely on the host language and environment for all but the most essential sites.
-For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <keyword>class</keyword> declarations.
+For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code>class</code> declarations.
 Therefore, the Orc standard library aims only to provide convenience for the most common Orc idioms, not the complete set of features needed for general-purpose programming.
 </para>
 

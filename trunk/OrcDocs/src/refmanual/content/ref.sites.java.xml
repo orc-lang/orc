@@ -17,7 +17,7 @@
 Essential to Orc's role as an orchestration language is Orc's interaction with its host environment,
 which in this implementation is the Java virtual machine (JVM).
 In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
-arbitrary Java classes using the <keyword>class</keyword> declaration.
+arbitrary Java classes using the <code>class</code> declaration.
 Values in Java fields, values returned from Java methods, and values returned from Java constructors
 may be used in Orc programs just as any other Orc value.
 </para>
@@ -31,7 +31,7 @@ may be used in Orc programs just as any other Orc value.
 <para><emphasis role="strong">EBNF</emphasis>: <replaceable>QualifiedIdentifier</replaceable> ::= <replaceable>Identifier</replaceable> | <replaceable>Identifier</replaceable> <code>.</code> <replaceable>QualifiedIdentifier</replaceable></para>
 
 <para>
-Java classes are named in an Orc program using the <keyword>class</keyword> declaration.
+Java classes are named in an Orc program using the <code>class</code> declaration.
 In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
 This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
 The class proxy also presents the class static methods and class static fields in the same manner as
@@ -276,7 +276,7 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="ref.declarations.class" targetptr="ref.declarations.class"><keyword>class</keyword> declaration</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.declarations.class" targetptr="ref.declarations.class"><code>class</code> declaration</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.data.external" targetptr="ref.data.external">External data values</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom sites</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.sites.library" targetptr="ref.sites.library">Library sites</olink></para></listitem>
