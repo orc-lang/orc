@@ -104,25 +104,25 @@ Note that this is a potential surprising naming conflict.
 When interacting with Java classes and objects, Orc performs some conversions of values passed to and from the Java code.
 Specifically, Orc applies conversions to the following:
 <itemizedlist>
-<listitem>Arguments of invoked constructors and methods</listitem>
-<listitem>Return values of invoked constructors and methods</listitem>
-<listitem>Accessed values from fields</listitem>
-<listitem>Assigned values to fields</listitem>
-<listitem>Accessed values from array components</listitem>
-<listitem>Assigned values to array components</listitem>
+<listitem><para>Arguments of invoked constructors and methods</para></listitem>
+<listitem><para>Return values of invoked constructors and methods</para></listitem>
+<listitem><para>Accessed values from fields</para></listitem>
+<listitem><para>Assigned values to fields</para></listitem>
+<listitem><para>Accessed values from array components</para></listitem>
+<listitem><para>Assigned values to array components</para></listitem>
 </itemizedlist>
 </para>
 
 <para>
 The conversions applied are the following:
 <itemizedlist>
-<listitem><code>void</code> Java methods return <code>signal</code> in Orc.</listitem>
-<listitem>Orc integer values are converted to Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, or <code>Double</code>, as needed.</listitem>
-<listitem>Orc floating-point values are converted to Java <code>Float</code> or <code>Double</code>, as needed.</listitem>
-<listitem>Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, and <code>Long</code> are converted to Orc integers.</listitem>
-<listitem>Java <code>Float</code> and <code>Double</code> are converted to Orc floating-point numbers.</listitem>
-<listitem>Java primitive values are boxed and unboxed as needed, per JLS §5.1.7 and §5.1.8.</listitem>
-<listitem>Java widening primitive conversions are applied as needed, per JLS §5.1.2.</listitem>
+<listitem><para><code>void</code> Java methods return <code>signal</code> in Orc.</para></listitem>
+<listitem><para>Orc integer values are converted to Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, or <code>Double</code>, as needed.</para></listitem>
+<listitem><para>Orc floating-point values are converted to Java <code>Float</code> or <code>Double</code>, as needed.</para></listitem>
+<listitem><para>Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, and <code>Long</code> are converted to Orc integers.</para></listitem>
+<listitem><para>Java <code>Float</code> and <code>Double</code> are converted to Orc floating-point numbers.</para></listitem>
+<listitem><para>Java primitive values are boxed and unboxed as needed, per JLS §5.1.7 and §5.1.8.</para></listitem>
+<listitem><para>Java widening primitive conversions are applied as needed, per JLS §5.1.2.</para></listitem>
 </itemizedlist>
 Note that Orc integers and floating-point numbers represent a larger range of values than the standard Java numeric types.
 If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
