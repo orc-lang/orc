@@ -40,6 +40,7 @@ The following postfix operators are defined in Orc:
       <para>Dereference</para>
     </listitem>
   </varlistentry>
+</variablelist>
 </para>
 
 <para>
@@ -130,7 +131,7 @@ The following infix operators are defined in Orc:
     </listitem>
   </varlistentry>
   <varlistentry>
-    <term><code>&&</code></term>
+    <term><code>&#38;&#38;</code></term>
     <listitem>
       <para>Logical and</para>
     </listitem>
@@ -155,8 +156,8 @@ For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
 Operators in Orc are syntatic sugar for site calls.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code>.
 The operators' syntax is fixed by the Orc grammar; however, the site
-called is defined by the library and can be changed by a <keyword>def</keyword>
-or <keyword>site</keyword> declaration.
+called is defined by the library and can be changed by a <code>def</code>
+or <code>site</code> declaration.
 Orc permits a special identifier form for operators: the operator name
 surrounded by parenthesis, as in <code>(+)</code>.
 To disambiguate the unary prefix operator <code>-</code> from the
