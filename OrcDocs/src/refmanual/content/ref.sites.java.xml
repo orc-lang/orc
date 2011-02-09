@@ -178,6 +178,7 @@ The Java <code>length</code> pseudo-field of arrays is available in Orc as <code
 
 <example xml:id="ref.sites.java.examples.one">
 <title>Construct a Java object, and invoke methods</title>
+<programlisting language="orc-demo"><![CDATA[
 -- Name a Java class
 class URL = java.net.URL
 
@@ -195,6 +196,7 @@ OUTPUT:
 
 <example xml:id="ref.sites.java.examples.two">
 <title>Static field access, Constructor invocation, static method access, overloading, and Orc-Java conversion</title>
+<programlisting language="orc-demo"><![CDATA[
 class JavaBoolean = "java.lang.Boolean"
 class JavaString = "java.lang.String"
 
@@ -222,6 +224,7 @@ true
 
 <example xml:id="ref.sites.java.examples.three">
 <title>No-arg constructor invocation, field assignment, and field dereference</title>
+<programlisting language="orc-demo"><![CDATA[
 class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 
 -- No-arg constructor invocation
