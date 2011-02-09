@@ -108,7 +108,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.types.String" targetptr="ref.types.String"><code>String</code> type</olink></para></listitem>
+          			<!-- TODO <listitem><para><olink targetdoc="ref.types.String" targetptr="ref.types.String"><code>String</code> type</olink></para></listitem> -->
           			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.write"><code>write</code> function</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.lines"><code>lines</code> function</olink></para></listitem>
           			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.unlines"><code>unlines</code> function</olink></para></listitem>

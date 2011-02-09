@@ -28,7 +28,7 @@ record is written <code>{..}</code>.
 <para>
 A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
 associates a key with an expression. Evaluation of the record expression {. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .} 
-<olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+<olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
 each yi to a value vi and publishes the record value {. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .} .
 </para>
 
@@ -115,8 +115,7 @@ rgb + {. alpha = 128 .}
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          	  <listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
+          	    <listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
           		<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>

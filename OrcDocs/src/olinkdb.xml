@@ -12,6 +12,8 @@
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/html/refmanual/targets.ref.combinators.sequential.db">
    <!ENTITY targets.ref.combinators SYSTEM "../build/html/refmanual/targets.ref.combinators.db">
+   <!ENTITY targets.ref.concepts.reap SYSTEM "../build/html/refmanual/targets.ref.concepts.reap.db">
+   <!ENTITY targets.ref.concepts SYSTEM "../build/html/refmanual/targets.ref.concepts.db">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/html/refmanual/targets.ref.data.boolean.db">
    <!ENTITY targets.ref.data.datatype SYSTEM "../build/html/refmanual/targets.ref.data.datatype.db">
    <!ENTITY targets.ref.data.external SYSTEM "../build/html/refmanual/targets.ref.data.external.db">
@@ -41,13 +43,17 @@
    <!ENTITY targets.ref.patterns.call SYSTEM "../build/html/refmanual/targets.ref.patterns.call.db">
    <!ENTITY targets.ref.patterns.cons SYSTEM "../build/html/refmanual/targets.ref.patterns.cons.db">
    <!ENTITY targets.ref.patterns.constant SYSTEM "../build/html/refmanual/targets.ref.patterns.constant.db">
-   <!ENTITY targets.ref.patterns.equality SYSTEM "../build/html/refmanual/targets.ref.patterns.equality.db">
    <!ENTITY targets.ref.patterns.list SYSTEM "../build/html/refmanual/targets.ref.patterns.list.db">
-   <!ENTITY targets.ref.patterns.reap SYSTEM "../build/html/refmanual/targets.ref.patterns.reap.db">
    <!ENTITY targets.ref.patterns.tuple SYSTEM "../build/html/refmanual/targets.ref.patterns.tuple.db">
    <!ENTITY targets.ref.patterns.variable SYSTEM "../build/html/refmanual/targets.ref.patterns.variable.db">
    <!ENTITY targets.ref.patterns.wildcard SYSTEM "../build/html/refmanual/targets.ref.patterns.wildcard.db">
    <!ENTITY targets.ref.patterns SYSTEM "../build/html/refmanual/targets.ref.patterns.db">
+   <!ENTITY targets.ref.sites.custom SYSTEM "../build/html/refmanual/targets.ref.sites.custom.db">
+   <!ENTITY targets.ref.sites.java SYSTEM "../build/html/refmanual/targets.ref.sites.java.db">
+   <!ENTITY targets.ref.sites.library SYSTEM "../build/html/refmanual/targets.ref.sites.library.db">
+   <!ENTITY targets.ref.sites.operators SYSTEM "../build/html/refmanual/targets.ref.sites.operators.db">
+   <!ENTITY targets.ref.sites.web SYSTEM "../build/html/refmanual/targets.ref.sites.web.db">
+   <!ENTITY targets.ref.sites SYSTEM "../build/html/refmanual/targets.ref.sites.db">
    <!ENTITY targets.ref.stdlib SYSTEM "../build/html/refmanual/targets.ref.stdlib.db">
    <!ENTITY targets.ref.stdlib.core SYSTEM "../build/html/refmanual/targets.ref.stdlib.core.db">
    <!ENTITY targets.ref.stdlib.idioms SYSTEM "../build/html/refmanual/targets.ref.stdlib.idioms.db">
@@ -63,6 +69,7 @@
    <!ENTITY targets.ref.syntax SYSTEM "../build/html/refmanual/targets.ref.syntax.db">
    <!ENTITY targets.ref.time.rtimer SYSTEM "../build/html/refmanual/targets.ref.time.rtimer.db">
    <!ENTITY targets.ref.time SYSTEM "../build/html/refmanual/targets.ref.time.db">
+   <!ENTITY targets.ref.types SYSTEM "../build/html/refmanual/targets.ref.types.db">
    ]>
 <targetset>
    <targetsetinfo>
@@ -104,6 +111,12 @@
 					  </document>
 					  <document targetdoc="ref.combinators" baseuri="ref.combinators.html">
 					  	&targets.ref.combinators;
+					  </document>
+					  <document targetdoc="ref.concepts.reap" baseuri="ref.concepts.reap.html">
+					  	&targets.ref.concepts.reap;
+					  </document>
+					  <document targetdoc="ref.concepts" baseuri="ref.concepts.html">
+					  	&targets.ref.concepts;
 					  </document>
 					  <document targetdoc="ref.data.boolean" baseuri="ref.data.boolean.html">
 					  	&targets.ref.data.boolean;
@@ -192,14 +205,8 @@
 					  <document targetdoc="ref.patterns.constant" baseuri="ref.patterns.constant.html">
 					  	&targets.ref.patterns.constant;
 					  </document>
-					  <document targetdoc="ref.patterns.equality" baseuri="ref.patterns.equality.html">
-					  	&targets.ref.patterns.equality;
-					  </document>
 					  <document targetdoc="ref.patterns.list" baseuri="ref.patterns.list.html">
 					  	&targets.ref.patterns.list;
-					  </document>
-					  <document targetdoc="ref.patterns.reap" baseuri="ref.patterns.reap.html">
-					  	&targets.ref.patterns.reap;
 					  </document>
 					  <document targetdoc="ref.patterns.tuple" baseuri="ref.patterns.tuple.html">
 					  	&targets.ref.patterns.tuple;
@@ -213,8 +220,23 @@
 					  <document targetdoc="ref.patterns" baseuri="ref.patterns.html">
 					  	&targets.ref.patterns;
 					  </document>
-					  <document targetdoc="ref.stdlib" baseuri="ref.stdlib.html">
-					  	&targets.ref.stdlib;
+					  <document targetdoc="ref.sites.custom" baseuri="ref.sites.custom.html">
+					  	&targets.ref.sites.custom;
+					  </document>
+					  <document targetdoc="ref.sites.java" baseuri="ref.sites.java.html">
+					  	&targets.ref.sites.java;
+					  </document>
+					  <document targetdoc="ref.sites.library" baseuri="ref.sites.library.html">
+					  	&targets.ref.sites.library;
+					  </document>
+					  <document targetdoc="ref.sites.operators" baseuri="ref.sites.operators.html">
+					  	&targets.ref.sites.operators;
+					  </document>
+					  <document targetdoc="ref.sites.web" baseuri="ref.sites.web.html">
+					  	&targets.ref.sites.web;
+					  </document>
+					  <document targetdoc="ref.site" baseuri="ref.sites.html">
+					  	&targets.ref.sites;
 					  </document>
 					  <document targetdoc="ref.stdlib.core" baseuri="ref.stdlib.core.html">
 					  	&targets.ref.stdlib.core;
@@ -240,6 +262,9 @@
 					  <document targetdoc="ref.stdlib.util" baseuri="ref.stdlib.util.html">
 					  	&targets.ref.stdlib.util;
 					  </document>
+					  <document targetdoc="ref.stdlib" baseuri="ref.stdlib.html">
+					  	&targets.ref.stdlib;
+					  </document>
 					  <document targetdoc="ref.syntax.EBNF" baseuri="ref.syntax.EBNF.html">
 					  	&targets.ref.syntax.EBNF;
 					  </document>
@@ -257,6 +282,9 @@
 					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;
+					  </document>
+					  <document targetdoc="ref.types" baseuri="ref.types.html">
+					  	&targets.ref.types;
 					  </document>
 				  </dir>
                </dir>
