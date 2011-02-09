@@ -18,7 +18,7 @@
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
 	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
-	<property name="xslthl.config" value="file://${user.dir}/${src.dir}/highlighting/xslthl-config.xml" />
+	<property name="xslthl.config" value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml" />
 	<property name="xalan.lib.dir" value="lib" />
 	<property name="database.olink.dir" value="${src.dir}" />
 
@@ -85,6 +85,7 @@
 			</classpath>
 		</taskdef>
 		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
+		<xinclude in="${src.dir}/refmanual/root_ref.xml" out="${build.dir}/refmanual-include-result.xml" />
 	</target>
 	
 	<!--
@@ -907,7 +908,7 @@
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chapter.autolabel" expression="0"/>
 			
-			<param name="target.database.document" expression="file://${user.dir}/${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="file://${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
 			
@@ -986,7 +987,7 @@
 		<param name="variablelist.max.termlength" expression="12"/>
 	        <include name="root_ref.xml" />
 	        
-		<param name="target.database.document" expression="file://${user.dir}/${database.olink.dir}/olinkdb.xml"/>	
+		<param name="target.database.document" expression="file://${basedir}/${database.olink.dir}/olinkdb.xml"/>	
 		<param name="current.docid" expression="refmanual"/>
 			
 		<param name="highlight.source" expression="1"/>
