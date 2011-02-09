@@ -98,7 +98,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.expressions.ifthenelse" targetptr="ref.expressions.ifthenelse">If Then Else</olink></para></listitem>
+          			<listitem><para><olink targetdoc="ref.expressions.ifthenelse" targetptr="ref.expressions.ifthenelse"><code>if then else</code></olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -92,5 +92,22 @@ PROCEDURES FOR LINKING FROM THE REFERENCE MANUAL TO THE USER GUIDE:
       For example:
          <olink targetdoc="root" targetptr="section.orc.datatypes">TEXT</olink>
          
+
+
+PROCEDURES FOR REMOVING A REFERENCE MANUAL SECTION
+
+0) Delete all code related to the PROCEDURES FOR ADDING A NEW SECTION TO
+THE REFERENCE MANUAL.  If you fail to do so, you'll get an error that
+looks something like this:
+
+/filepath/olink.xsl:38:55: Warning! Can not load requested doc: /filepath/targets.ref.new.db (No such file or directory)
+
+This will likely break all olinks in the entire document (cascade of errors).
+If you receive the above error, check to make sure "build.xml" and "olinkdb.xml"
+have been purged of all references to the "new.xml" based items.
+
+
+
 GOOD RESOURCES:
+
 The Complete Docbook Guide <http://www.sagehill.net/docbookxsl/>

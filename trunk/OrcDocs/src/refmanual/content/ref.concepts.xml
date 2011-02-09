@@ -22,11 +22,6 @@ These are a few concepts which are essential to Orc, and are used frequently in
 other parts of the reference manual.
 </para>
 
-<!-- 
-<xi:include href="ref.concepts.publish.xml"/>
-<xi:include href="ref.concepts.silent.xml"/>
-<xi:include href="ref.concepts.lenient.xml"/>
- -->
 <xi:include href="ref.concepts.halt.xml"/>
 <xi:include href="ref.concepts.reap.xml"/>
 

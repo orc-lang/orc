@@ -12,7 +12,7 @@
 
 <!-- IfThenElse -->
 	<section xml:id="ref.expressions.ifthenelse">
-		<title>if then else</title>
+		<title><code>if then else</code></title>
 		<section xml:id="ref.expressions.ifthenelse.body">
 			<para>
 A conditional expression in Orc is of the form 

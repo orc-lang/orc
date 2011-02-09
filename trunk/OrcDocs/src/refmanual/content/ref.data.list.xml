@@ -120,9 +120,10 @@ tail([3,2,5]) = [2,5]
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.syntax.EBNF" targetptr="ref.syntax.EBNF">EBNF</olink></para></listitem>
+        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.head"><code>head</code> function</olink></para></listitem>
+        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.init"><code>init</code> function</olink></para></listitem>
+        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.empty"><code>empty</code> function</olink></para></listitem>
+        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.head"><code>each</code> function</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

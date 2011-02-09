@@ -41,7 +41,7 @@ tuple elements.
 <para>
 	A tuple is written as two or more expressions, separated by commas
 	and enclosed within parentheses.  Evaluation of the tuple expression (e_1, ..., e_n)
-	<olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+	<olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
 	each ei to a value vi and publishes the tuple value (v_1, ..., v_n).
 </para>
 </section>
@@ -72,10 +72,16 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
 
 
 <example xml:id="ref.data.tuple.examples.one">
-<title>TODO:Example1</title>
+<title>Tuple Selection</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+{-
+Creates a new tuple where both values
+are the same as the first in "a", then
+publishes the second value of the new
+tuple, which is 1
+-}
+val a = (1,2)
+fst(a) >x> (x,x) >b> snd(b)
 ]]></programlisting>
 </example>
 
@@ -103,7 +109,7 @@ Rtimer(100) >> (f(), g())
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="ref.types.Tuple" targetptr="types.Tuple"><code>Tuple</code> type</olink></para></listitem>
+					<!-- TODO <listitem><para><olink targetdoc="ref.types.Tuple" targetptr="types.Tuple"><code>Tuple</code> type</olink></para></listitem> -->
 					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>fst</code> function</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>snd</code> function</olink></para></listitem>
         		</itemizedlist></entry>

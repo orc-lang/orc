@@ -20,7 +20,7 @@
 <para>Orc's expressible values are primarily those returned from site calls.
 However, Orc supplies a few primitive value types and some structured value types.</para>
 
-<para>Orc has conventional Boolean, numeric, and string literals, and a unit type with the literal "<code>signal</code>".
+<para>Orc has conventional Boolean, numeric, and string literals, and a unit type with the literal <code>signal</code>.
 Orc's built-in structured value types are list, tuple, record, and algebraic datatypes. 
 The Orc standard library provides other value types, including mutable values.</para>
 
