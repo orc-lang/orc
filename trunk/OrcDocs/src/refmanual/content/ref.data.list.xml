@@ -34,7 +34,7 @@ have type <code>T</code>, then the list will have type <code>List[T]</code>.
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-Evaluation of the list expression [e_1, ..., e_n] <olink targetdoc="ref.patterns.reap" targetptr="ref.patterns.reap">sublimates/reaps/aggregates</olink> 
+Evaluation of the list expression [e_1, ..., e_n] <olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
 each ei to a value vi and publishes the list value [v_1, ..., v_n].
 </para>
 </section>

@@ -33,5 +33,6 @@
 <xi:include href="content/ref.syntax.xml"/>
 <xi:include href="content/ref.types.xml"/>
 <xi:include href="content/ref.stdlib.xml"/>
+<xi:include href="content/ref.concepts.xml"/>
 
 </book>
