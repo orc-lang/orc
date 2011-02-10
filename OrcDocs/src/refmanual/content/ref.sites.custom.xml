@@ -135,7 +135,7 @@ For a detailed description of the Orc-site interface, refer to the <link xlink:h
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="root" targetptr="section.services.site"><code>site</code> Sites</olink></para></listitem>
+					<listitem><para><olink targetdoc="userguide" targetptr="section.services.site"><code>site</code> Sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

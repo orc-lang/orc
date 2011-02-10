@@ -1,78 +1,78 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Double check these file paths are correct if you're having problems -->
 <!-- Keep them alphabetical for ease of navigation -->
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
-   <!ENTITY targets.userguide SYSTEM "../build/html/targets.userguide.db">
-   <!ENTITY targets.refmanual SYSTEM "../build/html/refmanual/targets.refmanual.db">
-   <!ENTITY targets.ref.class SYSTEM "../build/html/refmanual/targets.ref.class.db">
-   <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/html/refmanual/targets.ref.combinators.otherwise.db">
-   <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/html/refmanual/targets.ref.combinators.parallel.db">
-   <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
-   <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/html/refmanual/targets.ref.combinators.sequential.db">
-   <!ENTITY targets.ref.combinators SYSTEM "../build/html/refmanual/targets.ref.combinators.db">
-   <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/html/refmanual/targets.ref.concepts.conventions.db">
-   <!ENTITY targets.ref.concepts.halt SYSTEM "../build/html/refmanual/targets.ref.concepts.halt.db">
-   <!ENTITY targets.ref.concepts.reap SYSTEM "../build/html/refmanual/targets.ref.concepts.reap.db">
-   <!ENTITY targets.ref.concepts SYSTEM "../build/html/refmanual/targets.ref.concepts.db">
-   <!ENTITY targets.ref.data.boolean SYSTEM "../build/html/refmanual/targets.ref.data.boolean.db">
-   <!ENTITY targets.ref.data.datatype SYSTEM "../build/html/refmanual/targets.ref.data.datatype.db">
-   <!ENTITY targets.ref.data.external SYSTEM "../build/html/refmanual/targets.ref.data.external.db">
-   <!ENTITY targets.ref.data.list SYSTEM "../build/html/refmanual/targets.ref.data.list.db">
-   <!ENTITY targets.ref.data.mutable SYSTEM "../build/html/refmanual/targets.ref.data.mutable.db">
-   <!ENTITY targets.ref.data.numeric SYSTEM "../build/html/refmanual/targets.ref.data.numeric.db">
-   <!ENTITY targets.ref.data.record SYSTEM "../build/html/refmanual/targets.ref.data.record.db">
-   <!ENTITY targets.ref.data.string SYSTEM "../build/html/refmanual/targets.ref.data.string.db">
-   <!ENTITY targets.ref.data.tuple SYSTEM "../build/html/refmanual/targets.ref.data.tuple.db">
-   <!ENTITY targets.ref.data SYSTEM "../build/html/refmanual/targets.ref.data.db">
-   <!ENTITY targets.ref.declarations.class SYSTEM "../build/html/refmanual/targets.ref.declarations.class.db">
-   <!ENTITY targets.ref.declarations.include SYSTEM "../build/html/refmanual/targets.ref.declarations.include.db">
-   <!ENTITY targets.ref.declarations.site SYSTEM "../build/html/refmanual/targets.ref.declarations.site.db">
-   <!ENTITY targets.ref.declarations.type SYSTEM "../build/html/refmanual/targets.ref.declarations.type.db">
-   <!ENTITY targets.ref.declarations SYSTEM "../build/html/refmanual/targets.ref.declarations.db">
-   <!ENTITY targets.ref.expressions.ifthenelse SYSTEM "../build/html/refmanual/targets.ref.expressions.ifthenelse.db">
-   <!ENTITY targets.ref.expressions.lambda SYSTEM "../build/html/refmanual/targets.ref.expressions.lambda.db">
-   <!ENTITY targets.ref.expressions.operators SYSTEM "../build/html/refmanual/targets.ref.expressions.operators.db">
-   <!ENTITY targets.ref.expressions.val SYSTEM "../build/html/refmanual/targets.ref.expressions.val.db">
-   <!ENTITY targets.ref.expressions SYSTEM "../build/html/refmanual/targets.ref.expressions.db">
-   <!ENTITY targets.ref.functions.clausal SYSTEM "../build/html/refmanual/targets.ref.functions.clausal.db">
-   <!ENTITY targets.ref.functions.closure SYSTEM "../build/html/refmanual/targets.ref.functions.closure.db">
-   <!ENTITY targets.ref.functions.lambda SYSTEM "../build/html/refmanual/targets.ref.functions.lambda.db">
-   <!ENTITY targets.ref.functions.recursion SYSTEM "../build/html/refmanual/targets.ref.functions.recursion.db">
-   <!ENTITY targets.ref.functions SYSTEM "../build/html/refmanual/targets.ref.functions.db">
-   <!ENTITY targets.ref.patterns.as SYSTEM "../build/html/refmanual/targets.ref.patterns.as.db">
-   <!ENTITY targets.ref.patterns.call SYSTEM "../build/html/refmanual/targets.ref.patterns.call.db">
-   <!ENTITY targets.ref.patterns.cons SYSTEM "../build/html/refmanual/targets.ref.patterns.cons.db">
-   <!ENTITY targets.ref.patterns.constant SYSTEM "../build/html/refmanual/targets.ref.patterns.constant.db">
-   <!ENTITY targets.ref.patterns.list SYSTEM "../build/html/refmanual/targets.ref.patterns.list.db">
-   <!ENTITY targets.ref.patterns.tuple SYSTEM "../build/html/refmanual/targets.ref.patterns.tuple.db">
-   <!ENTITY targets.ref.patterns.variable SYSTEM "../build/html/refmanual/targets.ref.patterns.variable.db">
-   <!ENTITY targets.ref.patterns.wildcard SYSTEM "../build/html/refmanual/targets.ref.patterns.wildcard.db">
-   <!ENTITY targets.ref.patterns SYSTEM "../build/html/refmanual/targets.ref.patterns.db">
-   <!ENTITY targets.ref.sites.custom SYSTEM "../build/html/refmanual/targets.ref.sites.custom.db">
-   <!ENTITY targets.ref.sites.java SYSTEM "../build/html/refmanual/targets.ref.sites.java.db">
-   <!ENTITY targets.ref.sites.library SYSTEM "../build/html/refmanual/targets.ref.sites.library.db">
-   <!ENTITY targets.ref.sites.operators SYSTEM "../build/html/refmanual/targets.ref.sites.operators.db">
-   <!ENTITY targets.ref.sites.web SYSTEM "../build/html/refmanual/targets.ref.sites.web.db">
-   <!ENTITY targets.ref.sites SYSTEM "../build/html/refmanual/targets.ref.sites.db">
-   <!ENTITY targets.ref.stdlib SYSTEM "../build/html/refmanual/targets.ref.stdlib.db">
-   <!ENTITY targets.ref.stdlib.core SYSTEM "../build/html/refmanual/targets.ref.stdlib.core.db">
-   <!ENTITY targets.ref.stdlib.idioms SYSTEM "../build/html/refmanual/targets.ref.stdlib.idioms.db">
-   <!ENTITY targets.ref.stdlib.list SYSTEM "../build/html/refmanual/targets.ref.stdlib.list.db">
-   <!ENTITY targets.ref.stdlib.reflect SYSTEM "../build/html/refmanual/targets.ref.stdlib.reflect.db">
-   <!ENTITY targets.ref.stdlib.state SYSTEM "../build/html/refmanual/targets.ref.stdlib.state.db">
-   <!ENTITY targets.ref.stdlib.text SYSTEM "../build/html/refmanual/targets.ref.stdlib.text.db">
-   <!ENTITY targets.ref.stdlib.time SYSTEM "../build/html/refmanual/targets.ref.stdlib.time.db">
-   <!ENTITY targets.ref.stdlib.util SYSTEM "../build/html/refmanual/targets.ref.stdlib.util.db">
-   <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/html/refmanual/targets.ref.syntax.EBNF.db">
-   <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/html/refmanual/targets.ref.syntax.keywords.db">
-   <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/html/refmanual/targets.ref.syntax.lexical.db">
-   <!ENTITY targets.ref.syntax SYSTEM "../build/html/refmanual/targets.ref.syntax.db">
-   <!ENTITY targets.ref.time.rtimer SYSTEM "../build/html/refmanual/targets.ref.time.rtimer.db">
-   <!ENTITY targets.ref.time SYSTEM "../build/html/refmanual/targets.ref.time.db">
-   <!ENTITY targets.ref.types.lattice SYSTEM "../build/html/refmanual/targets.ref.types.lattice.db">
-   <!ENTITY targets.ref.types SYSTEM "../build/html/refmanual/targets.ref.types.db">
+   <!ENTITY targets.userguide SYSTEM "../build/targetdb/targets.userguide.xml">
+   <!ENTITY targets.refmanual SYSTEM "../build/targetdb/targets.refmanual.xml">
+   <!ENTITY targets.ref.class SYSTEM "../build/targetdb/targets.ref.class.xml">
+   <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/targetdb/targets.ref.combinators.otherwise.xml">
+   <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/targetdb/targets.ref.combinators.parallel.xml">
+   <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/targetdb/targets.ref.combinators.pruning.xml">
+   <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/targetdb/targets.ref.combinators.sequential.xml">
+   <!ENTITY targets.ref.combinators SYSTEM "../build/targetdb/targets.ref.combinators.xml">
+   <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/targetdb/targets.ref.concepts.conventions.xml">
+   <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/targets.ref.concepts.halt.xml">
+   <!ENTITY targets.ref.concepts.reap SYSTEM "../build/targetdb/targets.ref.concepts.reap.xml">
+   <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/targets.ref.concepts.xml">
+   <!ENTITY targets.ref.data.boolean SYSTEM "../build/targetdb/targets.ref.data.boolean.xml">
+   <!ENTITY targets.ref.data.datatype SYSTEM "../build/targetdb/targets.ref.data.datatype.xml">
+   <!ENTITY targets.ref.data.external SYSTEM "../build/targetdb/targets.ref.data.external.xml">
+   <!ENTITY targets.ref.data.list SYSTEM "../build/targetdb/targets.ref.data.list.xml">
+   <!ENTITY targets.ref.data.mutable SYSTEM "../build/targetdb/targets.ref.data.mutable.xml">
+   <!ENTITY targets.ref.data.numeric SYSTEM "../build/targetdb/targets.ref.data.numeric.xml">
+   <!ENTITY targets.ref.data.record SYSTEM "../build/targetdb/targets.ref.data.record.xml">
+   <!ENTITY targets.ref.data.string SYSTEM "../build/targetdb/targets.ref.data.string.xml">
+   <!ENTITY targets.ref.data.tuple SYSTEM "../build/targetdb/targets.ref.data.tuple.xml">
+   <!ENTITY targets.ref.data SYSTEM "../build/targetdb/targets.ref.data.xml">
+   <!ENTITY targets.ref.declarations.class SYSTEM "../build/targetdb/targets.ref.declarations.class.xml">
+   <!ENTITY targets.ref.declarations.include SYSTEM "../build/targetdb/targets.ref.declarations.include.xml">
+   <!ENTITY targets.ref.declarations.site SYSTEM "../build/targetdb/targets.ref.declarations.site.xml">
+   <!ENTITY targets.ref.declarations.type SYSTEM "../build/targetdb/targets.ref.declarations.type.xml">
+   <!ENTITY targets.ref.declarations SYSTEM "../build/targetdb/targets.ref.declarations.xml">
+   <!ENTITY targets.ref.expressions.ifthenelse SYSTEM "../build/targetdb/targets.ref.expressions.ifthenelse.xml">
+   <!ENTITY targets.ref.expressions.lambda SYSTEM "../build/targetdb/targets.ref.expressions.lambda.xml">
+   <!ENTITY targets.ref.expressions.operators SYSTEM "../build/targetdb/targets.ref.expressions.operators.xml">
+   <!ENTITY targets.ref.expressions.val SYSTEM "../build/targetdb/targets.ref.expressions.val.xml">
+   <!ENTITY targets.ref.expressions SYSTEM "../build/targetdb/targets.ref.expressions.xml">
+   <!ENTITY targets.ref.functions.clausal SYSTEM "../build/targetdb/targets.ref.functions.clausal.xml">
+   <!ENTITY targets.ref.functions.closure SYSTEM "../build/targetdb/targets.ref.functions.closure.xml">
+   <!ENTITY targets.ref.functions.lambda SYSTEM "../build/targetdb/targets.ref.functions.lambda.xml">
+   <!ENTITY targets.ref.functions.recursion SYSTEM "../build/targetdb/targets.ref.functions.recursion.xml">
+   <!ENTITY targets.ref.functions SYSTEM "../build/targetdb/targets.ref.functions.xml">
+   <!ENTITY targets.ref.patterns.as SYSTEM "../build/targetdb/targets.ref.patterns.as.xml">
+   <!ENTITY targets.ref.patterns.call SYSTEM "../build/targetdb/targets.ref.patterns.call.xml">
+   <!ENTITY targets.ref.patterns.cons SYSTEM "../build/targetdb/targets.ref.patterns.cons.xml">
+   <!ENTITY targets.ref.patterns.constant SYSTEM "../build/targetdb/targets.ref.patterns.constant.xml">
+   <!ENTITY targets.ref.patterns.list SYSTEM "../build/targetdb/targets.ref.patterns.list.xml">
+   <!ENTITY targets.ref.patterns.tuple SYSTEM "../build/targetdb/targets.ref.patterns.tuple.xml">
+   <!ENTITY targets.ref.patterns.variable SYSTEM "../build/targetdb/targets.ref.patterns.variable.xml">
+   <!ENTITY targets.ref.patterns.wildcard SYSTEM "../build/targetdb/targets.ref.patterns.wildcard.xml">
+   <!ENTITY targets.ref.patterns SYSTEM "../build/targetdb/targets.ref.patterns.xml">
+   <!ENTITY targets.ref.sites.custom SYSTEM "../build/targetdb/targets.ref.sites.custom.xml">
+   <!ENTITY targets.ref.sites.java SYSTEM "../build/targetdb/targets.ref.sites.java.xml">
+   <!ENTITY targets.ref.sites.library SYSTEM "../build/targetdb/targets.ref.sites.library.xml">
+   <!ENTITY targets.ref.sites.operators SYSTEM "../build/targetdb/targets.ref.sites.operators.xml">
+   <!ENTITY targets.ref.sites.web SYSTEM "../build/targetdb/targets.ref.sites.web.xml">
+   <!ENTITY targets.ref.sites SYSTEM "../build/targetdb/targets.ref.sites.xml">
+   <!ENTITY targets.ref.stdlib SYSTEM "../build/targetdb/targets.ref.stdlib.xml">
+   <!ENTITY targets.ref.stdlib.core SYSTEM "../build/targetdb/targets.ref.stdlib.core.xml">
+   <!ENTITY targets.ref.stdlib.idioms SYSTEM "../build/targetdb/targets.ref.stdlib.idioms.xml">
+   <!ENTITY targets.ref.stdlib.list SYSTEM "../build/targetdb/targets.ref.stdlib.list.xml">
+   <!ENTITY targets.ref.stdlib.reflect SYSTEM "../build/targetdb/targets.ref.stdlib.reflect.xml">
+   <!ENTITY targets.ref.stdlib.state SYSTEM "../build/targetdb/targets.ref.stdlib.state.xml">
+   <!ENTITY targets.ref.stdlib.text SYSTEM "../build/targetdb/targets.ref.stdlib.text.xml">
+   <!ENTITY targets.ref.stdlib.time SYSTEM "../build/targetdb/targets.ref.stdlib.time.xml">
+   <!ENTITY targets.ref.stdlib.util SYSTEM "../build/targetdb/targets.ref.stdlib.util.xml">
+   <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/targetdb/targets.ref.syntax.EBNF.xml">
+   <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/targetdb/targets.ref.syntax.keywords.xml">
+   <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/targetdb/targets.ref.syntax.lexical.xml">
+   <!ENTITY targets.ref.syntax SYSTEM "../build/targetdb/targets.ref.syntax.xml">
+   <!ENTITY targets.ref.time.rtimer SYSTEM "../build/targetdb/targets.ref.time.rtimer.xml">
+   <!ENTITY targets.ref.time SYSTEM "../build/targetdb/targets.ref.time.xml">
+   <!ENTITY targets.ref.types.lattice SYSTEM "../build/targetdb/targets.ref.types.lattice.xml">
+   <!ENTITY targets.ref.types SYSTEM "../build/targetdb/targets.ref.types.xml">
    ]>
 <targetset>
    <targetsetinfo>
@@ -87,9 +87,11 @@
          <dir name="OrcDocs">
             <dir name="build">
                <dir name="html">
-				  <document targetdoc="root" baseuri="all.html"> 
-                     &targets.userguide;
-                  </document>
+				  <dir name="userguide">
+					  <document targetdoc="userguide" baseuri="userguide.html"> 
+	                     &targets.userguide;
+	                  </document>
+	              </dir>
 				  <dir name="refmanual">
 					  <dir name="content">
 						<!--  "content" contains source content, no output documents -->

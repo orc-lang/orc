@@ -17,7 +17,7 @@
 	xml:id="refmanual"
 	version="5.0" xml:lang="en"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	xmlns:xi="http://www.w3.org/2001/XInclude"><?dbhtml filename="root_ref.html" ?>
+	xmlns:xi="http://www.w3.org/2001/XInclude">
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
 	

@@ -62,7 +62,7 @@ a >x:y> x
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

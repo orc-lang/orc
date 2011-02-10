@@ -94,7 +94,7 @@ def odd("_":xs) = odd(xs)
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="section.orc.recursion">Recursion</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.recursion">Recursion</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

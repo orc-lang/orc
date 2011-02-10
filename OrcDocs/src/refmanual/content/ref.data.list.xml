@@ -140,7 +140,7 @@ tail([3,2,5]) = [2,5]
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="cor.data">Data Structures</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

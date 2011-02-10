@@ -115,8 +115,8 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="cor.constants">Constants</olink></para></listitem>
-          			<listitem><para><olink targetdoc="root" targetptr="cor.conditionals">Conditionals</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="cor.constants">Constants</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="cor.conditionals">Conditionals</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
