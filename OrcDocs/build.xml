@@ -101,7 +101,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.userguide.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- Create database of links for reference manual homepage (TOC) -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -111,7 +110,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.refmanual.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 
 		<!-- Create olink databases for modular chapters/sections -->
@@ -123,7 +121,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.class.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.combinators.otherwise -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -133,7 +130,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.combinators.parallel -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -143,7 +139,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.parallel.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.combinators.pruning -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -153,7 +148,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.pruning.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.combinators.sequential -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -163,7 +157,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.sequential.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.combinators -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -173,7 +166,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.concepts.reap -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -183,7 +175,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.concepts.reap.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.concepts -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -193,7 +184,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.concepts.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.boolean -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -203,7 +193,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.boolean.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.datatype -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -213,7 +202,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.datatype.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.external -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -223,7 +211,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.external.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.list -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -233,7 +220,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.list.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.mutable -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -243,7 +229,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.mutable.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.numeric -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -253,7 +238,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.numeric.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.record -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -263,7 +247,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.record.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!--  ref.data.signal -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -273,7 +256,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.signal.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.string -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -283,7 +265,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.string.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data.tuple -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -293,7 +274,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.tuple.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.data -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -303,7 +283,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.data.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.declarations.class -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -313,7 +292,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.declarations.class.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.declarations.include -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -323,7 +301,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.declarations.include.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.declarations.site -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -333,7 +310,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.declarations.site.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.declarations.type -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -343,7 +319,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.declarations.type.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.declarations -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -353,7 +328,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.declarations.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.examples.concept -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -363,7 +337,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.examples.concept.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.expressions.ifthenelse -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -373,7 +346,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.expressions.ifthenelse.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.expressions.lambda -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -383,7 +355,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.expressions.lambda.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.expressions.operators -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -393,7 +364,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.expressions.operators.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.expressions.val -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -403,7 +373,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.expressions.val.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.expressions -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -413,7 +382,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.expressions.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.functions.clausal -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -423,7 +391,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.functions.clausal.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.functions.closure -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -433,7 +400,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.functions.closure.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.functions.lambda -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -443,7 +409,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.functions.lambda.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.functions.recursion -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -453,7 +418,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.functions.recursion.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.functions -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -463,7 +427,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.functions.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.as -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -473,7 +436,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.as.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.call -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -483,7 +445,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.call.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.cons -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -493,7 +454,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.cons.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.constant -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -503,7 +463,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.constant.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.list -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -513,7 +472,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.list.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.tuple -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -523,7 +481,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.tuple.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.variable -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -533,7 +490,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.variable.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns.wildcard -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -543,7 +499,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.wildcard.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.patterns -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -553,7 +508,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.patterns.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites.custom -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -563,7 +517,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.custom.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites.java -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -573,7 +526,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.java.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites.library -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -583,7 +535,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.library.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites.operators -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -593,7 +544,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.operators.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites.web -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -603,7 +553,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.web.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.sites -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -613,7 +562,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.sites.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.core -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -623,7 +571,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.core.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.idioms -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -633,7 +580,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.idioms.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.list -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -643,7 +589,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.list.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.reflect -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -653,7 +598,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.reflect.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.state -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -663,7 +607,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.state.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.text -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -673,7 +616,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.text.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.time -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -683,7 +625,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.time.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib.util -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -693,7 +634,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.util.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.stdlib -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -703,7 +643,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.stdlib.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.syntax.EBNF -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -713,7 +652,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.syntax.EBNF.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.syntax.keywords -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -723,7 +661,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.syntax.keywords.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.syntax.lexical -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -733,7 +670,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.syntax.lexical.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.syntax -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -743,7 +679,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.syntax.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.time.rtimer -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -753,7 +688,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.time.rtimer.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.time -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -763,7 +697,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.time.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 		<!-- ref.types -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
@@ -773,7 +706,6 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.types.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 	</target>
 	
