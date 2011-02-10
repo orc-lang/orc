@@ -60,9 +60,9 @@ results
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        				<listitem><olink targetdoc="ref.data" targetptr="ref.data.tuple">Tuples</olink></listitem>
-	        				<listitem><olink targetdoc="ref.data" targetptr="ref.data.list">Lists</olink></listitem>
-	          			<listitem><olink targetdoc="ref.data" targetptr="ref.data.record">Records</olink></listitem>
+	        				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.tuple">Tuples</olink></para></listitem>
+	        				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.list">Lists</olink></para></listitem>
+	          				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.record">Records</olink></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -79,7 +79,7 @@ results
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        		<listitem><olink targetdoc="root" targetptr="section.idioms.forkjoin">Fork-join</olink></listitem>
+	        		<listitem><para><olink targetdoc="root" targetptr="section.idioms.forkjoin">Fork-join</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

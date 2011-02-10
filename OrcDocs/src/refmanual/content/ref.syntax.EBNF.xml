@@ -96,7 +96,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>{.</code> X <code>=</code> E <code>,</code> ... <code>,</code> X <code>=</code> E <code>.}</code></entry>
 
@@ -611,7 +611,7 @@
 
 <row>
 <entry></entry>
-<entry>|</entry>
+<entry>&#10073;</entry>
 
 <entry><code>lambda</code> <code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code> <code>::</code> T</entry>
 

@@ -40,9 +40,9 @@ tuple elements.
 
 <para>
 	A tuple is written as two or more expressions, separated by commas
-	and enclosed within parentheses.  Evaluation of the tuple expression (e_1, ..., e_n)
+	and enclosed within parentheses.  Evaluation of the tuple expression <code>(e_1, ..., e_n)</code>
 	<olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
-	each ei to a value vi and publishes the tuple value (v_1, ..., v_n).
+	each <code>ei</code> to a value <code>vi</code> and publishes the tuple value <code>(v_1, ..., v_n)</code>.
 </para>
 </section>
 

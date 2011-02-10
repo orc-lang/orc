@@ -24,7 +24,7 @@
 		 <section xml:id="ref.patterns.call.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.call.examples.one"><title>Associative Folding</title>
+		  <example xml:id="ref.patterns.call.examples.one"><title>Trees</title>
 <programlisting language="orc"><![CDATA[
 {- Match and unwrap the arguments using a datatype (call) pattern -}
 

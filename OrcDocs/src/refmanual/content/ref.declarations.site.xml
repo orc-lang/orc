@@ -50,7 +50,7 @@ b.put(10) >> b.get()
 		  </example>
 
 <para>
-See the Standard Library appendix 
+See the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink> chapter 
 for more information on the Buffer site
 and its available methods.
 </para>
@@ -70,7 +70,7 @@ and its available methods.
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para>ADD LINKS TO LIBRARY</para></listitem>
+	          			<listitem><para><olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

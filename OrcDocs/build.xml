@@ -167,6 +167,24 @@
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.combinators.db"/>
 		</xslt>
+		<!-- ref.concepts.conventions -->
+				<xslt style="${src.dir}/xsl/orc.xsl" 
+						basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+					<include name="ref.concepts.conventions.xml" />
+					<classpath refid="xalan.classpath" />
+					<param name="collect.xref.targets" expression="only" />
+					<param name="targets.filename" expression="targets.ref.concepts.conventions.db"/>
+				</xslt>
+		<!-- ref.concepts.halt -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.concepts.halt.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.concepts.halt.db"/>
+		</xslt>
 		<!-- ref.concepts.reap -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 
 				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
@@ -697,6 +715,15 @@
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.ref.time.db"/>
+		</xslt>
+		<!-- ref.types.lattice -->
+		<xslt style="${src.dir}/xsl/orc.xsl" 
+				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="ref.types.lattice.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="collect.xref.targets" expression="only" />
+			<param name="targets.filename" expression="targets.ref.types.lattice.db"/>
 		</xslt>
 		<!-- ref.types -->
 		<xslt style="${src.dir}/xsl/orc.xsl" 

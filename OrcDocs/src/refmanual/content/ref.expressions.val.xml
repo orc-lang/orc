@@ -10,9 +10,9 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Val -->
+<!-- val -->
 	<section xml:id="ref.expressions.val">
-		<title>Val</title>
+		<title><code>val</code></title>
 		<section xml:id="ref.expressions.val.body">
 			<para>
 The declaration <code>val x = G</code>, followed by expression <code>F</code>, is 
