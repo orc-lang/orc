@@ -15,7 +15,7 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>Signal</code></para>
 
-<para>A <literal>signal</literal> represents the instance of the Orc unit type, <type>Signal</type>.
+<para>A <literal>signal</literal> represents the instance of the Orc unit type, <code>Signal</code>.
 <literal>signal</literal>s are most commonly used to provide for control flow
 when there is no associated data to propagate.  For example, <code>metronome(100)</code>
 function publishes a <literal>signal</literal> every 100 milliseconds, since it has no other data of interest to publish.</para>
@@ -44,9 +44,9 @@ function publishes a <literal>signal</literal> every 100 milliseconds, since it 
 <section xml:id="ref.data.signal.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>Signal</type>s don't correspond to any Java value, so if a <type>Signal</type>
-is passed to Java code, it will be as an <type>java.lang.Object</type> of a type not specified here.
-Returns of type <type>void</type> from Java code are converted into a publication of a <type>Signal</type>.</para>
+<para>Orc <code>Signal</code>s don't correspond to any Java value, so if a <code>Signal</code>
+is passed to Java code, it will be as an <code language="java">java.lang.Object</code> of a type not specified here.
+Returns of type <code>void</code> from Java code are converted into a publication of a <code>Signal</code>.</para>
 
 </section>
 

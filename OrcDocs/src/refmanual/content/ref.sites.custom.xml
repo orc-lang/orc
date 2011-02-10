@@ -59,7 +59,7 @@ Orc provides a number of convenience mix-in traits for site implementors:
   <varlistentry>
     <term><code language="java">orc.values.sites.Site</code></term>
     <listitem>
-      <para>The basic site trait -- a site that can be called.</para>
+      <para>The basic site trait -- a site that can be called.  Implement the <code language="java">call</code> method.</para>
     </listitem>
   </varlistentry>
   <varlistentry>

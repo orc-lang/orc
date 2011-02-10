@@ -14,7 +14,7 @@
 <title>Java sites</title>
 
 <para>
-Essential to Orc's role as an orchestration language is Orc's interaction with its host environment,
+Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
 which in this implementation is the Java virtual machine (JVM).
 In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
 arbitrary Java classes using the <code>class</code> declaration.
@@ -25,10 +25,6 @@ may be used in Orc programs just as any other Orc value.
 
 <section xml:id="ref.sites.java.classes">
 <title>Java classes</title>
-
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassImport</replaceable> ::= <code>class </code><replaceable>Identifier</replaceable><code> = </code><replaceable>ClassName</replaceable></para>
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassName</replaceable> ::= <replaceable>StringLiteral</replaceable> | <replaceable>QualifiedIdentifier</replaceable></para>
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>QualifiedIdentifier</replaceable> ::= <replaceable>Identifier</replaceable> | <replaceable>Identifier</replaceable> <code>.</code> <replaceable>QualifiedIdentifier</replaceable></para>
 
 <para>
 Java classes are named in an Orc program using the <code>class</code> declaration.
@@ -116,13 +112,13 @@ Specifically, Orc applies conversions to the following:
 <para>
 The conversions applied are the following:
 <itemizedlist>
-<listitem><para><code>void</code> Java methods return <code>signal</code> in Orc.</para></listitem>
-<listitem><para>Orc integer values are converted to Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, or <code>Double</code>, as needed.</para></listitem>
-<listitem><para>Orc floating-point values are converted to Java <code>Float</code> or <code>Double</code>, as needed.</para></listitem>
-<listitem><para>Java <code>Byte</code>, <code>Short</code>, <code>Integer</code>, and <code>Long</code> are converted to Orc integers.</para></listitem>
-<listitem><para>Java <code>Float</code> and <code>Double</code> are converted to Orc floating-point numbers.</para></listitem>
-<listitem><para>Java primitive values are boxed and unboxed as needed, per JLS §5.1.7 and §5.1.8.</para></listitem>
-<listitem><para>Java widening primitive conversions are applied as needed, per JLS §5.1.2.</para></listitem>
+<listitem><para><code language="java">void</code> Java methods return <code>signal</code> in Orc.</para></listitem>
+<listitem><para>Orc integer values are converted to Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, <code language="java">Long</code>, <code language="java">Float</code>, or <code language="java">Double</code>, as needed.</para></listitem>
+<listitem><para>Orc floating-point values are converted to Java <code language="java">Float</code> or <code language="java">Double</code>, as needed.</para></listitem>
+<listitem><para>Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, and <code language="java">Long</code> are converted to Orc integers.</para></listitem>
+<listitem><para>Java <code language="java">Float</code> and <code language="java">Double</code> are converted to Orc floating-point numbers.</para></listitem>
+<listitem><para>Java primitive values are boxed and unboxed as needed, per <citetitle pubwork="book">The Java Language Specification</citetitle> §5.1.7 and §5.1.8.</para></listitem>
+<listitem><para>Java widening primitive conversions are applied as needed, per <citetitle pubwork="book">The Java Language Specification</citetitle> §5.1.2.</para></listitem>
 </itemizedlist>
 Note that Orc integers and floating-point numbers represent a larger range of values than the standard Java numeric types.
 If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
@@ -138,7 +134,7 @@ If a floating-point conversion is applied to an out-of-range value, the results 
 
 <para>
 Orc invokes a Java method or constructor by closely approximating the Java method
-invocation rules specified in JLS §15.12.
+invocation rules specified in <citetitle pubwork="book">The Java Language Specification</citetitle> §15.12.
 This is only an approximation, because Orc performs Java compile-time steps at
 run time using Java's reflection facilities, and therefore has a different
 view of the types of values than the Java compiler would have.
@@ -167,7 +163,7 @@ nonnegative integer-valued expression in parenthesis.
 Java arrays are zero-origin.
 Array components appear as references in Orc.
 Their values may be accessed and assigned using Orc's <code>?</code> and <code>:=</code> operators.
-The Java <code>length</code> pseudo-field of arrays is available in Orc as <code>length?</code>.
+The Java <code language="java">length</code> pseudo-field of arrays is available in Orc as <code>length?</code>.
 </para>
 
 </section>
@@ -195,7 +191,7 @@ OUTPUT:
 </example>
 
 <example xml:id="ref.sites.java.examples.two">
-<title>Static field access, Constructor invocation, static method access, overloading, and Orc-Java conversion</title>
+<title>Static field access, constructor invocation, static method access, overloading, and Orc-Java conversion</title>
 <programlisting language="orc-demo"><![CDATA[
 class JavaBoolean = "java.lang.Boolean"
 class JavaString = "java.lang.String"

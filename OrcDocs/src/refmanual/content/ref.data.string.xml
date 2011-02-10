@@ -15,12 +15,12 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
-<para>Orc's character sequence representation is <type>String</type>.
-Characters in Orc <type>String</type>s are drawn from the Unicode
+<para>Orc's character sequence representation is <code>String</code>.
+Characters in Orc <code>String</code>s are drawn from the Unicode
 character set, and are encoded in the UTF-16 encoding form.
 (Note that Orc source code files are encoded in the UTF-8 encoding form.)
-Orc <type>String</type>s have an explicit length and are not zero-terminated.
-<type>String</type>s are limited to a maximum length of 2^31-1 (2 147 483 647) characters.</para>
+Orc <code>String</code>s have an explicit length and are not zero-terminated.
+<code>String</code>s are limited to a maximum length of 2^31-1 (2 147 483 647) characters.</para>
 
 <section xml:id="ref.data.string.literals">
 <title>Literals</title>
@@ -51,12 +51,12 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 
 <para>Notable string operations include:
 <itemizedlist>
-<listitem><para>All <type>java.lang.String</type> operations</para></listitem>
-<listitem><para>Convert Orc value to <type>String</type>: <code>write</code></para></listitem>
-<listitem><para>Split a <type>String</type> into a <type>List</type> of <type>String</type>s corresponding to its lines: <code>lines</code></para></listitem>
-<listitem><para>Combine a <type>List</type> of <type>String</type>s into one multi-line <type>String</type>: <code>unlines</code></para></listitem>
-<listitem><para>Split a <type>String</type> into a <type>List</type> of <type>String</type>s corresponding to its words: <code>words</code></para></listitem>
-<listitem><para>Combine a <type>List</type> of <type>String</type>s into one multi-word <type>String</type>: <code>unwords</code></para></listitem>
+<listitem><para>All <code language="java">java.lang.String</code> operations</para></listitem>
+<listitem><para>Convert Orc value to <code>String</code>: <code>write</code></para></listitem>
+<listitem><para>Split a <code>String</code> into a <code>List</code> of <code>String</code>s corresponding to its lines: <code>lines</code></para></listitem>
+<listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-line <code>String</code>: <code>unlines</code></para></listitem>
+<listitem><para>Split a <code>String</code> into a <code>List</code> of <code>String</code>s corresponding to its words: <code>words</code></para></listitem>
+<listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-word <code>String</code>: <code>unwords</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -68,8 +68,8 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <para>
 class java.lang.String
 
-Orc <type>String</type> values are passed in calls to and returns
-from Java code as <type>java.lang.String</type>.</para>
+Orc <code>String</code> values are passed in calls to and returns
+from Java code as <code language="java">java.lang.String</code>.</para>
 
 </section>
 
