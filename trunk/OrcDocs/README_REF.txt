@@ -37,7 +37,6 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
 			<classpath refid="xalan.classpath" />
 			<param name="collect.xref.targets" expression="only" />
 			<param name="targets.filename" expression="targets.new.db"/>
-			<param name="user.dir" expression="${user.dir}" />
 		</xslt>
 
 2) Add an entity describing the filepath to the database
