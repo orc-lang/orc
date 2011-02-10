@@ -27,13 +27,13 @@ Namely, "infinite, NaN, or subnormal results are always treated as errors, and â
 Note that the divide operation on <code>Number</code>s can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
-using IEEE 754 <code>binary64</code> (formerly called double precision)
+using IEEE 754 binary64 (formerly called double precision)
 binary floating-point operands.
 This fall back may result in a loss of precision for this operation.
 </para>
 
 <para>
-Similiarly, the exponent operation may fall back to IEEE 754 <code>binary64</code>
+Similarly, the exponent operation may fall back to IEEE 754 binary64
 binary floating-point operands in the case of a fractional exponent.
 This fall back may result in a loss of precision for this operation.
 </para>
@@ -88,7 +88,7 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 
 <para>
 Orc <code>Integer</code> values are passed in calls to and returns
-from Java code as <code>java.math.BigInteger</code>, or if the callee
+from Java code as <code language="java">java.math.BigInteger</code>, or if the callee
 method expects a specific numeric type, an <code>Integer</code> will be
 converted to a <code language="java">java.lang.Byte</code>, <code language="java">java.lang.Short</code>,
 <code language="java">java.lang.Integer</code>, <code language="java">java.lang.Long</code>,
@@ -98,7 +98,7 @@ These values are boxed and unboxed per <citetitle pubwork="book">The Java Langua
 
 <para>
 Orc <code>Number</code> values are passed in calls to and returns
-from Java code as <code>java.math.BigDecimal</code>, or if the callee
+from Java code as <code language="java">java.math.BigDecimal</code>, or if the callee
 method expects a specific numeric type, a <code>Number</code> will be
 converted to a <code language="java">java.lang.Float</code> or 
 <code language="java">java.lang.Double</code>, as appropriate.

@@ -57,8 +57,8 @@ as well as the arithmetic relations that yield boolean results:
 <section xml:id="ref.data.boolean.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>Boolean</type> values are passed in calls to and returns
-from Java code as <type>java.lang.Boolean</type>, which is boxed and
+<para>Orc <code>Boolean</code> values are passed in calls to and returns
+from Java code as <code language="java">java.lang.Boolean</code>, which is boxed and
 unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle> as <type>boolean</type>.</para>
 
 </section>
