@@ -66,6 +66,8 @@ If(1 > 0) >> "correct"
      		<row>
         		<entry><itemizedlist>
 					<listitem><para><olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard library</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web services sites</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>

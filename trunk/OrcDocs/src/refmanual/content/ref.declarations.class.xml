@@ -11,62 +11,65 @@
   -->
 
 <!-- Site -->
-	<section xml:id="ref.declarations.class">
-		<title>Class</title>
-		<section xml:id="ref.declarations.class.body">
-			<para>
-				Here we will discuss how to we declare Java classes.
-			</para>
-		</section>
-		
-		<section xml:id="ref.declarations.class.examples">
-		<title>Examples</title>
-		
-		<example xml:id="ref.declarations.class.examples.one"><title>TODO</title>
-<programlisting language="orc"><![CDATA[
--- Need example
-]]></programlisting> 
-		  </example>
+<section xml:id="ref.declarations.class">
+	<title>Class</title>
 
-		</section>
-		
-		<section xml:id="ref.declarations.class.links">
-		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="center">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-	  </section>
+	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassImport</replaceable> ::= <code>class </code><replaceable>Identifier</replaceable><code> = </code><replaceable>ClassName</replaceable></para>
+	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassName</replaceable> ::= <replaceable>StringLiteral</replaceable> | <replaceable>QualifiedIdentifier</replaceable></para>
+	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>QualifiedIdentifier</replaceable> ::= <replaceable>Identifier</replaceable> | <replaceable>Identifier</replaceable> <code>.</code> <replaceable>QualifiedIdentifier</replaceable></para>
+
+	<para>
+		Here we will discuss how to we declare Java classes.
+	</para>
+
+	<section xml:id="ref.declarations.class.examples">
+		<title>Examples</title>
+	
+		<example xml:id="ref.declarations.class.examples.one">
+			<title>TODO</title>
+			<programlisting language="orc"><![CDATA[
+	-- Need example
+	]]></programlisting>
+		</example>
+	
 	</section>
 
+	<section xml:id="ref.declarations.class.links">
+		<title>Related Links</title>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="center">Related Reference Topics</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+		        		<entry><itemizedlist>
+							<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
+						</itemizedlist></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+		  
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Tutorial Sections</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry><itemizedlist>
+							<listitem><para><olink targetdoc="root" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
+						</itemizedlist></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+	</section>
+</section>

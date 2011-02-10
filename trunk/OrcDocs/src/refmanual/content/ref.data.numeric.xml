@@ -16,24 +16,24 @@
 <para><emphasis role="strong">Type</emphasis>: <code>Integer</code></para>
 <para><emphasis role="strong">Type</emphasis>: <code>Number</code></para>
 
-<para>Orc includes two numeric types, <type>Integer</type> and <type>Number</type>.
-Orc's <type>Integer</type> is an arbitrary-precision two's complement integer. 
-Orc's <type>Number</type> is a floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
-<type>Number</type> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
+<para>Orc includes two numeric types, <code>Integer</code> and <code>Number</code>.
+Orc's <code>Integer</code> is an arbitrary-precision two's complement integer. 
+Orc's <code>Number</code> is a floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
+<code>Number</code> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
 Namely, "infinite, NaN, or subnormal results are always treated as errors, and –0 results are hidden".
 </para>
 
 <para>
-Note that the divide operation on <type>Number</type>s can encounter a
+Note that the divide operation on <code>Number</code>s can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
-using IEEE 754 <type>binary64</type> (formerly called double precision)
+using IEEE 754 <code>binary64</code> (formerly called double precision)
 binary floating-point operands.
 This fall back may result in a loss of precision for this operation.
 </para>
 
 <para>
-Similiarly, the exponent operation may fall back to IEEE 754 <type>binary64</type>
+Similiarly, the exponent operation may fall back to IEEE 754 <code>binary64</code>
 binary floating-point operands in the case of a fractional exponent.
 This fall back may result in a loss of precision for this operation.
 </para>
@@ -45,7 +45,7 @@ This fall back may result in a loss of precision for this operation.
 
 <para>Numeric literals in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
-If a numeric literal contains a decimal point or an "<code>E</code>", it is a <type>Number</type> (floating point) literal, otherwise it is an <type>Integer</type> literal.
+If a numeric literal contains a decimal point or an "<code>E</code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
 A prefix unary minus sign is provided for in the Orc syntax, but not a prefix unary plus sign.
 </para>
 
@@ -72,12 +72,12 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 </para>
 
 <para>
-	Numbers with no decimal part, such as 3, are treated as integers. Arithmetic 
+	Arithmetic 
 	operators with two integer arguments will perform an integer operation and 
-	return an integer result; for example, 5 / 2 performs integer division and 
+	return an integer result; for example, <code>5 / 2</code> performs integer division and 
 	evaluates to 2. However, if either argument to an operator has a decimal part 
-	(even if it is trivial, as in 3.0), the other argument will be promoted, and 
-	a decimal operation will be performed. For example, 5 / 2.0 and 5.0 / 2 both 
+	(even if it is trivial, as in <code>3.0</code>), the other argument will be promoted, and 
+	a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
 	perform decimal division and evaluate to 2.5. 
 </para>
 
@@ -87,22 +87,22 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 <title>Java calls</title>
 
 <para>
-Orc <type>Integer</type> values are passed in calls to and returns
-from Java code as <type>java.math.BigInteger</type>, or if the callee
-method expects a specific numeric type, an <type>Integer</type> will be
-converted to a <type>java.lang.Byte</type>, <type>java.lang.Short</type>,
-<type>java.lang.Integer</type>, <type>java.lang.Long</type>,
-<type>java.lang.Float</type>, or <type>java.lang.Double</type>, as appropriate.
-These values are boxed and unboxed per the Java Language Specification.
+Orc <code>Integer</code> values are passed in calls to and returns
+from Java code as <code>java.math.BigInteger</code>, or if the callee
+method expects a specific numeric type, an <code>Integer</code> will be
+converted to a <code language="java">java.lang.Byte</code>, <code language="java">java.lang.Short</code>,
+<code language="java">java.lang.Integer</code>, <code language="java">java.lang.Long</code>,
+<code language="java">java.lang.Float</code>, or <code language="java">java.lang.Double</code>, as appropriate.
+These values are boxed and unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle>.
 </para>
 
 <para>
-Orc <type>Number</type> values are passed in calls to and returns
-from Java code as <type>java.math.BigDecimal</type>, or if the callee
-method expects a specific numeric type, a <type>Number</type> will be
-converted to a <type>java.lang.Float</type> or 
-<type>java.lang.Double</type>, as appropriate.
-These values are boxed and unboxed per the Java Language Specification.
+Orc <code>Number</code> values are passed in calls to and returns
+from Java code as <code>java.math.BigDecimal</code>, or if the callee
+method expects a specific numeric type, a <code>Number</code> will be
+converted to a <code language="java">java.lang.Float</code> or 
+<code language="java">java.lang.Double</code>, as appropriate.
+These values are boxed and unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle>.
 </para>
 
 </section>

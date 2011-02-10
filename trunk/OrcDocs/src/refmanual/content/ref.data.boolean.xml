@@ -59,7 +59,7 @@ as well as the arithmetic relations that yield boolean results:
 
 <para>Orc <type>Boolean</type> values are passed in calls to and returns
 from Java code as <type>java.lang.Boolean</type>, which is boxed and
-unboxed per the Java Language Specification as <type>boolean</type>.</para>
+unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle> as <type>boolean</type>.</para>
 
 </section>
 

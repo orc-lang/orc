@@ -17,7 +17,21 @@
 
 <title>Sites and Services</title>
 
-<para>TODO:Introduction paragraph about sites and services.</para>
+<para>
+Orc programs communicate with their environment by calling <firstterm>sites</firstterm>.
+These sites perform services, which the Orc program orchestrates.
+A site call may return a value, or may be silent, returning no value.
+</para>
+
+<para>
+Orc has no built-in services, so even operations as simple as addition are performed by sites.
+Sites may also provide complex services, such as a database management system.
+</para>
+
+<para>
+Sites may be provided by various types of software components, such as Java classes, Web services, or custom
+Orc sites.  The site call interface, however, is uniform across these types.
+</para>
 
 <xi:include href="ref.sites.operators.xml"/>
 <xi:include href="ref.sites.library.xml"/>

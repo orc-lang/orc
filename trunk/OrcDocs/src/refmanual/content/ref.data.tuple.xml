@@ -16,14 +16,14 @@
 <para><emphasis role="strong">Type</emphasis>: <code>(T1, T2...)</code></para>
 
 <para>
-Orc's <type>Tuple</type> data type is a sequence of values, whose number of values is at least two.
+Orc's <code>Tuple</code> data type is a sequence of values, whose number of values is at least two.
 (Orc does not provide for the construction of "0-tuples" or "1-tuples".)
 Tuples vary from lists in two significant ways:
 <itemizedlist>
 <listitem><para>Tuples are intended to be used where they have a fixed length.
 Lists may have varying lengths.</para></listitem>
 <listitem><para>Tuples may have elements of varying types in each position.
-Lists must be of a uniform type (though this may be <type>Top</type>).</para></listitem>
+Lists must be of a uniform type (though this may be <code>Top</code>).</para></listitem>
 </itemizedlist>
 </para>
 
@@ -62,8 +62,8 @@ tuple elements.
 <section xml:id="ref.data.tuple.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>Tuple</type>s don't correspond to any Java value, so if a <type>Tuple</type>
-is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
+<para>Orc <code>Tuple</code>s don't correspond to any Java value, so if a <code>Tuple</code>
+is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
 
 </section>
 
