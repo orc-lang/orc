@@ -46,7 +46,7 @@ function publishes a <literal>signal</literal> every 100 milliseconds, since it 
 
 <para>Orc <code>Signal</code>s don't correspond to any Java value, so if a <code>Signal</code>
 is passed to Java code, it will be as an <code language="java">java.lang.Object</code> of a type not specified here.
-Returns of type <code>void</code> from Java code are converted into a publication of a <code>Signal</code>.</para>
+Returns of type <code language="java">void</code> from Java code are converted into a publication of a <code>Signal</code>.</para>
 
 </section>
 
