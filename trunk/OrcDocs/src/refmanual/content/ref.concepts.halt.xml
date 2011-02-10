@@ -32,13 +32,13 @@
         <code><![CDATA[F >x> G]]></code> halts when <code><![CDATA[F]]></code> has halted and all instantiated copies of <code><![CDATA[G]]></code> have also halted.
       </listitem>
       <listitem>
-        <code><![CDATA[F <x< G]]></code> halts when <code><![CDATA[F]]></code> halts, and <code><![CDATA[G]]></code> has either halted or published a value. Also,
+        <code><![CDATA[F <x< G]]></code> halts when <code><![CDATA[F]]></code> halts and <code><![CDATA[G]]></code> has either halted or published a value. Also,
 				if <code><![CDATA[G]]></code> halts without publishing a value, then all expressions in <code><![CDATA[F]]></code> which use <code><![CDATA[x]]></code> also halt, since
 				they will never be able to proceed.
 			</listitem>
 			<listitem>
 				<code><![CDATA[F ; G]]></code> halts either when <code><![CDATA[F]]></code> has published a value and subsequently halted, 
-				or if <code><![CDATA[F]]></code> is silent, when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code>have halted.
+				or if <code><![CDATA[F]]></code> is silent, when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have halted.
 				</listitem>
 			<listitem>
 				<code>stop</code> halts immediately.
@@ -49,6 +49,13 @@
 		
 		 <section xml:id="ref.concepts.halt.examples">
 		  <title>Examples</title>
+<example xml:id="ref.concepts.halt.examples.one">
+<title>Stop--Hammertime!</title>
+<programlisting><![CDATA[
+-- This expression waits one second, then prints "hammertime"
+stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
+]]></programlisting>
+</example>
 		</section>
 		
 		<section xml:id="ref.concepts.halt.links">
@@ -64,8 +71,8 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        				<listitem><olink targetdoc="ref.combinators" targetptr="ref.combinators.otherwise">Otherwise</olink></listitem>
-	        				<listitem><olink targetdoc="ref.concepts" targetptr="ref.concepts.reap">Reaping</olink></listitem>
+	        				<listitem><olink targetdoc="ref.combinators.otherwise" targetptr="ref.combinators.otherwise">Otherwise</olink></listitem>
+	        				<listitem><olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">Reaping</olink></listitem>
 	          			<!-- <listitem><olink targetdoc="ref.expressions" targetptr="ref.expressions.stop"><code>stop</code></olink></listitem>  -->
 	        		</itemizedlist></entry>
 	        	</row>
