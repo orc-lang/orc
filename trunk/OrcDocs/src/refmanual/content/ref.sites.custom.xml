@@ -118,7 +118,7 @@ For a detailed description of the Orc-site interface, refer to the <link xlink:h
 					<listitem><para><olink targetdoc="ref.declarations.site" targetptr="ref.declarations.site"><code>site</code> declaration</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.sites.library" targetptr="ref.sites.library">Library sites</olink></para></listitem>
 					<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web services sites</olink></para></listitem>
+					<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web services</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

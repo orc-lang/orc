@@ -12,6 +12,8 @@
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/html/refmanual/targets.ref.combinators.pruning.db">
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/html/refmanual/targets.ref.combinators.sequential.db">
    <!ENTITY targets.ref.combinators SYSTEM "../build/html/refmanual/targets.ref.combinators.db">
+   <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/html/refmanual/targets.ref.concepts.conventions.db">
+   <!ENTITY targets.ref.concepts.halt SYSTEM "../build/html/refmanual/targets.ref.concepts.halt.db">
    <!ENTITY targets.ref.concepts.reap SYSTEM "../build/html/refmanual/targets.ref.concepts.reap.db">
    <!ENTITY targets.ref.concepts SYSTEM "../build/html/refmanual/targets.ref.concepts.db">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/html/refmanual/targets.ref.data.boolean.db">
@@ -69,6 +71,7 @@
    <!ENTITY targets.ref.syntax SYSTEM "../build/html/refmanual/targets.ref.syntax.db">
    <!ENTITY targets.ref.time.rtimer SYSTEM "../build/html/refmanual/targets.ref.time.rtimer.db">
    <!ENTITY targets.ref.time SYSTEM "../build/html/refmanual/targets.ref.time.db">
+   <!ENTITY targets.ref.types.lattice SYSTEM "../build/html/refmanual/targets.ref.types.lattice.db">
    <!ENTITY targets.ref.types SYSTEM "../build/html/refmanual/targets.ref.types.db">
    ]>
 <targetset>
@@ -111,6 +114,12 @@
 					  </document>
 					  <document targetdoc="ref.combinators" baseuri="ref.combinators.html">
 					  	&targets.ref.combinators;
+					  </document>
+					  <document targetdoc="ref.concepts.conventions" baseuri="ref.concepts.conventions.html">
+					  	&targets.ref.concepts.conventions;
+					  </document>
+					  <document targetdoc="ref.concepts.halt" baseuri="ref.concepts.halt.html">
+					  	&targets.ref.concepts.halt;
 					  </document>
 					  <document targetdoc="ref.concepts.reap" baseuri="ref.concepts.reap.html">
 					  	&targets.ref.concepts.reap;
@@ -282,6 +291,9 @@
 					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;
+					  </document>
+					  <document targetdoc="ref.types.lattice" baseuri="ref.types.lattice.html">
+					  	&targets.ref.types.lattice;
 					  </document>
 					  <document targetdoc="ref.types" baseuri="ref.types.html">
 					  	&targets.ref.types;

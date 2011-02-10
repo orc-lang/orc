@@ -119,7 +119,9 @@ stop << (f >x> println(x) >> stop | Rtimer(100) )
 	  <section xml:id="ref.combinators.pruning.type">
 	    <title>Type</title>
 			<para>
-				The type of F <code><![CDATA[<x<]]></code> G is the type of F using the assumption x :: T, where T is the type of G.
+				The type of <code><![CDATA[F <x< G]]></code> is the type of <code><![CDATA[F]]></code> 
+				using the assumption <code><![CDATA[x :: T]]></code>, where <code><![CDATA[T]]></code> 
+				is the type of <code><![CDATA[G]]></code>.
 			</para>
 
 		</section>

@@ -84,8 +84,8 @@
 		  <example xml:id="ref.combinators.sequential.examples.four"><title>Filtering</title>
 <programlisting language="orc-demo"><![CDATA[
 -- Filter out values of the form (_,false)
-( (4,true) | (5,false) | (6,true) )  >(x,true)> x
 -- Publishes 4 and 6 
+( (4,true) | (5,false) | (6,true) )  >(x,true)> x
 ]]></programlisting>
 		  </example>
 		  
@@ -113,7 +113,8 @@
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>
 			<para>
-				The type of F <code><![CDATA[>x>]]></code> G is the type of G using the assumption x :: T, where T is the type of F.
+				The type of <code><![CDATA[F >x> G]]></code> is the type of <code><![CDATA[G]]></code> using the assumption <code><![CDATA[x :: T]]></code>, 
+				where <code><![CDATA[T]]></code> is the type of <code><![CDATA[F]]></code>.
 			</para>
 		</section>
 	  

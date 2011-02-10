@@ -16,20 +16,21 @@
 		<section xml:id="ref.expressions.ifthenelse.body">
 			<para>
 A conditional expression in Orc is of the form 
-<code>if</code> E <code>then</code> F <code>else</code> G. 
+<code>if</code> <code><![CDATA[E]]></code> <code>then</code> <code><![CDATA[F]]></code> <code>else</code> <code><![CDATA[G]]></code>. 
 Its meaning is similar to that in other languages: the value
-of the expression is the value of F if and only if E evaluates to true, 
-or the value of G if and only if E evaluates to false. Note that G is not
-evaluated at all if E evaluates to true, and similarly F is not evaluated
-at all if E evaluates to false. Thus, for example, evaluation of 
+of the expression is the value of <code><![CDATA[F]]></code> if and only if <code><![CDATA[E]]></code> evaluates to <code>true</code>, 
+or the value of <code><![CDATA[G]]></code> if and only if <code><![CDATA[E]]></code> evaluates to <code>false</code>. 
+Note that <code><![CDATA[G]]></code> is not evaluated at all if <code><![CDATA[E]]></code> evaluates to <code>true</code>, 
+and similarly <code><![CDATA[F]]></code> is not evaluated
+at all if <code><![CDATA[E]]></code> evaluates to <code>false</code>. Thus, for example, evaluation of 
 <code>if true then 2+3 else 1/0</code> does not evaluate <code>1/0</code>;
 it only evaluates <code>2+3</code>.
 </para>
 
 <para>
-Unlike other languages, expressions in Cor may be silent. If E is
-silent, then the entire expression is silent. And if E evaluates to true 
-but F is silent (or if E evaluates to false and G is silent) then the 
+If <code><![CDATA[E]]></code> is
+silent, then the entire expression is silent. And if <code><![CDATA[E]]></code> evaluates to <code>true</code> 
+but <code><![CDATA[F]]></code> is silent (or if <code><![CDATA[E]]></code> evaluates to <code>false</code> and <code><![CDATA[G]]></code> is silent) then the 
 expression is silent.
 </para>
 

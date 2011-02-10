@@ -293,7 +293,7 @@ OUTPUT:
      		<row>
         		<entry><itemizedlist>
 					<!-- TODO <listitem><para><olink targetdoc="root" targetptr="section.types.java">Interacting with Java</olink></para></listitem> -->
-					<listitem><para><olink targetdoc="root" targetptr="section.orc.class">class declaration</olink></para></listitem>
+					<listitem><para><olink targetdoc="root" targetptr="section.orc.class"><code>class</code> declaration</olink></para></listitem>
 					<!-- TODO <listitem><para><olink targetdoc="root" targetptr="section.services.orcvalues">Orc values in Java</olink></para></listitem> -->
 					<!-- TODO <listitem><para><olink targetdoc="root" targetptr="section.services.javavalues">Java Values in Orc</olink></para></listitem> -->
         		</itemizedlist></entry>

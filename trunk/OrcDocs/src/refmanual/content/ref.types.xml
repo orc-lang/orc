@@ -18,7 +18,7 @@
 <title>Type System</title>
 
 <para>
-The Orc language, as it is described in <link linkend="chapter.language">Chapter 1</link>, is
+The Orc language is
 dynamically typed. If an operation occurs at runtime which is not type-correct, the call
 which attempted that operation becomes silent, and produces a type error that is reported
 on the console. 

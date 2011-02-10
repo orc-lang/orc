@@ -27,9 +27,9 @@ record is written <code>{..}</code>.
 
 <para>
 A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
-associates a key with an expression. Evaluation of the record expression {. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .} 
+associates a key with an expression. Evaluation of the record expression <code>{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}</code> 
 <olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
-each yi to a value vi and publishes the record value {. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .} .
+each <code>yi</code> to a value <code>vi</code> and publishes the record value <code>{. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .}</code> .
 </para>
 
 <para>Duplicate bindings for the same key are allowed, but only the rightmost binding will
