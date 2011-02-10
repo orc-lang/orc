@@ -239,7 +239,7 @@ def (?)(x) = "To "+x+", or not to "+x+", that is the question."
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="root" targetptr="language.base.operators">Operators</olink></para></listitem>
+					<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

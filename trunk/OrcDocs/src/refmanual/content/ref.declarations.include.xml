@@ -81,7 +81,7 @@ sum([1,2,3])
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="section.orc.include">Include Declaration</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.include">Include Declaration</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

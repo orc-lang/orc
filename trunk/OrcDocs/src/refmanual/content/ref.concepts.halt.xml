@@ -90,7 +90,7 @@ stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        		<listitem><olink targetdoc="root" targetptr="section.idioms.forkjoin">Fork-join</olink></listitem>
+	        		<listitem><olink targetdoc="userguide" targetptr="section.idioms.forkjoin">Fork-join</olink></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

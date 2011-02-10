@@ -17,10 +17,10 @@
 		  <title>Syntax</title>
 		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E >P> E]]></code></emphasis></para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
-			  <olink targetdoc="root" targetptr="combinators.sequential">sequential</olink> >
-			  <olink targetdoc="root" targetptr="combinators.parallel">parallel</olink> > 
-			  <olink targetdoc="root" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="root" targetptr="combinators.otherwise">otherwise</olink></para>
+			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink></para>
 		  <para><emphasis role="strong">Associativity</emphasis>: right </para>
 		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
 	  </section>
@@ -149,9 +149,9 @@
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="combinators.sequential">Sequential Combinator</olink></para></listitem>
-          			<listitem><para><olink targetdoc="root" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
-          			<listitem><para><olink targetdoc="root" targetptr="orc.sites">Sites</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="combinators.sequential">Sequential Combinator</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites">Sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

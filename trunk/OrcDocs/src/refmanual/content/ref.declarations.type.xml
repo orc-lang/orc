@@ -91,7 +91,7 @@ type Cell = orc.lib.state.types.CellType
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

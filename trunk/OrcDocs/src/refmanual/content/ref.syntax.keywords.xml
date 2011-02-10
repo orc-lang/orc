@@ -103,7 +103,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="root" targetptr="orc">Orchestrating Services</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="orc">Orchestrating Services</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

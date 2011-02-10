@@ -8,7 +8,7 @@ consistency, all declarations are written in prefix form, with the site name
 followed by the operands.  When the site name is surrounded in parentheses, as
 in <code>(+)</code>, it denotes an infix operator.
 </para><para>For a more complete description of the built-in operators and their syntax, see
-the <olink targetdoc="root" targetptr="language.base.operators">Operators</olink> section of the
+the <olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink> section of the
 User Guide.
 </para><variablelist>
             <?dbfo list-presentation="list"?>
@@ -231,8 +231,8 @@ being compared, but always obeys the rule that if two values are considered
 equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 </para><para>Two values with the same object identity are always considered equal.
-In addition, Cor <olink targetdoc="root" targetptr="cor.constants">constant values</olink> and
-<olink targetdoc="root" targetptr="cor.data">data structures</olink> are considered equal if their
+In addition, Cor <olink targetdoc="userguide" targetptr="cor.constants">constant values</olink> and
+<olink targetdoc="userguide" targetptr="cor.data">data structures</olink> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 </para><para>Note that although values of different types may be compared with

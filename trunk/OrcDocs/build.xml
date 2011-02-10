@@ -1,20 +1,25 @@
-<?xml version="1.0"?>
-<!--
-  - Original Author:  Nathan A. Good <mail@nathanagood.com>
-  - Excerpted from "Build DocBook XML in Eclipse"
-  - at http://www.ibm.com/developerworks/xml/library/os-eclipse-docbook/index.html
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- build.xml - Ant buildfile (tasks for project build)
+	 Project OrcDocs
+
+	 $Id$
+
+	 Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+	 Use and redistribution of this file is governed by the license terms in
+	 the LICENSE file found in the project's top-level directory and also found at
+	 URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<project name="docbook-src" default="all">
-
+<project name="orcdocs" default="all" basedir=".">
 	<description>
-		This Ant build.xml file is used to transform DocBook XML to various other formats.
-		We use it to build all the Orc documentation (User Guide and Reference Manual).
+		Ant build file for the Orc documentation (User Guide and Reference Manual).
 	</description>
 
 	<!--
-      - Configure basic properties that will be used in the file.
-      -->
+	  - Configure basic properties that will be used in the file.
+	  -->
 	<property name="docbook.xsl.dir" value="docbook-xsl" />
 	<property name="build.dir" value="build" />
 	<property name="src.dir" value="src" />
@@ -23,10 +28,10 @@
 	<property name="database.olink.dir" value="${src.dir}" />
 
 	<!--
-      - Sets up the classpath for the Xalan and Xerces implementations
-      - that are to be used in this script, since the versions that ship
-      - with Ant may be out of date.
-      -->
+	  - Sets up the classpath for the Xalan and Xerces implementations
+	  - that are to be used in this script, since the versions that ship
+	  - with Ant may be out of date.
+	  -->
 	<path id="xalan.classpath">
 		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
 			<include name="xalan.jar" />
@@ -35,751 +40,331 @@
 		</fileset>
 	</path>
 
-	<!--
-	  - target:  all
-	  -->
-	<target name="all" depends="olinks,build-pdf,build-html-chunk,build-html-single,rm-build-html-chunk,rm-build-html-single" 
-		description="Build all documentation" />
-	
-	<!--
-      - target:  usage
-      -->
-	<target name="usage" description="Prints the Ant build.xml usage">
-		<echo message="Use -projecthelp to get a list of the available targets." />
-	</target>
+	<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
+		<classpath>
+			<fileset dir="lib">
+				<include name="*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
 
-	<!--
-      - target:  clean
-      -->
-	<target name="clean" description="Cleans up generated files.">
-		<delete dir="${build.dir}" />
-	</target>
-	
-	<!--
-	  - target:  test
-	  -->
-	<target name="test" depends="clean,olinks,rm-build-html-chunk,build-html-single" description="Test build for modifications.">
-		<echo message="Test build complete" />
-	</target>
-	
-	<!--
-      - target:  depends
-      -->
-	<target name="depends">
+	<!-- =================================
+		  target: mkdirs
+		 ================================= -->
+	<target name="mkdirs" depends="" description="Create build directory tree">
 		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/targetdb" />
 		<mkdir dir="${build.dir}/html" />
-		<mkdir dir="${build.dir}/pdf" />
+		<mkdir dir="${build.dir}/html/userguide" />
+		<mkdir dir="${build.dir}/html/refmanual" />
 		<mkdir dir="${build.dir}/fo" />
+		<mkdir dir="${build.dir}/fo/userguide" />
+		<mkdir dir="${build.dir}/fo/refmanual" />
+		<mkdir dir="${build.dir}/pdf" />
+		<mkdir dir="${build.dir}/pdf/userguide" />
 		<mkdir dir="${build.dir}/pdf/refmanual" />
 	</target>
-	
-	<!--
-      - target:  xinclude
-      -->
-	<target name="xinclude" depends="depends">
-		<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
-			<classpath>
-				<fileset dir="lib">
-					<include name="*.jar" />
-				</fileset>
-			</classpath>
-		</taskdef>
-		<xinclude in="${src.dir}/root.xml" out="${src.dir}/all.xml" />
-		<xinclude in="${src.dir}/refmanual/root_ref.xml" out="${build.dir}/refmanual-include-result.xml" />
+
+	<!-- =================================
+		  target: xinclude
+		 ================================= -->
+	<target name="xinclude" depends="" description="Preprocess XIncludes">
+		<xinclude in="${src.dir}/userguide/userguide.xml" out="${build.dir}/userguide.xml" />
+		<xinclude in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/refmanual.xml" />
 	</target>
-	
-	<!--
-	  - target:  olinks
-	  -->
-	<target name="olinks" depends="xinclude" description="Builds the olink databases for mutual linking between documents">
+
+	<!-- =================================
+		  target: targetdb
+		 ================================= -->
+	<target name="targetdb" depends="mkdirs,xinclude" description="Build olink target databases for mutual linking among documents">
 		<echo message="Creating olink databases..."/>
+		<macrodef name="docbooktargetdb">
+			<attribute name="srcdir" />
+			<attribute name="destdir" />
+			<attribute name="src" />
+			<attribute name="target" default="targets.@{src}"/>
+			<sequential>
+				<xslt style="docbook-xsl/html/docbook.xsl"
+						basedir="@{srcdir}" destdir="@{destdir}"
+						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+					<include name="@{src}" />
+					<classpath refid="xalan.classpath" />
+					<param name="collect.xref.targets" expression="only" />
+					<param name="targets.filename" expression="@{target}"/>
+				</xslt>
+				<!-- Annoyingly, when collect.xref.targets=only, docbook.xsl still creates empty HTML files.
+				  -  These annoying files are used by Ant's xslt task to check the freshness of the links DB,
+				  -  so we must keep them to avoid a rebuild of all link DBs every build.  -->
+			</sequential>
+		</macrodef>
 		<!-- Create database of links for user guide -->
-		<xslt style="${src.dir}/xsl/orc.xsl"
-				basedir="${src.dir}" destdir="${build.dir}/html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="root.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.userguide.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${build.dir}" destdir="${build.dir}/targetdb" src="userguide.xml" target="targets.userguide.xml"/>
+
 		<!-- Create database of links for reference manual homepage (TOC) -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="root_ref.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.refmanual.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb" src="refmanual.xml" target="targets.refmanual.xml"/>
 
 		<!-- Create olink databases for modular chapters/sections -->
 		<!-- ref.class -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.class.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.class.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.class.xml" target="targets.ref.class.xml"/>
 		<!-- ref.combinators.otherwise -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.otherwise.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.otherwise.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.otherwise.xml" target="targets.ref.combinators.otherwise.xml"/>
 		<!-- ref.combinators.parallel -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.parallel.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.parallel.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.parallel.xml" target="targets.ref.combinators.parallel.xml"/>
 		<!-- ref.combinators.pruning -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.pruning.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.pruning.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.pruning.xml" target="targets.ref.combinators.pruning.xml"/>
 		<!-- ref.combinators.sequential -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.sequential.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.sequential.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.sequential.xml" target="targets.ref.combinators.sequential.xml"/>
 		<!-- ref.combinators -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.combinators.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.combinators.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.xml" target="targets.ref.combinators.xml"/>
 		<!-- ref.concepts.conventions -->
-				<xslt style="${src.dir}/xsl/orc.xsl" 
-						basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-					<include name="ref.concepts.conventions.xml" />
-					<classpath refid="xalan.classpath" />
-					<param name="collect.xref.targets" expression="only" />
-					<param name="targets.filename" expression="targets.ref.concepts.conventions.db"/>
-				</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.conventions.xml" target="targets.ref.concepts.conventions.xml"/>
 		<!-- ref.concepts.halt -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.concepts.halt.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.concepts.halt.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.halt.xml" target="targets.ref.concepts.halt.xml"/>
 		<!-- ref.concepts.reap -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.concepts.reap.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.concepts.reap.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.reap.xml" target="targets.ref.concepts.reap.xml"/>
 		<!-- ref.concepts -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.concepts.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.concepts.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.xml" target="targets.ref.concepts.xml"/>
 		<!-- ref.data.boolean -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.boolean.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.boolean.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.boolean.xml" target="targets.ref.data.boolean.xml"/>
 		<!-- ref.data.datatype -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.datatype.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.datatype.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.datatype.xml" target="targets.ref.data.datatype.xml"/>
 		<!-- ref.data.external -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.external.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.external.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.external.xml" target="targets.ref.data.external.xml"/>
 		<!-- ref.data.list -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.list.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.list.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.list.xml" target="targets.ref.data.list.xml"/>
 		<!-- ref.data.mutable -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.mutable.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.mutable.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.mutable.xml" target="targets.ref.data.mutable.xml"/>
 		<!-- ref.data.numeric -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.numeric.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.numeric.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.numeric.xml" target="targets.ref.data.numeric.xml"/>
 		<!-- ref.data.record -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.record.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.record.db"/>
-		</xslt>
-		<!--  ref.data.signal -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.signal.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.signal.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.record.xml" target="targets.ref.data.record.xml"/>
+		<!-- ref.data.signal -->
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.signal.xml" target="targets.ref.data.signal.xml"/>
 		<!-- ref.data.string -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.string.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.string.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.string.xml" target="targets.ref.data.string.xml"/>
 		<!-- ref.data.tuple -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.tuple.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.tuple.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.tuple.xml" target="targets.ref.data.tuple.xml"/>
 		<!-- ref.data -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.data.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.data.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.xml" target="targets.ref.data.xml"/>
 		<!-- ref.declarations.class -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.declarations.class.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.declarations.class.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.class.xml" target="targets.ref.declarations.class.xml"/>
 		<!-- ref.declarations.include -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.declarations.include.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.declarations.include.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.include.xml" target="targets.ref.declarations.include.xml"/>
 		<!-- ref.declarations.site -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.declarations.site.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.declarations.site.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.site.xml" target="targets.ref.declarations.site.xml"/>
 		<!-- ref.declarations.type -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.declarations.type.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.declarations.type.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.type.xml" target="targets.ref.declarations.type.xml"/>
 		<!-- ref.declarations -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.declarations.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.declarations.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.xml" target="targets.ref.declarations.xml"/>
 		<!-- ref.examples.concept -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.examples.concept.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.examples.concept.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.examples.concept.xml" target="targets.ref.examples.concept.xml"/>
 		<!-- ref.expressions.ifthenelse -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.expressions.ifthenelse.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.expressions.ifthenelse.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.ifthenelse.xml" target="targets.ref.expressions.ifthenelse.xml"/>
 		<!-- ref.expressions.lambda -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.expressions.lambda.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.expressions.lambda.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.lambda.xml" target="targets.ref.expressions.lambda.xml"/>
 		<!-- ref.expressions.operators -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.expressions.operators.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.expressions.operators.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.operators.xml" target="targets.ref.expressions.operators.xml"/>
 		<!-- ref.expressions.val -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.expressions.val.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.expressions.val.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.val.xml" target="targets.ref.expressions.val.xml"/>
 		<!-- ref.expressions -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.expressions.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.expressions.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.xml" target="targets.ref.expressions.xml"/>
 		<!-- ref.functions.clausal -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.functions.clausal.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.functions.clausal.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.clausal.xml" target="targets.ref.functions.clausal.xml"/>
 		<!-- ref.functions.closure -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.functions.closure.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.functions.closure.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.closure.xml" target="targets.ref.functions.closure.xml"/>
 		<!-- ref.functions.lambda -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.functions.lambda.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.functions.lambda.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.lambda.xml" target="targets.ref.functions.lambda.xml"/>
 		<!-- ref.functions.recursion -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.functions.recursion.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.functions.recursion.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.recursion.xml" target="targets.ref.functions.recursion.xml"/>
 		<!-- ref.functions -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.functions.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.functions.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.xml" target="targets.ref.functions.xml"/>
 		<!-- ref.patterns.as -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.as.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.as.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.as.xml" target="targets.ref.patterns.as.xml"/>
 		<!-- ref.patterns.call -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.call.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.call.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.call.xml" target="targets.ref.patterns.call.xml"/>
 		<!-- ref.patterns.cons -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.cons.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.cons.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.cons.xml" target="targets.ref.patterns.cons.xml"/>
 		<!-- ref.patterns.constant -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.constant.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.constant.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.constant.xml" target="targets.ref.patterns.constant.xml"/>
 		<!-- ref.patterns.list -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.list.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.list.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.list.xml" target="targets.ref.patterns.list.xml"/>
 		<!-- ref.patterns.tuple -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.tuple.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.tuple.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.tuple.xml" target="targets.ref.patterns.tuple.xml"/>
 		<!-- ref.patterns.variable -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.variable.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.variable.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.variable.xml" target="targets.ref.patterns.variable.xml"/>
 		<!-- ref.patterns.wildcard -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.wildcard.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.wildcard.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.wildcard.xml" target="targets.ref.patterns.wildcard.xml"/>
 		<!-- ref.patterns -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.patterns.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.patterns.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.xml" target="targets.ref.patterns.xml"/>
 		<!-- ref.sites.custom -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.custom.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.custom.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.custom.xml" target="targets.ref.sites.custom.xml"/>
 		<!-- ref.sites.java -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.java.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.java.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.java.xml" target="targets.ref.sites.java.xml"/>
 		<!-- ref.sites.library -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.library.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.library.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.library.xml" target="targets.ref.sites.library.xml"/>
 		<!-- ref.sites.operators -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.operators.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.operators.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.operators.xml" target="targets.ref.sites.operators.xml"/>
 		<!-- ref.sites.web -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.web.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.web.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.web.xml" target="targets.ref.sites.web.xml"/>
 		<!-- ref.sites -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.sites.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.sites.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.xml" target="targets.ref.sites.xml"/>
 		<!-- ref.stdlib.core -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.core.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.core.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.core.xml" target="targets.ref.stdlib.core.xml"/>
 		<!-- ref.stdlib.idioms -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.idioms.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.idioms.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.idioms.xml" target="targets.ref.stdlib.idioms.xml"/>
 		<!-- ref.stdlib.list -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.list.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.list.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.list.xml" target="targets.ref.stdlib.list.xml"/>
 		<!-- ref.stdlib.reflect -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.reflect.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.reflect.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.reflect.xml" target="targets.ref.stdlib.reflect.xml"/>
 		<!-- ref.stdlib.state -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.state.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.state.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.state.xml" target="targets.ref.stdlib.state.xml"/>
 		<!-- ref.stdlib.text -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.text.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.text.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.text.xml" target="targets.ref.stdlib.text.xml"/>
 		<!-- ref.stdlib.time -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.time.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.time.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.time.xml" target="targets.ref.stdlib.time.xml"/>
 		<!-- ref.stdlib.util -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.util.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.util.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.util.xml" target="targets.ref.stdlib.util.xml"/>
 		<!-- ref.stdlib -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.stdlib.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.stdlib.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.xml" target="targets.ref.stdlib.xml"/>
 		<!-- ref.syntax.EBNF -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.syntax.EBNF.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.syntax.EBNF.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.EBNF.xml" target="targets.ref.syntax.EBNF.xml"/>
 		<!-- ref.syntax.keywords -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.syntax.keywords.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.syntax.keywords.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.keywords.xml" target="targets.ref.syntax.keywords.xml"/>
 		<!-- ref.syntax.lexical -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.syntax.lexical.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.syntax.lexical.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.lexical.xml" target="targets.ref.syntax.lexical.xml"/>
 		<!-- ref.syntax -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.syntax.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.syntax.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.xml" target="targets.ref.syntax.xml"/>
 		<!-- ref.time.rtimer -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.time.rtimer.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.time.rtimer.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.time.rtimer.xml" target="targets.ref.time.rtimer.xml"/>
 		<!-- ref.time -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.time.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.time.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.time.xml" target="targets.ref.time.xml"/>
 		<!-- ref.types.lattice -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.types.lattice.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.types.lattice.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.types.lattice.xml" target="targets.ref.types.lattice.xml"/>
 		<!-- ref.types -->
-		<xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual/content" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="ref.types.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.ref.types.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.types.xml" target="targets.ref.types.xml"/>
 	</target>
-	
-	<!--
-      - target:  build-html-chunk
-      -->
-	<target name="build-html-chunk" depends="xinclude" description="Generates chunked User Guide HTML doc">
-		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html"
+
+	<!-- =================================
+		  target: ug-html-chunk
+		 ================================= -->
+	<target name="ug-html-chunk" depends="mkdirs,xinclude,targetdb" description="Generate chunked User Guide HTML doc">
+		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
+				basedir="${build.dir}" destdir="${build.dir}/html/userguide"
+				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="all.xml" />
+			<include name="userguide.xml" />
 			<classpath refid="xalan.classpath" />
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chunk.quietly" expression="1"/>
-			
+
 			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
-			<param name="current.docid" expression="root"/> 
-			
+			<param name="current.docid" expression="userguide"/>
+
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
-		<!-- Delete this because it confuses build-html-single otherwise -->
-		<delete file="${build.dir}/html/all.html" />
 		<!-- Copy the stylesheet and navigational images -->
-		<copy todir="${build.dir}/html/refmanual">
-			<fileset dir="css">
+		<copy todir="${build.dir}/html/userguide">
+			<fileset dir="${src.dir}/css">
 				<include name="style.css" />
 			</fileset>
 		</copy>
-		<copy todir="${build.dir}/html/refmanual/images">
+		<copy todir="${build.dir}/html/userguide/images">
 			<fileset dir="src/xsl/images"/>
 		</copy>
 	</target>
-		
-	<!--
-      - target:  rm-build-html-chunk
-      -->
-	<target name="rm-build-html-chunk" depends="xinclude" description="Generates chunked Reference Manual HTML doc">
-		<!-- Hack to make sure the ref manual builds every time -->
-		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
-		
-		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+
+	<!-- =================================
+		  target: ug-html-single
+		 ================================= -->
+	<target name="ug-html-single" depends="mkdirs,xinclude,targetdb" description="Generates single User Guide HTML doc">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
+				basedir="${build.dir}" destdir="${build.dir}/html/userguide"
+				force="true"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<include name="userguide.xml" />
+			<classpath refid="xalan.classpath" />
+			<param name="orc.demo" expression="1"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="userguide"/>
+
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+		<copy todir="${build.dir}/html/userguide">
+			<fileset dir="${src.dir}/css">
+				<include name="style.css" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- =================================
+		  target: ug-pdf
+		 ================================= -->
+	<target name="ug-pdf" depends="mkdirs,xinclude,targetdb" description="Generate User Guide PDF file">
+		<!-- Iterates through a directory and transforms .xml files into
+			 .fo files which can then be turned into a PDF document -->
+		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
+				basedir="${build.dir}" destdir="${build.dir}/fo/userguide"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<classpath refid="xalan.classpath" />
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<!-- default to indented layout to match HTML dl -->
+			<param name="variablelist.as.blocks" expression="1"/>
+			<!-- when table layout is used, default to 12em width for terms -->
+			<param name="variablelist.max.termlength" expression="12"/>
+			<include name="userguide.xml" />
+
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="userguide"/>
+
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+
+		<property name="fop.home" value="lib/fop" />
+
+		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+			<classpath>
+				<fileset dir="${fop.home}/lib">
+					<include name="*.jar" />
+				</fileset>
+				<fileset dir="${fop.home}/build">
+					<include name="fop.jar" />
+					<include name="fop-hyph.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+
+		<fop format="application/pdf" fofile="${build.dir}/fo/userguide/userguide.fo"
+			outfile="${build.dir}/pdf/userguide/userguide.pdf" />
+	</target>
+
+	<!-- =================================
+		  target: userguide
+		 ================================= -->
+	<target name="userguide" depends="mkdirs,ug-html-chunk,ug-html-single,ug-pdf" description="Generate the User Guide in various formats">
+	</target>
+
+	<!-- =================================
+		  target: rm-html-chunk
+		 ================================= -->
+	<target name="rm-html-chunk" depends="mkdirs,xinclude,targetdb" description="Generates chunked Reference Manual HTML doc">
+		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
+				basedir="${build.dir}" destdir="${build.dir}/html/refmanual"
+				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
@@ -790,30 +375,28 @@
 			<param name="chunk.first.sections" expression="1"/>
 			<param name="chapter.autolabel" expression="1"/>
 			<param name="generate.toc" expression="
-				book      toc
+				book	  toc
 				chapter	  toc
 			"/>
 			<param name="toc.section.depth" expression="1" />
 			<param name="header.rule" expression="0"/>
 			<param name="use.id.as.filename" expression="1" />
-			
+
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="1"/>
 			<param name="suppress.footer.navigation" expression="1"/>
 			<param name="navig.graphics" expression="1"/>
-			
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
-			<param name="current.docid" expression="refmanual"/> 
-			
+
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="refmanual"/>
+
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
-		<!-- Delete this because it confuses rm-build-html-single otherwise -->
-		<delete file="${build.dir}/html/refmanual/refmanual.html" />
 		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/refmanual">
-			<fileset dir="css">
+			<fileset dir="${src.dir}/css">
 				<include name="style.css" />
 			</fileset>
 		</copy>
@@ -821,43 +404,14 @@
 			<fileset dir="src/xsl/images"/>
 		</copy>
 	</target>
-	
-	<!--
-      - target:  build-html-single
-      -->
-	<target name="build-html-single" depends="xinclude" description="Generates single User Guide HTML doc">
-		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}" destdir="${build.dir}/html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="all.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="orc.demo" expression="1"/>
-			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
-			
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
-			<param name="current.docid" expression="root"/> 
-			
-			<param name="highlight.source" expression="1"/>
-			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-		</xslt>
-		<copy todir="${build.dir}/html">
-			<fileset dir="css">
-				<include name="style.css" />
-			</fileset>
-		</copy>
-	</target>
 
-	<!--
-	  - target:  rm-build-html-single
-	  -->
-	<target name="rm-build-html-single" depends="xinclude" description="Generates single Reference Manual HTML doc">
-		<!-- Hack to make sure the ref manual builds every time -->
-		<copy file="${src.dir}/refmanual/root_ref.xml" tofile="${src.dir}/refmanual/refmanual.xml"/>
-		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html" 
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+	<!-- =================================
+		  target: rm-html-single
+		 ================================= -->
+	<target name="rm-html-single" depends="mkdirs,xinclude,targetdb" description="Generates single Reference Manual HTML doc">
+		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
+				basedir="${build.dir}" destdir="${build.dir}/html/refmanual"
+				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 			<include name="refmanual.xml" />
 			<classpath refid="xalan.classpath" />
@@ -866,110 +420,92 @@
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chapter.autolabel" expression="0"/>
-			
-			<param name="target.database.document" expression="file://${basedir}/${database.olink.dir}/olinkdb.xml"/>
+
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
-			
+
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
 		</xslt>
 		<copy todir="${build.dir}/html/refmanual">
-			<fileset dir="css">
+			<fileset dir="${src.dir}/css">
 				<include name="style.css" />
 			</fileset>
 		</copy>
 	</target>
-	
-	<!--
-	    - target:  build-pdf
-	    - description:  Iterates through a directory and transforms
-	    -     .xml files into .fo files which can then be turned into a PDF document
-	    -->
-	<target name="build-pdf" depends="xinclude" 
-		    description="Generates PDF files from DocBook XML">
-	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
-			basedir="${src.dir}" destdir="${build.dir}/fo"
-			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-	        <classpath refid="xalan.classpath" />
-	    	<param name="section.autolabel" expression="1"/>
-	    	<param name="section.label.includes.component.label" expression="1"/>
-	    	<param name="section.autolabel.max.depth" expression="8"/>
-		<!-- default to indented layout to match HTML dl -->
-	    	<param name="variablelist.as.blocks" expression="1"/>
-		<!-- when table layout is used, default to 12em width for terms -->
-		<param name="variablelist.max.termlength" expression="12"/>
-	        <include name="all.xml" />
-	        	
-		<param name="highlight.source" expression="1"/>
-		<param name="highlight.default.language" expression="orc"/>
-	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-	    </xslt>
 
-	    <property name="fop.home" value="lib/fop" />
+	<!-- =================================
+		  target: rm-pdf
+		 ================================= -->
+	<target name="rm-pdf" depends="mkdirs,xinclude,targetdb" description="Generate the Reference Manual PDF file">
+		<!-- Iterates through a directory and transforms .xml files into
+			 .fo files which can then be turned into a PDF document -->
+		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
+			 	basedir="${build.dir}" destdir="${build.dir}/fo/refmanual"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<classpath refid="xalan.classpath" />
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="toc.section.depth" expression="1" />
+			<!-- default to indented layout to match HTML dl -->
+			<param name="variablelist.as.blocks" expression="1"/>
+			<!-- when table layout is used, default to 12em width for terms -->
+			<param name="variablelist.max.termlength" expression="12"/>
+			<include name="refmanual.xml" />
 
-	    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
-	        <classpath>
-	            <fileset dir="${fop.home}/lib">
-	                <include name="*.jar" />
-	            </fileset>
-	            <fileset dir="${fop.home}/build">
-	                <include name="fop.jar" />
-	                <include name="fop-hyph.jar" />
-	            </fileset>
-	        </classpath>
-	    </taskdef>
+			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="refmanual"/>
 
-	    <fop format="application/pdf" fofile="${build.dir}/fo/all.fo" 
-	        outfile="${build.dir}/pdf/all.pdf" />
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+		</xslt>
+
+		<property name="fop.home" value="lib/fop" />
+
+		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
+			<classpath>
+				<fileset dir="${fop.home}/lib">
+					<include name="*.jar" />
+				</fileset>
+				<fileset dir="${fop.home}/build">
+					<include name="fop.jar" />
+					<include name="fop-hyph.jar" />
+				</fileset>
+			</classpath>
+		</taskdef>
+
+		<fop format="application/pdf" fofile="${build.dir}/fo/refmanual/refmanual.fo"
+			outfile="${build.dir}/pdf/refmanual/refmanual.pdf" />
 	</target>
-	
-	<!--
-	    - target:  rm-build-pdf
-	    - description:  Iterates through a directory and transforms
-	    -     .xml files into .fo files which can then be turned into a PDF document
-	    -->
-	<target name="rm-build-pdf" depends="xinclude" 
-		    description="Generates PDF files from DocBook XML for the reference manual">
-	    <xslt style="${src.dir}/xsl/fo.xsl" extension=".fo" 
-			basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual"
-			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-	        <classpath refid="xalan.classpath" />
-	    	<param name="section.autolabel" expression="1"/>
-	    	<param name="section.label.includes.component.label" expression="1"/>
-	    	<param name="section.autolabel.max.depth" expression="8"/>
-	    	<param name="toc.section.depth" expression="1" />
-		<!-- default to indented layout to match HTML dl -->
-	    	<param name="variablelist.as.blocks" expression="1"/>
-		<!-- when table layout is used, default to 12em width for terms -->
-		<param name="variablelist.max.termlength" expression="12"/>
-	        <include name="root_ref.xml" />
-	        
-		<param name="target.database.document" expression="file://${basedir}/${database.olink.dir}/olinkdb.xml"/>	
-		<param name="current.docid" expression="refmanual"/>
-			
-		<param name="highlight.source" expression="1"/>
-		<param name="highlight.default.language" expression="orc"/>
-	    	<param name="highlight.xslthl.config" expression="${xslthl.config}" />
-	    </xslt>
 
-	    <property name="fop.home" value="lib/fop" />
-
-	    <taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
-	        <classpath>
-	            <fileset dir="${fop.home}/lib">
-	                <include name="*.jar" />
-	            </fileset>
-	            <fileset dir="${fop.home}/build">
-	                <include name="fop.jar" />
-	                <include name="fop-hyph.jar" />
-	            </fileset>
-	        </classpath>
-	    </taskdef>
-
-	    <fop format="application/pdf" fofile="${build.dir}/fo/refmanual/root_ref.fo" 
-	        outfile="${build.dir}/pdf/refmanual/root_ref.pdf" />
+	<!-- =================================
+		  target: refmanual
+		 ================================= -->
+	<target name="refmanual" depends="mkdirs,rm-html-chunk,rm-html-single,rm-pdf" description="Generate the Reference Manual in various formats">
 	</target>
-	
+
+	<!-- =================================
+		  target: all
+		 ================================= -->
+	<target name="all" depends="userguide,refmanual" description="">
+	</target>
+
+	<!-- =================================
+		  target: clean
+		 ================================= -->
+	<target name="clean" depends="" description="Delete build directory">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<!--
+	  - target:  test
+	  -->
+	<target name="test" depends="clean,rm-html-chunk,ug-html-single" description="Test build for modifications.">
+		<echo message="Test build complete" />
+	</target>
+
 </project>

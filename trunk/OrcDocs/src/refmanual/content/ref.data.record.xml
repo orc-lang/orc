@@ -133,7 +133,7 @@ rgb + {. alpha = 128 .}
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="root" targetptr="section.services.java.method">Method Resolution</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="section.services.java.method">Method Resolution</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

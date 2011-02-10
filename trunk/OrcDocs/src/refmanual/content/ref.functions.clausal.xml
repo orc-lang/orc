@@ -122,7 +122,7 @@ def parts23(_,s,h,0,m,n) = 1
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        			<listitem><para><olink targetdoc="root" targetptr="section.orc.clauses">Clauses</olink></para></listitem>
+	        			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.clauses">Clauses</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

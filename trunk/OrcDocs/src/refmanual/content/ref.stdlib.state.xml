@@ -497,7 +497,7 @@ there are no items in the buffer or waiting to be added, return an empty list.
 to contain <code>null</code>s.
 </para><para>The resulting array can be called directly with an index, as if
 its type were <code>lambda (Integer) :: Ref[A]</code>.
-In this case, it returns a <olink targetdoc="root" targetptr="library.state.Ref">Ref</olink>
+In this case, it returns a <olink targetdoc="userguide" targetptr="library.state.Ref">Ref</olink>
 pointing to the element of the array specified by an index,
 counting from 0. Changes to the array are reflected immediately
 in the ref and visa versa.
@@ -796,7 +796,7 @@ repeat(c.dec)]]></programlisting>
   			  <para>Create a new dictionary (a mutable map from field names to values), initially
 empty.  The first time each field of the dictionary is accessed (using dot
 notation), the dictionary creates and returns a new empty 
-<olink targetdoc="root" targetptr="library.state.Ref">Ref</olink> which will also be returned on
+<olink targetdoc="userguide" targetptr="library.state.Ref">Ref</olink> which will also be returned on
 subsequent accesses of the same field.  Dictionaries allow you to easily create
 object-like data structures.
 </para><para>Example:

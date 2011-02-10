@@ -83,8 +83,8 @@ HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> m.put("Donald", "Dais
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><olink targetdoc="root" targetptr="section.services.java.values">Java Values in Orc</olink></para></listitem> -->
-          			<listitem><para><olink targetdoc="root" targetptr="section.values.scala">Scala Values in Orc</olink></para></listitem>
+          			<!-- TODO <listitem><para><olink targetdoc="userguide" targetptr="section.services.java.values">Java Values in Orc</olink></para></listitem> -->
+          			<listitem><para><olink targetdoc="userguide" targetptr="section.values.scala">Scala Values in Orc</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

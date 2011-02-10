@@ -5,10 +5,10 @@
 -->
 
 <book
-	id="root"
+	id="userguide"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude">
-<title>Orc User Guide v<xi:include href="../VERSION" parse="text"/></title>
+<title>Orc User Guide v<xi:include href="../../VERSION" parse="text"/></title>
  
 <preface><title>Introduction</title>
 	
@@ -29,18 +29,18 @@ learn more about Orc and run your own Orc programs, visit the website:
 <para>
 Unless otherwise noted, all material in this document pertains to the
 Orc language implementation version
-<xi:include href="../VERSION" parse="text"/>.
+<xi:include href="../../VERSION" parse="text"/>.
 </para>
 
 
 </preface>
 
 <!-- Chapters -->
-<xi:include href="content/language.xml"/>
-<xi:include href="content/methodology.xml"/>
-<xi:include href="content/services.xml"/>
+<xi:include href="language.xml"/>
+<xi:include href="methodology.xml"/>
+<xi:include href="services.xml"/>
 	
 <!-- Appendices -->
-<xi:include href="content/syntax.xml"/>
+<xi:include href="syntax.xml"/>
 	
 </book>

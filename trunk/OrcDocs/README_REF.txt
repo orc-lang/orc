@@ -10,8 +10,8 @@ TO BUILD THE REFERENCE MANUAL:
    Also, for a fresh build that updates the links, etc.
    build the following targets in order:
      clean
-     olinks
-     rm-build-html-chunk
+     targetdb
+     rm-html-chunk
    or use the 'test' target and make it depend on the above.
 
 
@@ -22,28 +22,20 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
       For example:
          "new.xml"  <-- Filled with reference content
 
-1) Add an xslt instruction to "build.xml" to create an
+1) Add an docbooktargetdb instruction to "build.xml" to create an
    olinks database for the new file.  Use the filename
    in the 'include' section and the intended database
    (which should by convention be an expansion of the
-   file base name in the format targets.FILE.db) for the 
+   file base name in the format targets.FILE.xml) for the 
    expression of the 'targets.filename' section.
       For example:
-         <xslt style="${src.dir}/xsl/orc.xsl" 
-				basedir="${src.dir}/refmanual" 
-            destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="new.xml" />
-			<classpath refid="xalan.classpath" />
-			<param name="collect.xref.targets" expression="only" />
-			<param name="targets.filename" expression="targets.new.db"/>
-		</xslt>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.mutable.xml" target="targets.ref.data.mutable.xml"/>
 
 2) Add an entity describing the filepath to the database
    for the new section in "olinkdb.xml"  Note this should
    match the 'targets.filename' expression in (1)
       For example:
-         <!ENTITY targets.new SYSTEM "../build/html/refmanual/targets.new.db">
+         <!ENTITY targets.new SYSTEM "../build/targetdb/targets.new.xml">
 
 3) Add a document representing the new section to the
    sitemap contained in "olinkdb.xml"  The 'targetdoc' will
@@ -89,7 +81,7 @@ PROCEDURES FOR LINKING FROM THE REFERENCE MANUAL TO THE USER GUIDE:
    targetptr as the xml:id of the particular part of the document to
    which you are referring
       For example:
-         <olink targetdoc="root" targetptr="section.orc.datatypes">TEXT</olink>
+         <olink targetdoc="userguide" targetptr="section.orc.datatypes">TEXT</olink>
          
 
 
@@ -99,7 +91,7 @@ PROCEDURES FOR REMOVING A REFERENCE MANUAL SECTION
 THE REFERENCE MANUAL.  If you fail to do so, you'll get an error that
 looks something like this:
 
-/filepath/olink.xsl:38:55: Warning! Can not load requested doc: /filepath/targets.ref.new.db (No such file or directory)
+/filepath/olink.xsl:38:55: Warning! Can not load requested doc: /filepath/targets.ref.new.xml (No such file or directory)
 
 This will likely break all olinks in the entire document (cascade of errors).
 If you receive the above error, check to make sure "build.xml" and "olinkdb.xml"
