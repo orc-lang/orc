@@ -20,12 +20,12 @@
 	<!--
 	  - Configure basic properties that will be used in the file.
 	  -->
-	<property name="docbook.xsl.dir" value="docbook-xsl" />
-	<property name="build.dir" value="build" />
-	<property name="src.dir" value="src" />
-	<property name="xslthl.config" value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml" />
-	<property name="xalan.lib.dir" value="lib" />
-	<property name="database.olink.dir" value="${src.dir}" />
+	<property name="docbook.xsl.dir" value="docbook-xsl"/>
+	<property name="build.dir" value="build"/>
+	<property name="src.dir" value="src"/>
+	<property name="xslthl.config" value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml"/>
+	<property name="xalan.lib.dir" value="lib"/>
+	<property name="database.olink.dir" value="${src.dir}"/>
 
 	<!--
 	  - Sets up the classpath for the Xalan and Xerces implementations
@@ -34,71 +34,62 @@
 	  -->
 	<path id="xalan.classpath">
 		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
-			<include name="xalan.jar" />
-			<include name="xercesImpl.jar" />
-			<include name="xslthl-2.0.0.jar" />
+			<include name="xalan.jar"/>
+			<include name="xercesImpl.jar"/>
+			<include name="xslthl-2.0.0.jar"/>
 		</fileset>
 	</path>
-
-	<taskdef name="xinclude" classname="gr.abiss.xcluder.XercesXcluder">
-		<classpath>
-			<fileset dir="lib">
-				<include name="*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
 
 	<!-- =================================
 		  target: mkdirs
 		 ================================= -->
 	<target name="mkdirs" depends="" description="Create build directory tree">
-		<mkdir dir="${build.dir}" />
-		<mkdir dir="${build.dir}/targetdb" />
-		<mkdir dir="${build.dir}/html" />
-		<mkdir dir="${build.dir}/html/userguide" />
-		<mkdir dir="${build.dir}/html/refmanual" />
-		<mkdir dir="${build.dir}/fo" />
-		<mkdir dir="${build.dir}/fo/userguide" />
-		<mkdir dir="${build.dir}/fo/refmanual" />
-		<mkdir dir="${build.dir}/pdf" />
-		<mkdir dir="${build.dir}/pdf/userguide" />
-		<mkdir dir="${build.dir}/pdf/refmanual" />
-	</target>
-
-	<!-- =================================
-		  target: xinclude
-		 ================================= -->
-	<target name="xinclude" depends="" description="Preprocess XIncludes">
-		<xinclude in="${src.dir}/userguide/userguide.xml" out="${build.dir}/userguide.xml" />
-		<xinclude in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/refmanual.xml" />
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.dir}/targetdb"/>
+		<mkdir dir="${build.dir}/html"/>
+		<mkdir dir="${build.dir}/html/userguide"/>
+		<mkdir dir="${build.dir}/html/refmanual"/>
+		<mkdir dir="${build.dir}/fo"/>
+		<mkdir dir="${build.dir}/fo/userguide"/>
+		<mkdir dir="${build.dir}/fo/refmanual"/>
+		<mkdir dir="${build.dir}/pdf"/>
+		<mkdir dir="${build.dir}/pdf/userguide"/>
+		<mkdir dir="${build.dir}/pdf/refmanual"/>
 	</target>
 
 	<!-- =================================
 		  target: targetdb
 		 ================================= -->
-	<target name="targetdb" depends="mkdirs,xinclude" description="Build olink target databases for mutual linking among documents">
+	<target name="targetdb" depends="mkdirs" description="Build olink target databases for mutual linking among documents">
 		<echo message="Creating olink databases..."/>
 		<macrodef name="docbooktargetdb">
-			<attribute name="srcdir" />
-			<attribute name="destdir" />
-			<attribute name="src" />
+			<attribute name="srcdir"/>
+			<attribute name="destdir"/>
+			<attribute name="src"/>
 			<attribute name="target" default="targets.@{src}"/>
+			<element name="docbooktargetdb-elements" optional="true" implicit="true"/>
 			<sequential>
 				<xslt style="docbook-xsl/html/docbook.xsl"
 						basedir="@{srcdir}" destdir="@{destdir}"
 						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-					<include name="@{src}" />
-					<classpath refid="xalan.classpath" />
-					<param name="collect.xref.targets" expression="only" />
+					<docbooktargetdb-elements/>
+					<include name="@{src}"/>
+					<classpath refid="xalan.classpath"/>
+					<param name="collect.xref.targets" expression="only"/>
 					<param name="targets.filename" expression="@{target}"/>
 				</xslt>
-				<!-- Annoyingly, when collect.xref.targets=only, docbook.xsl still creates empty HTML files.
+				<!-- Annoyingly, when collect.xref.targets=only, this still creates empty HTML files.
 				  -  These annoying files are used by Ant's xslt task to check the freshness of the links DB,
 				  -  so we must keep them to avoid a rebuild of all link DBs every build.  -->
 			</sequential>
 		</macrodef>
+
 		<!-- Create database of links for user guide -->
-		<docbooktargetdb srcdir="${build.dir}" destdir="${build.dir}/targetdb" src="userguide.xml" target="targets.userguide.xml"/>
+		<docbooktargetdb srcdir="${src.dir}/userguide" destdir="${build.dir}/targetdb" src="userguide.xml" target="targets.userguide.xml">
+			<!-- Create a database of the combined files by processing includes -->
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+		</docbooktargetdb>
 
 		<!-- Create database of links for reference manual homepage (TOC) -->
 		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb" src="refmanual.xml" target="targets.refmanual.xml"/>
@@ -247,30 +238,32 @@
 	<!-- =================================
 		  target: ug-html-chunk
 		 ================================= -->
-	<target name="ug-html-chunk" depends="mkdirs,xinclude,targetdb" description="Generate chunked User Guide HTML doc">
+	<target name="ug-html-chunk" depends="mkdirs,targetdb" description="Generate chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
-				basedir="${build.dir}" destdir="${build.dir}/html/userguide"
+				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
 				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="userguide.xml" />
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="userguide.xml"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chunk.quietly" expression="1"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/userguide">
 			<fileset dir="${src.dir}/css">
-				<include name="style.css" />
+				<include name="style.css"/>
 			</fileset>
 		</copy>
 		<copy todir="${build.dir}/html/userguide/images">
@@ -281,28 +274,30 @@
 	<!-- =================================
 		  target: ug-html-single
 		 ================================= -->
-	<target name="ug-html-single" depends="mkdirs,xinclude,targetdb" description="Generates single User Guide HTML doc">
+	<target name="ug-html-single" depends="mkdirs,targetdb" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
-				basedir="${build.dir}" destdir="${build.dir}/html/userguide"
+				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
 				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="userguide.xml" />
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="userguide.xml"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 		<copy todir="${build.dir}/html/userguide">
 			<fileset dir="${src.dir}/css">
-				<include name="style.css" />
+				<include name="style.css"/>
 			</fileset>
 		</copy>
 	</target>
@@ -310,13 +305,15 @@
 	<!-- =================================
 		  target: ug-pdf
 		 ================================= -->
-	<target name="ug-pdf" depends="mkdirs,xinclude,targetdb" description="Generate User Guide PDF file">
+	<target name="ug-pdf" depends="mkdirs,targetdb" description="Generate User Guide PDF file">
 		<!-- Iterates through a directory and transforms .xml files into
 			 .fo files which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
-				basedir="${build.dir}" destdir="${build.dir}/fo/userguide"
+				basedir="${src.dir}/userguide" destdir="${build.dir}/fo/userguide"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -324,32 +321,32 @@
 			<param name="variablelist.as.blocks" expression="1"/>
 			<!-- when table layout is used, default to 12em width for terms -->
 			<param name="variablelist.max.termlength" expression="12"/>
-			<include name="userguide.xml" />
+			<include name="userguide.xml"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 
-		<property name="fop.home" value="lib/fop" />
+		<property name="fop.home" value="lib/fop"/>
 
 		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
 			<classpath>
 				<fileset dir="${fop.home}/lib">
-					<include name="*.jar" />
+					<include name="*.jar"/>
 				</fileset>
 				<fileset dir="${fop.home}/build">
-					<include name="fop.jar" />
-					<include name="fop-hyph.jar" />
+					<include name="fop.jar"/>
+					<include name="fop-hyph.jar"/>
 				</fileset>
 			</classpath>
 		</taskdef>
 
 		<fop format="application/pdf" fofile="${build.dir}/fo/userguide/userguide.fo"
-			outfile="${build.dir}/pdf/userguide/userguide.pdf" />
+			outfile="${build.dir}/pdf/userguide/userguide.pdf"/>
 	</target>
 
 	<!-- =================================
@@ -361,13 +358,15 @@
 	<!-- =================================
 		  target: rm-html-chunk
 		 ================================= -->
-	<target name="rm-html-chunk" depends="mkdirs,xinclude,targetdb" description="Generates chunked Reference Manual HTML doc">
+	<target name="rm-html-chunk" depends="mkdirs,targetdb" description="Generates chunked Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
-				basedir="${build.dir}" destdir="${build.dir}/html/refmanual"
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="refmanual.xml" />
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="refmanual.xml"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="0"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
@@ -378,26 +377,26 @@
 				book	  toc
 				chapter	  toc
 			"/>
-			<param name="toc.section.depth" expression="1" />
+			<param name="toc.section.depth" expression="1"/>
 			<param name="header.rule" expression="0"/>
-			<param name="use.id.as.filename" expression="1" />
+			<param name="use.id.as.filename" expression="1"/>
 
 			<param name="chunk.quietly" expression="1"/>
 			<param name="chunk.section.depth" expression="1"/>
 			<param name="suppress.footer.navigation" expression="1"/>
 			<param name="navig.graphics" expression="1"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="${src.dir}/css">
-				<include name="style.css" />
+				<include name="style.css"/>
 			</fileset>
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
@@ -408,30 +407,32 @@
 	<!-- =================================
 		  target: rm-html-single
 		 ================================= -->
-	<target name="rm-html-single" depends="mkdirs,xinclude,targetdb" description="Generates single Reference Manual HTML doc">
+	<target name="rm-html-single" depends="mkdirs,targetdb" description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
-				basedir="${build.dir}" destdir="${build.dir}/html/refmanual"
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<include name="refmanual.xml" />
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="refmanual.xml"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="1"/>
 			<param name="section.autolabel" expression="0"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chapter.autolabel" expression="0"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="${src.dir}/css">
-				<include name="style.css" />
+				<include name="style.css"/>
 			</fileset>
 		</copy>
 	</target>
@@ -439,47 +440,49 @@
 	<!-- =================================
 		  target: rm-pdf
 		 ================================= -->
-	<target name="rm-pdf" depends="mkdirs,xinclude,targetdb" description="Generate the Reference Manual PDF file">
+	<target name="rm-pdf" depends="mkdirs,targetdb" description="Generate the Reference Manual PDF file">
 		<!-- Iterates through a directory and transforms .xml files into
 			 .fo files which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
-			 	basedir="${build.dir}" destdir="${build.dir}/fo/refmanual"
+			 	basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-			<classpath refid="xalan.classpath" />
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<classpath refid="xalan.classpath"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
-			<param name="toc.section.depth" expression="1" />
+			<param name="toc.section.depth" expression="1"/>
 			<!-- default to indented layout to match HTML dl -->
 			<param name="variablelist.as.blocks" expression="1"/>
 			<!-- when table layout is used, default to 12em width for terms -->
 			<param name="variablelist.max.termlength" expression="12"/>
-			<include name="refmanual.xml" />
+			<include name="refmanual.xml"/>
 
-			<param name="target.database.document" expression="../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
-			<param name="highlight.xslthl.config" expression="${xslthl.config}" />
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
 
-		<property name="fop.home" value="lib/fop" />
+		<property name="fop.home" value="lib/fop"/>
 
 		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop">
 			<classpath>
 				<fileset dir="${fop.home}/lib">
-					<include name="*.jar" />
+					<include name="*.jar"/>
 				</fileset>
 				<fileset dir="${fop.home}/build">
-					<include name="fop.jar" />
-					<include name="fop-hyph.jar" />
+					<include name="fop.jar"/>
+					<include name="fop-hyph.jar"/>
 				</fileset>
 			</classpath>
 		</taskdef>
 
 		<fop format="application/pdf" fofile="${build.dir}/fo/refmanual/refmanual.fo"
-			outfile="${build.dir}/pdf/refmanual/refmanual.pdf" />
+			outfile="${build.dir}/pdf/refmanual/refmanual.pdf"/>
 	</target>
 
 	<!-- =================================
@@ -498,14 +501,14 @@
 		  target: clean
 		 ================================= -->
 	<target name="clean" depends="" description="Delete build directory">
-		<delete dir="${build.dir}" />
+		<delete dir="${build.dir}"/>
 	</target>
 
 	<!--
 	  - target:  test
 	  -->
 	<target name="test" depends="clean,rm-html-chunk,ug-html-single" description="Test build for modifications.">
-		<echo message="Test build complete" />
+		<echo message="Test build complete"/>
 	</target>
 
 </project>
