@@ -22,22 +22,13 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
       For example:
          "new.xml"  <-- Filled with reference content
 
-1) Add an docbooktargetdb instruction to "build.xml" to create an
-   olinks database for the new file.  Use the filename
-   in the 'include' section and the intended database
-   (which should by convention be an expansion of the
-   file base name in the format targets.FILE.xml) for the 
-   expression of the 'targets.filename' section.
-      For example:
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.mutable.xml" target="targets.ref.data.mutable.xml"/>
-
-2) Add an entity describing the filepath to the database
+1) Add an entity describing the filepath to the database
    for the new section in "olinkdb.xml"  Note this should
    match the 'targets.filename' expression in (1)
       For example:
          <!ENTITY targets.new SYSTEM "../build/targetdb/targets.new.xml">
 
-3) Add a document representing the new section to the
+2) Add a document representing the new section to the
    sitemap contained in "olinkdb.xml"  The 'targetdoc' will
    be used to refer to the document in olinks, and the
    'baseuri' must match the filename of the final HTML output.
@@ -48,7 +39,7 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
 				&targets.new;
 			 </document>
 
-4) Add any necessary 'xinclude' statements to the parent
+3) Add any necessary 'xinclude' statements to the parent
    .xml documents, i.e. make sure you've actually
    included your document in the build so the content is
    visible!

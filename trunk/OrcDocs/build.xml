@@ -65,18 +65,15 @@
 		<macrodef name="docbooktargetdb">
 			<attribute name="srcdir"/>
 			<attribute name="destdir"/>
-			<attribute name="src"/>
-			<attribute name="target" default="targets.@{src}"/>
 			<element name="docbooktargetdb-elements" optional="true" implicit="true"/>
 			<sequential>
 				<xslt style="docbook-xsl/html/docbook.xsl"
 						basedir="@{srcdir}" destdir="@{destdir}"
-						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison"
+				        filenameparameter="targets.filename">
 					<docbooktargetdb-elements/>
-					<include name="@{src}"/>
 					<classpath refid="xalan.classpath"/>
 					<param name="collect.xref.targets" expression="only"/>
-					<param name="targets.filename" expression="@{target}"/>
 				</xslt>
 				<!-- Annoyingly, when collect.xref.targets=only, this still creates empty HTML files.
 				  -  These annoying files are used by Ant's xslt task to check the freshness of the links DB,
@@ -85,154 +82,22 @@
 		</macrodef>
 
 		<!-- Create database of links for user guide -->
-		<docbooktargetdb srcdir="${src.dir}/userguide" destdir="${build.dir}/targetdb" src="userguide.xml" target="targets.userguide.xml">
+		<docbooktargetdb srcdir="${src.dir}/userguide" destdir="${build.dir}/targetdb">
 			<!-- Create a database of the combined files by processing includes -->
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="userguide.xml"/>
 		</docbooktargetdb>
 
 		<!-- Create database of links for reference manual homepage (TOC) -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb" src="refmanual.xml" target="targets.refmanual.xml"/>
+		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb">
+			<include name="*.xml"/>
+		</docbooktargetdb>
 
 		<!-- Create olink databases for modular chapters/sections -->
-		<!-- ref.class -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.class.xml" target="targets.ref.class.xml"/>
-		<!-- ref.combinators.otherwise -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.otherwise.xml" target="targets.ref.combinators.otherwise.xml"/>
-		<!-- ref.combinators.parallel -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.parallel.xml" target="targets.ref.combinators.parallel.xml"/>
-		<!-- ref.combinators.pruning -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.pruning.xml" target="targets.ref.combinators.pruning.xml"/>
-		<!-- ref.combinators.sequential -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.sequential.xml" target="targets.ref.combinators.sequential.xml"/>
-		<!-- ref.combinators -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.combinators.xml" target="targets.ref.combinators.xml"/>
-		<!-- ref.concepts.conventions -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.conventions.xml" target="targets.ref.concepts.conventions.xml"/>
-		<!-- ref.concepts.halt -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.halt.xml" target="targets.ref.concepts.halt.xml"/>
-		<!-- ref.concepts.reap -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.reap.xml" target="targets.ref.concepts.reap.xml"/>
-		<!-- ref.concepts -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.concepts.xml" target="targets.ref.concepts.xml"/>
-		<!-- ref.data.boolean -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.boolean.xml" target="targets.ref.data.boolean.xml"/>
-		<!-- ref.data.datatype -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.datatype.xml" target="targets.ref.data.datatype.xml"/>
-		<!-- ref.data.external -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.external.xml" target="targets.ref.data.external.xml"/>
-		<!-- ref.data.list -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.list.xml" target="targets.ref.data.list.xml"/>
-		<!-- ref.data.mutable -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.mutable.xml" target="targets.ref.data.mutable.xml"/>
-		<!-- ref.data.numeric -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.numeric.xml" target="targets.ref.data.numeric.xml"/>
-		<!-- ref.data.record -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.record.xml" target="targets.ref.data.record.xml"/>
-		<!-- ref.data.signal -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.signal.xml" target="targets.ref.data.signal.xml"/>
-		<!-- ref.data.string -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.string.xml" target="targets.ref.data.string.xml"/>
-		<!-- ref.data.tuple -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.tuple.xml" target="targets.ref.data.tuple.xml"/>
-		<!-- ref.data -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.data.xml" target="targets.ref.data.xml"/>
-		<!-- ref.declarations.class -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.class.xml" target="targets.ref.declarations.class.xml"/>
-		<!-- ref.declarations.include -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.include.xml" target="targets.ref.declarations.include.xml"/>
-		<!-- ref.declarations.site -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.site.xml" target="targets.ref.declarations.site.xml"/>
-		<!-- ref.declarations.type -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.type.xml" target="targets.ref.declarations.type.xml"/>
-		<!-- ref.declarations -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.declarations.xml" target="targets.ref.declarations.xml"/>
-		<!-- ref.examples.concept -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.examples.concept.xml" target="targets.ref.examples.concept.xml"/>
-		<!-- ref.expressions.ifthenelse -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.ifthenelse.xml" target="targets.ref.expressions.ifthenelse.xml"/>
-		<!-- ref.expressions.lambda -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.lambda.xml" target="targets.ref.expressions.lambda.xml"/>
-		<!-- ref.expressions.operators -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.operators.xml" target="targets.ref.expressions.operators.xml"/>
-		<!-- ref.expressions.val -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.val.xml" target="targets.ref.expressions.val.xml"/>
-		<!-- ref.expressions -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.expressions.xml" target="targets.ref.expressions.xml"/>
-		<!-- ref.functions.clausal -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.clausal.xml" target="targets.ref.functions.clausal.xml"/>
-		<!-- ref.functions.closure -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.closure.xml" target="targets.ref.functions.closure.xml"/>
-		<!-- ref.functions.lambda -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.lambda.xml" target="targets.ref.functions.lambda.xml"/>
-		<!-- ref.functions.recursion -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.recursion.xml" target="targets.ref.functions.recursion.xml"/>
-		<!-- ref.functions -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.functions.xml" target="targets.ref.functions.xml"/>
-		<!-- ref.patterns.as -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.as.xml" target="targets.ref.patterns.as.xml"/>
-		<!-- ref.patterns.call -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.call.xml" target="targets.ref.patterns.call.xml"/>
-		<!-- ref.patterns.cons -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.cons.xml" target="targets.ref.patterns.cons.xml"/>
-		<!-- ref.patterns.constant -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.constant.xml" target="targets.ref.patterns.constant.xml"/>
-		<!-- ref.patterns.list -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.list.xml" target="targets.ref.patterns.list.xml"/>
-		<!-- ref.patterns.tuple -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.tuple.xml" target="targets.ref.patterns.tuple.xml"/>
-		<!-- ref.patterns.variable -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.variable.xml" target="targets.ref.patterns.variable.xml"/>
-		<!-- ref.patterns.wildcard -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.wildcard.xml" target="targets.ref.patterns.wildcard.xml"/>
-		<!-- ref.patterns -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.patterns.xml" target="targets.ref.patterns.xml"/>
-		<!-- ref.sites.custom -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.custom.xml" target="targets.ref.sites.custom.xml"/>
-		<!-- ref.sites.java -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.java.xml" target="targets.ref.sites.java.xml"/>
-		<!-- ref.sites.library -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.library.xml" target="targets.ref.sites.library.xml"/>
-		<!-- ref.sites.operators -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.operators.xml" target="targets.ref.sites.operators.xml"/>
-		<!-- ref.sites.web -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.web.xml" target="targets.ref.sites.web.xml"/>
-		<!-- ref.sites -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.sites.xml" target="targets.ref.sites.xml"/>
-		<!-- ref.stdlib.core -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.core.xml" target="targets.ref.stdlib.core.xml"/>
-		<!-- ref.stdlib.idioms -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.idioms.xml" target="targets.ref.stdlib.idioms.xml"/>
-		<!-- ref.stdlib.list -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.list.xml" target="targets.ref.stdlib.list.xml"/>
-		<!-- ref.stdlib.reflect -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.reflect.xml" target="targets.ref.stdlib.reflect.xml"/>
-		<!-- ref.stdlib.state -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.state.xml" target="targets.ref.stdlib.state.xml"/>
-		<!-- ref.stdlib.text -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.text.xml" target="targets.ref.stdlib.text.xml"/>
-		<!-- ref.stdlib.time -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.time.xml" target="targets.ref.stdlib.time.xml"/>
-		<!-- ref.stdlib.util -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.util.xml" target="targets.ref.stdlib.util.xml"/>
-		<!-- ref.stdlib -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.stdlib.xml" target="targets.ref.stdlib.xml"/>
-		<!-- ref.syntax.EBNF -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.EBNF.xml" target="targets.ref.syntax.EBNF.xml"/>
-		<!-- ref.syntax.keywords -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.keywords.xml" target="targets.ref.syntax.keywords.xml"/>
-		<!-- ref.syntax.lexical -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.lexical.xml" target="targets.ref.syntax.lexical.xml"/>
-		<!-- ref.syntax -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.syntax.xml" target="targets.ref.syntax.xml"/>
-		<!-- ref.time.rtimer -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.time.rtimer.xml" target="targets.ref.time.rtimer.xml"/>
-		<!-- ref.time -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.time.xml" target="targets.ref.time.xml"/>
-		<!-- ref.types.lattice -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.types.lattice.xml" target="targets.ref.types.lattice.xml"/>
-		<!-- ref.types -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb" src="ref.types.xml" target="targets.ref.types.xml"/>
+		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb">
+			<include name="*.xml"/>
+		</docbooktargetdb>
 	</target>
 
 	<!-- =================================
