@@ -52,14 +52,14 @@ See the <olink targetdoc="ref.stdlib.state">state library</olink> section for mo
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>Ref</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Cell"><code>Cell</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Buffer"><code>Buffer</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Array"><code>Array</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Set"><code>Set</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Counter"><code>Counter</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state.Dictionary"><code>Dictionary</code> site</olink></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Ref"><code>Ref</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Cell"><code>Cell</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Array"><code>Array</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Set"><code>Set</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Counter"><code>Counter</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.state.Dictionary"><code>Dictionary</code> site</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

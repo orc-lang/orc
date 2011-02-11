@@ -105,7 +105,7 @@ def parts23(_,s,h,0,m,n) = 1
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.expressions.lambda" targetptr="ref.expressions.lambda">Lambda</olink></listitem>
+	          			<listitem><link linkend="ref.expressions.lambda">Lambda</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

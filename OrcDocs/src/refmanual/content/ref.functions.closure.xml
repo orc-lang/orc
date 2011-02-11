@@ -57,7 +57,7 @@ onetwosum(triple)
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.expressions.lambda" targetptr="ref.expressions.lambda">Lambda</olink></listitem>
+	          			<listitem><link linkend="ref.expressions.lambda">Lambda</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

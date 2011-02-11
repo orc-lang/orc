@@ -16,7 +16,7 @@
 <para>
 Orc programs are provided a variety of sites in the Orc standard library.
 These sites are declared in the Orc prelude, which is implicitly included in Orc programs.
-The standard prelude declarations are documented in the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink> chapter.
+The standard prelude declarations are documented in the <link linkend="ref.stdlib">Standard Library</link> chapter.
 </para>
 
 <para>
@@ -65,10 +65,10 @@ If(1 > 0) >> "correct"
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard library</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web services sites</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom sites</olink></para></listitem>
+					<listitem><para><link linkend="ref.stdlib">Standard library</link></para></listitem>
+					<listitem><para><link linkend="ref.sites.java">Java sites</link></para></listitem>
+					<listitem><para><link linkend="ref.sites.web">Web services sites</link></para></listitem>
+					<listitem><para><link linkend="ref.sites.custom">Custom sites</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

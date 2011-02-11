@@ -85,11 +85,11 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><olink targetdoc="ref.types.Signal" targetptr="ref.types.Signal"><code>Signal</code> type</olink></para></listitem> -->
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.If"><code>If</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.core" targetptr="ref.stdlib.core.Unless"><code>Unless</code> site</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.time" targetptr="ref.stdlib.time.metronome"><code>metronome</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.util" targetptr="ref.stdlib.util.signals"><code>signals</code> function</olink></para></listitem>
+          			<!-- TODO <listitem><para><link linkend="ref.types.Signal"><code>Signal</code> type</link></para></listitem> -->
+          			<listitem><para><link linkend="ref.stdlib.core.If"><code>If</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Unless"><code>Unless</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.time.metronome"><code>metronome</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.util.signals"><code>signals</code> function</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

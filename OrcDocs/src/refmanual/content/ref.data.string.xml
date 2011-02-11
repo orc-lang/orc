@@ -108,12 +108,12 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><olink targetdoc="ref.types.String" targetptr="ref.types.String"><code>String</code> type</olink></para></listitem> -->
-          			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.write"><code>write</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.lines"><code>lines</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.unlines"><code>unlines</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.words"><code>words</code> function</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.stdlib.text" targetptr="ref.stdlib.text.unwords"><code>unwords</code> function</olink></para></listitem>
+          			<!-- TODO <listitem><para><link linkend="ref.types.String"><code>String</code> type</link></para></listitem> -->
+          			<listitem><para><link linkend="ref.stdlib.text.write"><code>write</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.text.lines"><code>lines</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.text.unlines"><code>unlines</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.text.words"><code>words</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.text.unwords"><code>unwords</code> function</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

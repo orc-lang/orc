@@ -47,7 +47,7 @@
 				<tbody valign="top">
 					<row>
 		        		<entry><itemizedlist>
-							<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java sites</olink></para></listitem>
+							<listitem><para><link linkend="ref.sites.java">Java sites</link></para></listitem>
 						</itemizedlist></entry>
 					</row>
 				</tbody>

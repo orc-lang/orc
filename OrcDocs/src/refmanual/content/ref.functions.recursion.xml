@@ -77,7 +77,7 @@ def odd("_":xs) = odd(xs)
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.functions.clausal" targetptr="ref.functions.clausal">Clausal Functions</olink></listitem>
+	          			<listitem><link linkend="ref.functions.clausal">Clausal Functions</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

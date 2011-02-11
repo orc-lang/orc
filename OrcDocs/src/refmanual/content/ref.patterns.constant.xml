@@ -50,7 +50,7 @@ def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></listitem>
+	          			<listitem><link linkend="ref.patterns">Patterns</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

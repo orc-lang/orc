@@ -17,7 +17,7 @@
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
 			type declarations: aliases, imports, and 
-			<olink targetdoc="ref.data" targetptr="ref.data.datatypes">datatypes</olink>.
+			<link linkend="ref.data.datatypes">datatypes</link>.
 			This section discusses only aliases and imports.
 			</para>
 			
@@ -74,7 +74,7 @@ type Cell = orc.lib.state.types.CellType
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><olink targetdoc="ref.data.datatype" targetptr="ref.data.datatype">Datatypes</olink></para></listitem>
+	          			<listitem><para><link linkend="ref.data.datatype">Datatypes</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
