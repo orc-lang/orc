@@ -18,7 +18,7 @@ Combined with Orc's ability to invoke arbitrary functions of the environment in 
 this permits Orc programs to use any expressible value in its environment.
 For example, Orc programs running on a Java virtual machine (JVM) can interact with any Java object.</para>
 
-<para>Additionally, the Orc type system can be extended with user-declared types.  See <olink targetdoc="ref.declarations.type" targetptr="ref.declarations.type"><code>type</code> declarations</olink>.</para>
+<para>Additionally, the Orc type system can be extended with user-declared types.  See <link linkend="ref.declarations.type"><code>type</code> declarations</link>.</para>
 
 
 <section xml:id="ref.data.external.examples">
@@ -64,9 +64,9 @@ HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> m.put("Donald", "Dais
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.sites.java" targetptr="ref.sites.java">Java Sites</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.sites.web" targetptr="ref.sites.web">Web Services</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">Custom Sites</olink></para></listitem>
+          			<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
+          			<listitem><para><link linkend="ref.sites.web">Web Services</link></para></listitem>
+          			<listitem><para><link linkend="ref.sites.custom">Custom Sites</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

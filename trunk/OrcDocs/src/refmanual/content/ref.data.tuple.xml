@@ -41,7 +41,7 @@ tuple elements.
 <para>
 	A tuple is written as two or more expressions, separated by commas
 	and enclosed within parentheses.  Evaluation of the tuple expression <code>(e_1, ..., e_n)</code>
-	<olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
+	<link linkend="ref.concepts.reap">reaps</link> 
 	each <code>ei</code> to a value <code>vi</code> and publishes the tuple value <code>(v_1, ..., v_n)</code>.
 </para>
 </section>
@@ -109,9 +109,9 @@ Rtimer(100) >> (f(), g())
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<!-- TODO <listitem><para><olink targetdoc="ref.types.Tuple" targetptr="types.Tuple"><code>Tuple</code> type</olink></para></listitem> -->
-					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>fst</code> function</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.stdlib.state" targetptr="ref.stdlib.state"><code>snd</code> function</olink></para></listitem>
+					<!-- TODO <listitem><para><link linkend="types.Tuple"><code>Tuple</code> type</link></para></listitem> -->
+					<listitem><para><link linkend="ref.stdlib.state.fst"><code>fst</code> function</link></para></listitem>
+					<listitem><para><link linkend="ref.stdlib.state.snd"><code>snd</code> function</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

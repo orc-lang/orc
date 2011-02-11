@@ -34,7 +34,7 @@ have type <code>T</code>, then the list will have type <code>List[T]</code>.
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-Evaluation of the list expression <code>[e_1, ..., e_n]</code> <olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">reaps</olink> 
+Evaluation of the list expression <code>[e_1, ..., e_n]</code> <link linkend="ref.concepts.reap">reaps</link> 
 each <code>ei</code> to a value <code>vi</code> and publishes the list value <code>[v_1, ..., v_n]</code>.
 </para>
 </section>
@@ -120,10 +120,10 @@ tail([3,2,5]) = [2,5]
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.head"><code>head</code> function</olink></para></listitem>
-        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.init"><code>init</code> function</olink></para></listitem>
-        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.empty"><code>empty</code> function</olink></para></listitem>
-        			<listitem><para><olink targetdoc="ref.stdlib.list" targetptr="ref.stdlib.list.each"><code>each</code> function</olink></para></listitem>
+        			<listitem><para><link linkend="ref.stdlib.list.head"><code>head</code> function</link></para></listitem>
+        			<listitem><para><link linkend="ref.stdlib.list.init"><code>init</code> function</link></para></listitem>
+        			<listitem><para><link linkend="ref.stdlib.list.empty"><code>empty</code> function</link></para></listitem>
+        			<listitem><para><link linkend="ref.stdlib.list.each"><code>each</code> function</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

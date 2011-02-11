@@ -221,8 +221,8 @@ def (?)(x) = "To "+x+", or not to "+x+", that is the question."
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><olink targetdoc="ref.expressions.operators" targetptr="ref.expressions.operators">Operators</olink></para></listitem>
-					<listitem><para><olink targetdoc="ref.combinators" targetptr="ref.combinators">Combinators</olink></para></listitem>
+					<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
+					<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

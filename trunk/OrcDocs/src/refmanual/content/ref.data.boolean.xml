@@ -48,8 +48,8 @@ as well as the arithmetic relations that yield boolean results:
 	Note:  Unlike the typical symbols <code>&lt;</code> and <code>&gt;</code>
 	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:></code>
 	respectively.  This usage avoids ambiguity with the 
-	<olink targetdoc="ref.combinators.sequential" targetptr="ref.combinators.sequential">sequential composition combinator</olink>
-	and <olink targetdoc="ref.combinators.pruning" targetptr="ref.combinators.pruning">pruning combinator</olink>.
+	<link linkend="ref.combinators.sequential">sequential composition combinator</link>
+	and <link linkend="ref.combinators.pruning">pruning combinator</link>.
 </para>
 
 </section>
@@ -98,7 +98,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.expressions.ifthenelse" targetptr="ref.expressions.ifthenelse"><code>if then else</code></olink></para></listitem>
+          			<listitem><para><link linkend="ref.expressions.ifthenelse"><code>if then else</code></link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

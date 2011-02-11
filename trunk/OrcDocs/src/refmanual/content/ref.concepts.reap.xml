@@ -60,9 +60,9 @@ results
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.tuple">Tuples</olink></para></listitem>
-	        				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.list">Lists</olink></para></listitem>
-	          				<listitem><para><olink targetdoc="ref.data" targetptr="ref.data.record">Records</olink></para></listitem>
+	        				<listitem><para><link linkend="ref.data.tuple">Tuples</link></para></listitem>
+	        				<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
+	          				<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

@@ -43,7 +43,7 @@ the construtor invocation is silent.</para>
 <title>Patterns</title>
 
 <para>Datatype values are inspected by using Orc's pattern matching facility.
-This extensive facility is described in the <olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink> chapter of this reference manual.</para>
+This extensive facility is described in the <link linkend="ref.patterns">Patterns</link> chapter of this reference manual.</para>
 
 <para>(In the mathematical context of coalgebras, patterns are called "destructors" or "observers",
 but those mathematical terms should not be confused with their usage in many object-oriented programming languages.)</para>
@@ -119,7 +119,7 @@ type Option[T] = Some(T) | None
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

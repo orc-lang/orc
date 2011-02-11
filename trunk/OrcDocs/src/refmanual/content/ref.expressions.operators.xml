@@ -162,7 +162,7 @@ division and evaluate to <code>2.5</code>.
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.syntax.lexical" targetptr="ref.syntax.lexical">Lexical Specifications</olink></listitem>
+	          			<listitem><link linkend="ref.syntax.lexical">Lexical Specifications</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

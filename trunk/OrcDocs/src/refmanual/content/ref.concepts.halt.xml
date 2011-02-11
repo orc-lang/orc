@@ -71,9 +71,9 @@ stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        				<listitem><olink targetdoc="ref.combinators.otherwise" targetptr="ref.combinators.otherwise">Otherwise</olink></listitem>
-	        				<listitem><olink targetdoc="ref.concepts.reap" targetptr="ref.concepts.reap">Reaping</olink></listitem>
-	          			<!-- <listitem><olink targetdoc="ref.expressions" targetptr="ref.expressions.stop"><code>stop</code></olink></listitem>  -->
+	        				<listitem><link linkend="ref.combinators.otherwise">Otherwise</link></listitem>
+	        				<listitem><link linkend="ref.concepts.reap">Reaping</link></listitem>
+	          			<!-- <listitem><link linkend="ref.expressions.stop"><code>stop</code></link></listitem>  -->
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

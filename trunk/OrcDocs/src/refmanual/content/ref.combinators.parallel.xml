@@ -68,7 +68,7 @@ Google("cupcake") | Yahoo("cupcake")
 	  <section xml:id="ref.combinators.parallel.type">
 	    <title>Type</title>
 			<para>
-				The type of F <code>|</code> G is the <olink targetdoc="ref.types" targetptr="ref.types.lattice">join</olink> of the types of F and G.
+				The type of F <code>|</code> G is the <link linkend="ref.types.lattice">join</link> of the types of F and G.
 			</para>
 		</section>
 	  
@@ -85,8 +85,8 @@ Google("cupcake") | Yahoo("cupcake")
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="ref.combinators" targetptr="ref.combinators">Combinators</olink></para></listitem>
-          			<listitem><para><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
+          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -19,7 +19,7 @@
 			</para>
 			
 			<para>
-				The <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink>
+				The <link linkend="ref.stdlib">Standard Library</link>
 				makes use of colored tags to quickly convey properties of library sites.  The tags
 				and their definitions are as follows:
 			</para>

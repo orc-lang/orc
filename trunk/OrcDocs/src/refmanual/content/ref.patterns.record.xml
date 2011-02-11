@@ -56,7 +56,7 @@ each(applicants) >a>
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><olink targetdoc="ref.patterns" targetptr="ref.patterns">Patterns</olink></listitem>
+	          			<listitem><link linkend="ref.patterns">Patterns</link></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

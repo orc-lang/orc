@@ -64,7 +64,7 @@ sum([1,2,3])
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><olink targetdoc="ref.declarations.site" targetptr="ref.declarations.site">Site Declaration</olink></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.site">Site Declaration</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
