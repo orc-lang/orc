@@ -137,16 +137,16 @@ Orc invokes a Java method or constructor by closely approximating the Java metho
 invocation rules specified in <citetitle pubwork="book">The Java Language Specification</citetitle> §15.12.
 This is only an approximation, because Orc performs Java compile-time steps at
 run time using Java's reflection facilities, and therefore has a different
-view of the types of values than the Java compiler would have.
+view of the types of values than the Java compiler would have.<<<<<------
 However, in most cases, this difference has no effect.
 At present, Orc does not recognize Java variable arity methods.
-(In practice this is a very rarely used feature of Java.
-Please let the Orc team know if this is a desired feature of Orc.)
+(In practice, this is a very rarely used feature of Java.
+Please let the Orc team know if this should be a feature of Orc.)
 </para>
 
 <para>
-Orc has a Java stack trace option which may be specified as setting to the Orc
-runtime engine, for example via a command-line option or an Eclipse run configuration setting.
+Orc has a Java stack trace option, which may be specified as a setting to the Orc
+runtime engine (for example, via a command-line option or an Eclipse run configuration setting).
 This may be helpful when debugging Java invocations.
 </para>
 
