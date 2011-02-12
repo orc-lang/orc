@@ -89,7 +89,7 @@ Orc provides a number of convenience mix-in traits for site implementors:
   <varlistentry>
     <term><code language="java">orc.values.sites.UntypedSite</code></term>
     <listitem>
-      <para>A site that does not have a type. Use sparingly.</para>
+      <para>A site that does not participate in type checking. Use sparingly.</para>
     </listitem>
   </varlistentry>
 </variablelist>
