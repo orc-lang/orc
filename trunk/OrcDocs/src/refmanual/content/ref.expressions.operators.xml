@@ -86,7 +86,7 @@ Here is the full set of operators that Orc supports:
 <entry>less than</entry>
 
 <entry><code><![CDATA[~]]></code></entry>
-<entry>logical not</entry>
+<entry>logical negation</entry>
 
 <entry namest="string-names" nameend="string-ops"/>
 

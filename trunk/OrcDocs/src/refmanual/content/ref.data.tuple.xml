@@ -16,19 +16,15 @@
 <para><emphasis role="strong">Type</emphasis>: <code>(T1, T2...)</code></para>
 
 <para>
-Orc's <code>Tuple</code> data type is a sequence of values, whose number of values is at least two.
+Orc's <code>Tuple</code> data type is a sequence of at least two values.
 (Orc does not provide for the construction of "0-tuples" or "1-tuples".)
-Tuples vary from lists in two significant ways:
-<itemizedlist>
-<listitem><para>Tuples are intended to be used where they have a fixed length.
-Lists may have varying lengths.</para></listitem>
-<listitem><para>Tuples may have elements of varying types in each position.
-Lists must be of a uniform type (though this may be <code>Top</code>).</para></listitem>
-</itemizedlist>
 </para>
 
+<para>Tuples are intended to be used for sequences with a fixed length and varying element types,
+whereas lists are intended to be used for sequences with varying length and a fixed element type.</para> 
+
 <para>
-Although one can explicitly project a tuple element by its index, it is
+One can explicitly project a tuple element by its index, but it is
 idiomatic, safer, and far more common to use pattern matching to extract
 tuple elements.
 </para>
@@ -75,22 +71,19 @@ is passed to Java code, it will be as a <code language="java">java.lang.Object</
 <title>Tuple Selection</title>
 <programlisting language="orc-demo"><![CDATA[
 {-
-Creates a new tuple where both values
-are the same as the first in "a", then
-publishes the second value of the new
-tuple, which is 1
+Unzip a list of tuples into a tuple of lists.
 -}
-val a = (1,2)
-fst(a) >x> (x,x) >b> snd(b)
+val squares = [(1,1), (2,4), (3,9), (4,16)]
+( map(fst,squares) , map(snd,squares) ) 
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.data.tuple.examples.forkjoin"><title>Fork-Join</title>
 <programlisting language="orc-demo"><![CDATA[
-def f() = println("f starting") >> Rtimer(450) >> println("f is done") >> "f"
-def g() = println("g starting") >> Rtimer(900) >> println("g is done") >> "g"
-
-Rtimer(100) >> (f(), g())
+{-
+Print "fork", but wait at least 500ms before printing "join" 
+-}
+( println("fork"), Rtimer(500) ) >> println("join")
 ]]></programlisting>
 </example>
 

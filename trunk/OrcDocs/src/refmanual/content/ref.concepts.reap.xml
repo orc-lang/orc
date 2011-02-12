@@ -13,26 +13,48 @@
 <!-- Reap Concept -->
 	<section xml:id="ref.concepts.reap">
 		<title>Reaping</title>
-		<section xml:id="ref.concepts.reap.body">
-			<para></para>
+		<section xml:id="ref.concepts.reap.definition">
+		<title>Definition</title>
 			<para>
-			The value of the list expression [e_1, e_2, ..., e_n] is the same as the value of
-<programlisting><![CDATA[
-[x_1, x_2, ..., x_n]
-   <x_1< e_1
-   <x_2< e_2
-   ...
-   <x_n< e_n
-]]></programlisting>
+			Reaping is an evaluation mechanism which extracts a single value from an expression that
+			might publish many values, so that such an expression can be evaluated in a context that expects
+			at most one value.
 			</para>
-
 			<para>
-				That is, all expressions are concurrently evaluated, and the first published value
-				from each expression is used for construction of the list.  If any expression is silent, 
-				the list constructor is silent.
+			Orc reaps a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
+			<replaceable>C</replaceable> by rewriting</para> 
+			<para><replaceable>C</replaceable>[<replaceable>E</replaceable>]</para>
+			<para>to</para>
+			<para><replaceable>C</replaceable>[<code>x</code>]<code><![CDATA[ <x< ]]></code><replaceable>E</replaceable></para>
+			<para>When <replaceable>E</replaceable> publishes a value <replaceable>v</replaceable>, 
+			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>.</para> 
+			
+			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be reaped,
+			so this transformation may be applied multiple times. For example, the expression</para>
+			<para><code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code></para>
+			<para>rewrites to</para>
+			<para>
+			  <code>(x, y, z)</code>
+			  <code><![CDATA[ <x< ]]></code><replaceable>E</replaceable>
+			  <code><![CDATA[ <y< ]]></code><replaceable>F</replaceable>
+			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
 			</para>
+			<para>
+			  If any reaped expression halts silently, then the enclosing expression also halts silently. 
+			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
+			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
+			  would also halt silently. 
+			</para>
+			<para>
+			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a function
+			  call, it does not halt, since function evaluation is lenient.
+			</para>
+			<para>
+		    Notice that each reaped expression is evaluated concurrently, due to the behavior of the
+		    pruning combinator. This is what makes Orc a functional concurrent language: when an expression is
+		    evaluated recursively, all such evaluations take place simultaneously. 
+		  </para>   
 		</section>
-		
 		 <section xml:id="ref.concepts.reap.examples">
 		  <title>Examples</title>
 

@@ -46,7 +46,6 @@ This fall back may result in a loss of precision for this operation.
 <para>Numeric literals in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
 If a numeric literal contains a decimal point or an "<code>E</code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
-A prefix unary minus sign is provided for in the Orc syntax, but not a prefix unary plus sign.
 </para>
 
 </section>
@@ -55,7 +54,7 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 <section xml:id="ref.data.numeric.operations">
 <title>Operations</title>
 
-<para>Notable numeric operations include:
+<para>Notable operations on integers and numbers include:
 <itemizedlist>
 <listitem><para>Add: <code>+</code></para></listitem>
 <listitem><para>Subtract: <code>-</code></para></listitem>
@@ -66,19 +65,22 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 <listitem><para>Remainder: <code>%</code></para></listitem>
 <listitem><para>Absolute value: <code>abs</code></para></listitem>
 <listitem><para>Signum: <code>signum</code></para></listitem>
-<listitem><para>Floor: <code>floor</code></para></listitem>
-<listitem><para>Ceiling: <code>ceil</code></para></listitem>
+<listitem><para>Floor: <code>Floor</code></para></listitem>
+<listitem><para>Ceiling: <code>Ceil</code></para></listitem>
 </itemizedlist>
 </para>
 
 <para>
-	Arithmetic 
-	operators with two integer arguments will perform an integer operation and 
+	Arithmetic operators with two integer arguments will perform an integer operation and 
 	return an integer result; for example, <code>5 / 2</code> performs integer division and 
 	evaluates to 2. However, if either argument to an operator has a decimal part 
 	(even if it is trivial, as in <code>3.0</code>), the other argument will be promoted, and 
 	a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
 	perform decimal division and evaluate to 2.5. 
+</para>
+
+<para>
+A prefix unary minus sign is provided for in the Orc syntax, but not a prefix unary plus sign.
 </para>
 
 </section>
@@ -153,8 +155,8 @@ signal
           			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>Mod</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.abs"><code>abs</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.signum"><code>signum</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.floor"><code>floor</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.ceil"><code>ceil</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Ceil"><code>Ceil</code> function</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
