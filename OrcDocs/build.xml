@@ -58,9 +58,33 @@
 	</target>
 
 	<!-- =================================
+		  target: depends
+		 ================================= -->
+	<target name="depends" depends="" description="Remove out-of-date targets">
+		<!-- User Guide: -->
+		<!-- Remove all targets build form combined userguide source files if any file changes -->
+		<dependset>
+			<srcfileset dir="${src.dir}/userguide" includes="**/*"/>
+			<targetfileset dir="${build.dir}/targetdb" includes="userguide.*"/>
+			<targetfileset dir="${build.dir}/html/userguide" includes="**/*"/>
+			<targetfileset dir="${build.dir}/fo/userguide" includes="**/*"/>
+			<targetfileset dir="${build.dir}/pdf/userguide" includes="**/*"/>
+		</dependset>
+		<!-- Ref Manual: -->
+		<dependset>
+			<srcfileset dir="${src.dir}/refmanual" includes="**/*"/>
+			<!-- Since the ref manual targetdbs are built separately for each source
+			     XML file, XSLT can get those dependencies right without help. -->
+			<targetfileset dir="${build.dir}/html/refmanual" includes="**/*"/>
+			<targetfileset dir="${build.dir}/fo/refmanual" includes="**/*"/>
+			<targetfileset dir="${build.dir}/pdf/refmanual" includes="**/*"/>
+		</dependset>
+	</target>
+
+	<!-- =================================
 		  target: targetdb
 		 ================================= -->
-	<target name="targetdb" depends="mkdirs" description="Build olink target databases for mutual linking among documents">
+	<target name="targetdb" depends="mkdirs,depends" description="Build olink target databases for mutual linking among documents">
 		<echo message="Creating olink databases..."/>
 		<macrodef name="docbooktargetdb">
 			<attribute name="srcdir"/>
@@ -103,10 +127,10 @@
 	<!-- =================================
 		  target: ug-html-chunk
 		 ================================= -->
-	<target name="ug-html-chunk" depends="mkdirs,targetdb" description="Generate chunked User Guide HTML doc">
+	<target name="ug-html-chunk" depends="mkdirs,depends,targetdb" description="Generate chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
 				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
-				force="true"
+				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/html/userguide/index.html"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
@@ -139,10 +163,9 @@
 	<!-- =================================
 		  target: ug-html-single
 		 ================================= -->
-	<target name="ug-html-single" depends="mkdirs,targetdb" description="Generates single User Guide HTML doc">
+	<target name="ug-html-single" depends="mkdirs,depends,targetdb" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
 				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
-				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
@@ -170,7 +193,7 @@
 	<!-- =================================
 		  target: ug-pdf
 		 ================================= -->
-	<target name="ug-pdf" depends="mkdirs,targetdb" description="Generate User Guide PDF file">
+	<target name="ug-pdf" depends="mkdirs,depends,targetdb" description="Generate User Guide PDF file">
 		<!-- Iterates through a directory and transforms .xml files into
 			 .fo files which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
@@ -223,14 +246,13 @@
 	<!-- =================================
 		  target: rm-html-chunk
 		 ================================= -->
-	<target name="rm-html-chunk" depends="mkdirs,targetdb" description="Generates chunked Reference Manual HTML doc">
+	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb" description="Generates chunked Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
-				force="true"
+				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/html/refmanual/index.html"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
-			<include name="refmanual.xml"/>
 			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="0"/>
 			<param name="section.autolabel" expression="1"/>
@@ -272,20 +294,18 @@
 	<!-- =================================
 		  target: rm-html-single
 		 ================================= -->
-	<target name="rm-html-single" depends="mkdirs,targetdb" description="Generates single Reference Manual HTML doc">
+	<target name="rm-html-single" depends="mkdirs,depends,targetdb" description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
-				force="true"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="refmanual.xml"/>
 			<classpath refid="xalan.classpath"/>
 			<param name="orc.demo" expression="1"/>
-			<param name="section.autolabel" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
-			<param name="chapter.autolabel" expression="0"/>
 
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
@@ -305,7 +325,7 @@
 	<!-- =================================
 		  target: rm-pdf
 		 ================================= -->
-	<target name="rm-pdf" depends="mkdirs,targetdb" description="Generate the Reference Manual PDF file">
+	<target name="rm-pdf" depends="mkdirs,depends,targetdb" description="Generate the Reference Manual PDF file">
 		<!-- Iterates through a directory and transforms .xml files into
 			 .fo files which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
