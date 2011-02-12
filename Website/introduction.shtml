@@ -13,8 +13,8 @@ computations that can be performed efficiently over a wide-area network, where
 the delays associated with communication, unreliability of servers, and
 competition for resources from multiple clients are dominant concerns.</p>
 
-<p>The theory behind Orc is that smooth orchestration requires only three
-simple combinators: parallel computation, sequencing, and selective pruning.
+<p>The theory behind Orc is that smooth orchestration requires only four
+simple combinators: parallel computation, sequencing, selective pruning, and termination detection.
 Together, these combinators prove powerful enough to express typical distributed
 communication patterns.</p>
 

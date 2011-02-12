@@ -9,7 +9,7 @@
 <p>Orc is available in different formats depending on what you will be doing with it:</p>
 <ul>
 <li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
-<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine under the Eclipse IDE.</li>
+<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine in the Eclipse IDE.</li>
 <li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
 <li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
 </ul>
