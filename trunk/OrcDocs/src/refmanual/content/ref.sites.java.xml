@@ -137,7 +137,7 @@ Orc invokes a Java method or constructor by closely approximating the Java metho
 invocation rules specified in <citetitle pubwork="book">The Java Language Specification</citetitle> §15.12.
 This is only an approximation, because Orc performs Java compile-time steps at
 run time using Java's reflection facilities, and therefore has a different
-view of the types of values than the Java compiler would have.<<<<<------
+view of the types of values than the Java compiler.
 However, in most cases, this difference has no effect.
 At present, Orc does not recognize Java variable arity methods.
 (In practice, this is a very rarely used feature of Java.
