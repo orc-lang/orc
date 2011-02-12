@@ -15,10 +15,10 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>Signal</code></para>
 
-<para>A <literal>signal</literal> represents the instance of the Orc unit type, <code>Signal</code>.
-<literal>signal</literal>s are most commonly used to provide for control flow
-when there is no associated data to propagate.  For example, <code>metronome(100)</code>
-function publishes a <literal>signal</literal> every 100 milliseconds, since it has no other data of interest to publish.</para>
+<para>A <literal>signal</literal> is a value that carries no information. It typically indicates
+completion of a site call, when there is no other meaningful value to return. It is analagous
+to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
+</para>
 
 <section xml:id="ref.data.signal.literals">
 <title>Literals</title>
@@ -32,10 +32,8 @@ function publishes a <literal>signal</literal> every 100 milliseconds, since it 
 
 <para>Notable signal operations include:
 <itemizedlist>
-<listitem><para>Conditional publication of a <literal>signal</literal>: <code>If</code></para></listitem>
-<listitem><para>Negated conditional publication of a <literal>signal</literal>: <code>Unless</code></para></listitem>
-<listitem><para>Timed recurrent publication of a <literal>signal</literal>: <code>metronome</code></para></listitem>
-<listitem><para>Concurrent publication of a number of <literal>signal</literal>s: <code>signals</code></para></listitem>
+<listitem><para>The <code>Ift</code> site publishes a <literal>signal</literal> if its argument is true.</para></listitem>
+<listitem><para>The <code>Iff</code> site publishes a <literal>signal</literal> if its argument is false.</para></listitem>
 </itemizedlist>
 </para>
 
@@ -55,7 +53,7 @@ Returns of type <code language="java">void</code> from Java code are converted i
 
 
 <example xml:id="ref.data.signal.examples.one">
-<title>TODO:Example1</title>
+<title>TODO:Metronome</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 signal
@@ -63,7 +61,7 @@ signal
 </example>
 
 <example xml:id="ref.data.signal.examples.two">
-<title>TODO:Example2</title>
+<title>TODO:Sequential printing</title>
 <programlisting><![CDATA[
 --TODO
 signal

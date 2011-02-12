@@ -15,7 +15,7 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>Boolean</code></para>
 
-<para>Orc supports boolean values, <code>false</code> and <code>true</code>.</para>
+<para>Orc supports Boolean values, <code>false</code> and <code>true</code>.</para>
 
 <section xml:id="ref.data.boolean.literals">
 <title>Literals</title>
@@ -27,13 +27,13 @@
 <section xml:id="ref.data.boolean.operations">
 <title>Operations</title>
 
-<para>Notable boolean operations include:
+<para>Notable Boolean operations include:
 <itemizedlist>
-<listitem><para>Logical complement or not: <code>~</code></para></listitem>
+<listitem><para>Logical negation (not): <code>~</code></para></listitem>
 <listitem><para>Logical and: <code>&amp;&amp;</code></para></listitem>
 <listitem><para>Logical or: <code>||</code></para></listitem>
 </itemizedlist>
-as well as the arithmetic relations that yield boolean results:
+as well as the comparison operators, which yield Boolean results:
 <itemizedlist>
 <listitem><para>Less than: <code>&lt;:</code></para></listitem>
 <listitem><para>Greater than: <code>:></code></para></listitem>
@@ -59,7 +59,7 @@ as well as the arithmetic relations that yield boolean results:
 
 <para>Orc <code>Boolean</code> values are passed in calls to and returns
 from Java code as <code language="java">java.lang.Boolean</code>, which is boxed and
-unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle> as <type>boolean</type>.</para>
+unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle> as <code language="java">boolean</code>.</para>
 
 </section>
 

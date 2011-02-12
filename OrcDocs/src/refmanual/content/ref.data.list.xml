@@ -15,11 +15,10 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>List[T]</code></para>
 
-<!--  Change [] to [ ] for HTML readability? -->
 <para>
 A list consists of a finite sequence of values. The
 list may have no item; in that case it is an empty list. 
-An empty list is written as [].
+An empty list is written as <code>[]</code>.
 </para>
 
 <para>
@@ -34,8 +33,11 @@ have type <code>T</code>, then the list will have type <code>List[T]</code>.
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-Evaluation of the list expression <code>[e_1, ..., e_n]</code> <link linkend="ref.concepts.reap">reaps</link> 
-each <code>ei</code> to a value <code>vi</code> and publishes the list value <code>[v_1, ..., v_n]</code>.
+The list expression <code>[e_1, ..., e_n]</code> evaluates to the list value <code>[v_1, ..., v_n]</code>
+only if each <code>ei</code> <link linkend="ref.concepts.reap">reaps</link> to value <code>vi</code>. 
+<!-- Do we need to talk about silence here? -->
+ 
+
 </para>
 </section>
 
@@ -44,7 +46,7 @@ each <code>ei</code> to a value <code>vi</code> and publishes the list value <co
 
 <para>Notable list operations include:
 <itemizedlist>
-<listitem><para><code>head</code>: applied to a non-empty list, it returns the first item of the list.</para></listitem>
+<listitem><para><code>head(l)</code> returns the first item of list <code>l</code>.</para></listitem>
 <listitem><para><code>tail</code>: applied to a non-empty list, it returns the original list without its head.</para></listitem>
 <listitem><para><code>cons</code>: cons: applied to an item h and a list t returns a list whose head is
 										h and tail is t. cons is written as a colon (:) separating

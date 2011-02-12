@@ -11,7 +11,7 @@
   -->
 
 <section xml:id="ref.data.mutable">
-<title>Mutable Values</title>
+<title>Mutable State</title>
 
 <para>For the purposes of this section, a <firstterm>mutable value</firstterm> is a value that is
 not referentially transparent.  That is, use of a mutable value in an expression is not

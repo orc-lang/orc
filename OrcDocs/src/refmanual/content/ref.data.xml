@@ -17,12 +17,23 @@
 
 <title>Data Values</title>
 
-<para>Orc's expressible values are primarily those returned from site calls.
-However, Orc supplies a few primitive value types and some structured value types.</para>
+<para>
+The primitive data types in Orc are: Booleans, numbers, strings, and a unit value <code>signal</code>.
+Orc also has structured values: lists, tuples, records, and algebraic datatypes. 
+Functions are values, called <firstterm>closures</firstterm>. 
+Additionally, sites are themselves values, and may be passed to sites or returned by sites.
+</para>
 
-<para>Orc has conventional Boolean, numeric, and string literals, and a unit type with the literal <code>signal</code>.
-Orc's built-in structured value types are list, tuple, record, and algebraic datatypes. 
-The Orc standard library provides other value types, including mutable values.</para>
+<para>
+All of the preceding values are immutable. Orc also has access to mutable state through sites.
+The Standard Library includes many such sites, including <code>Ref</code> and <code>Buffer</code>.
+</para> 
+
+<para>
+Orc sites may create and manipulate many more kinds of values, such as Java objects, XML documents,
+video files, relational databases, etc. In fact, all of the built-in datatypes could be implemented 
+by external sites.   
+</para>
 
 <xi:include href="ref.data.boolean.xml"/>
 <xi:include href="ref.data.numeric.xml"/>
@@ -34,7 +45,10 @@ The Orc standard library provides other value types, including mutable values.</
 <xi:include href="ref.data.record.xml"/>
 <xi:include href="ref.data.datatype.xml"/>
 
-<xi:include href="ref.data.external.xml"/>
+<!-- <xi:include href="ref.data.closure.xml"/>  -->
+
 <xi:include href="ref.data.mutable.xml"/>
+<xi:include href="ref.data.external.xml"/>
+
 
 </chapter>
