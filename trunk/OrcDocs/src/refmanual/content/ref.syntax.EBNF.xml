@@ -17,6 +17,20 @@
 			<para>
 				The Orc language grammar can be expressed in Extended Backus-Naur Form (EBNF):
 			</para>
+			
+			<para>
+			<productionset>
+			<production xml:id="ebnf.expression">
+			  <lhs>Expression</lhs>
+			  <rhs><nonterminal def="#ebnf.expression.combinator.parallel">ParallelExpression</nonterminal></rhs>
+			</production>
+			<production xml:id="ebnf.expression.combinator.parallel">
+			  <lhs>ParallelExpression</lhs>
+			  <rhs><nonterminal def="#ebnf.expression">Expression</nonterminal> '<code>|</code>' <nonterminal def="#ebnf.expression">Expression</nonterminal></rhs>
+			</production>
+			</productionset>
+			</para>
+			
 			<para>
 <table xml:id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
 <title>Complete Syntax of Orc</title> 

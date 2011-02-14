@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.concepts.silent.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.concepts.silent.xml 2437 2011-02-12 18:29:01Z dkitchin $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- silent Concept -->
+	<section xml:id="ref.concepts.silent">
+		<title>Silence</title>
+		
+		<section xml:id="ref.concepts.silent.definition">
+		<title>Definition</title>
+			
+		</section>
+		
+		 <section xml:id="ref.concepts.silent.examples">
+		  <title>Examples</title>
+
+		</section>
+		
+		<section xml:id="ref.concepts.silent.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+	  </section>
+	</section>
