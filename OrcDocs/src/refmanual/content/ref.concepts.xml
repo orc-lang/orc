@@ -23,7 +23,11 @@ other parts of the reference manual.
 </para>
 
 <xi:include href="ref.concepts.conventions.xml"/>
+
+<xi:include href="ref.concepts.block.xml"/>
 <xi:include href="ref.concepts.halt.xml"/>
+<xi:include href="ref.concepts.silent.xml"/>
+<xi:include href="ref.concepts.kill.xml"/>
 <xi:include href="ref.concepts.reap.xml"/>
 
 </chapter>

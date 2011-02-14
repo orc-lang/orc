@@ -14,8 +14,26 @@
 <title>Web Services</title>
 
 <para>
-TODO
+Orc sites may provide access to Web services. 
+A set of sites in the standard library provides facilities for accessing REST-based web services;
+ support for SOAP-based services will be available in a future release. 
+Sites which make direct GET and POST requests via HTTP are also available in the library. 
+These sites return a single string, which may be used directly or parsed as XML input or JSON input by other library sites. 
 </para>
+
+<section xml:id="ref.sites.web.rest">
+<title>REST sites</title>
+
+</section>
+
+<section xml:id="ref.sites.web.rest">
+<title>HTTP GET/POST</title>
+</section>
+
+<section xml:id="ref.sites.web.rest">
+<title>Using XML or JSON results</title>
+</section>
+
 
 
 <section xml:id="ref.sites.web.examples">

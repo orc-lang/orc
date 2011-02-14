@@ -15,15 +15,50 @@
       <title>Parallel Combinator</title>
 	  <section xml:id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E | E]]></code></emphasis></para>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.combinator.parallel"/>
+		    </productionset>
+		  </para>
 		  <para><emphasis role="strong">Precedence</emphasis>: 
 			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> > 
-			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink></para>
-		  <para><emphasis role="strong">Associativity</emphasis>: left and right </para>
-		  <para><emphasis role="strong">Commutative</emphasis>: yes </para>
-	  </section>
+			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
+			  </para>
+			  
+		</section>
+		
+		<section xml:id="ref.combinators.parallel.identities">
+		<title>Identities</title>	  
+			  <para>
+			  Notable identities include:
+			  <informaltable class="identitylist">
+				<tbody>
+				  <tr>
+				    <td><code><![CDATA[F | G | H]]></code></td>
+				    <td> = </td>
+				    <td><code><![CDATA[F | (G | H)]]></code></td>
+				    <td>(Left Associative)</td>
+				  </tr>
+				  <tr>
+				    <td><code><![CDATA[F | G | H]]></code></td>
+				    <td> = </td>
+				    <td><code><![CDATA[(F | G) | H]]></code></td>
+				    <td>(Right Associative)</td>
+				  </tr>
+				  <tr>
+				    <td><code><![CDATA[F | G]]></code></td>
+				    <td> = </td>
+				    <td><code><![CDATA[G | F]]></code></td>
+				    <td>(Commutative)</td>
+				  </tr>
+				</tbody>
+				</informaltable>
+				...more identities...
+			  </para>
+    </section>
+    
 	  <section xml:id="ref.combinators.parallel.behavior">
 		  <title>Behavior</title>
 		  <itemizedlist><listitem><code><![CDATA[F | G]]></code></listitem></itemizedlist>
