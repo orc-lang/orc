@@ -30,8 +30,8 @@
 			  <listitem><code><![CDATA[F >x> G]]></code>
 				  <para>
 					  The execution of <code><![CDATA[F >x> G]]></code> starts by executing <code><![CDATA[F]]></code>. Whenever <code><![CDATA[F]]></code> 
-					  publishes a value, a new copy of <code><![CDATA[G]]></code> is executed in parallel with <code><![CDATA[F]]></code> (and with any previous 
-					  copies of <code><![CDATA[G]]></code>); in that copy of <code><![CDATA[G]]></code>, variable <code><![CDATA[x]]></code> is bound to the value
+					  publishes a value, a new instance of <code><![CDATA[G]]></code> is executed in parallel with <code><![CDATA[F]]></code> (and with any previous 
+					  copies of <code><![CDATA[G]]></code>); in that instance of <code><![CDATA[G]]></code>, variable <code><![CDATA[x]]></code> is bound to the value
 					  published by <code><![CDATA[F]]></code>. Values 
 					  published by copies of <code><![CDATA[G]]></code> are published by the whole expression, but the values published 
 					  by <code><![CDATA[F]]></code> are not published by the whole expression; they are consumed by the variable binding. 
@@ -41,8 +41,8 @@
 				  <para>
 					  The sequential combinator may be written as <code><![CDATA[F >P> G]]></code>, where <code><![CDATA[P]]></code> is a pattern instead of 
 					  just a variable name. Any value published by <code><![CDATA[F]]></code> is matched against the pattern <code><![CDATA[P]]></code>. 
-					  If this match is successful, a new copy of <code><![CDATA[G]]></code> is started with all of the bindings 
-					  from the match. Otherwise, the published value is simply ignored, and no new copy 
+					  If this match is successful, a new instance of <code><![CDATA[G]]></code> is started with all of the bindings 
+					  from the match. Otherwise, the published value is simply ignored, and no new instance 
 					  of <code><![CDATA[G]]></code> is executed. 
 				  </para>
 			  </listitem>
