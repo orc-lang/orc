@@ -1595,8 +1595,8 @@ from F to G.
 
 <para>
 The execution of F<code><![CDATA[ >x> ]]></code>G starts by executing F. Whenever F publishes a value, 
-a new copy of G is executed in parallel with F (and with any previous copies of G); in that
-copy of G, variable <code>x</code> is bound to the value published by F. Values published by copies
+a new instance of G is executed in parallel with F (and with any previous copies of G); in that
+instance of G, variable <code>x</code> is bound to the value published by F. Values published by copies
 of G are published by the whole expression, but the values published by F are not published
 by the whole expression; they are consumed by the variable binding.
 </para>
@@ -1639,8 +1639,8 @@ by the whole expression; they are consumed by the variable binding.
 <para>
 The sequential combinator may be written as F<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>G, 
 where P is a pattern instead of just a variable name. Any value published by F is matched against the 
-pattern P. If this match is successful, a new copy of G is started with all of the bindings from the match. 
-Otherwise, the published value is simply ignored, and no new copy of G is executed.
+pattern P. If this match is successful, a new instance of G is started with all of the bindings from the match. 
+Otherwise, the published value is simply ignored, and no new instance of G is executed.
 </para>
 
 <para>
