@@ -36,7 +36,7 @@
 					If <code><![CDATA[F]]></code> did publish one or more values, 
 					then <code><![CDATA[G]]></code> is ignored. The publications of <code><![CDATA[F ; G]]></code> are those
 					of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code>
-					if <code><![CDATA[F]]></code> is silent.
+					if <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link>.
 				  </para>	  
 			  </listitem>
 		  </itemizedlist>

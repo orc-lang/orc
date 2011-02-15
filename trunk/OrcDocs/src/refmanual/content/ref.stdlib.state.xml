@@ -52,7 +52,7 @@ val c = Cell()
    <siteprop propname="blocking"/>
    <siteprop propname="idempotent"/>
 </sitepropset>
-</para><para>Read a value from the cell. If the cell does not yet have a value, block until it receives one.
+</para><para>Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.block">block</link> until it receives one.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -63,7 +63,7 @@ val c = Cell()
    <siteprop propname="nonblocking"/>
    <siteprop propname="idempotent"/>
 </sitepropset>
-</para><para>Read a value from the cell. If the cell does not yet have a value, halt.
+</para><para>Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -74,7 +74,7 @@ val c = Cell()
    <siteprop propname="nonblocking"/>
    <siteprop propname="idempotent"/>
 </sitepropset>
-</para><para>Write a value to the cell. If the cell already has a value, halt.
+</para><para>Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry>
@@ -169,7 +169,7 @@ lock.release()]]></programlisting>
    <siteprop propname="blocking"/>
 </sitepropset>
 </para><para>If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.block">blocks</link> until it becomes greater than <code>0</code>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -180,7 +180,7 @@ If the semaphore's value is <code>0</code>, block until it becomes greater than 
    <siteprop propname="nonblocking"/>
 </sitepropset>
 </para><para>If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, halt.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -190,7 +190,7 @@ If the semaphore's value is <code>0</code>, halt.
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>If any calls to <code>acquire</code> are blocked, allow the oldest such call
+</para><para>If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 </para>
@@ -202,8 +202,8 @@ increment the value beyond that with which the semaphore was constructed.
   			  <para><sitepropset>
    <siteprop propname="blocking"/>
 </sitepropset>
-</para><para>If any calls to <code>acquire</code> are blocked, return a signal.
-Otherwise, block until some call to <code>acquire</code> blocks.
+</para><para>If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, return a signal.
+Otherwise, <link linkend="ref.concepts.block">block</link> until some call to <code>acquire</code> blocks.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -213,8 +213,8 @@ Otherwise, block until some call to <code>acquire</code> blocks.
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>If any calls to <code>acquire</code> are blocked, return a signal.
-Otherwise, halt.
+</para><para>If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, return a signal.
+Otherwise, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry>
@@ -233,8 +233,8 @@ Create a new buffer (FIFO channel) of unlimited size. A buffer supports
 get, put and close operations.
 </para>
 </para><para>A buffer may be either empty or non-empty, and either open or closed.  When
-empty and open, calls to <code>get</code> block.  When empty and closed, calls
-to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
+empty and open, calls to <code>get</code> <link linkend="ref.concepts.block">blocks</link>.  When empty and closed, calls
+to <code>get</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  When closed, calls to <code>put</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -252,8 +252,8 @@ val b = Buffer()
    <siteprop propname="blocking"/>
 </sitepropset>
 </para><para>Get an item from the buffer. If the buffer is open and no items are available,
-block until one becomes available. If the buffer is <link
-linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
+<link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
+linkend="orc.lib.Buffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -263,7 +263,7 @@ linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>Get an item from the buffer. If no items are available, halt.
+</para><para>Get an item from the buffer. If no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -274,7 +274,7 @@ linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
    <siteprop propname="nonblocking"/>
 </sitepropset>
 </para><para>Put an item in the buffer. If the buffer is <link
-linkend="orc.lib.Buffer.close">closed</link>, halt.
+linkend="orc.lib.Buffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -285,11 +285,11 @@ linkend="orc.lib.Buffer.close">closed</link>, halt.
    <siteprop propname="blocking"/>
    <siteprop propname="idempotent"/>
 </sitepropset>
-</para><para>Close the buffer and block until it is empty.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+</para><para>Close the buffer and <link linkend="ref.concepts.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -301,10 +301,10 @@ will halt, and once the buffer becomes empty, any subsequent calls to
    <siteprop propname="idempotent"/>
 </sitepropset>
 </para><para>Close the buffer and return a signal immediately.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -343,9 +343,9 @@ buffer, return an empty list.
 Putting an item into the buffer fills a slot, and getting an item opens a slot.
 A buffer with zero slots is equivalent to a synchronous channel.
 </para><para>A bounded buffer may be empty, partly filled, or full, and either open or
-closed.  When empty and open, calls to <code>get</code> block.  When empty and
-closed, calls to <code>get</code> halt. When full and open, calls to
-<code>put</code> block. When closed, calls to <code>put</code> halt.  In all
+closed.  When empty and open, calls to <code>get</code> <link linkend="ref.concepts.block">block</link>.  When empty and
+closed, calls to <code>get</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. When full and open, calls to
+<code>put</code> <link linkend="ref.concepts.block">block</link>. When closed, calls to <code>put</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -367,8 +367,8 @@ val c = BoundedBuffer(1)
    <siteprop propname="blocking"/>
 </sitepropset>
 </para><para>Get an item from the buffer. If the buffer is open and no items are available,
-block until one becomes available. If the buffer is <link
-linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, halt.
+<link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
+linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -378,7 +378,7 @@ linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, 
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>Get an item from the buffer. If no items are available, halt.
+</para><para>Get an item from the buffer. If no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -388,8 +388,8 @@ linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, 
   			  <para><sitepropset>
    <siteprop propname="blocking"/>
 </sitepropset>
-</para><para>Put an item in the buffer. If no slots are open, block until one becomes open.
-If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+</para><para>Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.block">block</link> until one becomes open.
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -399,8 +399,8 @@ If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>Put an item in the buffer. If no slots are open, halt.
-If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+</para><para>Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -413,11 +413,11 @@ If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt
 </sitepropset>
 </para><para><!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.BoundedBuffer.close">
-Close the buffer and block until it is empty.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+Close the buffer and <link linkend="ref.concepts.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 </para>
@@ -431,10 +431,10 @@ initiated prior to closing the buffer may still be allowed to return as usual.
    <siteprop propname="idempotent"/>
 </sitepropset>
 </para><para>Close the buffer and return a signal immediately.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt. Note that any blocked calls to <code>put</code>
+This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
   			</listitem>
@@ -611,8 +611,8 @@ natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). <code>Table</code> does
 not return a value until all calls to <code>f</code> have completed.
-Consequently, if <code>f</code> halts on any call, the call to 
-<code>Table</code> will halt.
+Consequently, if <code>f</code> <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to 
+<code>Table</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para><para>The user may also think of the call as returning an immutable array whose
 <code>i</code>th element is accessed by calling <code>f(i)</code>.
 </para><para>This function provides a simple form of memoisation; we avoid recomputing
@@ -753,7 +753,7 @@ and false otherwise.
   			  <para><sitepropset>
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>If the counter is already at zero, halt. Otherwise, decrement
+</para><para>If the counter is already at zero, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
 the counter and return a signal.
 </para>
   			</listitem>
@@ -764,8 +764,8 @@ the counter and return a signal.
   			  <para><sitepropset>
    <siteprop propname="blocking"/>
 </sitepropset>
-</para><para>If the counter is at zero, return a signal. Otherwise
-block until the counter reaches zero.
+</para><para>If the counter is at zero, return a signal. Otherwise,
+<link linkend="ref.concepts.block">block</link> until the counter reaches zero.
 </para>
   			</listitem>
   		</varlistentry><varlistentry>
@@ -928,7 +928,7 @@ the two intervals do not intersect, returns an empty interval.
   		  <term><code>Interval</code></term>
         <listitem>
   		 	  <para><code>site Interval[A].union(Interval[A]) :: Interval[A]</code></para>
-  			  <para>Return the union of this interval with another. Halts with an error if
+  			  <para>Return the union of this interval with another. <link linkend="ref.concepts.halt">halts</link> with an error if
 the two intervals are not contiguous.
 </para>
   			</listitem>

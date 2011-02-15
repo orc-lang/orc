@@ -49,7 +49,7 @@
 			  <listitem><code><![CDATA[F >> G]]></code> 
 				  <para>
 				  This is equivalent to using a wildcard pattern:  <code><![CDATA[F >_> G]]></code>.  Every publication
-				  of <code><![CDATA[F]]></code> will match the combinator pattern, causing an evaluation of <code><![CDATA[G]]></code> for every individual
+				  of <code><![CDATA[F]]></code> will match the combinator pattern, causing an execution of <code><![CDATA[G]]></code> for every individual
 				  publication of <code><![CDATA[F]]></code>.  No bindings will be made in <code><![CDATA[G]]></code> from these publications.
 				  </para>
 			  </listitem>		  
@@ -99,7 +99,7 @@
   string to the console and then publish a signal.
   Each site publication will match the sequential
   combinator wildcard pattern and cause stop to be
-  evaluated.  Since stop ceases evaluation and
+  evaluated.  Since stop ceases execution and
   publishes nothing, neither of the two signals
   published internally by the println() site calls
   will be published as a result of the full expression.

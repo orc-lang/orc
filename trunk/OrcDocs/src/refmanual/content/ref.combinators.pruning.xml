@@ -31,7 +31,7 @@
 				  <para>
 				  	The execution of <code><![CDATA[F <x< G]]></code> starts by executing <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> in parallel. Whenever
 					<code><![CDATA[F]]></code> publishes a value, that value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first value, that
-					value is bound to <code><![CDATA[x]]></code> in <code><![CDATA[F]]></code>, and then the execution of <code><![CDATA[G]]></code> is immediately terminated. A terminated expression
+					value is bound to <code><![CDATA[x]]></code> in <code><![CDATA[F]]></code>, and then the execution of <code><![CDATA[G]]></code> is immediately <link linkend="ref.concepts.kill">killed</link>. A <link linkend="ref.concepts.kill">killed</link> expression
 					cannot call any sites or publish any values. During the execution of <code><![CDATA[F]]></code>, any part of the execution that depends on <code><![CDATA[x]]></code> 
 					will be suspended until <code><![CDATA[x]]></code> is bound (to
 					the first value published by <code><![CDATA[G]]></code>). If <code><![CDATA[G]]></code> never publishes a value, that part of the execution is suspended forever.
@@ -40,7 +40,7 @@
 			  <listitem><code><![CDATA[F <P< G]]></code>
 				  <para>
 				  	The pruning combinator may include a full pattern <code><![CDATA[P]]></code> instead of just a variable name. Any value published
-					by <code><![CDATA[G]]></code> is matched against the pattern <code><![CDATA[P]]></code>. If this match is successful, then <code><![CDATA[G]]></code> terminates and all of the bindings
+					by <code><![CDATA[G]]></code> is matched against the pattern <code><![CDATA[P]]></code>. If this match is successful, then <code><![CDATA[G]]></code> <link linkend="ref.concepts.kill">killed</link> and all of the bindings
 					of pattern <code><![CDATA[P]]></code> are made in <code><![CDATA[F]]></code>. Otherwise, the published value is simply ignored and <code><![CDATA[G]]></code> continues to execute.
 				  </para>
 			  </listitem>
@@ -48,7 +48,7 @@
 				  <para>
 				  	This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>.  <code><![CDATA[G]]></code> continues to execute 
 					until it publishes a value.  Any value published by <code><![CDATA[G]]></code> will match the pattern. After the successful match, 
-					<code><![CDATA[G]]></code> terminates, but no bindings are made in <code><![CDATA[F]]></code>.
+					<code><![CDATA[G]]></code> is <link linkend="ref.concepts.kill">killed</link>, but no bindings are made in <code><![CDATA[F]]></code>.
 				  </para>
 				  <para>
 				  	<code><![CDATA[F << G]]></code> is a shorthand for <code><![CDATA[F <_< G]]></code>. 
@@ -57,7 +57,7 @@
 				  	value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first
 				  	value, that value, by convention, matches the wildcard pattern. No
 				  	variable is bound to this value, and then the execution of <code><![CDATA[G]]></code> is
-				 	immediately terminated.
+				 	immediately <link linkend="ref.concepts.kill">killed</link>.
 				  </para>
 			  </listitem>
 		  </itemizedlist>
@@ -88,7 +88,7 @@ console, regardless of which call responds first.
 
 Each call to the println() site will print its argument
 to the console then publish a signal.  The first signal
-to be published will be bound to x in the evaluation of
+to be published will be bound to x in the execution of
 stop.  Both println() calls will continue to execute
 until they publish a value.
 -}
@@ -106,8 +106,8 @@ x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
 		  <example xml:id="ref.combinators.pruning.examples.five"><title>Timed Termination</title>
 <programlisting language="orc"><![CDATA[
 {-
-Print all publications of f for 100 msec (after the evaluation of f starts). 
-Then terminate f.
+Print all publications of f for 100 msec (after the execution of f starts). 
+Then kill f.
 -}
 
 stop << (f >x> println(x) >> stop | Rtimer(100) )

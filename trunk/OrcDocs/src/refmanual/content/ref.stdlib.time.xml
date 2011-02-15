@@ -72,7 +72,7 @@ by the logical clock is quiescent (i.e. cannot advance on its own).
    <siteprop propname="nonblocking"/>
 </sitepropset>
 </para><para>Return the current logical time, as measured by logical
-clock which was current when <code>Ltimer.time</code> was evaluated.
+clock which was current when <code>Ltimer.time</code> was executed.
 Ranges from 0 to <code>Integer.MAX_VALUE</code>.
 </para>
   			</listitem>

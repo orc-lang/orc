@@ -137,15 +137,15 @@ There is also a unary negation operator, written <code>-</code>, for example <co
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> evaluates to <code>false</code>.
+<code>10 = true</code> publishes <code>false</code>.
 </para>
 
 <para>
 Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
-an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and evaluates to <code>2</code>.
+an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and returns <code>2</code>.
 However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
 be promoted, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both perform decimal
-division and evaluate to <code>2.5</code>.
+division and return <code>2.5</code>.
 </para>
 
 		</section>

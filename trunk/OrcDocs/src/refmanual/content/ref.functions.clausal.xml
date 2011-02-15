@@ -28,7 +28,7 @@ definition, where each individual declaration is a clause of the larger function
 		  </para>
 		  <para>
 		  When the function is called, the clauses are tried in the order in which they appear until a match is found.
-If no clause matches, the call remains silent.
+If no clause matches, the call remains <link linkend="ref.concepts.silent">silent</link>.
 		  </para>
 	  </section>
 	  <section xml:id="ref.functions.clausal.examples">

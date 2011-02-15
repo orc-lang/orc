@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.concepts.reap.xml - DocBook source for an Orc reference manual section
+<!-- ref.concepts.deflate.xml - DocBook source for an Orc reference manual section
 
      $Id$
 
@@ -10,18 +10,18 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Reap Concept -->
-	<section xml:id="ref.concepts.reap">
-		<title>Reaping</title>
-		<section xml:id="ref.concepts.reap.definition">
+<!-- deflate Concept -->
+	<section xml:id="ref.concepts.deflate">
+		<title>Deflating</title>
+		<section xml:id="ref.concepts.deflate.definition">
 		<title>Definition</title>
 			<para>
-			Reaping is an evaluation mechanism which extracts a single value from an expression that
+			Deflating is an evaluation mechanism which extracts a single value from an expression that
 			might publish many values, so that such an expression can be evaluated in a context that expects
 			at most one value.
 			</para>
 			<para>
-			Orc reaps a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
+			Orc deflates a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
 			<replaceable>C</replaceable> by rewriting</para> 
 			<para><replaceable>C</replaceable>[<replaceable>E</replaceable>]</para>
 			<para>to</para>
@@ -29,7 +29,7 @@
 			<para>When <replaceable>E</replaceable> publishes a value <replaceable>v</replaceable>, 
 			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>.</para> 
 			
-			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be reaped,
+			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be deflateed,
 			so this transformation may be applied multiple times. For example, the expression</para>
 			<para><code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code></para>
 			<para>rewrites to</para>
@@ -40,7 +40,7 @@
 			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
 			</para>
 			<para>
-			  If any reaped expression halts silently, then the enclosing expression also halts silently. 
+			  If any deflated expression halts <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
 			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
 			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
 			  would also halt silently. 
@@ -50,26 +50,26 @@
 			  call, it does not halt, since function evaluation is lenient.
 			</para>
 			<para>
-		    Notice that each reaped expression is evaluated concurrently, due to the behavior of the
+		    Notice that each deflated expression is evaluated concurrently, due to the behavior of the
 		    pruning combinator. This is what makes Orc a functional concurrent language: when an expression is
 		    evaluated recursively, all such evaluations take place simultaneously. 
 		  </para>   
 		</section>
-		 <section xml:id="ref.concepts.reap.examples">
+		 <section xml:id="ref.concepts.deflate.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.concepts.reap.examples.one"><title>Search Comparison</title>
+		  <example xml:id="ref.concepts.deflate.examples.one"><title>Search Comparison</title>
 <programlisting><![CDATA[
 -- Return the first published value from 3 major search engines
 -- in the form of a tuple.  Ignore all published values from
 -- each engine after its first.
-val results = (Google("grim reaper"), Yahoo("grim reaper"), Bing("grim reaper"))
+val results = (Google("grim deflater"), Yahoo("grim deflater"), Bing("grim deflater"))
 results
 ]]></programlisting>
 		  </example>
 		</section>
 		
-		<section xml:id="ref.concepts.reap.links">
+		<section xml:id="ref.concepts.deflate.links">
 		  <title>Related Links</title>
 		  
 		  <informaltable frame="none">

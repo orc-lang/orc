@@ -35,7 +35,7 @@
 			    	<tbody valign="top">
 			     		<row>
 			        		<entry><itemizedlist>
-			        				<listitem><sitepropset><siteprop propname="blocking"/></sitepropset><para>The site is blocking</para></listitem>
+			        				<listitem><sitepropset><siteprop propname="blocking"/></sitepropset><para>The site is <link linkend="ref.concepts.block">blocking</link></para></listitem>
 			        				<listitem><sitepropset><siteprop propname="nonblocking"/></sitepropset><para>The site is non-blocking</para></listitem>
 			        				<listitem><sitepropset><siteprop propname="pure"/></sitepropset><para>The site is pure</para></listitem>
 			        				<listitem><sitepropset><siteprop propname="idempotent"/></sitepropset><para>The site is idempotent</para></listitem>

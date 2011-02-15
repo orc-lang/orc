@@ -20,7 +20,7 @@
 <para>
 The Orc language is
 dynamically typed. If an operation occurs at runtime which is not type-correct, the call
-which attempted that operation becomes silent, and produces a type error that is reported
+which attempted that operation becomes <link linkend="ref.concepts.silent">silent</link>, and produces a type error that is reported
 on the console. 
 </para>
 
@@ -551,7 +551,7 @@ lists must contain the same type of elements. The resulting list contains elemen
  
 <para>
 Functions defined using <code>lambda</code> can also have type parameters, such as the following
-anonymous function, which returns the first element of a list, or is silent if the list is empty:
+anonymous function, which returns the first element of a list, or is <link linkend="ref.concepts.silent">silent</link> if the list is empty:
 
 <programlisting language="orc"><![CDATA[
 lambda[T](h:_ :: List[T]) = h

@@ -41,8 +41,8 @@ For example, <code>(x,y,x)</code> is not a valid pattern.
 
 <para>
 Note that a pattern may fail to match a value, if it does not have the same shape as that value. In a <code>val</code>
-declaration, this has the same effect as evaluating a silent expression. No variable in the pattern is bound, and
-if any one of those variables is later evaluated, it is silent.
+declaration, this has the same effect as executing a <link linkend="ref.concepts.silent">silent</link> expression. No variable in the pattern is bound, and
+if any one of those variables is later executed, it is <link linkend="ref.concepts.silent">silent</link>.
 </para>
 
 <xi:include href="ref.patterns.constant.xml"/>
