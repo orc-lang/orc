@@ -29,24 +29,36 @@ found in the Orc JAR files.
 		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.include.examples.one"><title>fold.inc</title>
-<programlisting language="orc"><![CDATA[
+		<example xml:id="ref.declarations.include.examples.fold"><title>fold.inc</title>
+<programlisting language="orc-demo"><![CDATA[
 {- Contents of fold.inc -}
+
 def foldl(f,[],s) = s
 def foldl(f,h:t,s) = foldl(f,t,f(h,s))
 
 def foldr(f,l,s) = foldl(f,rev(l),s)
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		  
-		<example xml:id="ref.declarations.include.examples.two"><title>Included file</title>
+		<example xml:id="ref.declarations.include.examples.include"><title>Included file</title>
 		<programlisting language="orc"><![CDATA[
 {- This is the same as inserting the contents of fold.inc here -}
+
 include "fold.inc"
 
 def sum(L) = foldl(lambda(a,b) = a+b, L, 0)
 
 sum([1,2,3])
+
+{-
+OUTPUT:
+6
+-}
 ]]></programlisting>
 		</example>
 		</section>

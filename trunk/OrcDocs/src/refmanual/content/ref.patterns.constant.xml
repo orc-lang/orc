@@ -25,14 +25,19 @@
 		 <section xml:id="ref.patterns.constant.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.constant.examples.one"><title>Base Case Definition</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.patterns.constant.examples.basecase"><title>Base Case Definition</title>
+<programlisting language="orc-demo"><![CDATA[
 {- Use the format function(CONSTANT) = value for later pattern matching on the constant -}
 
 {- Fibonacci numbers -}
 def fib(0) = 1
 def fib(1) = 1
 def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		</section>

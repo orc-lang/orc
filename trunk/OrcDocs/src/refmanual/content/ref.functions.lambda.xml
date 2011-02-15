@@ -28,8 +28,10 @@ Limitation:  we can use <code>lambda</code> to create a closure only for a funct
 	  <section xml:id="ref.functions.lambda.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.functions.closure.lambda.one"><title>Simple example of a lambda</title>
+		  <example xml:id="ref.functions.closure.lambda.simple"><title>Simple example of a lambda</title>
 <programlisting language="orc-demo"><![CDATA[
+{- Use lambda to pass a function -}
+
 def onetwosum(f) = f(1) + f(2)
 
 onetwosum( lambda(x) = x * 3 )
@@ -37,6 +39,11 @@ onetwosum( lambda(x) = x * 3 )
   identical to:
   def triple(x) = x * 3
   onetwosum(triple)
+-}
+
+{-
+OUTPUT:
+9
 -}
 ]]></programlisting>
 		  </example>

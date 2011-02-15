@@ -24,9 +24,10 @@
 		 <section xml:id="ref.patterns.list.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.list.examples.one"><title>Associative Folding</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.patterns.list.examples.associative"><title>Associative Folding</title>
+<programlisting language="orc-demo"><![CDATA[
 {- Define an associative folding function based on list pattern matching -}
+
 def afold(_, [x]) = x
 def afold(f, xs) =
   def step([]) = []
@@ -34,6 +35,10 @@ def afold(f, xs) =
   def step(x:y:xs) = f(x,y):step(xs)
   afold(f, step(xs))
 
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		</section>

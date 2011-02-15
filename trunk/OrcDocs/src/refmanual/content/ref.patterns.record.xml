@@ -26,8 +26,10 @@
 		 <section xml:id="ref.patterns.record.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.record.examples.one"><title>Student Applications</title>
+		  <example xml:id="ref.patterns.record.examples.studentapp"><title>Student Applications</title>
 <programlisting><![CDATA[
+{- Use records to test for a given string -}
+
 val applicants = 
 [
   {. name = "Harry Q. Bovik", college = "Carnegie Mellon University", status = "accepted" .},
@@ -39,6 +41,13 @@ each(applicants) >a>
     a >{. name = n, status = "accepted" .}> Println(n + "'s application was accepted") >> stop
   | a >{. name = n, status = "rejected" .}> Println(n + "'s application was not accepted") >> stop
 )
+
+{-
+OUTPUT:PERMUTABLE
+"Harry Q. Bovik's application was accepted"
+"Fred Hacker's application was not accepted"
+"D. F. Automaton's application was accepted"
+-}
 ]]></programlisting>
 		  </example>
 		</section>

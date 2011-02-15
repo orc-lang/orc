@@ -30,9 +30,8 @@
 		</section>
 		
 		<section xml:id="ref.combinators.parallel.identities">
-		<title>Identities</title>	  
+		<title>Notable Identities</title>	  
 			  <para>
-			  Notable identities include:
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
@@ -66,7 +65,7 @@
 			<varlistentry><term><code><![CDATA[F | G]]></code></term>
 			<listitem>
 			<para>
-			  Orc executes the expression <code><![CDATA[F | G]]></code> by executing <code><![CDATA[F]]></code> 
+			  Execution of expression <code><![CDATA[F | G]]></code> occurs by executing <code><![CDATA[F]]></code> 
 			  and <code><![CDATA[G]]></code> concurrently. Whenever <code><![CDATA[F]]></code> or <code><![CDATA[G]]></code> communicates with a service or 
 			  publishes a value, <code><![CDATA[F | G]]></code> does so as well.
 			  Therefore, <code><![CDATA[F | G]]></code> interleaves the publications of <code><![CDATA[F]]></code>
@@ -81,28 +80,35 @@
 	  <section xml:id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.combinators.parallel.examples.one"><title>Parallel Publication</title>
+		  <example xml:id="ref.combinators.parallel.examples.parapub"><title>Parallel Publication</title>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1 and 2 in parallel  
+{- Publish 1 and 2 in parallel -}
+
 1 | 1+1
 
--- Note the publication order may be either 1 then 2
--- or 2 then 1
+{-
+OUTPUT:PERMUTABLE
+1
+2
+-}
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.combinators.parallel.examples.two"><title>Parallel Sites</title>
+		  <example xml:id="ref.combinators.parallel.examples.parasite"><title>Parallel Site Calls</title>
 <programlisting language="orc"><![CDATA[
-{- 
- Access two search sites, Google and Yahoo, in parallel.
-
- Publish any results they return.
-
- Since each call may publish a value, the expression
- may publish up to two values.
+{- Access two search sites, Google and Yahoo, in parallel.
+   
+   Publish any results they return.
+   
+   Since each call may publish a value, the expression
+   may publish up to two values.
 -}  
 
 Google("cupcake") | Yahoo("cupcake")
+
+{-
+NONRUNNABLE
+-}
 ]]></programlisting>
 		  </example>
 		  

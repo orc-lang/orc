@@ -23,11 +23,16 @@
 		 <section xml:id="ref.patterns.wildcard.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.wildcard.one"><title>Wildcard Assignments</title>
+		  <example xml:id="ref.patterns.wildcard.assign"><title>Wildcard Assignments</title>
 <programlisting language="orc"><![CDATA[
+{- Showcase various types of assignment -}
 val (x,_,_) = (1,(2,2),[3,3,3]) -- binds x to 1.
 
 val [[_,x],[_,y]] = [[1,3],[2,4]] -- binds x to 3 and y to 4.
+
+{-
+NONRUNNABLE
+-}
 ]]></programlisting>
 		  </example>
 		</section>

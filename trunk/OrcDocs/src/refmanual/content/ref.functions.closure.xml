@@ -31,15 +31,20 @@ stored variable bindings.
 	  <section xml:id="ref.functions.closure.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.functions.closure.examples.one"><title>One Two Sum</title>
+		  <example xml:id="ref.functions.closure.examples.onetwosum"><title>One Two Sum</title>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-Executes as: 1 * 3 + 2 * 3 = 9
-Note that triple() is used as a closure
+{- Executes as: 1 * 3 + 2 * 3 = 9
+   Note that triple() is used as a closure
 -}
+
 def onetwosum(f) = f(1) + f(2)
 def triple(x) = x * 3
 onetwosum(triple)
+
+{-
+OUTPUT:
+9
+-}
 ]]></programlisting>
 		  </example>
 

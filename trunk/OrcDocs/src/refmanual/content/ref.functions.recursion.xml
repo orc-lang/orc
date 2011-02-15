@@ -27,32 +27,46 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.functions.recursion.examples.one"><title>Simple example of a recursive function</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+{- Simple recursion -}
+
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.functions.recursion.examples.two"><title>Mutually Recursive Parity v1</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.functions.recursion.examples.parity"><title>Mutually Recursive Parity v1</title>
+<programlisting language="orc-demo"><![CDATA[
 {- 
 Return true if parity of 1s in a binary string is even 
 Equivalent to Mutually Recursive Parity v1
 -}
+
 def even([]) = true
 def odd([]) = false
 def even("1":xs) = odd(xs)
 def odd("1":xs) = even(xs)
 def even("_":xs) = even(xs)
 def odd("_":xs) = odd(xs)
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.functions.recursion.examples.three"><title>Mutually Recursive Parity v2</title>
+		  <example xml:id="ref.functions.recursion.examples.recursiveparity"><title>Mutually Recursive Parity v2</title>
 <programlisting language="orc"><![CDATA[
 {- 
 Return true if parity of 1s in a binary string is even
 Equivalent to Mutually Recursive Parity v1
 -}
+
 def even([]) = true
 def even("1":xs) = odd(xs)
 def even("_":xs) = even(xs)
@@ -60,6 +74,11 @@ def even("_":xs) = even(xs)
 def odd([]) = false
 def odd("1":xs) = even(xs)
 def odd("_":xs) = odd(xs)
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		  

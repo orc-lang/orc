@@ -160,33 +160,38 @@ def class Newset(n) =
 			body must include the definitions of the same set of functions and
 			classes.
 		  </para>
-		  <example xml:id="ref.class.declaration.example"><title>Defining a Set</title>
-<programlisting language="orc"><![CDATA[
--- Define a set of maximum length n.
--- Export methods "add", "remove" and "size".
+		  <example xml:id="ref.class.declaration.defset"><title>Defining a Set</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Define a set of maximum length n.
+   Export methods "add", "remove" and "size".
+-}
 
 def class Newset(n) =
  val b = BoundedBuffer(n) -- to store the elements of the set
  val ne = Ref(0)          -- number of elements currently in the set
 
  {- Add an element to the set if it is non-full.
-   If the set is full, wait until the set becomes non-full.
-   Return a signal on completion.
+    If the set is full, wait until the set becomes non-full.
+    Return a signal on completion.
  -}
  def add(x) = b.put(x) >> ne := ne? + 1
 
  {- Remove some element from the set if it is non-empty.
-   If the set is empty, wait until the set becomes non-empty.
-   Return the removed value.
+    If the set is empty, wait until the set becomes non-empty.
+    Return the removed value.
  -}
  def remove() = b.get() >x> ne := ne? - 1 >> x
 
- {- Return the size, i.e., the number of elements currently in the set
- -}
+ {- Return the size, i.e., the number of elements currently in the set -}
  def size() = ne?
 
 
  {- Goal -} stop
+ 
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 	  </section>
@@ -209,7 +214,8 @@ Newset(5)
   val st = Newset(5)
 
 {- The methods defined in Newset can be applied as dot methods
-on st, as shown below. -}
+   on st, as shown below. 
+-}
 
   st.add(3) >> st.add(5) >> st.remove() >x> st.size() >y> (x,y)
 ]]></programlisting>
@@ -267,8 +273,12 @@ v <v< (st.add(3) >> true | Rtimer(1) >> false)
 			indices always start at 0. We define a 2-dimensional Matrix whose
 			row and column indices range over an arbitrary interval.
 	  	</para>
-	  	<example xml:id="ref.class.semantics.examples.one"><title>Matrix Definition</title>
+	  	<example xml:id="ref.class.semantics.examples.matrix"><title>Matrix Definition</title>
 <programlisting language="orc-demo"><![CDATA[
+{- Create a (rowhi-rowlo) x (colhi-collo) matrix 
+   with a method to access its elements.
+-}
+
 def class Matrix((rowlo, rowhi), (collo, colhi)) =
  val mat = Array((rowhi - rowlo + 1) * (colhi - collo + 1))
 
@@ -276,9 +286,14 @@ def class Matrix((rowlo, rowhi), (collo, colhi)) =
 
 stop
 
------------------ Usage
+{- Usage -}
 val A = Matrix((-2, 0), (-1, 3)).access
 A(-1, 2) := 5 >> A(-1, 2) := 3 >> A(-1, 2)?
+
+{-
+OUTPUT:
+3
+-}
 ]]></programlisting>
 		  </example>
 		  <para>
@@ -300,8 +315,10 @@ A(-1, 2) := 5 >> A(-1, 2) := 3 >> A(-1, 2)?
 		  	We use two library sites, <code>Semaphore</code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
 			value has been written) and <code>Ref</code> to store the value.
 		  </para>
-		  <example xml:id="ref.class.semantics.examples.two"><title>Create a Site</title>
+		  <example xml:id="ref.class.semantics.examples.createsite"><title>Create a Site</title>
 <programlisting language="orc"><![CDATA[
+{- Create a mutable cell site -}
+
 def class Cell() =
  val s = Semaphore(1)
  val r = Ref ()
@@ -310,6 +327,10 @@ def class Cell() =
  def read() = r?
 
 stop
+
+{-
+NONRUNNABLE
+-}
 ]]></programlisting>
 		  </example>
 		  </section>
@@ -320,8 +341,10 @@ stop
 			"length", that returns the number of items in the channel. We have to
 			assign a name different from "Buffer", "Channel", to this class.
 		  </para>
-		  <example xml:id="ref.class.semantics.examples.three"><title>Extend Functionality of an Existing Site</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.class.semantics.examples.extendsite"><title>Extend Functionality of an Existing Site</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Extend the pre existing channel site -}
+
 def class Channel() =
  val ch = Buffer()
  val chlen = Counter(0)
@@ -331,6 +354,11 @@ def class Channel() =
  def length() = chlen.value()
 
 stop
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		  </section>
@@ -343,8 +371,10 @@ stop
 			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
-		  <example xml:id="ref.class.semantics.examples.four"><title>Managing Concurrent Access</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.class.semantics.examples.concaccess"><title>Managing Concurrent Access</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Manage access to a set via a site -}
+
 def class Newset(n) =
  val b = BoundedBuffer(n)
  val (s , ne) = (semaphore(1) , Ref(0))
@@ -367,6 +397,11 @@ def class Newset(n) =
  def size() = s.acquire() ne? >x> s.release() >> x
 
 stop
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 		  </section>
@@ -378,8 +413,12 @@ stop
 			unending computation in which <code>tick</code> is printed every second; all the
 			publications of the goal expression are ignored.
 		  </para>
-		  <example xml:id="ref.class.semantics.examples.five"><title>Computing with the Goal Expression</title>
+		  <example xml:id="ref.class.semantics.examples.goal"><title>Computing with the Goal Expression</title>
 <programlisting language="orc"><![CDATA[
+{- Perform a print action with the goal expression 
+   of a class.
+-}
+
 def class metro() =
 
  def metronome() = signal | Rtimer(1000) >> metronome()
@@ -388,13 +427,18 @@ def class metro() =
 
 val _ = metro()
 {- Goal of the whole program -}  stop
+
+{-
+OUTPUT:
+"tick"
+-}
 ]]></programlisting>
 		  </example>
 		  </section>
 		  <section>
 		  <title>Stopwatch</title>
-		  <example xml:id="ref.class.semantics.examples.six"><title>Stopwatch</title>
-<programlisting language="orc"><![CDATA[
+		  <example xml:id="ref.class.semantics.examples.stopwatch"><title>Stopwatch</title>
+<programlisting language="orc-demo"><![CDATA[
 {-
 A stopwatch allows the following operations:
  start(): (re)starts the stopwatch and publishes a signal
@@ -418,6 +462,11 @@ def class Stopwatch() =
  def halt() =
     timeshown := timeshown? + (clk() − laststart?) >> timeshown?
 stop
+
+{-
+OUTPUT:
+no-output
+-}
 ]]></programlisting>
 		  </example>
 		  </section>

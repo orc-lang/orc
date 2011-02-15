@@ -30,9 +30,8 @@
 	  </section>
 		  
 		  <section xml:id="ref.combinators.otherwise.identities">
-		  <title>Identities</title>	  
+		  <title>Notable Identities</title>	  
 			  <para>
-			  Notable identities include:
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
@@ -64,7 +63,7 @@
 				<code><![CDATA[F ; G]]></code> proceeds as follows. First, <code><![CDATA[F]]></code> is executed. 
 				If <code><![CDATA[F]]></code> <link linkend="ref.concepts.halt">halts</link>, 
 				and has not published any values, then <code><![CDATA[G]]></code> executes. 
-				If <code><![CDATA[F]]></code> did publish one or more values, 
+				If <code><![CDATA[F]]></code> publishes one or more values, 
 				then <code><![CDATA[G]]></code> is ignored. The publications of <code><![CDATA[F ; G]]></code> are those
 				of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code>
 				if <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link>.
@@ -85,14 +84,76 @@
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.combinators.otherwise.examples.one"><title>Fallback Search</title>
+		  <example xml:id="ref.combinators.otherwise.examples.fallback"><title>Fallback Search</title>
 <programlisting language="orc"><![CDATA[
-{- 
- Attempt to retrieve search results from Google.
- If Google does not respond, then use Yahoo.
+{- Attempt to retrieve search results from Google.
+   If Google does not respond, then use Yahoo.
 -}  
 
 Google("cupcake") ; Yahoo("cupcake")
+
+{-
+NONRUNNABLE
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.combinators.otherwise.examples.sublist"><title>Lexographic sublist</title>
+<programlisting language="orc-demo"><![CDATA[
+{- A call to sum(n, xs), where n is an integer and xs is a list
+   of integers, find the first sublist of xs lexicographically
+   whose elements add up to n.  The call publishes nothing if
+   there is no solution
+-}
+
+def sum(0,[]) = []
+def sum(n,[]) = stop
+def sum(n, x:xs) =
+  x:sum(n-x, xs) ; sum(n, xs)
+  
+sum(-5,[-2,5,1,-3,8,-7])
+
+{-
+OUTPUT:
+[-2,4,-7]
+-}
+
+{- sum(-5,[-2,4,1,8]) would be silent -}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.combinators.otherwise.examples.sublist"><title>Lexographic sublist</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Transfer all items from a buffer to a list.  Assume that the
+   process has exclusive access to the buffer, so that no other
+   process is adding or removing items.
+-}
+
+def xfer(b) =
+  b.getnb() >x> x:xfer(b) ; []
+
+{-
+OUTPUT:
+no output
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.combinators.otherwise.examples.helpfulpub"><title>Helpful publication</title>
+<programlisting language="orc"><![CDATA[
+{- Publish a list of all publications of f.
+   Assume f is helpful.  Assume you have xfer() from above.
+-}
+
+f() >x> b.put(x) >> stop ; xfer(b)
+
+{-
+NONRUNNABLE
+-}
+
+{- (1 | 2 | 3) >x> c.put(x) >> stop ; xfer(c) outputs
+   [1,2,3]
+-}
 ]]></programlisting>
 		  </example>
 		  

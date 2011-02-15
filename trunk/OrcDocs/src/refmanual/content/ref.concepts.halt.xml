@@ -49,11 +49,17 @@
 		
 		 <section xml:id="ref.concepts.halt.examples">
 		  <title>Examples</title>
-<example xml:id="ref.concepts.halt.examples.one">
-<title>Stop--Hammertime!</title>
-<programlisting><![CDATA[
--- This expression waits one second, then prints "hammertime"
+<example xml:id="ref.concepts.halt.examples.haltexp">
+<title>Halted Expression</title>
+<programlisting language="orc-demo"><![CDATA[
+{- This expression waits one second, then prints -}
+
 stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
+
+{-
+OUTPUT:
+"hammertime"
+-}
 ]]></programlisting>
 </example>
 		</section>

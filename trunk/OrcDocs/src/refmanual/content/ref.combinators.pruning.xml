@@ -30,9 +30,8 @@
 	  </section>
 	  
 	  <section xml:id="ref.combinators.pruning.identities">
-		  <title>Identities</title>	  
+		  <title>Notable Identities</title>	  
 			  <para>
-			  Notable identities include:
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
@@ -78,6 +77,7 @@
 				This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>.  <code><![CDATA[G]]></code> continues to execute 
 				until it publishes a value.  Any value published by <code><![CDATA[G]]></code> will match the pattern. After the successful match, 
 				<code><![CDATA[G]]></code> is <link linkend="ref.concepts.kill">killed</link>, but no bindings are made in <code><![CDATA[F]]></code>.
+				No part of execution of <code><![CDATA[F]]></code> is suspended by the pruning combinator since there is no variable to be bound.
 			 </para>
 			</listitem>
 			</varlistentry>
@@ -90,9 +90,7 @@
 
 		  <example xml:id="ref.combinators.pruning.examples.exclusive"><title>Exclusive Publication</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-Simulate a coin toss by publishing either "heads" or "tails" arbitrarily
--}
+{- Simulate a coin toss by publishing either "heads" or "tails" arbitrarily -}
 
 x <x< ("heads" | "tails")
 
@@ -108,9 +106,8 @@ OUTPUT:
 
 		  <example xml:id="ref.combinators.pruning.examples.printfirst"><title>Print First Result</title>
 <programlisting language="orc"><![CDATA[
-{- 
-Query Google and Yahoo for a search result
-Print out the result that arrives first; ignore the other result
+{- Query Google and Yahoo for a search result
+   Print out the result that arrives first; ignore the other result
 -}
 
 println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
@@ -123,9 +120,7 @@ NONRUNNABLE
 		  
 		  <example xml:id="ref.combinators.pruning.examples.patternpub"><title>Pattern Publication</title>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-Publish either 9 or 25, but not 16.
--}
+{- Publish either 9 or 25, but not 16. -}
 
 x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
 
@@ -141,9 +136,8 @@ OUTPUT:
 		  
 		  <example xml:id="ref.combinators.pruning.examples.timed"><title>Timed Termination</title>
 <programlisting language="orc"><![CDATA[
-{-
-Print all publications of f for 100 msec (after the execution of f starts). 
-Then kill f.
+{- Print all publications of f for 100 msec (after the execution of f starts). 
+   Then kill f.
 -}
 
 stop << (f >x> println(x) >> stop | Rtimer(100) )

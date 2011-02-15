@@ -60,11 +60,15 @@
 
 		  <example xml:id="ref.concepts.deflate.examples.one"><title>Search Comparison</title>
 <programlisting><![CDATA[
--- Return the first published value from 3 major search engines
--- in the form of a tuple.  Ignore all published values from
--- each engine after its first.
-val results = (Google("grim deflater"), Yahoo("grim deflater"), Bing("grim deflater"))
+{- Return the first published value from 3 major search engines
+   in the form of a tuple.  Ignore all published values from
+   each engine after its first.
+-}
+
+val results = (Google("Jack Burton"), Yahoo("Jack Burton"), Bing("Jack Burton"))
 results
+
+{-
 ]]></programlisting>
 		  </example>
 		</section>

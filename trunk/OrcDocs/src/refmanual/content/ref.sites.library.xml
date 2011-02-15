@@ -36,16 +36,28 @@ Therefore, the Orc standard library aims only to provide convenience for the mos
 <example xml:id="ref.sites.library.examples.floor">
 <title>Using a standard library site</title>
 <programlisting language="orc-demo"><![CDATA[
---The Floor site, also called the greatest integer function or integer value
+{- The Floor site, also called the greatest integer function or integer value -}
+
 Floor(2.5)
+
+{-
+OUTPUT:
+2
+-}
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.sites.library.examples.if">
 <title>Ift site</title>
 <programlisting><![CDATA[
---Orc's conditional site: Ift -- publishes a signal if the argument is true
+{- Orc's conditional site: Ift(), publishes a signal if the argument is true -}
+
 Ift(1 > 0) >> "correct"
+
+{-
+OUTPUT:
+"correct"
+-}
 ]]></programlisting>
 </example>
 		  
@@ -75,6 +87,7 @@ Ift(1 > 0) >> "correct"
   		</tgroup>
 	  </informaltable>
 	  
+	  <!-- 
 	  <informaltable frame="none">
   		<tgroup cols="1" align="left">
     	<thead>
@@ -91,6 +104,7 @@ Ift(1 > 0) >> "correct"
     	</tbody>
   		</tgroup>
 	  </informaltable>
+	  -->
 </section>
 
 </section>
