@@ -15,8 +15,7 @@
 		<title>List Pattern</title>
 		<section xml:id="ref.patterns.list.body">
 			<para>
-				In Orc pattern matching, when a value is compared to a list, the entire list must
-				be matched exactly to be considered a successful pattern match.
+				Each element of a list pattern matches the corresponding element of a list value.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>[ P , ... , P ]</code></emphasis></para>
 		</section>
@@ -25,19 +24,16 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.list.examples.associative"><title>Associative Folding</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Define an associative folding function based on list pattern matching -}
+<programlisting language="orc"><![CDATA[
+{- A general template for insertion sort -}
 
-def afold(_, [x]) = x
-def afold(f, xs) =
-  def step([]) = []
-  def step([x]) = [x]
-  def step(x:y:xs) = f(x,y):step(xs)
-  afold(f, step(xs))
+def sort([]) = []
+def sort([x]) = [x]
+def sort([x,y]) = if (x < y) then [x,y] else [y,x]
+def sort(x:xs) = insert(x, sort(xs))  {- insert(x, ys) inserts x into sorted list ys -}
 
 {-
-OUTPUT:
-no output
+NONRUNNABLE
 -}
 ]]></programlisting>
 		  </example>

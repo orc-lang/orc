@@ -15,8 +15,7 @@
 		<title>Tuple Pattern</title>
 		<section xml:id="ref.patterns.tuple.body">
 			<para>
-				In Orc pattern matching, when a value is compared to a tuple, the entire tuple must
-				be matched exactly to be considered a successful pattern match.
+				Each element of a tuple pattern matches the corresponding element of a tuple value.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>( P , ... , P )</code></emphasis></para>
 		</section>
@@ -26,9 +25,9 @@
 
 		  <example xml:id="ref.patterns.tuple.examples.filtering"><title>Filtering</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Signal for each of the input tuples that have their first value as true -}
+{- Publish a signal for each tuple with a first value of true -}
 
-(false, true, true) | (true, false, false) | (false, false, false) >(true, _, _)> signal
+(false, true) | (true, false) | (false, false) >(true, _)> signal
 
 {-
 OUTPUT:
