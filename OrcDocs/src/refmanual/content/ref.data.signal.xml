@@ -52,15 +52,27 @@ Returns of type <code language="java">void</code> from Java code are converted i
 <title>Examples</title>
 
 
-<example xml:id="ref.data.signal.examples.one">
-<title>TODO:Metronome</title>
+<example xml:id="ref.data.signal.examples.metronome">
+<title>Metronome</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
+{-
+metronome publishes a signal once every second.
+-}
+
+def metronome() = signal | Rtimer(1000) >> metronome()
+metronome()
+
+{-
+OUTPUT:
 signal
+signal
+signal
+...
+-}
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.signal.examples.two">
+<example xml:id="ref.data.signal.examples.sequentialprint">
 <title>TODO:Sequential printing</title>
 <programlisting><![CDATA[
 --TODO

@@ -20,13 +20,13 @@
 		    <productionrecap linkend="ebnf.expression.combinator.parallel"/>
 		    </productionset>
 		  </para>
-		  <para><emphasis role="strong">Precedence</emphasis>: 
+		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
 			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
-			  </para>
-			  
+			  [<link linkend="ref.concepts.precedence">Full Table</link>]
+			  </para>  
 		</section>
 		
 		<section xml:id="ref.combinators.parallel.identities">
@@ -39,37 +39,45 @@
 				    <td><code><![CDATA[F | G | H]]></code></td>
 				    <td> = </td>
 				    <td><code><![CDATA[F | (G | H)]]></code></td>
-				    <td>(Left Associative)</td>
+				    <td>  (Left Associative)</td>
 				  </tr>
 				  <tr>
 				    <td><code><![CDATA[F | G | H]]></code></td>
 				    <td> = </td>
 				    <td><code><![CDATA[(F | G) | H]]></code></td>
-				    <td>(Right Associative)</td>
+				    <td>  (Right Associative)</td>
 				  </tr>
 				  <tr>
 				    <td><code><![CDATA[F | G]]></code></td>
 				    <td> = </td>
 				    <td><code><![CDATA[G | F]]></code></td>
-				    <td>(Commutative)</td>
+				    <td>  (Commutative)</td>
 				  </tr>
 				</tbody>
 				</informaltable>
 				...more identities...
 			  </para>
-    </section>
+    	</section>
     
 	  <section xml:id="ref.combinators.parallel.behavior">
-		  <title>Behavior</title>
-		  <itemizedlist><listitem><code><![CDATA[F | G]]></code></listitem></itemizedlist>
+		  <title>Behavior</title>		  
 		  <para>
+		  <variablelist>
+			<varlistentry><term><code><![CDATA[F | G]]></code></term>
+			<listitem>
+			<para>
 			  Orc executes the expression <code><![CDATA[F | G]]></code> by executing <code><![CDATA[F]]></code> 
 			  and <code><![CDATA[G]]></code> concurrently. Whenever <code><![CDATA[F]]></code> or <code><![CDATA[G]]></code> communicates with a service or 
-			  publishes a value, <code><![CDATA[F | G]]></code> does so as well. The 
-			  resulting publications of <code><![CDATA[F | G]]></code> may be published 
-			  in arbitrary order. 
+			  publishes a value, <code><![CDATA[F | G]]></code> does so as well.
+			  Therefore, <code><![CDATA[F | G]]></code> interleaves the publications of <code><![CDATA[F]]></code>
+			  and <code><![CDATA[G]]></code> arbitrarily.
+		    </para>
+			</listitem>
+			</varlistentry>
+			</variablelist>
 		  </para>
 	  </section>
+	  
 	  <section xml:id="ref.combinators.parallel.examples">
 		  <title>Examples</title>
 

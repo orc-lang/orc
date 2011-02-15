@@ -17,7 +17,7 @@
 	
 <title>Syntax</title>
 
-<para>These sections explain the Orc syntax and keywords in addition to the basic Cor syntax.</para>
+<para>These sections explain the Orc syntax and keywords.</para>
 
 <xi:include href="ref.syntax.EBNF.xml"/>
 <xi:include href="ref.syntax.keywords.xml"/>

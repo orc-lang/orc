@@ -180,7 +180,6 @@ division and return <code>2.5</code>.
 	     		<row>
 	        		<entry><itemizedlist>
 	        			<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
-          				<listitem><para><olink targetdoc="userguide" targetptr="cor.revisiting">Revisiting Cor Expressions</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

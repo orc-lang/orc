@@ -15,95 +15,131 @@
       <title>Pruning Combinator</title>
 	  <section xml:id="ref.combinators.pruning.syntax">
 		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>: <emphasis>E ::= <code><![CDATA[E <P< E]]></code></emphasis></para>
-		  <para><emphasis role="strong">Precedence</emphasis>: 
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.combinator.pruning"/>
+		    </productionset>
+		  </para>
+		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
 			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink></para>
-		  <para><emphasis role="strong">Associativity</emphasis>: left </para>
-		  <para><emphasis role="strong">Commutative</emphasis>: no </para>
+			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
+			        [<link linkend="ref.concepts.precedence">Full Table</link>]
+			  </para>
 	  </section>
+	  
+	  <section xml:id="ref.combinators.pruning.identities">
+		  <title>Identities</title>	  
+			  <para>
+			  Notable identities include:
+			  <informaltable class="identitylist">
+				<tbody>
+				  <tr>
+				    <td><code><![CDATA[F <P< G <P< H]]></code></td>
+				    <td> = </td>
+				    <td><code><![CDATA[F <P< (G <P< H)]]></code></td>
+				    <td>  (Left Associative)</td>
+				  </tr>
+				</tbody>
+				</informaltable>
+				...more identities...
+			  </para>
+      </section>
+	  
 	  <section xml:id="ref.combinators.pruning.behavior">
 		  <title>Behavior</title>
-		  <itemizedlist>
-			  <listitem><code><![CDATA[F <x< G]]></code>
-				  <para>
-				  	The execution of <code><![CDATA[F <x< G]]></code> starts by executing <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> in parallel. Whenever
-					<code><![CDATA[F]]></code> publishes a value, that value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first value, that
-					value is bound to <code><![CDATA[x]]></code> in <code><![CDATA[F]]></code>, and then the execution of <code><![CDATA[G]]></code> is immediately <link linkend="ref.concepts.kill">killed</link>. A <link linkend="ref.concepts.kill">killed</link> expression
-					cannot call any sites or publish any values. During the execution of <code><![CDATA[F]]></code>, any part of the execution that depends on <code><![CDATA[x]]></code> 
-					will be suspended until <code><![CDATA[x]]></code> is bound (to
-					the first value published by <code><![CDATA[G]]></code>). If <code><![CDATA[G]]></code> never publishes a value, that part of the execution is suspended forever.
-				  </para>
-			  </listitem>
-			  <listitem><code><![CDATA[F <P< G]]></code>
-				  <para>
-				  	The pruning combinator may include a full pattern <code><![CDATA[P]]></code> instead of just a variable name. Any value published
-					by <code><![CDATA[G]]></code> is matched against the pattern <code><![CDATA[P]]></code>. If this match is successful, then <code><![CDATA[G]]></code> <link linkend="ref.concepts.kill">killed</link> and all of the bindings
-					of pattern <code><![CDATA[P]]></code> are made in <code><![CDATA[F]]></code>. Otherwise, the published value is simply ignored and <code><![CDATA[G]]></code> continues to execute.
-				  </para>
-			  </listitem>
-			  <listitem><code><![CDATA[F << G]]></code>
-				  <para>
-				  	This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>.  <code><![CDATA[G]]></code> continues to execute 
-					until it publishes a value.  Any value published by <code><![CDATA[G]]></code> will match the pattern. After the successful match, 
-					<code><![CDATA[G]]></code> is <link linkend="ref.concepts.kill">killed</link>, but no bindings are made in <code><![CDATA[F]]></code>.
-				  </para>
-				  <para>
-				  	<code><![CDATA[F << G]]></code> is a shorthand for <code><![CDATA[F <_< G]]></code>. 
-				  	Thus, execution of <code><![CDATA[F << G]]></code> starts by
-				  	executing <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> in parallel. Whenever <code><![CDATA[F]]></code> publishes a value, that
-				  	value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first
-				  	value, that value, by convention, matches the wildcard pattern. No
-				  	variable is bound to this value, and then the execution of <code><![CDATA[G]]></code> is
-				 	immediately <link linkend="ref.concepts.kill">killed</link>.
-				  </para>
-			  </listitem>
-		  </itemizedlist>
+		  <para>
+		  <variablelist>
+			<varlistentry><term><code><![CDATA[F <x< G]]></code></term>
+			<listitem>
+			 <para>
+			  	The execution of <code><![CDATA[F <x< G]]></code> starts by executing <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> in parallel. Whenever
+				<code><![CDATA[F]]></code> publishes a value, that value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first value, that
+				value is bound to <code><![CDATA[x]]></code> in <code><![CDATA[F]]></code>, and then the execution of <code><![CDATA[G]]></code> is immediately <link linkend="ref.concepts.kill">killed</link>. A <link linkend="ref.concepts.kill">killed</link> expression
+				cannot call any sites or publish any values. During the execution of <code><![CDATA[F]]></code>, any part of the execution that depends on <code><![CDATA[x]]></code> 
+				will be suspended until <code><![CDATA[x]]></code> is bound (to
+				the first value published by <code><![CDATA[G]]></code>). If <code><![CDATA[G]]></code> never publishes a value, that part of the execution is suspended forever.
+			  </para>
+			</listitem>
+			</varlistentry>
+			<varlistentry><term><code><![CDATA[F <P< G]]></code></term>
+			<listitem>
+			  <para>
+				The pruning combinator may include a full pattern <code><![CDATA[P]]></code> instead of just a variable name. Any value published
+				by <code><![CDATA[G]]></code> is <link linkend="ref.patterns">matched</link> against the pattern <code><![CDATA[P]]></code>. If this match is successful, then <code><![CDATA[G]]></code> <link linkend="ref.concepts.kill">killed</link> and all of the bindings
+				of pattern <code><![CDATA[P]]></code> are made in <code><![CDATA[F]]></code>. Otherwise, the published value is simply ignored and <code><![CDATA[G]]></code> continues to execute.
+			  </para>
+			</listitem>
+			</varlistentry>
+			<varlistentry><term><code><![CDATA[F << G]]></code></term>
+			<listitem>
+			 <para>
+				This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>.  <code><![CDATA[G]]></code> continues to execute 
+				until it publishes a value.  Any value published by <code><![CDATA[G]]></code> will match the pattern. After the successful match, 
+				<code><![CDATA[G]]></code> is <link linkend="ref.concepts.kill">killed</link>, but no bindings are made in <code><![CDATA[F]]></code>.
+			 </para>
+			</listitem>
+			</varlistentry>
+			</variablelist>
+		  </para>	
 	  </section>
+	  
 	  <section xml:id="ref.combinators.pruning.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.combinators.pruning.examples.one"><title>Exclusive Publication</title>
-<programlisting language="orc-demo"><![CDATA[
--- Simulate a coin toss by publishing either "heads" or "tails" arbitrarily
-x <x< ("heads" | "tails")
-]]></programlisting>
-		  </example>
-
-		  <example xml:id="ref.combinators.pruning.examples.two"><title>Print First Result</title>
-<programlisting language="orc"><![CDATA[
--- Query Google and Yahoo for a search result
--- Print out the result that arrives first; ignore the other result
-println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
-]]></programlisting>
-		  </example>
-		  
-		  <example xml:id="ref.combinators.pruning.examples.three"><title>Console Output</title>
+		  <example xml:id="ref.combinators.pruning.examples.exclusive"><title>Exclusive Publication</title>
 <programlisting language="orc-demo"><![CDATA[
 {-
-This example actually prints both "true" and "false" to the
-console, regardless of which call responds first.
-
-Each call to the println() site will print its argument
-to the console then publish a signal.  The first signal
-to be published will be bound to x in the execution of
-stop.  Both println() calls will continue to execute
-until they publish a value.
+Simulate a coin toss by publishing either "heads" or "tails" arbitrarily
 -}
-stop <x< println("true") | println("false")
+
+x <x< ("heads" | "tails")
+
+{-
+OUTPUT:
+"heads"
+
+OUTPUT:
+"tails"
+-}
+]]></programlisting>
+		  </example>
+
+		  <example xml:id="ref.combinators.pruning.examples.printfirst"><title>Print First Result</title>
+<programlisting language="orc"><![CDATA[
+{- 
+Query Google and Yahoo for a search result
+Print out the result that arrives first; ignore the other result
+-}
+
+println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
+
+{-
+NONRUNNABLE
+-}
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.combinators.pruning.examples.four"><title>Pattern Publication</title>
+		  <example xml:id="ref.combinators.pruning.examples.patternpub"><title>Pattern Publication</title>
 <programlisting language="orc-demo"><![CDATA[
--- Publish either 9 or 25, but not 16.
+{- 
+Publish either 9 or 25, but not 16.
+-}
+
 x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
+
+{-
+OUTPUT:
+9
+
+OUTPUT:
+25
+-}
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.combinators.pruning.examples.five"><title>Timed Termination</title>
+		  <example xml:id="ref.combinators.pruning.examples.timed"><title>Timed Termination</title>
 <programlisting language="orc"><![CDATA[
 {-
 Print all publications of f for 100 msec (after the execution of f starts). 
@@ -111,6 +147,10 @@ Then kill f.
 -}
 
 stop << (f >x> println(x) >> stop | Rtimer(100) )
+
+{-
+NOTRUNNABLE
+-}
 ]]></programlisting>		  
 		  </example>
 		  		  

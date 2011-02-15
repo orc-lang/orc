@@ -24,11 +24,18 @@
 		 <section xml:id="ref.patterns.tuple.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.tuple.examples.one"><title>Filtering</title>
+		  <example xml:id="ref.patterns.tuple.examples.filtering"><title>Filtering</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Signal for each of the input tuples that have their first value as true -}
 {- Should publish one signal -}
 (false, true, true) | (true, false, false) | (false, false, false) >(true, _, _)> signal
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.patterns.tuple.examples.patternpublication"><title>Pattern Publication</title>
+<programlisting language="orc-demo"><![CDATA[
+-- Publish 3, 6, and 9 in arbitrary order.
+(3,6,9)  >(x,y,z)>  ( x | y | z )
 ]]></programlisting>
 		  </example>
 		</section>
