@@ -28,6 +28,18 @@
 			  <lhs>ParallelExpression</lhs>
 			  <rhs><nonterminal def="#ebnf.expression">Expression</nonterminal> '<code>|</code>' <nonterminal def="#ebnf.expression">Expression</nonterminal></rhs>
 			</production>
+			<production xml:id="ebnf.expression.combinator.sequential">
+			  <lhs>SequentialExpression</lhs>
+			  <rhs><nonterminal def="#ebnf.expression">Expression</nonterminal> '<code>&gt;<nonterminal>Pattern</nonterminal>&gt;</code>' <nonterminal def="#ebnf.expression">Expression</nonterminal></rhs>
+			</production>
+			<production xml:id="ebnf.expression.combinator.pruning">
+			  <lhs>PruningExpression</lhs>
+			  <rhs><nonterminal def="#ebnf.expression">Expression</nonterminal> '<code>&lt;<nonterminal>Pattern</nonterminal>&lt;</code>' <nonterminal def="#ebnf.expression">Expression</nonterminal></rhs>
+			</production>
+			<production xml:id="ebnf.expression.combinator.otherwise">
+			  <lhs>OtherwiseExpression</lhs>
+			  <rhs><nonterminal def="#ebnf.expression">Expression</nonterminal> '<code>;</code>' <nonterminal def="#ebnf.expression">Expression</nonterminal></rhs>
+			</production>
 			</productionset>
 			</para>
 			

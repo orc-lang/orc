@@ -13,8 +13,9 @@
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/targetdb/ref.combinators.sequential.xml">
    <!ENTITY targets.ref.combinators SYSTEM "../build/targetdb/ref.combinators.xml">
    <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/targetdb/ref.concepts.conventions.xml">
+   <!ENTITY targets.ref.concepts.deflate SYSTEM "../build/targetdb/ref.concepts.deflate.xml">
    <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/ref.concepts.halt.xml">
-   <!ENTITY targets.ref.concepts.reap SYSTEM "../build/targetdb/ref.concepts.reap.xml">
+   <!ENTITY targets.ref.concepts.precedence SYSTEM "../build/targetdb/ref.concepts.precedence.xml">
    <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/ref.concepts.xml">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/targetdb/ref.data.boolean.xml">
    <!ENTITY targets.ref.data.datatype SYSTEM "../build/targetdb/ref.data.datatype.xml">
@@ -120,11 +121,14 @@
 					  <document targetdoc="ref.concepts.conventions" baseuri="ref.concepts.conventions.html">
 					  	&targets.ref.concepts.conventions;
 					  </document>
+					  <document targetdoc="ref.concepts.deflate" baseuri="ref.concepts.deflate.html">
+					  	&targets.ref.concepts.deflate;
+					  </document>
 					  <document targetdoc="ref.concepts.halt" baseuri="ref.concepts.halt.html">
 					  	&targets.ref.concepts.halt;
 					  </document>
-					  <document targetdoc="ref.concepts.reap" baseuri="ref.concepts.reap.html">
-					  	&targets.ref.concepts.reap;
+					  <document targetdoc="ref.concepts.precedence" baseuri="ref.concepts.precedence.html">
+					  	&targets.ref.concepts.precedence;
 					  </document>
 					  <document targetdoc="ref.concepts" baseuri="ref.concepts.html">
 					  	&targets.ref.concepts;
