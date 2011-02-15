@@ -36,9 +36,10 @@ tuple elements.
 
 <para>
 	A tuple is written as two or more expressions, separated by commas
-	and enclosed within parentheses.  Execution of the tuple expression <code>(e_1, ..., e_n)</code>
-	<link linkend="ref.concepts.deflate">deflates</link> 
-	each <code>ei</code> to a value <code>vi</code> and publishes the tuple value <code>(v_1, ..., v_n)</code>.
+	and enclosed within parentheses.
+The tuple expression <code>(e_0, ..., e_n)</code> publishes the tuple <code>(v_0, ..., v_n)</code>
+only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
+Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 </section>
 

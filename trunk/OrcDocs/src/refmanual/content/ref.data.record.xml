@@ -27,9 +27,10 @@ record is written <code>{..}</code>.
 
 <para>
 A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
-associates a key with an expression. Execution of the record expression <code>{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}</code> 
-<link linkend="ref.concepts.deflate">deflates</link> 
-each <code>yi</code> to a value <code>vi</code> and publishes the record value <code>{. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .}</code> .
+associates a key with an expression. 
+The record expression <code>{. x_0 = e_0, ..., x_n = e_n .}</code> publishes the record <code>{.x_0 = v_0, ..., x_n = v_n .}</code>
+only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
+Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
 <para>Duplicate bindings for the same key are allowed, but only the rightmost binding will
@@ -55,8 +56,8 @@ overrides <replaceable>R</replaceable>. Record extension is associative, but not
 </para>
 
 <para>
-The expression <code>{. x_1 = e_1, x_2 = e_2, ..., x_n = e_n .}</code> is equivalent to the expression
-<code>{. x_1 = e_1. } + {. x_2 = e_2 .} + ... + {. x_n = e_n .}</code>.
+The expression <code>{. x_0 = e_0, x_1 = e_1, ..., x_n = e_n .}</code> is equivalent to the expression
+<code>{. x_0 = e_0. } + {. x_1 = e_1 .} + ... + {. x_n = e_n .}</code>.
 </para>
 
 </section>

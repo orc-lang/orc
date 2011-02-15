@@ -33,12 +33,11 @@ have type <code>T</code>, then the list will have type <code>List[T]</code>.
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-The list expression <code>[e_1, ..., e_n]</code> publishes the list value <code>[v_1, ..., v_n]</code>
+The list expression <code>[e_0, ..., e_n]</code> publishes the list <code>[v_0, ..., v_n]</code>
 only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
-<!-- Do we need to talk about silence here? -->
- 
-
+Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
+
 </section>
 
 <section xml:id="ref.data.list.operations">
