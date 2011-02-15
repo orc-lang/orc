@@ -15,9 +15,8 @@
 		<title>Constant Pattern</title>
 		<section xml:id="ref.patterns.constant.body">
 			<para>
-				In Orc pattern matching, a constant pattern is a match only for the same constant value. 
-				It is especially useful in clausal and function definitions based on a constant input.  
-				For example, we can define the "base case" of a recursive function in a straightforward way. 
+				A constant pattern matches only the same constant value. 
+				It is often used in clausal definition of functions.   
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
 		</section>
@@ -25,21 +24,38 @@
 		 <section xml:id="ref.patterns.constant.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.constant.examples.basecase"><title>Base Case Definition</title>
+		  <example xml:id="ref.patterns.constant.examples.factorial">
+		  <title>Factorial Function</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Use the format function(CONSTANT) = value for later pattern matching on the constant -}
+{- Factorial function -}
+def fact(0) = 1
+def fact(n) = n * fact(n-1)
 
-{- Fibonacci numbers -}
-def fib(0) = 1
-def fib(1) = 1
-def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+fact(3)
 
 {-
 OUTPUT:
-no output
+6
 -}
 ]]></programlisting>
 		  </example>
+		  
+		  		  <example xml:id="ref.patterns.constant.examples.implication">
+		  <title>Implication by Cases</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Defining logical implication by cases -}
+def implies(true, false) = false
+def implies(_, _) = true
+
+implies(false, false)
+
+{-
+OUTPUT:
+true
+-}
+]]></programlisting>
+		  </example>
+		  
 		</section>
 		
 		<section xml:id="ref.patterns.constant.links">

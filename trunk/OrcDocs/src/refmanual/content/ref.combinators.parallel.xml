@@ -17,7 +17,7 @@
 		  <title>Syntax</title>
 		  <para>
 		    <productionset>
-		    <productionrecap linkend="ebnf.expression.combinator.parallel"/>
+		    <productionrecap linkend="ebnf.expression.parallel"/>
 		    </productionset>
 		  </para>
 		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 

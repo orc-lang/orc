@@ -15,7 +15,7 @@
 		<title>Cons Pattern</title>
 		<section xml:id="ref.patterns.cons.body">
 			<para>
-				The <code>cons</code> pattern is used to decompose a list into the first element and a list that contains the remaining elements.
+				The cons pattern matches the head and the tail of a nonempty list.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>P : P</code></emphasis></para>
 		</section>
@@ -23,16 +23,17 @@
 		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.cons.examples.printhead"><title>Print List Head</title>
+		  <example xml:id="ref.patterns.cons.examples.listdecons">
+		  <title>List Deconstruction</title>
 <programlisting><![CDATA[
-{- Publish the head of a list -}
+{- Publish the head and tail of a list as a tuple -}
 
-val a = [1,2,3]
-a >x:y> x
+val a = [1, 2, 3]
+a >x:y> (x, y)
 
 {-
 OUTPUT:
-1
+(1, [2, 3])
 -}
 ]]></programlisting>
 		  </example>

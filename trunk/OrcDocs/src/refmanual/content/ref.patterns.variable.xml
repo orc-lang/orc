@@ -15,8 +15,7 @@
 		<title>Variable Pattern</title>
 		<section xml:id="ref.patterns.variable.body">
 			<para>
-				In Orc pattern matching, when a variable occurs in a pattern, it is bound to the value 
-				being matched against that pattern.
+				A variable that occurs in a pattern is bound to the value matched to that pattern.
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= X</emphasis></para>
 		</section>
@@ -24,15 +23,17 @@
 		 <section xml:id="ref.patterns.variable.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.variable.examples.varbase"><title>Variable Base Case Definition</title>
+		  <example xml:id="ref.patterns.variable.examples.pairsum">
+		  <title>Sum Pair</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Define a fold left function base case based on the variable arguments -}
+{- Sum the elements of a pair  -}
+val (x, y) = (3, 4)
 
-def foldl(f,[],s) = s
+x + y
 
 {-
 OUTPUT:
-no output
+7
 -}
 ]]></programlisting>
 		  </example>
