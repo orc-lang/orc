@@ -27,8 +27,8 @@ record is written <code>{..}</code>.
 
 <para>
 A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
-associates a key with an expression. Evaluation of the record expression <code>{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}</code> 
-<link linkend="ref.concepts.reap">reaps</link> 
+associates a key with an expression. Execution of the record expression <code>{. x_1 = y_1, x_2 = y_2, ..., x_n = y_n .}</code> 
+<link linkend="ref.concepts.deflate">deflates</link> 
 each <code>yi</code> to a value <code>vi</code> and publishes the record value <code>{. x_1 = v_1, x_2 = v_2, ..., x_n = v_n .}</code> .
 </para>
 
@@ -48,7 +48,7 @@ be used in the resulting record value.</para>
 </para>
 
 <para>
-Record extension, written <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, evaluates to
+Record extension, written <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, publishes
 a new record with all of the bindings of <replaceable>S</replaceable>, plus all of the bindings in <replaceable>R</replaceable>
 which do not bind keys mentioned in <replaceable>S</replaceable>. In other words, <replaceable>S</replaceable>
 overrides <replaceable>R</replaceable>. Record extension is associative, but not commutative. 

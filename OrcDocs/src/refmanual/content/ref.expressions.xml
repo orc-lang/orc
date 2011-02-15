@@ -19,8 +19,8 @@
 
 <para>
 	Orc language has a functional subset, called Cor.  Any expression in the
-	functional subset always yields the same result whenever it is evaluated.  Orc
-	expressions are executed, rather than evaluated; an execution may call
+	functional subset always yields the same result whenever it is executed.  Orc
+	expressions are executed, rather than executed; an execution may call
 	external services and publish some number of values (possibly zero).
 	Different executions of the same expression may have completely different
 	behaviors; they may call different services, may receive different

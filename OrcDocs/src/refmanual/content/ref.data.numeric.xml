@@ -73,10 +73,10 @@ If a numeric literal contains a decimal point or an "<code>E</code>", it is a <c
 <para>
 	Arithmetic operators with two integer arguments will perform an integer operation and 
 	return an integer result; for example, <code>5 / 2</code> performs integer division and 
-	evaluates to 2. However, if either argument to an operator has a decimal part 
+	returns 2. However, if either argument to an operator has a decimal part 
 	(even if it is trivial, as in <code>3.0</code>), the other argument will be promoted, and 
 	a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
-	perform decimal division and evaluate to 2.5. 
+	perform decimal division and returns 2.5. 
 </para>
 
 <para>

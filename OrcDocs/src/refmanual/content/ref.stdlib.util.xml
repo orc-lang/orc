@@ -19,7 +19,7 @@ chosen from the range of all possible 32-bit Integer values.
   		 	  <para><code>site random(Integer) :: Integer</code></para>
   			  <para>Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, halt.
+If the argument is 0, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
   			</listitem>
   		</varlistentry>
@@ -54,7 +54,7 @@ between 0.0 (inclusive) and 1.0 (exclusive).
    <siteprop propname="blocking"/>
 </sitepropset>
 </para><para>Prompt the user for some input. The user may cancel the prompt,
-in which case the site fails silently. Otherwise their response
+in which case the site fails <link linkend="ref.concepts.silent">silently</link>. Otherwise their response
 is returned as soon as it is received.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -185,7 +185,7 @@ def fillArray(a, f) =
   			  <para><code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
-halts.
+<link linkend="ref.concepts.halt">halts</link>.
 </para><formalpara>
       <title>Implementation</title>
       <programlisting language="orc-demo">

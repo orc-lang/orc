@@ -29,9 +29,9 @@ it only evaluates <code>2+3</code>.
 
 <para>
 If <code><![CDATA[E]]></code> is
-silent, then the entire expression is silent. And if <code><![CDATA[E]]></code> evaluates to <code>true</code> 
-but <code><![CDATA[F]]></code> is silent (or if <code><![CDATA[E]]></code> evaluates to <code>false</code> and <code><![CDATA[G]]></code> is silent) then the 
-expression is silent.
+<link linkend="ref.concepts.silent">silent</link>, then the entire expression is <link linkend="ref.concepts.silent">silent</link>. And if <code><![CDATA[E]]></code> evaluates to <code>true</code> 
+but <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link> (or if <code><![CDATA[E]]></code> evaluates to <code>false</code> and <code><![CDATA[G]]></code> is silent) then the 
+expression is <link linkend="ref.concepts.silent">silent</link>.
 </para>
 
 <para>
@@ -108,8 +108,8 @@ The behavior of conditionals is summarized by the following table
 <itemizedlist><title>Examples</title>
 <listitem><code>if true then 4 else 5</code> evaluates to <code>4</code>.</listitem>
 <listitem><code><![CDATA[if  2 < 3 && 5 < 4  then "blue" else "green"]]></code> evaluates to "green".</listitem>
-<listitem><code>if  true || "fish"  then "yes" else "no"</code> is silent.</listitem>
-<listitem><code>if  false || false  then 4+5 else 4+true</code> is silent.</listitem>
+<listitem><code>if  true || "fish"  then "yes" else "no"</code> is <link linkend="ref.concepts.silent">silent</link>.</listitem>
+<listitem><code>if  false || false  then 4+5 else 4+true</code> is <link linkend="ref.concepts.silent">silent</link>.</listitem>
 <listitem><code><![CDATA[if 0 < 5 then 0/5 else 5/0]]></code> evaluates to 0.</listitem>
 </itemizedlist>
 </para>

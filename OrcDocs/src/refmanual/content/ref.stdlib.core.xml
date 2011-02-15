@@ -48,7 +48,7 @@ User Guide.
    <siteprop propname="nonblocking"/>
    <siteprop propname="pure"/>
 </sitepropset>
-</para><para>Fail silently if the argument is false. Otherwise return a signal.
+</para><para>Fail <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
@@ -67,7 +67,7 @@ User Guide.
    <siteprop propname="nonblocking"/>
    <siteprop propname="pure"/>
 </sitepropset>
-</para><para>Fail silently if the argument is true. Otherwise return a signal.
+</para><para>Fail <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
@@ -85,7 +85,7 @@ User Guide.
   			  <para><sitepropset>   
    <siteprop propname="nonblocking"/>
 </sitepropset>
-</para><para>Halt with the given error message.
+</para><para><link linkend="ref.concepts.halt">Halt</link> with the given error message.
 </para><para>Example, using <code>error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
@@ -158,7 +158,7 @@ i.e. <code>a</code> raised to the <code>b</code>th power.
   			  <para><code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division. If <code>b=0</code>, <code>a/b</code> halts with an error.
+division. If <code>b=0</code>, <code>a/b</code> <link linkend="ref.concepts.halt">halts</link> with an error.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
   7/3   -- publishes 2
@@ -268,7 +268,7 @@ always considered inequal, i.e. the comparison will return <code>false</code>.
         <listitem>
   		 	  <para><code>site (&amp;&amp;)(Boolean, Boolean) :: Boolean</code></para>
   			  <para>Return the logical conjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 </para>
   			</listitem>
@@ -280,7 +280,7 @@ computed.
         <listitem>
   		 	  <para><code>site (||)(Boolean, Boolean) :: Boolean</code></para>
   			  <para>Return the logical disjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 </para>
   			</listitem>

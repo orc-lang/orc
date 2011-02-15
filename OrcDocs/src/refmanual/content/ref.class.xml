@@ -243,7 +243,7 @@ st.add(3) | st.add(5)
 			calls. Therefore,
 		</para>
 		<itemizedlist>
-			<listitem><para>A call is not terminated prematurely by prune; see example below.</para></listitem>
+			<listitem><para>A call is not <link linkend="ref.concepts.kill">killed</link> by prune; see example below.</para></listitem>
 			<listitem><para>Unlike calls to functions, calls to class methods are strict;
   							i.e., the call is made only when all the parameters are bound.</para></listitem>
 		</itemizedlist>
@@ -253,7 +253,7 @@ v <v< (st.add(3) >> true | Rtimer(1) >> false)
 		<para>		
 			The value published by this expression is either <code>true</code> or <code>false</code>. In
 			the first case, item 3 is added to <code>st</code>. In the second case, item 3 is
-			also added to <code>st</code>; the call <code>st.add(3)</code> is not terminated when
+			also added to <code>st</code>; the call <code>st.add(3)</code> is not <link linkend="ref.concepts.kill">killed</link> when
 			the execution of <code>Rtimer(1) >> false</code> is completed, though the
 			publication of <code>st.add(3)</code> is subsequently ignored.
 		</para>
@@ -291,13 +291,13 @@ A(-1, 2) := 5 >> A(-1, 2) := 3 >> A(-1, 2)?
 		  <title>Create a Site</title>
 		  <para>
 		  	We create a site, <code>Cell</code>, that defines a write-once variable. It
-			supports two methods: <code>read</code> blocks until the variable has been
-			written, and then it returns its value; <code>write(v)</code> blocks forever if a value has
+			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
+			written, and then it returns its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
 			publishes a <code>signal</code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code>Semaphore</code> (to ensure blocking of write if a
+		  	We use two library sites, <code>Semaphore</code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
 			value has been written) and <code>Ref</code> to store the value.
 		  </para>
 		  <example xml:id="ref.class.semantics.examples.two"><title>Create a Site</title>

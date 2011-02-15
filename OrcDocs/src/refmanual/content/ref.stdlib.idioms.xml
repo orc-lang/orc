@@ -467,8 +467,8 @@ def altMap(f, x:xs) = f(x) ; altMap(f, xs)
   		  <term><code>por</code></term>
         <listitem>
   		 	  <para><code>def por(List[lambda () :: Boolean]) :: Boolean</code></para>
-  			  <para>Parallel or. Evaluate a list of boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
+  			  <para>Parallel or. Execute a list of boolean functions in parallel, publishing
+a value as soon as possible, and <link linkend="ref.concepts.kill">killed</link> any unnecessary ongoing
 computation.
 </para><formalpara>
       <title>Implementation</title>
@@ -494,8 +494,8 @@ def por(p:ps) =
   		  <term><code>pand</code></term>
         <listitem>
   		 	  <para><code>def pand(List[lambda () :: Boolean]) :: Boolean</code></para>
-  			  <para>Parallel and. Evaluate a list of boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
+  			  <para>Parallel and. Execute a list of boolean functions in parallel, publishing
+a value as soon as possible, and <link linkend="ref.concepts.kill">killed</link> any unnecessary ongoing
 computation.
 </para><formalpara>
       <title>Implementation</title>
@@ -522,7 +522,7 @@ def pand(p:ps) =
         <listitem>
   		 	  <para><code>def collect[A](lambda () :: A) :: List[A]</code></para>
   			  <para>Run a function, collecting all publications in a list.
-Return the list when the function terminates.
+Return the list when the function <link linkend="ref.concepts.halt">halts</link>.
 </para><para>Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: [signal, signal, signal, signal, signal]

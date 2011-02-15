@@ -33,8 +33,8 @@ have type <code>T</code>, then the list will have type <code>List[T]</code>.
 <para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
 
 <para>
-The list expression <code>[e_1, ..., e_n]</code> evaluates to the list value <code>[v_1, ..., v_n]</code>
-only if each <code>ei</code> <link linkend="ref.concepts.reap">reaps</link> to value <code>vi</code>. 
+The list expression <code>[e_1, ..., e_n]</code> publishes the list value <code>[v_1, ..., v_n]</code>
+only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
 <!-- Do we need to talk about silence here? -->
  
 

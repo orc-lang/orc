@@ -147,14 +147,14 @@ The following infix operators are defined in Orc:
 
 <para>
 Operators are parsed using the following precedence levels.
-Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is evaluated.
+Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is executed.
 For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
 </para>
 
 <para>
 Operators in Orc are syntatic sugar for site calls.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.reap">deflated</link>.
+Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>

@@ -15,7 +15,7 @@
 		<title>Halting</title>
 		<section xml:id="ref.concepts.halt.body">
 			<para>
-			An expression <emphasis>halts</emphasis> when its evaluation is complete. It will
+			An expression <emphasis>halts</emphasis> when its execution is complete. It will
 			call no more sites, publish no more values, and perform no more actions of any kind.
 			</para>
 			<para>
@@ -38,7 +38,7 @@
 			</listitem>
 			<listitem>
 				<code><![CDATA[F ; G]]></code> halts either when <code><![CDATA[F]]></code> has published a value and subsequently halted, 
-				or if <code><![CDATA[F]]></code> is silent, when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have halted.
+				or if <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link>, when both <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> have halted.
 				</listitem>
 			<listitem>
 				<code>stop</code> halts immediately.
@@ -72,7 +72,7 @@ stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
 	     		<row>
 	        		<entry><itemizedlist>
 	        				<listitem><link linkend="ref.combinators.otherwise">Otherwise</link></listitem>
-	        				<listitem><link linkend="ref.concepts.reap">Reaping</link></listitem>
+	        				<listitem><link linkend="ref.concepts.deflate">deflateing</link></listitem>
 	          			<!-- <listitem><link linkend="ref.expressions.stop"><code>stop</code></link></listitem>  -->
 	        		</itemizedlist></entry>
 	        	</row>
