@@ -23,11 +23,17 @@
 		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.cons.examples.one"><title>Print List Head</title>
+		  <example xml:id="ref.patterns.cons.examples.printhead"><title>Print List Head</title>
 <programlisting><![CDATA[
--- Publishes the integer 1
+{- Publish the head of a list -}
+
 val a = [1,2,3]
 a >x:y> x
+
+{-
+OUTPUT:
+1
+-}
 ]]></programlisting>
 		  </example>
 		</section>

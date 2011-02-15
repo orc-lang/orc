@@ -74,9 +74,11 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
 <title>Examples</title>
 
 
-<example xml:id="ref.data.record.examples.one">
+<example xml:id="ref.data.record.examples.vecnorm">
 <title>Normalizing Vectors</title>
 <programlisting language="orc-demo"><![CDATA[
+{- Normalize a given integer vector using records -}
+
 def magnitude(v) = 
   v.x * v.x + 
   v.y * v.y + 
@@ -90,14 +92,26 @@ def norm(v) =
      
 val velocity = {. x = 3, y = 0, z = 4 .}      
 norm(velocity) 
+
+{-
+OUTPUT:
+???
+-}
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.record.examples.two">
+<example xml:id="ref.data.record.examples.recexp">
 <title>Record Expansion</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+{- Add the alpha field to rgb record -}
+
 val rgb = {. red = 60, green = 230, blue = 5 .}
 rgb + {. alpha = 128 .}
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 </example>
 

@@ -175,14 +175,15 @@ The Java <code language="java">length</code> pseudo-field of arrays is available
 <example xml:id="ref.sites.java.examples.one">
 <title>Construct a Java object, and invoke methods</title>
 <programlisting language="orc-demo"><![CDATA[
--- Name a Java class
+{- Name a Java class and use it to invoke object methods -}
 class URL = java.net.URL
 
--- Create an instance
+{- Create an instance-}
 val googleUrl = URL("http://www.google.com/")
 
--- Invoke some methods
+{- Invoke some methods -}
 googleUrl.openConnection().getResponseMessage()
+
 {-
 OUTPUT:
 "OK"
@@ -193,6 +194,8 @@ OUTPUT:
 <example xml:id="ref.sites.java.examples.two">
 <title>Static field access, constructor invocation, static method access, overloading, and Orc-Java conversion</title>
 <programlisting language="orc-demo"><![CDATA[
+{- Access Java's String and Boolean classes -}
+
 class JavaBoolean = "java.lang.Boolean"
 class JavaString = "java.lang.String"
 
@@ -221,6 +224,8 @@ true
 <example xml:id="ref.sites.java.examples.three">
 <title>No-arg constructor invocation, field assignment, and field dereference</title>
 <programlisting language="orc-demo"><![CDATA[
+{- Constructor invocation -} 
+
 class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 
 -- No-arg constructor invocation
@@ -242,7 +247,8 @@ OUTPUT:
 <example xml:id="ref.sites.java.examples.intoverflow">
 <title>Integer conversion overflow</title>
 <programlisting><![CDATA[
---Demonstrate an Orc-to-Java integer conversion of an out-of-range value
+{- Demonstrate an Orc-to-Java integer conversion of an out-of-range value -}
+
 class JavaInteger = java.lang.Integer
 
 val x = 1230000000000000000456789

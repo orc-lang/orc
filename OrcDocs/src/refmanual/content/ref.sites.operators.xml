@@ -14,7 +14,7 @@
 <title>Operators</title>
 
 <para>
-The following prefix operators are defined in Orc:
+The following operators are defined in Orc:
 <variablelist><title>Prefix operators</title>
   <varlistentry>
     <term><code>-</code></term>
@@ -176,7 +176,11 @@ unary prefix operator as <code>(0-)</code>.
 <title>Operator precedence</title>
 <programlisting language="orc-demo"><![CDATA[
   1 + 2 * 3
---Will publish 7 
+  
+{-
+OUTPUT:
+7
+-} 
 ]]></programlisting>
 </example>
 
@@ -184,27 +188,40 @@ unary prefix operator as <code>(0-)</code>.
 <title>Operators publish once</title>
 <programlisting language="orc-demo"><![CDATA[
   1 + (2 | 3)
---Will publish only one value, either 3 or 4
+
+{-
+OUTPUT:
+3
+
+OUTPUT:
+4
+-}
 ]]></programlisting>
 </example>
 
+<!-- 
 <example xml:id="ref.sites.operators.examples.equiv">
 <title>Operator-site call equivalence</title>
 <programlisting language="orc-demo"><![CDATA[
   1 + 2 * 3
-| --Same as 
+| {-Same as-} 
   (+)(1, (*)(2, 3))
 ]]></programlisting>
 </example>
+-->
 
 <example xml:id="ref.sites.operators.examples.redefine">
 <title>Redefine an operator</title>
 <programlisting><![CDATA[
---Redefine the "?" operator
+{- Redefine the "?" operator -}
 
 def (?)(x) = "To "+x+", or not to "+x+", that is the question."
-
 "be"?
+
+{-
+OUTPUT:
+"To be, or not to be, that is the question."
+-}
 ]]></programlisting>
 </example>
 		  

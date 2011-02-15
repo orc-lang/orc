@@ -55,9 +55,7 @@ Returns of type <code language="java">void</code> from Java code are converted i
 <example xml:id="ref.data.signal.examples.metronome">
 <title>Metronome</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-metronome publishes a signal once every second.
--}
+{- metronome publishes a signal once every second -}
 
 def metronome() = signal | Rtimer(1000) >> metronome()
 metronome()
@@ -72,13 +70,15 @@ signal
 ]]></programlisting>
 </example>
 
+<!-- 
 <example xml:id="ref.data.signal.examples.sequentialprint">
 <title>TODO:Sequential printing</title>
 <programlisting><![CDATA[
---TODO
+{-TODO-}
 signal
 ]]></programlisting>
 </example>
+-->
 
 </section>
 

@@ -46,17 +46,31 @@
 		<section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.type.examples.one"><title>Aliases</title>
+		<example xml:id="ref.declarations.type.examples.aliases"><title>Aliases</title>
 <programlisting><![CDATA[
+{- TODO -}
+
 type vector = {. x :: Number, y :: Number, z :: Number .}
 type relation[R] = (R,R) => Boolean
+
+{-
+OUTPUT:
+TODO
+-}
 ]]></programlisting>
 		  </example>
 		  
-		<example xml:id="ref.declarations.type.examples.two"><title>Imports</title>
+		<example xml:id="ref.declarations.type.examples.imports"><title>Imports</title>
 <programlisting><![CDATA[
+{- TODO -}
+
 type Signal = "orc.types.SignalType"
 type Cell = orc.lib.state.types.CellType
+
+{-
+OUTPUT:
+TODO
+-}
 ]]></programlisting>
 		  </example>
 		</section>

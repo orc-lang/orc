@@ -38,8 +38,14 @@ Bind y to 2 or 3
   distributed executions of Orc it is possible that
   y may be bound to 3. 
 -}
+
 val x = true | false
 val y = Rtimer(2) >> 2 | Rtimer(3) >> 3
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
 	  </section>

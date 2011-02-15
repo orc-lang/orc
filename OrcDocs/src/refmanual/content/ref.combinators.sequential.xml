@@ -30,9 +30,8 @@
 	  </section>
 	  
 	  <section xml:id="ref.combinators.sequential.identities">
-		<title>Identities</title>	  
+		<title>Notable Identities</title>	  
 			  <para>
-			  Notable identities include:
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
@@ -70,7 +69,7 @@
 			  just a variable name. Any value published by <code><![CDATA[F]]></code> is <link linkend="ref.patterns">matched</link> against the pattern <code><![CDATA[P]]></code>. 
 			  If this match is successful, a new instance of <code><![CDATA[G]]></code> is started with all of the bindings 
 			  from the match. Otherwise, the published value is simply ignored, and no new instance 
-			  of <code><![CDATA[G]]></code> is executed. 
+			  of <code><![CDATA[G]]></code> is created. 
 			</para>
 			</listitem>
 			</varlistentry>
@@ -92,9 +91,7 @@
 
 		  <example xml:id="ref.combinators.sequential.examples.binding"><title>Variable Binding</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-Publish 1 and 2 in parallel
--}
+{- Publish 1 and 2 in parallel -}
   
 (0 | 1) >n> n+1
 
@@ -108,9 +105,7 @@ OUTPUT:PERMUTABLE
 		  
 		  <example xml:id="ref.combinators.sequential.examples.filtering"><title>Filtering</title>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-Filter out values of the form (_,false)
--}
+{- Filter out values of the form (_,false) -}
 
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
 
@@ -124,9 +119,8 @@ OUTPUT:PERMUTABLE
 		  
 		  <example xml:id="ref.combinators.sequential.examples.suppressed"><title>Suppressed Publication</title>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-Print two strings to the console,
-but don't publish the return values of the calls.
+{- Print two strings to the console,
+   but don't publish the return values of the calls.
 -}
 
 println("goodbye") >>

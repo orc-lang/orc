@@ -73,7 +73,7 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
 <title>Examples</title>
 
 
-<example xml:id="ref.data.list.examples.one">
+<example xml:id="ref.data.list.examples.sample">
 <title>Sample Lists</title>
 <programlisting language="orc"><![CDATA[
 [] -- empty list
@@ -93,7 +93,7 @@ is passed to Java code, it will be as a <type>java.lang.Object</type> of a type 
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.list.examples.two">
+<example xml:id="ref.data.list.examples.listops">
 <title>List Operations</title>
 <programlisting language="orc"><![CDATA[
 head([3]) = 3
