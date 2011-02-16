@@ -12,7 +12,7 @@
 
 <!-- Type -->
 	<section xml:id="ref.declarations.type">
-		<title>Type</title>
+		<title><code>type</code> &#8212; Declare Type</title>
 		<section xml:id="ref.declarations.type.body">
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 

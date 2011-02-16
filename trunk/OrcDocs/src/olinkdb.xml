@@ -6,7 +6,6 @@
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
    <!ENTITY targets.userguide SYSTEM "../build/targetdb/userguide.xml">
    <!ENTITY targets.refmanual SYSTEM "../build/targetdb/refmanual.xml">
-   <!ENTITY targets.ref.class SYSTEM "../build/targetdb/ref.class.xml">
    <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/targetdb/ref.combinators.otherwise.xml">
    <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/targetdb/ref.combinators.parallel.xml">
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/targetdb/ref.combinators.pruning.xml">
@@ -18,6 +17,7 @@
    <!ENTITY targets.ref.concepts.precedence SYSTEM "../build/targetdb/ref.concepts.precedence.xml">
    <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/ref.concepts.xml">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/targetdb/ref.data.boolean.xml">
+   <!ENTITY targets.ref.data.closure SYSTEM "../build/targetdb/ref.data.closure.xml">
    <!ENTITY targets.ref.data.datatype SYSTEM "../build/targetdb/ref.data.datatype.xml">
    <!ENTITY targets.ref.data.external SYSTEM "../build/targetdb/ref.data.external.xml">
    <!ENTITY targets.ref.data.list SYSTEM "../build/targetdb/ref.data.list.xml">
@@ -28,13 +28,18 @@
    <!ENTITY targets.ref.data.tuple SYSTEM "../build/targetdb/ref.data.tuple.xml">
    <!ENTITY targets.ref.data SYSTEM "../build/targetdb/ref.data.xml">
    <!ENTITY targets.ref.declarations.class SYSTEM "../build/targetdb/ref.declarations.class.xml">
+   <!ENTITY targets.ref.declarations.def SYSTEM "../build/targetdb/ref.declarations.def.xml">
+   <!ENTITY targets.ref.declarations.defclass SYSTEM "../build/targetdb/ref.declarations.defclass.xml">
    <!ENTITY targets.ref.declarations.include SYSTEM "../build/targetdb/ref.declarations.include.xml">
    <!ENTITY targets.ref.declarations.site SYSTEM "../build/targetdb/ref.declarations.site.xml">
    <!ENTITY targets.ref.declarations.type SYSTEM "../build/targetdb/ref.declarations.type.xml">
+   <!ENTITY targets.ref.declarations.val SYSTEM "../build/targetdb/ref.declarations.val.xml">
    <!ENTITY targets.ref.declarations SYSTEM "../build/targetdb/ref.declarations.xml">
+   <!ENTITY targets.ref.expressions.call SYSTEM "../build/targetdb/ref.expressions.call.xml">
    <!ENTITY targets.ref.expressions.ifthenelse SYSTEM "../build/targetdb/ref.expressions.ifthenelse.xml">
    <!ENTITY targets.ref.expressions.lambda SYSTEM "../build/targetdb/ref.expressions.lambda.xml">
    <!ENTITY targets.ref.expressions.operators SYSTEM "../build/targetdb/ref.expressions.operators.xml">
+   <!ENTITY targets.ref.expressions.stop SYSTEM "../build/targetdb/ref.expressions.stop.xml">
    <!ENTITY targets.ref.expressions.val SYSTEM "../build/targetdb/ref.expressions.val.xml">
    <!ENTITY targets.ref.expressions SYSTEM "../build/targetdb/ref.expressions.xml">
    <!ENTITY targets.ref.functions.clausal SYSTEM "../build/targetdb/ref.functions.clausal.xml">
@@ -69,8 +74,10 @@
    <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/targetdb/ref.syntax.EBNF.xml">
    <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/targetdb/ref.syntax.keywords.xml">
    <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/targetdb/ref.syntax.lexical.xml">
+   <!ENTITY targets.ref.syntax.precedence SYSTEM "../build/targetdb/ref.syntax.precedence.xml">
    <!ENTITY targets.ref.syntax SYSTEM "../build/targetdb/ref.syntax.xml">
-   <!ENTITY targets.ref.time.rtimer SYSTEM "../build/targetdb/ref.time.rtimer.xml">
+   <!ENTITY targets.ref.time.real SYSTEM "../build/targetdb/ref.time.real.xml">
+   <!ENTITY targets.ref.time.logical SYSTEM "../build/targetdb/ref.time.logical.xml">
    <!ENTITY targets.ref.time SYSTEM "../build/targetdb/ref.time.xml">
    <!ENTITY targets.ref.types.lattice SYSTEM "../build/targetdb/ref.types.lattice.xml">
    <!ENTITY targets.ref.types SYSTEM "../build/targetdb/ref.types.xml">
@@ -99,9 +106,6 @@
 					  </dir>
 					  <document targetdoc="refmanual">
 						&targets.refmanual;
-					  </document>
-					  <document targetdoc="ref.class" baseuri="ref.class.html">
-					  	&targets.ref.class;
 					  </document>
 					  <document targetdoc="ref.combinators.otherwise" baseuri="ref.combinators.otherwise.html">
 					  	&targets.ref.combinators.otherwise;
@@ -136,6 +140,9 @@
 					  <document targetdoc="ref.data.boolean" baseuri="ref.data.boolean.html">
 					  	&targets.ref.data.boolean;
 					  </document>
+					  <document targetdoc="ref.data.closure" baseuri="ref.data.closure.html">
+					  	&targets.ref.data.closure;
+					  </document>
 					  <document targetdoc="ref.data.datatype" baseuri="ref.data.datatype.html">
 					  	&targets.ref.data.datatype;
 					  </document>
@@ -166,6 +173,12 @@
 					  <document targetdoc="ref.declarations.class" baseuri="ref.declarations.class.html">
 					  	&targets.ref.declarations.class;
 					  </document>
+					  <document targetdoc="ref.declarations.def" baseuri="ref.declarations.def.html">
+					  	&targets.ref.declarations.def;
+					  </document>
+					  <document targetdoc="ref.declarations.defclass" baseuri="ref.declarations.defclass.html">
+					  	&targets.ref.declarations.defclass;
+					  </document>
 					  <document targetdoc="ref.declarations.include" baseuri="ref.declarations.include.html">
 					  	&targets.ref.declarations.include;
 					  </document>
@@ -175,8 +188,14 @@
 					  <document targetdoc="ref.declarations.type" baseuri="ref.declarations.type.html">
 					  	&targets.ref.declarations.type;
 					  </document>
+					  <document targetdoc="ref.declarations.val" baseuri="ref.declarations.val.html">
+					  	&targets.ref.declarations.val;
+					  </document>
 					  <document targetdoc="ref.declarations" baseuri="ref.declarations.html">
 					  	&targets.ref.declarations;
+					  </document>
+					  <document targetdoc="ref.expressions.call" baseuri="ref.expressions.call.html">
+					  	&targets.ref.expressions.call;
 					  </document>
 					  <document targetdoc="ref.expressions.ifthenelse" baseuri="ref.expressions.ifthenelse.html">
 					  	&targets.ref.expressions.ifthenelse;
@@ -186,6 +205,9 @@
 					  </document>
 					  <document targetdoc="ref.expressions.operators" baseuri="ref.expressions.operators.html">
 					  	&targets.ref.expressions.operators;
+					  </document>
+					  <document targetdoc="ref.expressions.stop" baseuri="ref.expressions.stop.html">
+					  	&targets.ref.expressions.stop;
 					  </document>
 					  <document targetdoc="ref.expressions.val" baseuri="ref.expressions.val.html">
 					  	&targets.ref.expressions.val;
@@ -289,11 +311,17 @@
 					  <document targetdoc="ref.syntax.lexical" baseuri="ref.syntax.lexical.html">
 					  	&targets.ref.syntax.lexical;
 					  </document>
+					  <document targetdoc="ref.syntax.precedence" baseuri="ref.syntax.precedence.html">
+					  	&targets.ref.syntax.precedence;
+					  </document>
 					  <document targetdoc="ref.syntax" baseuri="ref.syntax.html">
 					  	&targets.ref.syntax;
 					  </document>
-					  <document targetdoc="ref.time.rtimer" baseuri="ref.time.rtimer.html">
-					  	&targets.ref.time.rtimer;
+					  <document targetdoc="ref.time.logical" baseuri="ref.time.logical.html">
+					  	&targets.ref.time.logical;
+					  </document>
+					  <document targetdoc="ref.time.real" baseuri="ref.time.real.html">
+					  	&targets.ref.time.real;
 					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;

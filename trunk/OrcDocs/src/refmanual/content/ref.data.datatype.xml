@@ -11,7 +11,7 @@
   -->
 
 <section xml:id="ref.data.datatype">
-<title>Datatype Values</title>
+<title>Algebraic Data Types</title>
 
 <para>An Orc <firstterm>datatype</firstterm> is an algebraic data type, or "tagged union" data type,
 where each instance of a datatype has a tag along with a sequence of values.

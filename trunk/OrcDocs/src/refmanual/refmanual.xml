@@ -20,19 +20,29 @@
 	xmlns:xi="http://www.w3.org/2001/XInclude">
 	
 <title>Orc Reference Manual v<xi:include href="../../VERSION" parse="text"/></title>
-	
+
+<xi:include href="content/ref.data.xml"/>
+<xi:include href="content/ref.expressions.xml"/>  
 <xi:include href="content/ref.combinators.xml"/>
-<xi:include href="content/ref.sites.xml"/> 
-<xi:include href="content/ref.data.xml"/> 
-<xi:include href="content/ref.patterns.xml"/>
-<xi:include href="content/ref.functions.xml"/>
-<xi:include href="content/ref.class.xml"/>
 <xi:include href="content/ref.declarations.xml"/>
-<xi:include href="content/ref.expressions.xml"/> 
+<xi:include href="content/ref.patterns.xml"/>
+<xi:include href="content/ref.sites.xml"/> 
 <xi:include href="content/ref.time.xml"/>
 <xi:include href="content/ref.syntax.xml"/>
 <xi:include href="content/ref.types.xml"/>
 <xi:include href="content/ref.stdlib.xml"/>
 <xi:include href="content/ref.concepts.xml"/>
+
+<!-- Chapters removed in r2447 reorganization -->
+<!--
+<xi:include href="content/ref.functions.xml"/>
+<xi:include href="content/ref.class.xml"/>
+-->
+
+
+
+
+
+
 
 </book>

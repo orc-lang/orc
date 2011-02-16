@@ -22,8 +22,11 @@ These are a few concepts which are essential to Orc, and are used frequently in
 other parts of the reference manual.
 </para>
 
+<!--  Removed in reorganization -->
+<!-- 
 <xi:include href="ref.concepts.conventions.xml"/>
 <xi:include href="ref.concepts.precedence.xml"/>
+-->
 
 <xi:include href="ref.concepts.block.xml"/>
 <xi:include href="ref.concepts.halt.xml"/>

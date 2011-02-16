@@ -45,7 +45,7 @@ by external sites.
 <xi:include href="ref.data.record.xml"/>
 <xi:include href="ref.data.datatype.xml"/>
 
-<!-- <xi:include href="ref.data.closure.xml"/>  -->
+<xi:include href="ref.data.closure.xml"/>
 
 <xi:include href="ref.data.mutable.xml"/>
 <xi:include href="ref.data.external.xml"/>

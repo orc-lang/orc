@@ -12,7 +12,7 @@
 
 <!-- Lambda -->
 	<section xml:id="ref.expressions.lambda">
-		<title>Lambda</title>
+		<title><code>lambda</code></title>
 		<section xml:id="ref.expressions.lambda.body">
 <para>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
