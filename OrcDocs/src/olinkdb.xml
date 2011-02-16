@@ -14,7 +14,6 @@
    <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/targetdb/ref.concepts.conventions.xml">
    <!ENTITY targets.ref.concepts.deflate SYSTEM "../build/targetdb/ref.concepts.deflate.xml">
    <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/ref.concepts.halt.xml">
-   <!ENTITY targets.ref.concepts.precedence SYSTEM "../build/targetdb/ref.concepts.precedence.xml">
    <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/ref.concepts.xml">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/targetdb/ref.data.boolean.xml">
    <!ENTITY targets.ref.data.closure SYSTEM "../build/targetdb/ref.data.closure.xml">
@@ -77,7 +76,7 @@
    <!ENTITY targets.ref.syntax.precedence SYSTEM "../build/targetdb/ref.syntax.precedence.xml">
    <!ENTITY targets.ref.syntax SYSTEM "../build/targetdb/ref.syntax.xml">
    <!ENTITY targets.ref.time.real SYSTEM "../build/targetdb/ref.time.real.xml">
-   <!ENTITY targets.ref.time.logical SYSTEM "../build/targetdb/ref.time.logical.xml">
+   <!ENTITY targets.ref.time.virtual SYSTEM "../build/targetdb/ref.time.virtual.xml">
    <!ENTITY targets.ref.time SYSTEM "../build/targetdb/ref.time.xml">
    <!ENTITY targets.ref.types.lattice SYSTEM "../build/targetdb/ref.types.lattice.xml">
    <!ENTITY targets.ref.types SYSTEM "../build/targetdb/ref.types.xml">
@@ -130,9 +129,6 @@
 					  </document>
 					  <document targetdoc="ref.concepts.halt" baseuri="ref.concepts.halt.html">
 					  	&targets.ref.concepts.halt;
-					  </document>
-					  <document targetdoc="ref.concepts.precedence" baseuri="ref.concepts.precedence.html">
-					  	&targets.ref.concepts.precedence;
 					  </document>
 					  <document targetdoc="ref.concepts" baseuri="ref.concepts.html">
 					  	&targets.ref.concepts;
@@ -317,11 +313,11 @@
 					  <document targetdoc="ref.syntax" baseuri="ref.syntax.html">
 					  	&targets.ref.syntax;
 					  </document>
-					  <document targetdoc="ref.time.logical" baseuri="ref.time.logical.html">
-					  	&targets.ref.time.logical;
-					  </document>
 					  <document targetdoc="ref.time.real" baseuri="ref.time.real.html">
 					  	&targets.ref.time.real;
+					  </document>
+					  <document targetdoc="ref.time.virtual" baseuri="ref.time.virtual.html">
+					  	&targets.ref.time.virtual;
 					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;

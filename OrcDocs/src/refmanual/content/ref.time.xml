@@ -26,6 +26,6 @@ wait for some amount of time, using the special site <code>Rtimer</code>.
 </para>
 
 <xi:include href="ref.time.real.xml"/>
-<xi:include href="ref.time.logical.xml"/>
+<xi:include href="ref.time.virtual.xml"/>
 
 </chapter>
