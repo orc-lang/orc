@@ -160,32 +160,6 @@
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - -
-          target: stdlib-doc
-         - - - - - - - - - - - - - - - - - -->
-	<target name="stdlib-doc">
-		<pathconvert property="orc.prelude.includefiles" pathsep=" ">
-			<path>
-				<fileset dir="src/orc/lib/includes/prelude">
-					<include name="*.inc"/>
-				</fileset>
-			</path>
-			<mapper>
-				<flattenmapper/>
-			</mapper>
-		</pathconvert>
-		<echo message="Making documentation for: ${orc.prelude.includefiles}"/>
-		<java classname="orc.doc.MakeDoc" fork="yes" failonerror="true"
-				dir="src/orc/lib/includes/prelude"
-				output="build/stdlib.xml">
-			<classpath refid="orc.classpath"/>
-				<assertions>
-					<enable/>
-				</assertions>
-			<arg line="${orc.prelude.includefiles}"/>
-		</java>
-	</target>
-	
-	<!-- - - - - - - - - - - - - - - - - -
           target: javadoc
          - - - - - - - - - - - - - - - - - -->
 	<target name="javadoc">
@@ -275,7 +249,7 @@
 	<!-- =================================
           target: build
          ================================= -->
-    <target name="build" depends="version,jar,stdlib-doc,javadoc,macosx-app" description="Build all targets"/>
+    <target name="build" depends="version,jar,javadoc,macosx-app" description="Build all targets"/>
 
 	<!-- - - - - - - - - - - - - - - - - -
           target: zip

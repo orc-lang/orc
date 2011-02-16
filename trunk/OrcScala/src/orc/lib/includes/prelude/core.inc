@@ -53,7 +53,7 @@ When applied to two or more arguments, return the arguments as a tuple.
 site Let = "orc.lib.builtin.Let"
 
 {--
-@site If(Boolean) :: Signal
+@site Ift(Boolean) :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -65,17 +65,17 @@ Fail silently if the argument is false. Otherwise return a signal.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  If(false) >> "Never publishes"
-| If(true) >> "Always publishes"]]></programlisting>
+  Ift(false) >> "Never publishes"
+| Ift(true) >> "Always publishes"]]></programlisting>
 
-Note: <code>Ift</code>, <code>IfT</code>, and <code>IfTrue</code>
+Note: <code>If</code>, <code>IfT</code>, and <code>IfTrue</code>
 are all aliases for <code>If</code>.
 
 --}
-site If = "orc.lib.builtin.If"
+site Ift = "orc.lib.builtin.If"
 
 {--
-@site Unless(Boolean) :: Signal
+@site Iff(Boolean) :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -87,21 +87,21 @@ Fail silently if the argument is true. Otherwise return a signal.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  Unless(false) >> "Always publishes"
-| Unless(true) >> "Never publishes"]]></programlisting>
+  Iff(false) >> "Always publishes"
+| Iff(true) >> "Never publishes"]]></programlisting>
 
 Note: <code>Iff</code>, <code>IfF</code>, and <code>IfFalse</code>
-are all aliases for <code>Unless</code>.
+are all aliases for <code>Iff</code>.
 
 --}
-site Unless = "orc.lib.builtin.Unless"
+site Iff = "orc.lib.builtin.Unless"
 
 {- Aliases for different styles of conditional site usage -}
-site Ift = "orc.lib.builtin.If"
+site If = "orc.lib.builtin.If"
 site IfT = "orc.lib.builtin.If"
 site IfTrue = "orc.lib.builtin.If"
 
-site Iff = "orc.lib.builtin.Unless"
+site Unless = "orc.lib.builtin.Unless"
 site IfF = "orc.lib.builtin.Unless"
 site IfFalse = "orc.lib.builtin.Unless"
 

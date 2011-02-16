@@ -83,6 +83,34 @@ site Cell = orc.lib.state.Cell
 type Cell = orc.lib.state.types.CellType
 
 
+{--
+@site Ref[A]() :: Ref[A]
+<para id="orc.lib.state.Ref">
+Create a rewritable storage location without an initial value.
+</para>
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+val r = Ref()
+Rtimer(1000) >> r := 5 >> stop
+| println(r?) >>
+  r := 10 >>
+  println(r?) >>
+  stop]]></programlisting>
+
+@method Ref[A](A) :: Ref[A]
+Create a rewritable storage location initialized to the provided value.
+
+@method Ref[A].read() :: A
+Read the value of the ref. If the ref does not yet have a value, block until it receives one.
+
+@method Ref[A].readnb() :: A
+Read the value of the ref. If the ref does not yet have a value, halt.
+
+@method Ref[A].write(A) :: Signal
+Write a value to the ref.
+
+--}
 site Ref = orc.lib.state.Ref
 type Ref = orc.lib.state.types.RefType
 
