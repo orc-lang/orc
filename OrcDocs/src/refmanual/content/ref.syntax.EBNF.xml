@@ -15,7 +15,19 @@
 		<title>EBNF Grammar</title>
 		<section xml:id="ref.syntax.EBNF.body">
 			<para>
-				The Orc language grammar can be expressed in Extended Backus-Naur Form (EBNF):
+				The Orc language grammar can be expressed in Extended Backus-Naur Form (EBNF), with the following metanotation:
+			</para>
+			
+			<para xml:id="ebnf.meta.questionmark">
+			G? denotes zero or one occurrences of G.
+			</para>
+			
+			<para xml:id="ebnf.meta.plus">
+			G+ denotes one or more occurrences of G.
+			</para>
+			
+			<para xml:id="ebnf.meta.ellipsis">
+			G <emphasis>sep</emphasis> &#x2026; <emphasis>sep</emphasis> G denotes zero or more occurences of G, separated by <emphasis>sep</emphasis>.
 			</para>
 			
 			<para>
@@ -24,174 +36,240 @@
 			<production xml:id="ebnf.expression">
 			  <lhs>Expression</lhs>
 			  <rhs>
-			    "<code>stop</code>"
-	<sbr/>| <nonterminal def="#ebnf.value">Value</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.variable">Variable</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.tuple">TupleExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.list">ListExpression</nonterminal>		    
-	<sbr/>| <nonterminal def="#ebnf.expression.record">RecordExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.call">CallExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.prefixoperator">PrefixOperatorExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.infixoperator">InfixOperatorExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.parallel">ParallelExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.sequential">SequentialExpression</nonterminal>		    
-	<sbr/>| <nonterminal def="#ebnf.expression.pruning">PruningExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.otherwise">OtherwiseExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.conditional">ConditionalExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.declaration">DeclarationExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.lambda">LambdaExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.annotated">AnnotatedExpression</nonterminal>
-	<sbr/>| "<code>(</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>)</code>"
+				  <nonterminal def="#ebnf.literal">Literal</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.variable">Variable</nonterminal>
+				  <sbr/>&#x2759; <code>stop</code>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.tuple">Tuple</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.list">List</nonterminal>		    
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.record">Record</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.call">Call</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.prefixoperator">PrefixOperation</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.infixoperator">InfixOperation</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.parallel">Parallel</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.sequential">Sequence</nonterminal>		    
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.pruning">Prune</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.otherwise">Otherwise</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.conditional">Conditional</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.lambda">Lambda</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.withtypeascription">WithTypeAscription</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.withtypeassertion">WithTypeAssertion</nonterminal>
+				  <sbr/>&#x2759; <nonterminal def="#ebnf.expression.declaration">Declaration</nonterminal> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+					<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
 			  </rhs>
 			</production>
-			
-			<!-- 
-			<production xml:id="ebnf.expression.base">
-			  <lhs>BaseExpression</lhs>
-			  <rhs>
-			    "<code>stop</code>"
-	<sbr/>| <nonterminal def="#ebnf.value">Value</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.variable">Variable</nonterminal>
-			  </rhs>
-			</production>
-			 -->
-			
-			<!-- 
-			<production xml:id="ebnf.expression.strict">
-			  <lhs>StrictExpression</lhs>
-			  <rhs>
-			    <nonterminal def="#ebnf.expression.tuple">TupleExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.list">ListExpression</nonterminal>		    
-	<sbr/>| <nonterminal def="#ebnf.expression.record">RecordExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.call">CallExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.prefixoperator">PrefixOperatorExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.infixoperator">InfixOperatorExpression</nonterminal>
-			  </rhs>
-			</production>
-			 -->
 			
 			<production xml:id="ebnf.expression.tuple">
-			  <lhs>TupleExpression</lhs>
+			  <lhs>Tuple</lhs>
 			  <rhs>
-			    "<code>(</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>  "<code>,</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> } "<code>)</code>"
+			    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
 			  </rhs>
+			  <constraint linkend="tuplesize"/>
 			</production>
 			
 			<production xml:id="ebnf.expression.list">
-			  <lhs>ListExpression</lhs>
+			  <lhs>List</lhs>
 			  <rhs>
-			    "<code>[</code>" [ <nonterminal def="#ebnf.expression">Expression</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> } ] "<code>]</code>"
+			    <code>[</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>]</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.record">
-			  <lhs>RecordExpression</lhs>
+			  <lhs>Record</lhs>
 			  <rhs>
-			    "<code>{.</code>" [ <nonterminal def="#ebnf.identifier">Identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.identifier">Identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> } ] "<code>.}</code>"
+			    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>.}</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.call">
-			  <lhs>CallExpression</lhs>
+			  <lhs>Call</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <nonterminal def="#ebnf.argumentgroup">ArgumentGroup</nonterminal> { <nonterminal def="#ebnf.argumentgroup">ArgumentGroup</nonterminal> }
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <nonterminal def="#ebnf.argumentgroup">ArgumentGroup</nonterminal><link linkend="ebnf.meta.plus">+</link>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.prefixoperator">
-			  <lhs>PrefixOperatorExpression</lhs>
+			  <lhs>PrefixOperation</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.operator.prefix">PrefixOperator</nonterminal> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <link linkend="please.point.me.to.the.prefix.operator.table">PrefixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.infixoperator">
-			  <lhs>InfixOperatorExpression</lhs>
+			  <lhs>InfixOperation</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <nonterminal def="#ebnf.operator.infix">InfixOperator</nonterminal> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="please.point.me.to.the.infix.operator.table">PrefixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
-						
-						<!-- 
-			<production xml:id="ebnf.expression.combinator">
-			  <lhs>CombinatorExpression</lhs>
-			  <rhs>
-			    <nonterminal def="#ebnf.expression.parallel">ParallelExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.sequential">SequentialExpression</nonterminal>		    
-	<sbr/>| <nonterminal def="#ebnf.expression.pruning">PruningExpression</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.expression.otherwise">OtherwiseExpression</nonterminal>
-			  </rhs>
-			</production>
-			 -->
 			
 			<production xml:id="ebnf.expression.parallel">
-			  <lhs>ParallelExpression</lhs>
+			  <lhs>Parallel</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>|</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>|</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.sequential">
-			  <lhs>SequentialExpression</lhs>
+			  <lhs>Sequence</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code><![CDATA[>]]></code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code><![CDATA[>]]></code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[>]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><code><![CDATA[>]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.pruning">
-			  <lhs>PruningExpression</lhs>
+			  <lhs>Prune</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code><![CDATA[<]]></code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code><![CDATA[<]]></code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[<]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><code><![CDATA[<]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.otherwise">
-			  <lhs>OtherwiseExpression</lhs>
+			  <lhs>Otherwise</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>;</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>;</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.conditional">
-			  <lhs>ConditionalExpression</lhs>
+			  <lhs>Conditional</lhs>
 			  <rhs>
-			    "<code>if</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>then</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>else</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <code>if</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>then</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>else</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.declaration">
-			  <lhs>DeclarationExpression</lhs>
+			  <lhs>WithDeclaration</lhs>
 			  <rhs>
 			    <nonterminal def="#ebnf.declaration">Declaration</nonterminal> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.lambda">
-			  <lhs>LambdaExpression</lhs>
+			  <lhs>Lambda</lhs>
 			  <rhs>
-			    "<code>lambda</code>" <nonterminal def="#ebnf.functionheader">FunctionHeader</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal>
-			  </rhs>
-			</production>
-			
-			<production xml:id="ebnf.expression.annotated">
-			  <lhs>AnnotatedExpression</lhs>
-			  <rhs>
-			    <nonterminal def="#ebnf.expression.withtypeascription">ExpressionWithTypeAscription</nonterminal>
-			  | <nonterminal def="#ebnf.expression.withtypeassertion">ExpressionWithTypeAssertion</nonterminal>
+			    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.withtypeascription">
-			  <lhs>ExpressionWithTypeAscription</lhs>
+			  <lhs>WithTypeAscription</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>::</code>" <nonterminal def="#ebnf.type">Type</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.expression.withtypeassertion">
-			  <lhs>ExpressionWithTypeAssertion</lhs>
+			  <lhs>WithTypeAssertion</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> "<code>:!:</code>" <nonterminal def="#ebnf.type">Type</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>:!:</code> <nonterminal def="#ebnf.type">Type</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.argumentgroup">
+			  <lhs>ArgumentGroup</lhs>
+			  <rhs>
+			    <nonterminal def="#ebnf.typearguments">TypeArguments</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.arguments">Arguments</nonterminal>
+					<sbr/>&#x2759; <code>.</code><nonterminal def="#ebnf.key">Key</nonterminal>
+					<sbr/>&#x2759; <code>?</code>	
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration">
+			  <lhs>Declaration</lhs>
+			  <rhs>
+			    <nonterminal def="#ebnf.declaration.val">DeclareVal</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.definition">DeclareDefinition</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.signature">DeclareSignature</nonterminal>
+				  <sbr/>&#x2759; <nonterminal def="#ebnf.declaration.site">DeclareSite</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.class">DeclareClass</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.include">DeclareInclude</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.type">DeclareType</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.val">
+			  <lhs>DeclareVal</lhs>
+			  <rhs>
+			    <code>val</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.definition">
+			  <lhs>DeclareDefinition</lhs>
+			  <rhs>
+			    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.signature">
+			  <lhs>DeclareSignature</lhs>
+			  <rhs>
+			    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal><link linkend="ebnf.meta.plus">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal> 
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.site">
+			  <lhs>DeclareSite</lhs>
+			  <rhs>
+			    <code>site</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.class">
+			  <lhs>DeclareClass</lhs>
+			  <rhs>
+			    <code>class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.include">
+			  <lhs>DeclareInclude</lhs>
+			  <rhs>
+			    <code>include</code> <nonterminal def="#ebnf.filename">FileName</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.type">
+			  <lhs>DeclareType</lhs>
+			  <rhs>
+			    <nonterminal def="#ebnf.declaration.type.alias">DeclareTypeAlias</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.type.import">DeclareTypeImport</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.type.datatype">DeclareDatatype</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.type.alias">
+			  <lhs>DeclareTypeAlias</lhs>
+			  <rhs>
+			    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.type.import">
+			  <lhs>DeclareTypeImport</lhs>
+			  <rhs>
+			    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.declaration.type.datatype">
+			  <lhs>DeclareDatatype</lhs>
+			  <rhs>
+			    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal> <code>|</code> &#x2026; <code>|</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.constructor">
+			  <lhs>Constructor</lhs>
+			  <rhs>
+			     <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.optionaltype">OptionalType</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.optionaltype">OptionalType</nonterminal> <code>)</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.optionaltype">
+			  <lhs>OptionalType</lhs>
+			  <rhs>
+			    <nonterminal def="#ebnf.type">Type</nonterminal>
+			    &#x2759; <code>_</code> 
 			  </rhs>
 			</production>
 			
@@ -199,30 +277,30 @@
 			  <lhs>Pattern</lhs>
 			  <rhs>
 			    <nonterminal def="#ebnf.pattern.wildcard">WildcardPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.value">ValuePattern</nonterminal>		    
-	<sbr/>| <nonterminal def="#ebnf.pattern.variable">VariablePattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.tuple">TuplePattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.list">ListPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.record">RecordPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.cons">ConsPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.call">CallPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.as">AsPattern</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.pattern.typed">TypedPattern</nonterminal>
-	<sbr/>| "<code>(</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code>)</code>"
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.literal">LiteralPattern</nonterminal>		    
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.variable">VariablePattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.tuple">TuplePattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.list">ListPattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.record">RecordPattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.cons">ConsPattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.call">CallPattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.as">AsPattern</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.typed">TypedPattern</nonterminal>
+					<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.wildcard">
 			  <lhs>WildcardPattern</lhs>
 			  <rhs>
-			    "<code>_</code>"
+			    <code>_</code>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.pattern.constant">
-			  <lhs>ValuePattern</lhs>
+			<production xml:id="ebnf.pattern.literal">
+			  <lhs>LiteralPattern</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.value">Value</nonterminal>
+			    <nonterminal def="#ebnf.literal">Literal</nonterminal>
 			  </rhs>
 			</production>
 			
@@ -236,759 +314,207 @@
 			<production xml:id="ebnf.pattern.tuple">
 			  <lhs>TuplePattern</lhs>
 			  <rhs>
-			    "<code>(</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal>  "<code>,</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> } "<code>)</code>"
+			    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 			  </rhs>
+			  <constraint linkend="tuplesize"/>
 			</production>
 			
 			<production xml:id="ebnf.pattern.list">
 			  <lhs>ListPattern</lhs>
 			  <rhs>
-			    "<code>[</code>" [ <nonterminal def="#ebnf.pattern">Pattern</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> } ] "<code>]</code>"
+			    <code>[</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>]</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.record">
 			  <lhs>RecordPattern</lhs>
 			  <rhs>
-			    "<code>{.</code>" [ <nonterminal def="#ebnf.identifier">Identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.identifier">Identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> } ] "<code>.}</code>"
+			    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal>  <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>.}</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.cons">
 			  <lhs>ConsPattern</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code>:</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal>
+			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>:</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.call">
 			  <lhs>CallPattern</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.variable">Variable</nonterminal> "<code>(</code>" [ <nonterminal def="#ebnf.pattern">Pattern</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.pattern">Pattern</nonterminal> } ] "<code>)</code>"
+			    <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.as">
 			  <lhs>AsPattern</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code>as</code>" <nonterminal def="#ebnf.variable">Variable</nonterminal>
+			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>as</code> <nonterminal def="#ebnf.variable">Variable</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.pattern.typed">
 			  <lhs>TypedPattern</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> "<code>::</code>" <nonterminal def="#ebnf.type">Type</nonterminal>
+			    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 			  </rhs>
 			</production>
-			
 			
 			<production xml:id="ebnf.type">
 			  <lhs>Type</lhs>
 			  <rhs>
-			    "<code>Boolean</code>" | "<code>Integer</code>" | "<code>Number</code>" | "<code>String</code>" | "<code>Signal</code>"
-	<sbr/>| "<code>Top</code>" | "<code>Bot</code>"
-	<sbr/>| <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.type.tuple">TupleType</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.type.record">RecordType</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.type.function">FunctionType</nonterminal>
-	<sbr/>| <nonterminal def="#ebnf.type.application">TypeApplication</nonterminal>
-	<sbr/>| "<code>(</code>" <nonterminal def="#ebnf.type">Type</nonterminal> "<code>)</code>"
+			    <nonterminal def="#ebnf.primitivetype">PrimitiveType</nonterminal>	
+	        <sbr/>&#x2759; <code>Top</code>
+					<sbr/>&#x2759; <code>Bot</code>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.type.tuple">TupleType</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.type.record">RecordType</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.type.function">FunctionType</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.type.application">TypeApplication</nonterminal>
+					<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
 			  </rhs>
 			</production>
 						
 			<production xml:id="ebnf.type.tuple">
 			  <lhs>TupleType</lhs>
 			  <rhs>
-			    "<code>(</code>" <nonterminal def="#ebnf.type">Type</nonterminal>  "<code>,</code>" <nonterminal def="#ebnf.type">Type</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.type">Type</nonterminal> } "<code>)</code>"
+			    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
 			  </rhs>
+			  <constraint linkend="tuplesize"/>
 			</production>
 						
 			<production xml:id="ebnf.type.record">
 			  <lhs>RecordType</lhs>
 			  <rhs>
-			    "<code>{.</code>" [ <nonterminal def="#ref.syntax.lexical.body.tokens.identifier">identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.type">type</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.identifier">Identifier</nonterminal> "<code>=</code>" <nonterminal def="#ebnf.type">Type</nonterminal> } ] "<code>.}</code>"
+			    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>.}</code>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.type.function">
 			  <lhs>FunctionType</lhs>
 			  <rhs>
-			    "<code>lambda</code>" <nonterminal def="#ebnf.functiontypeheader">FunctionTypeHeader</nonterminal> "<code>::</code>" <nonterminal def="#ebnf.type">Type</nonterminal>
+			    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.type.application">
 			  <lhs>TypeApplication</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.type">Type</nonterminal> "<code>[</code>" [ <nonterminal def="#ebnf.type">Type</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.type">Type</nonterminal> } ] "<code>]</code>"
+			    <nonterminal def="#ebnf.type">Type</nonterminal> <nonterminal def="#ebnf.typearguments">TypeArguments</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.primitivetype">
+			  <lhs>PrimitiveType</lhs>
+			  <rhs>
+					<code>Signal</code>
+					<sbr/>&#x2759; <code>Boolean</code>
+					<sbr/>&#x2759; <code>Integer</code>
+					<sbr/>&#x2759; <code>Number</code>
+					<sbr/>&#x2759; <code>String</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal">
+			  <lhs>Literal</lhs>
+			  <rhs>
+					<code>signal</code>
+					<sbr/>&#x2759; <code>true</code>
+					<sbr/>&#x2759; <code>false</code>
+					<sbr/>&#x2759; <link linkend="ref.data.numeric.literals">Number</link>
+					<sbr/>&#x2759; <link linkend="ref.data.string.literals">String</link>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.variable">
 			  <lhs>Variable</lhs>
 			  <rhs>
-			    <nonterminal def="#ref.syntax.lexical.body.tokens.identifier">identifier</nonterminal>
+			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.typevariable">
 			  <lhs>TypeVariable</lhs>
 			  <rhs>
-			    <nonterminal def="#ref.syntax.lexical.body.tokens.identifier">identifier</nonterminal>
+			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.sequence.variable">
-			  <lhs>VariableSequence</lhs>
+			<production xml:id="ebnf.key">
+			  <lhs>Key</lhs>
 			  <rhs>
-			    "<code>(</code>" [ <nonterminal def="#ebnf.variable">Variable</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.variable">Variable</nonterminal> } ] "<code>)</code>"
+			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.sequence.typevariable">
-			  <lhs>TypeVariableSequence</lhs>
+			<production xml:id="ebnf.classname">
+			  <lhs>ClassName</lhs>
 			  <rhs>
-			    "<code>(</code>" [ <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.variable">TypeVariable</nonterminal> } ] "<code>)</code>"
+			    <link linkend="ref.data.string.literals">String</link>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.sequence.expression">
-			  <lhs>ExpressionSequence</lhs>
+			<production xml:id="ebnf.filename">
+			  <lhs>FileName</lhs>
 			  <rhs>
-			    "<code>(</code>" [ <nonterminal def="#ebnf.expression">Expression</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.expression">Expression</nonterminal> } ] "<code>)</code>"
+			    <link linkend="ref.data.string.literals">String</link>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.sequence.type">
-			  <lhs>TypeSequence</lhs>
+			<production xml:id="ebnf.parameters">
+			  <lhs>Parameters</lhs>
 			  <rhs>
-			    "<code>[</code>" [ <nonterminal def="#ebnf.type">Type</nonterminal> { "<code>,</code>" <nonterminal def="#ebnf.type">Type</nonterminal> } ] "<code>]</code>"
+			    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.typeparameters">
+			  <lhs>TypeParameters</lhs>
+			  <rhs>
+			    <code>[</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>]</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.argumenttypes">
+			  <lhs>ArgumentTypes</lhs>
+			  <rhs>
+			    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.returntype">
+			  <lhs>ReturnType</lhs>
+			  <rhs>
+			    <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.arguments">
+			  <lhs>Arguments</lhs>
+			  <rhs>
+			    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.typearguments">
+			  <lhs>TypeArguments</lhs>
+			  <rhs>
+			    <code>[</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>]</code>
 			  </rhs>
 			</production>
 			
 			</productionset>
+			
+			<constraintdef xml:id="tuplesize">
+			<title>Tuple Size &#x2265; 2</title>
+			<para>A tuple must contain at least two elements. No 0-tuples or 1-tuples are permitted.</para>
+			</constraintdef>
+			
 			</para>
 			
 			
 			
-			<para>
-<table xml:id="full-ebnf-grammar" frame="none" rowsep="0" colsep="0">
-<title>Complete Syntax of Orc</title> 
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="100%" ?>
-<!--  <?dbfo keep-together="always" ?>  -->
-<tgroup cols="5" >
-<colspec colnum="1" colwidth="1*" align="right"/>
-<colspec colnum="2" colwidth="1*" align="center"/>
-<colspec colnum="3" colwidth="10*" align="left"/>
-<colspec colnum="4" colwidth="5*" align="left"/>
-<colspec colnum="5" colwidth="7*" align="left"/>
-<tbody>
-
-<row>
-<entry>E</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Expression</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry>C</entry>
-
-<entry></entry>
-<entry><emphasis>constant value</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>X</entry>
-
-<entry></entry>
-<entry><emphasis>variable</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>stop</code></entry>
-
-<entry></entry>
-<entry><emphasis><link linkend="ref.concepts.silent">silent</link> expression</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>tuple</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>[</code> E <code>,</code> ... <code>,</code> E <code>]</code></entry>
-
-<entry></entry>
-<entry><emphasis>list</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>{.</code> X <code>=</code> E <code>,</code> ... <code>,</code> X <code>=</code> E <code>.}</code></entry>
-
-<entry></entry>
-<entry><emphasis>record</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E G+</entry>
-
-<entry></entry>
-<entry><emphasis>call</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><emphasis>op</emphasis> E</entry>
-
-<entry></entry>
-<entry><emphasis>prefix operator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E <emphasis>op</emphasis> E</entry>
-
-<entry></entry>
-<entry><emphasis>infix operator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
-
-<entry></entry>
-<entry><emphasis>sequential combinator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E <code>|</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>parallel combinator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
-
-<entry></entry>
-<entry><emphasis>pruning combinator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E <code>;</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>otherwise combinator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>lambda (</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>closure (untyped)</emphasis></entry>
-
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>lambda</code><code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code><code>::</code> T <code>=</code> E </entry>
-
-<entry></entry>
-<entry><emphasis>closure (typed)</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
-
-<entry></entry>
-<entry><emphasis>conditional</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>D E</entry>
-
-<entry></entry>
-<entry><emphasis>scoped declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E <code>::</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>type ascription</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>E <code>:!:</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>type assertion</emphasis></entry>
-</row>
-
-<row>
-<entry>G</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Argument group</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
-
-<entry></entry>
-<entry><emphasis>arguments</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry> <code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
-
-<entry></entry>
-<entry><emphasis>type parameters plus arguments</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry> <code>.</code><emphasis>field</emphasis> </entry>
-
-<entry></entry>
-<entry><emphasis>field access</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry> <code>?</code> </entry>
-
-<entry></entry>
-<entry><emphasis>dereference</emphasis></entry>
-</row>
-
-
-<row>
-<entry>C</entry>
-<entry>::=</entry>
-
-<entry><emphasis>Boolean</emphasis> &#10073; <emphasis>Number</emphasis> &#10073; <emphasis>String</emphasis> &#10073; <code>signal</code> &#10073; <code>null</code></entry>
-
-<entry><emphasis>Constant</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>X</entry>
-<entry>::=</entry>
-
-<entry><emphasis>identifier</emphasis></entry>
-
-<entry><emphasis>Variable</emphasis></entry>
-<entry></entry>
-</row>
-
-
-<row>
-<entry>D</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Declaration</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry><code>val</code> P <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>value declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>site</code> X <code>=</code> <emphasis>address</emphasis></entry>
-
-<entry></entry>
-<entry><emphasis>site declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>class</code> X <code>=</code> <emphasis>classname</emphasis></entry>
-
-<entry></entry>
-<entry><emphasis>class declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>include</code> <code>"</code> <emphasis>filename</emphasis> <code>"</code></entry>
-
-<entry></entry>
-<entry><emphasis>inclusion</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>def</code> X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code>+ <code>::</code> T <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>function declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>def</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code>+ <code>::</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>function signature</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>type</code> X <code>=</code> <emphasis>classname</emphasis></entry>
-
-<entry></entry>
-<entry><emphasis>type import</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>type alias</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>type</code> X <code>=</code> UC &#10073; ... &#10073; UC </entry>
-
-<entry></entry>
-<entry><emphasis>datatype declaration (untyped)</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>type</code> X<code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>=</code> TC | ... | TC </entry>
-
-<entry></entry>
-<entry><emphasis>datatype declaration (typed)</emphasis></entry>
-</row>
-
-
-<row>
-<entry>UC</entry>
-<entry>::=</entry>
-
-<entry> X<code>(_,</code> ... <code>,_)</code> </entry>
-
-<entry><emphasis>Constructor (untyped)</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>TC</entry>
-<entry>::=</entry>
-
-<entry> X<code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code>  </entry>
-
-<entry><emphasis>Constructor (typed)</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>P</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Pattern</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry>X</entry>
-
-<entry></entry>
-<entry><emphasis>variable</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>C</entry>
-
-<entry></entry>
-<entry><emphasis>constant</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>_</code></entry>
-
-<entry></entry>
-<entry><emphasis>wildcard</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>X <code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>datatype pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>tuple pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>[</code> P <code>,</code> ... <code>,</code> P <code>]</code></entry>
-
-<entry></entry>
-<entry><emphasis>list pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>P <code>:</code> P</entry>
-
-<entry></entry>
-<entry><emphasis>cons pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>{.</code> X <code>=</code> P <code>,</code> ... <code>,</code> X <code>=</code> P <code>.}</code></entry>
-
-<entry></entry>
-<entry><emphasis>record pattern</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>P <code>as</code> X</entry>
-
-<entry></entry>
-<entry><emphasis>as pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>P <code>::</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>type ascription</emphasis></entry>
-</row>
-
-
-<row>
-<entry>T</entry>
-<entry>::=</entry>
-
-<entry>  </entry>
-
-<entry><emphasis>Type</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry>X</entry>
-
-<entry></entry>
-<entry><emphasis>Type variable</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>Integer</code> &#10073; <code>Boolean</code> &#10073; <code>String</code> &#10073; <code>Number</code> &#10073; <code>Signal</code> &#10073; <code>Top</code> &#10073; <code>Bot</code></entry>
-
-<entry></entry>
-<entry><emphasis>Ground type</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>Tuple type</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>{.</code> X <code>::</code> T <code>,</code> ... <code>,</code> X <code>::</code> T <code>.}</code></entry>
-
-<entry></entry>
-<entry><emphasis>Record type</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry><code>lambda</code> <code>[</code> X <code>,</code> ... <code>,</code> X <code>]</code> <code>(</code> T <code>,</code> ... <code>,</code> T <code>)</code> <code>::</code> T</entry>
-
-<entry></entry>
-<entry><emphasis>Function type</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>&#10073;</entry>
-
-<entry>X<code>[</code> T <code>,</code> ... <code>,</code> T <code>]</code></entry>
-
-<entry></entry>
-<entry><emphasis>Type application</emphasis></entry>
-</row>
-
-
-</tbody>
-</tgroup>
-</table>
-</para>
 		</section>
 		
 		<section xml:id="ref.syntax.EBNF.links">
@@ -1021,7 +547,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="orc">Orchestrating Services</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="style.conventions">Syntactic and Stylistic Conventions</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
