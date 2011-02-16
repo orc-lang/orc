@@ -6,7 +6,7 @@ Now, we turn our attention to how the language is used in practice, with guideli
 methodology, including a number of common concurrency patterns.
 </para>
 
-<section><title>Syntactic and Stylistic Conventions</title>
+<section id="style.conventions"><title>Syntactic and Stylistic Conventions</title>
 
 <para>
 In this section we suggest some syntactic conventions for writing Orc programs. None of these 
