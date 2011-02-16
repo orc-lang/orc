@@ -12,7 +12,7 @@
 
 <!-- Include -->
 	<section xml:id="ref.declarations.include">
-		<title>Include</title>
+		<title><code>include</code> &#8212; Include Orc File</title>
 		<section xml:id="ref.declarations.include.body">
 			<para>
 It is often convenient to group related declarations into units that can be

@@ -10,9 +10,9 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Site -->
+<!-- Class from Java -->
 <section xml:id="ref.declarations.class">
-	<title>Class</title>
+	<title><code>class</code> &#8212; Import Java Class</title>
 
 	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassImport</replaceable> ::= <code>class </code><replaceable>Identifier</replaceable><code> = </code><replaceable>ClassName</replaceable></para>
 	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassName</replaceable> ::= <replaceable>StringLiteral</replaceable> | <replaceable>QualifiedIdentifier</replaceable></para>

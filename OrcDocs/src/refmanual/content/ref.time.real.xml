@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.time.rtimer.xml - DocBook source for an Orc reference manual section
+<!-- ref.time.real.xml - DocBook source for an Orc reference manual section
 
      $Id$
 
@@ -11,9 +11,9 @@
   -->
 
 <!-- Rtimer -->
-   <section xml:id="ref.time.rtimer">
-      <title>Rtimer</title>
-	  <section xml:id="ref.time.rtimer.behavior">
+   <section xml:id="ref.time.real">
+      <title>Real Time</title>
+	  <section xml:id="ref.time.real.behavior">
 		  <title>Behavior</title>
 <para>
 The site <code>Rtimer</code> is a relative timer. It takes as an argument
@@ -21,10 +21,10 @@ a number of milliseconds to wait. It waits for exactly that amount of time,
 and then responds with a signal.
 </para>
 	  </section>
-	  <section xml:id="ref.time.rtimer.examples">
+	  <section xml:id="ref.time.real.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.time.rtimer.examples.simple"><title>Simple example of using Rtimer</title>
+		  <example xml:id="ref.time.real.examples.simple"><title>Simple example of using Rtimer</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Print "red", wait for 3 seconds (3000 ms), and then print "green" -}
 
@@ -38,7 +38,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.time.rtimer.examples.two"><title>Timeout</title>
+		  <example xml:id="ref.time.real.examples.timeout"><title>Timeout</title>
 <programlisting language="orc"><![CDATA[
 {- Publish the result of a Google search.
    If it takes more than 5 seconds, time out.
@@ -54,7 +54,7 @@ NONRUNNABLE
 		  </example>
 
 	  </section>
-	  <section xml:id="ref.time.rtimer.links">
+	  <section xml:id="ref.time.real.links">
 		  <title>Related Links</title>
 		  
 		  <informaltable frame="none">

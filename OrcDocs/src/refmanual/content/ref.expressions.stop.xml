@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.expressions.stop.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.expressions.stop.xml 2445 2011-02-15 09:44:04Z bmccord09@gmail.com $
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Lambda -->
+	<section xml:id="ref.expressions.stop">
+		<title><code>stop</code></title>
+		<section xml:id="ref.expressions.stop.body">
+			<para>
+			Content about <code>stop</code>.
+			</para>
+		</section>
+		
+		<section xml:id="ref.expressions.stop.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.expressions.lambda.examples.one"><title>TODO</title>
+<programlisting language="orc-demo"><![CDATA[
+--TODO
+]]></programlisting>
+		  </example>
+	  </section>
+		
+		<section xml:id="ref.expressions.stop.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem>TODO</listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+          				<listitem>TODO</listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+
+	  </section>
+	</section>

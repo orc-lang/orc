@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.time.logical.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.time.logical.xml 2445 2011-02-15 09:44:04Z bmccord09@gmail.com $
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Logical Time -->
+   <section xml:id="ref.time.logical">
+      <title>Logical Time</title>
+	  <section xml:id="ref.time.logical.behavior">
+		  <title>Behavior</title>
+<para>
+Content about logical time
+</para>
+	  </section>
+	  <section xml:id="ref.time.logical.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.time.logical.examples.one"><title>TODO</title>
+<programlisting language="orc-demo"><![CDATA[
+--TODO
+]]></programlisting>
+		  </example>
+	  </section>
+	  
+	  <section xml:id="ref.time.logical.links">
+		  <title>Related Links</title>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="center">Related Reference Topics</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	          			<listitem><link linkend="ref.declarations.site">Sites</link></listitem>
+	        		</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+		  <informaltable frame="none">
+	  		<tgroup cols="1" align="left">
+	    	<thead>
+	      		<row>
+	        		<entry align="left">Related Tutorial Sections</entry>
+	        	</row>
+	    	</thead>
+	    	<tbody valign="top">
+	     		<row>
+	        		<entry><itemizedlist>
+	        			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.time">Time</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.timeout">Timeout</olink></para></listitem>
+        			</itemizedlist></entry>
+	        	</row>
+	    	</tbody>
+	  		</tgroup>
+		  </informaltable>
+		  
+	  </section>
+   </section>

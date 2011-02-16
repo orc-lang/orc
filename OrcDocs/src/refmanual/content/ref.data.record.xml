@@ -11,7 +11,7 @@
   -->
 
 <section xml:id="ref.data.record">
-<title>Record Values</title>
+<title>Records</title>
 
 <para><emphasis role="strong">Type</emphasis>: <code>{. x1 :: T1, x2 :: T2, ... .}</code></para>
 

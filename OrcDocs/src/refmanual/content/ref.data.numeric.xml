@@ -11,7 +11,7 @@
   -->
 
 <section xml:id="ref.data.numeric">
-<title>Numeric Values: Integer and Floating-Point Values</title>
+<title>Numerics</title>
 
 <para><emphasis role="strong">Type</emphasis>: <code>Integer</code></para>
 <para><emphasis role="strong">Type</emphasis>: <code>Number</code></para>

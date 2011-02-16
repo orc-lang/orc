@@ -11,7 +11,7 @@
   -->
 
 <section xml:id="ref.data.list">
-<title>List Values</title>
+<title>Lists</title>
 
 <para><emphasis role="strong">Type</emphasis>: <code>List[T]</code></para>
 
