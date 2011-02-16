@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.time.logical.xml - DocBook source for an Orc reference manual section
+<!-- ref.time.virtual.xml - DocBook source for an Orc reference manual section
 
-     $Id: ref.time.logical.xml 2445 2011-02-15 09:44:04Z bmccord09@gmail.com $
+     $Id: ref.time.virtual.xml 2445 2011-02-15 09:44:04Z bmccord09@gmail.com $
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -11,25 +11,25 @@
   -->
 
 <!-- Logical Time -->
-   <section xml:id="ref.time.logical">
-      <title>Logical Time</title>
-	  <section xml:id="ref.time.logical.behavior">
+   <section xml:id="ref.time.virtual">
+      <title>Virtual Time</title>
+	  <section xml:id="ref.time.virtual.behavior">
 		  <title>Behavior</title>
 <para>
 Content about logical time
 </para>
 	  </section>
-	  <section xml:id="ref.time.logical.examples">
+	  <section xml:id="ref.time.virtual.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.time.logical.examples.one"><title>TODO</title>
+		  <example xml:id="ref.time.virtual.examples.one"><title>TODO</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 ]]></programlisting>
 		  </example>
 	  </section>
 	  
-	  <section xml:id="ref.time.logical.links">
+	  <section xml:id="ref.time.virtual.links">
 		  <title>Related Links</title>
 		  
 		  <informaltable frame="none">
