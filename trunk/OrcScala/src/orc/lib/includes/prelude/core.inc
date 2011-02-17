@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -20,7 +20,7 @@ followed by the operands.  When the site name is surrounded in parentheses, as
 in <code>(+)</code>, it denotes an infix operator.
 
 For a more complete description of the built-in operators and their syntax, see
-the <olink targetdoc="root" targetptr="language.base.operators">Operators</olink> section of the
+the <olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink> section of the
 User Guide.
 --}
 
@@ -60,7 +60,7 @@ site Let = "orc.lib.builtin.Let"
    <siteprop propname="pure"/>
 </sitepropset>
 
-Fail silently if the argument is false. Otherwise return a signal.
+Fail <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -82,7 +82,7 @@ site Ift = "orc.lib.builtin.If"
    <siteprop propname="pure"/>
 </sitepropset>
 
-Fail silently if the argument is true. Otherwise return a signal.
+Fail <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -112,7 +112,7 @@ site IfFalse = "orc.lib.builtin.Unless"
    <siteprop propname="nonblocking"/>
 </sitepropset>
 
-Halt with the given error message.
+<link linkend="ref.concepts.halt">halt</link> with the given error message.
 
 Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
@@ -164,7 +164,7 @@ site (**) = "orc.lib.math.Exponent"
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division. If <code>b=0</code>, <code>a/b</code> halts with an error.
+division. If <code>b=0</code>, <code>a/b</code> <link linkend="ref.concepts.halt">halts</link> with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -215,8 +215,8 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Cor <olink targetdoc="root" targetptr="cor.constants">constant values</olink> and
-<olink targetdoc="root" targetptr="cor.data">data structures</olink> are considered equal if their
+In addition, Cor <olink targetdoc="userguide" targetptr="cor.constants">constant values</olink> and
+<olink targetdoc="userguide" targetptr="cor.data">data structures</olink> are considered equal if their
 contents are equal. Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
@@ -241,7 +241,7 @@ site (~) = "orc.lib.bool.Not"
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
 Return the logical conjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 --}
 site (&&) = "orc.lib.bool.And"
@@ -249,7 +249,7 @@ site (&&) = "orc.lib.bool.And"
 {--
 @site (||)(Boolean, Boolean) :: Boolean
 Return the logical disjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 --}
 site (||) = "orc.lib.bool.Or"

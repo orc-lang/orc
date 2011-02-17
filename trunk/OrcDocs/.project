@@ -3,6 +3,8 @@
 	<name>OrcDocs</name>
 	<comment></comment>
 	<projects>
+		<project>OrcDocgen</project>
+		<project>OrcScala</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -84,7 +84,7 @@ site Println = "orc.lib.str.Println"
 Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
 the argument does not conform to Orc literal syntax,
-halt with an error.
+<link linkend="ref.concepts.halt">halt</link> with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[

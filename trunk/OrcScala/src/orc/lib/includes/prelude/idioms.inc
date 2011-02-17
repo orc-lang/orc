@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -276,8 +276,8 @@ def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 
 {--
 @def por(List[lambda () :: Boolean]) :: Boolean
-Parallel or. Evaluate a list of boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
+Parallel or. Execute a list of boolean functions in parallel, publishing
+a value as soon as possible, and <link linkend="ref.concepts.kill">killing</link> any unnecessary ongoing
 computation.
 
 @implementation
@@ -293,8 +293,8 @@ def por(p:ps) =
   
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
-Parallel and. Evaluate a list of boolean functions in parallel, publishing
-a value as soon as possible, and terminating any unnecessary ongoing
+Parallel and. Execute a list of boolean functions in parallel, publishing
+a value as soon as possible, and <link linkend="ref.concepts.kill">killing</link> any unnecessary ongoing
 computation.
 
 @implementation
@@ -311,7 +311,7 @@ def pand(p:ps) =
 {--
 @def collect[A](lambda () :: A) :: List[A]
 Run a function, collecting all publications in a list.
-Return the list when the function terminates.
+Return the list when the function <link linkend="ref.concepts.halt">halts</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
