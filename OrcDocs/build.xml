@@ -17,6 +17,7 @@
 		Ant build file for the Orc documentation (User Guide and Reference Manual).
 	</description>
 
+	<property file="build.properties"/>
 	<!--
 	  - Configure basic properties that will be used in the file.
 	  -->
@@ -26,6 +27,8 @@
 	<property name="xslthl.config" value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml"/>
 	<property name="xalan.lib.dir" value="lib"/>
 	<property name="database.olink.dir" value="${src.dir}"/>
+	<property name="orc.prelude.dir" value="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
+	<property name="orc.orcdoc-out.dir" value="${basedir}/${src.dir}/refmanual/content/"/>
 
 	<!--
 	  - Sets up the classpath for the Xalan and Xerces implementations
@@ -58,9 +61,39 @@
 	</target>
 
 	<!-- =================================
+		  target: prelude-orcdoc-depends
+		 ================================= -->
+	<target name="prelude-orcdoc-depends" depends="" description="Checks if prelude-orcdoc files are up-to-date">
+		<uptodate property="prelude-orcdoc-uptodate">
+			<srcfiles dir="${orc.prelude.dir}" includes="*.inc"/>
+			<mapper>
+				<chainedmapper>
+					<flattenmapper/>
+					<globmapper from="*.inc" to="${orc.orcdoc-out.dir}/ref.stdlib.*.xml" handledirsep="yes"/>
+				</chainedmapper>
+			</mapper>
+		</uptodate>
+	</target>
+
+	<!-- =================================
+		  target: prelude-orcdoc
+		 ================================= -->
+	<target name="prelude-orcdoc" depends="prelude-orcdoc-depends,mkdirs" unless="prelude-orcdoc-uptodate" description="Generates Reference Manual stdlib appendix from Orc prelude">
+	    <echo message="Generating Standard Library chapter from prelude OrcDoc..." level="info"/>
+		<java classname="docgen.Main" failonerror="true">
+			<arg value="${orc.prelude.dir}"/>
+			<arg value="${orc.orcdoc-out.dir}"/>
+			<classpath>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
+				<pathelement location="${orc.location.OrcDocgen}/build"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!-- =================================
 		  target: depends
 		 ================================= -->
-	<target name="depends" depends="" description="Remove out-of-date targets">
+	<target name="depends" depends="prelude-orcdoc" description="Remove out-of-date targets">
 		<!-- User Guide: -->
 		<!-- Remove all targets build form combined userguide source files if any file changes -->
 		<dependset>
@@ -85,7 +118,7 @@
 		  target: targetdb
 		 ================================= -->
 	<target name="targetdb" depends="mkdirs,depends" description="Build olink target databases for mutual linking among documents">
-		<echo message="Creating olink databases..."/>
+		<echo message="Creating olink databases..." level="info"/>
 		<macrodef name="docbooktargetdb">
 			<attribute name="srcdir"/>
 			<attribute name="destdir"/>
@@ -393,7 +426,7 @@
 	  - target:  test
 	  -->
 	<target name="test" depends="clean,rm-html-chunk,ug-html-single" description="Test build for modifications.">
-		<echo message="Test build complete"/>
+		<echo message="Test build complete" level="info"/>
 	</target>
 
 </project>

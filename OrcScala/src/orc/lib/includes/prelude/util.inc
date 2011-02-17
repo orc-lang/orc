@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -23,7 +23,7 @@ chosen from the range of all possible 32-bit Integer values.
 @site Random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, halt.
+If the argument is 0, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
 site Random = "orc.lib.util.Random"
 
@@ -48,7 +48,7 @@ site UUID = "orc.lib.util.UUID"
 </sitepropset>
 
 Prompt the user for some input. The user may cancel the prompt,
-in which case the site fails silently. Otherwise their response
+in which case the site fails <link linkend="ref.concepts.silent">silently</link>. Otherwise their response
 is returned as soon as it is received.
 
 Example:
@@ -142,7 +142,7 @@ def fillArray(a, f) =
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
-halts.
+<link linkend="ref.concepts.halt">halts</link>.
 
 @implementation
 --}

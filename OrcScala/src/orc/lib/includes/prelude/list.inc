@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -284,7 +284,7 @@ def length(h:t) = 1 + length(t)
 Given a number <code>n</code> and a list <code>l</code>,
 return the first <code>n</code> elements of <code>l</code>.
 If <code>n</code> exceeds the length of <code>l</code>,
-or <code>n &lt; 0</code>, take halts with an error.
+or <code>n &lt; 0</code>, take <link linkend="ref.concepts.halt">halts</link> with an error.
 
 @implementation
 --}
@@ -299,7 +299,7 @@ def take(n, x:xs) =
 Given a number <code>n</code> and a list <code>l</code>,
 return the elements of <code>l</code> after the first <code>n</code>.
 If <code>n</code> exceeds the length of <code>l</code>,
-or <code>n &lt; 0</code>, drop halts with an error.
+or <code>n &lt; 0</code>, drop <link linkend="ref.concepts.halt">halts</link> with an error.
 
 @implementation
 --}
@@ -506,8 +506,8 @@ def range(low, high) = rangeBy(low, high, 1)
 @def any[A](lambda (A) :: Boolean, List[A]) :: Boolean
 Return true if any of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
-is returned as soon as it is known and any unnecessary evaluation of the predicate
-terminated.
+is returned as soon as it is known and any unnecessary execution of the predicate
+<link linkend="ref.concepts.kill">killed</link>.
 
 @implementation
 --}
@@ -524,8 +524,8 @@ def any(p, x:xs) =
 @def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
 Return true if all of the elements of the list match the predicate, and false otherwise.
 The predicate is applied to all elements of the list in parellel; the result
-is returned as soon as it is known and any unnecessary evaluation of the predicate
-terminated.
+is returned as soon as it is known and any unnecessary execution of the predicate
+<link linkend="ref.concepts.kill">killed</link>.
 
 @implementation
 --}
