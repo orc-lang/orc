@@ -11,16 +11,17 @@
   -->
 
 <!-- Operators -->
-	<section xml:id="ref.expressions.operators">
-		<title>Operators (MERGE ME PLEASE)</title>
-		<section xml:id="ref.expressions.operators.body">
-			<para>
-				Orc has a standard set of arithmetic, logical, and comparison operators.
-				As in most other programming languages, they are written in the usual 
-				infix style. They have Java-like operator precedence, which can be
-				overridden by adding parentheses.  
-			</para>
-			<para>
+<section xml:id="ref.expressions.operators">
+	<title>Operators (MERGE ME PLEASE)</title>
+
+<para>
+Orc has a standard set of arithmetic, logical, and comparison operators.
+As in most other programming languages, they are written in the usual 
+infix style. They have Java-like operator precedence, which can be
+overridden by adding parentheses.  
+</para>
+
+<para>
 Here is the full set of operators that Orc supports:
 
 <table xml:id="ref.ops.table" frame="none" rowsep="0" colsep="0"> 
@@ -76,7 +77,6 @@ Here is the full set of operators that Orc supports:
 <entry namest="string-names" nameend="string-ops"/>
 
 </row>
-
 
 <row>
 <entry><code><![CDATA[*]]></code></entry>
@@ -148,43 +148,253 @@ be promoted, and a decimal operation will be performed. For example, <code>5 / 2
 division and return <code>2.5</code>.
 </para>
 
-		</section>
-		<section xml:id="ref.expressions.operators.links">
-		  <title>Related Links</title>
+<para>
+The following operators are defined in Orc:
+<variablelist><title>Prefix operators</title>
+  <varlistentry>
+    <term><code>-</code></term>
+    <listitem>
+      <para>Arithmetic negation</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>~</code></term>
+    <listitem>
+      <para>Logical negation</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+</para>
+
+<para>
+The following postfix operators are defined in Orc:
+<variablelist><title>Postfix operators</title>
+  <varlistentry>
+    <term><code>?</code></term>
+    <listitem>
+      <para>Dereference</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+</para>
+
+<para>
+The following infix operators are defined in Orc:
+<variablelist><title>Infix operators</title>
+  <varlistentry>
+    <term><code>**</code></term>
+    <listitem>
+      <para>Exponentiation</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>*</code></term>
+    <listitem>
+      <para>Multiplication</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>/</code></term>
+    <listitem>
+      <para>Division</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>%</code></term>
+    <listitem>
+      <para>Modulus</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>+</code></term>
+    <listitem>
+      <para>Addition</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>-</code></term>
+    <listitem>
+      <para>Subtraction</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>:</code></term>
+    <listitem>
+      <para>List construction</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>&lt;:</code></term>
+    <listitem>
+      <para>Less than</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>:&gt;</code></term>
+    <listitem>
+      <para>Greater than</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>&lt;=</code></term>
+    <listitem>
+      <para>Less than or equal to</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>=&gt;</code></term>
+    <listitem>
+      <para>Greater than or equal to</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>=</code></term>
+    <listitem>
+      <para>Equal to</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>/=</code></term>
+    <listitem>
+      <para>Not equal to</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>||</code></term>
+    <listitem>
+      <para>Logical or</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>&#38;&#38;</code></term>
+    <listitem>
+      <para>Logical and</para>
+    </listitem>
+  </varlistentry>
+  <varlistentry>
+    <term><code>:=</code></term>
+    <listitem>
+      <para>Assignment</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+</para>
+
+<para>
+Operators are parsed using the following precedence levels.
+Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is executed.
+For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
+</para>
+
+<para>
+Operators in Orc are syntatic sugar for site calls.
+For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
+Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
+</para>
+
+<para>
+The operators' syntax is fixed by the Orc grammar; however, the site
+called is defined by the library and can be changed by a <code>def</code>
+or <code>site</code> declaration.
+Orc permits a special identifier form for operators: the operator name
+surrounded by parenthesis, as in <code>(+)</code>.
+To disambiguate the unary prefix operator <code>-</code> from the
+binary infix operator <code>-</code>, Orc translates the
+unary prefix operator as <code>(0-)</code>.
+</para>
+
+<section xml:id="ref.expressions.operators.examples">
+<title>Examples</title>
+
+<example xml:id="ref.expressions.operators.examples.precedence">
+<title>Operator precedence</title>
+<programlisting language="orc-demo"><![CDATA[
+  1 + 2 * 3
+  
+{-
+OUTPUT:
+7
+-} 
+]]></programlisting>
+</example>
+
+<example xml:id="ref.expressions.operators.examples.pubonce">
+<title>Operators publish once</title>
+<programlisting language="orc-demo"><![CDATA[
+  1 + (2 | 3)
+
+{-
+OUTPUT:
+3
+
+OUTPUT:
+4
+-}
+]]></programlisting>
+</example>
+
+<!-- 
+<example xml:id="ref.expressions.operators.examples.equiv">
+<title>Operator-site call equivalence</title>
+<programlisting language="orc-demo"><![CDATA[
+  1 + 2 * 3
+| {-Same as-} 
+  (+)(1, (*)(2, 3))
+]]></programlisting>
+</example>
+-->
+
+<example xml:id="ref.expressions.operators.examples.redefine">
+<title>Redefine an operator</title>
+<programlisting><![CDATA[
+{- Redefine the "?" operator -}
+
+def (?)(x) = "To "+x+", or not to "+x+", that is the question."
+"be"?
+
+{-
+OUTPUT:
+"To be, or not to be, that is the question."
+-}
+]]></programlisting>
+</example>
 		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="center">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><link linkend="ref.syntax.lexical">Lexical Specifications</link></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        			<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-	  </section>
-	</section>
+</section>
+
+<section xml:id="ref.expressions.operators.links">
+	<title>Related Links</title>
+
+	<informaltable frame="none">
+		<tgroup cols="1" align="left">
+			<thead>
+				<row>
+					<entry align="left">Related Reference Topics</entry>
+				</row>
+			</thead>
+			<tbody valign="top">
+				<row><entry><itemizedlist>
+					<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
+					<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para>
+				</itemizedlist></entry></row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+
+	<informaltable frame="none">
+		<tgroup cols="1" align="left">
+			<thead>
+				<row>
+					<entry align="left">Related Tutorial Sections</entry>
+				</row>
+			</thead>
+			<tbody valign="top">
+				<row><entry><itemizedlist>
+					<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
+				</itemizedlist></entry></row>
+			</tbody>
+		</tgroup>
+	</informaltable>
+
+</section>
+
+</section>
