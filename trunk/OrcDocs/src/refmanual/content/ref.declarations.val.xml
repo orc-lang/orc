@@ -15,18 +15,90 @@
 		<title><code>val</code> &#8212; Define Value</title>
 		<section xml:id="ref.declarations.val.body">
 			<para>
-				Content about <code>val</code>.
+				UPDATE THIS CONTENT.
+				
+				The declaration <code>val x = G</code>, followed by expression <code>F</code>, is 
+				actually just a different way of writing the expression <code><![CDATA[F <x< G]]></code>.
+				Thus, <code>val</code> shares all of the behavior of the <link linkend="ref.combinators.pruning">pruning</link> combinator.
 			</para>
 		</section>
 		
 		<section xml:id="ref.declarations.val.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.val.examples.one"><title>TODO</title>
+		<example xml:id="ref.expressions.val.examples.bindings"><title>Bindings</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
+{- 
+Bind x to true or false arbitrarily 
+Bind y to 2 or 3
+  Note that in the Orc calculus y will always
+  be bound to 2 since Rtimer(2) always publishes
+  before Rtimer(3) and combinators/publications
+  occur instantaneously.  However, depending
+  on the real world implementation and hardware of
+  distributed executions of Orc it is possible that
+  y may be bound to 3. 
+-}
+
+val x = true | false
+val y = Rtimer(2) >> 2 | Rtimer(3) >> 3
+
+{-
+OUTPUT:
+no output
+-}
 ]]></programlisting>
 		  </example>
+		  
+		  <example xml:id="ref.expressions.val.examples.timeout"><title>Timeout</title>
+<programlisting language="orc"><![CDATA[
+{- Publish the result of a Google search.
+   If it takes more than 5 seconds, time out.
+-}
+
+result 
+  <result< ( Google("impatience") 
+           | Rtimer(5000) >> "Search timed out.")
+
+{-
+NONRUNNABLE
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.expressions.val.examples.die"><title>Roll Die</title>
+<programlisting language="orc"><![CDATA[
+{- Bind an arbitrary integer between 1 and 4, inclusive,
+   to a variable in order to simulate a 4-sided die roll.
+-}
+
+val roll = (1 | 2 | 3 | 4 )
+"You rolled " + roll
+
+{-
+OUTPUT:
+"You rolled 1"
+
+OUTPUT:
+"You rolled 2"
+
+OUTPUT:
+"You rolled 3"
+
+OUTPUT:
+"You rolled 4"
+-}
+]]></programlisting>
+		  </example>
+		  
+		</section>
+		
+		<section xml:id="ref.expressions.val.type">
+	    <title>Type</title>
+			<para>
+				When a declaration occurs as <code>val x = </code> <replaceable>F</replaceable>, the expression in scope for the declaration
+				is typechecked using the assumption x :: T, where T is the type of <replaceable>F</replaceable>.
+			</para>
 		</section>
 		
 		<section xml:id="ref.declarations.val.links">

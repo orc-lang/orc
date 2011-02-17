@@ -35,7 +35,7 @@ expression is <link linkend="ref.concepts.silent">silent</link>.
 </para>
 
 <para>
-Note that conditionals have lower precedence than any of the operators.
+Conditionals have lower precedence than any of the operators.
 For example, <code>if false then 1 else 2 + 3</code> is equivalent to
 <code>if false then 1 else (2 + 3)</code>, not <code>(if false then 1 else 2) + 3</code>.
 </para>
