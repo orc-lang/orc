@@ -69,6 +69,8 @@ val results = (Google("Jack Burton"), Yahoo("Jack Burton"), Bing("Jack Burton"))
 results
 
 {-
+NONRUNNABLE
+-}
 ]]></programlisting>
 		  </example>
 		</section>

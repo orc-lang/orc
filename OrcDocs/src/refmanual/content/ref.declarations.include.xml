@@ -49,7 +49,7 @@ no output
 		<programlisting language="orc"><![CDATA[
 {- This is the same as inserting the contents of fold.inc here -}
 
-include "fold.inc"
+include "http://www.cs.utexas.edu/users/misra/fold.inc"
 
 def sum(L) = foldl(lambda(a,b) = a+b, L, 0)
 

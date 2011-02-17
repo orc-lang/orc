@@ -11,7 +11,6 @@
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/targetdb/ref.combinators.pruning.xml">
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/targetdb/ref.combinators.sequential.xml">
    <!ENTITY targets.ref.combinators SYSTEM "../build/targetdb/ref.combinators.xml">
-   <!ENTITY targets.ref.concepts.conventions SYSTEM "../build/targetdb/ref.concepts.conventions.xml">
    <!ENTITY targets.ref.concepts.deflate SYSTEM "../build/targetdb/ref.concepts.deflate.xml">
    <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/ref.concepts.halt.xml">
    <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/ref.concepts.xml">
@@ -120,9 +119,6 @@
 					  </document>
 					  <document targetdoc="ref.combinators" baseuri="ref.combinators.html">
 					  	&targets.ref.combinators;
-					  </document>
-					  <document targetdoc="ref.concepts.conventions" baseuri="ref.concepts.conventions.html">
-					  	&targets.ref.concepts.conventions;
 					  </document>
 					  <document targetdoc="ref.concepts.deflate" baseuri="ref.concepts.deflate.html">
 					  	&targets.ref.concepts.deflate;

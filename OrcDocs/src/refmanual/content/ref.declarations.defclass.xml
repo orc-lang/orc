@@ -156,7 +156,7 @@ def class Newset(n) =
 			one definition, which could be a function or a class.
 		  </para>
 		  <para>
-		  	A class may be defined as a set of clauses. In that case, each clausal
+		  	A class may be defined by a set of clauses. In that case, each clausal
 			body must include the definitions of the same set of functions and
 			classes.
 		  </para>
@@ -245,7 +245,7 @@ st.add(3) | st.add(5)
 	  <section xml:id="ref.declarations.defclass.semantics.site">
 	  	<title>Class Instance is a Site</title>
 	  	<para>
-	  		Calls to methods of a class instance are treated exactly like external site
+	  		Calls to methods of any class instance are treated exactly like external site
 			calls. Therefore,
 		</para>
 		<itemizedlist>
@@ -264,14 +264,16 @@ v <v< (st.add(3) >> true | Rtimer(1) >> false)
 			publication of <code>st.add(3)</code> is subsequently ignored.
 		</para>
 	  </section>
+	</section>
+	
 	  <section xml:id="ref.declarations.defclass.semantics.examples">
 	  	<title>Longer Examples</title>
 	  	<section>
 	  	<title>Matrix Definition</title>
 	  	<para>
 	  		Orc's standard library supports only one dimensional arrays, and array
-			indices always start at 0. We define a 2-dimensional Matrix whose
-			row and column indices range over an arbitrary interval.
+			indices always start at 0. We define a template for a 2-dimensional matrix whose
+			row and column indices range over arbitrary intervals.
 	  	</para>
 	  	<example xml:id="ref.declarations.defclass.semantics.examples.matrix"><title>Matrix Definition</title>
 <programlisting language="orc-demo"><![CDATA[
@@ -307,7 +309,7 @@ OUTPUT:
 		  <para>
 		  	We create a site, <code>Cell</code>, that defines a write-once variable. It
 			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
-			written, and then it returns its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
+			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
 			publishes a <code>signal</code>.
 		  </para>
@@ -321,7 +323,7 @@ OUTPUT:
 
 def class Cell() =
  val s = Semaphore(1)
- val r = Ref ()
+ val r = Ref()
 
  def write(v) = s.acquire() >> r := v
  def read() = r?
@@ -338,7 +340,7 @@ NONRUNNABLE
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
 		  	The <code>Buffer</code> site implements an unbounded channel. We add a new method,
-			"length", that returns the number of items in the channel. We have to
+			<code>length</code>, that returns the number of items in the channel. We have to
 			assign a name different from "Buffer", "Channel", to this class.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite"><title>Extend Functionality of an Existing Site</title>
@@ -409,7 +411,7 @@ no output
 		  <title>Computing with the Goal Expression</title>
 		  <para>
 		  	All the goal expressions shown so far have been merely <code>stop</code>. In the
-			following example, the goal expression of class metro initiates an
+			following example, the goal expression of the class initiates an
 			unending computation in which <code>tick</code> is printed every second; all the
 			publications of the goal expression are ignored.
 		  </para>
@@ -439,19 +441,20 @@ OUTPUT:
 		  <title>Stopwatch</title>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.stopwatch"><title>Stopwatch</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-A stopwatch allows the following operations:
- start(): (re)starts the stopwatch and publishes a signal
- halt():  stops the stopwatch and publishes its current value
--}
+{- An instance of Stopwatch has the initial stopwatch value 0.
+   
+   The following operations are available:
+     start():  (re)start the stopwatch and publish a signal
+     halt():  stop the stopwatch and publish its current value
+-} 
 
-{-
-Each instance of the stopwatch creates a new clock.
+{- Each instance of Stopwatch creates a new clock.
 
-It also maintains two Ref variables:
-timeshown: clock value when the last halt() was executed,
-laststart: clock value when the last start() was executed.
- Initially, both variable values are 0.
+   It also maintains two Ref variables:
+     laststart: clock value when the last start() was executed.
+     timeshown: stopwatch value when the last halt() was executed.
+
+   Initially, both variable values are 0.
 -}
 
 def class Stopwatch() =
@@ -471,8 +474,7 @@ no-output
 		  </example>
 		  </section>
 	  </section>
-	  </section>
-	  
+	
 	  <section xml:id="ref.declarations.defclass.links">
 		  <title>Related Links</title>
 		  
@@ -513,4 +515,4 @@ no-output
 	  </informaltable>
 	  
 	  </section>
-   </section>
+</section>
