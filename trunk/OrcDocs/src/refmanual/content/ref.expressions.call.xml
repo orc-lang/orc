@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ref.expressions.call.xml - DocBook source for an Orc reference manual section
 
-     $Id: ref.expressions.call.xml 2445 2011-02-15 09:44:04Z bmccord09@gmail.com $
+     $Id$
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -22,7 +22,7 @@
 		<section xml:id="ref.expressions.call.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.lambda.examples.one"><title>TODO</title>
+		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 ]]></programlisting>
