@@ -60,7 +60,7 @@ site Let = "orc.lib.builtin.Let"
    <siteprop propname="pure"/>
 </sitepropset>
 
-Fail <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
+<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -82,7 +82,7 @@ site Ift = "orc.lib.builtin.If"
    <siteprop propname="pure"/>
 </sitepropset>
 
-Fail <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
+<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -90,7 +90,7 @@ Example:
   Iff(false) >> "Always publishes"
 | Iff(true) >> "Never publishes"]]></programlisting>
 
-Note: <code>Iff</code>, <code>IfF</code>, and <code>IfFalse</code>
+Note: <code>Unless</code>, <code>IfF</code>, and <code>IfFalse</code>
 are all aliases for <code>Iff</code>.
 
 --}
@@ -112,7 +112,7 @@ site IfFalse = "orc.lib.builtin.Unless"
    <siteprop propname="nonblocking"/>
 </sitepropset>
 
-<link linkend="ref.concepts.halt">halt</link> with the given error message.
+<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
 
 Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[

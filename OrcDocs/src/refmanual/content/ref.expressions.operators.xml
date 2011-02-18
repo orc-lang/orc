@@ -12,179 +12,121 @@
 
 <!-- Operators -->
 <section xml:id="ref.expressions.operators">
-	<title>Operators (MERGE ME PLEASE)</title>
+	<title>Operators</title>
 
 <para>
-Orc has a standard set of arithmetic, logical, and comparison operators.
-As in most other programming languages, they are written in the usual 
-infix style. They have Java-like operator precedence, which can be
-overridden by adding parentheses.  
+Orc has a standard set of operators, which are written in their conventional infix, prefix, or postfix style.
+Operators in Orc are syntatic sugar for site calls.
+For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
+Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
-Here is the full set of operators that Orc supports:
+The operators' syntax (fixity and precedence) is fixed by the Orc grammar; however, the site
+called is defined by the library and can be changed by a <code>def</code>
+or <code>site</code> declaration.
+Orc permits a special identifier form for operators: the operator name
+surrounded by parenthesis, as in <code>(+)</code>.
+To disambiguate the unary prefix operator <code>-</code> from the
+binary infix operator <code>-</code>, Orc translates the
+unary prefix operator as <code>(0-)</code>.
+</para>
 
-<table xml:id="ref.ops.table" frame="none" rowsep="0" colsep="0"> 
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="95%" ?>
-<?dbfo keep-together="always" ?>
-<title>Operators of Cor</title>
-<tgroup cols="8" >
-<colspec colnum="1" colname="arith-names" colwidth="1*" align="left"/>
-<colspec colnum="2" colname="arith-ops" colwidth="4*" align="left"/>
-<colspec colnum="3" colname="comp-names" colwidth="1*" align="left"/>
-<colspec colnum="4" colname="comp-ops" colwidth="6*" align="left"/>
-<colspec colnum="5" colname="logic-names" colwidth="1*" align="left"/>
-<colspec colnum="6" colname="logic-ops" colwidth="3*" align="left"/>
-<colspec colnum="7" colname="string-names" colwidth="1*" align="left"/>
-<colspec colnum="8" colname="string-ops" colwidth="4*" align="left"/>
+<para>
+Operators are parsed using the following precedence levels.
+Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is executed.
+For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
+</para>
 
-<thead>
-<row>
-<entry namest="arith-names" nameend="arith-ops" align="left">Arithmetic</entry>
-<entry namest="comp-names" nameend="comp-ops" align="left">Comparison</entry>
-<entry namest="logic-names" nameend="logic-ops" align="left">Logical</entry>
-<entry namest="string-names" nameend="string-ops" align="left">String</entry>
-</row>
-</thead>
-<tbody>
+<para>
+TODO: Make prettier
+</para>
 
-<row>
-<entry><code><![CDATA[+]]></code></entry>
-<entry>addition</entry>
-
-<entry><code><![CDATA[=]]></code></entry>
-<entry>equality</entry>
-
-<entry><code><![CDATA[&&]]></code></entry>
-<entry>logical and</entry>
-
-<entry><code><![CDATA[+]]></code></entry>
-<entry>concatenation</entry>
-
-</row>
-
-<row>
-<entry><code><![CDATA[-]]></code></entry>
-<entry>subtraction</entry>
-
-<entry><code><![CDATA[/=]]></code></entry>
-<entry>inequality</entry>
-
-<entry><code><![CDATA[||]]></code></entry>
-<entry>logical or</entry>
-
-<entry namest="string-names" nameend="string-ops"/>
-
-</row>
-
-<row>
-<entry><code><![CDATA[*]]></code></entry>
-<entry>multiplication</entry>
-
-<entry><code><![CDATA[<:]]></code></entry>
-<entry>less than</entry>
-
-<entry><code><![CDATA[~]]></code></entry>
-<entry>logical negation</entry>
-
-<entry namest="string-names" nameend="string-ops"/>
-
-</row>
-
-<row>
-<entry><code><![CDATA[/]]></code></entry>
-<entry>division</entry>
-
-<entry><code><![CDATA[:>]]></code></entry>
-<entry>greater than</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-<row>
-<entry><code><![CDATA[%]]></code></entry>
-<entry>modulus</entry>
-
-<entry><code><![CDATA[<=]]></code></entry>
-<entry>less than or equal</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-<row>
-<entry><code><![CDATA[**]]></code></entry>
-<entry>exponent</entry>
-
-<entry><code><![CDATA[>=]]></code></entry>
-<entry>greater than or equal</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-</tbody>
-</tgroup>
+<table frame="none" rowsep="1" colsep="0">
+	<title>Orc operators, in precedence order</title>
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<thead>
+			<row>
+				<entry>Operator</entry>
+				<entry>Fixity</entry>
+				<entry>Precedence</entry>
+			</row>
+		</thead>
+		<tbody>
+			<row>
+				<entry><code>?</code></entry>
+				<entry>postfix</entry>
+				<entry>Executes first</entry>
+			</row>
+			<row>
+				<entry><code>-</code> and <code>~</code></entry>
+				<entry>prefix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>**</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>*</code> and <code>/</code> and <code>%</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>+</code> and <code>-</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>:</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>=</code> and <code>/=</code> and <code>&lt;:</code> and <code>:&gt;</code> and <code>&lt;=</code> and <code>&gt;=</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>||</code> and <code>&amp;&amp;</code></entry>
+				<entry>infix</entry>
+				<entry/>
+			</row>
+			<row>
+				<entry><code>:=</code></entry>
+				<entry>infix</entry>
+				<entry>Executes last</entry>
+			</row>
+		</tbody>
+	</tgroup>
 </table>
 
-</para>
+
+<section>
+<title>Standard Orc Operators</title>
 
 <para>
-There is also a unary negation operator, written <code>-</code>, for example <code>-(2 ** 5)</code>.
+TODO: Make prettier
 </para>
 
-<para>
-The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> publishes <code>false</code>.
-</para>
+<section>
+<title>Arithmetic Operators</title>
 
-<para>
-Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
-an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and returns <code>2</code>.
-However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
-be promoted, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both perform decimal
-division and return <code>2.5</code>.
-</para>
-
-<para>
-The following operators are defined in Orc:
-<variablelist><title>Prefix operators</title>
+<variablelist><info><title>Arithmetic Operators</title></info>
+  <varlistentry>
+    <term><code>+</code></term>
+    <listitem>
+      <para>Addition</para>
+    </listitem>
+  </varlistentry>
   <varlistentry>
     <term><code>-</code></term>
     <listitem>
-      <para>Arithmetic negation</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>~</code></term>
-    <listitem>
-      <para>Logical negation</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
-</para>
-
-<para>
-The following postfix operators are defined in Orc:
-<variablelist><title>Postfix operators</title>
-  <varlistentry>
-    <term><code>?</code></term>
-    <listitem>
-      <para>Dereference</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
-</para>
-
-<para>
-The following infix operators are defined in Orc:
-<variablelist><title>Infix operators</title>
-  <varlistentry>
-    <term><code>**</code></term>
-    <listitem>
-      <para>Exponentiation</para>
+      <para>Subtraction</para>
     </listitem>
   </varlistentry>
   <varlistentry>
@@ -206,21 +148,43 @@ The following infix operators are defined in Orc:
     </listitem>
   </varlistentry>
   <varlistentry>
-    <term><code>+</code></term>
+    <term><code>**</code></term>
     <listitem>
-      <para>Addition</para>
+      <para>Exponentiation</para>
     </listitem>
   </varlistentry>
   <varlistentry>
-    <term><code>-</code></term>
+    <term><code>-</code> (unary prefix form)</term>
     <listitem>
-      <para>Subtraction</para>
+      <para>Arithmetic negation</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+<para>
+Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
+an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and returns <code>2</code>.
+However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
+be promoted, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both perform decimal
+division and return <code>2.5</code>.
+</para>
+
+</section>
+
+<section>
+<title>Comparison Operators</title>
+
+<variablelist><info><title>Comparison Operators</title></info>
+  <varlistentry>
+    <term><code>=</code></term>
+    <listitem>
+      <para>Equal to</para>
     </listitem>
   </varlistentry>
   <varlistentry>
-    <term><code>:</code></term>
+    <term><code>/=</code></term>
     <listitem>
-      <para>List construction</para>
+      <para>Not equal to</para>
     </listitem>
   </varlistentry>
   <varlistentry>
@@ -247,16 +211,23 @@ The following infix operators are defined in Orc:
       <para>Greater than or equal to</para>
     </listitem>
   </varlistentry>
+</variablelist>
+
+<para>
+The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
+<code>10 = true</code> publishes <code>false</code>.
+</para>
+
+</section>
+
+<section>
+<title>Logical Operators</title>
+
+<variablelist><info><title>Logical Operators</title></info>
   <varlistentry>
-    <term><code>=</code></term>
+    <term><code>&#38;&#38;</code></term>
     <listitem>
-      <para>Equal to</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>/=</code></term>
-    <listitem>
-      <para>Not equal to</para>
+      <para>Logical and</para>
     </listitem>
   </varlistentry>
   <varlistentry>
@@ -266,9 +237,65 @@ The following infix operators are defined in Orc:
     </listitem>
   </varlistentry>
   <varlistentry>
-    <term><code>&#38;&#38;</code></term>
+    <term><code>~</code></term>
     <listitem>
-      <para>Logical and</para>
+      <para>Logical negation</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</section>
+
+<section>
+<title>String Operators</title>
+
+<variablelist><info><title>String Operators</title></info>
+  <varlistentry>
+    <term><code>+</code></term>
+    <listitem>
+      <para>Concatenation</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</section>
+
+<section>
+<title>List Operators</title>
+
+<variablelist><info><title>List Operators</title></info>
+  <varlistentry>
+    <term><code>:</code></term>
+    <listitem>
+      <para>List construction</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</section>
+
+<section>
+<title>Record Operators</title>
+
+<variablelist><info><title>Record Operators</title></info>
+  <varlistentry>
+    <term><code>+</code></term>
+    <listitem>
+      <para>Extension</para>
+    </listitem>
+  </varlistentry>
+</variablelist>
+
+</section>
+
+<section>
+<title>Reference Operators</title>
+
+<variablelist><info><title>Reference Operators</title></info>
+  <varlistentry>
+    <term><code>?</code></term>
+    <listitem>
+      <para>Dereference</para>
     </listitem>
   </varlistentry>
   <varlistentry>
@@ -278,30 +305,11 @@ The following infix operators are defined in Orc:
     </listitem>
   </varlistentry>
 </variablelist>
-</para>
 
-<para>
-Operators are parsed using the following precedence levels.
-Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is executed.
-For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
-</para>
+</section>
 
-<para>
-Operators in Orc are syntatic sugar for site calls.
-For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
-</para>
+</section>
 
-<para>
-The operators' syntax is fixed by the Orc grammar; however, the site
-called is defined by the library and can be changed by a <code>def</code>
-or <code>site</code> declaration.
-Orc permits a special identifier form for operators: the operator name
-surrounded by parenthesis, as in <code>(+)</code>.
-To disambiguate the unary prefix operator <code>-</code> from the
-binary infix operator <code>-</code>, Orc translates the
-unary prefix operator as <code>(0-)</code>.
-</para>
 
 <section xml:id="ref.expressions.operators.examples">
 <title>Examples</title>
@@ -374,7 +382,7 @@ OUTPUT:
 			<tbody valign="top">
 				<row><entry><itemizedlist>
 					<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
-					<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para>
+					<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para></listitem>
 				</itemizedlist></entry></row>
 			</tbody>
 		</tgroup>
