@@ -14,7 +14,8 @@
 		<title>Definition</title>
 
 		<para>
-			TODO
+			An expression is <firstterm>silent</firstterm> if and only if it never publishes.
+			The type of a silent expression is always <code>Bot</code>.
 		</para>
 
 	</section>

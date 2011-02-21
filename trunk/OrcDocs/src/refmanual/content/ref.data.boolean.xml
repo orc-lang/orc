@@ -13,16 +13,16 @@
 <section xml:id="ref.data.boolean">
 <title>Booleans</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>Boolean</code></para>
+  <para>Orc supports Boolean values, <code>false</code> and <code>true</code>.</para>
 
-<para>Orc supports Boolean values, <code>false</code> and <code>true</code>.</para>
-
-<section xml:id="ref.data.boolean.literals">
-<title>Literals</title>
-
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Boolean</replaceable> ::= <code>false</code> &#10073; <code>true</code></para>
-
-</section>
+	<section xml:id="ref.data.boolean.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    <productionrecap linkend="ebnf.literal.boolean"/>
+	    </productionset>
+	  </para>
+	</section>
 
 <section xml:id="ref.data.boolean.operations">
 <title>Operations</title>
@@ -53,6 +53,13 @@ as well as the comparison operators, which yield Boolean results:
 </para>
 
 </section>
+
+<section xml:id="ref.data.boolean.type">
+	    <title>Type</title>
+			<para>
+				The type of boolean values is <code>Boolean</code>.
+			</para>
+		</section>
 
 <section xml:id="ref.data.boolean.javacalls">
 <title>Java calls</title>

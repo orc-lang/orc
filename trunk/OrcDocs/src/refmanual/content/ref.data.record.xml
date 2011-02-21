@@ -13,10 +13,8 @@
 <section xml:id="ref.data.record">
 <title>Records</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>{. x1 :: T1, x2 :: T2, ... .}</code></para>
-
 <para>
-Orc's <type>Record</type> data type is an unordered finite map from keys to values. It may be empty; the empty
+A record is an unordered finite map from keys to values. It may be empty; the empty
 record is written <code>{..}</code>. 
 </para>
 
@@ -49,6 +47,10 @@ be used in the resulting record value.</para>
 </para>
 
 <para>
+TODO: Projection
+</para>
+
+<para>
 Record extension, written <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, publishes
 a new record with all of the bindings of <replaceable>S</replaceable>, plus all of the bindings in <replaceable>R</replaceable>
 which do not bind keys mentioned in <replaceable>S</replaceable>. In other words, <replaceable>S</replaceable>
@@ -58,6 +60,16 @@ overrides <replaceable>R</replaceable>. Record extension is associative, but not
 <para>
 The expression <code>{. x_0 = e_0, x_1 = e_1, ..., x_n = e_n .}</code> is equivalent to the expression
 <code>{. x_0 = e_0. } + {. x_1 = e_1 .} + ... + {. x_n = e_n .}</code>.
+</para>
+
+</section>
+
+<section xml:id="ref.data.list.type">
+<title>Types</title>
+<para>
+The type of a record value  <code>{. x1 = </code><replaceable>T<subscript>i</subscript></replaceable><code>, ... , xn = </code><replaceable>Ti</replaceable><code> .}</code>,
+where <replaceable>Vi</replaceable> has type <replaceable>Ti</replaceable>,
+is <code>{. x1 :: T1, ... , xn :: Tn .}</code>
 </para>
 
 </section>

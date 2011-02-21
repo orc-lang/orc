@@ -13,19 +13,19 @@
 <section xml:id="ref.data.signal">
 <title><code>signal</code></title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>Signal</code></para>
-
 <para>A <literal>signal</literal> is a value that carries no information. It typically indicates
 completion of a site call, when there is no other meaningful value to return. It is analagous
 to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
 </para>
 
-<section xml:id="ref.data.signal.literals">
-<title>Literals</title>
-
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Signal</replaceable> ::= <code>signal</code></para>
-
-</section>
+  <section xml:id="ref.data.signal.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    <productionrecap linkend="ebnf.literal.signal"/>
+	    </productionset>
+	  </para>
+	</section>
 
 <section xml:id="ref.data.signal.operations">
 <title>Operations</title>

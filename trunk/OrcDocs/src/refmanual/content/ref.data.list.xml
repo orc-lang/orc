@@ -21,12 +21,6 @@ list may have no item; in that case it is an empty list.
 An empty list is written as <code>[]</code>.
 </para>
 
-<para>
-The type of a list is <code>List[U]</code>, where <code>U</code> is the join 
-of the types of each of its elements. In particular, if all of the elements 
-have type <code>T</code>, then the list will have type <code>List[T]</code>.
-</para>
-
 <section xml:id="ref.data.list.constructors">
 <title>Constructors</title>
 
@@ -55,10 +49,13 @@ Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.
 
 </section>
 
-<section xml:id="ref.data.list.types">
+<section xml:id="ref.data.list.type">
 <title>Types</title>
-<para>The values in a list may be of different types. The type of the list
-items is the join of the types of its individual values.</para>
+<para>
+The type of a list is <code>List[U]</code>, where <code>U</code> is the join 
+of the types of each of its elements. In particular, if all of the elements 
+have the same type <code>T</code>, then the list will have type <code>List[T]</code>.
+</para>
 </section>
 
 <section xml:id="ref.data.list.javacalls">

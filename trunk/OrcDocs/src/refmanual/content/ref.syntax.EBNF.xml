@@ -419,11 +419,26 @@
 			<production xml:id="ebnf.literal">
 			  <lhs>Literal</lhs>
 			  <rhs>
-					<code>signal</code>
-					<sbr/>&#x2759; <code>true</code>
-					<sbr/>&#x2759; <code>false</code>
+					<nonterminal def="#ebnf.literal.signal">SignalLiteral</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.literal.boolean">BooleanLiteral</nonterminal>
 					<sbr/>&#x2759; <link linkend="ref.data.numeric.literals">Number</link>
 					<sbr/>&#x2759; <link linkend="ref.data.string.literals">String</link>
+			  </rhs>
+			</production>
+			
+			
+			<production xml:id="ebnf.literal.signal">
+			  <lhs>SignalLiteral</lhs>
+			  <rhs>
+					<code>signal</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal.boolean">
+			  <lhs>BooleanLiteral</lhs>
+			  <rhs>
+					<code>true</code>
+					<sbr/>&#x2759; <code>false</code>
 			  </rhs>
 			</production>
 			
