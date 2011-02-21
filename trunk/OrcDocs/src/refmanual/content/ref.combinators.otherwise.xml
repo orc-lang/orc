@@ -17,7 +17,7 @@
 		  <title>Syntax</title>
 		  <para>
 		    <productionset>
-		    <productionrecap linkend="ebnf.expression.combinator.otherwise"/>
+		    <productionrecap linkend="ebnf.expression.otherwise"/>
 		    </productionset>
 		  </para>
 		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
@@ -35,20 +35,19 @@
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
-				    <td><code><![CDATA[F ; G ; H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable><code><![CDATA[ ; ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[F ; (G ; H)]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ ; (]]></code><replaceable>G</replaceable><code><![CDATA[ ; ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
 				    <td>  (Left Associative)</td>
 				  </tr>
 				  <tr>
-				    <td><code><![CDATA[F ; G ; H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable><code><![CDATA[ ; ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[(F ; G) ; H]]></code></td>
+				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable><code><![CDATA[) ; ]]></code><replaceable>H</replaceable></td>
 				    <td>  (Right Associative)</td>
 				  </tr>
 				</tbody>
 				</informaltable>
-				...more identities...
 			  </para>
     	  </section>
 
@@ -56,30 +55,23 @@
 		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
-			<varlistentry><term><code><![CDATA[F ; G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
 				The execution of
-				<code><![CDATA[F ; G]]></code> proceeds as follows. First, <code><![CDATA[F]]></code> is executed. 
-				If <code><![CDATA[F]]></code> <link linkend="ref.concepts.halt">halts</link>, 
-				and has not published any values, then <code><![CDATA[G]]></code> executes. 
-				If <code><![CDATA[F]]></code> publishes one or more values, 
-				then <code><![CDATA[G]]></code> is ignored. The publications of <code><![CDATA[F ; G]]></code> are those
-				of <code><![CDATA[F]]></code> if <code><![CDATA[F]]></code> publishes, or those of <code><![CDATA[G]]></code>
-				if <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link>.
+				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
+				If <replaceable>F</replaceable> <link linkend="ref.concepts.halt">halts</link>, 
+				and has not published any values, then <replaceable>G</replaceable> executes. 
+				If <replaceable>F</replaceable> publishes one or more values, 
+				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
+				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
+				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent">silent</link>.
 			</para>
 			</listitem>
 			</varlistentry>
 			</variablelist>
 		  </para>
 	  </section>
-	  
-	  <section xml:id="ref.combinators.otherwise.type">
-		  <title>Type</title>
-			<para>
-				The type of F <code>;</code> G is the <link linkend="ref.types.lattice">join</link> of the types of F and G.
-			</para>
-		</section>
 	  
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
@@ -122,7 +114,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.combinators.otherwise.examples.sublist"><title>Lexographic sublist</title>
+		  <example xml:id="ref.combinators.otherwise.examples.transfer"><title>Buffer Transfer</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Transfer all items from a buffer to a list.  Assume that the
    process has exclusive access to the buffer, so that no other
@@ -158,6 +150,15 @@ NONRUNNABLE
 		  </example>
 		  
 	  </section>
+	  
+  	  <section xml:id="ref.combinators.otherwise.type">
+		  <title>Type</title>
+			<para>
+				The type of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> 
+				is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
+			</para>
+	</section>
+	  
 	  <section xml:id="ref.combinators.otherwise.links">
 		  <title>Related Links</title>
 		  
