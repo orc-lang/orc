@@ -245,8 +245,9 @@ st.add(3) | st.add(5)
 	  <section xml:id="ref.declarations.defclass.semantics.site">
 	  	<title>Class Instance is a Site</title>
 	  	<para>
+	  		Any instance of a class, such as <code>st</code> above, is a site.  
 	  		Calls to methods of any class instance are treated exactly like external site
-			calls. Therefore,
+			calls.  Therefore,
 		</para>
 		<itemizedlist>
 			<listitem><para>A call is not <link linkend="ref.concepts.kill">killed</link> by prune; see example below.</para></listitem>

@@ -17,7 +17,7 @@
 		  <title>Syntax</title>
 		  <para>
 		    <productionset>
-		    <productionrecap linkend="ebnf.expression.combinator.pruning"/>
+		    <productionrecap linkend="ebnf.expression.pruning"/>
 		    </productionset>
 		  </para>
 		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
@@ -35,14 +35,13 @@
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
-				    <td><code><![CDATA[F <P< G <P< H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable><code><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[F <P< (G <P< H)]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
 				    <td>  (Left Associative)</td>
 				  </tr>
 				</tbody>
 				</informaltable>
-				...more identities...
 			  </para>
       </section>
 	  
@@ -50,34 +49,36 @@
 		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
-			<varlistentry><term><code><![CDATA[F <x< G]]></code></term>
+		  	<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			 <para>
-			  	The execution of <code><![CDATA[F <x< G]]></code> starts by executing <code><![CDATA[F]]></code> and <code><![CDATA[G]]></code> in parallel. Whenever
-				<code><![CDATA[F]]></code> publishes a value, that value is published by the entire execution. When <code><![CDATA[G]]></code> publishes its first value, that
-				value is bound to <code><![CDATA[x]]></code> in <code><![CDATA[F]]></code>, and then the execution of <code><![CDATA[G]]></code> is immediately <link linkend="ref.concepts.kill">killed</link>. A <link linkend="ref.concepts.kill">killed</link> expression
-				cannot call any sites or publish any values. During the execution of <code><![CDATA[F]]></code>, any part of the execution that depends on <code><![CDATA[x]]></code> 
-				will be suspended until <code><![CDATA[x]]></code> is bound (to
-				the first value published by <code><![CDATA[G]]></code>). If <code><![CDATA[G]]></code> never publishes a value, that part of the execution is suspended forever.
+			  	The execution of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
+			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
+				<replaceable>F</replaceable> publishes a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
+				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.kill">killed</link>. 
+				A killed expression cannot call any sites or publish any values. During the execution of <replaceable>F</replaceable>, 
+				any part of the execution that depends on <replaceable>x</replaceable> 
+				will be suspended until <replaceable>x</replaceable> is bound (to
+				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value, that part of the execution is suspended forever.
 			  </para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><code><![CDATA[F <P< G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			  <para>
-				The pruning combinator may include a full pattern <code><![CDATA[P]]></code> instead of just a variable name. Any value published
-				by <code><![CDATA[G]]></code> is <link linkend="ref.patterns">matched</link> against the pattern <code><![CDATA[P]]></code>. If this match is successful, then <code><![CDATA[G]]></code> <link linkend="ref.concepts.kill">killed</link> and all of the bindings
-				of pattern <code><![CDATA[P]]></code> are made in <code><![CDATA[F]]></code>. Otherwise, the published value is simply ignored and <code><![CDATA[G]]></code> continues to execute.
+				The pruning combinator may include a full pattern <replaceable>P</replaceable> instead of just a variable name. Any value published
+				by <replaceable>G</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. If this match is successful, then <replaceable>G</replaceable> is killed and all of the bindings
+				of pattern <replaceable>P</replaceable> are made in <replaceable>F</replaceable>. Otherwise, the published value is simply ignored and <replaceable>G</replaceable> continues to execute.
 			  </para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><code><![CDATA[F << G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ << ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			 <para>
-				This is equivalent to using a wildcard pattern, <code><![CDATA[F <_< G]]></code>.  <code><![CDATA[G]]></code> continues to execute 
-				until it publishes a value.  Any value published by <code><![CDATA[G]]></code> will match the pattern. After the successful match, 
-				<code><![CDATA[G]]></code> is <link linkend="ref.concepts.kill">killed</link>, but no bindings are made in <code><![CDATA[F]]></code>.
-				No part of execution of <code><![CDATA[F]]></code> is suspended by the pruning combinator since there is no variable to be bound.
+				This is equivalent to using a wildcard pattern, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
+				until it publishes a value.  Any value published by <replaceable>G</replaceable> will match the pattern. After the successful match, 
+				<replaceable>G</replaceable> is killed, but no bindings are made in <replaceable>F</replaceable>.
+				No part of execution of <replaceable>F</replaceable> is suspended by the pruning combinator since there is no variable to be bound.
 			 </para>
 			</listitem>
 			</varlistentry>
@@ -153,9 +154,10 @@ NOTRUNNABLE
 	  <section xml:id="ref.combinators.pruning.type">
 	    <title>Type</title>
 			<para>
-				The type of <code><![CDATA[F <x< G]]></code> is the type of <code><![CDATA[F]]></code> 
-				using the assumption <code><![CDATA[x :: T]]></code>, where <code><![CDATA[T]]></code> 
-				is the type of <code><![CDATA[G]]></code>.
+				The type of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
+				is the type of <replaceable>F</replaceable> 
+				using the assumption <replaceable>x</replaceable><code><![CDATA[ :: ]]></code><replaceable>T</replaceable>, where <replaceable>T</replaceable> 
+				is the type of <replaceable>G</replaceable>.
 			</para>
 
 		</section>

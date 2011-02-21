@@ -35,26 +35,25 @@
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
-				    <td><code><![CDATA[F | G | H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[F | (G | H)]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]><![CDATA[(]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
 				    <td>  (Left Associative)</td>
 				  </tr>
 				  <tr>
-				    <td><code><![CDATA[F | G | H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[(F | G) | H]]></code></td>
+				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[)]]></code><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td>  (Right Associative)</td>
 				  </tr>
 				  <tr>
-				    <td><code><![CDATA[F | G]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[G | F]]></code></td>
+				    <td><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>F</replaceable></td>
 				    <td>  (Commutative)</td>
 				  </tr>
 				</tbody>
 				</informaltable>
-				...more identities...
 			  </para>
     	</section>
     
@@ -62,14 +61,16 @@
 		  <title>Behavior</title>		  
 		  <para>
 		  <variablelist>
-			<varlistentry><term><code><![CDATA[F | G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  Execution of expression <code><![CDATA[F | G]]></code> occurs by executing <code><![CDATA[F]]></code> 
-			  and <code><![CDATA[G]]></code> concurrently. Whenever <code><![CDATA[F]]></code> or <code><![CDATA[G]]></code> communicates with a service or 
-			  publishes a value, <code><![CDATA[F | G]]></code> does so as well.
-			  Therefore, <code><![CDATA[F | G]]></code> interleaves the publications of <code><![CDATA[F]]></code>
-			  and <code><![CDATA[G]]></code> arbitrarily.
+			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
+			   occurs by executing <replaceable>F</replaceable> 
+			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
+			  publishes a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
+			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
+			  the publications of <replaceable>F</replaceable>
+			  and <replaceable>G</replaceable> arbitrarily.
 		    </para>
 			</listitem>
 			</varlistentry>
@@ -117,7 +118,9 @@ NONRUNNABLE
 	  <section xml:id="ref.combinators.parallel.type">
 	    <title>Type</title>
 			<para>
-				The type of F <code>|</code> G is the <link linkend="ref.types.lattice">join</link> of the types of F and G.
+				The type of <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
+				 is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable>
+				  and <replaceable>G</replaceable>.
 			</para>
 		</section>
 	  

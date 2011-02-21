@@ -17,7 +17,7 @@
 		  <title>Syntax</title>
 		  <para>
 		    <productionset>
-		    <productionrecap linkend="ebnf.expression.combinator.sequential"/>
+		    <productionrecap linkend="ebnf.expression.sequential"/>
 		    </productionset>
 		  </para>
 		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
@@ -35,14 +35,13 @@
 			  <informaltable class="identitylist">
 				<tbody>
 				  <tr>
-				    <td><code><![CDATA[F >P> G >P> H]]></code></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[(F >P> G) >P> H]]></code></td>
+				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><code><![CDATA[) >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></code><replaceable>H</replaceable></td>
 				    <td>  (Right Associative)</td>
 				  </tr>
 				</tbody>
 				</informaltable>
-				...more identities...
 			  </para>
       </section>
 	  
@@ -50,35 +49,37 @@
 		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
-			<varlistentry><term><code><![CDATA[F >x> G]]></code></term>
+		  	<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  The execution of <code><![CDATA[F >x> G]]></code> starts by executing <code><![CDATA[F]]></code>. Whenever <code><![CDATA[F]]></code> 
-			  publishes a value, a new instance of <code><![CDATA[G]]></code> is executed in parallel with <code><![CDATA[F]]></code> (and with any previous 
-			  copies of <code><![CDATA[G]]></code>); in that instance of <code><![CDATA[G]]></code>, variable <code><![CDATA[x]]></code> is bound to the value
-			  published by <code><![CDATA[F]]></code>. Values 
-			  published by copies of <code><![CDATA[G]]></code> are published by the whole expression, but the values published 
-			  by <code><![CDATA[F]]></code> are not published by the whole expression; they are consumed by the variable binding. 
+			  The execution of <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>
+			   starts by executing <replaceable>F</replaceable>. Whenever <replaceable>F</replaceable> 
+			  publishes a value, a new instance of <replaceable>G</replaceable> is executed in parallel with <replaceable>F</replaceable> (and with any previous 
+			  copies of <replaceable>G</replaceable>); in that instance of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
+			  published by <replaceable>F</replaceable>. Values 
+			  published by copies of <replaceable>G</replaceable> are published by the whole expression, but the values published 
+			  by <replaceable>F</replaceable> are not published by the whole expression; they are consumed by the variable binding. 
 			</para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><code><![CDATA[F >P> G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  The sequential combinator may be written as <code><![CDATA[F >P> G]]></code>, where <code><![CDATA[P]]></code> is a pattern instead of 
-			  just a variable name. Any value published by <code><![CDATA[F]]></code> is <link linkend="ref.patterns">matched</link> against the pattern <code><![CDATA[P]]></code>. 
-			  If this match is successful, a new instance of <code><![CDATA[G]]></code> is started with all of the bindings 
+			  The sequential combinator may be written as <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>, 
+			  where <replaceable>P</replaceable> is a pattern instead of 
+			  just a variable name. Any value published by <replaceable>F</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. 
+			  If this match is successful, a new instance of <replaceable>G</replaceable> is started with all of the bindings 
 			  from the match. Otherwise, the published value is simply ignored, and no new instance 
-			  of <code><![CDATA[G]]></code> is created. 
+			  of <replaceable>G</replaceable> is created. 
 			</para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><code><![CDATA[F >> G]]></code></term>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >> ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  This is equivalent to using a wildcard pattern:  <code><![CDATA[F >_> G]]></code>.  Every publication
-			  of <code><![CDATA[F]]></code> will match the combinator pattern, causing an execution of <code><![CDATA[G]]></code> for every individual
-			  publication of <code><![CDATA[F]]></code>.  No bindings will be made in <code><![CDATA[G]]></code> from these publications.
+			  This is equivalent to using a wildcard pattern: <replaceable>F</replaceable><code><![CDATA[ >_> ]]></code><replaceable>G</replaceable>.  Every publication
+			  of <replaceable>F</replaceable> will match the combinator pattern, causing an execution of <replaceable>G</replaceable> for every individual
+			  publication of <replaceable>F</replaceable>.  No bindings will be made in <replaceable>G</replaceable> from these publications.
 			</para>
 			</listitem>
 			</varlistentry>
@@ -140,8 +141,9 @@ OUTPUT:
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>
 			<para>
-				The type of <code><![CDATA[F >x> G]]></code> is the type of <code><![CDATA[G]]></code> using the assumption <code><![CDATA[x :: T]]></code>, 
-				where <code><![CDATA[T]]></code> is the type of <code><![CDATA[F]]></code>.
+				The type of <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>
+				 is the type of <replaceable>G</replaceable> using the assumption <replaceable>x</replaceable><code><![CDATA[ :: ]]></code><replaceable>T</replaceable>, 
+				where <replaceable>T</replaceable> is the type of <replaceable>F</replaceable>.
 			</para>
 		</section>
 	  
