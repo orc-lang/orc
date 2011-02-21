@@ -44,6 +44,7 @@ When this occurs, the unmatched value is simply discarded, as if it had never be
 <xi:include href="ref.patterns.variable.xml"/>
 <xi:include href="ref.patterns.tuple.xml"/>
 <xi:include href="ref.patterns.list.xml"/>
+<xi:include href="ref.patterns.record.xml"/>
 <xi:include href="ref.patterns.call.xml"/>
 <xi:include href="ref.patterns.cons.xml"/>
 <xi:include href="ref.patterns.as.xml"/>
