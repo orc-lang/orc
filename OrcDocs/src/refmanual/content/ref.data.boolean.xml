@@ -55,11 +55,11 @@ as well as the comparison operators, which yield Boolean results:
 </section>
 
 <section xml:id="ref.data.boolean.type">
-	    <title>Type</title>
-			<para>
-				The type of boolean values is <code>Boolean</code>.
-			</para>
-		</section>
+  <title>Type</title>
+	<para>
+		A boolean value has type <code>Boolean</code>.
+	</para>
+</section>
 
 <section xml:id="ref.data.boolean.javacalls">
 <title>Java calls</title>

@@ -13,108 +13,38 @@
 <!-- IfThenElse -->
 	<section xml:id="ref.expressions.ifthenelse">
 		<title><code>if then else</code></title>
-		<section xml:id="ref.expressions.ifthenelse.body">
-			<para>
-A conditional expression in Orc is of the form 
-<code>if</code> <code><![CDATA[E]]></code> <code>then</code> <code><![CDATA[F]]></code> <code>else</code> <code><![CDATA[G]]></code>. 
-Its meaning is similar to that in other languages: the value
-of the expression is the value of <code><![CDATA[F]]></code> if and only if <code><![CDATA[E]]></code> evaluates to <code>true</code>, 
-or the value of <code><![CDATA[G]]></code> if and only if <code><![CDATA[E]]></code> evaluates to <code>false</code>. 
-Note that <code><![CDATA[G]]></code> is not evaluated at all if <code><![CDATA[E]]></code> evaluates to <code>true</code>, 
-and similarly <code><![CDATA[F]]></code> is not evaluated
-at all if <code><![CDATA[E]]></code> evaluates to <code>false</code>. Thus, for example, evaluation of 
-<code>if true then 2+3 else 1/0</code> does not evaluate <code>1/0</code>;
-it only evaluates <code>2+3</code>.
-</para>
-
-<para>
-If <code><![CDATA[E]]></code> is
-<link linkend="ref.concepts.silent">silent</link>, then the entire expression is <link linkend="ref.concepts.silent">silent</link>. And if <code><![CDATA[E]]></code> evaluates to <code>true</code> 
-but <code><![CDATA[F]]></code> is <link linkend="ref.concepts.silent">silent</link> (or if <code><![CDATA[E]]></code> evaluates to <code>false</code> and <code><![CDATA[G]]></code> is silent) then the 
-expression is <link linkend="ref.concepts.silent">silent</link>.
-</para>
-
-<para>
-Conditionals have lower precedence than any of the operators.
-For example, <code>if false then 1 else 2 + 3</code> is equivalent to
-<code>if false then 1 else (2 + 3)</code>, not <code>(if false then 1 else 2) + 3</code>.
-</para>
-
-<para>
-The behavior of conditionals is summarized by the following table
-(<emphasis>v</emphasis> denotes a value).
-
-<informaltable xml:id="cond-table" frame="none" rowsep="0" colsep="0"> 
-<?dbhtml table-width="60%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="4" >
-<colspec colnum="1" colname="E" colwidth="1*" align="center"/>
-<colspec colnum="2" colname="F" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="G" colwidth="1*" align="center"/>
-<colspec colnum="4" colname="result" colwidth="3*" align="center"/>
-<thead>
-<row>
-<entry>E</entry>
-<entry>F</entry>
-<entry>G</entry>
-<entry><code>if</code> E <code>then</code> F <code>else</code> G</entry>
-</row>
-</thead>
-<tbody>
-
-<row>
-<entry><code>true</code></entry>
-<entry><emphasis>v</emphasis></entry>
-<entry>-</entry>
-<entry><emphasis>v</emphasis></entry>
-</row>
-
-<row>
-<entry><code>true</code></entry>
-<entry>silent</entry>
-<entry>-</entry>
-<entry>silent</entry>
-</row>
-
-<row>
-<entry><code>false</code></entry>
-<entry>-</entry>
-<entry><emphasis>v</emphasis></entry>
-<entry><emphasis>v</emphasis></entry>
-</row>
-
-<row>
-<entry><code>false</code></entry>
-<entry>-</entry>
-<entry>silent</entry>
-<entry>silent</entry>
-</row>
-
-<row>
-<entry>silent</entry>
-<entry>-</entry>
-<entry>-</entry>
-<entry>silent</entry>
-</row>
-
-</tbody>
-</tgroup>
-</informaltable>
-
-</para>
-
-<para>
-<itemizedlist><title>Examples</title>
-<listitem><code>if true then 4 else 5</code> evaluates to <code>4</code>.</listitem>
-<listitem><code><![CDATA[if  2 < 3 && 5 < 4  then "blue" else "green"]]></code> evaluates to "green".</listitem>
-<listitem><code>if  true || "fish"  then "yes" else "no"</code> is <link linkend="ref.concepts.silent">silent</link>.</listitem>
-<listitem><code>if  false || false  then 4+5 else 4+true</code> is <link linkend="ref.concepts.silent">silent</link>.</listitem>
-<listitem><code><![CDATA[if 0 < 5 then 0/5 else 5/0]]></code> evaluates to 0.</listitem>
-</itemizedlist>
-</para>
-		</section>
 		
+		<para>
+		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
+		is a conditional expression.
+		It executes as follows:
+		<itemizedlist>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, halt.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> halts silently, halt.</listitem>
+		</itemizedlist>
+		 
+		</para>
+		
+		<section xml:id="ref.expressions.ifthenelse.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.conditional"/>
+		    </productionset>
+		  </para>
+		</section>
+
+		<section xml:id="ref.expressions.ifthenelse.type">
+		  <title>Type</title>
+		  <para>
+		    The type of <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
+		    is the join of the types of <replaceable>E<subscript>t</subscript></replaceable> and <replaceable>E<subscript>f</subscript></replaceable>.
+		    Additionally, <replaceable>E<subscript>c</subscript></replaceable> must have type <code>Boolean</code>.
+		  </para>
+		</section>
+				
 		<section xml:id="ref.expressions.ifthenelse.links">
 		  <title>Related Links</title>
 		  
@@ -145,7 +75,6 @@ The behavior of conditionals is summarized by the following table
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="cor">Cor</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

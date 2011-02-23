@@ -14,20 +14,31 @@
 <title>Records</title>
 
 <para>
-A record is an unordered finite map from keys to values. It may be empty; the empty
-record is written <code>{..}</code>. 
+A record is an unordered finite map from keys to values. 
+It may be empty; the empty record is written as <code>{. .}</code>. 
 </para>
+
+<section xml:id="ref.data.record.syntax">
+  <title>Syntax</title>
+  <para>
+    <productionset>
+    <productionrecap linkend="ebnf.expression.record"/>
+    </productionset>
+  </para>
+</section>
 
 <section xml:id="ref.data.record.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Record</replaceable> ::= <code>{. x1 = E1, x2 = E2, ... .}</code></para>
-
 <para>
 A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
-associates a key with an expression. 
-The record expression <code>{. x_0 = e_0, ..., x_n = e_n .}</code> publishes the record <code>{.x_0 = v_0, ..., x_n = v_n .}</code>
-only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
+associates a key with an expression.
+</para>
+ 
+<para>
+The record expression <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 
+publishes the record <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
 Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
@@ -58,27 +69,26 @@ overrides <replaceable>R</replaceable>. Record extension is associative, but not
 </para>
 
 <para>
-The expression <code>{. x_0 = e_0, x_1 = e_1, ..., x_n = e_n .}</code> is equivalent to the expression
-<code>{. x_0 = e_0. } + {. x_1 = e_1 .} + ... + {. x_n = e_n .}</code>.
+The expression <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 
+is equivalent to the expression
+<code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>.}</code> <code>+</code> &#x2026; <code>+</code> <code>{.</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code>.
 </para>
 
 </section>
 
-<section xml:id="ref.data.list.type">
-<title>Types</title>
+<section xml:id="ref.data.record.type">
+<title>Type</title>
 <para>
-The type of a record value  <code>{. x1 = </code><replaceable>T<subscript>i</subscript></replaceable><code>, ... , xn = </code><replaceable>Ti</replaceable><code> .}</code>,
-where <replaceable>Vi</replaceable> has type <replaceable>Ti</replaceable>,
-is <code>{. x1 :: T1, ... , xn :: Tn .}</code>
+The type of a record value <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
+where <replaceable>v<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>,
+is a record type, written <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>.
 </para>
-
 </section>
 
 <section xml:id="ref.data.record.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>Record</type>s don't correspond to any Java value, so if a <type>Record</type>
-is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
+<para>Orc records do not correspond to any Java value, so if a record is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 
@@ -107,7 +117,7 @@ norm(velocity)
 
 {-
 OUTPUT:
-???
+{. x = 0.6, y = 0, z = 0.8 .}
 -}
 ]]></programlisting>
 </example>
@@ -115,14 +125,15 @@ OUTPUT:
 <example xml:id="ref.data.record.examples.recexp">
 <title>Record Expansion</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Add the alpha field to rgb record -}
+{- Add an alpha field to an rgb color record -}
 
 val rgb = {. red = 60, green = 230, blue = 5 .}
-rgb + {. alpha = 128 .}
+val rgba = rgb + {. alpha = 128 .}
+rgba.alpha
 
 {-
 OUTPUT:
-no output
+128
 -}
 ]]></programlisting>
 </example>

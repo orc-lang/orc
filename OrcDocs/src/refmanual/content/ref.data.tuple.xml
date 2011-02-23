@@ -13,32 +13,35 @@
 <section xml:id="ref.data.tuple">
 <title>Tuples</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>(T1, T2...)</code></para>
-
 <para>
-Orc's <code>Tuple</code> data type is a sequence of at least two values.
-(Orc does not provide for the construction of "0-tuples" or "1-tuples".)
+A tuple is a sequence of at least two values. Orc does not have 0-tuples or 1-tuples.
 </para>
 
 <para>Tuples are intended to be used for sequences with a fixed length and varying element types,
-whereas lists are intended to be used for sequences with varying length and a fixed element type.</para> 
+whereas <link linkend="ref.data.list">lists</link> are intended to be used for sequences with varying length and a fixed element type.</para> 
 
 <para>
 One can explicitly project a tuple element by its index, but it is
-idiomatic, safer, and far more common to use pattern matching to extract
+idiomatic, safer, and far more common to <link linkend="ref.patterns.tuple">use pattern matching</link> to extract
 tuple elements.
 </para>
+
+<section xml:id="ref.data.tuple.syntax">
+  <title>Syntax</title>
+  <para>
+    <productionset>
+    <productionrecap linkend="ebnf.expression.tuple"/>
+    </productionset>
+  </para>
+</section>
 
 <section xml:id="ref.data.tuple.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Tuple</replaceable> ::= <code>(E, ..., E)</code></para>
-
 <para>
-	A tuple is written as two or more expressions, separated by commas
-	and enclosed within parentheses.
-The tuple expression <code>(e_0, ..., e_n)</code> publishes the tuple <code>(v_0, ..., v_n)</code>
-only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
+The tuple expression <code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code> 
+publishes the tuple value <code>(</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>)</code>
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>.
 Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 </section>
@@ -48,19 +51,27 @@ Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.
 
 <para>Notable tuple operations include:
 <itemizedlist>
-<listitem><para>Projection: <replaceable>tuple</replaceable><code>(</code> <replaceable>index</replaceable> <code>)</code></para></listitem>
-<listitem><para>Project first element of pair: <code>fst</code></para></listitem>
-<listitem><para>Project second element of pair: <code>snd</code></para></listitem>
+<listitem><para><replaceable>tuple</replaceable><code>(</code><replaceable>index</replaceable><code>)</code>, a <firstterm>projection</firstterm>, which returns the tuple element at position <replaceable>index</replaceable>, starting from 0.</para></listitem>
+<listitem><para><code>fst(</code><replaceable>tuple</replaceable><code>)</code>, which returns the first element of a pair.</para></listitem>
+<listitem><para><code>snd(</code><replaceable>tuple</replaceable><code>)</code>, which returns the second element of a pair.</para></listitem>
 </itemizedlist>
 </para>
 
 </section>
 
+<section xml:id="ref.data.tuple.type">
+<title>Type</title>
+<para>
+The type of a tuple value <code>(</code><replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable><code>)</code>
+where <replaceable>v<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>,
+is a tuple type, written <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>.
+</para>
+</section>
+
 <section xml:id="ref.data.tuple.javacalls">
 <title>Java calls</title>
 
-<para>Orc <code>Tuple</code>s don't correspond to any Java value, so if a <code>Tuple</code>
-is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
+<para>Orc tuples don't correspond to any Java value, so if a tuple is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
 
 </section>
 
@@ -87,12 +98,12 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Print "fork", but wait at least 500ms before printing "join" -}
 
-( println("fork"), Rtimer(500) ) >> println("join")
+( println("fork"), Rtimer(500) ) >> println("join") >> stop
 
 {-
 OUTPUT:
-"fork"
-"join"
+fork
+join
 -}
 ]]></programlisting>
 </example>

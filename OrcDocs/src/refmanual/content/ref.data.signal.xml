@@ -39,6 +39,13 @@ to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
 
 </section>
 
+<section xml:id="ref.data.signal.type">
+  <title>Type</title>
+	<para>
+		The <code>signal</code> value has type <code>Signal</code>.
+	</para>
+</section>
+
 <section xml:id="ref.data.signal.javacalls">
 <title>Java calls</title>
 

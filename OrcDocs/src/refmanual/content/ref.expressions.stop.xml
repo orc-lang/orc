@@ -15,8 +15,30 @@
 		<title><code>stop</code></title>
 		<section xml:id="ref.expressions.stop.body">
 			<para>
-			Content about <code>stop</code>.
+			The <code>stop</code> expression does nothing. Execution of <code>stop</code>
+			immediately halts without publishing. 
 			</para>
+			
+			<para>
+			<code>stop</code> is often used in conjunction with the <link linkend="ref.combinators.sequential">sequential combinator</link> to make an expression <link linkend="ref.concepts.silence">silent</link>. 
+			For example, the expression <replaceable>F</replaceable><code> >> stop</code> behaves as <replaceable>F</replaceable>, except that it is silent, since all of its publications are consumed by <code>stop</code>, which does nothing.
+			</para>
+		</section>
+		
+		<section xml:id="ref.expressions.stop.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.stop"/>
+		    </productionset>
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.stop.type">
+		  <title>Type</title>
+		  <para>
+		    <code>stop</code> has type <code>Bot</code>. 
+		  </para>
 		</section>
 		
 		<section xml:id="ref.expressions.stop.examples">

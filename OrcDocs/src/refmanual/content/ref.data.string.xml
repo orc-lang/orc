@@ -57,9 +57,16 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-line <code>String</code>: <code>unlines</code></para></listitem>
 <listitem><para>Split a <code>String</code> into a <code>List</code> of <code>String</code>s corresponding to its words: <code>words</code></para></listitem>
 <listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-word <code>String</code>: <code>unwords</code></para></listitem>
-</itemizedlist>
+</itemizedlist> 
 </para>
 
+</section>
+
+<section xml:id="ref.data.string.type">
+  <title>Type</title>
+	<para>
+		A string value has type <code>String</code>.
+	</para>
 </section>
 
 <section xml:id="ref.data.string.javacalls">
