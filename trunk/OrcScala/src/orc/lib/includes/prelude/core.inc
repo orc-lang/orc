@@ -215,9 +215,8 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Cor <olink targetdoc="userguide" targetptr="cor.constants">constant values</olink> and
-<olink targetdoc="userguide" targetptr="cor.data">data structures</olink> are considered equal if their
-contents are equal. Other types are free to implement their own equality
+Orc data structures, such as records, are equal if their contents are equal.
+Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
 Note that although values of different types may be compared with
