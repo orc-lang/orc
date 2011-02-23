@@ -13,22 +13,26 @@
 <section xml:id="ref.data.list">
 <title>Lists</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>List[T]</code></para>
-
 <para>
-A list consists of a finite sequence of values. The
-list may have no item; in that case it is an empty list. 
-An empty list is written as <code>[]</code>.
+A list consists of a finite sequence of values. 
+It may be empty; the empty list is written as <code>[]</code>.
 </para>
+
+<section xml:id="ref.data.list.syntax">
+  <title>Syntax</title>
+  <para>
+    <productionset>
+    <productionrecap linkend="ebnf.expression.list"/>
+    </productionset>
+  </para>
+</section>
 
 <section xml:id="ref.data.list.constructors">
 <title>Constructors</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <emphasis>List ::= <code><![CDATA[(E, ..., E)]]></code></emphasis></para>
-
 <para>
-The list expression <code>[e_0, ..., e_n]</code> publishes the list <code>[v_0, ..., v_n]</code>
-only if each <code>ei</code> <link linkend="ref.concepts.deflate">deflates</link> to value <code>vi</code>. 
+The list expression <code>[</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>]</code> publishes the list <code>[</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>]</code>
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
 Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
@@ -39,30 +43,27 @@ Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.
 
 <para>Notable list operations include:
 <itemizedlist>
-<listitem><para><code>head(l)</code> returns the first item of list <code>l</code>.</para></listitem>
-<listitem><para><code>tail</code>: applied to a non-empty list, it returns the original list without its head.</para></listitem>
-<listitem><para><code>cons</code>: cons: applied to an item h and a list t returns a list whose head is
-										h and tail is t. cons is written as a colon (:) separating
-										h and t.</para></listitem>
+<listitem><para><code>head(l)</code>, which returns the first element of list <code>l</code>.</para></listitem>
+<listitem><para><code>tail(l)</code>, which returns a list with every element in <code>l</code> except the first.</para></listitem>
+<listitem><para><code>h:t</code>, a <firstterm>cons</firstterm> operation, which returns a list with first element <code>h</code> and remaining elements <code>t</code>.</para></listitem>
 </itemizedlist>
 </para>
 
 </section>
 
 <section xml:id="ref.data.list.type">
-<title>Types</title>
+<title>Type</title>
 <para>
-The type of a list is <code>List[U]</code>, where <code>U</code> is the join 
+The type of a list is <code>List[</code><replaceable>U</replaceable><code>]</code>, where <replaceable>U</replaceable> is the join 
 of the types of each of its elements. In particular, if all of the elements 
-have the same type <code>T</code>, then the list will have type <code>List[T]</code>.
+have the same type <replaceable>T</replaceable>, then the list will have type <code>List[</code><replaceable>T</replaceable><code>]</code>.
 </para>
 </section>
 
 <section xml:id="ref.data.list.javacalls">
 <title>Java calls</title>
 
-<para>Orc <type>List</type>s don't correspond to any Java value, so if a <type>List</type>
-is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
+<para>Orc lists do not correspond to any Java value, so if a list is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
 
 </section>
 
@@ -119,6 +120,7 @@ tail([3,2,5]) = [2,5]
      		<row>
         		<entry><itemizedlist>
         			<listitem><para><link linkend="ref.stdlib.list.head"><code>head</code> function</link></para></listitem>
+        			<listitem><para><link linkend="ref.stdlib.list.tail"><code>tail</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.init"><code>init</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.empty"><code>empty</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.each"><code>each</code> function</link></para></listitem>

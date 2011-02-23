@@ -13,9 +13,6 @@
 <section xml:id="ref.data.numeric">
 <title>Numerics</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>Integer</code></para>
-<para><emphasis role="strong">Type</emphasis>: <code>Number</code></para>
-
 <para>Orc includes two numeric types, <code>Integer</code> and <code>Number</code>.
 Orc's <code>Integer</code> is an arbitrary-precision two's complement integer. 
 Orc's <code>Number</code> is a floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
@@ -108,6 +105,15 @@ These values are boxed and unboxed per <citetitle pubwork="book">The Java Langua
 </para>
 
 </section>
+
+<section xml:id="ref.data.numeric.type">
+  <title>Type</title>
+	<para>
+		All numeric values have type <code>Number</code>. Integer values also
+		have the more specific type <code>Integer</code>, which is a subtype of <code>Number</code>.
+	</para>
+</section>
+
 
 <section xml:id="ref.data.numeric.examples">
 <title>Examples</title>

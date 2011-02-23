@@ -38,7 +38,7 @@
 			  <rhs>
 				  <nonterminal def="#ebnf.literal">Literal</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.variable">Variable</nonterminal>
-				  <sbr/>&#x2759; <code>stop</code>
+				  <sbr/>&#x2759; <nonterminal def="#ebnf.expression.stop">Stop</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.tuple">Tuple</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.list">List</nonterminal>		    
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.record">Record</nonterminal>
@@ -55,6 +55,13 @@
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.withtypeassertion">WithTypeAssertion</nonterminal>
 				  <sbr/>&#x2759; <nonterminal def="#ebnf.expression.declaration">Declaration</nonterminal> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 					<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.expression.stop">
+			  <lhs>Stop</lhs>
+			  <rhs>
+			    <code>stop</code>
 			  </rhs>
 			</production>
 			
@@ -97,7 +104,7 @@
 			<production xml:id="ebnf.expression.infixoperator">
 			  <lhs>InfixOperation</lhs>
 			  <rhs>
-			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="please.point.me.to.the.infix.operator.table">PrefixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+			    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="please.point.me.to.the.infix.operator.table">InfixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 			  </rhs>
 			</production>
 			
