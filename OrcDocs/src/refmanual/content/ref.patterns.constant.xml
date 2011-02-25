@@ -28,6 +28,7 @@
 		  <title>Factorial Function</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Factorial function -}
+
 def fact(0) = 1
 def fact(n) = n * fact(n-1)
 
@@ -44,6 +45,7 @@ OUTPUT:
 		  <title>Implication by Cases</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Defining logical implication by cases -}
+
 def implies(true, false) = false
 def implies(_, _) = true
 

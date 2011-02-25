@@ -38,7 +38,6 @@
    <!ENTITY targets.ref.expressions.lambda SYSTEM "../build/targetdb/ref.expressions.lambda.xml">
    <!ENTITY targets.ref.expressions.operators SYSTEM "../build/targetdb/ref.expressions.operators.xml">
    <!ENTITY targets.ref.expressions.stop SYSTEM "../build/targetdb/ref.expressions.stop.xml">
-   <!ENTITY targets.ref.expressions.val SYSTEM "../build/targetdb/ref.expressions.val.xml">
    <!ENTITY targets.ref.expressions SYSTEM "../build/targetdb/ref.expressions.xml">
    <!ENTITY targets.ref.functions.clausal SYSTEM "../build/targetdb/ref.functions.clausal.xml">
    <!ENTITY targets.ref.functions.closure SYSTEM "../build/targetdb/ref.functions.closure.xml">
@@ -57,10 +56,8 @@
    <!ENTITY targets.ref.sites.custom SYSTEM "../build/targetdb/ref.sites.custom.xml">
    <!ENTITY targets.ref.sites.java SYSTEM "../build/targetdb/ref.sites.java.xml">
    <!ENTITY targets.ref.sites.library SYSTEM "../build/targetdb/ref.sites.library.xml">
-   <!ENTITY targets.ref.sites.operators SYSTEM "../build/targetdb/ref.sites.operators.xml">
    <!ENTITY targets.ref.sites.web SYSTEM "../build/targetdb/ref.sites.web.xml">
    <!ENTITY targets.ref.sites SYSTEM "../build/targetdb/ref.sites.xml">
-   <!ENTITY targets.ref.stdlib SYSTEM "../build/targetdb/ref.stdlib.xml">
    <!ENTITY targets.ref.stdlib.core SYSTEM "../build/targetdb/ref.stdlib.core.xml">
    <!ENTITY targets.ref.stdlib.idioms SYSTEM "../build/targetdb/ref.stdlib.idioms.xml">
    <!ENTITY targets.ref.stdlib.list SYSTEM "../build/targetdb/ref.stdlib.list.xml">
@@ -69,6 +66,7 @@
    <!ENTITY targets.ref.stdlib.text SYSTEM "../build/targetdb/ref.stdlib.text.xml">
    <!ENTITY targets.ref.stdlib.time SYSTEM "../build/targetdb/ref.stdlib.time.xml">
    <!ENTITY targets.ref.stdlib.util SYSTEM "../build/targetdb/ref.stdlib.util.xml">
+   <!ENTITY targets.ref.stdlib SYSTEM "../build/targetdb/ref.stdlib.xml">
    <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/targetdb/ref.syntax.EBNF.xml">
    <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/targetdb/ref.syntax.keywords.xml">
    <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/targetdb/ref.syntax.lexical.xml">
@@ -201,9 +199,6 @@
 					  <document targetdoc="ref.expressions.stop" baseuri="ref.expressions.stop.html">
 					  	&targets.ref.expressions.stop;
 					  </document>
-					  <document targetdoc="ref.expressions.val" baseuri="ref.expressions.val.html">
-					  	&targets.ref.expressions.val;
-					  </document>
 					  <document targetdoc="ref.expressions" baseuri="ref.expressions.html">
 					  	&targets.ref.expressions;
 					  </document>
@@ -257,9 +252,6 @@
 					  </document>
 					  <document targetdoc="ref.sites.library" baseuri="ref.sites.library.html">
 					  	&targets.ref.sites.library;
-					  </document>
-					  <document targetdoc="ref.sites.operators" baseuri="ref.sites.operators.html">
-					  	&targets.ref.sites.operators;
 					  </document>
 					  <document targetdoc="ref.sites.web" baseuri="ref.sites.web.html">
 					  	&targets.ref.sites.web;

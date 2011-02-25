@@ -55,9 +55,9 @@ Returns of type <code language="java">void</code> from Java code are converted i
 
 </section>
 
+<!-- 
 <section xml:id="ref.data.signal.examples">
 <title>Examples</title>
-
 
 <example xml:id="ref.data.signal.examples.metronome">
 <title>Metronome</title>
@@ -76,6 +76,7 @@ signal
 -}
 ]]></programlisting>
 </example>
+-->
 
 <!-- 
 <example xml:id="ref.data.signal.examples.sequentialprint">
@@ -85,9 +86,9 @@ signal
 signal
 ]]></programlisting>
 </example>
--->
 
 </section>
+-->
 
 <section xml:id="ref.data.signal.links">
 <title>Related Links</title>
