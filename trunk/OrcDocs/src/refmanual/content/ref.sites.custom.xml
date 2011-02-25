@@ -40,7 +40,7 @@ for the site to respond to the site call.  The <code language="java">Handle</cod
 to respond by either:
 <itemizedlist>
 <listitem>Publishing a value</listitem>
-<listitem><link linkend="ref.concepts.halt">Halting</link> <link linkend="ref.concepts.silent">silently</link></listitem>
+<listitem><link linkend="ref.concepts.halt">Halting </link> <link linkend="ref.concepts.silent">silently</link></listitem>
 <listitem>Throwing an exception</listitem>
 </itemizedlist>
 Additionally, sites may notify the Orc runtime engine of events via the <code language="java">Handle</code>,
@@ -71,7 +71,7 @@ Orc provides a number of convenience mix-in traits for site implementors:
   <varlistentry>
     <term><code language="java">orc.values.sites.PartialSite</code></term>
     <listitem>
-      <para>A site that sometimes publishes and sometimes <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.  Implement the <code language="java">evaluate</code> method instead of the <code language="java">call</code> method.  <code language="java">evaluate</code> should return an <code language="java">Option</code>, <code language="java">Some(x)</code> to publish <code language="java">x</code>, or <code language="java">None</code> to halt.</para>
+      <para>A site that sometimes publishes and sometimes halts silently.  Implement the <code language="java">evaluate</code> method instead of the <code language="java">call</code> method.  <code language="java">evaluate</code> should return an <code language="java">Option</code>, <code language="java">Some(x)</code> to publish <code language="java">x</code>, or <code language="java">None</code> to halt.</para>
     </listitem>
   </varlistentry>
   <varlistentry>

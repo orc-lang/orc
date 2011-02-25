@@ -33,9 +33,11 @@ Limitation:  we can use <code>lambda</code> to create a closure only for a funct
 {- Define a function that sums the results of its argument function
    evaluated with arguments 1 and 2
 -}
+
 def onetwosum(f) = f(1) + f(2)
 
 onetwosum( lambda(x) = x * 3 )
+
 {- 
   identical to:
   def triple(x) = x * 3

@@ -29,7 +29,6 @@ Most of Orc's value types are immutable.</para>
 <listitem><para><code>Cell</code>: A write-once <code>Ref</code></para></listitem>
 <listitem><para><code>Buffer</code>: A queue of values</para></listitem>
 <listitem><para><code>BoundedBuffer</code>: A queue of values with a maximum size</para></listitem>
-<listitem><para><code>BoundedBuffer</code>: A queue of values with a maximum size</para></listitem>
 <listitem><para><code>Array</code>: A mutable integer-indexed sequence of values</para></listitem>
 <listitem><para><code>Set</code>: A mutable set of values</para></listitem>
 <listitem><para><code>Counter</code>: A value that can be incremented and decremented atomically</para></listitem>

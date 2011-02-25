@@ -37,13 +37,12 @@ with zero values.</para>
 
 <para>Constructor arguments are executed in parallel, and the first published value of each argument
 expression is used as the actual argument to the consructor.  If any argument expression is <link linkend="ref.concepts.silent">silent</link>,
-the construtor invocation is <link linkend="ref.concepts.silent">silent</link>.</para>
+the construtor invocation is silent.</para>
 
 <section xml:id="ref.data.datatype.patterns">
 <title>Patterns</title>
 
-<para>Datatype values are inspected by using Orc's pattern matching facility.
-This extensive facility is described in the <link linkend="ref.patterns">Patterns</link> chapter of this reference manual.</para>
+<para>Datatype values are inspected by using Orc's <link linkend="ref.patterns">pattern matching</link> facility.</para>
 
 <para>(In the mathematical context of coalgebras, patterns are called "destructors" or "observers",
 but those mathematical terms should not be confused with their usage in many object-oriented programming languages.)</para>

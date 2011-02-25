@@ -26,7 +26,7 @@ Additionally, sites are themselves values, and may be passed to sites or returne
 
 <para>
 All of the preceding values are immutable. Orc also has access to mutable state through sites.
-The Standard Library includes many such sites, including <code>Ref</code> and <code>Buffer</code>.
+The <link linkend="ref.stdlib">Standard Library</link> includes many such sites, including <code>Ref</code> and <code>Buffer</code>.
 </para> 
 
 <para>

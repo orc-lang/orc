@@ -27,6 +27,7 @@
 		  <title>Sum Pair</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Sum the elements of a pair  -}
+
 val (x, y) = (3, 4)
 
 x + y

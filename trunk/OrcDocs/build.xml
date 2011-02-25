@@ -95,7 +95,7 @@
 		 ================================= -->
 	<target name="depends" depends="prelude-orcdoc" description="Remove out-of-date targets">
 		<!-- User Guide: -->
-		<!-- Remove all targets build form combined userguide source files if any file changes -->
+		<!-- Remove all targets built from combined userguide source files if any file changes -->
 		<dependset>
 			<srcfileset dir="${src.dir}/userguide" includes="**/*"/>
 			<targetfileset dir="${build.dir}/targetdb" includes="userguide.*"/>

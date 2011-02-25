@@ -14,13 +14,8 @@
 <title>Library sites</title>
 
 <para>
-Orc programs are provided a variety of sites in the Orc standard library.
+The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites (as well as functions and types) for use in Orc programs.
 These sites are declared in the Orc prelude, which is implicitly included in Orc programs.
-The standard prelude declarations are documented in the <link linkend="ref.stdlib">Standard Library</link> chapter.
-</para>
-
-<para>
-(Note that the Orc prelude also declares functions and types, not only sites.)
 </para>
 
 <para>

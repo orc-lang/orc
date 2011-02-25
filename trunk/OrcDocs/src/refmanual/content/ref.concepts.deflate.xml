@@ -29,7 +29,7 @@
 			<para>When <replaceable>E</replaceable> publishes a value <replaceable>v</replaceable>, 
 			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>.</para> 
 			
-			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be deflateed,
+			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be deflated,
 			so this transformation may be applied multiple times. For example, the expression</para>
 			<para><code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code></para>
 			<para>rewrites to</para>
@@ -40,7 +40,7 @@
 			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
 			</para>
 			<para>
-			  If any deflated expression halts <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
+			  If any deflated expression <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
 			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
 			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
 			  would also halt silently. 

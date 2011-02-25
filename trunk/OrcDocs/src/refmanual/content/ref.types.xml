@@ -78,7 +78,7 @@ though it does not currently implement <emphasis>bounded polymorphism</emphasis>
  -->
 
 
-<section><title>Simple Typing</title>
+<section xml:id="ref.types.simple"><title>Simple Typing</title>
 
 In this section we will see how Orc programs are typechecked, starting with
 simple expressions like constants and arithmetic operations, and working up to more interesting
@@ -487,7 +487,7 @@ they are not recommended for production code.
 </section>
 
 
-<section><title>Polymorphism</title>
+<section xml:id="ref.types.polymorphism"><title>Polymorphism</title>
 
 In this section we examine a powerful feature of Orc's typechecker: <emphasis>parametric polymorphism</emphasis>.
 This allows us to define types that take other types as parameters; the same theory underlies Java's generics.
@@ -654,7 +654,7 @@ type constructors
 
 </section>
 
-<section><title>Interacting with Java</title>
+<section xml:id="ref.types.java"><title>Interacting with Java</title>
 
 <para>
 When a Java class is made accessible to Orc using the <code>class</code> declaration,

@@ -13,7 +13,7 @@
 <!-- Include -->
 	<section xml:id="ref.declarations.include">
 		<title><code>include</code> &#8212; Include Orc File</title>
-		<section xml:id="ref.declarations.include.body">
+
 			<para>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code>include</code> declaration offers a simple
@@ -24,7 +24,6 @@ replaced the include declaration. An included file may itself contain
 URI recognized by the Java library (http, https, ftp, etc.), and include resources
 found in the Orc JAR files.
 			</para>
-		</section>
 		
 		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>

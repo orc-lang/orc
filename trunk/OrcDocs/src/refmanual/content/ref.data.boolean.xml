@@ -13,7 +13,7 @@
 <section xml:id="ref.data.boolean">
 <title>Booleans</title>
 
-  <para>Orc supports Boolean values, <code>false</code> and <code>true</code>.</para>
+  <para>Orc supports Boolean values, <code>true</code> and <code>false</code>.</para>
 
 	<section xml:id="ref.data.boolean.syntax">
 	  <title>Syntax</title>
