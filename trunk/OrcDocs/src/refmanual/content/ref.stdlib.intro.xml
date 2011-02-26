@@ -27,6 +27,7 @@
 		of library sites.  The tags and their definitions are as follows:
 	 </para>
 			
+	<!-- 
 	 <para>
 	 	<informaltable frame="none">
 			<tgroup cols="1" align="left">
@@ -47,6 +48,39 @@
 			    </tbody>
 			  	</tgroup>
 				</informaltable>			
+	</para>
+	-->
+	
+	<para>
+		<variablelist><title>Site Property Set</title>
+		  <varlistentry>
+		    <term><sitepropset><siteprop propname="blocking"/></sitepropset></term>
+		    <listitem>
+		      <para>The site may block execution of an expression.</para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><sitepropset><siteprop propname="nonblocking"/></sitepropset></term>
+		    <listitem>
+		      <para>The site will never block execution of an expression.</para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><sitepropset><siteprop propname="pure"/></sitepropset></term>
+		    <listitem>
+		      <para>The site is pure.</para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><sitepropset><siteprop propname="idempotent"/></sitepropset></term>
+		    <listitem>
+		      <para>The site is idempotent, therefore applying it multiple times to the same
+		      argument will not change the result.</para> 
+		    </listitem>
+		  </varlistentry>
+ </variablelist>
+
+	
 	</para>
 	
 </para>
