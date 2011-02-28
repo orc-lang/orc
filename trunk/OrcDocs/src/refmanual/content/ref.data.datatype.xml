@@ -19,9 +19,6 @@ The set of allowed tags is fixed by the definition of the datatype.
 Each tag has a defined number of associated values, similar to a tuple, but, unlike an Orc tuple, the
 number of associated values may be zero or more.</para>
 
-<para>Enumerations found in other languages are algebraic data types where all tags are associated
-with zero values.</para>
-
 <para>When using the Orc type system, datatypes may be polymorphic (taking type parameters).</para>
 
 <para>Datatypes can be recursive; namely, a datatype instance may contain an instance of the same type.</para>
@@ -59,9 +56,30 @@ but those mathematical terms should not be confused with their usage in many obj
 <section xml:id="ref.data.datatype.examples">
 <title>Examples</title>
 
+
+<para></para>
+
+<example xml:id="ref.data.datatypes.examples.shapes">
+<title>Enumeration</title>
+<programlisting language="orc-demo"><![CDATA[
+{- An enumeration, such as Java's enum, can be represented by a datatype
+   whose constructors have no arguments. Note that an empty argument list,
+   (), is still needed.
+-}
+type objective = Primary() | Secondary() | Tertiary()
+
+[Secondary(), Tertiary()]
+
+{-
+OUTPUT:
+[Secondary(), Tertiary()]
+-}
+]]></programlisting>
+</example>
+
 <example xml:id="ref.data.datatypes.examples.shapes">
 <title>Geometric shape datatype</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- A Shape type with three data constructors -}
 type Shape = Rectangle(_, _) | Circle (_) | Triangle(_, _, _)
 
@@ -69,7 +87,8 @@ type Shape = Rectangle(_, _) | Circle (_) | Triangle(_, _, _)
 Rectangle(2, 3)
 
 {-
-NONRUNNABLE
+OUTPUT:
+Rectangle(2, 3)
 -}
 ]]></programlisting>
 </example>
@@ -91,7 +110,8 @@ type Node = LeafNode(Integer) | InnerNode(Node, Node)
 InnerNode(LeafNode(1),InnerNode(LeafNode(2),LeafNode(3)))
 
 {-
-NONRUNNABLE
+OUTPUT:
+InnerNode(LeafNode(1), InnerNode(LeafNode(2), LeafNode(3)))
 -}
 ]]></programlisting>
 </example>

@@ -90,8 +90,11 @@
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>
 			<para>
-				The type of <code><![CDATA[F >x> G]]></code> is the type of <code><![CDATA[G]]></code> using the assumption <code><![CDATA[x :: T]]></code>, 
-				where <code><![CDATA[T]]></code> is the type of <code><![CDATA[F]]></code>.
+				The type of <replaceable>F</replaceable> <code><![CDATA[>]]></code><replaceable>x</replaceable><code><![CDATA[>]]></code> <replaceable>G</replaceable> 
+				is the type of <replaceable>G</replaceable> 
+				using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, 
+				where <replaceable>T</replaceable> 
+				is the type of <replaceable>F</replaceable>.
 			</para>
 		</section>
 		

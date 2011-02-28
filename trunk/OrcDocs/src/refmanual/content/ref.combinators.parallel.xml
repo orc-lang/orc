@@ -81,7 +81,7 @@
 	  <section xml:id="ref.combinators.parallel.type">
 	    <title>Type</title>
 			<para>
-				The type of F <code>|</code> G is the <link linkend="ref.types.lattice">join</link> of the types of F and G.
+				The type of <replaceable>F</replaceable> <code>|</code> <replaceable>G</replaceable> is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
 			</para>
 		</section>
 	  
