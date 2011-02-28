@@ -20,8 +20,16 @@
 				value must match its corresponding pattern. The record value may contain additional
 				keys not mentioned by the record pattern.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>{.</code> X<code> = </code>P , ... , X<code> = </code>P <code>.}</code></emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.record.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.record"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.record.examples">
 		  <title>Examples</title>

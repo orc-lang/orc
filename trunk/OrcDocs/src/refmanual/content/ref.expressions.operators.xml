@@ -14,6 +14,16 @@
 <section xml:id="ref.expressions.operators">
 	<title>Operators</title>
 
+		<section xml:id="ref.expressions.operators.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    	<productionrecap linkend="ebnf.expression.prefixoperation"/>
+		    	<productionrecap linkend="ebnf.expression.infixoperation"/>
+		    </productionset>
+		  </para>
+	  </section>
+
 <para>
 Orc has a standard set of operators, which are written in their conventional infix, prefix, or postfix style.
 Operators in Orc are syntatic sugar for site calls.

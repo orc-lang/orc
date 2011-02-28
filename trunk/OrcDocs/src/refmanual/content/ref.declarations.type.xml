@@ -41,6 +41,17 @@
 			hand side of a type import is always a fully specified Java or Scala class name.
 			</para>
 		
+		<section xml:id="ref.declarations.type.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.type"/>
+	    	<productionrecap linkend="ebnf.declaration.type.alias"/>
+	    	<productionrecap linkend="ebnf.declaration.type.import"/>
+	    </productionset>
+	  </para>
+  </section>
+		
 		<section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 

@@ -25,118 +25,12 @@
 		necessarily explicitly called methods.
       </para>
 	  <section xml:id="ref.declarations.defclass.syntax">
-		  <title>Syntax</title>
-		  <para><emphasis role="strong">EBNF</emphasis>:</para>
-		  <para>
-		  <!-- 
-<programlisting language="orc"><![CDATA[
-D::=                             Declaration     
-  val P = E                      Value Declaration
-  | def X( P , ... , P ) = E       
-CP::=                            Class Declaration
-  def class C( P , ... , P ) = 
-    (D | CP)* 
-    def X( P , ... , P ) = E
-    E                            Goal Expression    
-]]></programlisting>
-			-->
-			<table frame="none" rowsep="0" colsep="0">
-			<title>Class Syntax</title>
-			<?dbhtml table-width="80%" ?>
-			<?dbfo table-width="100%" ?>
-			<!--  <?dbfo keep-together="always" ?>  -->
-			<tgroup cols="5" >
-			<colspec colnum="1" colwidth="1*" align="right"/>
-			<colspec colnum="2" colwidth="1*" align="center"/>
-			<colspec colnum="3" colwidth="10*" align="left"/>
-			<colspec colnum="4" colwidth="5*" align="left"/>
-			<colspec colnum="5" colwidth="7*" align="left"/>
-			<tbody>
-			
-			<row>
-			<entry>D</entry>
-			<entry>::=</entry>
-			
-			<entry></entry>
-			
-			<entry><emphasis>Declaration</emphasis></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry></entry>
-			
-			<entry><code>val P = E</code></entry>
-			
-			<entry><emphasis>Value Declaration</emphasis></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry>&#10073;</entry>
-			
-			<entry><code>def X( P , ... , P ) = E</code></entry>
-			
-			<entry></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry>CP</entry>
-			<entry>::=</entry>
-			
-			<entry></entry>
-			
-			<entry><emphasis>Class Declaration</emphasis></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry></entry>
-			
-			<entry><code>def class C( P , ... , P ) =</code></entry>
-			
-			<entry></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry></entry>
-			
-			<entry><code>    (D </code>&#10073;<code> CP)*</code></entry>
-			
-			<entry></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry></entry>
-			
-			<entry><code>    def X( P , ... , P ) = E</code></entry>
-			
-			<entry></entry>
-			<entry></entry>
-			</row>
-			
-			<row>
-			<entry></entry>
-			<entry></entry>
-			
-			<entry><code>    E</code></entry>
-			
-			<entry>Goal Expression</entry>
-			<entry></entry>
-			</row>
-			
-			</tbody>
-			</tgroup>
-			</table>
-		  </para>
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.defclass"/>
+	    </productionset>
+	  </para>
 	  </section>
 	  <section xml:id="ref.declarations.defclass.declaration">
 		  <title>Declaration</title>

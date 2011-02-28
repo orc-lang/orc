@@ -28,6 +28,15 @@ class to provide the service.
 			</para>
 		</section>
 		
+		<section xml:id="ref.declarations.site.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.site"/>
+	    </productionset>
+	  </para>
+  </section>
+		
 		<section xml:id="ref.declarations.site.examples">
 		<title>Examples</title>
 		

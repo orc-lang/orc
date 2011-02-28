@@ -25,6 +25,15 @@ URI recognized by the Java library (http, https, ftp, etc.), and include resourc
 found in the Orc JAR files.
 			</para>
 		
+	<section xml:id="ref.declarations.include.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.include"/>
+	    </productionset>
+	  </para>
+  </section>
+		
 		<section xml:id="ref.declarations.include.examples">
 		<title>Examples</title>
 

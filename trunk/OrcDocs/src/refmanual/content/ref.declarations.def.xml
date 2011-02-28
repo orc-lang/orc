@@ -19,6 +19,15 @@
 			</para>
 		</section>
 		
+		<section xml:id="ref.declarations.def.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.definition"/>
+	    </productionset>
+	  </para>
+  </section>
+		
 		<section xml:id="ref.declarations.def.examples">
 		<title>Examples</title>
 

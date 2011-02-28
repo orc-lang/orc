@@ -17,8 +17,16 @@
 			<para>
 				Each element of a tuple pattern matches the corresponding element of a tuple value.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>( P , ... , P )</code></emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.tuple.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.tuple"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.tuple.examples">
 		  <title>Examples</title>

@@ -17,8 +17,16 @@
 			<para>
 				Each element of a list pattern matches the corresponding element of a list value.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>[ P , ... , P ]</code></emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.list.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.list"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.list.examples">
 		  <title>Examples</title>

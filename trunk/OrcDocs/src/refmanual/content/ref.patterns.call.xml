@@ -18,8 +18,16 @@
 				In Orc pattern matching, when a value is compared to a call, the value must match the
 				form of the call to be considered a successful pattern match.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>X ( P , ... , P )</code></emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.call.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.call"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.call.examples">
 		  <title>Examples</title>

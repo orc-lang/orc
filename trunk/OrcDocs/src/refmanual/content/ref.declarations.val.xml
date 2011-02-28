@@ -23,6 +23,15 @@
 			</para>
 		</section>
 		
+		<section xml:id="ref.declarations.val.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.val"/>
+	    </productionset>
+	  </para>
+	  </section>
+		
 		<section xml:id="ref.declarations.val.examples">
 		<title>Examples</title>
 

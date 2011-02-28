@@ -26,14 +26,21 @@ with zero values.</para>
 
 <para>Datatypes can be recursive; namely, a datatype instance may contain an instance of the same type.</para>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>DataTypeDecl</replaceable> ::= <code>type </code><replaceable>TypeVar</replaceable><code>[</code><replaceable>TypeVar</replaceable>...<code>] = </code><replaceable>Constructor</replaceable><code> &#10073; </code><replaceable>Constructor</replaceable>...</para>
+		<section xml:id="ref.expressions.operators.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    	<productionrecap linkend="ebnf.declaration.type.datatype"/>
+		    	<productionrecap linkend="ebnf.constructor"/>
+		    	<productionrecap linkend="ebnf.optionaltype"/>
+		    </productionset>
+		  </para>
+	  </section>
 
 <section xml:id="ref.data.datatype.constructors">
 <title>Constructors</title>
 
 <para>Each tag name is declared as a data constructor, which is used to create values of the datatype.</para>
-
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Constructor</replaceable> ::= <replaceable>ident</replaceable><code>(_, </code>...<code>)</code> &#10073; <replaceable>ident</replaceable><code>(</code><replaceable>Type</replaceable><code>, </code>...<code>)</code></para>
 
 <para>Constructor arguments are executed in parallel, and the first published value of each argument
 expression is used as the actual argument to the consructor.  If any argument expression is <link linkend="ref.concepts.silent">silent</link>,

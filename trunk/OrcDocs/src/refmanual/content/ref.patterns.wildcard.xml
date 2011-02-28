@@ -17,8 +17,16 @@
 			<para>
 				The wildcard pattern matches any value and binds no variables.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= _</emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.wildcard.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.wildcard"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.wildcard.examples">
 		  <title>Examples</title>

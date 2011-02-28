@@ -17,8 +17,16 @@
 			<para>
 				The cons pattern matches the head and the tail of a nonempty list.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= <code>P : P</code></emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.cons.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.cons"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.cons.examples">
 		  <title>Examples</title>
