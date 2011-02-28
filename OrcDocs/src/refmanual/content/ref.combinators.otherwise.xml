@@ -76,7 +76,7 @@
 	  <section xml:id="ref.combinators.otherwise.type">
 		  <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> 
+				The type of <replaceable>F</replaceable> <code>;</code> <replaceable>G</replaceable> 
 				is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
 			</para>
 		</section>
