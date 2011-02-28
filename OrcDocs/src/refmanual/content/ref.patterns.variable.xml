@@ -17,8 +17,16 @@
 			<para>
 				A variable that occurs in a pattern is bound to the value matched to that pattern.
 			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= X</emphasis></para>
 		</section>
+		
+		<section xml:id="ref.patterns.variable.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.variable"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.variable.examples">
 		  <title>Examples</title>

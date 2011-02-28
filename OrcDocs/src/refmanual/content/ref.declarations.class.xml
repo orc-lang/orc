@@ -14,13 +14,18 @@
 <section xml:id="ref.declarations.class">
 	<title><code>class</code> &#8212; Import Java Class</title>
 
-	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassImport</replaceable> ::= <code>class </code><replaceable>Identifier</replaceable><code> = </code><replaceable>ClassName</replaceable></para>
-	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>ClassName</replaceable> ::= <replaceable>StringLiteral</replaceable> | <replaceable>QualifiedIdentifier</replaceable></para>
-	<para><emphasis role="strong">EBNF</emphasis>: <replaceable>QualifiedIdentifier</replaceable> ::= <replaceable>Identifier</replaceable> | <replaceable>Identifier</replaceable> <code>.</code> <replaceable>QualifiedIdentifier</replaceable></para>
-
 	<para>
 		Here we will discuss how to we declare Java classes.
 	</para>
+
+  <section xml:id="ref.declarations.class.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.declaration.class"/>
+	    </productionset>
+	  </para>
+  </section>
 
 	<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>

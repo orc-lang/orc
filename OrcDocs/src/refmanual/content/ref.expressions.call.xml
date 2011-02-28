@@ -12,12 +12,24 @@
 
 <!-- Lambda -->
 	<section xml:id="ref.expressions.call">
-		<title>Site call</title>
+		<title>Call</title>
 		<section xml:id="ref.expressions.call.body">
 			<para>
-			Content about calling sites.
+			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression 
+			on an <firstterm>argument group</firstterm>. There are four kinds of call: site call,
+			function call, dot access, and dereference.
 			</para>
 		</section>
+		
+		<section xml:id="ref.expressions.call.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.expression.call"/>
+	    	<productionrecap linkend="ebnf.argumentgroup"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		<section xml:id="ref.expressions.call.examples">
 		  <title>Examples</title>

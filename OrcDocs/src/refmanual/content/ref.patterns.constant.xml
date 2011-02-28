@@ -12,14 +12,24 @@
 
 <!-- Constant Pattern -->
 	<section xml:id="ref.patterns.constant">
-		<title>Constant Pattern</title>
+		<title>Literal Pattern</title>
 		<section xml:id="ref.patterns.constant.body">
 			<para>
-				A constant pattern matches only the same constant value. 
+				A literal pattern matches only the same literal value. 
 				It is often used in clausal definition of functions.   
 			</para>
 			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
 		</section>
+		
+		
+		<section xml:id="ref.patterns.constant.syntax">
+	  <title>Syntax</title>
+	  <para>
+	    <productionset>
+	    	<productionrecap linkend="ebnf.pattern.literal"/>
+	    </productionset>
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.constant.examples">
 		  <title>Examples</title>

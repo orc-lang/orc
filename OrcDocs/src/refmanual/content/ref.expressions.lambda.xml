@@ -25,6 +25,15 @@ Limitation:  we can use <code>lambda</code> to create a closure only for a funct
 </para>
 		</section>
 		
+		<section xml:id="ref.expressions.lambda.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    	<productionrecap linkend="ebnf.expression.lambda"/>
+		    </productionset>
+		  </para>
+	  </section>
+		
 		<section xml:id="ref.expressions.lambda.examples">
 		  <title>Examples</title>
 
