@@ -54,7 +54,7 @@
 <programlisting language="orc-demo"><![CDATA[
 {- This expression waits one second, then prints -}
 
-stop << Rtimer(1000) >> ("mc" | "hammer") ; "hammertime"
+stop << Rwait(1000) >> ("mc" | "hammer") ; "hammertime"
 
 {-
 OUTPUT:
@@ -78,7 +78,7 @@ OUTPUT:
 	     		<row>
 	        		<entry><itemizedlist>
 	        				<listitem><para><link linkend="ref.combinators.otherwise">Otherwise</link></para></listitem>
-	        				<listitem><para><link linkend="ref.concepts.deflate">deflateing</link></para></listitem>
+	        				<listitem><para><link linkend="ref.concepts.deflate">deflating</link></para></listitem>
 	          			<!-- <listitem><link linkend="ref.expressions.stop"><code>stop</code></link></listitem>  -->
 	        		</itemizedlist></entry>
 	        	</row>

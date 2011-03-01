@@ -98,7 +98,7 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Print "fork", but wait at least 500ms before printing "join" -}
 
-( println("fork"), Rtimer(500) ) >> println("join") >> stop
+( println("fork"), Rwait(500) ) >> println("join") >> stop
 
 {-
 OUTPUT:

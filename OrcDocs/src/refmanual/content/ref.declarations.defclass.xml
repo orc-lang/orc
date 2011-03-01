@@ -149,13 +149,13 @@ st.add(3) | st.add(5)
   							i.e., the call is made only when all the parameters are bound.</para></listitem>
 		</itemizedlist>
 		<programlisting language="orc"><![CDATA[
-v <v< (st.add(3) >> true | Rtimer(1) >> false)
+v <v< (st.add(3) >> true | Rwait(1) >> false)
 ]]></programlisting>
 		<para>		
 			The value published by this expression is either <code>true</code> or <code>false</code>. In
 			the first case, item 3 is added to <code>st</code>. In the second case, item 3 is
 			also added to <code>st</code>; the call <code>st.add(3)</code> is not <link linkend="ref.concepts.kill">killed</link> when
-			the execution of <code>Rtimer(1) >> false</code> is completed, though the
+			the execution of <code>Rwait(1) >> false</code> is completed, though the
 			publication of <code>st.add(3)</code> is subsequently ignored.
 		</para>
 	  </section>
@@ -318,7 +318,7 @@ no output
 
 def class metro() =
 
- def metronome() = signal | Rtimer(1000) >> metronome()
+ def metronome() = signal | Rwait(1000) >> metronome()
 
  {- Goal -} metronome() >> println("tick")
 
