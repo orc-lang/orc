@@ -45,7 +45,7 @@ public class RmiTest {
 		;
 
 		// Compile a program
-		oil = compiler.compile("", "def M(x) = x | Rtimer(1000) >> M(x+1) M(1)");
+		oil = compiler.compile("", "def M(x) = x | Rwait(1000) >> M(x+1) M(1)");
 
 		// Submit the program
 		String job = executor.submit("", oil);
