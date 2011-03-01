@@ -13,11 +13,10 @@
 <!-- def -->
 	<section xml:id="ref.declarations.def">
 		<title><code>def</code> &#8212; Define Function</title>
-		<section xml:id="ref.declarations.def.body">
-			<para>
-				Content about <code>def</code>.
-			</para>
-		</section>
+		
+		<para>
+			TODO (info paragraph about functions)
+		</para>
 		
 		<section xml:id="ref.declarations.def.syntax">
 	  <title>Syntax</title>
@@ -27,16 +26,166 @@
 	    </productionset>
 	  </para>
   </section>
+  
+  		<section xml:id="ref.declarations.def.clausal">
+			<title>Clausal Functions</title>
+			<para>
+			  A function can be defined by a sequence of clauses, where each clause specifies
+			  a pattern of arguments and the code to be executed in case the arguments match
+			  the pattern.
+			</para>
+			<para>
+			  A function may have multiple clauses, each of which has a sequence of patterns to match each argument,
+			  and a body expression. All clauses of a function are required to have the same number of arguments. Any
+			  contiguous sequence of definitions with the same name and different arguments is interpreted as a clausal
+			  definition, where each individual declaration is a clause of the larger function.
+			</para>
+			<para>
+			  When the function is called, the clauses are tried in the order in which they appear until a match is found.
+			  If no clause matches, the call remains silent.
+			</para>
+			
+			<section xml:id="ref.declarations.def.clausal.examples">
+			<title>Examples</title>
+			<example xml:id="ref.declarations.def.clausal.examples.one"><title>Simple example of a clausal function</title>
+<programlisting language="orc"><![CDATA[
+{- Simple clausal function -}
+
+def sum([]) = 0
+def sum(h:t) = h + sum(t)
+sum([1,2,3])
+
+{-
+OUTPUT:
+6
+-}
+
+]]></programlisting>
+		  </example>
+
+		  <example xml:id="ref.declarations.def.clausal.examples.two"><title>Clausal function with constant patterns</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Fibonacci numbers -}
+
+def fib(0) = 1
+def fib(1) = 1
+def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+
+fib(5)
+
+{-
+OUTPUT:
+8
+-}
+]]></programlisting>
+		  </example>
+
+		  <example xml:id="ref.declarations.def.clausal.examples.three"><title>Parity</title>
+<programlisting language="orc"><![CDATA[
+{- Return true if parity of 1s in a binary string is even -}
+
+def even([]) = true
+def odd([]) = false
+def even(1:xs) = odd(xs)
+def odd(1:xs) = even(xs)
+def even(_:xs) = even(xs)
+def odd(_:xs) = odd(xs)
+
+even([1,1,1,0])
+
+{-
+OUTPUT:
+false
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.declarations.def.clausal.examples.four"><title>Currying</title>
+<programlisting language="orc"><![CDATA[
+{- Simple currying example -}
+
+def sum(d,l)(h,p,v) = parts(d,l,h,p,v)
+
+{-
+NONRUNNABLE
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.declarations.def.clausal.examples.five"><title>Wild-Card</title>
+<programlisting language="orc"><![CDATA[
+{- Use a wildcard to define ignore a clausal argument -}
+
+def parts23(_,s,h,0,m,n) = 1
+
+{-
+NONRUNNABLE
+-}
+]]></programlisting>
+		  </example>
+		</section>
+		</section>
 		
+		<section xml:id="ref.declarations.def.recursive">
+		<title>Recursive Functions</title>
+			  <para>
+			  Functions can be recursive; that is, the name of a function may be used in its own body.
+			  </para>
+			  <para>
+			  A set of functions may be mutually recursive by naming each other in their bodies.
+			  There is no special keyword for mutual recursion.
+			  </para>
+			  
+			  <section xml:id="ref.declarations.def.recursive.examples">
+			  <title>Examples</title>
+			  <example xml:id="ref.declarations.def.recursive.examples.one"><title>Simple example of a recursive function</title>
+<programlisting language="orc"><![CDATA[
+{- Simple recursive function -}
+
+def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
+sumto(5)
+
+{-
+OUTPUT:
+15
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.declarations.def.recursive.examples.three"><title>Mutually Recursive Parity v2</title>
+<programlisting language="orc"><![CDATA[
+{- Return true if parity of 1s in a binary string is even -}
+
+def even([]) = true
+def even(1:xs) = odd(xs)
+def even(_:xs) = even(xs)
+
+def odd([]) = false
+def odd(1:xs) = even(xs)
+def odd(_:xs) = odd(xs)
+
+even([1,0,1,0])
+
+{-
+OUTPUT:
+true
+-}
+]]></programlisting>
+		  </example>
+			  </section>
+		</section>
+		
+		<!-- 
 		<section xml:id="ref.declarations.def.examples">
 		<title>Examples</title>
 
 		<example xml:id="ref.declarations.def.examples.one"><title>TODO</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
+TODO
 ]]></programlisting>
 		  </example>
 		</section>
+		-->
 		
 		<section xml:id="ref.declarations.def.links">
 		  <title>Related Links</title>
@@ -51,7 +200,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem>TODO</listitem>
+	          			<listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -68,7 +217,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem>TODO</listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.clauses">Clauses</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
