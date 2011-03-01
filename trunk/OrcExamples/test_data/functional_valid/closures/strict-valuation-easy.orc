@@ -8,9 +8,9 @@
  - 
  - Created by dkitchin on Jul 28, 2010
  -}
-val x = Rtimer(500) >> 23
+val x = Rwait(500) >> 23
 
-Rtimer(250) >> Println("250ms") >> stop
+Rwait(250) >> Println("250ms") >> stop
 |
 (
   def f() = x

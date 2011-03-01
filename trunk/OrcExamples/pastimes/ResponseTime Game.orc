@@ -12,7 +12,7 @@ val (id,dd) = (3000,100)
 
 val sw = Stopwatch()
 
-def rand_seq() = Random(10) |  Rtimer(dd) >> rand_seq()
+def rand_seq() = Random(10) |  Rwait(dd) >> rand_seq()
 
 def game() =
 {- game() conducts one game and returns a pair (b,w).
@@ -23,7 +23,7 @@ def game() =
 
    val (b,w) = 
  
-       sw.reset() >> Rtimer(id) >> rand_seq() >x> Println(x) >>
+       sw.reset() >> Rwait(id) >> rand_seq() >x> Println(x) >>
        If(x = v) >> sw.start() >> stop
 
      | Prompt("Press ENTER/OK for "+v) >> 

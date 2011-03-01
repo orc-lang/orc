@@ -1,5 +1,5 @@
 //
-// Rtimer.scala -- Scala class/trait/object Rtimer
+// Rwait.scala -- Scala class/trait/object Rwait
 // Project OrcScala
 //
 // $Id$
@@ -23,7 +23,7 @@ import orc.types.IntegerType
 import orc.types.SignalType
 import orc.types.FieldType
 import orc.types.OverloadedType
-import orc.run.extensions.RtimerEvent
+import orc.run.extensions.RwaitEvent
 import orc.Handle
 import orc.values.Field
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -34,12 +34,12 @@ import orc.error.runtime.ArityMismatchException
  *
  * @author dkitchin
  */
-class Rtimer extends Site with TypedSite {
+class Rwait extends Site with TypedSite {
 
   def call(args: List[AnyRef], caller: Handle) {
     args match {
       case List(delay: BigInt) => {
-        caller.notifyOrc(RtimerEvent(delay, caller))
+        caller.notifyOrc(RwaitEvent(delay, caller))
       }
       case List(Field("time")) => Rclock
       case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")

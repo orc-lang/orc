@@ -40,7 +40,7 @@ def class Multialarm() =
   def class Alarm() =
     val run = Ref(true)
 
-    def set(t) = Rtimer(t) >> If(run?)
+    def set(t) = Rwait(t) >> If(run?)
     def cancel() = run := false
   stop
 
@@ -62,7 +62,7 @@ val m = Multialarm()
 
   m.set("first", 500) >> "first alarm" 
 | m.set("second", 100) >> "second alarm" 
-| Rtimer(400) >> m.cancel("first") >> "first cancelled"
+| Rwait(400) >> m.cancel("first") >> "first cancelled"
 | m.cancel("third") >> "No third alarm has been set"
 
 {-

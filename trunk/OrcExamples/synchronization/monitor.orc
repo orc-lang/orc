@@ -36,7 +36,7 @@ def wait() =
 | dec() >> stop
 | dec() >> stop
 | dec() >> stop
-| Rtimer(100) >> dec() >> stop
+| Rwait(100) >> dec() >> stop
 | wait() >> Println("Zero!") >> stop
 
 {-

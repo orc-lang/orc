@@ -16,7 +16,7 @@ Real and virtual time.
 --}
 
 {--
-@site Rtimer(Integer) :: Signal
+@site Rwait(Integer) :: Signal
 
 <sitepropset>
    <siteprop propname="blocking"/>
@@ -24,7 +24,7 @@ Real and virtual time.
 
 Publish a signal after the given number of milliseconds.
 
-@method Rtimer.time() :: Integer
+@method Rwait.time() :: Integer
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -34,7 +34,7 @@ Return the current real time in milliseconds, as
 measured from midnight January 1, 1970 UTC.
 Ranges from 0 to <code>Long.MAX_VALUE</code>.
 --}
-site Rtimer = "orc.lib.time.Rtimer"
+site Rwait = "orc.lib.time.Rwait"
 
 {--
 @def Clock()() :: Number
@@ -47,12 +47,12 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes a value near 1000
 val c = Clock()
-Rtimer(1000) >> c()]]></programlisting>
+Rwait(1000) >> c()]]></programlisting>
 --}
 def Clock()() :: Number
 def Clock() =
-  val time = Rtimer.time()
-  lambda () = Rtimer.time() - time
+  val time = Rwait.time()
+  lambda () = Rwait.time() - time
 
 {--
 @site Vtimer(Integer) :: Signal
@@ -85,7 +85,7 @@ Publish a signal at regular intervals, indefinitely. The period is given by the
 argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal
-def metronome(t) = signal | Rtimer(t) >> metronome(t)
+def metronome(t) = signal | Rwait(t) >> metronome(t)
 
 
 {-
@@ -95,4 +95,4 @@ If it does become bound to a value v, publish Some(v).
 If instead the timeout is reached, publish None().
 -}
 def timeout[A](A, Integer) :: Option[A]
-def timeout(x, t) = Let(Some(x) | Rtimer(t) >> None())
+def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())

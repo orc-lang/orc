@@ -41,6 +41,6 @@ def class Sequencer(n) =
 val cc = Sequencer(2)
 val sw1 = Stopwatch()
 val sw2 = Stopwatch()
-  sw1.start() >> cc.register() >> sw1.halt() >t> Rtimer(50) >>  (1,t)
-| sw2.start() >> Rtimer(10) >> cc.register() >> sw2.halt() >t> (2,t)
-| cc.incr() >> stop | Rtimer(80) >> cc.incr() >> stop
+  sw1.start() >> cc.register() >> sw1.halt() >t> Rwait(50) >>  (1,t)
+| sw2.start() >> Rwait(10) >> cc.register() >> sw2.halt() >t> (2,t)
+| cc.incr() >> stop | Rwait(80) >> cc.incr() >> stop

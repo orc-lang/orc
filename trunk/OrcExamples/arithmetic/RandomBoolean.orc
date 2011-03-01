@@ -20,7 +20,7 @@ def class RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(f,t) =  
    If(URandom() <: f) >>  s.acquire() >>
-   Random(t) >w> Rtimer(w) >>
+   Random(t) >w> Rwait(w) >>
    (Random(2) = 1) >v>
    s.release() >> 
    (w,v)

@@ -11,7 +11,7 @@ def allow(0, c, s) = c.closenb() >> s.release() >> stop
 def allow(n, c, s) = c.get() >x> ( x | allow(n-1, c, s) )
 
 {- Example f -}
-def f() = upto(10) >x> Rtimer(x * 100) >> x
+def f() = upto(10) >x> Rwait(x * 100) >> x
 
 {- Main program -}
 val c = Buffer[Integer]()

@@ -94,7 +94,7 @@ def redraw() =
   redraw()
   
 def clock() =
-  Rtimer(1) >>
+  Rwait(1) >>
   Ltimer(1) >>
   clock()
 

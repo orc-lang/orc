@@ -76,12 +76,12 @@ stop
 {- Test
 
 -- The output should be a non-ending sequence of small negative integers, each is
--- the amount of time taken to execute Rtimer(100). Ideally, it should
+-- the amount of time taken to execute Rwait(100). Ideally, it should
 -- be 0; typically it is 3 or 4.
 
 val sw = Stopwatch()
 def test() = sw.reset() >> 
-             sw.start() >> Rtimer(100) >> sw.halt() >v>
+             sw.start() >> Rwait(100) >> sw.halt() >v>
              Println(v-100) >> test()
 
 test()

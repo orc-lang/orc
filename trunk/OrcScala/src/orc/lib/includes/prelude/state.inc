@@ -50,7 +50,7 @@ Example:
 -- Publishes: 5 5
 val c = Cell()
   c.write(5) >> c.read()
-| Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting>
+| Rwait(1) >> ( c.write(10) ; c.read() )]]></programlisting>
 
 @method Cell[A].read() :: A
 
@@ -92,7 +92,7 @@ Create a rewritable storage location without an initial value.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
-Rtimer(1000) >> r := 5 >> stop
+Rwait(1000) >> r := 5 >> stop
 | println(r?) >>
   r := 10 >>
   println(r?) >>
@@ -227,7 +227,7 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 10
 val b = Buffer()
-  Rtimer(1000) >> b.put(10) >> stop
+  Rwait(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting>
 
 @method Buffer[A].get() :: A
@@ -324,7 +324,7 @@ Example:
 val c = BoundedBuffer(1)
   c.put(1) >> "Put " + 1
 | c.put(2) >> "Put " + 2
-| Rtimer(1000) >> (
+| Rwait(1000) >> (
     c.get() >n> "Got " + n
   | c.get() >n> "Got " + n
   )]]></programlisting>

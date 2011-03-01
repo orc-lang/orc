@@ -53,7 +53,7 @@ def philosopher(name, mbox, missing) =
   def digesting() =
       Println(name + " thinking") >>
       thinking()
-    | Rtimer(Random(30)) >>
+    | Rwait(Random(30)) >>
       send(("rumble", send)) >>
       stop
 
@@ -88,7 +88,7 @@ def philosopher(name, mbox, missing) =
 
   def eating() =
     clean.clear() >>
-    Rtimer(Random(10)) >>
+    Rwait(Random(10)) >>
     map(sendFork, deferred.getAll()) >>
     digesting()
 
