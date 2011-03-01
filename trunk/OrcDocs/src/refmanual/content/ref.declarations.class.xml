@@ -12,7 +12,7 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class">
-	<title><code>class</code> &#8212; Import Java Class</title>
+	<title><code>class</code> &#8212; Import Class from Java</title>
 
 	<para>
 		Here we will discuss how to we declare Java classes.

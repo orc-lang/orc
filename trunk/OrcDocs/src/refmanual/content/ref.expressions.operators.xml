@@ -14,114 +14,29 @@
 <section xml:id="ref.expressions.operators">
 	<title>Operators</title>
 
-		<section xml:id="ref.expressions.operators.syntax">
-		  <title>Syntax</title>
-		  <para>
-		    <productionset>
-		    	<productionrecap linkend="ebnf.expression.prefixoperation"/>
-		    	<productionrecap linkend="ebnf.expression.infixoperation"/>
-		    </productionset>
-		  </para>
-	  </section>
-
 <para>
-Orc has a standard set of operators, which are written in their conventional infix, prefix, or postfix style.
-Operators in Orc are syntatic sugar for site calls.
+Orc has a standard set of infix, prefix, and postfix operators. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call">site calls</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
 Recall that site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
-The operators' syntax (fixity and precedence) is fixed by the Orc grammar; however, the site
-called is defined by the library and can be changed by a <code>def</code>
-or <code>site</code> declaration.
-Orc permits a special identifier form for operators: the operator name
-surrounded by parenthesis, as in <code>(+)</code>.
-To disambiguate the unary prefix operator <code>-</code> from the
-binary infix operator <code>-</code>, Orc translates the
-unary prefix operator as <code>(0-)</code>.
+Operators are parsed using <link linkend="ref.syntax.precedence">the precedence rules</link> of Orc. In particular, these rules describe the relationship between operators and combinators.
 </para>
 
-<para>
-Operators are parsed using the following precedence levels.
-Operators at a higher precedence, at the top of the table, execute before lower operators when the expression is executed.
-For example, <code>1 + 2 * 3</code> is equivalent to <code>1 + (2 * 3)</code>.
-</para>
-
-<para>
-TODO: Make prettier
-</para>
-
-<table frame="none" rowsep="1" colsep="0">
-	<title>Orc operators, in precedence order</title>
-	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="center"/>
-		<colspec align="left"/>
-		<thead>
-			<row>
-				<entry>Operator</entry>
-				<entry>Fixity</entry>
-				<entry>Precedence</entry>
-			</row>
-		</thead>
-		<tbody>
-			<row>
-				<entry><code>?</code></entry>
-				<entry>postfix</entry>
-				<entry>Executes first</entry>
-			</row>
-			<row>
-				<entry><code>-</code> and <code>~</code></entry>
-				<entry>prefix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>**</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>*</code> and <code>/</code> and <code>%</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>+</code> and <code>-</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>:</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>=</code> and <code>/=</code> and <code>&lt;:</code> and <code>:&gt;</code> and <code>&lt;=</code> and <code>&gt;=</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>||</code> and <code>&amp;&amp;</code></entry>
-				<entry>infix</entry>
-				<entry/>
-			</row>
-			<row>
-				<entry><code>:=</code></entry>
-				<entry>infix</entry>
-				<entry>Executes last</entry>
-			</row>
-		</tbody>
-	</tgroup>
-</table>
-
+<section xml:id="ref.expressions.operators.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    	<productionrecap linkend="ebnf.expression.prefixoperation"/>
+		    	<productionrecap linkend="ebnf.expression.infixoperation"/>
+		    	<productionrecap linkend="ebnf.expression.postfixoperation"/>
+		    </productionset>
+		  </para>
+	  </section>
 
 <section>
 <title>Standard Orc Operators</title>
-
-<para>
-TODO: Make prettier
-</para>
 
 <section>
 <title>Arithmetic Operators</title>
@@ -321,6 +236,26 @@ The <code>=</code> operator can compare values of any type. Values of different 
 </section>
 
 
+<section xml:id="ref.expressions.operators.redefining">
+<title>Redefining Operators</title>
+
+<para>
+The operators' syntax (fixity and precedence) is fixed by the Orc grammar; however, the site
+called is defined by the library and can be changed by a <code>def</code>
+or <code>site</code> declaration.
+</para>
+<para>
+Orc permits a special identifier form for operators: the operator name
+surrounded by parenthesis, as in <code>(+)</code>.
+To disambiguate the unary prefix operator <code>-</code> from the
+binary infix operator <code>-</code>, Orc translates the
+unary prefix operator as <code>(0-)</code>. Binding a value to such
+an identifier redefines the corresponding operator in the scope of
+that binding.
+</para>
+</section>
+
+
 <section xml:id="ref.expressions.operators.examples">
 <title>Examples</title>
 
@@ -350,17 +285,6 @@ OUTPUT:
 -}
 ]]></programlisting>
 </example>
-
-<!-- 
-<example xml:id="ref.expressions.operators.examples.equiv">
-<title>Operator-site call equivalence</title>
-<programlisting language="orc-demo"><![CDATA[
-  1 + 2 * 3
-| {-Same as-} 
-  (+)(1, (*)(2, 3))
-]]></programlisting>
-</example>
--->
 
 <example xml:id="ref.expressions.operators.examples.redefine">
 <title>Redefine an operator</title>

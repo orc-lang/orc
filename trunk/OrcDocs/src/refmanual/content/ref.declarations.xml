@@ -18,8 +18,13 @@
 <title>Declarations</title>
 
 <para>
-A variable can be bound to a value. A declaration binds one or more variables to values.  
+A declaration precedes an expression.
+It binds one or more variables to values, or type variables to types, in that expression. 
 Declarations follow the rules of <ulink url="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</ulink>.
+</para>
+
+<para>
+Declarations introduce new abstractions, services, and types. 
 </para>
 
 <xi:include href="ref.declarations.val.xml"/>
