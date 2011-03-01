@@ -1,6 +1,6 @@
 val c = BoundedBuffer[Integer](2)
   for(1, 6) >i> c.put(i) >> "Put " + i
-| Rtimer(100) >> (
+| Rwait(100) >> (
     for(1, 6) >> c.get() >i> "Got " + i
   )
 

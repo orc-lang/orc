@@ -47,13 +47,13 @@ val v = Ref[Integer](0)
 
 -- Typechecker will fail here because we do not have a syntax for record types yet
 def reader(lock) = 
-  Rtimer((Random(4)+1)*100) >>
+  Rwait((Random(4)+1)*100) >>
   lock.read_start() >>
 --  Println(v?) >>
   lock.read_finish()
 
 def writer(lock) = 
-  Rtimer((Random(4)+1)*100) >>
+  Rwait((Random(4)+1)*100) >>
   lock.write_start() >>
   v := v? + 1 >>
   lock.write_finish()

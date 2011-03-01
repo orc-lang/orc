@@ -2,7 +2,7 @@ def class channel() =
   val ch = Buffer[Integer]()
   val chlen = Ref[Integer](0)
   val s = Semaphore(1)
-  val _ = Rtimer(3000) >> Println("time up in channel!")
+  val _ = Rwait(3000) >> Println("time up in channel!")
   def put(x :: Integer) = 
     s.acquire() >>
     (ch.put(x) >>

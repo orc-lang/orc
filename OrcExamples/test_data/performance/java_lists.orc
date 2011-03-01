@@ -2,7 +2,7 @@ class LinkedList = java.util.LinkedList
 val l = LinkedList()
 val r = Ref()
 
-def Counter(n) = n | Rtimer(1) >> Counter(n+1)
+def Counter(n) = n | Rwait(1) >> Counter(n+1)
 
 Let(
     Counter(1) >n>
@@ -10,5 +10,5 @@ Let(
     l.remove() >n>
     r.write(n) >>
     stop
-  | Rtimer(10000) >> r.read()
+  | Rwait(10000) >> r.read()
 )

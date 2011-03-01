@@ -85,9 +85,9 @@ main()
 
 val rw = ReadersWriters()
 
-  rw.start(true) >> Println("1 read") >> Rtimer(75) >> rw.end()
-| Rtimer(50) >> rw.start(true)  >> Println("2 read") >> rw.end()
-| Rtimer(60) >>  rw.start(false) >> Println("3 write") >> rw.end()
+  rw.start(true) >> Println("1 read") >> Rwait(75) >> rw.end()
+| Rwait(50) >> rw.start(true)  >> Println("2 read") >> rw.end()
+| Rwait(60) >>  rw.start(false) >> Println("3 write") >> rw.end()
 
 
 ----------------------------------------------------

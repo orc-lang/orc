@@ -1,4 +1,4 @@
-x <x< Rtimer(1) | Rtimer(10000)
+x <x< Rwait(1) | Rwait(10000)
 
 {-
 OUTPUT:

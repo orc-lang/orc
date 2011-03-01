@@ -8,7 +8,7 @@ def delay(n) = Thread.currentThread().sleep(n)
 upto(50) >> delay(3000)>> stop
 | delay(2000) >> "delay"
 | "immediate"
-| Rtimer(500) >> Println("rtimer") >> stop
+| Rwait(500) >> Println("rtimer") >> stop
 
 {-
 OUTPUT:

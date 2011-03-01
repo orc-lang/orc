@@ -9,8 +9,8 @@ include "BoundedChannel.inc"
 
 val c = BBuffer(2)
   c.put(5) >> c.put(2) >> c.put(50) >> "yes"
-| Rtimer(2000) >> c.get()
-| Rtimer(4000) >> c.get() >> c.get()
+| Rwait(2000) >> c.get()
+| Rwait(4000) >> c.get() >> c.get()
 
 {-
 OUTPUT:

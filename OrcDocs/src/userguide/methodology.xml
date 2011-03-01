@@ -18,7 +18,7 @@ helps to improve the readability of programs, so that the programmer's intent is
 <!--
 <section><title>Identifiers</title>
 
-By convention, identifiers bound to sites should begin with a capital letter (e.g. <code>Rtimer</code>,
+By convention, identifiers bound to sites should begin with a capital letter (e.g. <code>Rwait</code>,
 <code>Google</code>). Similarly, identifiers bound to functions which are strict and publish at 
 most one value should also begin with a capital letter. Identifiers bound to functions which are not
 strict, or may publish multiple values, should begin with a lowercase letter. Variable names
@@ -464,7 +464,7 @@ with no arguments. A read operation on an empty cell blocks until the cell is wr
 {- Create a cell, and wait 1 second before initializing it. -}
 {- The read operation blocks until the write occurs. -}
 val r = Ref()
-r.read() | Rtimer(1000) >> r.write(1) >> stop
+r.read() | Rwait(1000) >> r.write(1) >> stop
 ]]></programlisting>
 
 </para>
@@ -484,8 +484,8 @@ simply halt.
 {- The read will block until a write occurs
    and only one write will succeed. -}
 val r = Cell()
-  Rtimer(1000) >> r.write(2) >> println("Wrote 2") >> stop
-| Rtimer(1000) >> r.write(3) >> println("Wrote 3") >> stop
+  Rwait(1000) >> r.write(2) >> println("Wrote 2") >> stop
+| Rwait(1000) >> r.write(3) >> println("Wrote 3") >> stop
 | r.read()
 ]]></programlisting>
 
@@ -521,8 +521,8 @@ but lower precedence than any of the other operators.</listitem>
 {- The read will block until a write occurs
    and only one write will succeed. -}
 val r = Cell()
-  Rtimer(1000) >> r := 2 >> println("Wrote 2") >> stop
-| Rtimer(1000) >> r := 3 >> println("Wrote 3") >> stop
+  Rwait(1000) >> r := 2 >> println("Wrote 2") >> stop
+| Rwait(1000) >> r := 3 >> println("Wrote 3") >> stop
 | r?
 ]]></programlisting>
 
@@ -941,13 +941,13 @@ publish only the first result.
 <para>
 <firstterm>Timeout</firstterm>, the ability to execute an expression for at most a specified
 amount of time, is an essential ingredient of fault-tolerant and distributed
-programming.  Orc accomplishes timeout using pruning and the <code>Rtimer</code> site.
+programming.  Orc accomplishes timeout using pruning and the <code>Rwait</code> site.
 The following program runs F for at most one second, publishing its result if
 available and the value <code>0</code> otherwise.
 </para>
 
 <programlisting>
-let( <emphasis role="bold">F</emphasis> | Rtimer(1000)<![CDATA[ >> ]]>0 )
+let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
 </programlisting>
 
 
@@ -961,7 +961,7 @@ one of the bidders does not respond. We can add a timeout so that a bidder has a
 <programlisting><![CDATA[
 def auction([]) = 0
 def auction(b:bs) = 
-  val bid = b.ask() | Rtimer(8000) >> 0
+  val bid = b.ask() | Rwait(8000) >> 0
   max(bid, auction(bs))
 ]]></programlisting>
 
@@ -989,14 +989,14 @@ within the time limit, we bind its result to <code>r</code> and execute G.
 Otherwise, we execute H.
 
 <programlisting>
-val (r, b) = (<emphasis role="bold">F</emphasis>, true) | (Rtimer(t), false)
+val (r, b) = (<emphasis role="bold">F</emphasis>, true) | (Rwait(t), false)
 if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
 </programlisting>
 
 Instead of using a boolean and conditional, we could use pattern matching:
 
 <programlisting><![CDATA[
-val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None()
+val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rwait(t) >> None()
   s >Some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
 | s >None()>  ]]><emphasis role="bold">H</emphasis>
 </programlisting>
@@ -1008,7 +1008,7 @@ val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rtimer(t) >> None
 It is even possible to encapsulate timeout as a function.
 
 <programlisting><![CDATA[
-def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
+def timeout(x, t) = let(Some(x) | Rwait(t) >> None())
 ]]></programlisting>
 
 <code><![CDATA[timeout(]]><emphasis role="bold">F</emphasis><![CDATA[, t)]]></code> waits 
@@ -1078,7 +1078,7 @@ is published.
 <programlisting>
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
-let( y | Rtimer(1000) >> x )
+let( y | Rwait(1000) >> x )
 </programlisting>
 
 </para>
@@ -1094,7 +1094,7 @@ intervals, for example to poll a service.
 Recall the definition of <code>metronome</code> from the previous chapter:
 
 <programlisting><![CDATA[
-def metronome(t) = signal | Rtimer(t) >> metronome()
+def metronome(t) = signal | Rwait(t) >> metronome()
 ]]></programlisting>
 </para>
 
@@ -1108,7 +1108,7 @@ the recursion is entirely contained within <code>metronome</code>.
 <para>
 <programlisting language="orc-demo"><![CDATA[
   metronome(1000) >> "tick"
-| Rtimer(500) >> metronome(1000) >> "tock"
+| Rwait(500) >> metronome(1000) >> "tock"
 ]]></programlisting>
 </para>
 
@@ -1160,12 +1160,12 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 val c = Buffer()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | Rtimer(1000) >> c.closenb()]]></programlisting>
+  | Rwait(1000) >> c.closenb()]]></programlisting>
 
 <para>
 This program allows F to execute for one second and then terminates it. Each
 value published by F is routed through channel <code>c</code> so that it does
-not terminate F. After one second, <code>Rtimer(1000)</code> responds,
+not terminate F. After one second, <code>Rwait(1000)</code> responds,
 triggering the call <code>c.closenb()</code>.  The call
 <code>c.closenb()</code> closes <code>c</code> and publishes a signal,
 terminating F.  The library function <code>repeat</code> is used to repeatedly
@@ -1373,12 +1373,12 @@ def lifter() =
   def loop() = c.get() >f> ( f() >> stop | loop() )
   c.put | loop()
 
-def delayedPrint() = Rtimer(1500) >> println("Delayed 1.5 seconds")
+def delayedPrint() = Rwait(1500) >> println("Delayed 1.5 seconds")
 
 lifter() >lift>
 (
 println("Running...") 
-  << Rtimer(1000) | delayedPrint() | lift(delayedPrint)
+  << Rwait(1000) | delayedPrint() | lift(delayedPrint)
 )
 ]]>
 </programlisting>
@@ -1516,12 +1516,12 @@ def phil(n,a,b) =
   def thinking() = 
     println(n + " thinking") >> 
     if (random(10) < 9)
-      then Rtimer(random(1000))
+      then Rwait(random(1000))
       else stop
   def hungry() = take((a,b))
   def eating() = 
     println(n + " eating") >> 
-    Rtimer(random(1000)) >> 
+    Rwait(random(1000)) >> 
     println(n + " done eating") >> 
     drop(a,b)
   thinking() >> hungry() >> eating() >> phil(n,a,b)
@@ -1619,7 +1619,7 @@ def philosopher(name, mbox, missing) =
   def digesting() =
       println(name + " thinking") >>
       thinking()
-    | Rtimer(random(1000)) >>
+    | Rwait(random(1000)) >>
       mbox.put(("rumble", mbox.put)) >>
       stop
 
@@ -1650,7 +1650,7 @@ def philosopher(name, mbox, missing) =
   {- Dirty forks, process deferred requests, then digest -}
   def eating() =
     clean.clear() >>
-    Rtimer(random(1000)) >>
+    Rwait(random(1000)) >>
     map(sendFork, deferred.getAll()) >>
     digesting()
 
@@ -1686,7 +1686,7 @@ def philosophers(n) =
 {- Simulate a 3x3 grid of philosophers for 10 seconds -}
 let(
   philosophers(3)
-  | Rtimer(10000)
+  | Rwait(10000)
 ) >> "HALTED"]]></programlisting>
 
 <para>
@@ -1779,13 +1779,13 @@ def release() = c.dec()
 -------------------------------------------------
 
 {-- These definitions are for testing only --}
-def reader(start) = Rtimer(start) >>
+def reader(start) = Rwait(start) >>
   acquire(false) >> println("START READ") >>
-  Rtimer(1000) >> println("END READ") >>
+  Rwait(1000) >> println("END READ") >>
   release() >> stop
-def writer(start) = Rtimer(start) >>
+def writer(start) = Rwait(start) >>
   acquire(true) >> println("START WRITE") >>
-  Rtimer(1000) >> println("END WRITE") >>
+  Rwait(1000) >> println("END WRITE") >>
   release() >> stop
 
 let(
@@ -1801,7 +1801,7 @@ let(
                {- END READ    -}
                {- END READ    -}
   -- halt after the last reader finishes
-  | Rtimer(60) >> acquire(true)
+  | Rwait(60) >> acquire(true)
 )]]></programlisting>
 
 <para>

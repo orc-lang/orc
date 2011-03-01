@@ -3,7 +3,7 @@ val s = Semaphore(1)
 signals(50) >>
 s.acquire() >>
 Println("Entering critical section") >>
-Rtimer(1) >>
+Rwait(1) >>
 Println("Leaving critical section") >>
 s.release() >> stop
 

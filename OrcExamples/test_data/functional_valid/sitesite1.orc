@@ -5,10 +5,10 @@
 
 def countdown(Integer) :: Signal
 def countdown(0) = signal
-def countdown(i) = Println(i) >> Rtimer(500) >> countdown(i-1)
+def countdown(i) = Println(i) >> Rwait(500) >> countdown(i-1)
 val Countdown = MakeSite(countdown)
 
-Let(Rtimer(250) >> true | Countdown(4)) -- | Rtimer(750) >> false
+Let(Rwait(250) >> true | Countdown(4)) -- | Rwait(750) >> false
  
 
 {-

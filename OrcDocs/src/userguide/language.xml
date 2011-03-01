@@ -2034,11 +2034,11 @@ Orc is designed to communicate with the external world, and one of the
 most important characteristics of the external world is the passage of
 time. Orc implicitly interacts with the passage of time by calling external
 services which take time to respond. However, Orc can also explicitly
-wait for some amount of time, using the special site <code>Rtimer</code>. 
+wait for some amount of time, using the special site <code>Rwait</code>. 
 </para>
 
 <para>
-The site <code>Rtimer</code> is a relative timer. It takes as an argument
+The site <code>Rwait</code> is a relative timer. It takes as an argument
 a number of milliseconds to wait. It waits for exactly that amount of time,
 and then responds with a signal.
 </para>
@@ -2046,7 +2046,7 @@ and then responds with a signal.
 <para>
 <programlisting language="orc-demo"><![CDATA[
 -- Print "red", wait for 3 seconds (3000 ms), and then print "green" 
-println("red") >> Rtimer(3000) >> println("green") >> stop
+println("red") >> Rwait(3000) >> println("green") >> stop
 ]]></programlisting>
 </para>
 
@@ -2057,12 +2057,12 @@ every <code>t</code> milliseconds, indefinitely.
 
 <para>
 <programlisting><![CDATA[
-def metronome(t) = signal | Rtimer(t) >> metronome(t)
+def metronome(t) = signal | Rwait(t) >> metronome(t)
 ]]></programlisting>
 </para>
 
 <para>
-We can also use <code>Rtimer</code> together with the pruning combinator 
+We can also use <code>Rwait</code> together with the pruning combinator 
 to enforce a timeout.
 </para>
 
@@ -2074,7 +2074,7 @@ to enforce a timeout.
 -}
 result 
   <result< ( Google("impatience") 
-           | Rtimer(5000) >> "Search timed out.")
+           | Rwait(5000) >> "Search timed out.")
 ]]></programlisting>
 </para>
 
@@ -2772,7 +2772,7 @@ Concurrent calls to methods: Methods of a class instance may
   interfere. Calling the methods of stack <code>st</code> concurrently may
   result in unintended outcomes. For example, in  
 <programlisting><![CDATA[
-  st.push(3) >> st.pop() >> Rtimer(1000) >> st.pop()
+  st.push(3) >> st.pop() >> Rwait(1000) >> st.pop()
 | st.push(4) >> stop
 ]]></programlisting>
   the last <code>st.pop()</code> (in the first line) often does not succeed,
@@ -2790,10 +2790,10 @@ Prune on class call: Like site calls, running class method invocations
   <computeroutput>done</computeroutput> is printed.
 <programlisting><![CDATA[
 def class testprune() =
-  def run() =  Rtimer(1000) >> println("done") >> stop
+  def run() =  Rwait(1000) >> println("done") >> stop
   stop
 
-  val x =  Rtimer(50) >> 3 |  testprune().run()
+  val x =  Rwait(50) >> 3 |  testprune().run()
   x
 ]]></programlisting>
 </para></listitem>
@@ -2983,7 +2983,7 @@ def class nclock(n) = -- tick every n milliseconds
 
 	val ticker = nclock(250)
 	-- prints a mutiple of 4 every one second
-	Rtimer(1000) >> metronome(1000) >> ticker.getTick()
+	Rwait(1000) >> metronome(1000) >> ticker.getTick()
 		]]></programlisting>
 	
 	<para>
@@ -3105,7 +3105,7 @@ val group1 = Rendezvous()
 val group2 = Rendezvous()
 
   group1.send(3)
-| Rtimer(1000) >> group2.recv()
+| Rwait(1000) >> group2.recv()
 | group2.send(5) >> group1.recv()
 ]]></programlisting>
 </section>

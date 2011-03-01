@@ -1,5 +1,5 @@
 //
-// SupportForRtimer.scala -- Scala trait SupportForRtimer
+// SupportForRwait.scala -- Scala trait SupportForRwait
 // Project OrcScala
 //
 // $Id$
@@ -28,22 +28,22 @@ import java.util.TimerTask
  * @author dkitchin
  */
 
-case class RtimerEvent(delay: BigInt, caller: Handle) extends OrcEvent
+case class RwaitEvent(delay: BigInt, caller: Handle) extends OrcEvent
 
-trait SupportForRtimer extends Orc {
+trait SupportForRwait extends Orc {
   
   val timer: Timer = new Timer()
   
   override def stop = { timer.cancel() ; super.stop }
   
-  /* Note that all executions in a runtime with Rtimer support
+  /* Note that all executions in a runtime with Rwait support
    * will share the same timer queue, so that we can stop the
    * timer when the runtime is shut down.
    */
   
   override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
     val thisHandler = { 
-      case RtimerEvent(delay, caller) => {
+      case RwaitEvent(delay, caller) => {
         val callback =  
           new TimerTask() {
             @Override

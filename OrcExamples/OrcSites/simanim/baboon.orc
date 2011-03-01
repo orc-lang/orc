@@ -178,7 +178,7 @@ def framerate() =
 	
 -- How many miliseconds go by in between logical timer clicks.
 def realTime() =
-	Ltimer(5) >> Rtimer(15) >> realTime()
+	Ltimer(5) >> Rwait(15) >> realTime()
 
 	 
 disp.open() >> 

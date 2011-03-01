@@ -7,13 +7,13 @@
  - 
  - Created by dkitchin on Jul 28, 2010
  -}
-val x = Rtimer(500) >> 23
+val x = Rwait(500) >> 23
 
-Rtimer(250) >> Println("250ms") >> stop
+Rwait(250) >> Println("250ms") >> stop
 |
 (
   def f(0) = Println("f(0)") >> x
-  def f(n) = Println("f(" + n + ")") >> Rtimer(83) >> f(n-1)
+  def f(n) = Println("f(" + n + ")") >> Rwait(83) >> f(n-1)
   f(2) >> stop
 ) 
 
