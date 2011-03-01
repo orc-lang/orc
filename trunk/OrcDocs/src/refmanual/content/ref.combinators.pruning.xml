@@ -155,7 +155,7 @@ OUTPUT:
    signal every 20 msec.
 -}
 
-stop << (metronome(20) >x> println(x) >> stop | Rtimer(100) )
+stop << (metronome(20) >x> println(x) >> stop | Rwait(100) )
 
 {-
 OUTPUT:

@@ -10,13 +10,13 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Rtimer -->
+<!-- Rwait -->
    <section xml:id="ref.time.real">
       <title>Real Time</title>
 	  <section xml:id="ref.time.real.behavior">
 		  <title>Behavior</title>
 <para>
-The site <code>Rtimer</code> is a relative timer. It takes as an argument
+The site <code>Rwait</code> is a relative timer. It takes as an argument
 a number of milliseconds to wait. It waits for exactly that amount of time,
 and then responds with a signal.
 </para>
@@ -24,11 +24,11 @@ and then responds with a signal.
 	  <section xml:id="ref.time.real.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.time.real.examples.simple"><title>Simple example of using Rtimer</title>
+		  <example xml:id="ref.time.real.examples.simple"><title>Simple example of using Rwait</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Print "red", wait for 3 seconds (3000 ms), and then print "green" -}
 
-println("red") >> Rtimer(3000) >> println("green") >> stop
+println("red") >> Rwait(3000) >> println("green") >> stop
 
 {-
 OUTPUT:
@@ -45,7 +45,7 @@ OUTPUT:
 -}
 result 
   <result< ( Google("impatience") 
-           | Rtimer(5000) >> "Search timed out.")
+           | Rwait(5000) >> "Search timed out.")
            
 {-
 NONRUNNABLE

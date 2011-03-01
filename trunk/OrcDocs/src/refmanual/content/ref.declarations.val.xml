@@ -42,13 +42,12 @@
 
 		<example xml:id="ref.expressions.val.examples.bindings"><title>Bindings</title>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-Bind x to true or false arbitrarily 
-Bind y to 2
+{- Bind x to true or false arbitrarily 
+   Bind y to 2
 -}
 
 val x = true | false
-val y = Rtimer(200) >> 2 | Rtimer(300) >> 3
+val y = Rwait(200) >> 2 | Rwait(300) >> 3
 
 "x is " + x + ", " +
 "y is " + y
@@ -69,7 +68,7 @@ OUTPUT:
    If it takes more than 5 seconds, time out.
 -}
 
-val result = Google("impatience") | Rtimer(5000) >> "Search timed out."
+val result = Google("impatience") | Rwait(5000) >> "Search timed out."
 
 {-
 NONRUNNABLE
