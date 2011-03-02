@@ -85,18 +85,32 @@ from Java code as <code language="java">java.lang.String</code>.</para>
 
 
 <example xml:id="ref.data.string.examples.one">
-<title>TODO:Example1</title>
+<title>Concatenation</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+{- Concatenate two strings -}
+
+"hello" + " world"
+
+{-
+OUTPUT:
+"hello world"
+-}
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.data.string.examples.two">
-<title>TODO:Example2</title>
+<title>String Functions</title>
 <programlisting><![CDATA[
---TODO
-signal
+{- Showcase some Orc library string functions -}
+
+Println("I go to the console") >>
+unwords(["I", "like", "Haskell"])
+
+{-
+OUTPUT:
+I go to the console
+"I like Haskell"
+-}
 ]]></programlisting>
 </example>
 		  
@@ -115,7 +129,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><link linkend="ref.types.String"><code>String</code> type</link></para></listitem> -->
+          			<!-- <listitem><para><link linkend="ref.types.String"><code>String</code> type</link></para></listitem> -->
           			<listitem><para><link linkend="ref.stdlib.text.write"><code>write</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.text.lines"><code>lines</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.text.unlines"><code>unlines</code> function</link></para></listitem>

@@ -22,6 +22,7 @@
 			</para>
 		</section>
 		
+		<!-- 
 		<section xml:id="ref.types.lattice.links">
 		  <title>Related Links</title>
 		  
@@ -35,7 +36,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        			<listitem><olink targetdoc="TODO" targetptr="TODO">TODO</olink></listitem>
+	        			<listitem></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -52,12 +53,12 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        			<listitem><olink targetdoc="TODO" targetptr="TODO">TODO</olink></listitem>
+	        			<listitem></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
 	  		</tgroup>
-		  </informaltable>
-		  
-	  </section>
+		  </informaltable>		  
+		  </section>
+		  -->
 	</section>
