@@ -15,8 +15,12 @@
 		<title>Site and Function Calls</title>
 		<section xml:id="ref.expressions.call.body">
 			<para>
-			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression 
-			on a sequence of <firstterm>argument</firstterm> expressions.
+			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression on a sequence of <firstterm>argument</firstterm> expressions. 
+			First, the target expression is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>f</replaceable>.
+			If <replaceable>f</replaceable> is a site, then the call is a site call. 
+			If <replaceable>f</replaceable> is a closure, then the call is a function call.
+			Each of these cases is described below.
+			
 			</para>
 		</section>
 		
@@ -30,6 +34,28 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.expressions.call.site">
+	  <title>Site Calls</title>
+	  <para>
+	     Execution of a site call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	     deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
+	     The site <replaceable>f</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
+	     A site call publishes at most one value. Once it publishes a value, it immediately halts.
+	     If the site is <link linkend="ref.concepts.halt.helpful">helpful</link>, the call may halt without publishing a value.
+	      
+	    
+	  </para>
+	  </section>
+	  
+	  <section xml:id="ref.expressions.call.function">
+	  <title>Function Calls</title>
+	  <para>
+	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. Execution of a function call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
+	    Since a function call executes an arbitrary expression, it may publish any number of values.
+	  </para>
+	  </section>
 		
 		<section xml:id="ref.expressions.call.examples">
 		  <title>Examples</title>
@@ -39,6 +65,19 @@
 --TODO
 ]]></programlisting>
 		  </example>
+		  
+		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
+<programlisting language="orc-demo"><![CDATA[
+--TODO
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
+<programlisting language="orc-demo"><![CDATA[
+--TODO
+]]></programlisting>
+		  </example>
+		  
 	  </section>
 		
 		<section xml:id="ref.expressions.call.links">
