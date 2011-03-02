@@ -282,12 +282,12 @@
 			<production xml:id="ebnf.constructor">
 			  <lhs>Constructor</lhs>
 			  <rhs>
-			     <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.optionaltype">OptionalType</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.optionaltype">OptionalType</nonterminal> <code>)</code>
+			     <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>)</code>
 			  </rhs>
 			</production>
 			
-			<production xml:id="ebnf.optionaltype">
-			  <lhs>OptionalType</lhs>
+			<production xml:id="ebnf.slot">
+			  <lhs>Slot</lhs>
 			  <rhs>
 			    <nonterminal def="#ebnf.type">Type</nonterminal>
 			    &#x2759; <code>_</code> 
