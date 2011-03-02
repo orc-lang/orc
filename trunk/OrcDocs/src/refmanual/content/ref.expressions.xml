@@ -28,6 +28,7 @@
 
 <xi:include href="ref.expressions.stop.xml"/>
 <xi:include href="ref.expressions.call.xml"/>
+<xi:include href="ref.expressions.dot.xml"/>
 <xi:include href="ref.expressions.operators.xml"/> 
 <xi:include href="ref.expressions.ifthenelse.xml"/>	
 <xi:include href="ref.expressions.lambda.xml"/>

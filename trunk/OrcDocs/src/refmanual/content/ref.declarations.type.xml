@@ -16,32 +16,10 @@
 
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: aliases, imports, and 
-			<link linkend="ref.data.datatype">datatypes</link>.
-			This section discusses only aliases and imports.
+			type declarations: aliases, imports, and datatypes.
 			</para>
 			
-			<para>
-			A type alias gives an existing type a new name, for the programmer's ease of use.
-			There is no distinction between the alias and the aliased type; they can be used
-			interchangeably. A type alias may be polymorphic, in which case the alias defines
-			a type operator. 
-			</para>
-			
-			<para>
-			A type import gives a name to a type described by some external entity, typically
-			by the host language. This allows new types to be added to the Orc type system.
-			Typically, these new types are used to describe new structures created by sites,
-			for example a <code>Buffer</code> type or a <code>URL</code> type. 
-			</para>
-			
-			<para>
-			Type aliases and imports use the same keyword, but they are easy to differentiate:
-			the right hand side of a type alias is always a valid Orc type, whereas the right
-			hand side of a type import is always a fully specified Java or Scala class name.
-			</para>
-		
-		<section xml:id="ref.declarations.type.syntax">
+	<section xml:id="ref.declarations.type.syntax">
 	  <title>Syntax</title>
 	  <para>
 	    <productionset>
@@ -51,34 +29,72 @@
 	    </productionset>
 	  </para>
   </section>
-		
-		<section xml:id="ref.declarations.type.examples">
+  
+  <section xml:id="ref.declarations.type.alias">
+	  <title>Type Alias</title>
+	  <para>
+	    A type alias gives an existing type a new name, for the programmer's ease of use.
+			There is no distinction between the alias and the aliased type; they can be used
+			interchangeably. A type alias may not be recursive.
+	  </para>
+	  
+	  <para>
+	    A type alias may have type parameters, in which case it defines a type operator
+	    which can be applied to other types.
+	  </para>
+  </section>
+			
+	<section xml:id="ref.declarations.type.import">
+	  <title>Type Import</title>
+	  
+	  <para>
+			A type import gives a name to a type described by some external service.
+			This allows new types to be added to Orc, in much the same way that
+			the <code>site</code> declaration allows new sites to be added to Orc.
+			These new types are used to describe new structures created by sites,
+			for example a <code>Buffer</code> type or a <code>URL</code> type. 
+	  </para>
+	  
+	</section>
+	
+	<section xml:id="ref.declarations.type.datatype">
+	  <title>Datatype</title>	  
+	  <para>
+	  TODO
+	  <!-- 
+	  tagged union of types, i.e. a variant/sum type. also allows recursive types because it controls unfolding.
+			<para>When using the Orc type system, datatypes may be polymorphic (taking type parameters).</para>
+<para>Datatypes can be recursive; namely, a datatype instance may contain an instance of the same type.</para>
+ -->
+	  </para>
+	  
+	</section>
+			
+  <section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 
 		<example xml:id="ref.declarations.type.examples.aliases"><title>Aliases</title>
-<programlisting><![CDATA[
-{- TODO -}
+<programlisting language="orc"><![CDATA[
+{- Define a three-dimensional vector type, and a polymorphic relation type  -}
 
-type vector = {. x :: Number, y :: Number, z :: Number .}
-type relation[R] = (R,R) => Boolean
+type Vector = {. x :: Number, y :: Number, z :: Number .}
+type Relation[R] = (R,R) => Boolean
 
 {-
-OUTPUT:
-TODO
+NONRUNNABLE
 -}
 ]]></programlisting>
 		  </example>
 		  
 		<example xml:id="ref.declarations.type.examples.imports"><title>Imports</title>
-<programlisting><![CDATA[
-{- TODO -}
+<programlisting language="orc"><![CDATA[
+{- Import the Cell type of write-once cells, and import Java's URI type -}
 
-type Signal = "orc.types.SignalType"
 type Cell = orc.lib.state.types.CellType
+type URI = java.net.URI
 
 {-
-OUTPUT:
-TODO
+NONRUNNABLE
 -}
 ]]></programlisting>
 		  </example>
