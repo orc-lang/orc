@@ -192,51 +192,7 @@
 			
 		</section>
 		
-		
-			
-			<!-- 
-			<para>
-			  Combinator Precedence:
-			  <informaltable class="identitylist">
-				<tbody>
-				  <tr>
-				    <td><emphasis>Evaluates First</emphasis></td>
-				  </tr>
-				  <tr>
-				    <td><code><![CDATA[F >P> G]]></code></td>
-				    <td> i.e. </td>
-				    <td><code><![CDATA[ >> ]]></code></td>
-				    <td>  (Sequential Combinator)</td>
-				  </tr>
-				  <tr>
-				    <td><code><![CDATA[F | G]]></code></td>
-				    <td> i.e. </td>
-				    <td><code><![CDATA[ | ]]></code></td>
-				    <td>  (Parallel Combinator)</td>
-				  </tr>
-				  <tr>
-				    <td><code><![CDATA[F <P< G]]></code></td>
-				    <td> i.e. </td>
-				    <td><code><![CDATA[ << ]]></code></td>
-				    <td>  (Pruning Combinator)</td>
-				  </tr>
-				  <tr>
-				    <td><code><![CDATA[F ; G]]></code></td>
-				    <td> i.e. </td>
-				    <td><code><![CDATA[ ; ]]></code></td>
-				    <td>  (Otherwise Combinator)</td>
-				  </tr>
-				  <tr>
-				    <td><emphasis>Evaluates Last</emphasis></td>
-				  </tr>
-				</tbody>
-				</informaltable>
-			  </para>
-		</section>
-		-->
-		
-		<!-- 
-		<section xml:id="ref.concepts.halt.links">
+		<section xml:id="ref.syntax.precedence.links">
 		  <title>Related Links</title>
 		  
 		  <informaltable frame="none">
@@ -249,9 +205,8 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        				<listitem><link linkend="ref.combinators.otherwise">Otherwise</link></listitem>
-	        				<listitem><link linkend="ref.concepts.deflate">deflateing</link></listitem>
-	          			 <listitem><link linkend="ref.expressions.stop"><code>stop</code></link></listitem> 
+	        				<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
+	        				<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem> 
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -268,7 +223,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	        		<listitem><olink targetdoc="userguide" targetptr="section.idioms.forkjoin">Fork-join</olink></listitem>
+	        		<listitem><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

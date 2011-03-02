@@ -114,6 +114,7 @@ NONRUNNABLE
 	     		<row>
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.data.datatype">Datatypes</link></para></listitem>
+	          			<listitem><para><link linkend="ref.types">Orc Types</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

@@ -201,6 +201,7 @@ TODO
 	     		<row>
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
+	          			<listitem><para><link linkend="ref.data.closures">Closures</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -217,7 +218,7 @@ TODO
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="section.orc.clauses">Clauses</olink></para></listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="orc.language.clauses">Clauses</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

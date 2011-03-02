@@ -93,6 +93,8 @@
 	  		</tgroup>
 		  </informaltable>
 		  
+		  <!-- 
+		  
 		  <informaltable frame="none">
 	  		<tgroup cols="1" align="left">
 	    	<thead>
@@ -109,6 +111,8 @@
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
+		  
+		 -->
 		  
 	  </section>
 	</section>

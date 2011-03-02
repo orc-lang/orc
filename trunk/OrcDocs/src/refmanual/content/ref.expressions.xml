@@ -33,7 +33,4 @@
 <xi:include href="ref.expressions.ifthenelse.xml"/>	
 <xi:include href="ref.expressions.lambda.xml"/>
 
-<!--  Removed in reorganization (moved to declarations) -->
-<!--  <xi:include href="ref.expressions.val.xml"/> -->
-
 </chapter>

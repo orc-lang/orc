@@ -91,13 +91,14 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem>TODO</listitem>
+	          			<listitem><para><link linkend="ref.concepts.halt">Halting</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
 		  
+		  <!-- 
 		  <informaltable frame="none">
 	  		<tgroup cols="1" align="left">
 	    	<thead>
@@ -114,6 +115,7 @@ OUTPUT:
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
+		  -->
 
 	  </section>
 	</section>
