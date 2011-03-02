@@ -120,18 +120,48 @@ These values are boxed and unboxed per <citetitle pubwork="book">The Java Langua
 
 
 <example xml:id="ref.data.numeric.examples.one">
-<title>TODO:Example1</title>
+<title>Decimal Promotion</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+{- An expression only publishes a decimal value
+   if one of its values (including function and
+   site call publications) is a decimal
+-}
+
+16 - 8 + 50 / 3 * 1 >a>
+16 - 8 + 5e1 / 3 * 1 >b>
+16 - floor(8.5) + ceil(49.99) / 3 * 1 >c>
+(a, b, c) 
+
+{-
+OUTPUT:
+(24, 24.666666666666668, 24)
+-}
 ]]></programlisting>
 </example>
 
 <example xml:id="ref.data.numeric.examples.two">
-<title>TODO:Example2</title>
+<title>Square Roots and Squares</title>
 <programlisting><![CDATA[
---TODO
-signal
+{- Calculate the square roots and squares of
+   a list of numbers
+-}
+
+val nums = [1,2,3,4.0,5.00]
+
+each(nums) >x> ( 
+  x**(1.0/2) >sqrt>
+  x**2 >sq>
+  (x,sqrt,sq)
+)
+
+{-
+OUTPUT:permutable
+(1, 1.0, 1)
+(2, 1.4142135623730951, 4)
+(3, 1.7320508075688772, 9)
+(4.0, 2.0, 16.00)
+(5.00, 2.23606797749979, 25.0000)
+-}
 ]]></programlisting>
 </example>
 		  
@@ -150,8 +180,8 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><link linkend="ref.types.Integer"><code>Integer</code> type</link></para></listitem> -->
-          			<!-- TODO <listitem><para><link linkend="ref.types.Number"><code>Number</code> type</link></para></listitem> -->
+        			<!-- TODO <listitem><para><link linkend="ref.types.Integer">Integer type</link></para></listitem> -->
+        			<!-- TODO <listitem><para><link linkend="ref.types.Number">Number type</link></para></listitem> -->
           			<listitem><para><link linkend="ref.stdlib.core.Add"><code>Add</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>Sub</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.UMinus"><code>UMinus</code> site</link></para></listitem>
