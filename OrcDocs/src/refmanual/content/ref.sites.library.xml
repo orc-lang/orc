@@ -73,9 +73,6 @@ OUTPUT:
      		<row>
         		<entry><itemizedlist>
 					<listitem><para><link linkend="ref.stdlib">Standard library</link></para></listitem>
-					<listitem><para><link linkend="ref.sites.java">Java sites</link></para></listitem>
-					<listitem><para><link linkend="ref.sites.web">Web services sites</link></para></listitem>
-					<listitem><para><link linkend="ref.sites.custom">Custom sites</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -986,7 +986,7 @@ stored variable bindings.
 
 </section>
 
-<section><title>Lambda</title>
+<section xml:id="orc.language.lambda"><title>Lambda</title>
 
 <para>
 Sometimes one would like to create a closure directly, without bothering to give it a name. 
@@ -1016,7 +1016,7 @@ a recursive function in this way. Only <code>def</code> can create a recursive f
 </section>
 
 
-<section><title>Clauses</title>
+<section xml:id="orc.language.clauses"><title>Clauses</title>
 
 <para>
 The combination of functions and pattern matching offers a powerful capability: 
@@ -2027,7 +2027,7 @@ that has not yet been bound suspends until that parameter is bound to a value.
 </section>
 
 
-<section><title>Time</title>
+<section xml:id="orc.language.time"><title>Time</title>
 
 <para>
 Orc is designed to communicate with the external world, and one of the
@@ -3194,7 +3194,7 @@ in Java.  For complete details of how Orc interacts with Java and Scala, see
 </section>
 
 
-<section><title><code>include</code> declaration</title>
+<section xml:id="orc.language.include"><title><code>include</code> declaration</title>
 
 <para>
 It is often convenient to group related declarations into units that can be

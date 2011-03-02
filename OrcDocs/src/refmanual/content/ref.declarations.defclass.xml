@@ -383,8 +383,7 @@ no-output
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.declarations.class">Class Declaration</link></para></listitem>
-          			<listitem><para><link linkend="ref.syntax.EBNF">EBNF Grammar</link></para></listitem>
+          			<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -402,7 +401,6 @@ no-output
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="userguide" targetptr="section.language.class">Classes</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="section.language.class.examples">Class Examples</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

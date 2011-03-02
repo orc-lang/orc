@@ -39,11 +39,6 @@
    <!ENTITY targets.ref.expressions.operators SYSTEM "../build/targetdb/ref.expressions.operators.xml">
    <!ENTITY targets.ref.expressions.stop SYSTEM "../build/targetdb/ref.expressions.stop.xml">
    <!ENTITY targets.ref.expressions SYSTEM "../build/targetdb/ref.expressions.xml">
-   <!ENTITY targets.ref.functions.clausal SYSTEM "../build/targetdb/ref.functions.clausal.xml">
-   <!ENTITY targets.ref.functions.closure SYSTEM "../build/targetdb/ref.functions.closure.xml">
-   <!ENTITY targets.ref.functions.lambda SYSTEM "../build/targetdb/ref.functions.lambda.xml">
-   <!ENTITY targets.ref.functions.recursion SYSTEM "../build/targetdb/ref.functions.recursion.xml">
-   <!ENTITY targets.ref.functions SYSTEM "../build/targetdb/ref.functions.xml">
    <!ENTITY targets.ref.patterns.as SYSTEM "../build/targetdb/ref.patterns.as.xml">
    <!ENTITY targets.ref.patterns.call SYSTEM "../build/targetdb/ref.patterns.call.xml">
    <!ENTITY targets.ref.patterns.cons SYSTEM "../build/targetdb/ref.patterns.cons.xml">
@@ -201,21 +196,6 @@
 					  </document>
 					  <document targetdoc="ref.expressions" baseuri="ref.expressions.html">
 					  	&targets.ref.expressions;
-					  </document>
-					  <document targetdoc="ref.functions.clausal" baseuri="ref.functions.clausal.html">
-					  	&targets.ref.functions.clausal;
-					  </document>
-					  <document targetdoc="ref.functions.closure" baseuri="ref.functions.closure.html">
-					  	&targets.ref.functions.closure;
-					  </document>
-					  <document targetdoc="ref.functions.lambda" baseuri="ref.functions.lambda.html">
-					  	&targets.ref.functions.lambda;
-					  </document>
-					  <document targetdoc="ref.functions.recursion" baseuri="ref.functions.recursion.html">
-					  	&targets.ref.functions.recursion;
-					  </document>
-					  <document targetdoc="ref.functions" baseuri="ref.functions.html">
-					  	&targets.ref.functions;
 					  </document>
 					  <document targetdoc="ref.patterns.as" baseuri="ref.patterns.as.html">
 					  	&targets.ref.patterns.as;

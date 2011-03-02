@@ -13,16 +13,13 @@
 <!-- Lambda -->
 	<section xml:id="ref.expressions.call">
 		<title>Site and Function Calls</title>
-		<section xml:id="ref.expressions.call.body">
 			<para>
 			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression on a sequence of <firstterm>argument</firstterm> expressions. 
 			First, the target expression is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>f</replaceable>.
 			If <replaceable>f</replaceable> is a site, then the call is a site call. 
 			If <replaceable>f</replaceable> is a closure, then the call is a function call.
-			Each of these cases is described below.
-			
+			Each of these cases is described below.		
 			</para>
-		</section>
 		
 		<section xml:id="ref.expressions.call.syntax">
 	  <title>Syntax</title>
@@ -108,7 +105,7 @@ However, any part that uses the arguments must wait.
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem>TODO</listitem>
+	          			<listitem><para><link linkend="ref.declarations">Site and Function Declarations</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -125,7 +122,7 @@ However, any part that uses the arguments must wait.
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem>TODO</listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
