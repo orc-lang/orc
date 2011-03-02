@@ -797,7 +797,7 @@ This use of <code>+</code> is left-associative and does not commute.
 </section>
 
 
-<section><title>Patterns</title>
+<section xml:id="orc.language.patterns"><title>Patterns</title>
 
 <para>
 We have seen how to construct data structures. But how do we examine them, and use them? We use <firstterm>patterns</firstterm>.

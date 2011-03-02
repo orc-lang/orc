@@ -77,6 +77,7 @@ unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle
 <title>Boolean Implication</title>
 <programlisting><![CDATA[
 {- Define logical implication -}
+
 def implies(a,b) = ~a || b
 
 implies(true, true) | implies(false, false)
@@ -88,6 +89,30 @@ true
 -}
 ]]></programlisting>
 </example>
+
+<!-- 
+<example xml:id="ref.data.boolean.examples.one">
+<title>If(t/f) Sites</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Orc makes use of the Ift and Iff sites to test conditionals 
+   Ift returns a signal if the argument is true,
+   Iff when the argument is false.
+-}
+
+  Ift(true) >> "Ift(true) signals" 
+| Iff(true) >> "Iff(true) signals" 
+| Ift(false) >> "Ift(false) signals"
+| Iff(false) >> "Iff(false) signals"
+
+{-
+OUTPUT:permutable
+"Ift(true) signals"
+"Iff(false) signals"
+-}
+]]></programlisting>
+</example>
+
+ -->
 
 <example xml:id="ref.data.boolean.examples.xor">
 <title>Boolean XOR</title>

@@ -79,13 +79,8 @@ signal
 -->
 
 <!-- 
-<example xml:id="ref.data.signal.examples.sequentialprint">
-<title>TODO:Sequential printing</title>
-<programlisting><![CDATA[
-{-TODO-}
-signal
-]]></programlisting>
-</example>
+
+Perhaps a sequential print example?
 
 </section>
 -->
@@ -103,7 +98,7 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<!-- TODO <listitem><para><link linkend="ref.types.Signal"><code>Signal</code> type</link></para></listitem> -->
+          			<!-- <listitem><para><link linkend="ref.types.Signal"><code>Signal</code> type</link></para></listitem> -->
           			<listitem><para><link linkend="ref.stdlib.core.If"><code>If</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Unless"><code>Unless</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.time.metronome"><code>metronome</code> function</link></para></listitem>
