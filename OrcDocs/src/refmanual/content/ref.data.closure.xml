@@ -14,9 +14,9 @@
 <title>Closures</title>
 
 <para>
-In Orc, functions are first-class values. Defining a function creates a special value called a 
+In Orc, functions are first-class values. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
 <firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
- is the closure. Thus, a closure can be published, passed to a site, or put into a data structure, just 
+ is the closure. A closure can be published, passed to a site, or put into a data structure, just 
  like any other value.
 </para>
 <para>
@@ -29,6 +29,24 @@ of the function body uses those stored variable bindings.
 
 <section xml:id="ref.data.closure.examples">
 		  <title>Examples</title>
+
+	<example xml:id="ref.data.closure.examples.stagedadd"><title>Staged Addition</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Create a closure using inc, and then apply it -}
+
+def inc(n) = 
+  def addnto(x) = x + n
+  addnto
+  
+val f = inc(3)
+f(4)
+
+{-
+OUTPUT:
+7
+-}
+]]></programlisting>
+		  </example>
 
 		  <example xml:id="ref.data.closure.examples.onetwosum"><title>One Two Sum</title>
 <programlisting language="orc-demo"><![CDATA[
