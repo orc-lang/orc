@@ -202,7 +202,7 @@ which can be called from Scala/Java code to invoke the behavior of the site.</pa
 </variablelist>
 </section>
 
-<section xml:id="section.services.javavalues"><title>Scala values in Orc</title>
+<section xml:id="section.services.scalavalues"><title>Scala values in Orc</title>
 
 <para>
 Scala objects may be used directly as values anywhere in an Orc program.

@@ -59,7 +59,7 @@ but those mathematical terms should not be confused with their usage in many obj
 
 <para></para>
 
-<example xml:id="ref.data.datatypes.examples.shapes">
+<example xml:id="ref.data.datatypes.examples.enumeration">
 <title>Enumeration</title>
 <programlisting language="orc-demo"><![CDATA[
 {- An enumeration, such as Java's enum, can be represented by a datatype
@@ -168,7 +168,8 @@ NONRUNNABLE
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+          			<listitem><para><link linkend="ref.types">Orc types</link></para></listitem>
+          			<listitem><para><link linkend="ref.declarations.type"><code>type</code> &#8212; Declare Type</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -186,7 +187,7 @@ NONRUNNABLE
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.patterns">Patterns</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="orc.language.patterns">Patterns</olink></para></listitem>
           			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>

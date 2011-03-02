@@ -329,7 +329,7 @@ operators, which in turn have higher precedence than conditionals.
 </para>
 
 
-<section id="cor.constants"><title>Constants</title>
+<section id="orc.constants"><title>Constants</title>
 <para>
 The simplest expression one can write is a constant. It evaluates trivially
 to that constant value. 
@@ -1386,7 +1386,7 @@ The original Cor grammar rules are abbreviated by ellipses (...).
 </para>
 
 		
-<section><title>Communicating with external services</title>
+<section xml:id="orc.sites"><title>Communicating with external services</title>
 
 <para>
 An Orc expression may be a site call. Sites are called using the same syntax as a 
@@ -1394,7 +1394,7 @@ function call, but with a slightly different meaning. Sites are introduced and b
 to variables by a special declaration.  
 </para>
 
-<section><title>Calling a site</title>
+<section xml:id="orc.sites.calling"><title>Calling a site</title>
 
 <para>
 Suppose that the variable <code>Google</code> is bound to a site which invokes the
@@ -1867,7 +1867,7 @@ the name of the site is the operator enclosed by parentheses, e.g. <code>(**)</c
 </section>
 
 
-<section><title>Conditionals</title>
+<section xml:id="orc.conditionals"><title>Conditionals</title>
 
 <para>
 The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
@@ -2361,7 +2361,7 @@ will recognize this technique as <emphasis>currying</emphasis>.
 </section>
 
 
-<section><title>Currying</title>
+<section xml:id="orc.language.currying"><title>Currying</title>
 
 <para>
 It is sometimes useful to <emphasis>stage</emphasis> the arguments to a function; that is,
@@ -2477,7 +2477,7 @@ expression. If the call target expression never publishes, no call occurs.
 
 </section>
 
-<section><title>Extensions to pattern matching</title>
+<section xml:id="patterns.extensions"><title>Extensions to pattern matching</title>
 
 <section><title>As pattern</title>
 

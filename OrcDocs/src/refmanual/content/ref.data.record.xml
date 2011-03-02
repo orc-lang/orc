@@ -151,8 +151,8 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          	    <listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para></listitem>
-          		<listitem><para><link linkend="ref.syntax.EBNF">EBNF</link></para></listitem>
+          	    <listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
+          	    <listitem><para><link linkend="ref.concepts.halt">Halting</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -169,7 +169,7 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="section.services.java.method">Method Resolution</olink></para></listitem>
+          			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -303,7 +303,7 @@ concurrent and functional programming. Despite the austerity of Orc's four
 combinators, we are able to encode a variety of idioms straightforwardly.
 </para>
 
-<section><title>Channels</title>
+<section xml:id="methodology.channels"><title>Channels</title>
 
 <para>
 Orc has no communication primitives like pi-calculus
@@ -419,7 +419,7 @@ repeat(c.get)
 </section>
 
 
-<section><title>Mutable References</title>
+<section xml:id="methodology.mutable"><title>Mutable References</title>
 
 <para>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
@@ -727,7 +727,7 @@ publishing both <code>1</code> and <code>2</code>.
 
 </section>
 
-<section><title>Fork-join</title>
+<section xml:id="methodology.forkjoin"><title>Fork-join</title>
 
 <para>
 One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,

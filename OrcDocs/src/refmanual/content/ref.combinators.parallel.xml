@@ -135,7 +135,6 @@ NONRUNNABLE
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
           			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
@@ -155,7 +154,6 @@ NONRUNNABLE
         		<entry><itemizedlist>
           			<listitem><para><olink targetdoc="userguide" targetptr="combinators.parallel">Parallel Combinator</olink></para></listitem>
           			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites">Sites</olink></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
