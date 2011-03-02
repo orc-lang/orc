@@ -14,16 +14,17 @@
 <title>Closures</title>
 
 <para>
-Functions are actually values, just like any other value. Defining a function creates a special value called a 
-<firstterm>closure</firstterm>; the name of the function is a variable and its bound value is the closure. Thus, 
-a closure can be put into a data structure, or bound to some other variable, just like any other value.
+In Orc, functions are first-class values. Defining a function creates a special value called a 
+<firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
+ is the closure. Thus, a closure can be published, passed to a site, or put into a data structure, just 
+ like any other value.
 </para>
 <para>
-Since all declarations (including function declarations) are lexically scoped, these closures are
-<emphasis><ulink url="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</ulink></emphasis>. This means that when a closure is created, if the body of the
-if the function contains any variables other than the formal parameters, the bindings for those variables are
-stored in the closure. Then, when the closure is called, the evaluation of the function body uses those 
-stored variable bindings.  
+Since all declarations - including function declarations - are lexically scoped, these closures are
+<emphasis><ulink url="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</ulink></emphasis>. 
+When a closure is created, if the body of the function contains any variables other than the formal parameters, 
+the bindings for those variables are stored in the closure. Then, when the closure is called, the evaluation 
+of the function body uses those stored variable bindings.  
 </para>
 
 <section xml:id="ref.data.closure.examples">
@@ -59,7 +60,9 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
+        		  <listitem><para><link linkend="ref.declarations.def"><code>def</code></link></para></listitem>
+          	  <listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
+          		<listitem><para><link linkend="ref.expressions.call.function">Function Calls</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
