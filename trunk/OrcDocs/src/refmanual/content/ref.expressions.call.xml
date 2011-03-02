@@ -38,13 +38,13 @@
 	  <section xml:id="ref.expressions.call.site">
 	  <title>Site Calls</title>
 	  <para>
-	     Execution of a site call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
-	     deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
-	     The site <replaceable>f</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
-	     A site call publishes at most one value. Once it publishes a value, it immediately halts.
-	     If the site is <link linkend="ref.concepts.halt.helpful">helpful</link>, the call may halt without publishing a value.
-	      
-	    
+	    Execution of a site call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
+	    The site <replaceable>f</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
+	  </para>
+	  <para>
+	    A site call publishes at most one value. Once it publishes a value, it immediately halts.
+	    If the site is <link linkend="ref.concepts.halt.helpful">helpful</link>, the call may halt without publishing a value.
 	  </para>
 	  </section>
 	  
@@ -53,6 +53,8 @@
 	  <para>
 	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. Execution of a function call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
+	  </para>
+	  <para>
 	    Since a function call executes an arbitrary expression, it may publish any number of values.
 	  </para>
 	  </section>
@@ -60,26 +62,39 @@
 		<section xml:id="ref.expressions.call.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
+		  <example xml:id="ref.expressions.call.examples.sites_are_strict"><title>Sites are Strict</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
+{- A site call is strict. -} 
+
+Println(Rwait(500) >> "Waited 0.5 seconds" | Rwait(1000) >> "Waited 1 second") >> stop
+
+{-
+OUTPUT:
+Waited 0.5 seconds
+-}
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
+		  <example xml:id="ref.expressions.call.examples.functions_are_lenient"><title>Functions are Lenient</title>
 <programlisting language="orc-demo"><![CDATA[
---TODO
+{- A function call is lenient -}
+
+def Printfn(s) =
+    Println("Parts of the function that do not need the arguments can execute immediately.") 
+  | Println(s)
+  
+Printfn(Rwait(1000) >> "However, any part that uses the arguments must wait.") >> stop
+
+{-
+OUTPUT:
+Parts of the function that do not need the arguments can execute immediately.
+However, any part that uses the arguments must wait.
+-}
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.expressions.call.examples.one"><title>TODO</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-]]></programlisting>
-		  </example>
-		  
-	  </section>
-		
+		</section>
+		  		
 		<section xml:id="ref.expressions.call.links">
 		  <title>Related Links</title>
 		  
