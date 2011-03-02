@@ -15,17 +15,56 @@
 		<title><code>def</code> &#8212; Define Function</title>
 		
 		<para>
-			TODO (info paragraph about functions)
+			The <code>def</code> declaration defines a function. A function definition consists of an identifier, a sequence of <firstterm>parameters</firstterm>,
+		  and a <firstterm>body</firstterm> expression.
+		</para>
+		  
+		<section xml:id="ref.declarations.def.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    	<productionrecap linkend="ebnf.declaration.definition"/>
+		    </productionset>
+		  </para>
+    </section>  
+		  
+		  
+		<section xml:id="ref.declarations.def.behavior">
+		<title>Behavior</title>  
+		<para>
+		  When a function is <link linkend="ref.expressions.call.function">called</link>,
+		  the body executes, and in parallel the argument expression  are <link linkend="ref.concepts.deflate">deflated</link>. 
+		  If the execution of the body encounters a parameter whose corresponding argument expression 
+		  has not yet published a value, that parameter <link linkend="ref.concepts.block">blocks</link> until the argument value is available,
+			but the rest of the body continues to execute. 
+		  Whenever the execution of the body would publish a value, the function call publishes that value.
+		  If execution of the body <link linkend="ref.concepts.halt">halts</link>, the function call also halts. 
+		</para>  
+		  
+		<para>
+		  Functions in Orc are similar to functions, methods, or subroutines in other programming languages, but with two
+			key differences:
+			
+			<itemizedlist>
+			<listitem><para>
+			An Orc function might publish multiple values as it computes,
+			whereas a function in most other languages returns only one value, when its computation
+			completes.
+			</para></listitem>
+			<listitem><para>
+			Orc functions are <firstterm>lenient</firstterm>, since the execution of the function body
+			occurs in parallel with the execution of the argument expressions. 
+			This is unlike <firstterm>strict</firstterm> functions,
+			which evaluate their arguments before evaluating the body, and also unlike <firstterm>lazy</firstterm>
+			functions, which evaluate the body but do not begin to evaluate the arguments until they
+			are encountered during the evaluation of the body.
+			</para></listitem>
+			</itemizedlist> 
 		</para>
 		
-		<section xml:id="ref.declarations.def.syntax">
-	  <title>Syntax</title>
-	  <para>
-	    <productionset>
-	    	<productionrecap linkend="ebnf.declaration.definition"/>
-	    </productionset>
-	  </para>
-  </section>
+		</section>
+		
+		
   
   		<section xml:id="ref.declarations.def.clausal">
 			<title>Clausal Functions</title>
