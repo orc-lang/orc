@@ -73,20 +73,35 @@ unboxed per <citetitle pubwork="book">The Java Language Specification</citetitle
 <section xml:id="ref.data.boolean.examples">
 <title>Examples</title>
 
+<example xml:id="ref.data.boolean.examples.implication">
+<title>Boolean Implication</title>
+<programlisting><![CDATA[
+{- Define logical implication -}
+def implies(a,b) = ~a || b
 
-<example xml:id="ref.data.boolean.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
+implies(true, true) | implies(false, false)
+
+{-
+OUTPUT:
+true
+true
+-}
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.boolean.examples.two">
-<title>TODO:Example2</title>
-<programlisting><![CDATA[
---TODO
-signal
+<example xml:id="ref.data.boolean.examples.xor">
+<title>Boolean XOR</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Define exclusive or -}
+def xor(a,b) = (a || b) && ~(a && b)
+
+xor(true, true) | xor(false, false)
+
+{-
+OUTPUT:
+false
+false
+-}
 ]]></programlisting>
 </example>
 		  
