@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.concepts.approximation.xml - DocBook source for an Orc reference manual section 
-	$Id: ref.concepts.approximation.xml 2458 2011-02-17 22:36:25Z jthywissen $ Copyright 
-	(c) 2011 The University of Texas at Austin. All rights reserved. Use and 
-	redistribution of this file is governed by the license terms in the LICENSE 
-	file found in the project's top-level directory and also found at URL: http://orc.csres.utexas.edu/license.shtml 
-	. -->
+<!-- ref.concepts.approximation.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
 
 <!-- Approximation -->
 <section xml:id="ref.concepts.approximation">
