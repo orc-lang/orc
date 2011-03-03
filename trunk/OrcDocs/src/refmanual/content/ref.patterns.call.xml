@@ -15,8 +15,13 @@
 		<title>Call Pattern</title>
 		<section xml:id="ref.patterns.call.body">
 			<para>
-				In Orc pattern matching, when a value is compared to a call, the value must match the
-				form of the call to be considered a successful pattern match.
+				A call pattern matches a value produced by a previous call to a site. Each argument pattern
+				is matched against the corresponding argument to the original call. 
+			</para>
+			<para>
+			  Call patterns can only be used with values that have an <code>unapply</code> member. All
+			  <link linkend="ref.data.datatype">datatype constructors</link> support <code>unapply</code>. 
+			  Matching against datatype values is the most common use of the call pattern.
 			</para>
 		</section>
 		
@@ -34,15 +39,16 @@
 
 		  <example xml:id="ref.patterns.call.examples.trees"><title>Trees</title>
 <programlisting language="orc"><![CDATA[
-{- Match and unwrap the arguments using a datatype (call) pattern -}
+{- 
+   Build up a small binary tree, then use call patterns to deconstruct the tree and extract its contents.   
+-}
 
 type Tree = Node(_,_,_) | Empty()
-{- Build up a small binary tree -}
+
 val l = Node(Empty(), 0, Empty())
 val r = Node(Empty(), 2, Empty())
 val t = Node(l,1,r)
 
-{- And then match it to extract its contents -}
 t >Node(l,j,r)>
 l >Node(_,i,_)>
 r >Node(_,k,_)>
@@ -53,6 +59,31 @@ OUTPUT:PERMUTABLE
 0
 1
 2
+-}
+
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.patterns.call.examples.trees"><title>Trees</title>
+<programlisting language="orc"><![CDATA[
+{- 
+   A user-defined call pattern match, using a class with an unapply member.
+   Defines a value Square which matches only perfect squares. 
+-}
+
+def isqrt(n) =
+  val root = Floor(n ** 0.5)
+  if (n = root * root) then root else stop
+
+val Square = {. unapply = isqrt .}
+
+signal >> (9 | 12 | 16 | 24 | 25) >Square(n)> n
+
+{-
+OUTPUT:PERMUTABLE
+3
+4
+5
 -}
 
 ]]></programlisting>
