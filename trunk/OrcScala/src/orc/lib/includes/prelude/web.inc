@@ -26,3 +26,6 @@ Browse("http://www.google.com")
 ]]></programlisting>
 --}
 site Browse = orc.lib.web.Browse
+
+{- HTTP -} 
+site HTTP = orc.lib.web.HTTP
