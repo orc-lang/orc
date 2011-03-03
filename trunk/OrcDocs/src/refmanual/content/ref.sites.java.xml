@@ -176,7 +176,7 @@ The Java <code language="java">length</code> pseudo-field of arrays is available
 <title>Construct a Java object, and invoke methods</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Name a Java class and use it to invoke object methods -}
-class URL = java.net.URL
+class URL = "java.net.URL"
 
 {- Create an instance-}
 val googleUrl = URL("http://www.google.com/")
