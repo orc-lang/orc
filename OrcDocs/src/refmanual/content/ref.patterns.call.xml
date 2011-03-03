@@ -68,12 +68,22 @@ OUTPUT:PERMUTABLE
 <programlisting language="orc"><![CDATA[
 {- 
    A user-defined call pattern match, using a class with an unapply member.
-   Defines a value Square which matches only perfect squares. 
+   
+   The integer square root function, isqrt, returns the square root of a
+   perfect square, and halts on any input that is not a perfect square.
+   
+   isqrt is then used to define a value Square that matches perfect squares.
 -}
 
 def isqrt(n) =
-  val root = Floor(n ** 0.5)
-  if (n = root * root) then root else stop
+  if (n <: 0) 
+    then stop
+    else (
+      val root = Floor(n ** 0.5)
+      if (n = root*root) 
+        then root 
+        else stop
+    )
 
 val Square = {. unapply = isqrt .}
 

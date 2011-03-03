@@ -19,8 +19,8 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
 
 <para>
-  Datatypes are defined by a <code>type</code> declaration. Each <firstterm>constructor</firstterm>
-  in the declaration introduces a new tag, followed by a sequence of <firstterm>slots</firstterm>.
+  Datatypes are defined by a <link linkend="ref.declarations.type.datatype"><code>type</code> declaration</link>.
+  Each <firstterm>constructor</firstterm> in the declaration introduces a new tag, followed by a sequence of <firstterm>slots</firstterm>.
   The <code>|</code> separator allows multiple constructors to be defined at the same time.
 </para>
 
@@ -53,7 +53,18 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 <title>Type</title>
 
 <para>
-The typing rules for datatypes are described in the <link linkend="ref.declarations.type.datatype"><code>type</code> declarations</link> article.
+A datatype declaration defines a new <firstterm>sum type</firstterm>.
+</para>
+
+<para>
+Each of the sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
+<code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
+where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
+and <replaceable>S</replaceable> is the sum type.
+</para>
+<para>
+Each constructor site also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
+with type <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code><replaceable>S</replaceable><code>)</code> <code>::</code> <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>.
 </para>
 
 </section>
