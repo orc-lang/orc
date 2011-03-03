@@ -14,8 +14,8 @@
 <title>Algebraic Data Types</title>
 
 <para>An Orc <firstterm>datatype</firstterm> is an algebraic data type, or "tagged union".
-A datatype value contains a sequence of values enclosed by a <firstterm>tag</firstterm>,
-which can be <link linkend="ref.patterns.call">matched by a pattern</link>.
+A datatype value contains a sequence of values enclosed by a <firstterm>tag</firstterm>.
+This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
 
 <para>
@@ -147,9 +147,7 @@ NONRUNNABLE
 <example xml:id="ref.data.datatypes.examples.option">
 <title>Orc built-in Option type</title>
 <programlisting language="orc"><![CDATA[
-{- Option is built in to Orc, but if it were
-   declared, the declaration would be:
--}
+{- A datatype for optional values of type T -}
 
 type Option[T] = Some(T) | None
 
