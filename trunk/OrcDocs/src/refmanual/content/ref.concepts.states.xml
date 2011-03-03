@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.concepts.states.xml - DocBook source for an Orc reference manual section 
+	$Id: ref.concepts.states.xml 2458 2011-02-17 22:36:25Z jthywissen $ Copyright 
+	(c) 2011 The University of Texas at Austin. All rights reserved. Use and 
+	redistribution of this file is governed by the license terms in the LICENSE 
+	file found in the project's top-level directory and also found at URL: http://orc.csres.utexas.edu/license.shtml 
+	. -->
+
+<!-- Expression States -->
+<section xml:id="ref.concepts.states">
+	<title>Expression States</title>
+
+		<para>
+			During execution of an expression, it is either <firstterm>active</firstterm>, <firstterm>passive</firstterm> or
+			<firstterm>killed</firstterm>. An active expression will eventually make a <link linkend="ref.expressions.call">site call</link> or
+			publish a value without receiving a response from a site. A passive
+			expression waits for response from sites or functions it has called;
+			it can not take any steps without receiving a response from a site. A
+			killed expression has been terminated because of a <link linkend="ref.combinators.pruning">pruning combinator</link>;
+			so, it can take no further steps. Expression <replaceable>G</replaceable> is killed 
+			in <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> if
+			<replaceable>G</replaceable> has published; a component of a killed expression is killed.
+		</para>
+			
+		<para>
+			There are three passive states: <firstterm>pending</firstterm>, <firstterm>blocked</firstterm> 
+			and <firstterm>halted</firstterm>. A pending
+			expression will definitely receive a response from some called site
+			(or function), a blocked expression may receive a response, and a
+			halted expression will never receive a response.
+		</para>
+
+		<para>
+			The transitions among the states are as follows:
+		</para>
+		
+		<orderedlist>
+			<listitem><para>An active or passive expression may be killed. A killed expression stays killed.</para></listitem>
+			<listitem><para>An active expression may transit to any passive state.</para></listitem>
+			<listitem><para>A pending expression definitely transits to active eventually.</para></listitem>
+			<listitem><para>A blocked expression may transit to another passive state, pending or halted.</para></listitem>
+			<listitem><para>A halted expression stays halted unless is killed.</para></listitem>
+		</orderedlist>
+
+		<figure>
+			<title>Expression States Diagram</title>
+			<mediaobject>
+				<imageobject>
+					<imagedata fileref="images/stateTransition.svg" format="SVG"/>
+				</imageobject>
+			</mediaobject>
+		</figure>
+
+	<section xml:id="ref.concepts.states.links">
+		<title>Related Links</title>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Reference Topics</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+								<listitem><para><link linkend="ref.sites">Sites</link></para></listitem>
+								<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+<!-- 
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Tutorial Sections</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+-->
+
+	</section>
+</section>

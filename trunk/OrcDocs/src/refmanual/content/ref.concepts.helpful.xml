@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.concepts.helpful.xml - DocBook source for an Orc reference manual section 
+	$Id: ref.concepts.helpful.xml 2458 2011-02-17 22:36:25Z jthywissen $ Copyright 
+	(c) 2011 The University of Texas at Austin. All rights reserved. Use and 
+	redistribution of this file is governed by the license terms in the LICENSE 
+	file found in the project's top-level directory and also found at URL: http://orc.csres.utexas.edu/license.shtml 
+	. -->
+
+<!-- Helpful Sites -->
+<section xml:id="ref.concepts.helpful">
+	<title>Helpful Sites</title>
+
+		<para>
+			A call to a <link linkend="ref.sites">site</link>, from the site's perspective, has three possible
+			outcomes: the site will definitely publish a value, the site knows
+			that it will never publish a value, and the site does not know if it
+			will ever publish a value. For example, a call to <code>Ift(true)</code> publishes a signal,
+			<code>Ift(false)</code> never publishes, and <code>c.get()</code> on channel <code>c</code> that is currently
+			empty may eventually publish or remain non-responsive, depending on whether a
+			value is put in <code>c</code> in the future.
+		</para>
+		
+		<para>
+			All sites respond with a value when they publish. A <firstterm>helpful</firstterm> site,
+			additionally, responds with an indication that it will never publish
+			when it knows this outcome. All library sites in Orc are
+			helpful. Thus, <code>Ift</code> is a helpful site, and <code>Ift(false)</code> sends an
+			indication to the caller that it will never publish. A <link linkend="ref.stdlib.state.Buffer">buffer</link> is a
+			helpful site, and some of its methods will send an indication that
+			they will never publish. Note that <code>get</code> method on a buffer never
+			sends an indication that will not publish, because it can not
+			definitely determine this outcome; this outcome depends on whether
+			some caller <code>put</code>s an item in the buffer eventually. Thus, <code>get</code> may
+			be blocked permanently.
+		</para>
+		
+		<para>
+			We do not expect arbitrary web services to be helpful. The indication
+			from a helpful site that it will never publish can be exploited in the
+			caller using the <link linkend="ref.combinators.otherwise">otherwise combinator</link>.
+		</para>
+
+	<section xml:id="ref.concepts.helpful.links">
+		<title>Related Links</title>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Reference Topics</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
+								<listitem><para><link linkend="ref.stdlib">Orc standard library</link></para></listitem>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+<!-- 
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Tutorial Sections</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+-->
+
+	</section>
+</section>

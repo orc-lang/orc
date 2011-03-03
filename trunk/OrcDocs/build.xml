@@ -313,7 +313,7 @@
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 		</xslt>
-		<!-- Copy the stylesheet and navigational images -->
+		<!-- Copy the stylesheet and navigational/content images -->
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="${src.dir}/css">
 				<include name="style.css"/>
@@ -321,6 +321,9 @@
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
 			<fileset dir="src/xsl/images"/>
+		</copy>
+		<copy todir="${build.dir}/html/refmanual/images">
+			<fileset dir="src/refmanual/content/images"/>
 		</copy>
 	</target>
 
