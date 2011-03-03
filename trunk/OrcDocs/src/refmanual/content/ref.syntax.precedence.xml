@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.concepts.precedence.xml - DocBook source for an Orc reference manual section
+<!-- ref.syntax.precedence.xml - DocBook source for an Orc reference manual section
 
      $Id$
 
@@ -10,14 +10,13 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Precedence Concept -->
-	<section xml:id="ref.concepts.precedence">
+<!-- Precedence -->
+	<section xml:id="ref.syntax.precedence">
 		<title>Precedence</title>
-		<section xml:id="ref.concepts.precedence.body">
+		<section xml:id="ref.syntax.precedence.body">
 			<para>
 			The following table represents the precedence of combinators and operators in Orc.  
-			Within an expression, the combinators/operators are evaluated in descending table order.
-			Operators at the same precedence level are evaluated in arbitrary order.
+			Within an expression, the combinators/operators are executed in descending table order.
 			</para>
 			
 			<!-- 
@@ -71,120 +70,120 @@
           </row>
         </thead>
         <tbody>
-          <row>
-            <entry>0</entry>
-            <entry>Sequential</entry>
-            <entry><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></entry>
-	      </row>
-           <row>
-            <entry>1</entry>
-            <entry>Parallel</entry>
-            <entry><code><![CDATA[ | ]]></code></entry>
-		   </row>
-           <row>
-            <entry>2</entry>
-            <entry>Pruning</entry>
-            <entry><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></entry>
-		   </row>
-           <row>
-            <entry>3</entry>
-            <entry>Otherwise</entry>
-            <entry><code><![CDATA[ ; ]]></code></entry>
-		   </row>
 		   <row>
-		   	<entry>4</entry>
+		   	<entry>0</entry>
 		   	<entry>Dereference</entry>
 		   	<entry><code><![CDATA[ ? ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry morerows="1">5</entry>
+		   	<entry morerows="1">1</entry>
 		   	<entry>Arithmetic Negation</entry>
 		   	<entry><code><![CDATA[ - ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 5 -->
+		   	<!-- Level 1 -->
 		   	<entry>Negation (Logical Complement)</entry>
 		   	<entry><code><![CDATA[ ~ ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry>6</entry>
+		   	<entry>2</entry>
 		   	<entry>Exponentiation</entry>
 		   	<entry><code><![CDATA[ ** ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry morerows="2">7</entry>
+		   	<entry morerows="2">3</entry>
 		   	<entry>Multiplication</entry>
 		   	<entry><code><![CDATA[ * ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 7 -->
+		   	<!-- Level 3 -->
 		   	<entry>Division</entry>
 		   	<entry><code><![CDATA[ / ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 7 -->
+		   	<!-- Level 3 -->
 		   	<entry>Modulus</entry>
 		   	<entry><code><![CDATA[ % ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry morerows="1">8</entry>
+		   	<entry morerows="1">4</entry>
 		   	<entry>Addition/Concatenation</entry>
 		   	<entry><code><![CDATA[ + ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 8 -->
+		   	<!-- Level 4 -->
 		   	<entry>Subtraction</entry>
 		   	<entry><code><![CDATA[ - ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry>9</entry>
+		   	<entry>5</entry>
 		   	<entry>List Construction</entry>
 		   	<entry><code><![CDATA[ : ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry morerows="5">10</entry>
+		   	<entry morerows="5">6</entry>
 		   	<entry>Equal To</entry>
 		   	<entry><code><![CDATA[ = ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 10 -->
+		   	<!-- Level 6 -->
 		   	<entry>Not Equal To</entry>
 		   	<entry><code><![CDATA[ /= ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 10 -->
+		   	<!-- Level 6 -->
 		   	<entry>Less Than</entry>
 		   	<entry><code><![CDATA[ <: ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 10 -->
+		   	<!-- Level 6 -->
 		   	<entry>Greater Than</entry>
 		   	<entry><code><![CDATA[ :> ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 10 -->
+		   	<!-- Level 6 -->
 		   	<entry>Less Than or Equal To</entry>
 		   	<entry><code><![CDATA[ <= ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 10 -->
+		   	<!-- Level 6 -->
 		   	<entry>Greater Than or Equal To</entry>
 		   	<entry><code><![CDATA[ >= ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry morerows="1">11</entry>
+		   	<entry morerows="1">7</entry>
 		   	<entry>Logical OR</entry>
 		   	<entry><code><![CDATA[ || ]]></code></entry>
 		   </row>
 		   <row>
-		   	<!-- Level 11 -->
+		   	<!-- Level 7 -->
 		   	<entry>Logical AND</entry>
 		   	<entry><code><![CDATA[ && ]]></code></entry>
 		   </row>
 		   <row>
-		   	<entry>12</entry>
+		   	<entry>8</entry>
 		   	<entry>Assignment</entry>
 		   	<entry><code><![CDATA[ := ]]></code></entry>
+		   </row>
+		   <row>
+            <entry>9</entry>
+            <entry>Sequential</entry>
+            <entry><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></entry>
+	      </row>
+           <row>
+            <entry>10</entry>
+            <entry>Parallel</entry>
+            <entry><code><![CDATA[ | ]]></code></entry>
+		   </row>
+           <row>
+            <entry>11</entry>
+            <entry>Pruning</entry>
+            <entry><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></entry>
+		   </row>
+           <row>
+            <entry>12</entry>
+            <entry>Otherwise</entry>
+            <entry><code><![CDATA[ ; ]]></code></entry>
 		   </row>
         </tbody>
       </tgroup>
@@ -232,5 +231,4 @@
 		  
  
 	  </section>
-	  -->
 	</section>

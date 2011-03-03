@@ -25,7 +25,7 @@
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
-			  [<link linkend="ref.concepts.precedence">Full Table</link>]
+			  [<link linkend="ref.syntax.precedence">Full Table</link>]
 			  </para>  
 		</section>
 		
