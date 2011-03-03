@@ -15,7 +15,20 @@
 	<title><code>class</code> &#8212; Import Class from Java</title>
 
 	<para>
-		Here we will discuss how to we declare Java classes.
+Orc programs can use services of the platform on which the Orc runtime engine runs.
+In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
+Java classes may be imported into Orc programs and invoked as Orc sites.
+	</para>
+
+	<para>
+The declaration <code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
+binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
+Calls to <replaceable>S</replaceable> invoke the corresponding constructor of the Java class <replaceable>J</replaceable>.
+The created class instance is published from the site call.
+Instance methods may be invoked on this published value.
+Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the class static method of the Java class <replaceable>J</replaceable>.
+The return value of the method is published from the site call.
+Further details of the Orc-Java interface are in the <link linkend="ref.sites.java">Java sites</link> section.
 	</para>
 
   <section xml:id="ref.declarations.class.syntax">
@@ -30,11 +43,37 @@
 	<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>
 	
-		<example xml:id="ref.declarations.class.examples.one">
-			<title>TODO</title>
-			<programlisting language="orc"><![CDATA[
-	-- Need example
-	]]></programlisting>
+		<example xml:id="ref.declarations.class.examples.call">
+			<title>Invoke a Java constructor and instance method</title>
+			<programlisting language="orc-demo"><![CDATA[
+class StringTokenizer = "java.util.StringTokenizer"
+
+-- Invoke a constructor:
+val st = StringTokenizer("Elegance is not a dispensable luxury, but a quality that decides between success and failure.", " ")
+
+-- Invoke a method
+st.countTokens()
+
+{-
+OUTPUT:
+15
+-}
+]]></programlisting>
+		</example>
+	
+		<example xml:id="ref.declarations.class.examples.staticcall">
+			<title>Invoke a Java static method</title>
+			<programlisting language="orc-demo"><![CDATA[
+class JavaMath = "java.lang.Math"
+
+-- Invoke a static method:
+JavaMath.log10(42.0)
+
+{-
+OUTPUT:
+1.6232492903979006
+-}
+]]></programlisting>
 		</example>
 	
 	</section>
