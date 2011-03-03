@@ -11,8 +11,11 @@
    <!ENTITY targets.ref.combinators.pruning SYSTEM "../build/targetdb/ref.combinators.pruning.xml">
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/targetdb/ref.combinators.sequential.xml">
    <!ENTITY targets.ref.combinators SYSTEM "../build/targetdb/ref.combinators.xml">
+   <!ENTITY targets.ref.concepts.approximation SYSTEM "../build/targetdb/ref.concepts.approximation.xml">
    <!ENTITY targets.ref.concepts.deflate SYSTEM "../build/targetdb/ref.concepts.deflate.xml">
    <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/ref.concepts.halt.xml">
+   <!ENTITY targets.ref.concepts.helpful SYSTEM "../build/targetdb/ref.concepts.helpful.xml">
+   <!ENTITY targets.ref.concepts.states SYSTEM "../build/targetdb/ref.concepts.states.xml">
    <!ENTITY targets.ref.concepts SYSTEM "../build/targetdb/ref.concepts.xml">
    <!ENTITY targets.ref.data.boolean SYSTEM "../build/targetdb/ref.data.boolean.xml">
    <!ENTITY targets.ref.data.closure SYSTEM "../build/targetdb/ref.data.closure.xml">
@@ -113,11 +116,20 @@
 					  <document targetdoc="ref.combinators" baseuri="ref.combinators.html">
 					  	&targets.ref.combinators;
 					  </document>
+					  <document targetdoc="ref.concepts.approximation" baseuri="ref.concepts.approximation.html">
+					  	&targets.ref.concepts.approximation;
+					  </document>
 					  <document targetdoc="ref.concepts.deflate" baseuri="ref.concepts.deflate.html">
 					  	&targets.ref.concepts.deflate;
 					  </document>
 					  <document targetdoc="ref.concepts.halt" baseuri="ref.concepts.halt.html">
 					  	&targets.ref.concepts.halt;
+					  </document>
+					  <document targetdoc="ref.concepts.helpful" baseuri="ref.concepts.helpful.html">
+					  	&targets.ref.concepts.helpful;
+					  </document>
+					  <document targetdoc="ref.concepts.states" baseuri="ref.concepts.states.html">
+					  	&targets.ref.concepts.states;
 					  </document>
 					  <document targetdoc="ref.concepts" baseuri="ref.concepts.html">
 					  	&targets.ref.concepts;
