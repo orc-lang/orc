@@ -240,7 +240,7 @@ TODO
 	     		<row>
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
-	          			<listitem><para><link linkend="ref.data.closures">Closures</link></para></listitem>
+	          			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
