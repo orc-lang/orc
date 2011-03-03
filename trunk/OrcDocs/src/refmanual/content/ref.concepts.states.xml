@@ -50,7 +50,7 @@
 			<title>Expression States Diagram</title>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="images/stateTransition.svg" format="SVG"/>
+					<imagedata fileref="images/stateTransition.svg" format="SVG" contentwidth="800px" contentdepth="480px" width="80%" align="center"/>
 				</imageobject>
 			</mediaobject>
 		</figure>
