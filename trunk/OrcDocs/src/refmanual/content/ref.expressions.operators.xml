@@ -41,50 +41,39 @@ Operators are parsed using <link linkend="ref.syntax.precedence">the precedence 
 <section>
 <title>Arithmetic Operators</title>
 
-<variablelist><info><title>Arithmetic Operators</title></info>
-  <varlistentry>
-    <term><code>+</code></term>
-    <listitem>
-      <para>Addition</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>-</code></term>
-    <listitem>
-      <para>Subtraction</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>*</code></term>
-    <listitem>
-      <para>Multiplication</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>/</code></term>
-    <listitem>
-      <para>Division</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>%</code></term>
-    <listitem>
-      <para>Modulus</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>**</code></term>
-    <listitem>
-      <para>Exponentiation</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>-</code> (unary prefix form)</term>
-    <listitem>
-      <para>Arithmetic negation</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>Arithmetic Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>+</code></entry>
+    <entry>Addition</entry>
+  </row>
+  <row>
+    <entry><code>-</code></entry>
+    <entry>Subtraction</entry>
+  </row>
+  <row>
+    <entry><code>*</code></entry>
+    <entry>Multiplication</entry>
+  </row>
+  <row>
+    <entry><code>/</code></entry>
+    <entry>Division</entry>
+  </row>
+  <row>
+    <entry><code>%</code></entry>
+    <entry>Modulus</entry>
+  </row>
+  <row>
+    <entry><code>**</code></entry>
+    <entry>Exponentiation</entry>
+  </row>
+  <row>
+    <entry><code>-</code> (unary prefix form)</entry>
+    <entry>Arithmetic negation</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 <para>
 Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
@@ -99,44 +88,35 @@ division and return <code>2.5</code>.
 <section>
 <title>Comparison Operators</title>
 
-<variablelist><info><title>Comparison Operators</title></info>
-  <varlistentry>
-    <term><code>=</code></term>
-    <listitem>
-      <para>Equal to</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>/=</code></term>
-    <listitem>
-      <para>Not equal to</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>&lt;:</code></term>
-    <listitem>
-      <para>Less than</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>:&gt;</code></term>
-    <listitem>
-      <para>Greater than</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>&lt;=</code></term>
-    <listitem>
-      <para>Less than or equal to</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>=&gt;</code></term>
-    <listitem>
-      <para>Greater than or equal to</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>Comparison Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>=</code></entry>
+    <entry>Equal to</entry>
+  </row>
+  <row>
+    <entry><code>/=</code></entry>
+    <entry>Not equal to</entry>
+  </row>
+  <row>
+    <entry><code>&lt;:</code></entry>
+    <entry>Less than</entry>
+  </row>
+  <row>
+    <entry><code>:&gt;</code></entry>
+    <entry>Greater than</entry>
+  </row>
+  <row>
+    <entry><code>&lt;=</code></entry>
+    <entry>Less than or equal to</entry>
+  </row>
+  <row>
+    <entry><code>=&gt;</code></entry>
+    <entry>Greater than or equal to</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
@@ -148,88 +128,87 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>Logical Operators</title>
 
-<variablelist><info><title>Logical Operators</title></info>
-  <varlistentry>
-    <term><code>&#38;&#38;</code></term>
-    <listitem>
-      <para>Logical and</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>||</code></term>
-    <listitem>
-      <para>Logical or</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>~</code></term>
-    <listitem>
-      <para>Logical negation</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>Logical Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>&#38;&#38;</code></entry>
+    <entry>Logical and</entry>
+  </row>
+  <row>
+    <entry><code>||</code></entry>
+    <entry>Logical or</entry>
+  </row>
+  <row>
+    <entry><code>~</code></entry>
+    <entry>Logical negation</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 </section>
 
 <section>
 <title>String Operators</title>
 
-<variablelist><info><title>String Operators</title></info>
-  <varlistentry>
-    <term><code>+</code></term>
-    <listitem>
-      <para>Concatenation</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>String Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>+</code></entry>
+    <entry>Concatenation</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 </section>
 
 <section>
 <title>List Operators</title>
 
-<variablelist><info><title>List Operators</title></info>
-  <varlistentry>
-    <term><code>:</code></term>
-    <listitem>
-      <para>List construction</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>List Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>:</code></entry>
+    <entry>List construction</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 </section>
 
 <section>
 <title>Record Operators</title>
 
-<variablelist><info><title>Record Operators</title></info>
-  <varlistentry>
-    <term><code>+</code></term>
-    <listitem>
-      <para>Extension</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>Record Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>+</code></entry>
+    <entry>Extension</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 </section>
 
 <section>
 <title>Reference Operators</title>
 
-<variablelist><info><title>Reference Operators</title></info>
-  <varlistentry>
-    <term><code>?</code></term>
-    <listitem>
-      <para>Dereference</para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term><code>:=</code></term>
-    <listitem>
-      <para>Assignment</para>
-    </listitem>
-  </varlistentry>
-</variablelist>
+<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
+	<info><title>Reference Operators</title></info>
+	<colspec align="center"/>
+	<colspec align="left"/>
+  <row>
+    <entry><code>?</code></entry>
+    <entry>Dereference</entry>
+  </row>
+  <row>
+    <entry><code>:=</code></entry>
+    <entry>Assignment</entry>
+  </row>
+</tbody></tgroup></informaltable>
 
 </section>
 
@@ -240,7 +219,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <title>Redefining Operators</title>
 
 <para>
-The operators' syntax (fixity, precedence, and associativity) is fixed by the Orc grammar; however, the site
+The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, precedence, and associativity) is fixed by the Orc grammar; however, the site
 called is defined by the library and can be changed by a <code>def</code>
 or <code>site</code> declaration.
 </para>
