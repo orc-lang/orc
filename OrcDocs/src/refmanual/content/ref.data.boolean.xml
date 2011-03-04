@@ -105,7 +105,7 @@ true
 | Iff(false) >> "Iff(false) signals"
 
 {-
-OUTPUT:permutable
+OUTPUT:PERMUTABLE
 "Ift(true) signals"
 "Iff(false) signals"
 -}
