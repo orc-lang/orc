@@ -56,7 +56,7 @@ described in <link linkend="section.services.java.method">Method Resolution</lin
 below.</listitem>
 <listitem>Otherwise, if <code>x</code> has a field named <code>member</code>,
 the object's field is returned, encapsulated in a <link
-	linkend="orc.lib.state.Ref"><code>Ref</code> object</link>. The
+	linkend="ref.stdlib.state.Ref"><code>Ref</code> object</link>. The
 <code>Ref</code> object has <code>read</code> and <code>write</code> methods
 which are used to get and set the value of the field.</listitem>
 </itemizedlist>

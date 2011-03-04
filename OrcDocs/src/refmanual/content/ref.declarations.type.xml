@@ -76,7 +76,7 @@
   <section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.type.examples.aliases"><title>Type aliases</title>
+		<example xml:id="ref.declarations.type.examples.aliases"><title>Aliasing Types</title>
 <programlisting language="orc"><![CDATA[
 {- Define a three-dimensional vector type, and a polymorphic relation type  -}
 
@@ -88,8 +88,8 @@ NONRUNNABLE
 -}
 ]]></programlisting>
 		  </example>
-		  
-		<example xml:id="ref.declarations.type.examples.imports"><title>Type imports</title>
+
+		<example xml:id="ref.declarations.type.examples.imports"><title>Importing Types</title>
 <programlisting language="orc"><![CDATA[
 {- Import the Cell type of write-once cells, and import Java's URI type -}
 
@@ -98,6 +98,35 @@ type URI = java.net.URI
 
 {-
 NONRUNNABLE
+-}
+]]></programlisting>
+		  </example>
+		
+		<example xml:id="ref.declarations.type.examples.tree"><title>Binary Tree Type</title>
+<programlisting language="orc"><![CDATA[
+{- 
+   Define a polymorphic binary tree datatype,
+   then construct a tree of integers and a
+   tree of booleans.
+-}
+
+type Tree[T] = Node(Tree[T], T, Tree[T]) | Empty()
+
+val intTree =
+  val left = Node(Empty(), 0, Empty())
+  val right = Node(Empty(), 2, Empty())
+  Node(left, 1, right)
+
+val boolTree =
+  val left = Node(Empty(), false, Empty())
+  Node(left, true, Empty())
+
+intTree | boolTree 
+
+{-
+OUTPUT:
+Node(Node(Empty(), false, Empty()), true, Empty())
+Node(Node(Empty(), 0, Empty()), 1, Node(Empty(), 2, Empty()))
 -}
 ]]></programlisting>
 		  </example>

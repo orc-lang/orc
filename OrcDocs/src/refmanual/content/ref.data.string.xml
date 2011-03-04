@@ -134,7 +134,7 @@ I go to the console
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.stdlib.text.write"><code>write</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.text.Write"><code>Write</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.text.lines"><code>lines</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.text.unlines"><code>unlines</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.text.words"><code>words</code> function</link></para></listitem>
