@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -15,7 +15,7 @@
 		<title>EBNF Grammar</title>
 		<section xml:id="ref.syntax.EBNF.body">
 			<para>
-				The Orc language grammar can be expressed in Extended Backus-Naur Form (EBNF), with the following metanotation:
+				The Orc language grammar is expressed in Extended Backus-Naur Form (EBNF), with the following metanotation:
 			</para>
 			
 			<para xml:id="ebnf.meta.questionmark">
@@ -38,7 +38,7 @@
 			  <rhs>
 				  <nonterminal def="#ebnf.literal">Literal</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.variable">Variable</nonterminal>
-				  <sbr/>&#x2759; <nonterminal def="#ebnf.expression.stop">Stop</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.stop">Stop</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.tuple">Tuple</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.list">List</nonterminal>		    
 					<sbr/>&#x2759; <nonterminal def="#ebnf.expression.record">Record</nonterminal>
@@ -442,8 +442,8 @@
 			  <rhs>
 					<nonterminal def="#ebnf.literal.signal">SignalLiteral</nonterminal>
 					<sbr/>&#x2759; <nonterminal def="#ebnf.literal.boolean">BooleanLiteral</nonterminal>
-					<sbr/>&#x2759; <link linkend="ref.data.numeric.literals">Number</link>
-					<sbr/>&#x2759; <link linkend="ref.data.string.literals">String</link>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.literal.number">NumberLiteral</nonterminal>
+					<sbr/>&#x2759; <nonterminal def="#ebnf.literal.string">CharacterStringLiteral</nonterminal>
 			  </rhs>
 			</production>
 			
@@ -459,6 +459,46 @@
 			  <lhs>BooleanLiteral</lhs>
 			  <rhs>
 					<code>true</code> &#x2759; <code>false</code>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal.integer">
+			  <lhs>IntegerLiteral</lhs>
+			  <rhs>
+					DecimalDigit<link linkend="ebnf.meta.plus">+</link>
+			  </rhs>
+			</production>
+
+			<production xml:id="ebnf.literal.number">
+			  <lhs>NumberLiteral</lhs>
+			  <rhs>
+					<nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal> <nonterminal def="#ebnf.literal.decimalpart">DecimalPart</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.literal.exponentpart">ExponentPart</nonterminal><link linkend="ebnf.meta.questionmark">?</link>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal.decimalpart">
+			  <lhs>DecimalPart</lhs>
+			  <rhs>
+					<code>.</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal.exponentpart">
+			  <lhs>ExponentPart</lhs>
+			  <rhs>
+					               <code>E</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+					<sbr/>&#x2759; <code>E+</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+					<sbr/>&#x2759; <code>E-</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+					<sbr/>&#x2759; <code>e</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+					<sbr/>&#x2759; <code>e+</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+					<sbr/>&#x2759; <code>e-</code> <nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal>
+			  </rhs>
+			</production>
+			
+			<production xml:id="ebnf.literal.string">
+			  <lhs>CharacterStringLiteral</lhs>
+			  <rhs>
+					<code>"</code>Character<link linkend="ebnf.meta.plus">+</link><code>"</code>
 			  </rhs>
 			</production>
 			
@@ -486,14 +526,14 @@
 			<production xml:id="ebnf.classname">
 			  <lhs>ClassName</lhs>
 			  <rhs>
-			    <link linkend="ref.data.string.literals">String</link>
+			    <nonterminal def="#ebnf.literal.string">CharacterStringLiteral</nonterminal>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.filename">
 			  <lhs>FileName</lhs>
 			  <rhs>
-			    <link linkend="ref.data.string.literals">String</link>
+			    <nonterminal def="#ebnf.literal.string">CharacterStringLiteral</nonterminal>
 			  </rhs>
 			</production>
 			

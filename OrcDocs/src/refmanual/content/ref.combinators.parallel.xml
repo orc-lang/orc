@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -37,13 +37,13 @@
 				  <tr>
 				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]><![CDATA[(]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
+				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[)]]></code><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td>  (Left Associative)</td>
 				  </tr>
 				  <tr>
 				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
 				    <td> = </td>
-				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[)]]></code><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
+				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]><![CDATA[(]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
 				    <td>  (Right Associative)</td>
 				  </tr>
 				  <tr>

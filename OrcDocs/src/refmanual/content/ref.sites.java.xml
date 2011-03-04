@@ -281,6 +281,7 @@ OUTPUT:
 					<listitem><para><link linkend="ref.declarations.class"><code>class</code> declaration</link></para></listitem>
 					<listitem><para><link linkend="ref.data.external">External data values</link></para></listitem>
 					<listitem><para><link linkend="ref.sites.custom">Custom sites</link></para></listitem>
+					<listitem><para><link linkend="ref.types.java">Types: Interacting with Java</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -297,7 +298,6 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<!-- TODO <listitem><para><olink targetdoc="userguide" targetptr="section.types.java">Interacting with Java</olink></para></listitem> -->
 					<listitem><para><olink targetdoc="userguide" targetptr="section.orc.class"><code>class</code> declaration</olink></para></listitem>
 					<listitem><para><olink targetdoc="userguide" targetptr="section.services.orcvalues">Orc values in Java</olink></para></listitem>
 					<listitem><para><olink targetdoc="userguide" targetptr="section.services.scalavalues">Java Values in Orc</olink></para></listitem>

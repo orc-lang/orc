@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -38,7 +38,15 @@ This fall back may result in a loss of precision for this operation.
 <section xml:id="ref.data.numeric.literals">
 <title>Literals</title>
 
-<para><emphasis role="strong">EBNF</emphasis>: <replaceable>Number</replaceable> ::= <replaceable>digit</replaceable>+ ( <code>.</code> <replaceable>digit</replaceable>+ )? ( (<code>E</code>|<code>e</code>) (<code>+</code>|<code>-</code>)? (<replaceable>digit</replaceable>+) )?</para>
+<section xml:id="ref.data.numeric.literals.syntax">
+<title>Syntax</title>
+<productionset>
+<productionrecap linkend="ebnf.literal.integer"/>
+<productionrecap linkend="ebnf.literal.number"/>
+<productionrecap linkend="ebnf.literal.decimalpart"/>
+<productionrecap linkend="ebnf.literal.exponentpart"/>
+</productionset>
+</section>
 
 <para>Numeric literals in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
@@ -180,8 +188,6 @@ OUTPUT:permutable
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<!-- TODO <listitem><para><link linkend="ref.types.Integer">Integer type</link></para></listitem> -->
-        			<!-- TODO <listitem><para><link linkend="ref.types.Number">Number type</link></para></listitem> -->
           			<listitem><para><link linkend="ref.stdlib.core.Add"><code>Add</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>Sub</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.UMinus"><code>UMinus</code> site</link></para></listitem>
