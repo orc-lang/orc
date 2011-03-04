@@ -102,7 +102,7 @@ is a record type, written <code>{.</code> <replaceable>K<subscript>0</subscript>
 def magnitude(v) = 
   (v.x * v.x + 
    v.y * v.y + 
-   v.z * v.z ) ** 0.5
+   v.z * v.z) ** 0.5
     >tot>
       tot ** (1.0/2)
   

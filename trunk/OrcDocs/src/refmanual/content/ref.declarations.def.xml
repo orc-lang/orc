@@ -86,7 +86,7 @@
 			
 			<section xml:id="ref.declarations.def.clausal.examples">
 			<title>Examples</title>
-			<example xml:id="ref.declarations.def.clausal.examples.one"><title>Simple example of a clausal function</title>
+			<example xml:id="ref.declarations.def.clausal.examples.sum"><title>Simple example of a clausal function</title>
 <programlisting language="orc"><![CDATA[
 {- Simple clausal function -}
 
@@ -102,7 +102,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.declarations.def.clausal.examples.two"><title>Clausal function with constant patterns</title>
+		  <example xml:id="ref.declarations.def.clausal.examples.fib"><title>Clausal function with constant patterns</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Fibonacci numbers -}
 
@@ -119,7 +119,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.declarations.def.clausal.examples.three"><title>Parity</title>
+		  <example xml:id="ref.declarations.def.clausal.examples.evenodd"><title>Parity</title>
 <programlisting language="orc"><![CDATA[
 {- Return true if parity of 1s in a binary string is even -}
 
@@ -139,7 +139,7 @@ false
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.declarations.def.clausal.examples.four"><title>Currying</title>
+		  <example xml:id="ref.declarations.def.clausal.examples.curry"><title>Currying</title>
 <programlisting language="orc"><![CDATA[
 {- Simple currying example -}
 
@@ -151,7 +151,7 @@ NONRUNNABLE
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.declarations.def.clausal.examples.five"><title>Wild-Card</title>
+		  <example xml:id="ref.declarations.def.clausal.examples.wildcard"><title>Wild-Card</title>
 <programlisting language="orc"><![CDATA[
 {- Use a wildcard to define ignore a clausal argument -}
 

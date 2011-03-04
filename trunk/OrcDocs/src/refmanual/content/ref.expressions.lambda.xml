@@ -37,7 +37,7 @@ Limitation:  we can use <code>lambda</code> to create a closure only for a funct
 		<section xml:id="ref.expressions.lambda.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.lambda.examples.one"><title>One Two Sum</title>
+		  <example xml:id="ref.expressions.lambda.examples.onetwosum"><title>One Two Sum</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Define a function that sums the results of its argument function
    evaluated with arguments 1 and 2

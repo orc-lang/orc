@@ -89,8 +89,8 @@ from Java code as <code language="java">java.lang.String</code>.</para>
 <title>Examples</title>
 
 
-<example xml:id="ref.data.string.examples.one">
-<title>Concatenation</title>
+<example xml:id="ref.data.string.examples.concat">
+<title>String Concatenation</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Concatenate two strings -}
 
@@ -103,7 +103,7 @@ OUTPUT:
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.string.examples.two">
+<example xml:id="ref.data.string.examples.functions">
 <title>String Functions</title>
 <programlisting><![CDATA[
 {- Showcase some Orc library string functions -}

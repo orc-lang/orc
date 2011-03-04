@@ -126,8 +126,8 @@ These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="htt
 <section xml:id="ref.data.numeric.examples">
 <title>Examples</title>
 
-<example xml:id="ref.data.numeric.examples.one">
-<title>Precedence</title>
+<example xml:id="ref.data.numeric.examples.precedence">
+<title>Operator Precedence</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Operators follow common precedence practice. 
    Combinators have lower precedence than operators.
@@ -142,12 +142,13 @@ OUTPUT:
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.numeric.examples.two">
-<title>Decimal Promotion</title>
+<example xml:id="ref.data.numeric.examples.int2float">
+<title>Integer to Number Promotion</title>
 <programlisting language="orc-demo"><![CDATA[
-{- An expression only publishes a decimal value
-   if one of its values (including function and
-   site call publications) is a decimal
+{- Arithmetic operations, when all arguments are integers,
+   operate as integer operations.  If any argument is a floating-
+   point number, then the operation treats all arguments as
+   floating-point numbers and operates in that domain.
 -}
 
 16 - 8 + 50.0 / 3 * 1 >a>
@@ -161,7 +162,7 @@ OUTPUT:
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.numeric.examples.three">
+<example xml:id="ref.data.numeric.examples.sqrt">
 <title>Square Roots and Squares</title>
 <programlisting><![CDATA[
 {- Calculate the square roots and squares of

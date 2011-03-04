@@ -22,7 +22,7 @@ Content about logical time
 	  <section xml:id="ref.time.virtual.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.time.virtual.examples.one"><title>TODO</title>
+		  <example xml:id="ref.time.virtual.examples.TODO"><title>TODO</title>
 <programlisting language="orc-demo"><![CDATA[
 --TODO
 ]]></programlisting>
