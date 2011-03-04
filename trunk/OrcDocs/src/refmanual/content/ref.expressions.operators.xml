@@ -21,7 +21,7 @@ Recall that site calls only publish once, and arguments are <link linkend="ref.c
 </para>
 
 <para>
-Operators are parsed using <link linkend="ref.syntax.precedence">the precedence rules</link> of Orc. In particular, these rules describe the relationship between operators and combinators.
+Operators are parsed using <link linkend="ref.syntax.precedence">the precedence and associativity rules</link> of Orc. In particular, these rules describe the relationship between operators and combinators.
 </para>
 
 <section xml:id="ref.expressions.operators.syntax">
@@ -240,7 +240,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <title>Redefining Operators</title>
 
 <para>
-The operators' syntax (fixity and precedence) is fixed by the Orc grammar; however, the site
+The operators' syntax (fixity, precedence, and associativity) is fixed by the Orc grammar; however, the site
 called is defined by the library and can be changed by a <code>def</code>
 or <code>site</code> declaration.
 </para>
@@ -316,7 +316,7 @@ OUTPUT:
 			<tbody valign="top">
 				<row><entry><itemizedlist>
 					<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
-					<listitem><para><link linkend="ref.syntax.precedence">Precedence Table</link></para></listitem>
+					<listitem><para><link linkend="ref.syntax.precedence">Precedence and Associativity Table</link></para></listitem>
 				</itemizedlist></entry></row>
 			</tbody>
 		</tgroup>

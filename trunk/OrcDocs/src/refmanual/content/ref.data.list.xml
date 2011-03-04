@@ -43,9 +43,25 @@ Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.
 
 <para>Notable list operations include:
 <itemizedlist>
-<listitem><para><code>head(l)</code>, which returns the first element of list <code>l</code>.</para></listitem>
-<listitem><para><code>tail(l)</code>, which returns a list with every element in <code>l</code> except the first.</para></listitem>
-<listitem><para><code>h:t</code>, a <firstterm>cons</firstterm> operation, which returns a list with first element <code>h</code> and remaining elements <code>t</code>.</para></listitem>
+<listitem><para><firstterm>Cons</firstterm> (construct) a list with first element <replaceable>h</replaceable> and remaining elements <replaceable>t</replaceable>: <replaceable>h</replaceable><code>:</code><replaceable>t</replaceable></para></listitem>
+<listitem><para>Publish <code>true</code> iff the list <replaceable>l</replaceable> has no elements: <code>empty(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish the length of list <replaceable>l</replaceable>: <code>length(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish the first element of list <replaceable>l</replaceable>: <code>head(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish a list with every element in list <replaceable>l</replaceable> except the first: <code>tail(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish all but the last element of list <replaceable>l</replaceable>: <code>init(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish the last element of list <replaceable>l</replaceable>: <code>last(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish the <replaceable>n</replaceable>th element of a list, counting from 0: <code>index(</code><replaceable>l</replaceable><code>, </code><replaceable>n</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish a list with the first <replaceable>n</replaceable> elements of the list <replaceable>l</replaceable>: <code>take(</code><replaceable>n</replaceable><code>, </code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish a list with all but the first <replaceable>n</replaceable> elements of the list <replaceable>l</replaceable>: <code>drop(</code><replaceable>n</replaceable><code>, </code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish every value in list <replaceable>l</replaceable>, simultaneously: <code>each(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Concatenate list <replaceable>a</replaceable> and list <replaceable>b</replaceable>: <code>append(</code><replaceable>a</replaceable><code>, </code><replaceable>b</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish a list with the elements of list <replaceable>l</replaceable> in reverse order: <code>reverse(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish a list containing only those elements of <replaceable>l</replaceable> which satisfy the function <replaceable>f</replaceable>: <code>filter(</code><replaceable>f</replaceable><code>, </code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Apply unary function <replaceable>f</replaceable> to every element of list <replaceable>l</replaceable> (in parallel), and return a list of the results: <code>map(</code><replaceable>f</replaceable><code>, </code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Apply a binary function to every element of a list: <code>foldl</code>, <code>foldr</code>, and many variations thereof.</para></listitem>
+<listitem><para>Combine two lists into a list of pairs, and its reverse: <code>zip</code> and <code>unzip</code></para></listitem>
+<listitem><para>Concatenate a list of lists <replaceable>l</replaceable> into a single list: <code>concat(</code><replaceable>l</replaceable><code>)</code></para></listitem>
+<listitem><para>Publish <code>true</code> if item <replaceable>x</replaceable> is a member of list <replaceable>l</replaceable>: <code>member(</code><replaceable>l</replaceable><code>)</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -119,6 +135,7 @@ tail([3,2,5]) = [2,5]
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
+        			<listitem><para><link linkend="ref.stdlib.list">Standard library list functions</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.head"><code>head</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.tail"><code>tail</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.init"><code>init</code> function</link></para></listitem>

@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -122,8 +122,10 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.expressions">Expressions</link></para></listitem>
-	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code> &#8212; Define Function</link></para></listitem>
+	          			<listitem><para><link linkend="ref.combinators.pruning">Pruning Combinator</link></para></listitem>
+	        			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+	          			<listitem><para><link linkend="ref.concepts.kill">Killing</link></para></listitem>
+	          			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -140,7 +142,9 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="orc.language.patterns">Patterns</olink></para></listitem>
+	          			<listitem><para><olink targetdoc="userguide" targetptr="cor.variables">Variables</olink></para></listitem>
+	          			<listitem><para><olink targetdoc="userguide" targetptr="combinators.pruning">Pruning Combinator</olink></para></listitem>
+	          			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

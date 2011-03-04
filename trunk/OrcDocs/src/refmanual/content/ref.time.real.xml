@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -17,9 +17,10 @@
 		  <title>Behavior</title>
 <para>
 The site <code>Rwait</code> is a relative timer. It takes as an argument
-a number of milliseconds to wait. It waits for exactly that amount of time,
+a number of milliseconds to wait. It waits for <link linkend="ref.concepts.approximation">approximately</link> that amount of time,
 and then responds with a signal.
 </para>
+
 	  </section>
 	  <section xml:id="ref.time.real.examples">
 		  <title>Examples</title>
