@@ -151,7 +151,7 @@ OUTPUT:
 -}
 
 16 - 8 + 50.0 / 3 * 1 >a>
-16 - floor(8.5) + ceil(40e1 + 9.99) / 3 * 1 >b>
+16 - Floor(8.5) + Ceil(4e1 + 9.99) / 3 * 1 >b>
 (a, b) 
 
 {-
@@ -168,7 +168,7 @@ OUTPUT:
    a list of numbers
 -}
 
-val nums = [1,2,3,4.0,5.00]
+val nums = [1, 2, 3, 4.0, 5.00]
 
 each(nums) >x> ( 
   x**(1.0/2) >sqrt>
@@ -177,7 +177,7 @@ each(nums) >x> (
 )
 
 {-
-OUTPUT:permutable
+OUTPUT:PERMUTABLE
 (1, 1.0, 1)
 (2, 1.4142135623730951, 4)
 (3, 1.7320508075688772, 9)
