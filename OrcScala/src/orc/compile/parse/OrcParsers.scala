@@ -268,7 +268,7 @@ with CustomParserCombinators
     | parseConditionalExpression
     )
 
-  def parseExpnExpr          = parseUnaryExpr      leftAssociativeInfix  List("**")
+  def parseExpnExpr          = parseUnaryExpr      rightAssociativeInfix  List("**")
   def parseMultExpr          = parseExpnExpr       leftAssociativeInfix  List("*", "/", "%")
   def parseAdditionalExpr    = parseMultExpr       leftAssociativeInfix  List("-", "+")
   def parseConsExpr          = parseAdditionalExpr rightAssociativeInfix List(":")
