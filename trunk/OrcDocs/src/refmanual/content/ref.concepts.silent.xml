@@ -18,8 +18,10 @@
 		<title>Definition</title>
 
 		<para>
-			An expression is <firstterm>silent</firstterm> if and only if it never publishes.
-			The type of a silent expression is always <code>Bot</code>.
+			An expression that never publishes in any execution is called <firstterm>silent</firstterm>. 
+			A silent expression may call sites. The type of a silent
+			expression is <code>Bot</code>. Formally, expression <replaceable>F</replaceable> 
+			is silent if it behaves exactly as <replaceable>F</replaceable><code><![CDATA[ >> stop]]></code>.
 		</para>
 
 	</section>
@@ -27,9 +29,28 @@
 	<section xml:id="ref.concepts.silent.examples">
 		<title>Examples</title>
 
-		<para>
-			TODO
-		</para>
+		<example xml:id="ref.concepts.silent.examples.one">
+<title>Precedence</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Silent expressions never publish but may have side effects 
+   such as output to the console.
+-}
+
+   stop
+|  Println("do not publish") >> stop
+|  stop >> Println("do not publish")
+|  Println("do not publish") >> stop | stop >> Println("do not publish")
+|  stop <x< (3 | 5)
+|  Println("do not publish") >> stop | stop >> Println("do not publish")
+
+{-
+OUTPUT:
+do not publish
+do not publish
+do not publish
+-}
+]]></programlisting>
+</example>
 
 	</section>
 
