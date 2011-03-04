@@ -20,8 +20,7 @@ followed by the operands.  When the site name is surrounded in parentheses, as
 in <code>(+)</code>, it denotes an infix operator.
 
 For a more complete description of the built-in operators and their syntax, see
-the <olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink> section of the
-User Guide.
+the <link linkend="ref.expressions.operators">Operators</link> article.
 --}
 
 {-
@@ -98,12 +97,7 @@ site Iff = "orc.lib.builtin.Unless"
 
 {- Aliases for different styles of conditional site usage -}
 site If = "orc.lib.builtin.If"
-site IfT = "orc.lib.builtin.If"
-site IfTrue = "orc.lib.builtin.If"
-
 site Unless = "orc.lib.builtin.Unless"
-site IfF = "orc.lib.builtin.Unless"
-site IfFalse = "orc.lib.builtin.Unless"
 
 {--
 @site Error(String) :: Bot
