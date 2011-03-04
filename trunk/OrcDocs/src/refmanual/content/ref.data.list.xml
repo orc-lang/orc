@@ -90,33 +90,55 @@ have the same type <replaceable>T</replaceable>, then the list will have type <c
 <example xml:id="ref.data.list.examples.sample">
 <title>Sample Lists</title>
 <programlisting language="orc"><![CDATA[
-[] -- empty list
-[1,2,3] -- a list of integers
-[(1,2),(2,3),(3,4)] -- a list of tuples of integers
-[fib(1),fib(2),fib(3)] -- the list of first 3 fibonacci numbers
-[[1],[2,2],[3,3,3]] -- a list of lists of integers
+  []                       -- empty list
+| [1, 2, 3]                -- a list of integers
+| [(1, 2), (2, 3), (3, 4)] -- a list of tuples of integers
+| [1, 1 * 2, 1 * 2 * 3]    -- a list of the first 3 factorials
+| [[1], [2, 2], [3, 3, 3]] -- a list of lists of integers
 
--- The element type of a list is the join of the types of each of its elements.
--- The following list has type List[Top], because the individual elements
--- have different types, and Top is their only common supertype.
-   [[2],3,(5,7),"misra"]
-
--- The order and number of elements in a list matter. So,
-[2,3] {- is not the same as -}  [3,2]
-[2] {- is not the same as -}    [2,2]
+{-
+OUTPUT:PERMUTABLE:
+[]
+[1, 2, 3]
+[(1, 2), (2, 3), (3, 4)]
+[1, 2, 6]
+[[1], [2, 2], [3, 3, 3]]
+-}
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.list.examples.listops">
-<title>List Operations</title>
+<example xml:id="ref.data.list.examples.notsets">
+<title>Lists Are Not Sets</title>
 <programlisting language="orc"><![CDATA[
-head([3]) = 3
-tail([3]) = []
-head([3,2,5]) = 3
-tail([3,2,5]) = [2,5]
-3:[] = [3]
-3:[2,5] = [3,2,5]
-[2,3]: [[1],[2,3,4]] = [[2,3],[1],[2,3,4]]
+{- 
+  Lists do not behave like sets.
+  The order and number of elements in a list do matter.
+-}
+
+  [2,3] /= [3,2]  
+| [2] /= [2,2]
+
+{-
+OUTPUT:
+true
+true
+-}
+]]></programlisting>
+</example>
+
+
+
+<example xml:id="ref.data.list.examples.cons">
+<title>Building Lists with Cons</title>
+<programlisting language="orc"><![CDATA[
+  3:[]
+| 4:3:[2,1]
+
+{-
+OUTPUT:PERMUTABLE:
+[3]
+[4, 3, 2, 1]
+-}
 ]]></programlisting>
 </example>
 

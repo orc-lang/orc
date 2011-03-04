@@ -109,12 +109,12 @@ OUTPUT:
 {- Showcase some Orc library string functions -}
 
 Println("I go to the console") >>
-unwords(["I", "like", "Haskell"])
+unwords(["I", "like", "Orc"])
 
 {-
 OUTPUT:
 I go to the console
-"I like Haskell"
+"I like Orc"
 -}
 ]]></programlisting>
 </example>
