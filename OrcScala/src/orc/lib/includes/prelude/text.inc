@@ -169,3 +169,20 @@ def unwords(List[String]) :: String
 def unwords([]) = ""
 def unwords([word]) = word
 def unwords(word:words) = word + " " + unwords(words)
+
+{--
+@def characters(String) :: List[String]
+Convert a string to a list of strings of length 1,
+where the list items are the characters of the given string.
+
+Example:
+characters("Hello") = ["H", "e", "l", "l", "o"]
+
+@implementation
+--}
+def characters(String) :: List[String]
+def characters(s) =
+  def rest(i) =
+      Ift (i >= s.length()) >> []
+    | Ift (i <: s.length()) >> s.substring(i,i+1):rest(i+1)
+  rest(0)
