@@ -38,13 +38,13 @@ def prod(i)(h,p,v) =    (exp(v,2), exp(v,3),exp(v,5),exp(v,7)) >(a,b,c,d)>
 
 def interface(msg,f,h) =
   Prompt(msg + " : write value followed by number of cells for board size " + h)  >r>
-    read(r) >s> (s%10,s/10) >(p,v)>
+    Read(r) >s> (s%10,s/10) >(p,v)>
   (  Println(msg + v + " into " + p + " parts in board size " + h) >> f(h,p,v)
    | interface(msg,f,h)
   )
 
 def main() =
-  Prompt("Welcome to KenKen helper. What is the board size?")  >r> read(r) >board>
+  Prompt("Welcome to KenKen helper. What is the board size?")  >r> Read(r) >board>
   (  interface("outline * " ,prod(0),board)
   | interface("inline * "  ,prod(1),board)
   | interface("inline + "  ,sum(1,1),board)
