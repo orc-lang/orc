@@ -126,11 +126,42 @@ class DocMaker(toplevelName: String) {
     
   }
   
+  
+  def processDeclName(name: String): Option[String] = {
+  	"""^\w+$""".r.findPrefixOf(name) match {
+  	  case Some(ident) => Some(ident)
+  	  case None => {
+				"""^\([^\)]+\)$""".r.findPrefixOf(name) match {
+					case Some(s) => s match {
+						case "(+)" => Some("Add")
+						case "(-)" => Some("Sub")
+						case "(0-)" => Some("UMinus")
+						case "(*)" => Some("Mult")
+						case "(**)" => Some("Exponent")
+						case "(/)" => Some("Div")
+						case "(%)" => Some("Mod")
+						case "(<:)" => Some("Less")
+					  case "(<=)" => Some("Leq")
+						case "(:>)" => Some("Greater")
+						case "(>=)" => Some("Greq")
+						case "(=)" => Some("Eq")
+						case "(/=)" => Some("Inequal")
+						case "(~)" => Some("Not")
+						case "(&&)" => Some("And")
+						case "(||)" => Some("Or")
+						case "(:)" => Some("Cons")
+						case _ => None
+					}
+					case None => None
+				}
+			}
+		}
+  }
     
   def renderDecl(decl: DocDecl, nextCode: String)(implicit sectionName: String) = {
   	
   	val optionalId = {
-  		"""^\w+$""".r.findPrefixOf(decl.name) match {
+  		processDeclName(decl.name) match {
   			case Some(ident) => {
   			  val longId = toplevelName + "." + sectionName + "." + ident
   			  if (claimedIdentifiers contains longId) {
