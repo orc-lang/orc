@@ -39,8 +39,8 @@ object DocParsers extends RegexParsers {
     """\s*\w+""".r.findPrefixOf(line) match {
     	case Some(ident) => ident.trim()
     	case None => {
-    		"""\([+*/%&|~<>=:.?\-]+\)""".r.findPrefixOf(line) match {
-    			case Some(opname) => opname
+    		"""\s*\(0?[+*/%&|~<>=:.?\-]+\)""".r.findPrefixOf(line) match {
+    			case Some(opname) => opname.trim()
     			case None => ""
     		}
     	}
