@@ -14,24 +14,86 @@
 <title>Web Services</title>
 
 <para>
-Orc sites may provide access to Web services. 
-A set of sites in the standard library provides facilities for accessing REST-based web services;
- support for SOAP-based services will be available in a future release. 
-Sites which make direct GET and POST requests via HTTP are also available in the library. 
-These sites return a single string, which may be used directly or parsed as XML input or JSON input by other library sites. 
+Some sites provide access to remote services, rather than performing local computation.
+In particular, a site could provide access to a web service. 
+The Orc library provides sites which perform basic HTTP requests and manipulate JSON and XML data representations;
+these capabilities are sufficient to interact with many simple web services, especially RESTful services.
+</para>
+
+<section xml:id="ref.sites.web.http">
+<title>HTTP</title>
+
+<para>
+The <link linkend="ref.stdlib.web.HTTP"><code>HTTP</code></link> site provides a simple mechanism to send GET and POST requests to a URL.
+<itemizedlist>
+<listitem><code>HTTP(</code><replaceable>U</replaceable><code>)</code>, where <replaceable>U</replaceable> is a <code>java.net.URL</code>, publishes a site which accepts HTTP requests on the URL <replaceable>U</replaceable>.</listitem>
+<listitem><code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the string <replaceable>S</replaceable> as an absolute URL <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.</listitem>
+<listitem><code>HTTP(</code><replaceable>S</replaceable><code>,</code><replaceable>Q</replaceable><code>)</code> maps the record <replaceable>Q</replaceable> to a URL query string <replaceable>QS</replaceable> by translating each record binding to a query pair, escaping characters
+if necessary. The call then behaves as <code>HTTP(</code><replaceable>S</replaceable>+<replaceable>QS</replaceable><code>)</code>.</listitem>
+</itemizedlist>  
+</para>
+
+<para>
+The <code>HTTP</code> site publishes a site (call it <replaceable>H</replaceable>) with methods <code>get</code> and <code>post</code>:
+
+<itemizedlist>
+<listitem><replaceable>H</replaceable><code>.get()</code> performs a <code>GET</code> request on the URL used to create <replaceable>H</replaceable>. </listitem>
+<listitem><replaceable>H</replaceable><code>.post(</code><replaceable>P</replaceable><code>)</code> performs a <code>POST</code> request with payload <replaceable>P</replaceable> on the URL used to create <replaceable>H</replaceable>. </listitem>
+</itemizedlist>
+</para>
+
+<para>
+If the request is successful, the response is published as a single string, which may be translated to a more useful representation by other library sites.
+</para>
+
+</section>
+
+<section xml:id="ref.sites.web.data">
+<title>Data Processing</title>
+
+<para>
+Web services often expect inputs or provide outputs in a particular format, such as XML or JSON. 
+The Orc library provides sites which convert between string representations of these data formats
+and structured representations which Orc can manipulate.
+
 </para>
 
 <section xml:id="ref.sites.web.rest">
-<title>REST sites</title>
+<title>JSON</title>
+<para>
+<ulink url="http://www.json.org">JSON</ulink> (JavaScript Object Notation) is a lightweight data format often used 
+by Web services, especially by services with simple interfaces. The structure of JSON values maps quite naturally
+onto Orc values, using nested lists and records.
+</para> 
+
+<para>
+The library sites <code>ReadJSON</code> and <code>WriteJSON</code> convert between string representations of JSON
+values and Orc representations of those values. <code>ReadJSON</code> parses a string representation of JSON
+and creates an Orc value, where each JSON array becomes an Orc <link linkend="ref.data.list">list</link>,
+each JSON object becomes an Orc <link linkend="ref.data.record">record</link>, and literal values map to their
+Orc counterparts. <code>WriteJSON</code> performs the inverse operation, taking a structured value of this form
+and producing a string representation of an equivalent JSON value. If <replaceable>S</replaceable> is a string
+representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> is
+equal to <replaceable>S</replaceable>.
+</para>
 
 </section>
 
-<section xml:id="ref.sites.web.rest">
-<title>HTTP GET/POST</title>
+<section xml:id="ref.sites.web.xml">
+<title>XML</title>
 </section>
 
-<section xml:id="ref.sites.web.rest">
-<title>Using XML or JSON results</title>
+</section>
+
+
+<section xml:id="ref.sites.web.soap">
+<title>SOAP Web Services</title>
+
+<para>
+Though Orc does not provide direct bindings to SOAP web services, it is possible to access such services through Java bindings.
+Frameworks such as JAX-WS map SOAP web service functionality to Java classes; these classes can then be <link linkend="ref.sites.java">used as sites in Orc</link>.
+</para>
+
 </section>
 
 
@@ -40,18 +102,25 @@ These sites return a single string, which may be used directly or parsed as XML 
 <title>Examples</title>
 
 <example xml:id="ref.sites.web.examples.one">
-<title>TODO:Example1</title>
-<programlisting language="orc-demo"><![CDATA[
---TODO
-signal
-]]></programlisting>
-</example>
+<title>Random Bytes from Fourmilab</title>
+<programlisting language="orc"><![CDATA[
+{-
+   Make a request to the HotBits service at Fourmilab
+   to produce a sequence of 4 random bytes in hex.
+-}
+site ReadXML = orc.lib.xml.ReadXML
+site Elem = orc.lib.xml.XmlElementSite
+site Text = orc.lib.xml.XmlTextSite
 
-<example xml:id="ref.sites.web.examples.two">
-<title>TODO:Example2</title>
-<programlisting><![CDATA[
---TODO
-signal
+{- Returns a hexadecimal string of n random bytes -}
+def randombytes(n) =
+  val query = {. nbytes = n, fmt = "xml" .} 
+  val location = "https://www.fourmilab.ch/cgi-bin/Hotbits"
+  val response = HTTP(location, query).get()
+  val [Elem(_,_,[Text(datastring)])] = ReadXML(response)("random-data") 
+  datastring.replaceAll("\\s+","")
+
+randombytes(4)
 ]]></programlisting>
 </example>
 		  

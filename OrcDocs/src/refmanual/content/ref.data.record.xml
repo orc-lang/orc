@@ -100,9 +100,9 @@ is a record type, written <code>{.</code> <replaceable>K<subscript>0</subscript>
 {- Normalize a given integer vector using records -}
 
 def magnitude(v) = 
-  v.x * v.x + 
-  v.y * v.y + 
-  v.z * v.z
+  (v.x * v.x + 
+   v.y * v.y + 
+   v.z * v.z ) ** 0.5
     >tot>
       tot ** (1.0/2)
   
@@ -112,13 +112,14 @@ def norm(v) =
      y = v.y / m, 
      z = v.z / m .}
      
-val velocity = {. x = 3, y = 0, z = 4 .}      
+val velocity = {. x = 3.0, y = 0.0, z = 4.0 .}      
 norm(velocity) 
 
 {-
 OUTPUT:
-{. x = 0.6, y = 0, z = 0.8 .}
+{. x = 0.6, y = 0.0, z = 0.8 .}
 -}
+
 ]]></programlisting>
 </example>
 
