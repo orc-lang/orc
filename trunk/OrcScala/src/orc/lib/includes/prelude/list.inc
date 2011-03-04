@@ -151,7 +151,7 @@ def foldl(f,z,x:xs) = foldl(f,f(z,x),xs)
 
 {--
 @def foldl1[A](lambda (A, A) :: A, List[A]) :: A
-A special case of <code>foldl</code> which uses the last element of the list as the
+A special case of <code>foldl</code> which uses the first element of the list as the
 initial value. It is an error to call this on an empty list.
 
 @implementation
