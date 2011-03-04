@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.index.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.index.xml 2496 2011-03-04 02:38:59Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Reference Manual Index -->
+<index/>

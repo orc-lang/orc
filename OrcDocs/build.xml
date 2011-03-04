@@ -287,6 +287,9 @@
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
+			
+			<param name="index.links.to.section" expression="0"/>
+			
 			<param name="orc.demo" expression="0"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
@@ -312,6 +315,7 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+			
 		</xslt>
 		<!-- Copy the stylesheet and navigational/content images -->
 		<copy todir="${build.dir}/html/refmanual">

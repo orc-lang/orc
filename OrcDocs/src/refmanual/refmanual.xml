@@ -32,17 +32,6 @@
 <xi:include href="content/ref.types.xml"/>
 <xi:include href="content/ref.stdlib.xml"/>
 <xi:include href="content/ref.concepts.xml"/>
-
-<!-- Chapters removed in r2447 reorganization -->
-<!--
-<xi:include href="content/ref.functions.xml"/>
-<xi:include href="content/ref.class.xml"/>
--->
-
-
-
-
-
-
+<xi:include href="content/ref.index.xml"/>
 
 </book>
