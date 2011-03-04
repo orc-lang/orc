@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -123,7 +123,6 @@ join
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<!-- TODO <listitem><para><link linkend="types.Tuple"><code>Tuple</code> type</link></para></listitem> -->
 					<listitem><para><link linkend="ref.stdlib.state.fst"><code>fst</code> function</link></para></listitem>
 					<listitem><para><link linkend="ref.stdlib.state.snd"><code>snd</code> function</link></para></listitem>
         		</itemizedlist></entry>
