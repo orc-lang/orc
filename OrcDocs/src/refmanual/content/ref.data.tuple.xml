@@ -51,9 +51,9 @@ Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.
 
 <para>Notable tuple operations include:
 <itemizedlist>
-<listitem><para><replaceable>tuple</replaceable><code>(</code><replaceable>index</replaceable><code>)</code>, a <firstterm>projection</firstterm>, which returns the tuple element at position <replaceable>index</replaceable>, starting from 0.</para></listitem>
-<listitem><para><code>fst(</code><replaceable>tuple</replaceable><code>)</code>, which returns the first element of a pair.</para></listitem>
-<listitem><para><code>snd(</code><replaceable>tuple</replaceable><code>)</code>, which returns the second element of a pair.</para></listitem>
+<listitem><para><firstterm>Projection</firstterm>, which returns the tuple element at position <replaceable>index</replaceable>, starting from 0: <replaceable>tuple</replaceable><code>(</code><replaceable>index</replaceable><code>)</code></para></listitem>
+<listitem><para>Returns the first element of a pair: <code>fst(</code><replaceable>tuple</replaceable><code>)</code></para></listitem>
+<listitem><para>Return the second element of a pair: <code>snd(</code><replaceable>tuple</replaceable><code>)</code></para></listitem>
 </itemizedlist>
 </para>
 

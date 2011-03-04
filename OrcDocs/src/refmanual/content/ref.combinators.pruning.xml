@@ -184,6 +184,7 @@ signal
      		<row>
         		<entry><itemizedlist>
         			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+        			<listitem><para><link linkend="ref.declarations.val"><code>val</code> Declaration</link></para></listitem>
           			<listitem><para><link linkend="ref.concepts.kill">Killing</link></para></listitem>
           			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
         		</itemizedlist></entry>

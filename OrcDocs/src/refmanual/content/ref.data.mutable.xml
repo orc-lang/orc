@@ -13,14 +13,10 @@
 <section xml:id="ref.data.mutable">
 <title>Mutable State</title>
 
-<para>For the purposes of this section, a <firstterm>mutable value</firstterm> is a value that is
-not referentially transparent.  That is, use of a mutable value in an expression is not
-guaranteed to always be the same as replacing the expression with its result. The expression
-could yield different results when the mutable value is used at different times.
-(We disregard timing and performance effects in this discussion.)</para>
-
-<para>Mutable values are common in imperative programming languages.  They reflect the
-concept of a storage location in a von Neumann-style architecture.  
+<para>A <firstterm>mutable object</firstterm> is value on which operations may
+yield different results when called at different times.
+Mutable objects are common in imperative programming languages.
+They reflect the concept of a storage location in a von Neumann-style architecture.  
 Most of Orc's value types are immutable.</para>
 
 <para>Orc provides the following standard mutable value types:

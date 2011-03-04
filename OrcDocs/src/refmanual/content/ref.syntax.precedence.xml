@@ -15,7 +15,7 @@
 		<title>Precedence</title>
 		<section xml:id="ref.syntax.precedence.body">
 			<para>
-			The following table represents the precedence of combinators and operators in Orc.  
+			The following table represents the precedence, fixity, and associativity of combinators and operators in Orc.  
 			Within an expression, the combinators/operators are executed in descending table order.
 			</para>
 			
@@ -128,7 +128,7 @@
 		   	<entry>Addition/Concatenation</entry>
 		   	<entry><code><![CDATA[ + ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Both</entry>
+		   	<entry>Left</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 4 -->
@@ -149,63 +149,63 @@
 		   	<entry>Equal To</entry>
 		   	<entry><code><![CDATA[ = ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Both</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 6 -->
 		   	<entry>Not Equal To</entry>
 		   	<entry><code><![CDATA[ /= ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Both</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 6 -->
 		   	<entry>Less Than</entry>
 		   	<entry><code><![CDATA[ <: ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 6 -->
 		   	<entry>Greater Than</entry>
 		   	<entry><code><![CDATA[ :> ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 6 -->
 		   	<entry>Less Than or Equal To</entry>
 		   	<entry><code><![CDATA[ <= ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 6 -->
 		   	<entry>Greater Than or Equal To</entry>
 		   	<entry><code><![CDATA[ >= ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
 		   	<entry morerows="1">7</entry>
 		   	<entry>Logical OR</entry>
 		   	<entry><code><![CDATA[ || ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Both</entry>
+		   	<entry>Left</entry>
 		   </row>
 		   <row>
 		   	<!-- Level 7 -->
 		   	<entry>Logical AND</entry>
 		   	<entry><code><![CDATA[ && ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Both</entry>
+		   	<entry>Left</entry>
 		   </row>
 		   <row>
 		   	<entry>8</entry>
 		   	<entry>Assignment</entry>
 		   	<entry><code><![CDATA[ := ]]></code></entry>
 		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
+		   	<entry>None</entry>
 		   </row>
 		   <row>
             <entry>9</entry>
@@ -219,7 +219,7 @@
             <entry>Parallel</entry>
             <entry><code><![CDATA[ | ]]></code></entry>
             <entry>Infix</entry>
-            <entry>Both</entry>
+            <entry>Left</entry>
 		   </row>
            <row>
             <entry>11</entry>
@@ -233,7 +233,7 @@
             <entry>Otherwise</entry>
             <entry><code><![CDATA[ ; ]]></code></entry>
             <entry>Infix</entry>
-            <entry>Both</entry>
+            <entry>Left</entry>
 		   </row>
         </tbody>
       </tgroup>
