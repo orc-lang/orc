@@ -58,7 +58,7 @@
 		 <section xml:id="ref.concepts.deflate.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.concepts.deflate.examples.one"><title>Search Comparison</title>
+		  <example xml:id="ref.concepts.deflate.examples.search"><title>Search Comparison</title>
 <programlisting><![CDATA[
 {- Return the first published value from 3 major search engines
    in the form of a tuple.  Ignore all published values from

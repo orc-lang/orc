@@ -64,7 +64,7 @@ OUTPUT:PERMUTABLE
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.patterns.call.examples.trees"><title>Trees</title>
+		  <example xml:id="ref.patterns.call.examples.isqrt"><title>Integer square root</title>
 <programlisting language="orc"><![CDATA[
 {- 
    A user-defined call pattern match, using a class with an unapply member.

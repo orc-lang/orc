@@ -172,7 +172,7 @@ The Java <code language="java">length</code> pseudo-field of arrays is available
 <section xml:id="ref.sites.java.examples">
 <title>Examples</title>
 
-<example xml:id="ref.sites.java.examples.one">
+<example xml:id="ref.sites.java.examples.constructinvoke">
 <title>Construct a Java object, and invoke methods</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Name a Java class and use it to invoke object methods -}
@@ -191,7 +191,7 @@ OUTPUT:
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.sites.java.examples.two">
+<example xml:id="ref.sites.java.examples.static">
 <title>Static field access, constructor invocation, static method access, overloading, and Orc-Java conversion</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Access Java's String and Boolean classes -}
@@ -221,7 +221,7 @@ true
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.sites.java.examples.three">
+<example xml:id="ref.sites.java.examples.noarg">
 <title>No-arg constructor invocation, field assignment, and field dereference</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Constructor invocation -} 

@@ -91,8 +91,8 @@ true
 </example>
 
 <!-- 
-<example xml:id="ref.data.boolean.examples.one">
-<title>If(t/f) Sites</title>
+<example xml:id="ref.data.boolean.examples.ifsites">
+<title>Ift and Iff Sites</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Orc makes use of the Ift and Iff sites to test conditionals 
    Ift returns a signal if the argument is true,

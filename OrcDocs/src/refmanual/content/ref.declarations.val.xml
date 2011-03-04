@@ -40,7 +40,7 @@
 		<section xml:id="ref.declarations.val.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.val.examples.bindings"><title>Bindings</title>
+		<example xml:id="ref.declarations.val.examples.bindings"><title>Binding variables to values</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Bind x to true or false arbitrarily 
    Bind y to 2

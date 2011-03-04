@@ -76,7 +76,7 @@
   <section xml:id="ref.declarations.type.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.declarations.type.examples.aliases"><title>Aliases</title>
+		<example xml:id="ref.declarations.type.examples.aliases"><title>Type aliases</title>
 <programlisting language="orc"><![CDATA[
 {- Define a three-dimensional vector type, and a polymorphic relation type  -}
 
@@ -89,7 +89,7 @@ NONRUNNABLE
 ]]></programlisting>
 		  </example>
 		  
-		<example xml:id="ref.declarations.type.examples.imports"><title>Imports</title>
+		<example xml:id="ref.declarations.type.examples.imports"><title>Type imports</title>
 <programlisting language="orc"><![CDATA[
 {- Import the Cell type of write-once cells, and import Java's URI type -}
 

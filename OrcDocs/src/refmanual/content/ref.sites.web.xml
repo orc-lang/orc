@@ -101,7 +101,7 @@ Frameworks such as JAX-WS map SOAP web service functionality to Java classes; th
 <section xml:id="ref.sites.web.examples">
 <title>Examples</title>
 
-<example xml:id="ref.sites.web.examples.one">
+<example xml:id="ref.sites.web.examples.randombytes">
 <title>Random Bytes from Fourmilab</title>
 <programlisting language="orc"><![CDATA[
 {-
