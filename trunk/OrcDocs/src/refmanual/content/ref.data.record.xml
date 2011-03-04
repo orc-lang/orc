@@ -103,6 +103,8 @@ def magnitude(v) =
   v.x * v.x + 
   v.y * v.y + 
   v.z * v.z
+    >tot>
+      tot ** (1.0/2)
   
 def norm(v) = 
   val m = magnitude(v)
