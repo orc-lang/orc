@@ -29,7 +29,7 @@
 	  </para>
 	  </section>
 		
-		<section xml:id="ref.expressions.val.type">
+		<section xml:id="ref.declarations.val.type">
 	    <title>Type</title>
 			<para>
 				When a declaration occurs as <code>val</code> <replaceable>x</replaceable> <code>=</code> <replaceable>F</replaceable>, the expression in scope for the declaration
@@ -40,7 +40,7 @@
 		<section xml:id="ref.declarations.val.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.expressions.val.examples.bindings"><title>Bindings</title>
+		<example xml:id="ref.declarations.val.examples.bindings"><title>Bindings</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Bind x to true or false arbitrarily 
    Bind y to 2
@@ -62,7 +62,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.expressions.val.examples.timeout"><title>Timeout</title>
+		  <example xml:id="ref.declarations.val.examples.timeout"><title>Timeout</title>
 <programlisting language="orc"><![CDATA[
 {- Publish the result of a Google search.
    If it takes more than 5 seconds, time out.
@@ -76,7 +76,7 @@ NONRUNNABLE
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.expressions.val.examples.die"><title>Roll Die</title>
+		  <example xml:id="ref.declarations.val.examples.die"><title>Roll Die</title>
 <programlisting language="orc"><![CDATA[
 {- Bind an arbitrary integer between 1 and 6, inclusive,
    to a variable in order to simulate a 6-sided die roll.

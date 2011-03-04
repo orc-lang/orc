@@ -29,16 +29,16 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
   program as well. Instead of containing a type, a slot may be empty, written <code>_</code>.
 </para>
 
-		<section xml:id="ref.expressions.operators.syntax">
-		  <title>Syntax</title>
-		  <para>
-		    <productionset>
-		    	<productionrecap linkend="ebnf.declaration.type.datatype"/>
-		    	<productionrecap linkend="ebnf.constructor"/>
-		    	<productionrecap linkend="ebnf.constructor.member"/>
-		    </productionset>
-		  </para>
-	  </section>
+<section xml:id="ref.data.datatype.syntax">
+  <title>Syntax</title>
+  <para>
+    <productionset>
+    	<productionrecap linkend="ebnf.declaration.type.datatype"/>
+    	<productionrecap linkend="ebnf.constructor"/>
+    	<productionrecap linkend="ebnf.constructor.member"/>
+    </productionset>
+  </para>
+</section>
 
 <section xml:id="ref.data.datatype.constructors">
 <title>Constructors</title>
