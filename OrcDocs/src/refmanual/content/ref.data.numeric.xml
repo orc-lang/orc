@@ -126,8 +126,23 @@ These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="htt
 <section xml:id="ref.data.numeric.examples">
 <title>Examples</title>
 
-
 <example xml:id="ref.data.numeric.examples.one">
+<title>Precedence</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Operators follow common precedence practice. 
+   Combinators have lower precedence than operators.
+-}
+
+4 + 15 / 3 * 2 >result> result
+
+{-
+OUTPUT:
+14
+-}
+]]></programlisting>
+</example>
+
+<example xml:id="ref.data.numeric.examples.two">
 <title>Decimal Promotion</title>
 <programlisting language="orc-demo"><![CDATA[
 {- An expression only publishes a decimal value
@@ -135,19 +150,18 @@ These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="htt
    site call publications) is a decimal
 -}
 
-16 - 8 + 50 / 3 * 1 >a>
-16 - 8 + 5e1 / 3 * 1 >b>
-16 - floor(8.5) + ceil(49.99) / 3 * 1 >c>
-(a, b, c) 
+16 - 8 + 50.0 / 3 * 1 >a>
+16 - floor(8.5) + ceil(40e1 + 9.99) / 3 * 1 >b>
+(a, b) 
 
 {-
 OUTPUT:
-(24, 24.666666666666668, 24)
+(24.666666666666668, 24)
 -}
 ]]></programlisting>
 </example>
 
-<example xml:id="ref.data.numeric.examples.two">
+<example xml:id="ref.data.numeric.examples.three">
 <title>Square Roots and Squares</title>
 <programlisting><![CDATA[
 {- Calculate the square roots and squares of
