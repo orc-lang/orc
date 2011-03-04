@@ -212,8 +212,8 @@ OUTPUT:PERMUTABLE
           			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>Mod</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.abs"><code>abs</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.signum"><code>signum</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Ceil"><code>Ceil</code> function</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Ceil"><code>Ceil</code> site</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
