@@ -18,17 +18,40 @@ import orc.types.Type;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 public class Ceil extends EvalSite {
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		final Number n = args.numberArg(0);
-		final int i = n.intValue();
-		return Integer.valueOf(n.equals(Integer.valueOf(i)) ? i : i + 1);
-	}
+  public static BigInteger ceil(BigDecimal d) {
+    if (d.signum() >= 0) {
+      try {
+        // d has no fractional part
+        return d.toBigIntegerExact();
+      }
+      catch (ArithmeticException e) {
+        // d has a fractional part
+        return d.add(BigDecimal.ONE).toBigInteger();
+      }
+    }
+    else {
+      return Floor.floor(d.negate()).negate();
+    }
+  }
 
-	public Type orcType() {
-		return Types.function(Types.number(), Types.integer());
-	}
+  @Override
+  public Object evaluate(final Args args) throws TokenException {
+      final Number n = args.numberArg(0);
+      if (   n instanceof BigInteger
+          || n instanceof Integer
+          || n instanceof Long
+          || n instanceof Short
+          || n instanceof Byte) {
+        return n;
+      }
+      else {
+        BigDecimal d = (n instanceof BigDecimal ? (BigDecimal)n : new BigDecimal(n.doubleValue()));
+        return ceil(d);
+      }
+  }
 }

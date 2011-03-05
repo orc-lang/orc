@@ -19,13 +19,34 @@ import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 public class Floor extends EvalSite implements TypedSite {
 
+    public static BigInteger floor(BigDecimal d) {
+      if (d.signum() >= 0) {
+        return d.toBigInteger();
+      }
+      else {
+        return Ceil.ceil(d.negate()).negate();
+      }
+    }
+  
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final Number n = args.numberArg(0);
-		return Integer.valueOf(n.intValue());
+		if (   n instanceof BigInteger
+		    || n instanceof Integer
+		    || n instanceof Long
+		    || n instanceof Short
+		    || n instanceof Byte) {
+		  return n;
+		}
+		else {
+		  BigDecimal d = (n instanceof BigDecimal ? (BigDecimal)n : new BigDecimal(n.doubleValue()));
+		  return floor(d);
+		}
 	}
 
 	@Override
