@@ -184,7 +184,7 @@ NONRUNNABLE
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><link linkend="ref.types">Orc types</link></para></listitem>
-          			<listitem><para><link linkend="ref.declarations.type"><code>type</code> &#8212; Declare Type</link></para></listitem>
+          			<listitem><para><link linkend="ref.declarations.type"><code>type</code> &#x2014; Declare Type</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

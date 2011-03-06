@@ -14,7 +14,7 @@
    <section xml:id="ref.declarations.defclass">
 
    	  <!-- <?dbhtml stop-chunking?>  Don't chunk this chapter -->
-      <title><code>def class</code> &#8212; Define Site in Orc</title>
+      <title><code>def class</code> &#x2014; Define Site in Orc</title>
       <para>
       	Class is an abstraction mechanism in Orc, much like function. It
 		allows a programmer to code a site in Orc. More generally, a class can
