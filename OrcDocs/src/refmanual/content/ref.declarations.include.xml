@@ -12,7 +12,7 @@
 
 <!-- Include -->
 	<section xml:id="ref.declarations.include">
-		<title><code>include</code> &#8212; Include Orc File</title>
+		<title><code>include</code> &#x2014; Include Orc File</title>
 
 			<para>
 It is often convenient to group related declarations into units that can be
@@ -78,9 +78,9 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.declarations.site"><code>site</code> &#8212; Import Site</link></para></listitem>
-	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code> &#8212; Define Function</link></para></listitem>
-	          			<listitem><para><link linkend="ref.declarations.val"><code>val</code> &#8212; Bind Value</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.site"><code>site</code> &#x2014; Import Site</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code> &#x2014; Define Function</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.val"><code>val</code> &#x2014; Bind Value</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

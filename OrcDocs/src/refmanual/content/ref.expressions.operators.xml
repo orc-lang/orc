@@ -133,7 +133,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="center"/>
 	<colspec align="left"/>
   <row>
-    <entry><code>&#38;&#38;</code></entry>
+    <entry><code>&#x26;&#x26;</code></entry>
     <entry>Logical and</entry>
   </row>
   <row>
