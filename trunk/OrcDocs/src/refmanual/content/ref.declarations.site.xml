@@ -12,7 +12,7 @@
 
 <!-- Site -->
 	<section xml:id="ref.declarations.site">
-		<title><code>site</code> &#x2014; Import Site</title>
+		<title><code>site</code>:  Import Site</title>
 		<section xml:id="ref.declarations.site.body">
 			<para>
 A <code>site</code> declaration makes some service available as a site and
