@@ -58,6 +58,9 @@
 		<mkdir dir="${build.dir}/pdf"/>
 		<mkdir dir="${build.dir}/pdf/userguide"/>
 		<mkdir dir="${build.dir}/pdf/refmanual"/>
+		<mkdir dir="${build.dir}/eclipsehelp"/>
+		<mkdir dir="${build.dir}/eclipsehelp/userguide"/>
+		<mkdir dir="${build.dir}/eclipsehelp/refmanual"/>
 	</target>
 
 	<!-- =================================
@@ -224,6 +227,47 @@
 	</target>
 
 	<!-- =================================
+		  target: ug-eclipsehelp
+		 ================================= -->
+	<target name="ug-eclipsehelp" depends="mkdirs,depends,targetdb" description="Generate User Guide in Eclipse Help format">
+		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
+				basedir="${src.dir}/userguide" destdir="${build.dir}/eclipsehelp/userguide"
+				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/eclipsehelp/userguide/index.html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<include name="userguide.xml"/>
+			<classpath refid="xalan.classpath"/>
+			<param name="orc.demo" expression="1"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="chunk.quietly" expression="1"/>
+
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="userguide"/>
+
+			<param name="suppress.footer.navigation" expression="1"/>
+
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+		</xslt>
+		<!-- Copy the stylesheet and navigational images -->
+		<copy todir="${build.dir}/eclipsehelp/userguide">
+			<fileset dir="${src.dir}/css">
+				<include name="style.css"/>
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}/eclipsehelp/userguide/images">
+			<fileset dir="src/xsl/images"/>
+		</copy>
+		<!-- Remove useless generated files -->
+		<delete file="${build.dir}/eclipsehelp/userguide/plugin.xml"/>
+		<delete file="${build.dir}/eclipsehelp/userguide/index.xml"/>
+	</target>
+
+	<!-- =================================
 		  target: ug-pdf
 		 ================================= -->
 	<target name="ug-pdf" depends="mkdirs,depends,targetdb" description="Generate User Guide PDF file">
@@ -273,7 +317,7 @@
 	<!-- =================================
 		  target: userguide
 		 ================================= -->
-	<target name="userguide" depends="mkdirs,ug-html-chunk,ug-html-single,ug-pdf" description="Generate the User Guide in various formats">
+	<target name="userguide" depends="mkdirs,ug-html-chunk,ug-html-single,ug-eclipsehelp,ug-pdf" description="Generate the User Guide in various formats">
 	</target>
 
 	<!-- =================================
@@ -363,6 +407,59 @@
 	</target>
 
 	<!-- =================================
+		  target: rm-eclipsehelp
+		 ================================= -->
+	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb" description="Generate Reference Manual in Eclipse Help format">
+		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
+				basedir="${src.dir}/refmanual" destdir="${build.dir}/eclipsehelp/refmanual"
+				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/eclipsehelp/refmanual/index.html"
+				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<classpath refid="xalan.classpath"/>
+			<param name="orc.demo" expression="0"/>
+			<param name="section.autolabel" expression="1"/>
+			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.autolabel.max.depth" expression="2"/>
+			<param name="chunk.first.sections" expression="1"/>
+			<param name="chapter.autolabel" expression="1"/>
+			<param name="generate.toc" expression="
+				book	  toc
+				chapter	  toc
+			"/>
+			<param name="toc.section.depth" expression="1"/>
+			<param name="header.rule" expression="0"/>
+			<param name="use.id.as.filename" expression="1"/>
+
+			<param name="chunk.quietly" expression="1"/>
+			<param name="chunk.section.depth" expression="1"/>
+			<param name="suppress.footer.navigation" expression="1"/>
+
+			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="current.docid" expression="refmanual"/>
+
+			<param name="highlight.source" expression="1"/>
+			<param name="highlight.default.language" expression="orc"/>
+			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+		</xslt>
+		<!-- Copy the stylesheet and navigational/content images -->
+		<copy todir="${build.dir}/eclipsehelp/refmanual">
+			<fileset dir="${src.dir}/css">
+				<include name="style.css"/>
+			</fileset>
+		</copy>
+		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
+			<fileset dir="src/xsl/images"/>
+		</copy>
+		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
+			<fileset dir="src/refmanual/content/images"/>
+		</copy>
+		<!-- Remove useless generated files -->
+		<delete file="${build.dir}/eclipsehelp/refmanual/plugin.xml"/>
+		<delete file="${build.dir}/eclipsehelp/refmanual/index.xml"/>
+	</target>
+
+	<!-- =================================
 		  target: rm-pdf
 		 ================================= -->
 	<target name="rm-pdf" depends="mkdirs,depends,targetdb" description="Generate the Reference Manual PDF file">
@@ -413,7 +510,13 @@
 	<!-- =================================
 		  target: refmanual
 		 ================================= -->
-	<target name="refmanual" depends="mkdirs,rm-html-chunk,rm-html-single,rm-pdf" description="Generate the Reference Manual in various formats">
+	<target name="refmanual" depends="mkdirs,rm-html-chunk,rm-html-single,rm-eclipsehelp,rm-pdf" description="Generate the Reference Manual in various formats">
+	</target>
+
+	<!-- =================================
+		  target: eclipsehelp
+		 ================================= -->
+	<target name="eclipsehelp" depends="ug-eclipsehelp,rm-eclipsehelp" description="Generate the manuals in Eclipse Help format">
 	</target>
 
 	<!-- =================================
