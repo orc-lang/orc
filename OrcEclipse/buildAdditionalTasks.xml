@@ -5,7 +5,7 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -28,8 +28,25 @@
 	</target>
 
 	<target name="copyuserguide">
-		<copy preservelastmodified="true" todir="help/orcuserguide" verbose="true">
-			<fileset dir="../OrcDocs/build/html/userguide"/>
+		<copy todir="help" verbose="true">
+			<fileset dir="../OrcDocs/build/eclipsehelp" excludes="**/toc.xml"/>
+		</copy>
+		<!-- Fix up the paths in the Eclipse Help TOCs -->
+		<copy file="../OrcDocs/build/eclipsehelp/refmanual/toc.xml" todir="help/refmanual" verbose="true">
+			<filterchain>
+				<tokenfilter>
+			    	<replacestring from=" topic=&quot;" to=" topic=&quot;help/refmanual/"/>
+			    	<replacestring from=" href=&quot;" to=" href=&quot;help/refmanual/"/>
+				</tokenfilter>
+			</filterchain>
+		</copy>
+		<copy file="../OrcDocs/build/eclipsehelp/userguide/toc.xml" todir="help/userguide" verbose="true">
+			<filterchain>
+				<tokenfilter>
+			    	<replacestring from=" topic=&quot;" to=" topic=&quot;help/userguide/"/>
+			    	<replacestring from=" href=&quot;" to=" href=&quot;help/userguide/"/>
+				</tokenfilter>
+			</filterchain>
 		</copy>
 	</target>
 </project>

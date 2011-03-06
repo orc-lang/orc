@@ -103,6 +103,7 @@
 			<srcfileset dir="${src.dir}/userguide" includes="**/*"/>
 			<targetfileset dir="${build.dir}/targetdb" includes="userguide.*"/>
 			<targetfileset dir="${build.dir}/html/userguide" includes="**/*"/>
+			<targetfileset dir="${build.dir}/eclipsehelp/userguide" includes="**/*"/>
 			<targetfileset dir="${build.dir}/fo/userguide" includes="**/*"/>
 			<targetfileset dir="${build.dir}/pdf/userguide" includes="**/*"/>
 		</dependset>
@@ -112,6 +113,7 @@
 			<!-- Since the ref manual targetdbs are built separately for each source
 			     XML file, XSLT can get those dependencies right without help. -->
 			<targetfileset dir="${build.dir}/html/refmanual" includes="**/*"/>
+			<targetfileset dir="${build.dir}/eclipsehelp/refmanual" includes="**/*"/>
 			<targetfileset dir="${build.dir}/fo/refmanual" includes="**/*"/>
 			<targetfileset dir="${build.dir}/pdf/refmanual" includes="**/*"/>
 		</dependset>

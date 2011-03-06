@@ -458,14 +458,21 @@
    <extension
          point="org.eclipse.help.toc">
       <toc
-            file="help/toc.xml"
+            file="help/pluginhelp/toc.xml"
             primary="true">
       </toc>
    </extension>
    <extension
          point="org.eclipse.help.toc">
       <toc
-            file="help/userguide_toc.xml"
+            file="help/userguide/toc.xml"
+            primary="true">
+      </toc>
+   </extension>
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/refmanual/toc.xml"
             primary="true">
       </toc>
    </extension>
