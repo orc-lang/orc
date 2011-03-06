@@ -12,7 +12,7 @@
 
 <!-- Val -->
 	<section xml:id="ref.declarations.val">
-		<title><code>val</code> &#x2014; Bind Value</title>
+		<title><code>val</code>:  Bind Value</title>
 		<section xml:id="ref.declarations.val.body">
 			<para>
 				The declaration <code>val</code> <replaceable>x</replaceable> <code>=</code> <replaceable>G</replaceable>, followed by expression <replaceable>F</replaceable>, is a different way of writing the expression <replaceable>F</replaceable> <code>&lt;</code><replaceable>x</replaceable><code>&lt;</code> <replaceable>G</replaceable>.

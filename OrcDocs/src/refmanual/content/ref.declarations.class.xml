@@ -12,7 +12,7 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class">
-	<title><code>class</code> &#x2014; Import Class from Java</title>
+	<title><code>class</code>:  Import Class from Java</title>
 
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.

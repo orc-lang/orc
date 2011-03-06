@@ -12,7 +12,7 @@
 
 <!-- def -->
 	<section xml:id="ref.declarations.def">
-		<title><code>def</code> &#x2014; Define Function</title>
+		<title><code>def</code>:  Define Function</title>
 		
 		<para>
 			The <code>def</code> declaration defines a function. A function definition consists of an identifier, a sequence of <firstterm>parameters</firstterm>,
