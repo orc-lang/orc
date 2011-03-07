@@ -13,30 +13,29 @@
 <!-- Lambda -->
 	<section xml:id="ref.expressions.dot">
 		<title>Dot Access</title>
-		<section xml:id="ref.expressions.dot.body">
-			<para>
+		
+		<para>
 			A <firstterm>dot access</firstterm> is an expression which retrieves a named member of a value.
 			It consists of a <firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <firstterm>key</firstterm> <replaceable>K</replaceable>.
 			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>v</replaceable>.
 			If the value <replaceable>v</replaceable> has a <firstterm>member</firstterm> named <replaceable>K</replaceable>, that member
 			is published. Otherwise, the expression halts.
-			</para>
+		</para>
 			
-			<para>
-		  Not all values have members. 
-		  <link linkend="ref.data.record">Records</link> have members, as do many sites.
-		  A value created by an <link linkend="ref.declarations.class">imported class</link> has
-		  a member for each method and field of the corresponding class.
-		  A value created by a <link linkend="ref.declarations.class">defined class</link> has
-		  a member for each <code>def</code> and <code>val</code> declaration in the class.
-			</para>
+		<para>
+			Not all values have members. 
+			<link linkend="ref.data.record">Records</link> have members, as do many sites.
+			A value created by an <link linkend="ref.declarations.class">imported class</link> has
+			a member for each method and field of the corresponding class.
+			A value created by a <link linkend="ref.declarations.class">defined class</link> has
+			a member for each <code>def</code> and <code>val</code> declaration in the class.
+		</para>
 			
-			<para>
-		  Like many expressions in Orc, a dot access is simply another form of site call. The key
-		  is converted to a special value and passed to the site call as the only argument. The
-		  site call publishes the member named by the key if it exists, and halts otherwise.
-			</para>
-		</section>
+		<para>
+			Like many expressions in Orc, a dot access is simply another form of site call. The key
+			is converted to a special value and passed to the site call as the only argument. The
+			site call publishes the member named by the key if it exists, and halts otherwise.
+		</para>
 		
 		<section xml:id="ref.expressions.dot.syntax">
 	  <title>Syntax</title>

@@ -4,13 +4,17 @@
     exclude-result-prefixes="xslthl"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<!--  Customization layer imports -->
-<xsl:import href="html.xsl"/>
+<!-- Import profiling customizations (for index) and chunking -->
+<xsl:import href="profiledchunk.xsl"/>
+
+<!-- Import syntax highlighting -->
+<xsl:import href="highlighting.xsl"/>
+
+<!-- Import customization layers -->
+<xsl:import href="html-custom.xsl"/>
 	
 <!--  Add DOCTYPE to the top of HTML output to make it Internet Explorer compatible (no quirks mode) -->
 <xsl:output doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN" doctype-system="http://www.w3.org/TR/html4/loose.dtd"/>
-	
-<!-- Customization for the Orc Reference manual -->
 
 <!-- Changes the navigation text from "Home" to "Table of Contents" -->
 <xsl:param name="local.l10n.xml" select="document('')"/>

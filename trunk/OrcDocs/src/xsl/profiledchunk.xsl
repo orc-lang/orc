@@ -6,9 +6,6 @@
 <!-- Unedited docbook .xsl (need profiling for index)-->
 <xsl:import href="../../docbook-xsl/html/profile-chunk.xsl"/>
 
-<!-- Import syntax highlighting -->
-<xsl:import href="highlighting.xsl"/>
-
 <!-- Each firstterm is placed into index -->
 <xsl:template match="firstterm" mode="profile">
   <!-- Copy original element -->
