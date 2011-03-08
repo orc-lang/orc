@@ -27,5 +27,71 @@ Browse("http://www.google.com")
 --}
 site Browse = orc.lib.web.Browse
 
-{- HTTP -} 
+{--
+The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
+ 
+@site HTTP(java.net.URL) :: HTTP 
+
+Publishes an HTTP site which accepts HTTP requests on the given URL.
+
+@site HTTP(String) :: HTTP
+
+Converts the given string to a URL U and then behaves as HTTP(U).
+
+@site HTTP(String, {..}) :: HTTP
+
+Takes a string S and a query record Q. Maps Q to a URL query string QS by translating each record binding to a query pair, escaping characters
+if necessary, and then behaves as HTTP(S+QS).
+
+@method HTTP.get() :: String
+
+Performs a GET request on the URL used to create this HTTP site. 
+The payload is empty. 
+The response is published as a single string.
+
+@method HTTP.post(String) :: String
+
+Performs a POST request on the URL used to create this HTTP site. 
+The string argument is used as a UTF-16 encoded payload.
+The response is published as a single string.
+
+--} 
 site HTTP = orc.lib.web.HTTP
+
+{--
+@site ReadJSON(String) :: Top 
+
+ReadJSON parses a string representation of a JSON value, producing an Orc representation of that JSON value. 
+
+An Orc representation of a JSON value, called an OrcJSON value, 
+is either a record of OrcJSON values (representing a JSON object), 
+a list of OrcJSON values (representing a JSON array), 
+or a literal value (representing a JSON primitive value).
+
+ReadJSON and WriteJSON are mutual inverses. 
+If S is a string representation of a JSON value, then WriteJSON(ReadJSON(S)) = S, modulo whitespace.
+
+--}
+site ReadJSON = orc.lib.web.ReadJSON
+
+{-- 
+@site WriteJSON(Top) :: String 
+
+WriteJSON serializes an Orc representation of a JSON value, producing a string representation of that JSON value. 
+
+An Orc representation of a JSON value, called an OrcJSON value, 
+is either a record of OrcJSON values (representing a JSON object), 
+a list of OrcJSON values (representing a JSON array), 
+or a literal value (representing a JSON primitive value).
+
+WriteJSON and ReadJSON are mutual inverses. 
+If V is an Orc representation of a JSON value, then ReadJSON(WriteJSON(V)) = V.
+
+--}
+site WriteJSON = orc.lib.web.WriteJSON
+
+{- ReadXML -}
+-- site ReadXML = orc.lib.xml.ReadXML
+
+{- WriteXML -}
+-- site WriteXML = orc.lib.xml.WriteXML
