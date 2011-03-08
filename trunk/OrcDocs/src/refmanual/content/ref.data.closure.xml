@@ -27,6 +27,17 @@ the bindings for those variables are stored in the closure. Then, when the closu
 of the function body uses those stored variable bindings.  
 </para>
 
+
+<section xml:id="ref.data.closure.type">
+  <title>Type</title>
+	<para>
+		The type of a closure is a function type <code>lambda</code> <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+		where <replaceable>T<subscript>i</subscript></replaceable> are the argument types of the closure and <replaceable>R</replaceable> is its return type.
+		The argument and return types are derived from the original <link linkend="ref.declarations.def.type">definition of the function</link>.
+	</para>
+</section>
+
+
 <section xml:id="ref.data.closure.examples">
 		  <title>Examples</title>
 
