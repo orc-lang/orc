@@ -29,14 +29,6 @@
 	  </para>
 	  </section>
 		
-		<section xml:id="ref.declarations.val.type">
-	    <title>Type</title>
-			<para>
-				When a declaration occurs as <code>val</code> <replaceable>x</replaceable> <code>=</code> <replaceable>F</replaceable>, the expression in scope for the declaration
-				is typechecked using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, where <replaceable>T</replaceable> is the type of <replaceable>F</replaceable>.
-			</para>
-		</section>
-		
 		<section xml:id="ref.declarations.val.examples">
 		<title>Examples</title>
 

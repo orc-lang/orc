@@ -370,6 +370,17 @@ no-output
 		  </section>
 	  </section>
 	
+	  <section xml:id="ref.declarations.defclass.type">
+	    <title>Type</title>
+	    <para>
+	      A <code>def class</code> declaration is typechecked in the same way as a <link linkend="ref.declarations.def"><code>def</code> declaration</link>, with one exception.
+	      The return type of a closure created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
+	      <code>{.</code> <replaceable>d<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>d<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
+	      where each <replaceable>d<subscript>i</subscript></replaceable> is the name of a <code>def</code> or <code>def class</code> declaration in the body,
+	      and <replaceable>T<subscript>i</subscript></replaceable> is its type.
+	    </para>
+	  </section>
+	
 	  <section xml:id="ref.declarations.defclass.links">
 		  <title>Related Links</title>
 		  

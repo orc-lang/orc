@@ -39,6 +39,16 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 	    </productionset>
 	  </para>
   </section>
+  
+   <section xml:id="ref.declarations.class.syntax">
+	  <title>Type</title>
+	  <para>
+	    The Orc typechecker interfaces with the Java type system, so that operations on
+	    Java objects typecheck as one would expect in a Java program, with the exception
+	    that methods with return type <code>void</code> instead have return
+	    type <code>Signal</code> in Orc.
+	  </para>
+  </section>
 
 	<section xml:id="ref.declarations.class.examples">
 		<title>Examples</title>
