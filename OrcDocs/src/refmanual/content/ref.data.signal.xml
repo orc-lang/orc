@@ -13,9 +13,9 @@
 <section xml:id="ref.data.signal">
 <title><code>signal</code></title>
 
-<para>A <literal>signal</literal> is a value that carries no information. It typically indicates
-completion of a site call, when there is no other meaningful value to return. It is analagous
-to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
+<para>A <firstterm>signal</firstterm> is a value that carries no information. It typically indicates
+completion of a <ind>site call</ind>, when there is no other meaningful value to return. It is analagous
+to <code>void</code> in <ind>Java</ind> or <code>()</code>, the unit value, in ML.
 </para>
 
   <section xml:id="ref.data.signal.syntax">
@@ -32,8 +32,8 @@ to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
 
 <para>Notable signal operations include:
 <itemizedlist>
-<listitem><para>The <code>Ift</code> site publishes a <literal>signal</literal> if its argument is true.</para></listitem>
-<listitem><para>The <code>Iff</code> site publishes a <literal>signal</literal> if its argument is false.</para></listitem>
+<listitem><para>The <code><ind>Ift</ind></code> site publishes a <code>signal</code> if its argument is true.</para></listitem>
+<listitem><para>The <code><ind>Iff</ind></code> site publishes a <code>signal</code> if its argument is false.</para></listitem>
 </itemizedlist>
 </para>
 
@@ -51,7 +51,7 @@ to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
 
 <para>Orc <code>Signal</code>s don't correspond to any Java value, so if a <code>Signal</code>
 is passed to Java code, it will be as an <code language="java">java.lang.Object</code> of a type not specified here.
-Returns of type <code language="java">void</code> from Java code are converted into a publication of a <code>Signal</code>.</para>
+Returns of type <code language="java">void</code> from <ind>Java</ind> code are converted into a publication of a <code>Signal</code>.</para>
 
 </section>
 

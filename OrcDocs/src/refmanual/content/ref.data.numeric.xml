@@ -13,15 +13,15 @@
 <section xml:id="ref.data.numeric" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Numerics</title>
 
-<para>Orc includes two numeric types, <code>Integer</code> and <code>Number</code>.
+<para>Orc includes two numeric types, <code><ind>Integer</ind></code> and <code><ind>Number</ind></code>.
 Orc's <code>Integer</code> is an arbitrary-precision two's complement integer. 
-Orc's <code>Number</code> is a floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
-<code>Number</code> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
+Orc's <code>Number</code> is a <ind>floating point</ind> number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
+<code>Number</code> behaves in accordance with the <ind>ANSI</ind> INCITS 274-1996 subset of ANSI/<ind>IEEE</ind> Std 754-2008.
 Namely, "infinite, NaN, or subnormal results are always treated as errors, and –0 results are hidden".
 </para>
 
 <para>
-Note that the divide operation on <code>Number</code>s can encounter a
+Note that the <ind>divide</ind> operation on <code>Number</code>s can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
 using IEEE 754 binary64 (formerly called double precision)
@@ -48,9 +48,9 @@ This fall back may result in a loss of precision for this operation.
 </productionset>
 </section>
 
-<para>Numeric literals in Orc are specified in decimal.
+<para>Numeric <ind>literals</ind> in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
-If a numeric literal contains a decimal point or an "<code>E</code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
+If a numeric literal contains a decimal point or an "<code><ind>E</ind></code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
 </para>
 
 </section>
@@ -59,27 +59,27 @@ If a numeric literal contains a decimal point or an "<code>E</code>", it is a <c
 <section xml:id="ref.data.numeric.operations">
 <title>Operations</title>
 
-<para>Notable operations on integers and numbers include:
+<para>Notable <ind>operations</ind> on integers and numbers include:
 <itemizedlist>
-<listitem><para>Add: <code>+</code></para></listitem>
-<listitem><para>Subtract: <code>-</code></para></listitem>
-<listitem><para>Negate (unary minus): <code>-</code></para></listitem>
-<listitem><para>Multiply: <code>*</code></para></listitem>
-<listitem><para>Divide: <code>/</code></para></listitem>
-<listitem><para>Exponent: <code>**</code></para></listitem>
-<listitem><para>Remainder: <code>%</code></para></listitem>
-<listitem><para>Absolute value: <code>abs</code></para></listitem>
-<listitem><para>Signum: <code>signum</code></para></listitem>
-<listitem><para>Floor: <code>Floor</code></para></listitem>
-<listitem><para>Ceiling: <code>Ceil</code></para></listitem>
+<listitem><para><ind>Add</ind>: <code>+</code></para></listitem>
+<listitem><para><ind>Subtract</ind>: <code>-</code></para></listitem>
+<listitem><para><ind>Negate</ind> (unary minus): <code>-</code></para></listitem>
+<listitem><para><ind>Multiply</ind>: <code>*</code></para></listitem>
+<listitem><para><ind>Divide</ind>: <code>/</code></para></listitem>
+<listitem><para><ind>Exponent</ind>: <code>**</code></para></listitem>
+<listitem><para><ind>Remainder</ind>: <code>%</code></para></listitem>
+<listitem><para><ind>Absolute value</ind>: <code>abs</code></para></listitem>
+<listitem><para><ind>Signum</ind>: <code>signum</code></para></listitem>
+<listitem><para><ind>Floor</ind>: <code>Floor</code></para></listitem>
+<listitem><para><ind>Ceiling</ind>: <code>Ceil</code></para></listitem>
 </itemizedlist>
 </para>
 
 <para>
-	Arithmetic operators with two integer arguments will perform an integer operation and 
-	return an integer result; for example, <code>5 / 2</code> performs integer division and 
+	Arithmetic <ind>operators</ind> with two integer arguments will perform an integer operation and 
+	return an integer result; for example, <code>5 / 2</code> performs integer <ind>division</ind> and 
 	returns 2. However, if either argument to an operator has a decimal part 
-	(even if it is trivial, as in <code>3.0</code>), the other argument will be promoted, and 
+	(even if it is trivial, as in <code>3.0</code>), the other argument will be <ind>promoted</ind>, and 
 	a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
 	perform decimal division and return 2.5. 
 </para>
@@ -95,12 +95,12 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 
 <para>
 Orc <code>Integer</code> values are passed in calls to and returns
-from Java code as <code language="java">java.math.BigInteger</code>, or if the callee
+from <ind>Java</ind> code as <code language="java">java.math.BigInteger</code>, or if the callee
 method expects a specific numeric type, an <code>Integer</code> will be
 converted to a <code language="java">java.lang.Byte</code>, <code language="java">java.lang.Short</code>,
 <code language="java">java.lang.Integer</code>, <code language="java">java.lang.Long</code>,
 <code language="java">java.lang.Float</code>, or <code language="java">java.lang.Double</code>, as appropriate.
-These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
+These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7"><ind>The Java Language Specification</ind></citetitle>.
 </para>
 
 <para>
@@ -141,6 +141,8 @@ OUTPUT:
 -}
 ]]></programlisting>
 </example>
+
+<para>See the Orc <link linkend="ref.syntax.precedence">precedence table</link>.</para>
 
 <example xml:id="ref.data.numeric.examples.int2float">
 <title>Integer to Number Promotion</title>

@@ -13,7 +13,7 @@
 <section xml:id="ref.data.boolean" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Booleans</title>
 
-  <para>Orc supports Boolean values, <code>true</code> and <code>false</code>.</para>
+  <para>Orc supports <firstterm>Boolean</firstterm> values, <code>true</code> and <code>false</code>.</para>
 
 	<section xml:id="ref.data.boolean.syntax">
 	  <title>Syntax</title>
@@ -29,18 +29,18 @@
 
 <para>Notable Boolean operations include:
 <itemizedlist>
-<listitem><para>Logical negation (not): <code>~</code></para></listitem>
-<listitem><para>Logical and: <code>&amp;&amp;</code></para></listitem>
-<listitem><para>Logical or: <code>||</code></para></listitem>
+<listitem><para><ind>Logical negation</ind> (not): <code>~</code></para></listitem>
+<listitem><para><ind>Logical and</ind>: <code>&amp;&amp;</code></para></listitem>
+<listitem><para><ind>Logical or</ind>: <code>||</code></para></listitem>
 </itemizedlist>
 as well as the comparison operators, which yield Boolean results:
 <itemizedlist>
-<listitem><para>Less than: <code>&lt;:</code></para></listitem>
-<listitem><para>Greater than: <code>:></code></para></listitem>
-<listitem><para>Less than or equal to: <code>&lt;=</code></para></listitem>
-<listitem><para>Greater than or equal to: <code>>=</code></para></listitem>
-<listitem><para>Equal to: <code>=</code></para></listitem>
-<listitem><para>Not equal to: <code>/=</code></para></listitem>
+<listitem><para><ind>Less than</ind>: <code>&lt;:</code></para></listitem>
+<listitem><para><ind>Greater than</ind>: <code>:></code></para></listitem>
+<listitem><para><ind>Less than or equal to</ind>: <code>&lt;=</code></para></listitem>
+<listitem><para><ind>Greater than or equal to</ind>: <code>>=</code></para></listitem>
+<listitem><para><ind>Equal to</ind>: <code>=</code></para></listitem>
+<listitem><para><ind>Not equal to</ind>: <code>/=</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -57,7 +57,7 @@ as well as the comparison operators, which yield Boolean results:
 <section xml:id="ref.data.boolean.type">
   <title>Type</title>
 	<para>
-		A boolean value has type <code>Boolean</code>.
+		A Boolean value has type <code>Boolean</code>.
 	</para>
 </section>
 
@@ -65,7 +65,7 @@ as well as the comparison operators, which yield Boolean results:
 <title>Java calls</title>
 
 <para>Orc <code>Boolean</code> values are passed in calls to and returns
-from Java code as <code language="java">java.lang.Boolean</code>, which is boxed and
+from <ind>Java</ind> code as <code language="java">java.lang.Boolean</code>, which is boxed and
 unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle> as <code language="java">boolean</code>.</para>
 
 </section>
