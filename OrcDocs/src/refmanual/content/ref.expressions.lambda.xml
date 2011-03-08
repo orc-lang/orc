@@ -21,7 +21,8 @@ definition without the keyword <code>def</code> and replacing the function name 
 the keyword <code>lambda</code>, that definition becomes an expression which publishes a closure. 
 </para>
 <para>
-Limitation:  we can use <code>lambda</code> to create a closure only for a function that is not recursive.
+Note that a <code>lambda</code> cannot create a recursive function, since the function is
+not given a name in the body.
 </para>
 		</section>
 		
@@ -60,6 +61,13 @@ OUTPUT:
 
 ]]></programlisting>
 		  </example>
+	  </section>
+		
+		<section xml:id="ref.expressions.lambda.syntax">
+		  <title>Type</title>
+		  <para>
+		    The type of a <code>lambda</code> expression is exactly the type of the <link linkend="ref.data.closure">closure</link> it creates.
+		  </para>
 	  </section>
 		
 		<section xml:id="ref.expressions.lambda.links">

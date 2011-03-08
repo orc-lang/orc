@@ -17,14 +17,13 @@
 			<para>
 A <code>site</code> declaration makes some service available as a site and
 binds it to a variable. The service might be an object in the host language 
-(e.g. a class instance in Scala or Java), or an external service on the web which is accessed 
-through some protocol like SOAP or REST, or even a primitive operation like addition.
+(e.g. a class instance in Scala or Java), or an external Web service, 
+or even a primitive operation like addition.
 			</para>
 			<para>
-Consider an example that instantiates a Java object to be used as a site in an Orc program, specifically
-a Java object which provides an asynchronous buffer service. The declaration uses a
-fully qualified Java class name to find and load a class, and creates an instance of that
-class to provide the service. 
+A site declaration loads a platform object, specifically a Java class, to be 
+used as a site in an Orc program. The declaration uses a fully qualified Java class 
+name to find and load a class, and creates an instance of that class to provide the service. 
 			</para>
 		</section>
 		
@@ -36,6 +35,17 @@ class to provide the service.
 	    </productionset>
 	  </para>
   </section>
+  
+    <section xml:id="ref.declarations.site.type">
+	  <title>Type</title>
+	  <para>
+	    The type of a site is determined entirely by the site itself. It may be representable
+	    in Orc, for example as a <link linkend="ref.data.closure.type">function type</link>,
+	    or it may be an entirely opaque type. The type of a site behaves very much like a site
+	    itself during typechecking; it is invoked with argument types and responds with a return
+	    type.
+	  </para>
+    </section>
 		
 		<section xml:id="ref.declarations.site.examples">
 		<title>Examples</title>
