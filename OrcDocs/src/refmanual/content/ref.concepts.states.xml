@@ -27,8 +27,8 @@
 		</para>
 			
 		<para>
-			There are three passive states: <firstterm>pending</firstterm>, <firstterm>blocked</firstterm> 
-			and <firstterm>halted</firstterm>. A pending
+			There are three passive states: pending, blocked 
+			and halted. A pending
 			expression will definitely receive a response from some called site
 			(or function), a blocked expression may receive a response, and a
 			halted expression will never receive a response.
@@ -54,6 +54,108 @@
 				</imageobject>
 			</mediaobject>
 		</figure>
+		
+	<section xml:id="ref.concepts.states.block">
+	<title>Blocked</title>
+		<para>
+			Execution of an expression is <firstterm>blocked</firstterm> if it can not take an autonomous
+			step, it is not halted, and none of the outstanding site calls can
+			respond immediately. That is, there is some outstanding site call that may
+			respond in the future. For example, an expression that calls <code>c.get()</code>,
+			where channel <code>c</code> is empty, is blocked; the call may receive
+			a response or may remain blocked forever, depending on whether a value
+			is put in <code>c</code> in the future.
+		</para>
+		
+		<section xml:id="ref.concepts.states.block.examples">
+			<title>Examples</title>
+
+		<example xml:id="ref.concepts.states.block.examples.one">
+<title>Blocked on Call</title>
+<programlisting language="orc-demo"><![CDATA[
+{- A "get" call to an empty channel blocks until a
+   value is placed on the channel.
+   
+   This program runs forever as a blocked execution.
+-}
+
+val c = Buffer()
+   
+c.get()
+   
+{-
+OUTPUT:
+no output
+-}
+]]></programlisting>
+</example>
+		</section>
+	</section>
+	
+	<section xml:id="ref.concepts.states.halt">
+	<title>Halted</title>
+		<para>
+			Execution of an expression is <firstterm>halted</firstterm> if it can not take an autonomous
+			step, nor will it ever receive a response to any outstanding site
+			call. Therefore, a halted expression will have no further execution.
+		</para>
+		
+		<section xml:id="ref.concepts.states.halt.examples">
+			<title>Examples</title>
+
+		<example xml:id="ref.concepts.states.halt.examples.one">
+<title>Halted on Close</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Create a channel c.  After 500ms, "close" the channel
+   and halt any blocked "get" calls to the empty channel.
+-}
+
+val c = Buffer()
+
+c.get() | Rwait(500) >> c.close()
+
+{-
+OUTPUT:
+signal
+-}
+]]></programlisting>
+</example>
+		<para>See the <link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link>.</para>
+		</section>
+	</section>
+		
+	<section xml:id="ref.concepts.states.kill">
+	<title>Killed</title>
+		<para>
+			Execution of an expression is <firstterm>killed</firstterm> when it is forced to take no more
+		    autonomous steps.  Only a <link linkend="ref.combinators.pruning">pruning combinator</link>
+			may kill an expression.  For example,
+			expression <replaceable>G</replaceable> is killed in 
+			<replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
+			if <replaceable>G</replaceable> has published.
+			A component of a killed expression is killed.
+		</para>
+		
+		<section xml:id="ref.concepts.states.kill.examples">
+			<title>Examples</title>
+
+		<example xml:id="ref.concepts.states.kill.examples.one">
+<title>Killed Queries</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Query multiple search engines.
+   Publish the query result that arrives first and 
+   kill executions of the other queries.
+-}
+
+println(result) <result< ( Google("survivor") | Yahoo("survivor") | Bing("survivor") )
+
+{-
+NONRUNNABLE
+-}
+]]></programlisting>
+</example>
+		</section>
+	</section>
 
 	<section xml:id="ref.concepts.states.links">
 		<title>Related Links</title>
@@ -69,6 +171,8 @@
 					<row>
 						<entry>
 							<itemizedlist>
+								<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
+								<listitem><para><link linkend="ref.concepts.silent">Silent</link></para></listitem>
 								<listitem><para><link linkend="ref.sites">Sites</link></para></listitem>
 								<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
 							</itemizedlist>

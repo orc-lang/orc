@@ -18,7 +18,7 @@
 		<title>Definition</title>
 
 		<para>
-			An expression that never publishes in any execution is called <firstterm>silent</firstterm>. 
+			An expression that never publishes in a particular execution is called <firstterm>silent</firstterm>. 
 			A silent expression may call sites. The type of a silent
 			expression is <code>Bot</code>. Formally, expression <replaceable>F</replaceable> 
 			is silent if it behaves exactly as <replaceable>F</replaceable><code><![CDATA[ >> stop]]></code>.

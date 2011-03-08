@@ -12,9 +12,7 @@
    <!ENTITY targets.ref.combinators.sequential SYSTEM "../build/targetdb/ref.combinators.sequential.xml">
    <!ENTITY targets.ref.combinators SYSTEM "../build/targetdb/ref.combinators.xml">
    <!ENTITY targets.ref.concepts.approximation SYSTEM "../build/targetdb/ref.concepts.approximation.xml">
-   <!ENTITY targets.ref.concepts.block SYSTEM "../build/targetdb/ref.concepts.block.xml">
    <!ENTITY targets.ref.concepts.deflate SYSTEM "../build/targetdb/ref.concepts.deflate.xml">
-   <!ENTITY targets.ref.concepts.halt SYSTEM "../build/targetdb/ref.concepts.halt.xml">
    <!ENTITY targets.ref.concepts.helpful SYSTEM "../build/targetdb/ref.concepts.helpful.xml">
    <!ENTITY targets.ref.concepts.silent SYSTEM "../build/targetdb/ref.concepts.silent.xml">
    <!ENTITY targets.ref.concepts.states SYSTEM "../build/targetdb/ref.concepts.states.xml">
@@ -121,14 +119,8 @@
 					  <document targetdoc="ref.concepts.approximation" baseuri="ref.concepts.approximation.html">
 					  	&targets.ref.concepts.approximation;
 					  </document>
-					  <document targetdoc="ref.concepts.block" baseuri="ref.concepts.block.html">
-					  	&targets.ref.concepts.block;
-					  </document>
 					  <document targetdoc="ref.concepts.deflate" baseuri="ref.concepts.deflate.html">
 					  	&targets.ref.concepts.deflate;
-					  </document>
-					  <document targetdoc="ref.concepts.halt" baseuri="ref.concepts.halt.html">
-					  	&targets.ref.concepts.halt;
 					  </document>
 					  <document targetdoc="ref.concepts.helpful" baseuri="ref.concepts.helpful.html">
 					  	&targets.ref.concepts.helpful;
