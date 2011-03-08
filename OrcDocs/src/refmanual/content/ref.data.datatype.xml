@@ -57,7 +57,7 @@ A datatype declaration defines a new <firstterm>sum type</firstterm>.
 </para>
 
 <para>
-Each of the sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
+Each of the constructor sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
 <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
 where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
 and <replaceable>S</replaceable> is the sum type.

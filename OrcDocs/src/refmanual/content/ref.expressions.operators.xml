@@ -234,6 +234,43 @@ that binding.
 </para>
 </section>
 
+<section>
+<title>Type</title>
+<para>
+  Assuming that an operator has not been redefined, it obeys the following typing rules:
+  <itemizedlist>
+  <listitem>
+    An arithmetic operation publishes an <code>Integer</code> if all of its operands have type <code>Integer</code>. 
+    If any operand has type <code>Number</code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
+  </listitem>
+  <listitem>
+    A comparison operation allows operands of any type, and publishes a <code>Boolean</code>.
+  </listitem>
+  <listitem>
+    A logical operation allows only <code>Boolean</code> operands, and publishes a <code>Boolean</code>.
+  </listitem>
+  <listitem>
+    A string concatenation requires at least one <code>String</code> operand.
+    Other operands may be of type <code>Top</code>; they are converted to strings. 
+    String concatenation publishes a <code>String</code>.
+  </listitem>
+  <listitem>
+    List construction is polymorphic.
+    It takes an operand of type <replaceable>T</replaceable> and an operand of type <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
+    It publishes a <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
+  </listitem>
+  <listitem>
+    Record extension takes two <link linkend="ref.data.record.type">records</link> and publishes a record.
+  </listitem>
+  <listitem>
+    Dereference takes an operand of type <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.
+  </listitem>
+  <listitem>
+    Assignment takes operands of types <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and <replaceable>T</replaceable>, and publishes a <code>Signal</code>. 
+  </listitem>
+  </itemizedlist>
+</para>
+</section>
 
 <section xml:id="ref.expressions.operators.examples">
 <title>Examples</title>
