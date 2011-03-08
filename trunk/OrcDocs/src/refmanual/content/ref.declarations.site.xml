@@ -40,17 +40,36 @@ class to provide the service.
 		<section xml:id="ref.declarations.site.examples">
 		<title>Examples</title>
 		
-		<example xml:id="ref.declarations.site.examples.sitedecl"><title>Site Declaration</title>
+		
+		  
+		  <example xml:id="ref.declarations.site.examples.floor"><title>Declaring the Floor Site</title>
 <programlisting language="orc-demo"><![CDATA[
 {-  
-Define the Buffer site by instantiating a Java object,
-specifically an object that provides an asynchronous 
-buffer service.
+Define the Floor site by instantiating a Java object
+that calculates the floor function.
+-}
+
+site Floor = orc.lib.math.Floor
+
+Floor(3.8) | Floor(-3.3)
+
+{-
+OUTPUT:PERMUTABLE:
+3
+-4
+-}
+]]></programlisting> 
+		  </example>
+		  
+		  <example xml:id="ref.declarations.site.examples.sitedecl"><title>Declaring the Buffer Site</title>
+<programlisting language="orc-demo"><![CDATA[
+{-  
+Define the Buffer site by instantiating a Java object
+that provides a factory for buffers.
 -}
 
 site Buffer = orc.lib.state.Buffer
 
-{- The object can now be used as a site in an Orc program -}
 val b = Buffer()
 b.put(10) >> b.get()
 
