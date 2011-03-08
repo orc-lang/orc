@@ -18,15 +18,16 @@
 <title>Data Values</title>
 
 <para>
-The primitive data types in Orc are: Booleans, numbers, strings, and a unit value <code>signal</code>.
-Orc also has structured values: lists, tuples, records, and algebraic datatypes. 
-Functions are values, called <firstterm>closures</firstterm>. 
-Additionally, sites are themselves values, and may be passed to sites or returned by sites.
+The primitive data types in Orc are: <ind>Booleans</ind>, <ind>numbers</ind>, <ind>strings</ind>, 
+and a unit value <code><ind>signal</ind></code>.
+Orc also has structured values: <ind>lists</ind>, <ind>tuples</ind>, <ind>records</ind>, and <ind>algebraic datatypes</ind>. 
+<ind>Functions</ind> are values, called <firstterm>closures</firstterm>. 
+Additionally, <ind>sites</ind> are themselves values, and may be passed to sites or returned by sites.
 </para>
 
 <para>
 All of the preceding values are immutable. Orc also has access to mutable state through sites.
-The <link linkend="ref.stdlib">Standard Library</link> includes many such sites, including <code>Ref</code> and <code>Buffer</code>.
+The <link linkend="ref.stdlib"><ind>Standard Library</ind></link> includes many such sites, e.g. <code>Ref</code> and <code>Buffer</code>.
 </para> 
 
 <para>
