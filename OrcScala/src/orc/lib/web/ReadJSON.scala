@@ -117,7 +117,7 @@ object OrcJSONParser extends StdTokenParsers {
   override val lexical = OrcJSONLexical
 
   // Define the grammar
-  def jsonText   = jsonObj | jsonArray
+  def jsonText   = value
   def jsonObj    = ("{" ~> repsep(objEntry, ",") <~ "}") ^^ { new OrcRecord(_) } 
   def jsonArray  = "[" ~> repsep(value, ",") <~ "]"
   def objEntry   = stringLit ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
