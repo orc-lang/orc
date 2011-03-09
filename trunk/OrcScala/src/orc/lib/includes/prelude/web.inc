@@ -75,7 +75,7 @@ a list of OrcJSON values (representing a JSON array),
 or a literal value (representing a JSON primitive value).
 
 ReadJSON and WriteJSON are mutual inverses. 
-If <replaceable>S</replaceable> is a string representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> = <replaceable>S</replaceable>, modulo whitespace.
+If <replaceable>S</replaceable> is a string representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> = <replaceable>S</replaceable>, modulo whitespace and object member ordering.
 
 --}
 site ReadJSON = orc.lib.web.ReadJSON
