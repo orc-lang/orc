@@ -46,6 +46,12 @@ Performs a POST request on the URL used to create this HTTP site.
 The string argument is used as a UTF-16 encoded payload.
 The response is published as a single string.
 
+@method HTTP.url :: String
+
+Publishes the URL used to create this HTTP site. If query parameters
+were used, they will be displayed in the query part of the URL,
+with the appropriate encoding.
+
 @site HTTP(String) :: HTTP
 
 Converts the given string to a URL U and then behaves as HTTP(U).
@@ -88,10 +94,24 @@ WriteJSON and ReadJSON are mutual inverses.
 If <replaceable>V</replaceable> is an Orc representation of a JSON value, then <code>ReadJSON(WriteJSON(</code><replaceable>V</replaceable><code>))</code> = <replaceable>V</replaceable>.
 
 --}
--- site WriteJSON = orc.lib.web.WriteJSON
+site WriteJSON = orc.lib.web.WriteJSON
 
-{- ReadXML -}
--- site ReadXML = orc.lib.xml.ReadXML
 
-{- WriteXML -}
--- site WriteXML = orc.lib.xml.WriteXML
+
+{- We use Scala's Node class as the underlying type of Orc XML trees -}
+class XML = scala.xml.Node
+
+{--
+@site ReadXML(String) :: XML  
+
+Parses a string representation of XML into a structured form
+that Orc can manipulate.
+--}
+site ReadXML = orc.lib.xml.ReadXML
+
+{--
+@site WriteXML(XML) :: String
+
+Serializes Orc's representation of XML to a string.
+--}
+site WriteXML = orc.lib.xml.WriteXML
