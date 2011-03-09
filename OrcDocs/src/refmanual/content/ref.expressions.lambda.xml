@@ -63,7 +63,7 @@ OUTPUT:
 		  </example>
 	  </section>
 		
-		<section xml:id="ref.expressions.lambda.syntax">
+		<section xml:id="ref.expressions.lambda.type">
 		  <title>Type</title>
 		  <para>
 		    The type of a <code>lambda</code> expression is exactly the type of the <link linkend="ref.data.closure">closure</link> it creates.

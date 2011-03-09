@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.types.polymorphism.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.types.polymorphism.xml 2496 2011-03-04 02:38:59Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Type polymorphism -->
+<section xml:id="ref.types.polymorphism">
+	<title>Polymorphism</title>
+	
+	<section xml:id="ref.types.polymorphism.body">
+
+	</section>
+		
+		 
+	<section xml:id="ref.types.polymorphism.links">
+	  <title>Related Links</title>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+       			</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>		  
+	  </section>
+	  
+</section>

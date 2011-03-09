@@ -32,9 +32,18 @@
 		<section xml:id="ref.declarations.def.behavior">
 		<title>Behavior</title>  
 		<para>
+		<!-- 
+		def f(x,y) = B
+		
+		f(e,g) is same as
+		val x = e
+		val y = g
+		B
+		 -->
 		  When a function is <link linkend="ref.expressions.call.function">called</link>,
-		  the body executes, and in parallel the argument expression  are <link linkend="ref.concepts.deflate">deflated</link>. 
-		  If the execution of the body encounters a parameter whose corresponding argument expression 
+		  the body executes, and in parallel the argument expressions are <link linkend="ref.concepts.deflate">deflated</link>. 
+		  If the execution of the body encounters a parameter which is not yet bound to a value,
+		  whose corresponding argument expression 
 		  has not yet published a value, that parameter <link linkend="ref.concepts.block">blocks</link> until the argument value is available,
 			but the rest of the body continues to execute. 
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
@@ -67,7 +76,7 @@
 		
   
   		<section xml:id="ref.declarations.def.clausal">
-			<title>Clausal Functions</title>
+			<title>Clausal Definition of Functions</title>
 			<para>
 			  A function can be defined by a sequence of clauses, where each clause specifies
 			  a pattern of arguments and the code to be executed in case the arguments match
@@ -213,6 +222,13 @@ true
 		  </example>
 			  </section>
 		</section>
+
+	  <section xml:id="ref.declarations.def.type">
+	    <title>Type</title>
+	    <para>
+	      TODO
+	    </para>
+	  </section>
 
 		<section xml:id="ref.declarations.def.links">
 		  <title>Related Links</title>

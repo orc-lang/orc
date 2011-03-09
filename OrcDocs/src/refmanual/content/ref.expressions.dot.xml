@@ -46,7 +46,7 @@
 	  </para>
 	  </section>
 	  
-	  <section xml:id="ref.declarations.def.type">
+	  <section xml:id="ref.expressions.dot.type">
 	    <title>Type</title>
 	    <para>
 	    	If the target expression <replaceable>E</replaceable> has the record type <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,

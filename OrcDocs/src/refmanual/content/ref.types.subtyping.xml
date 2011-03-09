@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.types.subtyping.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.types.subtyping.xml 2496 2011-03-04 02:38:59Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+ 
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Type subtyping -->
+<section xml:id="ref.types.subtyping">
+	<title>Subtyping</title>
+	
+	<!-- Top/Bot/lattice, subtyping of structural types, java subtyping, meets and joins -->
+	
+	<!-- F :: S, S <: T => F :: T (subsumption) -->
+	
+	<section xml:id="ref.types.subtyping.lattice">
+		<para>
+		Types in Orc form a bounded lattice. The lattice is ordered by the subtyping relation,
+		its maximal element is <code>Top</code>, and its minimal element is <code>Bot</code>.
+		Any two types have a join (least supertype) and a meet (greatest subtype). Often, the
+		join is simply <code>Top</code> and the meet is simply <code>Bot</code>.			
+		</para>
+	</section>
+		
+		 
+	<section xml:id="ref.types.subtyping.links">
+	  <title>Related Links</title>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+       			</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>		  
+	  </section>
+	  
+</section>

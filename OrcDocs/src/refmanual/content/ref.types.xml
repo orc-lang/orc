@@ -20,8 +20,8 @@
 <para>
 The Orc language is
 dynamically typed. If an operation occurs at runtime which is not type-correct, the call
-which attempted that operation becomes <link linkend="ref.concepts.silent">silent</link>, and produces a type error that is reported
-on the console. 
+which attempted that operation <link linkend="ref.concepts.halt">halts</link>
+<link linkend="ref.concepts.silent">silently</link>, and reports an error on the console. 
 </para>
 
 <para>
@@ -29,7 +29,7 @@ Orc also has an optional static typechecker, which will guarantee that a program
 free of type errors before the program is run. For every expression in the program,
 the typechecker tries to find the types of values that the expression could publish, 
 and then checks that all such types are consistent. The typechecker performs a limited form of
-<emphasis>type inference</emphasis>, so it can discover many of these types automatically.
+<firstterm>type inference</firstterm>, so it can discover many of these types automatically.
 However, the programmer must provide additional type information for function definitions
 and for a few other specific cases.
 </para>
@@ -46,37 +46,21 @@ If the typechecker can verify that a program is correctly typed, it will display
 </para>
 
 <para>
-<code>Program type checks as </code><replaceable>T</replaceable>
+<code language="en">Program type checks as </code><replaceable>T</replaceable>
 </para>
 
 <para>
-on the console. <replaceable>T</replaceable> is the type of all values that the program might publish.
+This means that the program has no type errors, and that every value published by the program will be of type <replaceable>T</replaceable>.
 </para>
 
-<para>
-The typechecker uses the local type inference algorithm described by Pierce and Turner in the paper 
-<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
-It extends this algorithm with polymorphic type constructors (e.g. <code>List</code> and
-<code>Buffer</code>), user-defined datatypes (which may also be polymorphic),
-and a typing discipline for external services. The typechecker supports both 
-<emphasis>parametric polymorphism</emphasis> (generics) and 
-<emphasis>inclusion polymorphism</emphasis> (subtyping), 
-though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
-   
-</para>
+<xi:include href="ref.types.metatheory.xml"/>
+<xi:include href="ref.types.polymorphism.xml"/>
+<xi:include href="ref.types.subtyping.xml"/>
+<xi:include href="ref.types.annotation.xml"/>
+<xi:include href="ref.types.context.xml"/>
+
 
 <!-- 
-<para>TODO: Add "Primitive types" section.</para>
-<para>TODO: Add "Tuple type" section.</para>
-<para>TODO: Add "List type" section.</para>
-<para>TODO: Add "Record type" section.</para>
-<para>TODO: Add "Lambda type" section.</para>
-<para>TODO: Add "Ascriptions" section.</para>
-<para>TODO: Add "Assertions" section.</para>
-
-
- -->
-
 
 <section xml:id="ref.types.simple"><title>Simple Typing</title>
 
@@ -699,6 +683,6 @@ not find the least common ancestor of two classes as the join.
 
 </section>
 
-<xi:include href="ref.types.lattice.xml"/>
+-->
 
 </chapter>
