@@ -88,7 +88,7 @@ WriteJSON and ReadJSON are mutual inverses.
 If <replaceable>V</replaceable> is an Orc representation of a JSON value, then <code>ReadJSON(WriteJSON(</code><replaceable>V</replaceable><code>))</code> = <replaceable>V</replaceable>.
 
 --}
-site WriteJSON = orc.lib.web.WriteJSON
+-- site WriteJSON = orc.lib.web.WriteJSON
 
 {- ReadXML -}
 -- site ReadXML = orc.lib.xml.ReadXML
