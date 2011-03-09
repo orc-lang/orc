@@ -85,7 +85,9 @@ type Cell = orc.lib.state.types.CellType
 
 {--
 @site Ref[A]() :: Ref[A]
+<para id="orc.lib.state.Ref">
 Create a rewritable storage location without an initial value.
+</para>
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -211,8 +213,10 @@ type Semaphore = orc.lib.state.types.SemaphoreType
 {--
 @site Buffer[A]() :: Buffer[A]
 <!-- XSL/FO doesn't like me using an anchor tag here -->
+<para>
 Create a new buffer (FIFO channel) of unlimited size. A buffer supports
 get, put and close operations.
+</para>
 
 A buffer may be either empty or non-empty, and either open or closed.  When
 empty and open, calls to <code>get</code> <link linkend="ref.concepts.block">block</link>.  When empty and closed, calls
@@ -265,6 +269,8 @@ This has the effect of immediately causing any <link linkend="ref.concepts.block
 <code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+When the buffer is empty, return a signal.
 
 @method Buffer[A].closenb() :: Signal
 
@@ -369,12 +375,14 @@ If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</li
 </sitepropset>
 
 <!-- XSL/FO doesn't like me using an anchor tag here -->
+<para id="orc.lib.BoundedBuffer.close">
 Close the buffer and <link linkend="ref.concepts.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
+</para>
 
 @method BoundedBuffer[A].closenb() :: Signal
 
