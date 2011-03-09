@@ -56,7 +56,7 @@
 	  </para>
 	  </section>
 		
-		<section xml:id="ref.declarations.def.type">
+		<section xml:id="ref.expressions.call.type">
 	    <title>Type</title>
 	    <para>
 	      In addition to argument expressions, a call may also have type arguments <replaceable>A<subscript>j</subscript></replaceable>, since the target
@@ -67,16 +67,16 @@
 	      and each argument expression <replaceable>E<subscript>i</subscript></replaceable> has type <replaceable>S<subscript>i</subscript></replaceable>.
 	    </para>
 	    <para>
-	    	If S is a function type <code>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+	    	If <replaceable>S</replaceable> is a function type <code>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
 	    	then there must be exactly as many arguments as argument types, 
 	    	and each argument type <replaceable>S<subscript>i</subscript></replaceable> must be a <link linkend="ref.types.subtyping">subtype</link> of the corresponding type <replaceable>T<subscript>i</subscript></replaceable> (with all <replaceable>X<subscript>j</subscript></replaceable> replaced by <replaceable>A<subscript>j</subscript></replaceable>).
 	    	Then the type of the whole call is <replaceable>R</replaceable>, the return type.	    	  
 	    </para>
 	    <para>
-	      If the target expression <replaceable>E</replaceable> is a site, then the type of the call is determined entirely by the site.
-	      The typechecker passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to the site,
-	      which then responds with the return type <replaceable>R</replaceable>.
-	      Then the type of the whole call is <replaceable>R</replaceable>.
+	      If <replaceable>S</replaceable> is the type of a site, <replaceable>S</replaceable> itself behaves like a site during typehcecking.
+	      The typechecker passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to <replaceable>S</replaceable>,
+	      which then responds with the return type <replaceable>R</replaceable>, or indicates that the argument types are not appropriate.
+	      If <replaceable>S</replaceable> does respond, then the type of the call expression is <replaceable>R</replaceable>.
 	    </para>
 	  </section>
 		
@@ -98,18 +98,22 @@ Waited 0.5 seconds
 		  
 		  <example xml:id="ref.expressions.call.examples.functions_are_lenient"><title>Functions are Lenient</title>
 <programlisting language="orc-demo"><![CDATA[
-{- A function call is lenient -}
+{- 
+  A function call is lenient.
+  Parts of the function that do not need the arguments can execute immediately. 
+  However, any part that uses the arguments must wait.
+-}
 
 def Printfn(s) =
-    Println("Parts of the function that do not need the arguments can execute immediately.") 
-  | Println(s)
+    Println("Immediate") 
+  | s >> Println("Waiting")
   
-Printfn(Rwait(1000) >> "However, any part that uses the arguments must wait.") >> stop
+Printfn(Rwait(1000) >> signal) >> stop
 
 {-
 OUTPUT:
-Parts of the function that do not need the arguments can execute immediately.
-However, any part that uses the arguments must wait.
+Immediate
+Waiting
 -}
 ]]></programlisting>
 		  </example>

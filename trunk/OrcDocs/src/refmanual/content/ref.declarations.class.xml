@@ -40,7 +40,7 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 	  </para>
   </section>
   
-   <section xml:id="ref.declarations.class.syntax">
+   <section xml:id="ref.declarations.class.type">
 	  <title>Type</title>
 	  <para>
 	    The Orc typechecker interfaces with the Java type system, so that operations on

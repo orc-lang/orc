@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.types.metatheory.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.types.metatheory.xml 2496 2011-03-04 02:38:59Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Type Metatheory -->
+<section xml:id="ref.types.metatheory">
+	<title>Metatheory</title>
+	
+	<section xml:id="ref.types.metatheory.origin">
+		<para>
+		The typechecker uses the local type inference algorithm described by Pierce and Turner in the paper 
+		<ulink url="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</ulink>.
+		The typechecker extends this algorithm with polymorphic type operators (e.g. <code>List</code> or
+		<code>Buffer</code>), forming a second-order type system. It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link>,
+		and a typing procedure for external services.
+		</para>
+	</section>
+	
+  <section xml:id="ref.types.metatheory.polymorphisms">	
+		<para>
+		The typechecker supports both generics (<firstterm>parametric polymorphism</firstterm>) and 
+		subtyping (<firstterm>inclusion polymorphism</firstterm>), 
+		though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
+		Sites may also be overloaded (<firstterm>ad-hoc polymorphism</firstterm>), but the programmer cannot
+		write overloaded functions within Orc itself.  
+		</para>
+	</section>
+		
+		 
+	<section xml:id="ref.types.metatheory.links">
+	  <title>Related Links</title>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Reference Topics</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+        		</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>
+	  
+	  <informaltable frame="none">
+  		<tgroup cols="1" align="left">
+    	<thead>
+      		<row>
+        		<entry align="left">Related Tutorial Sections</entry>
+        	</row>
+    	</thead>
+    	<tbody valign="top">
+     		<row>
+        		<entry><itemizedlist>
+        			<listitem></listitem>
+       			</itemizedlist></entry>
+        	</row>
+    	</tbody>
+  		</tgroup>
+	  </informaltable>		  
+	  </section>
+	  
+</section>
