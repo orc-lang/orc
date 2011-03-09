@@ -56,6 +56,30 @@
 	  </para>
 	  </section>
 		
+		<section xml:id="ref.declarations.def.type">
+	    <title>Type</title>
+	    <para>
+	      In addition to argument expressions, a call may also have type arguments <replaceable>A<subscript>j</subscript></replaceable>, since the target
+	      may have a <link linkend="ref.types.polymorphism">polymorphic</link> type.     
+	    </para>
+	    <para>
+	      Suppose the target expression <replaceable>E</replaceable> has type <replaceable>S</replaceable>,
+	      and each argument expression <replaceable>E<subscript>i</subscript></replaceable> has type <replaceable>S<subscript>i</subscript></replaceable>.
+	    </para>
+	    <para>
+	    	If S is a function type <code>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+	    	then there must be exactly as many arguments as argument types, 
+	    	and each argument type <replaceable>S<subscript>i</subscript></replaceable> must be a <link linkend="ref.types.subtyping">subtype</link> of the corresponding type <replaceable>T<subscript>i</subscript></replaceable> (with all <replaceable>X<subscript>j</subscript></replaceable> replaced by <replaceable>A<subscript>j</subscript></replaceable>).
+	    	Then the type of the whole call is <replaceable>R</replaceable>, the return type.	    	  
+	    </para>
+	    <para>
+	      If the target expression <replaceable>E</replaceable> is a site, then the type of the call is determined entirely by the site.
+	      The typechecker passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to the site,
+	      which then responds with the return type <replaceable>R</replaceable>.
+	      Then the type of the whole call is <replaceable>R</replaceable>.
+	    </para>
+	  </section>
+		
 		<section xml:id="ref.expressions.call.examples">
 		  <title>Examples</title>
 

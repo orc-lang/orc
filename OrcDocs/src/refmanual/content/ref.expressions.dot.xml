@@ -46,6 +46,20 @@
 	  </para>
 	  </section>
 	  
+	  <section xml:id="ref.declarations.def.type">
+	    <title>Type</title>
+	    <para>
+	    	If the target expression <replaceable>E</replaceable> has the record type <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
+	    	then the dot access <replaceable>E</replaceable><code>.</code><replaceable>K<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>.
+	    </para>
+	    <para>
+	    	If the target has a Java class or object type, the <link linkend="ref.types.java">usual Java typing rules</link> apply.
+	    </para>
+	    <para>
+	      If the target is a site, then the type of the dot access is determined entirely by the site, like any other site call.
+	    </para>
+	  </section>
+	  
 		<section xml:id="ref.expressions.dot.examples">
 		  <title>Examples</title>
 
