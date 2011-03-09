@@ -60,7 +60,8 @@ object HTTP extends TotalSite {
   def createHTTPInstance(url: URL) = {
     new OrcRecord(List(
       ("get", HTTPGet(url)),
-      ("post", HTTPPost(url))
+      ("post", HTTPPost(url)),
+      ("url", url.toString())
     ))
   }
   
@@ -69,7 +70,17 @@ object HTTP extends TotalSite {
       val getAction = 
         new Runnable {
           def run() {
-            h.publish(Source.fromURL(url).mkString)
+            val conn = url.openConnection
+            conn.setConnectTimeout(10000)
+            conn.setReadTimeout(5000)
+            conn.connect()
+
+            val headerEncoding = conn.getContentEncoding()
+            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" } 
+            val in = Source.fromInputStream(conn.getInputStream, encoding)
+            val result = in.mkString
+            in.close
+            h.publish(result)
           }
         }
       (new Thread(getAction)).start()
@@ -88,22 +99,16 @@ object HTTP extends TotalSite {
             conn.setDoOutput(true)
             conn.connect()
             
-            val out = new OutputStreamWriter(conn.getOutputStream)
+            val out = new OutputStreamWriter(conn.getOutputStream, "UTF-8")
             out.write(post)
             out.close
       
-            val in = new InputStreamReader(conn.getInputStream, "UTF-8")
-            val result = new StringBuilder
-            var buf = new Array[Char](1024)
-            var blen = in.read(buf)
-            while(blen >= 0) {
-              blen = in.read(buf)
-              result.append(buf)
-              println(blen)
-            } 
+            val headerEncoding = conn.getContentEncoding()
+            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" } 
+            val in = Source.fromInputStream(conn.getInputStream, encoding)
+            val result = in.mkString
             in.close
-            
-            h.publish(result.toString)
+            h.publish(result)
           }
         }
       (new Thread(postAction)).start()
