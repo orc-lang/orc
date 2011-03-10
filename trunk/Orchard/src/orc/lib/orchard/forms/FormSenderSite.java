@@ -64,7 +64,12 @@ public class FormSenderSite extends SiteAdaptor {
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		try {
-			caller.publish(new FormReceiver(Job.getJobFromHandle(caller), (Form) args.getArg(0)));
+			final Job job = Job.getJobFromHandle(caller);
+			if (job == null) {
+				caller.halt();
+				return;
+			}
+			caller.publish(new FormReceiver(job, (Form) args.getArg(0)));
 		} catch (final ClassCastException e) {
 			throw new ArgumentTypeMismatchException(0, "orc.lib.orchard.forms.Form", args.getArg(0).getClass().getCanonicalName());
 		}

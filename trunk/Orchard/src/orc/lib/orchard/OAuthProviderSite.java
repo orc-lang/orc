@@ -70,7 +70,12 @@ public class OAuthProviderSite extends SiteAdaptor {
 			/**
 			 * This implementation of OAuthProvider 
 			 */
-			caller.publish(new WebOAuthProvider(Job.getJobFromHandle(caller), caller,
+			final Job job = Job.getJobFromHandle(caller);
+			if (job == null) {
+				caller.halt();
+				return;
+			}
+			caller.publish(new WebOAuthProvider(job, caller,
 			// force root-relative resource path
 					"/" + args.stringArg(0)));
 		} catch (final IOException e) {
