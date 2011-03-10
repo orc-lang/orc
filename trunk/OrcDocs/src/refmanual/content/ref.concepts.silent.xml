@@ -12,16 +12,17 @@
 
 <!-- silent Concept -->
 <section xml:id="ref.concepts.silent">
-	<title>Silence</title>
+	<title>Silent</title>
 
 	<section xml:id="ref.concepts.silent.definition">
 		<title>Definition</title>
 
 		<para>
-			An expression that never publishes in a particular execution is called <firstterm>silent</firstterm>. 
-			A silent expression may call sites. The type of a silent
-			expression is <code>Bot</code>. Formally, expression <replaceable>F</replaceable> 
-			is silent if it behaves exactly as <replaceable>F</replaceable><code><![CDATA[ >> stop]]></code>.
+			An expression is <firstterm>silent</firstterm> in an execution if it never publishes in that execution. 
+			An expression is always silent if it does not publish in any execution.
+			A silent expression may call sites. 
+			The type of a silent expression is <code>Bot</code>. 
+			<!-- Formally, expression <replaceable>F</replaceable> is silent if it behaves exactly as <replaceable>F</replaceable><code><![CDATA[ >> stop]]></code>.  -->
 		</para>
 		
 	</section>
@@ -29,28 +30,47 @@
 	<section xml:id="ref.concepts.silent.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.concepts.silent.examples.one">
-<title>Precedence</title>
+		<example xml:id="ref.concepts.silent.examples.sideeffects">
+<title>Silence with Side Effects</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Silent expressions never publish but may have side effects 
    such as output to the console.
 -}
-
-   stop
-|  Println("do not publish") >> stop
-|  stop >> Println("do not publish")
-|  Println("do not publish") >> stop | stop >> Println("do not publish")
-|  stop <x< (3 | 5)
-|  Println("do not publish") >> stop | stop >> Println("do not publish")
+ 
+  Println("print but don't publish") >> stop
+| stop >> Println("never runs")
 
 {-
 OUTPUT:
-do not publish
-do not publish
-do not publish
+print but don't publish
 -}
 ]]></programlisting>
 </example>
+
+		<example xml:id="ref.concepts.silent.examples.conditional">
+<title>Conditional Silence</title>
+<programlisting language="orc-demo"><![CDATA[
+{- 
+  Ift(x) is silent if x is bound to false
+  Ift(y) is silent because y is always bound to false
+  Ift(z) is silent because z is never bound
+-}
+
+val x = true | false
+val y = false
+val z = stop
+
+Ift(x) | Ift(y) | Ift(z)
+
+{-
+OUTPUT:
+signal
+
+OUTPUT:
+-}
+]]></programlisting>
+</example>
+
 
 	</section>
 
