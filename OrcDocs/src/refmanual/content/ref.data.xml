@@ -21,7 +21,7 @@
 The primitive data types in Orc are: <ind>Booleans</ind>, <ind>numbers</ind>, <ind>strings</ind>, 
 and a unit value <code><ind>signal</ind></code>.
 Orc also has structured values: <ind>lists</ind>, <ind>tuples</ind>, <ind>records</ind>, and <ind>algebraic datatypes</ind>. 
-<ind>Functions</ind> are values, called <firstterm>closures</firstterm>. 
+<ind>Functions</ind> are values, called <ind>closures</ind>. 
 Additionally, <ind>sites</ind> are themselves values, and may be passed to sites or returned by sites.
 </para>
 
