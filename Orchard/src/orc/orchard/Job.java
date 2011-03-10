@@ -295,7 +295,12 @@ public final class Job implements JobMBean {
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
 		try {
-			return ((JobEngine) ((Orc.Token) callHandle).runtime()).getJob();
+			final scala.Option<Orc.Token> listener = ((Orc.SiteCallHandle) callHandle).listener();
+			if (listener.isDefined()) {
+				return ((JobEngine) ((Orc.Token) (listener.get())).runtime()).getJob();
+			} else {
+				return null;
+			}
 		} catch (final ClassCastException e) {
 			throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
 		}

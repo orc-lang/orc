@@ -73,7 +73,12 @@ public class MailListenerFactory extends SiteAdaptor {
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		try {
-			caller.publish(new MailListener(Job.getJobFromHandle(caller), (Mailer) args.getArg(0)));
+			final Job job = Job.getJobFromHandle(caller);
+			if (job == null) {
+				caller.halt();
+				return;
+			}
+			caller.publish(new MailListener(job, (Mailer) args.getArg(0)));
 		} catch (final AddressException e) {
 			throw new JavaException(e);
 		} catch (final ClassCastException e) {
