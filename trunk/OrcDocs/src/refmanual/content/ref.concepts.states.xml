@@ -15,6 +15,10 @@
 	<title>Expression States</title>
 
 		<para>
+			<emphasis>BEGIN ORIGINAL</emphasis>
+		</para>
+		
+		<para>
 			During execution of an expression, it is either <firstterm>active</firstterm>, <firstterm>passive</firstterm> or
 			<firstterm>killed</firstterm>. An active expression will eventually make a <link linkend="ref.expressions.call">site call</link> or
 			publish a value without receiving a response from a site. A passive
@@ -45,6 +49,104 @@
 			<listitem><para>A blocked expression may transit to another passive state, pending or halted.</para></listitem>
 			<listitem><para>A halted expression stays halted unless is killed.</para></listitem>
 		</orderedlist>
+		
+		<para>
+			<emphasis>END ORIGINAL</emphasis>
+		</para>
+		
+		<para>
+			<emphais>BEGIN NEW</emphais>
+		</para>
+		
+		<para>
+		A site call, from the site's perspective, has three possible outcomes:
+		the site will definitely publish a value, the site knows that it will
+		never publish a value, and the site does not know if it will ever
+		publish a value. For example, a call to Ift(true) publishes a signal,
+		Ift(false) never publishes, and c.get() on buffer c that is currently
+		empty may eventually publish or remain non-responsive, depending on
+		whether a value is put in c in the future.
+		</para>
+		
+		<para>
+		A site call, from the caller's perspective, is unready, ready, blocked
+		or halted. A site call is ready (when its execution is being
+		attempted) if all its argument variables are bound to values, so that
+		a call can be made; it is unready otherwise. A call is blocked if the
+		site has been called and the caller is waiting for a response. A site
+		call is halted if the caller has already received a response or the
+		site indicates that it will never send a response. Sites that indicate
+		absence of response are called helpful (see Section ...); not all
+		sites are helpful.
+		</para>
+		
+		<para>
+		An unready call becomes ready when all its arguments are bound to
+		values. A ready call becomes blocked once the call is made; a blocked
+		call transits to halted if it receives a response or if the called
+		site can determine that it will never respond; a blocked call may
+		remain blocked forever if the called site can not determine if if it
+		will ever respond. Note that a halted call stays halted (unless it is
+		killed, see below).
+		</para>
+		
+		<para>
+		We extend these concepts to execution of an expression. During its
+		execution an expression may have spawned many copies of its
+		components, as in f &gt;x&gt; g. At any moment during its execution, an
+		expression has an associated set of site calls under consideration. If
+		all such calls are unready, the expression is unready; if some call is
+		ready, the expression is ready; if all calls are blocked, the
+		expression is blocked and if all calls are halted the expression is
+		halted. Note that all component expressions of a halted/blocked
+		expression are halted/blocked; further a halted expression stays
+		halted (unless it is killed, see below). A halted expression never
+		makes site calls nor publishes any value.
+		</para>
+		
+		<para>
+		Expression G is killed in F &lt;x&lt; G if G has published; any
+		component of a killed expression is also killed.
+		</para>
+		
+		<para>
+		Example: Let c be a buffer. Consider the following
+		expressions. 
+		</para>
+		
+		<para>
+		f: x &gt;&gt; c.get() &gt;&gt; true
+		g: c.get() | Rwait(1000)
+		e: (f ; false) &lt;x&lt; g
+		</para>
+		
+		<para>
+		Expression e written out in full is:
+		</para>
+		
+		<para>
+		(x &gt;&gt; c.get() &gt;&gt; true ; false) 
+		         &lt;x&lt; (c.get() | Rwait(1000) )
+		</para>
+		
+		<para>
+		In starting an execution of e, expression (f ; false) is unready
+		because x is not bound.  Expression g is ready, so e is ready. After
+		the calls in g are made (one call to c.get() and one to Rwait(1000)),
+		e is blocked. Independent of the status of c, expression g always
+		publishes because of the call to Rwait. Once g publishes, it is
+		killed. Then x binds to a value making f ready. Now, the call to
+		c.get() within f is made causing e to become blocked. If c is empty
+		and remains empty forever (without being closed), e remains
+		blocked. If e is not empty or some item is put in c by another caller
+		eventually, c.get() responds, true is published and the expression
+		halts. If c is empty and it is then closed by another caller, c.get()
+		halts causing f to halt; so, false is published.
+		</para>
+		
+		<para>
+			<emphasis>END NEW</emphasis>
+		</para>
 
 		<figure>
 			<title>Expression States Diagram</title>

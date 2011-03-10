@@ -13,35 +13,32 @@
 <!-- Helpful Sites -->
 <section xml:id="ref.concepts.helpful">
 	<title>Helpful Sites</title>
+		
+		<para>
+		A <firstterm>helpful site</firstterm> responds with an indication that it will never 
+		<link linkend="ref.concepts.publish"><ind>publish</ind></link>
+		when it knows this outcome for a call. 
+		</para>
 
 		<para>
-			A call to a <link linkend="ref.sites">site</link>, from the site's perspective, has three possible
-			outcomes: the site will definitely publish a value, the site knows
-			that it will never publish a value, and the site does not know if it
-			will ever publish a value. For example, a call to <code>Ift(true)</code> publishes a signal,
-			<code>Ift(false)</code> never publishes, and <code>c.get()</code> on channel <code>c</code> that is currently
-			empty may eventually publish or remain non-responsive, depending on whether a
-			value is put in <code>c</code> in the future.
+		All <ind>library sites</ind> in Orc are helpful. Thus, <code><ind>Ift</ind></code> 
+		is a helpful site, and <code><ind>Ift</ind>(false)</code> 
+		sends an indication to the caller that it will never
+		publish. A <link linkend="ref.stdlib.state.Buffer"><code><ind>Buffer</ind></code></link> 
+		is a helpful site, and some of its methods will send
+		an indication that they will never publish. In particular, the <code>get</code>
+		method is blocked on an empty buffer, but it sends an indication it
+		will never publish if the buffer is closed.
 		</para>
-		
+
 		<para>
-			All sites respond with a value when they publish. A <firstterm>helpful</firstterm> site,
-			additionally, responds with an indication that it will never publish
-			when it knows this outcome. All library sites in Orc are
-			helpful. Thus, <code>Ift</code> is a helpful site, and <code>Ift(false)</code> sends an
-			indication to the caller that it will never publish. A <link linkend="ref.stdlib.state.Buffer">buffer</link> is a
-			helpful site, and some of its methods will send an indication that
-			they will never publish. Note that <code>get</code> method on a buffer never
-			sends an indication that will not publish, because it can not
-			definitely determine this outcome; this outcome depends on whether
-			some caller <code>put</code>s an item in the buffer eventually. Thus, <code>get</code> may
-			be blocked permanently.
+		We do not expect arbitrary <ind>web services</ind> to be helpful. 
 		</para>
-		
+
 		<para>
-			We do not expect arbitrary web services to be helpful. The indication
-			from a helpful site that it will never publish can be exploited in the
-			caller using the <link linkend="ref.combinators.otherwise">otherwise combinator</link>.
+		The indication from a helpful site that it will never publish can be
+		exploited by the caller using the 
+		<link linkend="ref.combinators.otherwise"><ind>otherwise combinator</ind></link>.
 		</para>
 
 	<section xml:id="ref.concepts.helpful.links">
@@ -58,8 +55,9 @@
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
+								<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
 								<listitem><para><link linkend="ref.stdlib">Orc standard library</link></para></listitem>
+								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>

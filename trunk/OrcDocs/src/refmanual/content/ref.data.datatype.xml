@@ -13,7 +13,7 @@
 <section xml:id="ref.data.datatype">
 <title>Algebraic Data Types</title>
 
-<para>An Orc <firstterm>datatype</firstterm> is an algebraic data type, or "tagged union".
+<para>An Orc <firstterm>datatype</firstterm> is an <ind>algebraic data type</ind>, or "tagged union".
 A datatype value contains a sequence of values enclosed by a <firstterm>tag</firstterm>.
 This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
@@ -25,7 +25,7 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
 
 <para>
-  Datatypes provide many static typing facilities, but they may be used in an untyped
+  Datatypes provide many <ind>static typing</ind> facilities, but they may be used in an <ind>untyped</ind>
   program as well. Instead of containing a type, a slot may be empty, written <code>_</code>.
 </para>
 
@@ -44,7 +44,7 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 <title>Constructors</title>
 
 <para>
-  Each constructor creates a new site of the same name. The site takes one argument for each slot
+  Each <ind>constructor</ind> creates a new <ind>site</ind> of the same name. The site takes one argument for each slot
   in the constructor, and publishes a datatype value consisting of the sequence of argument
   values, tagged with that constructor's unique tag.
 </para>
@@ -57,13 +57,13 @@ A datatype declaration defines a new <firstterm>sum type</firstterm>.
 </para>
 
 <para>
-Each of the constructor sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
-<code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
+Each of the constructor sites defined by the datatype has the <link linkend="ref.data.closure.type"><ind>function type</ind></link> 
+<code><ind>lambda</ind></code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
 where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
 and <replaceable>S</replaceable> is the sum type.
 </para>
 <para>
-Each constructor site also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
+Each constructor site also has a corresponding <link linkend="ref.patterns.call"><code><ind>unapply</ind></code> member</link>,
 with type <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code><replaceable>S</replaceable><code>)</code> <code>::</code> <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>.
 </para>
 
