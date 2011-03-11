@@ -26,9 +26,7 @@
 	
   <section xml:id="ref.types.metatheory.polymorphisms">	
 		<para>
-		The typechecker supports both generics (<firstterm>parametric polymorphism</firstterm>) and 
-		subtyping (<firstterm>inclusion polymorphism</firstterm>), 
-		though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
+		The typechecker supports both generics and subtyping, though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
 		Sites may also be overloaded (<firstterm>ad-hoc polymorphism</firstterm>), but the programmer cannot
 		write overloaded functions within Orc itself.  
 		</para>

@@ -67,6 +67,12 @@ Each constructor site also has a corresponding <link linkend="ref.patterns.call"
 with type <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code><replaceable>S</replaceable><code>)</code> <code>::</code> <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>.
 </para>
 
+<para>
+A datatype declaration may define a <firstterm>recursive type</firstterm>: the name of the type
+may be used in the definition of the type itself. In fact, this is the only way to declare a recursive
+type in Orc.
+</para>
+
 </section>
 
 

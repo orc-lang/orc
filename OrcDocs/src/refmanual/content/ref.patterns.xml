@@ -40,7 +40,12 @@ Note that a pattern may fail to match a value, if it does not have the same shap
 When this occurs, the unmatched value is simply discarded, as if it had never been published.
 </para>
 
-<xi:include href="ref.patterns.constant.xml"/>
+<para>
+During typechecking, a pattern is matched against a type instead of a value. This match produces a 
+<link linkend="ref.types.context">typing context</link>, which associates a type with each variable that occurs in the pattern.
+</para>
+
+<xi:include href="ref.patterns.literal.xml"/>
 <xi:include href="ref.patterns.variable.xml"/>
 <xi:include href="ref.patterns.tuple.xml"/>
 <xi:include href="ref.patterns.list.xml"/>

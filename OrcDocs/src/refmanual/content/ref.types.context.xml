@@ -16,6 +16,27 @@
 	
 	<section xml:id="ref.types.context.body">
 
+  <para>
+  Whenever one or more variables is bound, the type checker records information from that
+  binding to typecheck the uses of that variable in its scope. This information is stored
+  in a <firstterm>typing context</firstterm>, which is just a sequence of variable names and
+  their types. When an expression in the scope of many declarations is typechecked, the
+  typechecker will carry a composite context of all of the typing contexts created by all
+  of the declarations. 
+  </para>
+  
+  <para>
+  Most declarations bind only a single variable and simply add one binding to the typing
+  context. However, pattern matching may generate a whole sequence of variable bindings.
+  </para>
+  
+  <para>
+  When a variable is typechecked, its type is found by first looking in the most recent 
+  context (i.e. from the nearest declaration), and if its type is not found there, proceeding
+  further and further out in scope. If the variable is not in the typing context, then it
+  is a free variable, which is a syntactic error.
+  </para>
+
 	</section>
 		
 		 

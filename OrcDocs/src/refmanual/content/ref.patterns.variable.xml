@@ -27,6 +27,14 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.patterns.variable.type">
+	  <title>Type</title>
+	  <para>
+	    When a variable pattern <replaceable>x</replaceable> is matched against a type <replaceable>T</replaceable>, 
+	    it produces the typing context {<replaceable>x</replaceable> has type <replaceable>T</replaceable>}.
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.variable.examples">
 		  <title>Examples</title>
