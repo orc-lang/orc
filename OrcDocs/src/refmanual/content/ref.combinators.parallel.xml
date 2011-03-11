@@ -12,7 +12,7 @@
 
 <!-- Parallel Combinator -->
    <section xml:id="ref.combinators.parallel">
-      <title>Parallel Combinator</title>
+      <title><ind>Parallel Combinator</ind></title>
 	  <section xml:id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
 		  <para>
@@ -64,11 +64,11 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
+			  Execution of <ind>expression</ind> <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
 			   occurs by executing <replaceable>F</replaceable> 
 			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
-			  publishes a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
-			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
+			  <ind>publishes</ind> a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
+			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> <ind>interleaves</ind> 
 			  the publications of <replaceable>F</replaceable>
 			  and <replaceable>G</replaceable> arbitrarily.
 		    </para>
@@ -81,7 +81,7 @@
 	  <section xml:id="ref.combinators.parallel.type">
 	    <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable> <code>|</code> <replaceable>G</replaceable> is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
+				The type of <replaceable>F</replaceable> <code>|</code> <replaceable>G</replaceable> is the <link linkend="ref.types.lattice"><ind>join</ind></link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
 			</para>
 		</section>
 	  

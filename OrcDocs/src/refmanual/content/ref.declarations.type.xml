@@ -16,7 +16,7 @@
 
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: aliases, imports, and datatypes.
+			type declarations: <ind>aliases</ind>, <ind>imports</ind>, and <ind>datatypes</ind>.
 			</para>
 			
 	<section xml:id="ref.declarations.type.syntax">
@@ -33,9 +33,9 @@
   <section xml:id="ref.declarations.type.alias">
 	  <title>Type Alias</title>
 	  <para>
-	    A type alias gives an existing type a new name, for the programmer's ease of use.
+	    A <firstterm>type alias</firstterm> gives an existing type a new name, for the programmer's ease of use.
 			There is no distinction between the alias and the aliased type; they can be used
-			interchangeably. A type alias may not be recursive.
+			interchangeably. A type alias may not be <ind>recursive</ind>.
 	  </para>
 	  
 	  <para>
@@ -48,7 +48,7 @@
 	  <title>Type Import</title>
 	  
 	  <para>
-			A type import gives a name to a type described by some external service.
+			A <firstterm>type import</firstterm> gives a name to a type described by some external service.
 			This allows new types to be added to Orc, in much the same way that
 			the <code>site</code> declaration allows new sites to be added to Orc.
 			Type imports are often used in conjunction with the <link linkend="ref.declarations.site"><code>site</code> declaration</link>,
@@ -60,16 +60,16 @@
 	<section xml:id="ref.declarations.type.datatype">
 	  <title>Datatype</title>	  
 	  <para>
-	    A datatype declaration defines a new type, called a <firstterm>sum type</firstterm>, which is the
+	    A <firstterm>datatype declaration</firstterm> defines a new type, called a <firstterm>sum type</firstterm>, which is the
 	    type of all values produced by any of the declared constructors. 
 	  </para>
 	  <para>
-	    A datatype declaration may be polymorphic, introducing new type variables which may be used within
+	    A datatype declaration may be <ind>polymorphic</ind>, introducing new type variables which may be used within
 	    the slots of the constructors. It may also be recursive; the type name itself can be used within the
 	    slots of the constructors. A datatype declaration is the only way to define type recursively in Orc.
 	  </para>
 	  <para>
-	    The datatype declaration also assigns types to each of the <link linkend="ref.data.datatype.type">constructor sites</link> that it defines.
+	    The datatype declaration also assigns types to each of the <link linkend="ref.data.datatype.type"><ind>constructor sites</ind></link> that it defines.
 	  </para>   
 	</section>
 			

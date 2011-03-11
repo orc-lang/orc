@@ -18,8 +18,8 @@
 <title>Combinators</title>
 
 <para>
-Orc has four combinators: parallel, sequential, pruning, and otherwise. A combinator forms an
-expression from two component expressions. Each combinator captures a different aspect of concurrency.
+Orc has four <ind>combinators</ind>: <ind>parallel</ind>, <ind>sequential</ind>, <ind>pruning</ind>, and <ind>otherwise</ind>. A combinator forms an
+<ind>expression</ind> from two component expressions. Each combinator captures a different aspect of concurrency.
 Syntactically, the combinators are written infix, and have lower <link linkend="ref.concepts.precedence">precedence</link> than operators, but higher
 precedence than conditionals or declarations.
 </para>

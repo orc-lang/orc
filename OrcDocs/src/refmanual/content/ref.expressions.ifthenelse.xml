@@ -10,19 +10,19 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- IfThenElse -->
+<!-- if then else -->
 	<section xml:id="ref.expressions.ifthenelse">
-		<title><code>if then else</code></title>
+		<title><code><ind>if then else</ind></code></title>
 		
 		<para>
 		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
-		is a conditional expression.
+		is a <ind>conditional expression</ind>.
 		It executes as follows:
 		<itemizedlist>
-		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> <ind>deflates</ind> to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</listitem>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</listitem>
-		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.halt">halt</link>.</listitem>
-		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent">silently</link>, halt.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-<ind>Boolean</ind> value, <link linkend="ref.concepts.halt"><ind>halt</ind></link>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent"><ind>silently</ind></link>, halt.</listitem>
 		</itemizedlist>
 		 
 		</para>

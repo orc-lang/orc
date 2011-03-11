@@ -15,7 +15,7 @@
 		<title><code>def</code>:  Define Function</title>
 		
 		<para>
-			The <code>def</code> declaration defines a function. A function definition consists of an identifier, a sequence of <firstterm>parameters</firstterm>,
+			The <code><ind>def</ind></code> declaration defines a function. A function definition consists of an <ind>identifier</ind>, a sequence of <firstterm>parameters</firstterm>,
 		  and a <firstterm>body</firstterm> expression.
 		</para>
 		  
@@ -41,13 +41,13 @@
 		B
 		 -->
 		  When a function is <link linkend="ref.expressions.call.function">called</link>,
-		  the body executes, and in parallel the argument expressions are <link linkend="ref.concepts.deflate">deflated</link>. 
+		  the body executes, and in parallel the argument expressions are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>. 
 		  If the execution of the body encounters a parameter which is not yet bound to a value,
 		  whose corresponding argument expression 
-		  has not yet published a value, that parameter <link linkend="ref.concepts.block">blocks</link> until the argument value is available,
+		  has not yet published a value, that parameter <link linkend="ref.concepts.block"><ind>blocks</ind></link> until the argument value is available,
 			but the rest of the body continues to execute. 
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
-		  If execution of the body <link linkend="ref.concepts.halt">halts</link>, the function call also halts. 
+		  If execution of the body <link linkend="ref.concepts.halt"><ind>halts</ind></link>, the function call also halts. 
 		</para>  
 		  
 		<para>
@@ -78,8 +78,8 @@
   		<section xml:id="ref.declarations.def.clausal">
 			<title>Clausal Definition of Functions</title>
 			<para>
-			  A function can be defined by a sequence of clauses, where each clause specifies
-			  a pattern of arguments and the code to be executed in case the arguments match
+			  A function can be defined by a sequence of <ind>clauses</ind>, where each clause specifies
+			  a <ind>pattern</ind> of arguments and the code to be executed in case the arguments match
 			  the pattern.
 			</para>
 			<para>
@@ -177,11 +177,11 @@ NONRUNNABLE
 		<section xml:id="ref.declarations.def.recursive">
 		<title>Recursive Functions</title>
 			  <para>
-			  Functions can be recursive; that is, the name of a function may be used in its own body.
+			  Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
 			  </para>
 			  <para>
 			  A set of functions may be mutually recursive by naming each other in their bodies.
-			  There is no special keyword for mutual recursion.
+			  There is no special keyword for <ind>mutual recursion</ind>.
 			  </para>
 			  
 			  <section xml:id="ref.declarations.def.recursive.examples">

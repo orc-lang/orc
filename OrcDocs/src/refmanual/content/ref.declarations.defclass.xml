@@ -10,18 +10,17 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Class -->
+<!-- def class -->
    <section xml:id="ref.declarations.defclass">
-
-   	  <!-- <?dbhtml stop-chunking?>  Don't chunk this chapter -->
       <title><code>def class</code>:  Define Site in Orc</title>
+      
       <para>
       	Class is an abstraction mechanism in Orc, much like function. It
-		allows a programmer to code a site in Orc. More generally, a class can
-		be used to: (1) Define object classes with methods, (2) Create new
+		allows a programmer to code a site in Orc. More generally, a <ind>class</ind> can
+		be used to: (1) Define <ind>object classes</ind> with <ind>methods</ind>, (2) Create new
 		sites and extend behaviors of existing sites, (3) Allow concurrent
 		method invocation on objects, and (4) Create active objects, whose
-		executions may be based on time or other external stimulus, not
+		executions may be based on <ind>time</ind> or other external stimulus, not
 		necessarily explicitly called methods.
       </para>
 	  <section xml:id="ref.declarations.defclass.syntax">
@@ -40,17 +39,17 @@ def class Newset(n) =
 ]]></programlisting>
 		  <para> 
 		  	The keyword <code>class</code> denotes that a class is being defined, not just a
-			function.  A class definition may have parameters like a function
+			<ind>function</ind>.  A class definition may have parameters like a function
 			definition. In particular, a class or class instance could be a parameter.
 		  </para>
 		  <para>
 		  	The body of a class may include definitions of both functions and
 			classes. The name of every definition in the body is exported to the
-			surrounding scope as a dot method. A class body must include at least
+			surrounding scope as a <ind>dot method</ind>. A class body must include at least
 			one definition, which could be a function or a class.
 		  </para>
 		  <para>
-		  	A class may be defined by a set of clauses. In that case, each clausal
+		  	A class may be defined by a set of <ind>clauses</ind>. In that case, each clausal
 			body must include the definitions of the same set of functions and
 			classes.
 		  </para>
@@ -96,9 +95,9 @@ no output
 Newset(5)
 ]]></programlisting>
 		  <para>
-		  	creates and publishes a site (an instance of the class). The created
+		  	creates and <ind>publishes</ind> a site (an instance of the class). The created
 			site can be accessed through the methods defined for the
-			class. Unlike goal expressions of functions, the publications of the
+			class. Unlike <ind>goal expressions</ind> of functions, the publications of the
 			goal expression of a class are ignored. Yet, the goal expression is
 			executed, and its execution may have side effects.
 		  </para>
@@ -120,13 +119,13 @@ Newset(5)
 	  	</para>
 	  	<itemizedlist>
 	  		<listitem><para>Any publication by the goal expression of a class is ignored.</para></listitem>
-	  		<listitem><para>Each function defined within a class can publish at most once.</para></listitem>
+	  		<listitem><para>Each <ind>function</ind> defined within a class can publish at most once.</para></listitem>
 	  	</itemizedlist>
 	  </section>
 	  <section xml:id="ref.declarations.defclass.semantics.concurrent">
 	  	<title>Concurrent Executions of Methods</title>
 	  	<para>
-	  		The methods of a class instance may be executed concurrently through
+	  		The <ind>methods</ind> of a class instance may be executed concurrently through
 			concurrent invocations. The class must be designed for concurrent
 			execution, otherwise the different executions may interfere. For
 			example,
@@ -144,7 +143,7 @@ st.add(3) | st.add(5)
 			calls.  Therefore,
 		</para>
 		<itemizedlist>
-			<listitem><para>A call is not <link linkend="ref.concepts.kill">killed</link> by prune; see example below.</para></listitem>
+			<listitem><para>A call is not <link linkend="ref.concepts.kill"><ind>killed</ind></link> by <ind>prune</ind>; see example below.</para></listitem>
 			<listitem><para>Unlike calls to functions, calls to class methods are strict;
   							i.e., the call is made only when all the parameters are bound.</para></listitem>
 		</itemizedlist>
@@ -195,22 +194,22 @@ OUTPUT:
 		  </example>
 		  <para>
 		  	Note: We have defined <code>A</code> as the "access" method of the defined
-			matrix. This allows us to retrive and update the matrix elements using
+			matrix. This allows us to retrieve and update the matrix elements using
 			traditional notation.
 		  </para>
 		  </section>
 		  <section>
 		  <title>Create a Site</title>
 		  <para>
-		  	We create a site, <code>Cell</code>, that defines a write-once variable. It
-			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
+		  	We create a site, <code><ind>Cell</ind></code>, that defines a write-once variable. It
+			supports two methods: <code>read</code> <link linkend="ref.concepts.block"><ind>blocks</ind></link> until the variable has been
 			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
-			publishes a <code>signal</code>.
+			publishes a <code><ind>signal</ind></code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code>Semaphore</code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
-			value has been written) and <code>Ref</code> to store the value.
+		  	We use two library sites, <code><ind>Semaphore</ind></code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
+			value has been written) and <code><ind>Ref</ind></code> to store the value.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite"><title>Create a Site</title>
 <programlisting language="orc"><![CDATA[
@@ -234,9 +233,9 @@ NONRUNNABLE
 		  <section>
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
-		  	The <code>Buffer</code> site implements an unbounded channel. We add a new method,
+		  	The <code><ind>Buffer</ind></code> site implements an unbounded <ind>channel</ind>. We add a new method,
 			<code>length</code>, that returns the number of items in the channel. We have to
-			assign a name different from "Buffer", "Channel", to this class.
+			assign a name different from "Buffer" (e.g. "Channel") to this class.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite"><title>Extend Functionality of an Existing Site</title>
 <programlisting language="orc-demo"><![CDATA[
@@ -264,8 +263,8 @@ no output
 		  <para>
 		  	The methods of a class instance may be executed concurrently through
 			concurrent invocations. Concurrent execution may cause interference,
-			as in the example of the <code>Newset</code> example. Typically, semaphores are used to
-			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
+			as in the example of the <code>Newset</code> example. Typically, <ind>semaphores</ind> are used to
+			restrict access to methods and/or data. We rewrite <code><ind>Newset</ind></code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.concaccess"><title>Managing Concurrent Access</title>
@@ -305,7 +304,7 @@ no output
 		  <section>
 		  <title>Computing with the Goal Expression</title>
 		  <para>
-		  	All the goal expressions shown so far have been merely <code>stop</code>. In the
+		  	All the goal expressions shown so far have been merely <code><ind>stop</ind></code>. In the
 			following example, the goal expression of the class initiates an
 			unending computation in which <code>tick</code> is printed every second; all the
 			publications of the goal expression are ignored.
@@ -374,7 +373,7 @@ no-output
 	    <title>Type</title>
 	    <para>
 	      A <code>def class</code> declaration is typechecked in the same way as a <link linkend="ref.declarations.def"><code>def</code> declaration</link>, with one exception.
-	      The return type of a closure created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
+	      The return type of a <ind>closure</ind> created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
 	      <code>{.</code> <replaceable>d<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>d<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
 	      where each <replaceable>d<subscript>i</subscript></replaceable> is the name of a <code>def</code> or <code>def class</code> declaration in the body,
 	      and <replaceable>T<subscript>i</subscript></replaceable> is its type.

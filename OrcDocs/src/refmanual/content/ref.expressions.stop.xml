@@ -15,10 +15,9 @@
 		<title><code>stop</code></title>
 		<section xml:id="ref.expressions.stop.body">
 			<para>
-			The <code>stop</code> expression does nothing. 
-			Execution of <code>stop</code> immediately <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
-			</para>
-			
+			The <code><ind>stop</ind></code> expression does nothing. 
+			Execution of <code>stop</code> immediately <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent"><ind>silently</ind></link>.
+			</para>		
 		</section>
 		
 		<section xml:id="ref.expressions.stop.syntax">
@@ -43,9 +42,10 @@
 		  <example xml:id="ref.expressions.stop.examples.printsilent">
 		  <title>Print Silently</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-  Print three numbers in sequence, and then halt, without publishing.
+{-  Print three numbers in sequence, and then halt, 
+    without publishing.
 -}
+
 Println("1") >> 
 Println("2") >> 
 Println("3") >>
@@ -63,9 +63,10 @@ OUTPUT:
 		  <example xml:id="ref.expressions.stop.examples.squareroot">
 		  <title>Square Root</title>
 <programlisting language="orc-demo"><![CDATA[
-{-
-  Define a square root function which halts silently if its argument is negative.
+{-  Define a square root function which halts silently if 
+    its argument is negative.
 -}
+
 def squareroot(n) = if (n <: 0) then stop else (n ** 0.5)
 
 squareroot(-1)

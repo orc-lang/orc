@@ -46,7 +46,6 @@
    <!ENTITY targets.ref.patterns.as SYSTEM "../build/targetdb/ref.patterns.as.xml">
    <!ENTITY targets.ref.patterns.call SYSTEM "../build/targetdb/ref.patterns.call.xml">
    <!ENTITY targets.ref.patterns.cons SYSTEM "../build/targetdb/ref.patterns.cons.xml">
-   <!ENTITY targets.ref.patterns.constant SYSTEM "../build/targetdb/ref.patterns.constant.xml">
    <!ENTITY targets.ref.patterns.list SYSTEM "../build/targetdb/ref.patterns.list.xml">
    <!ENTITY targets.ref.patterns.tuple SYSTEM "../build/targetdb/ref.patterns.tuple.xml">
    <!ENTITY targets.ref.patterns.variable SYSTEM "../build/targetdb/ref.patterns.variable.xml">
@@ -74,7 +73,6 @@
    <!ENTITY targets.ref.time.real SYSTEM "../build/targetdb/ref.time.real.xml">
    <!ENTITY targets.ref.time.virtual SYSTEM "../build/targetdb/ref.time.virtual.xml">
    <!ENTITY targets.ref.time SYSTEM "../build/targetdb/ref.time.xml">
-   <!ENTITY targets.ref.types.lattice SYSTEM "../build/targetdb/ref.types.lattice.xml">
    <!ENTITY targets.ref.types SYSTEM "../build/targetdb/ref.types.xml">
    ]>
 <targetset>
@@ -222,9 +220,6 @@
 					  <document targetdoc="ref.patterns.cons" baseuri="ref.patterns.cons.html">
 					  	&targets.ref.patterns.cons;
 					  </document>
-					  <document targetdoc="ref.patterns.constant" baseuri="ref.patterns.constant.html">
-					  	&targets.ref.patterns.constant;
-					  </document>
 					  <document targetdoc="ref.patterns.list" baseuri="ref.patterns.list.html">
 					  	&targets.ref.patterns.list;
 					  </document>
@@ -305,9 +300,6 @@
 					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;
-					  </document>
-					  <document targetdoc="ref.types.lattice" baseuri="ref.types.lattice.html">
-					  	&targets.ref.types.lattice;
 					  </document>
 					  <document targetdoc="ref.types" baseuri="ref.types.html">
 					  	&targets.ref.types;

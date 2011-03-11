@@ -15,9 +15,9 @@
 		<title><code>site</code>:  Import Site</title>
 		<section xml:id="ref.declarations.site.body">
 			<para>
-A <code>site</code> declaration makes some service available as a site and
+A <code></code> declaration makes some service available as a site and
 binds it to a variable. The service might be an object in the host language 
-(e.g. a class instance in Scala or Java), or an external Web service, 
+(e.g. a class instance in <ind>Scala</ind> or <ind>Java</ind>), or an external Web service, 
 or even a primitive operation like addition.
 			</para>
 			<para>
@@ -40,8 +40,8 @@ name to find and load a class, and creates an instance of that class to provide 
 	  <title>Type</title>
 	  <para>
 	    The type of a site is determined entirely by the site itself. It may be representable
-	    in Orc, for example as a <link linkend="ref.data.closure.type">function type</link>,
-	    or it may be an entirely opaque type. The type of a site behaves very much like a site
+	    in Orc, for example as a <link linkend="ref.data.closure.type"><ind>function type</ind></link>,
+	    or it may be an entirely <ind>opaque type</ind>. The type of a site behaves very much like a site
 	    itself during typechecking; it is invoked with argument types and responds with a return
 	    type.
 	  </para>
@@ -91,9 +91,7 @@ OUTPUT:
 		  </example>
 
 <para>
-See the <link linkend="ref.stdlib">Standard Library</link> chapter 
-for more information on the Buffer site
-and its available methods.
+See the <link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link>.
 </para>
 
 		</section>
