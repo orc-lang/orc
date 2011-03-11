@@ -15,9 +15,9 @@
 		<title>Site and Function Calls</title>
 			<para>
 			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression on a sequence of <firstterm>argument</firstterm> expressions. 
-			First, the target expression is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>f</replaceable>.
-			If <replaceable>f</replaceable> is a site, then the call is a site call. 
-			If <replaceable>f</replaceable> is a closure, then the call is a function call.
+			First, the target expression is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>g</replaceable>.
+			If <replaceable>g</replaceable> is a site, then the call is a site call. 
+			If <replaceable>g</replaceable> is a closure, then the call is a function call.
 			Each of these cases is described below.		
 			</para>
 		
@@ -35,9 +35,9 @@
 	  <section xml:id="ref.expressions.call.site">
 	  <title>Site Calls</title>
 	  <para>
-	    Execution of a site call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    Execution of a site call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
-	    The site <replaceable>f</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
+	    The site <replaceable>g</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
 	  </para>
 	  <para>
 	    A site call publishes at most one value. Once it publishes a value, it immediately halts.
@@ -48,7 +48,7 @@
 	  <section xml:id="ref.expressions.call.function">
 	  <title>Function Calls</title>
 	  <para>
-	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. Execution of a function call <replaceable>f</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. Execution of a function call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
 	  </para>
 	  <para>

@@ -30,6 +30,18 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.patterns.record.type">
+	  <title>Type</title>
+	  <para>
+	    When a record pattern <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>P<subscript>n</subscript></replaceable> <code>.}</code> 
+	    is matched against a record type <replaceable>R</replaceable>, each <replaceable>K<subscript>i</subscript></replaceable>
+	    must have a binding in <replaceable>R</replaceable>. Then each <replaceable>P<subscript>i</subscript></replaceable> is
+	    matched against the type bound to <replaceable>K<subscript>i</subscript></replaceable> in <replaceable>R</replaceable>,
+	    producing a typing context Γ<subscript>i</subscript>. 
+	    The typing context produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.record.examples">
 		  <title>Examples</title>

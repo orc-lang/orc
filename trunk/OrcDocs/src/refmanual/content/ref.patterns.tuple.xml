@@ -28,6 +28,18 @@
 	  </para>
 	  </section>
 		
+		<section xml:id="ref.patterns.tuple.type">
+	  <title>Type</title>
+	  <para>
+	    When a tuple pattern <code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code> 
+	    is matched against a tuple type <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>,
+	    each <replaceable>P<subscript>i</subscript></replaceable> is matched against the corresponding
+	    <replaceable>T<subscript>i</subscript></replaceable>,
+	    producing typing contexts Γ<subscript>i</subscript>. The typing context
+	    produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
+	  </para>
+	  </section>
+		
 		 <section xml:id="ref.patterns.tuple.examples">
 		  <title>Examples</title>
 

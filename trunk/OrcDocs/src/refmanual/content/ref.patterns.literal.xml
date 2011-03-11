@@ -10,10 +10,10 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Constant Pattern -->
-	<section xml:id="ref.patterns.constant">
+<!-- Literal Pattern -->
+	<section xml:id="ref.patterns.literal">
 		<title>Literal Pattern</title>
-		<section xml:id="ref.patterns.constant.body">
+		<section xml:id="ref.patterns.literal.body">
 			<para>
 				A literal pattern matches only the same literal value. 
 				It is often used in clausal definition of functions.   
@@ -22,7 +22,7 @@
 		</section>
 		
 		
-		<section xml:id="ref.patterns.constant.syntax">
+		<section xml:id="ref.patterns.literal.syntax">
 	  <title>Syntax</title>
 	  <para>
 	    <productionset>
@@ -30,11 +30,20 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.patterns.literal.type">
+	  <title>Type</title>
+	  <para>
+	    When a literal pattern is matched against a type <replaceable>T</replaceable>,
+	    the type of the literal value must be a subtype of the type <replaceable>T</replaceable>.
+	    The match produces an empty typing context, since it binds no variables.
+	  </para>
+	  </section>
 		
-		 <section xml:id="ref.patterns.constant.examples">
+		 <section xml:id="ref.patterns.literal.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.constant.examples.factorial">
+		  <example xml:id="ref.patterns.literal.examples.factorial">
 		  <title>Factorial Function</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Factorial function -}
@@ -51,7 +60,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  		  <example xml:id="ref.patterns.constant.examples.implication">
+		  		  <example xml:id="ref.patterns.literal.examples.implication">
 		  <title>Implication by Cases</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Defining logical implication by cases -}
@@ -70,7 +79,7 @@ true
 		  
 		</section>
 		
-		<section xml:id="ref.patterns.constant.links">
+		<section xml:id="ref.patterns.literal.links">
 		  <title>Related Links</title>
 		  
 		  <informaltable frame="none">

@@ -28,6 +28,16 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.patterns.as.type">
+	  <title>Type</title>
+	  <para>
+	    When <replaceable>P</replaceable> <code>as</code> <replaceable>x</replaceable> is matched
+	    against a type <replaceable>T</replaceable>, the pattern <replaceable>P</replaceable> 
+	    is matched against <replaceable>T</replaceable>, producing typing context Γ.
+	    The typing context produced by the whole match is Γ ∪ {<replaceable>x</replaceable> has type <replaceable>T</replaceable>}.
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.as.examples">
 		  <title>Examples</title>

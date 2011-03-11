@@ -33,6 +33,19 @@
 	    </productionset>
 	  </para>
 	  </section>
+	  
+	  <section xml:id="ref.patterns.call.type">
+	  <title>Type</title>
+	  <para>
+	    When a call pattern is matched against a type <replaceable>T</replaceable>,
+	    the <code>unapply</code> member is used to recover the argument types
+	    <replaceable>T<subscript>i</subscript></replaceable> from <replaceable>T</replaceable>.
+	    Then each argument pattern <replaceable>P<subscript>i</subscript></replaceable>
+	    is matched against the corresponding type <replaceable>T<subscript>i</subscript></replaceable>,
+	    producing typing contexts Γ<subscript>i</subscript>. The typing context
+	    produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
+	  </para>
+	  </section>
 		
 		 <section xml:id="ref.patterns.call.examples">
 		  <title>Examples</title>
