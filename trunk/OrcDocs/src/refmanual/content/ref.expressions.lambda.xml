@@ -15,13 +15,13 @@
 		<title><code>lambda</code></title>
 		<section xml:id="ref.expressions.lambda.body">
 <para>
-Sometimes one would like to create a closure directly, without bothering to give it a name. 
-There is a special keyword <code>lambda</code> for this purpose. By writing a function
-definition without the keyword <code>def</code> and replacing the function name with
+Sometimes one would like to create a <ind>closure</ind> directly, without bothering to give it a name. 
+There is a special keyword <firstterm><code>lambda</code></firstterm> for this purpose. By writing a function
+definition without the keyword <code><ind>def</ind></code> and replacing the function name with
 the keyword <code>lambda</code>, that definition becomes an expression which publishes a closure. 
 </para>
 <para>
-Note that a <code>lambda</code> cannot create a recursive function, since the function is
+Note that a <code>lambda</code> cannot create a <ind>recursive function</ind>, since the function is
 not given a name in the body.
 </para>
 		</section>

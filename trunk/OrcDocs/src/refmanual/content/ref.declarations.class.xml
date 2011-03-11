@@ -12,19 +12,19 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class">
-	<title><code>class</code>:  Import Class from Java</title>
+	<title><code><ind>class</ind></code>:  Import Class from Java</title>
 
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
-In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
-Java classes may be imported into Orc programs and invoked as Orc sites.
+In this implementation of Orc, this platform is the <ind>Java Runtime Environment</ind> (JRE).
+<ind>Java</ind> classes may be imported into Orc programs and invoked as Orc sites.
 	</para>
 
 	<para>
 The declaration <code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
 binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
-Calls to <replaceable>S</replaceable> invoke the corresponding constructor of the Java class <replaceable>J</replaceable>.
-The created class instance is published from the site call.
+Calls to <replaceable>S</replaceable> invoke the corresponding <ind>constructor</ind> of the Java class <replaceable>J</replaceable>.
+The created class instance is published from the <ind>site call</ind>.
 Instance methods may be invoked on this published value.
 Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the class static method of the Java class <replaceable>J</replaceable>.
 The return value of the method is published from the site call.
@@ -43,11 +43,11 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
    <section xml:id="ref.declarations.class.type">
 	  <title>Type</title>
 	  <para>
-	    When typechecking declared classes, the Orc typechecker interfaces with the Java type system, so that operations on
+	    When typechecking declared classes, the Orc <ind>typechecker</ind> interfaces with the Java type system, so that operations on
 	    Java objects typecheck as one would expect in a Java program, with a few exceptions.
 	    
 	    <itemizedlist>
-	    <listitem>Methods with return type <code language="java">void</code> in Java have return type <code>Signal</code> in Orc.</listitem>
+	    <listitem>Methods with return type <code language="java"><ind>void</ind></code> in Java have return type <code><ind>Signal</ind></code> in Orc.</listitem>
 	    <listitem>Interfaces are not fully supported.</listitem>
 	    <listitem>Type parameter bounds are not supported.</listitem>
 	    </itemizedlist>
@@ -66,9 +66,9 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 		</para>
 
 		<para>
-		Subtyping between Java object types is determined by Java's subtyping relation: if
+		Subtyping between Java object types is determined by Java's <ind>subtyping</ind> relation: if
 		one class is a subclass of another, then that type will be a subtype of the other.
-		The typechecker does not implement a true join operation for Java types; it will
+		The typechecker does not implement a true <ind>join</ind> operation for Java types; it will
 		find a common ancestor, but not the least common ancestor. 
 		</para>
 		
@@ -80,6 +80,8 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 		<example xml:id="ref.declarations.class.examples.call">
 			<title>Invoke a Java constructor and instance method</title>
 			<programlisting language="orc-demo"><![CDATA[
+{- Use a Java class to count the number of tokens in a string -}
+
 class StringTokenizer = "java.util.StringTokenizer"
 
 -- Invoke a constructor:
@@ -98,6 +100,8 @@ OUTPUT:
 		<example xml:id="ref.declarations.class.examples.staticcall">
 			<title>Invoke a Java static method</title>
 			<programlisting language="orc-demo"><![CDATA[
+{- Use a Java class to calculate a log value -}
+
 class JavaMath = "java.lang.Math"
 
 -- Invoke a static method:
@@ -113,14 +117,17 @@ OUTPUT:
 		<example xml:id="ref.declarations.class.examples.generic">
 		<title>Declaring and instantiating a Java generic class</title>
 		<programlisting language="orc"><![CDATA[
-		class TreeSet = java.util.TreeSet
-		val s = TreeSet[String]()
-		s.add("Orc") >> s.add("Java") >> s.add("Orc") >> s.size()
-		
-		{-
-		OUTPUT:
-		2
-		-} 
+{- Use a Java class to represent tree data structures -}
+
+class TreeSet = java.util.TreeSet
+
+val s = TreeSet[String]()
+s.add("Orc") >> s.add("Java") >> s.add("Orc") >> s.size()
+
+{-
+OUTPUT:
+2
+-} 
 		]]></programlisting>
 	  </example>
 	  

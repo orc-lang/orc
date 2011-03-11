@@ -12,7 +12,7 @@
 
 <!-- Otherwise Combinator -->
    <section xml:id="ref.combinators.otherwise">
-      <title>Otherwise Combinator</title>
+      <title><ind>Otherwise Combinator</ind></title>
 	  <section xml:id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
 		  <para>
@@ -60,12 +60,12 @@
 			<para>
 				The execution of
 				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
-				If <replaceable>F</replaceable> <link linkend="ref.concepts.halt">halts</link>, 
+				If <replaceable>F</replaceable> <link linkend="ref.concepts.halt"><ind>halts</ind></link>, 
 				and has not published any values, then <replaceable>G</replaceable> executes. 
-				If <replaceable>F</replaceable> publishes one or more values, 
+				If <replaceable>F</replaceable> <ind>publishes</ind> one or more values, 
 				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
 				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
-				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent">silent</link>.
+				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent"><ind>silent</ind></link>.
 			</para>
 			</listitem>
 			</varlistentry>
@@ -77,7 +77,7 @@
 		  <title>Type</title>
 			<para>
 				The type of <replaceable>F</replaceable> <code>;</code> <replaceable>G</replaceable> 
-				is the <link linkend="ref.types.lattice">join</link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
+				is the <link linkend="ref.types.lattice"><ind>join</ind></link> of the types of <replaceable>F</replaceable> and <replaceable>G</replaceable>.
 			</para>
 		</section>
 	  

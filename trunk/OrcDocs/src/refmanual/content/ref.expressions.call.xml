@@ -10,12 +10,12 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Lambda -->
+<!-- Site and Function Calls -->
 	<section xml:id="ref.expressions.call">
 		<title>Site and Function Calls</title>
 			<para>
 			A <firstterm>call</firstterm> is an invocation of a <firstterm>target</firstterm> expression on a sequence of <firstterm>argument</firstterm> expressions. 
-			First, the target expression is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>g</replaceable>.
+			First, the target expression is <link linkend="ref.concepts.deflate"><ind>deflated</ind></link> to a value <replaceable>g</replaceable>.
 			If <replaceable>g</replaceable> is a site, then the call is a site call. 
 			If <replaceable>g</replaceable> is a closure, then the call is a function call.
 			Each of these cases is described below.		
@@ -35,7 +35,7 @@
 	  <section xml:id="ref.expressions.call.site">
 	  <title>Site Calls</title>
 	  <para>
-	    Execution of a site call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    Execution of a <ind>site call</ind> <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
 	    The site <replaceable>g</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
 	  </para>
@@ -52,7 +52,7 @@
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
 	  </para>
 	  <para>
-	    Since a function call executes an arbitrary expression, it may publish any number of values.
+	    Since a function call executes an arbitrary expression, it may <ind>publish</ind> any number of values.
 	  </para>
 	  </section>
 		
@@ -60,21 +60,21 @@
 	    <title>Type</title>
 	    <para>
 	      In addition to argument expressions, a call may also have type arguments <replaceable>A<subscript>j</subscript></replaceable>, since the target
-	      may have a <link linkend="ref.types.polymorphism">polymorphic</link> type.     
+	      may have a <link linkend="ref.types.polymorphism"><ind>polymorphic</ind></link> type.     
 	    </para>
 	    <para>
-	      Suppose the target expression <replaceable>E</replaceable> has type <replaceable>S</replaceable>,
+	      Suppose the <ind>target expression</ind> <replaceable>E</replaceable> has type <replaceable>S</replaceable>,
 	      and each argument expression <replaceable>E<subscript>i</subscript></replaceable> has type <replaceable>S<subscript>i</subscript></replaceable>.
 	    </para>
 	    <para>
-	    	If <replaceable>S</replaceable> is a function type <code>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
-	    	then there must be exactly as many arguments as argument types, 
+	    	If <replaceable>S</replaceable> is a function type <code><ind>lambda</ind></code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+	    	then there must be exactly as many arguments as <ind>argument types</ind>, 
 	    	and each argument type <replaceable>S<subscript>i</subscript></replaceable> must be a <link linkend="ref.types.subtyping">subtype</link> of the corresponding type <replaceable>T<subscript>i</subscript></replaceable> (with all <replaceable>X<subscript>j</subscript></replaceable> replaced by <replaceable>A<subscript>j</subscript></replaceable>).
 	    	Then the type of the whole call is <replaceable>R</replaceable>, the return type.	    	  
 	    </para>
 	    <para>
 	      If <replaceable>S</replaceable> is the type of a site, <replaceable>S</replaceable> itself behaves like a site during typehcecking.
-	      The typechecker passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to <replaceable>S</replaceable>,
+	      The <ind>typechecker</ind> passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to <replaceable>S</replaceable>,
 	      which then responds with the return type <replaceable>R</replaceable>, or indicates that the argument types are not appropriate.
 	      If <replaceable>S</replaceable> does respond, then the type of the call expression is <replaceable>R</replaceable>.
 	    </para>
