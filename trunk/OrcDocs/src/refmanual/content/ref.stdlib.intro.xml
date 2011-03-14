@@ -12,7 +12,7 @@
 
 <para>
      <para>
-     The standard library is a set of declarations implicitly available to all Orc
+     The <firstterm>standard library</firstterm> is a set of declarations implicitly available to all Orc
      programs.  In this section we give an informal description of the standard library,
      including the type of each declaration and a short explanation of its use.
      
@@ -41,15 +41,17 @@
 	<para>
 		<variablelist><title>Site Property Set</title>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="blocking"/></sitepropset></term>
+		    <term><sitepropset><siteprop propname="indefinite"/></sitepropset></term>
 		    <listitem>
-		      <para>The site may block execution of an expression.</para>
+		      <para>The site may block execution of an expression, since it is not 
+		            guaranteed to always eventually publish a value or halt.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="nonblocking"/></sitepropset></term>
+		    <term><sitepropset><siteprop propname="definite"/></sitepropset></term>
 		    <listitem>
-		      <para>The site will never block execution of an expression.</para>
+		      <para>The site will never block execution of an expression, since it is 
+		            guaranteed to always eventually publish a value or halt.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
@@ -62,7 +64,7 @@
 		    <term><sitepropset><siteprop propname="idempotent"/></sitepropset></term>
 		    <listitem>
 		      <para>The site is idempotent, therefore applying it multiple times to the same
-		      argument will not change the result.</para> 
+		      		argument will not change the result.</para> 
 		    </listitem>
 		  </varlistentry>
  </variablelist>

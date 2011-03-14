@@ -14,13 +14,13 @@
 <title>Library sites</title>
 
 <para>
-The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites (as well as functions and types) for use in Orc programs.
-These sites are declared in the Orc prelude, which is implicitly included in Orc programs.
+The Orc <link linkend="ref.stdlib"><firstterm>Standard Library</firstterm></link> provides a variety of sites (as well as functions and types) for use in Orc programs.
+These sites are declared in the Orc <firstterm>prelude</firstterm>, which is implicitly included in Orc programs.
 </para>
 
 <para>
 Orc programs are expected to rely on the host language and environment for all but the most essential sites.
-For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code>class</code> declarations.
+For example, in the <ind>Java</ind> implementation of Orc, the entire Java standard library is available to Orc programs via <code>class</code> declarations.
 Therefore, the Orc standard library aims only to provide convenience for the most common Orc idioms, not the complete set of features needed for general-purpose programming.
 </para>
 

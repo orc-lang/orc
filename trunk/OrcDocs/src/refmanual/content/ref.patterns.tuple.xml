@@ -15,7 +15,7 @@
 		<title>Tuple Pattern</title>
 		<section xml:id="ref.patterns.tuple.body">
 			<para>
-				Each element of a tuple pattern matches the corresponding element of a tuple value.
+				Each element of a <firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.
 			</para>
 		</section>
 		
@@ -32,7 +32,7 @@
 	  <title>Type</title>
 	  <para>
 	    When a tuple pattern <code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code> 
-	    is matched against a tuple type <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>,
+	    is matched against a <ind>tuple type</ind> <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>,
 	    each <replaceable>P<subscript>i</subscript></replaceable> is matched against the corresponding
 	    <replaceable>T<subscript>i</subscript></replaceable>,
 	    producing typing contexts Γ<subscript>i</subscript>. The typing context

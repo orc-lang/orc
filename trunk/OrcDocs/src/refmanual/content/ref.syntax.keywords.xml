@@ -15,7 +15,7 @@
 		<title>Keywords</title>
 		<section xml:id="ref.syntax.keywords.body">
 			<para>
-				The reserved keywords in the Orc programming language are the following:
+				The reserved <ind>keywords</ind> in the Orc programming language are the following:
 			</para>
 			<para>
 <table xml:id="orc-keyword-table" frame="none" rowsep="0" colsep="0">

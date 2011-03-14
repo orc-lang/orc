@@ -70,11 +70,11 @@ function toggle(link, divId) { var lText = link.innerHTML; var d = document.getE
 	<table class="proptable">
 		<tr>
     		<xsl:for-each select="siteprop">
-    			<xsl:if test="@propname='blocking'">
-    				<td bgcolor="#CC0000"><font color="#FFFFFF">Blocking</font></td>
+    			<xsl:if test="@propname='indefinite'">
+    				<td bgcolor="#CC0000"><font color="#FFFFFF">Indefinite</font></td>
     			</xsl:if>
-    			<xsl:if test="@propname='nonblocking'">
-    				<td bgcolor="#00CC00"><font color="#FFFFFF">Nonblocking</font></td>
+    			<xsl:if test="@propname='definite'">
+    				<td bgcolor="#00CC00"><font color="#FFFFFF">Definite</font></td>
     			</xsl:if>
     			<xsl:if test="@propname='idempotent'">
     				<td bgcolor="#0000CC"><font color="#FFFFFF">Idempotent</font></td>
