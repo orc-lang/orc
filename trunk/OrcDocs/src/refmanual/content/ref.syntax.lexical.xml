@@ -167,7 +167,6 @@
 					</para>
 				</section>
 			</section>
-		</section>
 		
 		<section xml:id="ref.syntax.lexical.links">
 		  <title>Related Links</title>
@@ -205,5 +204,6 @@
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
+		</section>
 		  
 	</section>
