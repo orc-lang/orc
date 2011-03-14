@@ -13,25 +13,24 @@
 <!-- Syntax: Lexical Specifications -->
 	<section xml:id="ref.syntax.lexical">
 		<title>Lexical Specifications</title>
-		<section xml:id="ref.syntax.lexical.body">
 			<para>
 				This page specifies Orc's processing of an input <ind>byte stream</ind> into an Orc lexical <ind>token sequence</ind>. 
 				This token sequence is the input to the Orc parsing procedure. 
 			</para>
-			<section xml:id="ref.syntax.lexical.body.inputstream">
+			<section xml:id="ref.syntax.lexical.inputstream">
 				<title>Input Byte Stream</title>
 				<para>
 					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, <ind>FTP</ind>, Gopher, HTTP, and <ind>JAR</ind> files.
 					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf"><ind>UTF-8</ind></ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
 				</para>
 			</section>
-			<section xml:id="ref.syntax.lexical.body.tokens">
+			<section xml:id="ref.syntax.lexical.tokens">
 				<title>Lexical Tokens</title>
 				<para>
 					Orc lexical scanning reads <ind>Unicode</ind> characters and emits corresponding Orc <ind>lexical tokens</ind>. 
 					Orc uses seven lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
 				</para>
-				<section xml:id="ref.syntax.lexical.body.tokens.identifier">
+				<section xml:id="ref.syntax.lexical.tokens.identifier">
 					<title>Identifier</title>
 					<para>
 						Orc scans <ind>identifiers</ind> per <ulink url="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</ulink>, namely: 
@@ -56,7 +55,7 @@
 						An identifier cannot match a keyword; see the following section. 
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.keyword">
+				<section xml:id="ref.syntax.lexical.tokens.keyword">
 					<title>Keyword</title>
 					<para>
 						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a <ind>keyword</ind> instead. 
@@ -68,7 +67,7 @@
 						Note that <code>_</code> is a special case: Identifiers cannot start with an underscore, but <code>_</code> scans as a keyword nonetheless. 
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.operator">
+				<section xml:id="ref.syntax.lexical.tokens.operator">
 					<title>Operator</title>
 					<para>
 						An Orc <ind>operator</ind> is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to two * operators, if possible.) 
@@ -77,7 +76,7 @@
 						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.delimiters">
+				<section xml:id="ref.syntax.lexical.tokens.delimiters">
 					<title>Delimiters</title>
 					<para>
 						An Orc <ind>delimiter</ind> is a character sequence that matches one of the following.
@@ -86,7 +85,7 @@
 						<code>( ) {. .} , | ; :: :!: </code>
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.numericliteral">
+				<section xml:id="ref.syntax.lexical.tokens.numericliteral">
 					<title>Numeric Literal</title>
 					<para>
 						<ind>Numeric literals</ind> are matched per the following regular expression: ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?
@@ -98,7 +97,7 @@
 						All Orc numeric literals are decimal (radix 10). 
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.stringliteral">
+				<section xml:id="ref.syntax.lexical.tokens.stringliteral">
 					<title>String Literal</title>
 					<para>
 						Double quotes demarcate a <ind>string literal</ind>. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
@@ -116,7 +115,7 @@
 						</itemizedlist>
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.comment">
+				<section xml:id="ref.syntax.lexical.tokens.comment">
 					<title>Comments</title>
 					<para>
 						Orc comments take two forms: 
@@ -132,7 +131,7 @@
 						Orc comments can be nested, so  {-  starts a nested multi-line comment, and -}  ends the current multi-line comment. 
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.whitespace">
+				<section xml:id="ref.syntax.lexical.tokens.whitespace">
 					<title>Whitespace</title>
 					<para>
 						Per <ulink url="http://unicode.org/reports/tr31/#Pattern_Syntax">Unicode Standard Annex #31, section 4, recommendation R3</ulink>, Orc treats all Unicode Pattern_White_Space characters as whitespace. 
@@ -148,7 +147,7 @@
 						</itemizedlist>
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.body.tokens.newline">
+				<section xml:id="ref.syntax.lexical.tokens.newline">
 					<title>Newlines</title>
 					<para>
 						Orc follows the newline definition of <ulink url="http://unicode.org/versions/Unicode5.2.0/ch05.pdf">Unicode standard section 5.8, Newline Guidelines, recommendation R4</ulink>. 
@@ -207,5 +206,4 @@
 	  		</tgroup>
 		  </informaltable>
 		  
-	  </section>
 	</section>

@@ -505,21 +505,21 @@
 			<production xml:id="ebnf.variable">
 			  <lhs>Variable</lhs>
 			  <rhs>
-			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
+			    <link linkend="ref.syntax.lexical.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.typevariable">
 			  <lhs>TypeVariable</lhs>
 			  <rhs>
-			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
+			    <link linkend="ref.syntax.lexical.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
 			<production xml:id="ebnf.key">
 			  <lhs>Key</lhs>
 			  <rhs>
-			    <link linkend="ref.syntax.lexical.body.tokens.identifier">Identifier</link>
+			    <link linkend="ref.syntax.lexical.tokens.identifier">Identifier</link>
 			  </rhs>
 			</production>
 			
