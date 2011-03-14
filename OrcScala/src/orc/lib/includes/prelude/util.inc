@@ -122,6 +122,7 @@ the contents of the array, in the same order.
 --}
 def arrayToList[A](Array[A]) :: List[A]
 def arrayToList(a) = 
+  def walk(Integer, List[A]) :: List[A]
   def walk(0,acc) = acc
   def walk(i,acc) = walk(i-1, a(i-1)? : acc)
   walk(a.length?, [])
