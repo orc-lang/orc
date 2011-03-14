@@ -205,6 +205,7 @@ OUTPUT:PERMUTABLE
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
+          			<listitem><para><link linkend="ref.syntax.lexical.tokens.numericliteral">Numeric literal</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Add"><code>Add</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>Sub</code> site</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.UMinus"><code>UMinus</code> site</link></para></listitem>
