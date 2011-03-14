@@ -182,6 +182,7 @@ characters("Hello") = ["H", "e", "l", "l", "o"]
 --}
 def characters(String) :: List[String]
 def characters(s) =
+  def rest(Integer) :: List[String]
   def rest(i) =
       Ift (i >= s.length()) >> []
     | Ift (i <: s.length()) >> s.substring(i,i+1):rest(i+1)

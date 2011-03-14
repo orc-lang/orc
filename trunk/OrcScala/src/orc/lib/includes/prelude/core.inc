@@ -316,3 +316,13 @@ Return the least integer greater than
 or equal to this number.
 --}
 site Ceil = "orc.lib.math.Ceil"
+
+{--
+@def sqrt(Number) :: Integer
+Return the square root of this number.
+
+@implementation
+--}
+def sqrt(Number) :: Number
+def sqrt(n) = n ** 0.5
+
