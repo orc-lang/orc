@@ -31,6 +31,15 @@
 		write overloaded functions within Orc itself.  
 		</para>
 	</section>
+	
+	<section xml:id="ref.types.metatheory.erasure">	
+		<para>
+		The Orc type system currently uses an <firstterm>erasure</firstterm> semantics, meaning that type information
+		does not affect runtime behavior, and may be removed from a program after typechecking is finished. In the
+		case of <link linkend="ref.declarations.type.datatype">datatype declarations</link>, the type information and 
+		constructor site bindings are separated by the compiler, so that datatypes may be used in an untyped setting.
+		</para>
+	</section>
 		
 		 
 	<section xml:id="ref.types.metatheory.links">
