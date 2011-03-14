@@ -61,7 +61,7 @@ val c = Cell()
 
 Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.block">block</link> until it receives one.
 
-@method Cell[A].readnb() :: A
+@method Cell[A].readD() :: A
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -104,7 +104,7 @@ Create a rewritable storage location initialized to the provided value.
 @method Ref[A].read() :: A
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.block">block</link> until it receives one.
 
-@method Ref[A].readnb() :: A
+@method Ref[A].readD() :: A
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Ref[A].write(A) :: Signal
@@ -169,7 +169,7 @@ lock.release()]]></programlisting>
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.block">block</link> until it becomes greater than <code>0</code>.
 
-@method Semaphore.acquirenb() :: Signal
+@method Semaphore.acquireD() :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -198,7 +198,7 @@ increment the value beyond that with which the semaphore was constructed.
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.block">blocks</link>.
 
-@method Semaphore.snoopnb() :: Signal
+@method Semaphore.snoopD() :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -240,7 +240,7 @@ Get an item from the buffer. If the buffer is open and no items are available,
 <link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
 linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].getnb() :: A
+@method Buffer[A].getD() :: A
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -272,7 +272,7 @@ will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.s
 
 When the buffer is empty, return a signal.
 
-@method Buffer[A].closenb() :: Signal
+@method Buffer[A].closeD() :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -341,7 +341,7 @@ Get an item from the buffer. If the buffer is open and no items are available,
 <link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
 linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].getnb() :: A
+@method BoundedBuffer[A].getD() :: A
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -358,7 +358,7 @@ Get an item from the buffer. If no items are available, <link linkend="ref.conce
 Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.block">block</link> until one becomes open.
 If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].putnb(A) :: Signal
+@method BoundedBuffer[A].putD(A) :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>
@@ -384,7 +384,7 @@ will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.s
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 
-@method BoundedBuffer[A].closenb() :: Signal
+@method BoundedBuffer[A].closeD() :: Signal
 
 <sitepropset>
    <siteprop propname="nonblocking"/>

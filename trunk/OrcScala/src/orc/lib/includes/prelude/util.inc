@@ -168,7 +168,7 @@ def takePubs(n, f) =
   Let(
     f() >x>
     Ift(c.dec() >> out.put(x) >> false
-       ; out.closenb() >> true)
+       ; out.closeD() >> true)
   ) >> stop | repeat(out.get)
 
 {--

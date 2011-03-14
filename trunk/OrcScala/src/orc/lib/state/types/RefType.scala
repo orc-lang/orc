@@ -40,7 +40,7 @@ object RefType extends SimpleTypeConstructor("Ref", Invariant) {
     val List(t) = ts
     new RecordType(
       "read" -> SimpleFunctionType(t),
-      "readnb" -> SimpleFunctionType(t),
+      "readD" -> SimpleFunctionType(t),
       "write" -> SimpleFunctionType(t, SignalType)
     ) 
   }

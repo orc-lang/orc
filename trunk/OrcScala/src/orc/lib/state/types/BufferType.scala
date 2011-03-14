@@ -35,10 +35,10 @@ object BufferType extends SimpleTypeConstructor("Buffer", Invariant) {
     val List(t) = ts
     new RecordType(
       "get" -> SimpleFunctionType(t),
-      "getnb" -> SimpleFunctionType(t),
+      "getD" -> SimpleFunctionType(t),
       "put" -> SimpleFunctionType(t, SignalType),
       "close" -> SimpleFunctionType(SignalType),
-      "closenb" -> SimpleFunctionType(SignalType),
+      "closeD" -> SimpleFunctionType(SignalType),
       "isClosed" -> SimpleFunctionType(BooleanType),
       "getAll" -> SimpleFunctionType(ListType(t))
     ) 

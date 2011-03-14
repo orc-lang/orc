@@ -34,7 +34,7 @@ object CellType extends SimpleTypeConstructor("Cell", Invariant) {
     val List(t) = ts
     new RecordType(
       "read" -> SimpleFunctionType(t),
-      "readnb" -> SimpleFunctionType(t),
+      "readD" -> SimpleFunctionType(t),
       "write" -> SimpleFunctionType(t, SignalType)
     ) 
   }

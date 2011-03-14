@@ -25,7 +25,7 @@ every sempahore that is deallocated must have value 0.
 def class Pool(f) = 
  val buff = Buffer()
  
- def allocate()    = buff.getnb() ; f
+ def allocate()    = buff.getD() ; f
    
  def deallocate(x) = buff.put(x) 
 

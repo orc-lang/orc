@@ -130,7 +130,7 @@ OUTPUT:
 -}
 
 def xfer(b) =
-  b.getnb() >x> x:xfer(b) ; []
+  b.getD() >x> x:xfer(b) ; []
 
 {-
 OUTPUT:

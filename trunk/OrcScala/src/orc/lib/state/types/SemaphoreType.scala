@@ -23,10 +23,10 @@ import orc.types._
  */
 object SemaphoreType extends RecordType(
   "acquire" -> SimpleFunctionType(SignalType),
-  "acquirenb" -> SimpleFunctionType(SignalType),
+  "acquireD" -> SimpleFunctionType(SignalType),
   "release" -> SimpleFunctionType(SignalType),
   "snoop" -> SimpleFunctionType(SignalType),
-  "snoopnb" -> SimpleFunctionType(SignalType)
+  "snoopD" -> SimpleFunctionType(SignalType)
 ) {
  
   override def toString = "Semaphore"

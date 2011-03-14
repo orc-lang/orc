@@ -90,7 +90,7 @@ public class Ref extends EvalSite implements TypedSite {
 		protected void addMembers() {
 			addMember("read", new readMethod());
 			addMember("write", new writeMethod());
-			addMember("readnb", new SiteAdaptor() {
+			addMember("readD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle caller) throws TokenException {
 					synchronized (RefInstance.this) {

@@ -12,7 +12,7 @@ def f() = upto(10) >n> Rwait(n*20) >> n
 val c = Buffer[Integer]()
 repeat(c.get) <<
     f() >x> c.put(x) >> stop
-  | Rwait(100) >> c.closenb()
+  | Rwait(100) >> c.closeD()
 
 
 {- 

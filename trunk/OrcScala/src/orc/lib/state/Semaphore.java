@@ -75,7 +75,7 @@ public class Semaphore extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("acquirenb", new SiteAdaptor() {
+			addMember("acquireD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle waiter) {
 					synchronized (SemaphoreInstance.this) {
@@ -116,7 +116,7 @@ public class Semaphore extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("snoopnb", new SiteAdaptor() {
+			addMember("snoopD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) throws TokenException {
 					synchronized (SemaphoreInstance.this) {

@@ -331,7 +331,7 @@ If the channel <code>c</code> is closed, <code>c.put(v)</code> always halts
 (without modifying the state of the channel), and <code>c.get()</code> halts
 once <code>c</code> becomes empty. The channel <code>c</code> may be closed by
 calling either <code>c.close()</code>, which returns a signal once
-<code>c</code> becomes empty, or <code>c.closenb()</code>, which returns a
+<code>c</code> becomes empty, or <code>c.closeD()</code>, which returns a
 signal immediately.
 </para>
 
@@ -892,7 +892,7 @@ available item if there is one, and halts otherwise.
 
 <programlisting>
 def priorityPoll([]) = stop
-def priorityPoll(b:bs) = b.getnb() ; priorityPoll(bs)
+def priorityPoll(b:bs) = b.getD() ; priorityPoll(bs)
 </programlisting>
 </section>
 
@@ -1160,14 +1160,14 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 val c = Buffer()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | Rwait(1000) >> c.closenb()]]></programlisting>
+  | Rwait(1000) >> c.closeD()]]></programlisting>
 
 <para>
 This program allows F to execute for one second and then terminates it. Each
 value published by F is routed through channel <code>c</code> so that it does
 not terminate F. After one second, <code>Rwait(1000)</code> responds,
-triggering the call <code>c.closenb()</code>.  The call
-<code>c.closenb()</code> closes <code>c</code> and publishes a signal,
+triggering the call <code>c.closeD()</code>.  The call
+<code>c.closeD()</code> closes <code>c</code> and publishes a signal,
 terminating F.  The library function <code>repeat</code> is used to repeatedly
 take and publish values from <code>c</code> until it is closed.
 </para>
@@ -1188,7 +1188,7 @@ repeat(c.get)<![CDATA[ << ]]>
   <emphasis role="bold">F</emphasis><![CDATA[ >x> 
     (if x >= 0 
         then c.put(x) >> stop
-        else c.closenb())]]>
+        else c.closeD())]]>
 </programlisting>
 
 <para>
@@ -1216,7 +1216,7 @@ val c = Buffer()
 val done = Semaphore(0)
 repeat(c.get) <<
     ]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop
-  | done.acquire() >> c.closenb()]]></programlisting>
+  | done.acquire() >> c.closeD()]]></programlisting>
 
 </section>
 
@@ -1235,7 +1235,7 @@ def allow(0) = done.release() >> stop
 def allow(n) = c.get() >x> (x | allow(n-1))
 allow(5) << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
-  | done.acquire() >> c.closenb()
+  | done.acquire() >> c.closeD()
 ]]>
 </programlisting>
 
@@ -1283,7 +1283,7 @@ val c = Buffer()
 repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop ; c.close() >> ]]><emphasis role="bold">G</emphasis>)  
 </programlisting>
 
-We use <code>c.close()</code> instead of the more common <code>c.closenb()</code>
+We use <code>c.close()</code> instead of the more common <code>c.closeD()</code>
 to ensure that G does not execute until all the publications of F have been
 routed. Recall that <code>c.close()</code> does not return until <code>c</code> is
 empty.
@@ -1312,7 +1312,7 @@ def interruptible(f) =
   val done = Semaphore(0)
   done.release
     << f() >> stop 
-     | done.acquire() >> c.closenb()
+     | done.acquire() >> c.closeD()
 
 {- wrong! -}
 val stopper = interruptible(g)
@@ -1336,7 +1336,7 @@ def interruptible(f) =
   val done = Semaphore(0)
   done.release
     << f() >> stop 
-     | done.acquire() >> c.closenb()
+     | done.acquire() >> c.closeD()
 
 interruptible(g) >stopper>
 ...
@@ -1507,7 +1507,7 @@ unlikely.
 def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
 
 def take((a,b)) =    
-  a.acquire() >> b.acquirenb() ;
+  a.acquire() >> b.acquireD() ;
   a.release() >> take(shuffle(a,b))
     
 def drop(a,b) = (a.release(), b.release()) >> signal
@@ -1548,7 +1548,7 @@ her forks.
 <para>
 Calling <code>take(a,b)</code> attempts to acquire a pair of forks <code>(a,b)</code> in two steps:
 wait for fork <code>a</code> to become available, then immediately attempt to acquire fork <code>b</code>.
-The call <code>b.acquirenb()</code> either acquires <code>b</code> and responds immediately, or halts if <code>b</code> is not available.
+The call <code>b.acquireD()</code> either acquires <code>b</code> and responds immediately, or halts if <code>b</code> is not available.
 If <code>b</code> is acquired, signal success; otherwise, release <code>a</code>, and
 then try again, randomly changing the order in which the forks are acquired
 using the auxiliary function <code>shuffle</code>.
