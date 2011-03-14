@@ -38,7 +38,7 @@
 			Orc has a special form of type, called a <firstterm>type application</firstterm>, which
 			applies a type operator to a sequence of type arguments. This permits the instantiation
 			of multiple variations of the same type. The simplest example of this feature is the
-			<code>List</code> type operator. The list value <code>[1,2,3]</code> has the type <code>List[Integer]</code>,
+			<code>List</code> type operator. For example, the list value <code>[1,2,3]</code> has the type <code>List[Integer]</code>,
 			whereas the list value <code>[true, false]</code> has the type <code>List[Boolean]</code>. 
 		</para>
 
@@ -94,30 +94,20 @@
 			append([1,2,3], [4,5])
 			]]></programlisting>
 			
-			and the typechecker infers that the parameter<replaceable>T</replaceable> is <code>Integer</code>, since both argument lists are
+			and the typechecker infers that the parameter <replaceable>T</replaceable> is <code>Integer</code>, since both argument lists are
 			of type <code>List[Integer]</code>. For a more thorough explanation of how this inference occurs, please
-			refer to <link linkend="ref.types.metatheory.origin">the typing algorithm</link> on which Orc's typechecker is based.
+			refer to <link linkend="ref.types.metatheory.origin">the typing algorithm</link> on which the Orc typechecker is based.
 			</para>
 			
 			<para>
 			Inference of type arguments will always fail on certain kinds of calls, because the typechecker does
 			not have enough information to infer the correct type. The most common case is a site call which
-			constructs a parametric type without taking any arguments. For example:
-			
-			<programlisting language="orc"><![CDATA[
-			val b = Buffer()
-			]]></programlisting>
-			
+			constructs a parametric type without taking any arguments. For example, the call <code>Buffer()</code>
 			will never typecheck, since there is no way for the typechecker to know what type of elements the
 			buffer should contain. In other languages such as ML, the typechecker might be able to infer this information
 			from the rest of the program, but Orc's typechecker is based on <emphasis>local</emphasis> type inference,
 			which must find the information locally, such as from the types of the arguments. So, to construct
-			a buffer that will contain Numbers, a type parameter must be given:
-			
-			<programlisting language="orc"><![CDATA[
-			val b = Buffer[Number]()
-			]]></programlisting>
-			
+			a buffer that will contain Numbers, a type argument must be given: <code>Buffer[Number]()</code>.		
 			</para>
 		
 		</section>
