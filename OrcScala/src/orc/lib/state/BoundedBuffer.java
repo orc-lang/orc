@@ -95,7 +95,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("getnb", new SiteAdaptor() {
+			addMember("getD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (BufferInstance.this) {
@@ -143,7 +143,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("putnb", new SiteAdaptor() {
+			addMember("putD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
 					synchronized (BufferInstance.this) {
@@ -226,7 +226,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("closenb", new SiteAdaptor() {
+			addMember("closeD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
 					synchronized (BufferInstance.this) {

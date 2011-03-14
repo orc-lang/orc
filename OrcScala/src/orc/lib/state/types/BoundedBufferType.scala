@@ -35,11 +35,11 @@ object BoundedBufferType extends SimpleTypeConstructor("BoundedBuffer", Invarian
     val List(t) = ts
     new RecordType(
       "get" -> SimpleFunctionType(t),
-      "getnb" -> SimpleFunctionType(t),
+      "getD" -> SimpleFunctionType(t),
       "put" -> SimpleFunctionType(t, SignalType),
-      "putnb" -> SimpleFunctionType(t, SignalType),
+      "putD" -> SimpleFunctionType(t, SignalType),
       "close" -> SimpleFunctionType(SignalType),
-      "closenb" -> SimpleFunctionType(SignalType),
+      "closeD" -> SimpleFunctionType(SignalType),
       "getOpen" -> SimpleFunctionType(IntegerType),
       "getBound" -> SimpleFunctionType(IntegerType),
       "getAll" -> SimpleFunctionType(ListType(t))

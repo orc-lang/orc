@@ -28,7 +28,7 @@ def class fast_sieve(n) =
     -- it to next
     -- if the psq is less than v then just send the v to the next sieve 
     else (
-      if psq :> v then prime_buf.put(fast_sieve(v)) >> next.readnb() ; next.write(prime_buf.get())
+      if psq :> v then prime_buf.put(fast_sieve(v)) >> next.readD() ; next.write(prime_buf.get())
       else next.read() >s> s.in(v)
     )) >> main()
 

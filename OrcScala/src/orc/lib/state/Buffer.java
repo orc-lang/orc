@@ -116,7 +116,7 @@ public class Buffer extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("getnb", new SiteAdaptor() {
+			addMember("getD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (BufferInstance.this) {
@@ -172,7 +172,7 @@ public class Buffer extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("closenb", new SiteAdaptor() {
+			addMember("closeD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
 					synchronized (BufferInstance.this) {

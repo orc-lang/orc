@@ -50,7 +50,7 @@ def releaseFork(n,side,f) =
   f.put(true)
  
 def getFork(n,side,f) =
-  f.getnb() >>
+  f.getD() >>
   grabAnimate(n,side,10)
 
 def eatAnimate(p,i,speed) =

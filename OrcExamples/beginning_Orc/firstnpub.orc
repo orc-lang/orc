@@ -7,7 +7,7 @@ terminate the call to f.
 
 {- Publish first n values received on c, then release s -}
 def allow[A](Integer, Buffer[A], Semaphore) :: A
-def allow(0, c, s) = c.closenb() >> s.release() >> stop
+def allow(0, c, s) = c.closeD() >> s.release() >> stop
 def allow(n, c, s) = c.get() >x> ( x | allow(n-1, c, s) )
 
 {- Example f -}
