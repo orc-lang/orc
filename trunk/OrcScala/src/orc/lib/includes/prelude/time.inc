@@ -55,7 +55,7 @@ def Clock() =
   lambda () = Rwait.time() - time
 
 {--
-@site Vtimer(Integer) :: Signal
+@site Vwait(Integer) :: Signal
 
 <sitepropset>
    <siteprop propname="blocking"/>
@@ -71,9 +71,9 @@ Publish a signal after the given amount of virtual time.
 
 Return the current virtual time.
 --}
--- site Vtimer = "orc.lib.time.Vtimer"
-def Vtimer(Integer) :: Bot
-def Vtimer(_) = Error("Vtimer not yet implemented")
+-- site Vwait = "orc.lib.time.Vwait"
+def Vwait(Integer) :: Bot
+def Vwait(_) = Error("Vwait not yet implemented")
 
 -- site Vclock = "orc.lib.time.Vclock"
 def Vclock() :: Bot

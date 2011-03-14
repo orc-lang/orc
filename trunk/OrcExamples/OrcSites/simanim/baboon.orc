@@ -27,7 +27,7 @@ def randRange(mn,mx) =
 def nSpurt(n,tMin,tMax,oMin,oMax) =
 	( IfT(n>=1) 
 	  >> randRange(tMin,tMax)
-	  >d> Ltimer(d)				-- Delay
+	  >d> Vwait(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
 			) 
@@ -37,7 +37,7 @@ def nSpurt(n,tMin,tMax,oMin,oMax) =
 	
 def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 	randRange(lMin,lMax) 
-	>lull> Ltimer(lull)
+	>lull> Vwait(lull)
 	>> randRange(sMin,sMax)
 	>spurt>	(nSpurt(spurt,tMin,tMax,oMin,oMax)
 		<tMin< randRange(mnMn,mnMx)
@@ -61,7 +61,7 @@ def freeSideLock() =
 	[i.e., a monkey comes]
 -}
 def timeSource(tMin,tMax) =
-	Ltimer(Random(tMax-tMin)+tMin)>> ((Random(32)+1) | timeSource(tMin,tMax))
+	Vwait(Random(tMax-tMin)+tMin)>> ((Random(32)+1) | timeSource(tMin,tMax))
 
 def leftDone() =
 	Print("Left Done\n")
@@ -95,7 +95,7 @@ def followRight(b,s,f,d) =
 	|	(  IfT(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
-							| (Ltimer(d) >> true)
+							| (Vwait(d) >> true)
 							)
 		>c>	(	( IfT(c)
 				>> followRight(rb,rs,f,d)
@@ -119,7 +119,7 @@ def followLeft(b,s,f,d) =
 	|	(  IfT(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
-							| (Ltimer(d) >> true)
+							| (Vwait(d) >> true)
 							)
 		>c>	(	( IfT(c)
 				>> followLeft(lb,ls,f,d)
@@ -154,7 +154,7 @@ def bManager(mainLine,aPack,oPack) =
 	mainLine.get() 
 	>> oFlag.get() -- Check opposite side
 	>rdy> oFlag.put(false) -- Replace notifier
-	>>	((	IfT(rdy) -- A monkey's waiting
+	>>	((	Ift(rdy) -- A monkey's waiting
 			>> oDeck.get() -- Get the waiting monkey
 			>d> oAck.put(true) -- Acknowledge the opposite guide
 			>> aFollow(aLink,aSign,freeSideLock,0) -- Flush current side
@@ -174,15 +174,15 @@ def bManager(mainLine,aPack,oPack) =
 		))
 
 def framerate() =
-	disp.redraw() >> Ltimer(5) >> framerate()
+	disp.redraw() >> Vwait(5) >> framerate()
 	
 -- How many miliseconds go by in between logical timer clicks.
 def realTime() =
-	Ltimer(5) >> Rwait(15) >> realTime()
+	Vwait(5) >> Rwait(15) >> realTime()
 
 	 
 disp.open() >> 
-( Ltimer(10000)>> (framerate() | realTime())
+( Vwait(10000)>> (framerate() | realTime())
 |( (spurtSource(500,2200,1,5,1,64,10,50,100,400) >lm> disp.leftPush(lm) >> leftQ.put(lm) >> stop)
  | (spurtSource(500,2200,1,5,1,64,10,50,100,400) >rm> disp.rightPush(rm) >> rightQ.put(rm) >> stop) -- The right side is more popular
  | bGuide(leftQ,  leftDeck, leftFlag, leftAck,mainLine)

@@ -31,6 +31,6 @@ Println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
 Println("   " + musicShow) >>
-IfT(musicShow.getCity().toLowerCase().contains("austin")) >>
+Ift(musicShow.getCity().toLowerCase().contains("austin")) >>
 GoogleCalendar.addMusicShow(musicShow) >>
 stop

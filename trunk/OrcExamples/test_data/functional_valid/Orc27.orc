@@ -1,5 +1,5 @@
 
-(Rwait(100) >> Vclock()) << (Vtimer(3) | Vtimer(2))
+(Rwait(100) >> Vclock()) << (Vwait(3) | Vwait(2))
 
 {-
 OUTPUT:

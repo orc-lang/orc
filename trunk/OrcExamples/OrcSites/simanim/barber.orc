@@ -14,8 +14,8 @@ def nbPut(mb,v) =
 	
 def nbTry(mb) =
 	mb 	>(cnt,q)> cnt.get() 
-		>size> 	( (IfT(size>=1) >> q.get() >v> cnt.put(size-1) >> Let(v,true))
-				| (IfT(size<=0) >> cnt.put(size) >> Let(signal,false))
+		>size> 	( (Ift(size>=1) >> q.get() >v> cnt.put(size-1) >> Let(v,true))
+				| (Ift(size<=0) >> cnt.put(size) >> Let(signal,false))
 				)
 
 def nbGet(mb) =
@@ -41,7 +41,7 @@ def randRange(mn,mx) =
 def nSpurt(n,tMin,tMax,oMin,oMax) =
 	( IfT(n>=1) 
 	  >> randRange(tMin,tMax)
-	  >d> Ltimer(d)				-- Delay
+	  >d> Vwait(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
 			) 
@@ -51,7 +51,7 @@ def nSpurt(n,tMin,tMax,oMin,oMax) =
 	
 def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 	randRange(lMin,lMax) 
-	>lull> Ltimer(lull)
+	>lull> Vwait(lull)
 	>> randRange(sMin,sMax)
 	>spurt>	(nSpurt(spurt,tMin,tMax,oMin,oMax)
 		<tMin< randRange(mnMn,mnMx)
@@ -88,7 +88,7 @@ def lswitch(n,l) =
 def animateTransition(tt,n,d) =
 	(	IfT(n<=19)
 		>> disp.setTransition(tt,n)
-		>> Ltimer(d/8+1)
+		>> Vwait(d/8+1)
 		>> animateTransition(tt,n+1,d)
 	|   IfT(n>=20)
 	)
@@ -103,14 +103,14 @@ def tryToEnterShop(cID) =
 					>>Print("Cst ",cID," enters\n")
 					>>disp.pushFloor(cID) 
 					>>stop
-				| Ltimer(5) >> ok
+				| Vwait(5) >> ok
 				)
 	
 -- Put the customer's place back in the buffer
 def leaveShop(cID) =
 	Print("Cst ",cID," leaves happy\n")
 	>> disp.popRegister()
-	>> Ltimer(25)
+	>> Vwait(25)
 	>> nbPut(shop,true)
 
 -- Nothing to do here, unless we want to animate it
@@ -148,7 +148,7 @@ def getWaitChair(cID) =
 	>tt> animateTransition(tt,1,cID)
 	>> disp.endTransition(tt)
 	>> disp.setChairState(wt,cID) -- Have a seat to wait
-	>> Ltimer(20) -- Read the Highlights magazine
+	>> Vwait(20) -- Read the Highlights magazine
 	>> wt
 	
 def freeWaitChair(cID,chair,wt) =
@@ -164,7 +164,7 @@ def freeWaitChair(cID,chair,wt) =
 -- ch has the chairID and the associated barber.
 def signalBarber(cID,ch) =
 	Print("Cst ",cID," wants a haircut\n")
-	>> Ltimer(10)
+	>> Vwait(10)
 	>> ch >(chID,chDone,bJob)> bJob.put((true,cID))
 	
 def waitForHairCut(cID,ch) =
@@ -239,13 +239,13 @@ def waitForJob(bID,jobQ) =
 	>> disp.setBarberState(bID,0)
 	>> jobQ.get() 
 	>jb> Print("Barber ",bID," got job\n")
-	>> Ltimer(lswitch(Random(4),[10,20,40,50]))
+	>> Vwait(lswitch(Random(4),[10,20,40,50]))
 	>> jb
 	
 -- The chair holds the hair semaphore
 def cutHair(bID,cID,chDone) =
 	disp.setBarberState(bID,1)
-	>> Ltimer(Random(300)+50) 
+	>> Vwait(Random(300)+50) 
 	>> Print("Barber ",bID," cut hair",cID,"\n") 
 	>> chDone.put(true)
 	
@@ -262,14 +262,14 @@ def takePayment(bID,ding) =
 	>hand> ding.put(hand)
 	>> disp.setReg(true) 
 	>> hand.get()
-	>h> Ltimer(50)
+	>h> Vwait(50)
 	>> Print("Barber ",bID," got cash\n") 
 	>> h
 
 -- Once we get the cash deliver a receipt and always say 'thank-you'
 def giveReceipt(bID,cash) =
 	disp.setReg(false)
-	>> Ltimer(15)
+	>> Vwait(15)
 	>> cash.put(bID)
 	>> disp.setBarberState(bID,4) -- Don't draw
 	>> disp.barberFromReg(bID)
@@ -304,11 +304,11 @@ def fillShop(ii) =
 	nbPut(shop,ii)
 
 def framerate() =
-	disp.redraw() >> Ltimer(1) >> framerate()
+	disp.redraw() >> Vwait(1) >> framerate()
 	
 -- How many miliseconds go by in between logical timer clicks.
 def realTime() =
-	Ltimer(1) >> Rwait(5) >> realTime()
+	Vwait(1) >> Rwait(5) >> realTime()
 	
 
 -----------------------------------------------------------------
@@ -328,7 +328,7 @@ def realTime() =
 | disp.open() 
   >> (	forLoop(20,fillShop) 
   		>> spurtSource(300,800,1,12,1,64,10,25,50,75) >cst> customer(cst)
-  	 | Ltimer(500)>> (framerate() | realTime())
+  	 | Vwait(500)>> (framerate() | realTime())
   	 )
 
 --(10|20|30|40|50|60|15|25|35)
