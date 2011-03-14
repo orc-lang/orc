@@ -15,7 +15,7 @@
 		<title>List Pattern</title>
 		<section xml:id="ref.patterns.list.body">
 			<para>
-				Each element of a list pattern matches the corresponding element of a list value.
+				Each element of a <firstterm>list pattern</firstterm> matches the corresponding element of a list value.
 			</para>
 		</section>
 		
@@ -32,7 +32,7 @@
 	  <title>Type</title>
 	  <para>
 	    When a list pattern <code>[</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>]</code> 
-	    is matched against a list type <code>List[</code><replaceable>T</replaceable><code>]</code>,
+	    is matched against a list type <code><ind>List</ind>[</code><replaceable>T</replaceable><code>]</code>,
 	    each <replaceable>P<subscript>i</subscript></replaceable> is matched against the type <replaceable>T</replaceable>, 
 	    producing typing contexts Γ<subscript>i</subscript>. The typing context
 	    produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.

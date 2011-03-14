@@ -15,7 +15,7 @@
 		<title>Wildcard Pattern</title>
 		<section xml:id="ref.patterns.wildcard.body">
 			<para>
-				The wildcard pattern matches any value and binds no variables.
+				The <firstterm>wildcard pattern</firstterm> matches any value and binds no variables.
 			</para>
 		</section>
 		

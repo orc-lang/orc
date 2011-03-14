@@ -10,18 +10,18 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- deflate Concept -->
+<!-- Deflate Concept -->
 	<section xml:id="ref.concepts.deflate">
 		<title>Deflating</title>
 		<section xml:id="ref.concepts.deflate.definition">
 		<title>Definition</title>
 			<para>
-			Deflating is an evaluation mechanism which extracts a single value from an expression that
+			Deflating is an evaluation mechanism which extracts a single value from an <ind>expression</ind> that
 			might publish many values, so that such an expression can be evaluated in a context that expects
 			at most one value.
 			</para>
 			<para>
-			Orc deflates a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
+			Orc <firstterm>deflates</firstterm> a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
 			<replaceable>C</replaceable> by rewriting</para> 
 			<para><replaceable>C</replaceable>[<replaceable>E</replaceable>]</para>
 			<para>to</para>
@@ -40,18 +40,18 @@
 			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
 			</para>
 			<para>
-			  If any deflated expression <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
+			  If any deflated expression <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent"><ind>silently</ind></link>, then the enclosing expression also halts silently. 
 			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
 			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
 			  would also halt silently. 
 			</para>
 			<para>
-			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a function
-			  call, it does not halt, since function evaluation is lenient.
+			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a <ind>function call</ind>
+			  it does not halt, since function evaluation is <ind>lenient</ind>.
 			</para>
 			<para>
 		    Notice that each deflated expression is evaluated concurrently, due to the behavior of the
-		    pruning combinator. This is what makes Orc a functional concurrent language: when an expression is
+		    <ind>pruning combinator</ind>. This is what makes Orc a functional concurrent language: when an expression is
 		    evaluated recursively, all such evaluations take place simultaneously. 
 		  </para>   
 		</section>

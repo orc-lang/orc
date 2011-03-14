@@ -15,7 +15,7 @@
 		<title>Variable Pattern</title>
 		<section xml:id="ref.patterns.variable.body">
 			<para>
-				A variable that occurs in a pattern is bound to the value matched to that pattern.
+				A <ind>variable</ind> that occurs in a pattern is bound to the value matched to that pattern.
 			</para>
 		</section>
 		
@@ -42,7 +42,7 @@
 		  <example xml:id="ref.patterns.variable.examples.pairsum">
 		  <title>Sum Pair</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Sum the elements of a pair  -}
+{- Sum the elements of a pair -}
 
 val (x, y) = (3, 4)
 

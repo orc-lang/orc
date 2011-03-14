@@ -15,26 +15,26 @@
 		<title>Lexical Specifications</title>
 		<section xml:id="ref.syntax.lexical.body">
 			<para>
-				This page specifies Orc's processing of an input byte stream into an Orc lexical token sequence. 
+				This page specifies Orc's processing of an input <ind>byte stream</ind> into an Orc lexical <ind>token sequence</ind>. 
 				This token sequence is the input to the Orc parsing procedure. 
 			</para>
 			<section xml:id="ref.syntax.lexical.body.inputstream">
 				<title>Input Byte Stream</title>
 				<para>
-					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
-					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
+					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, <ind>FTP</ind>, Gopher, HTTP, and <ind>JAR</ind> files.
+					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf"><ind>UTF-8</ind></ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
 				</para>
 			</section>
 			<section xml:id="ref.syntax.lexical.body.tokens">
 				<title>Lexical Tokens</title>
 				<para>
-					Orc lexical scanning reads Unicode characters and emits corresponding Orc lexical tokens. 
+					Orc lexical scanning reads <ind>Unicode</ind> characters and emits corresponding Orc <ind>lexical tokens</ind>. 
 					Orc uses seven lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
 				</para>
 				<section xml:id="ref.syntax.lexical.body.tokens.identifier">
 					<title>Identifier</title>
 					<para>
-						Orc scans identifiers per <ulink url="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</ulink>, namely: 
+						Orc scans <ind>identifiers</ind> per <ulink url="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</ulink>, namely: 
 					</para>
 					<para>
 						<itemizedlist>
@@ -59,7 +59,7 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.keyword">
 					<title>Keyword</title>
 					<para>
-						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a keyword instead. 
+						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a <ind>keyword</ind> instead. 
 					</para>
 					<para>
 						<code>true false signal stop null lambda if then else as _ val def type site class include Top Bot</code>
@@ -71,7 +71,7 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.operator">
 					<title>Operator</title>
 					<para>
-						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to two * operators, if possible.) 
+						An Orc <ind>operator</ind> is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to two * operators, if possible.) 
 					</para>
 					<para>
 						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
@@ -80,7 +80,7 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.delimiters">
 					<title>Delimiters</title>
 					<para>
-						An Orc delimiter is a character sequence that matches one of the following.
+						An Orc <ind>delimiter</ind> is a character sequence that matches one of the following.
 					</para>
 					<para>
 						<code>( ) {. .} , | ; :: :!: </code>
@@ -89,10 +89,10 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.numericliteral">
 					<title>Numeric Literal</title>
 					<para>
-						Numeric literals are matched per the following regular expression: ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?
+						<ind>Numeric literals</ind> are matched per the following regular expression: ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?
 					</para>
 					<para>
-						If the matched string contains a decimal point, an e, or an E, it is a floating point literal, otherwise it is an integer literal. 
+						If the matched string contains a decimal point, an e, or an <ind>E</ind>, it is a floating point literal, otherwise it is an integer literal. 
 					</para>
 					<para>
 						All Orc numeric literals are decimal (radix 10). 
@@ -101,7 +101,7 @@
 				<section xml:id="ref.syntax.lexical.body.tokens.stringliteral">
 					<title>String Literal</title>
 					<para>
-						Double quotes demarcate a string literal. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
+						Double quotes demarcate a <ind>string literal</ind>. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
 					</para>
 					<para>
 						The backslash escape convention is recognized as follows:
