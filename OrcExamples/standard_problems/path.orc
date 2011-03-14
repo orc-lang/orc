@@ -26,7 +26,7 @@ def path(source :: Node,
   def run(n :: Node, p :: List[Node]) :: Bot =
     cell(n).write(p) >>
     succ(n) >(m,d)>
-    Vtimer(d) >> 
+    Vwait(d) >> 
     run(m,m:p)
   run(source, [source])
   ; reverse(cell(sink).read())

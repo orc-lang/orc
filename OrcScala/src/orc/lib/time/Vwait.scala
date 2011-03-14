@@ -1,5 +1,5 @@
 //
-// Vtimer.scala -- Scala class Vtimer
+// Vwait.scala -- Scala class Vwait
 // Project OrcScala
 //
 // $Id$
@@ -27,7 +27,7 @@ import orc.types.SignalType
  *
  * @author amshali
  */
-class Vtimer extends Site with TypedSite {
+class Vwait extends Site with TypedSite {
   def call(args: List[AnyRef], token: Handle) {
     val n : scala.math.BigInt  = args(0).asInstanceOf[scala.math.BigInt]
     if (n.toInt == 0) {
