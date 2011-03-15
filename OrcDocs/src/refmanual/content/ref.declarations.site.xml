@@ -41,7 +41,7 @@ name to find and load a class, and creates an instance of that class to provide 
 	  <para>
 	    The type of a site is determined entirely by the site itself. It may be representable
 	    in Orc, for example as a <link linkend="ref.data.closure.type"><ind>function type</ind></link>,
-	    or it may be an entirely <ind>opaque type</ind>. The type of a site behaves very much like a site
+	    or it may be an entirely opaque type. The type of a site behaves very much like a site
 	    itself during typechecking; it is invoked with argument types and responds with a return
 	    type.
 	  </para>

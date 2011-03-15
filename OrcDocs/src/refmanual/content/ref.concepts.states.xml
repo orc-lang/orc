@@ -160,7 +160,7 @@
 	<section xml:id="ref.concepts.states.block">
 	<title>Blocked</title>
 		<para>
-			Execution of an expression is <firstterm>blocked</firstterm> if it can not take an autonomous
+			Execution of an expression is <firstterm baseform="block">blocked</firstterm> if it can not take an autonomous
 			step, it is not halted, and none of the outstanding site calls can
 			respond immediately. That is, there is some outstanding site call that may
 			respond in the future. For example, an expression that calls <code>c.get()</code>,

@@ -17,7 +17,7 @@
       <para>
       	Class is an abstraction mechanism in Orc, much like function. It
 		allows a programmer to code a site in Orc. More generally, a <ind>class</ind> can
-		be used to: (1) Define <ind>object classes</ind> with <ind>methods</ind>, (2) Create new
+		be used to: (1) Define object classes with <ind>methods</ind>, (2) Create new
 		sites and extend behaviors of existing sites, (3) Allow concurrent
 		method invocation on objects, and (4) Create active objects, whose
 		executions may be based on <ind>time</ind> or other external stimulus, not
@@ -39,7 +39,7 @@ def class Newset(n) =
 ]]></programlisting>
 		  <para> 
 		  	The keyword <code>class</code> denotes that a class is being defined, not just a
-			<ind>function</ind>.  A class definition may have parameters like a function
+			function.  A class definition may have parameters like a function
 			definition. In particular, a class or class instance could be a parameter.
 		  </para>
 		  <para>
@@ -49,7 +49,7 @@ def class Newset(n) =
 			one definition, which could be a function or a class.
 		  </para>
 		  <para>
-		  	A class may be defined by a set of <ind>clauses</ind>. In that case, each clausal
+		  	A class may be defined by a set of clauses. In that case, each clausal
 			body must include the definitions of the same set of functions and
 			classes.
 		  </para>
@@ -119,7 +119,7 @@ Newset(5)
 	  	</para>
 	  	<itemizedlist>
 	  		<listitem><para>Any publication by the goal expression of a class is ignored.</para></listitem>
-	  		<listitem><para>Each <ind>function</ind> defined within a class can publish at most once.</para></listitem>
+	  		<listitem><para>Each function defined within a class can publish at most once.</para></listitem>
 	  	</itemizedlist>
 	  </section>
 	  <section xml:id="ref.declarations.defclass.semantics.concurrent">
@@ -202,7 +202,7 @@ OUTPUT:
 		  <title>Create a Site</title>
 		  <para>
 		  	We create a site, <code><ind>Cell</ind></code>, that defines a write-once variable. It
-			supports two methods: <code>read</code> <link linkend="ref.concepts.block"><ind>blocks</ind></link> until the variable has been
+			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
 			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
 			publishes a <code><ind>signal</ind></code>.
@@ -233,7 +233,7 @@ NONRUNNABLE
 		  <section>
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
-		  	The <code><ind>Buffer</ind></code> site implements an unbounded <ind>channel</ind>. We add a new method,
+		  	The <code><ind>Buffer</ind></code> site implements an unbounded channel. We add a new method,
 			<code>length</code>, that returns the number of items in the channel. We have to
 			assign a name different from "Buffer" (e.g. "Channel") to this class.
 		  </para>
@@ -264,7 +264,7 @@ no output
 		  	The methods of a class instance may be executed concurrently through
 			concurrent invocations. Concurrent execution may cause interference,
 			as in the example of the <code>Newset</code> example. Typically, <ind>semaphores</ind> are used to
-			restrict access to methods and/or data. We rewrite <code><ind>Newset</ind></code> in which all
+			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.concaccess"><title>Managing Concurrent Access</title>

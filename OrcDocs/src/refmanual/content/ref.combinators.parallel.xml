@@ -64,11 +64,11 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  Execution of <ind>expression</ind> <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
+			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
 			   occurs by executing <replaceable>F</replaceable> 
 			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
 			  <ind>publishes</ind> a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
-			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> <ind>interleaves</ind> 
+			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
 			  the publications of <replaceable>F</replaceable>
 			  and <replaceable>G</replaceable> arbitrarily.
 		    </para>

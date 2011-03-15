@@ -16,7 +16,7 @@
 
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
-In this implementation of Orc, this platform is the <ind>Java Runtime Environment</ind> (JRE).
+In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
 <ind>Java</ind> classes may be imported into Orc programs and invoked as Orc sites.
 	</para>
 

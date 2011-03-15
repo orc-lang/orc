@@ -15,7 +15,7 @@
 
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
-<para>Orc's <ind>character</ind> sequence representation is <code><ind>String</ind></code>.
+<para>Orc's character sequence representation is <code><ind>String</ind></code>.
 Characters in Orc <code>String</code>s are drawn from the <ind>Unicode</ind>
 character set, and are encoded in the <ind>UTF-16</ind> encoding form.
 (Note that Orc source code files are encoded in the <ind>UTF-8</ind> encoding form.)
@@ -32,7 +32,7 @@ Orc <code>String</code>s have an explicit length and are not zero-terminated.
 </productionset>
 </section>
 
-<para>String <ind>literals</ind> are enclosed in quotation marks (U+0022).
+<para>String literals are enclosed in quotation marks (U+0022).
 Any Unicode character can be placed between the quotation marks, except:
 line terminators (CR, LF, NEL [U+0085], LS [U+2028], FF, or PS [U+2029])
 or a quotation mark.

@@ -16,12 +16,12 @@
 		
 		<para>
 		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
-		is a <ind>conditional expression</ind>.
+		is a conditional expression.
 		It executes as follows:
 		<itemizedlist>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> <ind>deflates</ind> to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</listitem>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</listitem>
-		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-<ind>Boolean</ind> value, <link linkend="ref.concepts.halt"><ind>halt</ind></link>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.halt"><ind>halt</ind></link>.</listitem>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent"><ind>silently</ind></link>, halt.</listitem>
 		</itemizedlist>
 		 

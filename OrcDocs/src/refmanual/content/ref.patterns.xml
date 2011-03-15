@@ -19,12 +19,12 @@
 
 <para>
 A <firstterm>pattern</firstterm> describes a set of values and may bind variables to their components. 
-Patterns are used in <code><ind>val</ind></code> declarations, in <ind>combinators</ind>, and in <ind>clausal definitions</ind> of functions. 
+Patterns are used in <code><ind>val</ind></code> declarations, in combinators, and in clausal definitions of functions. 
 </para>
 
 <para>
 A pattern is given by a shape and a set of variables. A <firstterm>shape</firstterm> is either a <ind>tuple</ind>, a <ind>list</ind>, 
-a <ind>record</ind>, a <ind>call</ind>, a <ind>literal</ind> value,
+a record, a call, a literal value,
 or <ind>wildcard</ind> (written as <code>_</code>). If the shape describes a structured value (such as a tuple), its components may
 also be shapes. For example, the shape <code>(_,3)</code> describes all pairs whose second element is <code>3</code>, 
 and the pattern <code>(x,3)</code> binds <code>x</code> to the first element of all such pairs.      

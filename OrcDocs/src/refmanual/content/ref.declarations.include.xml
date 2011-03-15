@@ -22,7 +22,7 @@ those declarations are incorporated into the program as if they had textually
 replaced the include declaration. An included file may itself contain 
 <code>include</code> declarations.  Included files may come from local files, any
 URI recognized by the <ind>Java</ind> library (http, https, ftp, etc.), and include resources
-found in the Orc <ind>JAR</ind> files.
+found in the Orc JAR files.
 			</para>
 		
 	<section xml:id="ref.declarations.include.syntax">

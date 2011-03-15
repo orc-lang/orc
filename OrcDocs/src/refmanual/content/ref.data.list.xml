@@ -43,7 +43,7 @@ Otherwise, it <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link li
 
 <para>Notable list operations include:
 <itemizedlist>
-<listitem><para><firstterm>Cons</firstterm> (construct) a list with first element <replaceable>h</replaceable> and remaining elements <replaceable>t</replaceable>: <replaceable>h</replaceable><code>:</code><replaceable>t</replaceable></para></listitem>
+<listitem><para><emphasis>Cons</emphasis> (construct) a list with first element <replaceable>h</replaceable> and remaining elements <replaceable>t</replaceable>: <replaceable>h</replaceable><code>:</code><replaceable>t</replaceable></para></listitem>
 <listitem><para>Publish <code>true</code> iff the list <replaceable>l</replaceable> has no elements: <code>empty(</code><replaceable>l</replaceable><code>)</code></para></listitem>
 <listitem><para>Publish the length of list <replaceable>l</replaceable>: <code>length(</code><replaceable>l</replaceable><code>)</code></para></listitem>
 <listitem><para>Publish the first element of list <replaceable>l</replaceable>: <code>head(</code><replaceable>l</replaceable><code>)</code></para></listitem>

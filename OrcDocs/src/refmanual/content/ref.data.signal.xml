@@ -32,8 +32,8 @@ to <code>void</code> in <ind>Java</ind> or <code>()</code>, the unit value, in M
 
 <para>Notable signal operations include:
 <itemizedlist>
-<listitem><para>The <code><ind>Ift</ind></code> site publishes a <code>signal</code> if its argument is true.</para></listitem>
-<listitem><para>The <code><ind>Iff</ind></code> site publishes a <code>signal</code> if its argument is false.</para></listitem>
+<listitem><para>The <code>Ift</code> site publishes a <code>signal</code> if its argument is true.</para></listitem>
+<listitem><para>The <code>Iff</code> site publishes a <code>signal</code> if its argument is false.</para></listitem>
 </itemizedlist>
 </para>
 

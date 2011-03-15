@@ -20,7 +20,7 @@
 			</para>
 			<para>
 			  Call patterns can only be used with values that have an <code><ind>unapply</ind></code> member. All
-			  <link linkend="ref.data.datatype"><ind>datatype constructors</ind></link> support <code>unapply</code>. 
+			  <link linkend="ref.data.datatype">datatype constructors</link> support <code>unapply</code>. 
 			  Matching against datatype values is the most common use of the call pattern.
 			</para>
 		</section>

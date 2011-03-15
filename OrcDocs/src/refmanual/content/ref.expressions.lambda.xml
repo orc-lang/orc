@@ -21,7 +21,7 @@ definition without the keyword <code><ind>def</ind></code> and replacing the fun
 the keyword <code>lambda</code>, that definition becomes an expression which publishes a closure. 
 </para>
 <para>
-Note that a <code>lambda</code> cannot create a <ind>recursive function</ind>, since the function is
+Note that a <code>lambda</code> cannot create a recursive function, since the function is
 not given a name in the body.
 </para>
 		</section>

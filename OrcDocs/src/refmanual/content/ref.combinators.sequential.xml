@@ -57,7 +57,7 @@
 			  <ind>publishes</ind> a value, a new instance of <replaceable>G</replaceable> is executed in parallel with <replaceable>F</replaceable> (and with any previous 
 			  copies of <replaceable>G</replaceable>); in that instance of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
 			  published by <replaceable>F</replaceable>. Values 
-			  published by copies of <replaceable>G</replaceable> are published by the whole <ind>expression</ind>, but the values published 
+			  published by copies of <replaceable>G</replaceable> are published by the whole expression, but the values published 
 			  by <replaceable>F</replaceable> are not published by the whole expression; they are consumed by the <ind>variable binding</ind>. 
 			</para>
 			</listitem>

@@ -70,7 +70,7 @@ onto Orc values, using nested lists and records.
 The library sites <code>ReadJSON</code> and <code>WriteJSON</code> convert between string representations of JSON
 values and Orc representations of those values. <code>ReadJSON</code> parses a string representation of JSON
 and creates an Orc value, where each JSON array becomes an Orc <link linkend="ref.data.list">list</link>,
-each JSON object becomes an Orc <link linkend="ref.data.record"><ind>record</ind></link>, and <ind>literal</ind> values map to their
+each JSON object becomes an Orc <link linkend="ref.data.record">record</link>, and literal values map to their
 Orc counterparts. <code>WriteJSON</code> performs the inverse operation, taking a structured value of this form
 and producing a string representation of an equivalent JSON value. If <replaceable>S</replaceable> is a string
 representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> is
