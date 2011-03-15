@@ -21,7 +21,7 @@
 		<itemizedlist>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</listitem>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</listitem>
-		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.halt">halt</link>.</listitem>
+		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.states.halt">halt</link>.</listitem>
 		<listitem>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent">silently</link>, halt.</listitem>
 		</itemizedlist>
 		 

@@ -59,7 +59,7 @@ val c = Cell()
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.block">block</link> until it receives one.
+Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
 
 @method Cell[A].readD() :: A
 
@@ -68,7 +68,7 @@ Read a value from the cell. If the cell does not yet have a value, <link linkend
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Cell[A].write(A) :: Signal
 
@@ -77,7 +77,7 @@ Read a value from the cell. If the cell does not yet have a value, <link linkend
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
 site Cell = orc.lib.state.Cell
 type Cell = orc.lib.state.types.CellType
@@ -102,10 +102,10 @@ Rwait(1000) >> r := 5 >> stop
 Create a rewritable storage location initialized to the provided value.
 
 @method Ref[A].read() :: A
-Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.block">block</link> until it receives one.
+Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
 
 @method Ref[A].readD() :: A
-Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Ref[A].write(A) :: Signal
 Write a value to the ref.
@@ -167,7 +167,7 @@ lock.release()]]></programlisting>
 </sitepropset>
 
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.block">block</link> until it becomes greater than <code>0</code>.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
 
 @method Semaphore.acquireD() :: Signal
 
@@ -176,7 +176,7 @@ If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.block">b
 </sitepropset>
 
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Semaphore.release() :: Signal
 
@@ -185,7 +185,7 @@ If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.halt">ha
 </sitepropset>
 
 
-If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, allow the oldest such call
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
@@ -195,8 +195,8 @@ increment the value beyond that with which the semaphore was constructed.
    <siteprop propname="indefinite"/>
 </sitepropset>
 
-If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, return a signal.
-Otherwise, <link linkend="ref.concepts.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.block">blocks</link>.
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
+Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
 
 @method Semaphore.snoopD() :: Signal
 
@@ -204,8 +204,8 @@ Otherwise, <link linkend="ref.concepts.block">block</link> until some call to <c
    <siteprop propname="definite"/>
 </sitepropset>
 
-If any calls to <code>acquire</code> are <link linkend="ref.concepts.block">blocked</link>, return a signal.
-Otherwise, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
+Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
 site Semaphore = orc.lib.state.Semaphore
 type Semaphore = orc.lib.state.types.SemaphoreType
@@ -219,8 +219,8 @@ get, put and close operations.
 </para>
 
 A buffer may be either empty or non-empty, and either open or closed.  When
-empty and open, calls to <code>get</code> <link linkend="ref.concepts.block">block</link>.  When empty and closed, calls
-to <code>get</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  When closed, calls to <code>put</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
+empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and closed, calls
+to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 
 Example:
@@ -237,8 +237,8 @@ val b = Buffer()
 </sitepropset>
 
 Get an item from the buffer. If the buffer is open and no items are available,
-<link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
-linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
+linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].getD() :: A
 
@@ -246,7 +246,7 @@ linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available
    <siteprop propname="definite"/>
 </sitepropset>
 
-Get an item from the buffer. If no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].put(A) :: Signal
 
@@ -255,7 +255,7 @@ Get an item from the buffer. If no items are available, <link linkend="ref.conce
 </sitepropset>
 
 Put an item in the buffer. If the buffer is <link
-linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].close() :: Signal
 
@@ -264,11 +264,11 @@ linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concep
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-Close the buffer and <link linkend="ref.concepts.block">block</link> until it is empty.
-This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
-<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Close the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 When the buffer is empty, return a signal.
 
@@ -281,10 +281,10 @@ When the buffer is empty, return a signal.
 
 
 Close the buffer and return a signal immediately.
-This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
-<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].isClosed() :: Boolean
 
@@ -315,9 +315,9 @@ Putting an item into the buffer fills a slot, and getting an item opens a slot.
 A buffer with zero slots is equivalent to a synchronous channel.
 
 A bounded buffer may be empty, partly filled, or full, and either open or
-closed.  When empty and open, calls to <code>get</code> <link linkend="ref.concepts.block">block</link>.  When empty and
-closed, calls to <code>get</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. When full and open, calls to
-<code>put</code> <link linkend="ref.concepts.block">block</link>. When closed, calls to <code>put</code> <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
+closed.  When empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and
+closed, calls to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. When full and open, calls to
+<code>put</code> <link linkend="ref.concepts.states.block">block</link>. When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 
 Example:
@@ -338,8 +338,8 @@ val c = BoundedBuffer(1)
 </sitepropset>
 
 Get an item from the buffer. If the buffer is open and no items are available,
-<link linkend="ref.concepts.block">block</link> until one becomes available. If the buffer is <link
-linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
+linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].getD() :: A
 
@@ -347,7 +347,7 @@ linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are av
    <siteprop propname="definite"/>
 </sitepropset>
 
-Get an item from the buffer. If no items are available, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].put(A) :: Signal
 
@@ -355,8 +355,8 @@ Get an item from the buffer. If no items are available, <link linkend="ref.conce
    <siteprop propname="indefinite"/>
 </sitepropset>
 
-Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.block">block</link> until one becomes open.
-If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
+If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].putD(A) :: Signal
 
@@ -364,8 +364,8 @@ If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</li
    <siteprop propname="definite"/>
 </sitepropset>
 
-Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
-If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].close() :: Signal
 
@@ -376,11 +376,11 @@ If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</li
 
 <!-- XSL/FO doesn't like me using an anchor tag here -->
 <para id="orc.lib.BoundedBuffer.close">
-Close the buffer and <link linkend="ref.concepts.block">block</link> until it is empty.
-This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
-<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.block">blocked</link> calls to <code>put</code>
+Close the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
 </para>
 
@@ -392,10 +392,10 @@ initiated prior to closing the buffer may still be allowed to return as usual.
 </sitepropset>
 
 Close the buffer and return a signal immediately.
-This has the effect of immediately causing any <link linkend="ref.concepts.block">blocked</link> calls to
-<code>get</code> to <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.block">blocked</link> calls to <code>put</code>
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
 
 @method BoundedBuffer[A].isClosed() :: Boolean
@@ -560,8 +560,8 @@ natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). <code>Table</code> does
 not return a value until all calls to <code>f</code> have completed.
-Consequently, if <code>f</code> <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to 
-<code>Table</code> will <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Consequently, if <code>f</code> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to 
+<code>Table</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 The user may also think of the call as returning an immutable array whose
 <code>i</code>th element is accessed by calling <code>f(i)</code>.
@@ -669,7 +669,7 @@ Increment the counter.
    <siteprop propname="definite"/>
 </sitepropset>
 
-If the counter is already at zero, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
+If the counter is already at zero, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
 the counter and return a signal.
 
 @method Counter.onZero() :: Signal
@@ -679,7 +679,7 @@ the counter and return a signal.
 </sitepropset>
 
 If the counter is at zero, return a signal. Otherwise,
-<link linkend="ref.concepts.block">block</link> until the counter reaches zero.
+<link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
 
 @method Counter.value() :: Integer
 
@@ -791,7 +791,7 @@ Return true if the given interval is contiguous with this one
 (overlaps or abuts), and false otherwise.
 
 @method Interval[A].union(Interval[A]) :: Interval[A]
-Return the union of this interval with another. <link linkend="ref.concepts.halt">Halts</link> with an error if
+Return the union of this interval with another. <link linkend="ref.concepts.states.halt">Halts</link> with an error if
 the two intervals are not contiguous.
 --}
 class Interval = "orc.lib.state.Interval"

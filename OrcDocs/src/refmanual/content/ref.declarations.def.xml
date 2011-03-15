@@ -77,14 +77,14 @@
 		   
 		   <para>
 		   If the execution of the body encounters a use of a parameter whose corresponding argument expression 
-		  has not yet published a value, that use <link linkend="ref.concepts.block">blocks</link> 
+		  has not yet published a value, that use <link linkend="ref.concepts.states.block">blocks</link> 
 		  until the argument value is available,
 			but the rest of the body continues to execute. 
 			</para>
 			
 			<para>
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
-		  If execution of the body <link linkend="ref.concepts.halt">halts</link>, the function call also halts.
+		  If execution of the body <link linkend="ref.concepts.states.halt">halts</link>, the function call also halts.
 		  As a result, a function call might publish any number of times, including zero.
 		  </para>
 		  

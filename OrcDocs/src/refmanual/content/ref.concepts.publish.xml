@@ -21,7 +21,7 @@ Orc expressions may publish zero or more values during their execution.
 The effect of publication depends on the context.
 For example, each publication of <replaceable>F</replaceable> in the sequential combinator expression <replaceable>F</replaceable><code> &gt;x&gt; </code><replaceable>G</replaceable>
 causes <replaceable>G</replaceable> to be run with <code>x</code> bound to the published value.
-An expression that never publishes is said to be <link linkend="ref.concept.silent">silent</link>.
+An expression that never publishes is said to be <link linkend="ref.concepts.silent">silent</link>.
 	</para>
 
 	<para>

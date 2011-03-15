@@ -104,21 +104,21 @@
 		<production xml:id="ebnf.expression.prefixoperation">
 		  <lhs>PrefixOperation</lhs>
 		  <rhs>
-		    <link linkend="please.point.me.to.the.prefix.operator.table">PrefixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <link linkend="ref.syntax.precedence">PrefixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.infixoperation">
 		  <lhs>InfixOperation</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="please.point.me.to.the.infix.operator.table">InfixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="ref.syntax.precedence">InfixOperator</link> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.postfixoperation">
 		  <lhs>PostfixOperation</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="please.point.me.to.the.postfix.operator.table">PostfixOperator</link> 
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <link linkend="ref.syntax.precedence">PostfixOperator</link> 
 		  </rhs>
 		</production>
 		

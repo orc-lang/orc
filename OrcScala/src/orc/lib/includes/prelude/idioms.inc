@@ -277,7 +277,7 @@ def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 {--
 @def por(List[lambda () :: Boolean]) :: Boolean
 Parallel or. Execute a list of boolean functions in parallel, publishing
-a value as soon as possible, and <link linkend="ref.concepts.kill">killing</link> any unnecessary ongoing
+a value as soon as possible, and <link linkend="ref.concepts.states.kill">killing</link> any unnecessary ongoing
 computation.
 
 @implementation
@@ -294,7 +294,7 @@ def por(p:ps) =
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
 Parallel and. Execute a list of boolean functions in parallel, publishing
-a value as soon as possible, and <link linkend="ref.concepts.kill">killing</link> any unnecessary ongoing
+a value as soon as possible, and <link linkend="ref.concepts.states.kill">killing</link> any unnecessary ongoing
 computation.
 
 @implementation
@@ -311,7 +311,7 @@ def pand(p:ps) =
 {--
 @def collect[A](lambda () :: A) :: List[A]
 Run a function, collecting all publications in a list.
-Return the list when the function <link linkend="ref.concepts.halt">halts</link>.
+Return the list when the function <link linkend="ref.concepts.states.halt">halts</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[

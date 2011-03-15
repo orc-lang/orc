@@ -23,7 +23,7 @@ chosen from the range of all possible 32-bit Integer values.
 @site Random(Integer) :: Integer
 Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, <link linkend="ref.concepts.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the argument is 0, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
 site Random = "orc.lib.util.Random"
 
@@ -157,7 +157,7 @@ def fillArray(a, f) =
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
-<link linkend="ref.concepts.halt">halts</link>.
+<link linkend="ref.concepts.states.halt">halts</link>.
 
 @implementation
 --}
