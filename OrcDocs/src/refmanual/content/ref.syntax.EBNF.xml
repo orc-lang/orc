@@ -209,7 +209,14 @@
 		<production xml:id="ebnf.declaration.definition">
 		  <lhs>DeclareDefinition</lhs>
 		  <rhs>
-		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.guard">Guard</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		  </rhs>
+		</production>
+		
+		<production xml:id="ebnf.guard">
+		  <lhs>Guard</lhs>
+		  <rhs>
+		    <code>if</code> <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code> 
 		  </rhs>
 		</production>
 		

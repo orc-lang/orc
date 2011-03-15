@@ -48,8 +48,10 @@
 	  <section xml:id="ref.expressions.call.function">
 	  <title>Function Calls</title>
 	  <para>
-	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. Execution of a function call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    Unlike site calls, function calls are <firstterm>lenient</firstterm>. 
+	    <link linkend="ref.declarations.def.execution">Execution of a function call</link> <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
+	    
 	  </para>
 	  <para>
 	    Since a function call executes an arbitrary expression, it may <ind>publish</ind> any number of values.
