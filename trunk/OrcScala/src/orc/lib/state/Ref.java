@@ -114,7 +114,6 @@ public class Ref extends EvalSite implements TypedSite {
 					 */
 					if (readQueue != null) {
 						readQueue.add(reader);
-						//FIXME:reader.setQuiescent();
 					}
 					/* Otherwise, return the contents of the ref */
 					else {
@@ -145,7 +144,6 @@ public class Ref extends EvalSite implements TypedSite {
 						 * value to them.
 						 */
 						for (final Handle reader : readQueue) {
-							//FIXME:reader.unsetQuiescent();
 							reader.publish(object2value(val));
 						}
 
