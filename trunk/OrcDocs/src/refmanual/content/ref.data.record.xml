@@ -39,7 +39,7 @@ associates a key with an expression.
 The record expression <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 
 publishes the record <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
 only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">bindings</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
-Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
+Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
 <para>Duplicate bindings for the same key are allowed, but only the rightmost binding will
@@ -155,7 +155,7 @@ OUTPUT:
      		<row>
         		<entry><itemizedlist>
           	    <listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
-          	    <listitem><para><link linkend="ref.concepts.halt">Halting</link></para></listitem>
+          	    <listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

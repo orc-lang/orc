@@ -16,7 +16,7 @@
 
 		<para>
 		The <code><ind>stop</ind></code> expression does nothing. 
-		Execution of <code>stop</code> immediately <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent">silently</link>.
+		Execution of <code>stop</code> immediately <link linkend="ref.concepts.states.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent">silently</link>.
 		</para>		
 
 		
@@ -92,7 +92,7 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.concepts.halt">Halting</link></para></listitem>
+	          			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

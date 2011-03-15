@@ -114,7 +114,7 @@ OUTPUT:
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.combinators.pruning">Pruning Combinator</link></para></listitem>
 	        			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.kill">Killing</link></para></listitem>
+	          			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
 	          			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>

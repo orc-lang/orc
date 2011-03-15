@@ -41,7 +41,7 @@
 	  </para>
 	  <para>
 	    A site call publishes at most one value. Once it publishes a value, it immediately halts.
-	    If the site is <link linkend="ref.concepts.halt.helpful">helpful</link>, the call may halt without publishing a value.
+	    If the site is <link linkend="ref.concepts.helpful">helpful</link>, the call may halt without publishing a value.
 	  </para>
 	  </section>
 	  

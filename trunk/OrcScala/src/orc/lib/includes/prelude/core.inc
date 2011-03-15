@@ -59,7 +59,7 @@ site Let = "orc.lib.builtin.Let"
    <siteprop propname="pure"/>
 </sitepropset>
 
-<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
+<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -81,7 +81,7 @@ site Ift = "orc.lib.builtin.If"
    <siteprop propname="pure"/>
 </sitepropset>
 
-<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
+<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -106,7 +106,7 @@ site Unless = "orc.lib.builtin.Unless"
    <siteprop propname="definite"/>
 </sitepropset>
 
-<link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
+<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
 
 Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
@@ -158,7 +158,7 @@ site (**) = "orc.lib.math.Exponent"
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division. If <code>b=0</code>, <code>a/b</code> <link linkend="ref.concepts.halt">halts</link> with an error.
+division. If <code>b=0</code>, <code>a/b</code> <link linkend="ref.concepts.states.halt">halts</link> with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[

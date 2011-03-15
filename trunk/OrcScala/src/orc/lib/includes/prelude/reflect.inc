@@ -25,8 +25,8 @@ like site calls; in particular, the following four properties hold:
 <itemizedlist>
 <listitem> The site, like all sites, is strict in its arguments. </listitem>
 <listitem> The site returns only the first value published by the executed closure. The closure continues to run, but its subsequent publications are discarded. </listitem>
-<listitem> The execution of the closure is protected from being <link linkend="ref.concepts.kill">killed</link>. If the site call is <link linkend="ref.concepts.kill">killed</link>, the closure still runs, and its publications are simply ignored. </listitem>
-<listitem> If the execution of the closure <link linkend="ref.concepts.halt">halts</link>, so does the site call. </listitem>
+<listitem> The execution of the closure is protected from being <link linkend="ref.concepts.states.kill">killed</link>. If the site call is <link linkend="ref.concepts.states.kill">killed</link>, the closure still runs, and its publications are simply ignored. </listitem>
+<listitem> If the execution of the closure <link linkend="ref.concepts.states.halt">halts</link>, so does the site call. </listitem>
 </itemizedlist>
 
 The typical usage of MakeSite looks like:

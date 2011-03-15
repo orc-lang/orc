@@ -55,7 +55,7 @@
 			  	The execution of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
 			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
 				<replaceable>F</replaceable> <ind>publishes</ind> a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
-				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.kill"><ind>killed</ind></link>. 
+				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.states.kill"><ind>killed</ind></link>. 
 				A killed expression cannot call any sites or publish any values. During the execution of <replaceable>F</replaceable>, 
 				any part of the execution that depends on <replaceable>x</replaceable> 
 				will be suspended until <replaceable>x</replaceable> is bound (to
@@ -185,7 +185,7 @@ signal
         		<entry><itemizedlist>
         			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         			<listitem><para><link linkend="ref.declarations.val"><code>val</code> Declaration</link></para></listitem>
-          			<listitem><para><link linkend="ref.concepts.kill">Killing</link></para></listitem>
+          			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
           			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
