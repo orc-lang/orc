@@ -13,11 +13,9 @@
 <!-- Variable Pattern -->
 	<section xml:id="ref.patterns.variable">
 		<title>Variable Pattern</title>
-		<section xml:id="ref.patterns.variable.body">
-			<para>
-				A <ind>variable</ind> that occurs in a pattern is bound to the value matched to that pattern.
-			</para>
-		</section>
+		<para>
+			A <ind>variable</ind> that occurs in a pattern is bound to the value matched to that pattern.
+		</para>
 		
 		<section xml:id="ref.patterns.variable.syntax">
 	  <title>Syntax</title>

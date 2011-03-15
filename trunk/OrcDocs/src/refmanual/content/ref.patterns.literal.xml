@@ -13,13 +13,11 @@
 <!-- Literal Pattern -->
 	<section xml:id="ref.patterns.literal">
 		<title>Literal Pattern</title>
-		<section xml:id="ref.patterns.literal.body">
-			<para>
-				A <firstterm>literal pattern</firstterm> matches only the same literal value. 
-				It is often used in clausal definition of functions.   
-			</para>
-			<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
-		</section>
+		<para>
+			A <firstterm>literal pattern</firstterm> matches only the same literal value. 
+			It is often used in clausal definition of functions.   
+		</para>
+		<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
 		
 		
 		<section xml:id="ref.patterns.literal.syntax">

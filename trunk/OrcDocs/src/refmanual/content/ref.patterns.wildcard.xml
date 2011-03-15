@@ -13,11 +13,9 @@
 <!-- Wildcard Pattern -->
 	<section xml:id="ref.patterns.wildcard">
 		<title>Wildcard Pattern</title>
-		<section xml:id="ref.patterns.wildcard.body">
-			<para>
-				The <firstterm>wildcard pattern</firstterm> matches any value and binds no variables.
-			</para>
-		</section>
+		<para>
+			The <firstterm>wildcard pattern</firstterm> matches any value and binds no variables.
+		</para>
 		
 		<section xml:id="ref.patterns.wildcard.syntax">
 	  <title>Syntax</title>

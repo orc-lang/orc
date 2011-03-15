@@ -13,14 +13,12 @@
 <!-- Record Pattern -->
 	<section xml:id="ref.patterns.record">
 		<title>Record Pattern</title>
-		<section xml:id="ref.patterns.record.body">
-			<para>
-				In Orc pattern matching, when a record value is compared to a <firstterm>record pattern</firstterm>, each key mentioned
-				in the record pattern must have a mapping in the record value, and each such mapped
-				value must match its corresponding pattern. The record value may contain additional
-				<ind>keys</ind> not mentioned by the record pattern.
-			</para>
-		</section>
+		<para>
+			In Orc pattern matching, when a record value is compared to a <firstterm>record pattern</firstterm>, each key mentioned
+			in the record pattern must have a mapping in the record value, and each such mapped
+			value must match its corresponding pattern. The record value may contain additional
+			<ind>keys</ind> not mentioned by the record pattern.
+		</para>
 		
 		<section xml:id="ref.patterns.record.syntax">
 	  <title>Syntax</title>

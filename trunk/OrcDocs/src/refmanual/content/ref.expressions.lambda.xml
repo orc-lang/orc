@@ -13,7 +13,6 @@
 <!-- Lambda -->
 	<section xml:id="ref.expressions.lambda">
 		<title><code>lambda</code></title>
-		<section xml:id="ref.expressions.lambda.body">
 <para>
 Sometimes one would like to create a <ind>closure</ind> directly, without bothering to give it a name. 
 There is a special keyword <firstterm><code>lambda</code></firstterm> for this purpose. By writing a function
@@ -24,7 +23,6 @@ the keyword <code>lambda</code>, that definition becomes an expression which pub
 Note that a <code>lambda</code> cannot create a recursive function, since the function is
 not given a name in the body.
 </para>
-		</section>
 		
 		<section xml:id="ref.expressions.lambda.syntax">
 		  <title>Syntax</title>
