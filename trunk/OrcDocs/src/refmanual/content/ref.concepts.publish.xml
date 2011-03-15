@@ -15,22 +15,26 @@
 	<title>Publication</title>
 
 	<para>
-An expression <firstterm>publishes</firstterm> a value when the expression produces a value to be used in the context enclosing the expression.
-A simple example of publication is a literal, for example <code>1</code>, which publishes a single integer value.
+An Orc expression <firstterm>publishes</firstterm> a value when the expression produces a value to be used in the context enclosing the expression.
+An extremely simple example of publication is a literal, for example the expression <code>1</code>, which publishes a single integer value.
 Orc expressions may publish zero or more values during their execution.
 The effect of publication depends on the context.
-For example, each publication of <replaceable>F</replaceable> in the sequential combinator expression <replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+For example, each publication of <replaceable>F</replaceable> in the sequential combinator expression <replaceable>F</replaceable><code> &gt;x&gt; </code><replaceable>G</replaceable>
 causes <replaceable>G</replaceable> to be run with <code>x</code> bound to the published value.
 An expression that never publishes is said to be <link linkend="ref.concept.silent">silent</link>.
 	</para>
 
 	<para>
-Site calls publish only zero or one value, but function calls may publish an unbounded number of values.
-Literals, including <code>signal</code> publish one value.
-<code>stop</code> never publishes.
-A variable, when executed, publishes its value, if bound.
-If not, execution of the variable is suspended until it is bound.
-Each of the Orc combinators has a unique publication behavior.
+The following is the publication behavior of a few common forms of Orc expressions.  See the relevant manual sections for details.
+		<itemizedlist>
+			<listitem><para>Site calls publish only zero or one value.</para></listitem>
+			<listitem><para>Function calls may publish an unbounded number of values.</para></listitem>
+			<listitem><para>Literals, including <code>signal</code>, publish one value.</para></listitem>
+			<listitem><para><code>stop</code> never publishes.</para></listitem>
+			<listitem><para>A variable, when executed, publishes its value, if bound.
+				If not, execution of the variable is suspended until it is bound.</para></listitem>
+			<listitem><para>Each of the Orc combinators has a unique publication behavior.</para></listitem>
+		</itemizedlist>
 	</para>
 
 	<section xml:id="ref.concepts.publish.examples">
