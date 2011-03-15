@@ -19,8 +19,8 @@ An expression <firstterm>publishes</firstterm> a value when the expression produ
 A simple example of publication is a literal, for example <code>1</code>, which publishes a single integer value.
 Orc expressions may publish zero or more values during their execution.
 The effect of publication depends on the context.
-For example, each publication of <replacable>F</replacable> in the sequential combinator expression <replacable>F</replacable><code> &lt;x&lt; </code><replacable>G</replacable>
-causes <replacable>G</replacable> to be run with <code>x</code> bound to the published value.
+For example, each publication of <replaceable>F</replaceable> in the sequential combinator expression <replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+causes <replaceable>G</replaceable> to be run with <code>x</code> bound to the published value.
 An expression that never publishes is said to be <link linkend="ref.concept.silent">silent</link>.
 	</para>
 
