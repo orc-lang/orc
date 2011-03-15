@@ -35,7 +35,7 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
     <productionset>
     	<productionrecap linkend="ebnf.declaration.type.datatype"/>
     	<productionrecap linkend="ebnf.constructor"/>
-    	<productionrecap linkend="ebnf.constructor.member"/>
+    	<productionrecap linkend="ebnf.slot"/>
     </productionset>
   </para>
 </section>

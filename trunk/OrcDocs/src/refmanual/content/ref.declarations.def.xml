@@ -15,86 +15,313 @@
 		<title><code>def</code>:  Define Function</title>
 		
 		<para>
-			The <code><ind>def</ind></code> declaration defines a function. A function definition consists of an identifier, a sequence of <firstterm baseform="parameter">parameters</firstterm>,
-		  and a <firstterm>body</firstterm> expression.
+			The <code><ind>def</ind></code> declaration defines a function. 
+			A function definition consists of an <ind>identifier</ind>, a sequence of <firstterm>parameters</firstterm>,
+		  and a <firstterm>body</firstterm> expression. 
 		</para>
+		
+		<para>
+		  An Orc function behaves much like a function, method, procedure, or subroutine in other programming languages. 
+		  However, there are two key differences:
+		</para>
+		
+		<para>
+		<itemizedlist>
+		<listitem>Orc functions are <ind>lenient</ind>: when a function is called, the argument expressions and the 
+		function body are evaluated in parallel. </listitem>
+		<listitem>Orc functions may <link linkend="ref.concepts.publish">publish</link> any number of values, including zero,
+		during the execution of the function body.</listitem>		  
+		</itemizedlist>
+		</para>
+		
+		<para>
+		Orc functions also have other features, many of them adopted from typed functional programming languages:
+		</para>
+		
+		<para>
+		<itemizedlist>
+		  <listitem>Orc functions may be recursive. A group of functions may be mutually recursive.</listitem>
+		  <listitem>Patterns may be used as function parameters.</listitem>
+		  <listitem>A function may have a guard, which allows the function body to be executed only if a given condition holds.</listitem>
+		  <listitem>A function may be defined by multiple clauses.</listitem>
+		  <listitem>A function may be defined in a <firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</listitem>
+		</itemizedlist>
+		</para>
+	
 		  
 		<section xml:id="ref.declarations.def.syntax">
 		  <title>Syntax</title>
 		  <para>
 		    <productionset>
 		    	<productionrecap linkend="ebnf.declaration.definition"/>
+		    	<productionrecap linkend="ebnf.parameters"/>
+		    	<productionrecap linkend="ebnf.guard"/>
 		    </productionset>
 		  </para>
     </section>  
-		  
-		  
-		<section xml:id="ref.declarations.def.behavior">
-		<title>Behavior</title>  
-		<para>
-		<!-- 
-		def f(x,y) = B
+		 
+		<section xml:id="ref.declarations.def.execution">
+		<title>Function Execution</title>
 		
-		f(e,g) is same as
-		val x = e
-		val y = g
-		B
-		 -->
-		  When a function is <link linkend="ref.expressions.call.function">called</link>,
-		  the body executes, and in parallel the argument expressions are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>. 
-		  If the execution of the body encounters a parameter which is not yet bound to a value,
-		  whose corresponding argument expression 
-		  has not yet published a value, that parameter <link linkend="ref.concepts.block">blocks</link> until the argument value is available,
+		  <para>
+		  Suppose that a function definition uses only variables and wildcards as parameters.
+		  </para>
+		
+			<para>
+		   When such a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
+		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>.
+		   </para>
+		   
+		   <para>
+		   If the execution of the body encounters a use of a parameter whose corresponding argument expression 
+		  has not yet published a value, that use <link linkend="ref.concepts.block"><ind>blocks</ind></link> 
+		  until the argument value is available,
 			but the rest of the body continues to execute. 
-		  Whenever the execution of the body would publish a value, the function call publishes that value.
-		  If execution of the body <link linkend="ref.concepts.halt"><ind>halts</ind></link>, the function call also halts. 
-		</para>  
-		  
-		<para>
-		  Functions in Orc are similar to functions, methods, or subroutines in other programming languages, but with two
-			key differences:
+			</para>
 			
-			<itemizedlist>
-			<listitem><para>
-			An Orc function might publish multiple values as it computes,
-			whereas a function in most other languages returns only one value, when its computation
-			completes.
-			</para></listitem>
-			<listitem><para>
-			Orc functions are <firstterm>lenient</firstterm>, since the execution of the function body
-			occurs in parallel with the execution of the argument expressions. 
-			This is unlike <firstterm>strict</firstterm> functions,
-			which evaluate their arguments before evaluating the body, and also unlike lazy
+			<para>
+		  Whenever the execution of the body would publish a value, the function call publishes that value.
+		  If execution of the body <link linkend="ref.concepts.halt"><ind>halts</ind></link>, the function call also halts.
+		  As a result, a function call might publish any number of times, including zero.
+		  </para>
+		  
+		  <para>
+		  Because functions are lenient, the following two programs are equivalent:
+		  
+		  <programlisting language="orc"><![CDATA[
+def fn(x,y) = E
+fn(G,H)
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+val x = G
+val y = H
+E
+]]></programlisting>
+
+		</para>
+		   
+		  <para>
+		 			 Lenient functions are different from <firstterm>strict</firstterm> functions,
+			which evaluate their arguments before evaluating the body. They are also unlike <firstterm>lazy</firstterm>
 			functions, which evaluate the body but do not begin to evaluate the arguments until they
 			are encountered during the evaluation of the body.
-			</para></listitem>
-			</itemizedlist> 
+			</para>
+			
+
+		</section> 
+		
+		<section xml:id="ref.declarations.def.pattern">
+		<title>Pattern Matching</title>
+		
+		  <para>
+		  A function parameter may be any pattern. If all parameters are variables or wildcards, calls to the function execute
+		  as described above. If other patterns are used, they increase the strictness of a call.
+		  </para>
+		  
+		  <para>
+		  A <firstterm>lenient pattern</firstterm> is either a variable pattern or a wildcard pattern; such patterns will never fail to match. 
+		  Any other pattern is a <firstterm>strict pattern</firstterm>, which could fail to match. 
+		  </para>
+		  
+		  <para>
+		  When a function is called, the call blocks until a value is available for each strict pattern. The values are then matched
+		  against the strict patterns. If all of these matches succeed, then the function call executes as described earlier. If any 
+		  strict pattern match fails, or if any of the argument expressions corresponding to a strict pattern halts, 
+		  then the function call halts. 
+		  </para>
+		  
+		  <para>
+		  Suppose <code>P</code> is a strict pattern. The following two programs are equivalent:
+		  
+		  <programlisting language="orc"><![CDATA[
+def fn(x,P) = E
+fn(G,H)
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+val x = G
+val z = H
+z >P> E
+]]></programlisting>
+
 		</para>
 		
 		</section>
 		
+		<section xml:id="ref.declarations.def.guard">
+		<title>Guards</title>
 		
-  
-  		<section xml:id="ref.declarations.def.clausal">
-			<title>Clausal Definition of Functions</title>
+		  <para>
+		  A function definition may include a guard, of the form <code>if</code> <code>(</code> <replaceable>E</replaceable> <code>)</code>.
+		  When a function is called, and each strict pattern matches successfuly as described earlier, then the guard expression
+		  <replaceable>E</replaceable> is deflated. If <replaceable>E</replaceable> deflates to <code>true</code>, then the function
+		  body is executed. If <replaceable>E</replaceable> deflates to some other value, or halts without publishing a value,
+		  then the function call halts. 
+		  </para>
+			
 			<para>
-			  A function can be defined by a sequence of <firstterm baseform="clause">clauses</firstterm>, where each clause specifies
-			  a <ind>pattern</ind> of arguments and the code to be executed in case the arguments match
-			  the pattern.
-			</para>
-			<para>
-			  A function may have multiple clauses, each of which has a sequence of patterns to match each argument,
-			  and a body expression. All clauses of a function are required to have the same number of arguments. Any
-			  contiguous sequence of definitions with the same name and different arguments is interpreted as a clausal
-			  definition, where each individual declaration is a clause of the larger function.
-			</para>
-			<para>
-			  When the function is called, the clauses are tried in the order in which they appear until a match is found.
-			  If no clause matches, the call remains silent.
+		  Suppose <code>P</code> is a strict pattern and <code>Gd</code> is a guard expression.
+		  The following two programs are equivalent:
+		  
+		  <programlisting language="orc"><![CDATA[
+def fn(x,P) if (Gd) = E
+fn(G,H)
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+val x = G
+val z = H
+z >P> Gd >true> E
+]]></programlisting>
+
 			</para>
 			
-			<section xml:id="ref.declarations.def.clausal.examples">
+		</section>  
+		
+		<section xml:id="ref.declarations.def.clauses">
+		<title>Clausal Definition</title>
+		
+		  <para>
+			  A function can be defined by a sequence of <firstterm baseform="clause">clauses</firstterm>: repeated
+			  function definitions with the same identifier but different parameters. Each clause must have
+			  the same number of parameters.  
+			</para>
+			
+			<para>
+			  When a function with multiple clauses is called, the first clause is executed, as described earlier.
+			  If that clause halts without executing the function body, either because some strict pattern failed to
+			  match, because some argument expression halted, or because a guard did not deflate to <code>true</code>,
+			  then the next clause is executed. If the last clause halts, then the call halts.
+			</para>
+			
+			<para>
+			  If a clause halts, then the argument expressions are not reexecuted. They deflate in parallel with 
+			  the entire series of clauses; if an argument expression deflates to a value, or halts, that same outcome
+			  is used for every clause. 
+			</para> 
+
+	  </section>
+		 
+		<section xml:id="ref.declarations.def.recursion">
+		<title>Recursion</title>
+		
+		  <para>
+			  Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
+			</para>
+			  
+			  <example xml:id="ref.declarations.def.recursion.examples.factorial">
+<programlisting language="orc"><![CDATA[
+{- A recursive factorial function -}
+def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
+]]></programlisting>
+		  </example>
+			  
+			<para>
+			  A recursive function might continue executing indefinitely, producing an infinite number of publications.
+			</para>  
+			  
+			<example xml:id="ref.declarations.def.recursion.examples.factorial">
+<programlisting language="orc"><![CDATA[
+{- Publishes a signal every second, forever -}
+def metronome() = signal | Rwait(1000) >> metronome()
+
+{- NONRUNNABLE -}
+]]></programlisting>
+		  </example>
+			  
+			  
+			  <para>
+			  A set of functions may be mutually recursive by naming each other in their bodies.
+			  There is no special keyword for <ind>mutual recursion</ind>; whenever two or more function
+			  definitions are adjacent, the compiler detects whether they mutually recurse.
+			  </para>
+<example>			  
+<programlisting language="orc"><![CDATA[
+{- Test if a number is even or odd, using mutual recursion -}
+def even(n) if (n < 0) = odd(n+1)
+def even(n) if (n = 0) = true
+def even(n) if (n > 0) = odd(n-1)
+
+def odd(n) if (n < 0) = even(n+1)
+def odd(n) if (n = 0) = false
+def odd(n) if (n > 0) = even(n-1)
+
+odd(-4)
+
+{- 
+OUTPUT:
+false
+-}
+]]></programlisting>
+</example>			 
+	  </section>
+		
+	  
+	  <section xml:id="ref.declarations.def.currying">
+		<title>Curried Definition</title>
+		
+		<para>
+		  A function definition may have more than one group of arguments. 
+		  If it does, it is a <firstterm baseform="curry">curried</firstterm> definition.
+		  When such a function is called, it executes as described earlier,
+		  except that rather than executing the function body, it instead immediately
+		  publishes a closure of an equivalent function definition, minus the first group of arguments.
+		</para>
+		
+		<para>
+		  The following two programs are equivalent:
+		  
+<programlisting language="orc"><![CDATA[
+def fn(x)(y) = E
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+def fn(x) = ( lambda (y) = E )
+]]></programlisting>
+    </para>
+    
+    <para>
+		  Combining curried definition with clausal definition is not recommended.
+		</para>
+		
+		</section>
+	  
+	  
+
+	  <section xml:id="ref.declarations.def.type">
+	    <title>Type</title>
+	    <para>
+	      When a function is defined, the function identifier is bound to a <link linkend="ref.data.closure">closure</link>.
+	      A definition must be given <link linkend="ref.types.annotation.function">additional type information</link> so that the typechecker can deduce the correct <link linkend="ref.data.closure.type">function type</link> for the identifier.
+	    </para>
+	  </section>
+	  
+
+    <section xml:id="ref.declarations.def.examples">
 			<title>Examples</title>
+			
+		  <example xml:id="ref.declarations.def.recursive.examples.three"><title>Mutually Recursive Parity v2</title>
+<programlisting language="orc"><![CDATA[
+{- Return true if parity of 1s in a binary string is even -}
+
+def even([]) = true
+def even(1:xs) = odd(xs)
+def even(0:xs) = even(xs)
+
+def odd([]) = false
+def odd(1:xs) = even(xs)
+def odd(0:xs) = odd(xs)
+
+even([1,0,1,0])
+
+{-
+OUTPUT:
+true
+-}
+]]></programlisting>
+		  </example>
+			
 			<example xml:id="ref.declarations.def.clausal.examples.sum"><title>Simple example of a clausal function</title>
 <programlisting language="orc"><![CDATA[
 {- Simple clausal function -}
@@ -148,86 +375,6 @@ false
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.declarations.def.clausal.examples.curry"><title>Currying</title>
-<programlisting language="orc"><![CDATA[
-{- Simple currying example -}
-
-def sum(d,l)(h,p,v) = parts(d,l,h,p,v)
-
-{-
-NONRUNNABLE
--}
-]]></programlisting>
-		  </example>
-		  
-		  <example xml:id="ref.declarations.def.clausal.examples.wildcard"><title>Wild-Card</title>
-<programlisting language="orc"><![CDATA[
-{- Use a wildcard to define ignore a clausal argument -}
-
-def parts23(_,s,h,0,m,n) = 1
-
-{-
-NONRUNNABLE
--}
-]]></programlisting>
-		  </example>
-		</section>
-		</section>
-		
-		<section xml:id="ref.declarations.def.recursive">
-		<title>Recursive Functions</title>
-			  <para>
-			  Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
-			  </para>
-			  <para>
-			  A set of functions may be mutually recursive by naming each other in their bodies.
-			  There is no special keyword for <ind>mutual recursion</ind>.
-			  </para>
-			  
-			  <section xml:id="ref.declarations.def.recursive.examples">
-			  <title>Examples</title>
-			  <example xml:id="ref.declarations.def.recursive.examples.one"><title>Simple example of a recursive function</title>
-<programlisting language="orc"><![CDATA[
-{- Simple recursive function -}
-
-def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
-sumto(5)
-
-{-
-OUTPUT:
-15
--}
-]]></programlisting>
-		  </example>
-		  
-		  <example xml:id="ref.declarations.def.recursive.examples.three"><title>Mutually Recursive Parity v2</title>
-<programlisting language="orc"><![CDATA[
-{- Return true if parity of 1s in a binary string is even -}
-
-def even([]) = true
-def even(1:xs) = odd(xs)
-def even(_:xs) = even(xs)
-
-def odd([]) = false
-def odd(1:xs) = even(xs)
-def odd(_:xs) = odd(xs)
-
-even([1,0,1,0])
-
-{-
-OUTPUT:
-true
--}
-]]></programlisting>
-		  </example>
-			  </section>
-		</section>
-
-	  <section xml:id="ref.declarations.def.type">
-	    <title>Type</title>
-	    <para>
-	      TODO
-	    </para>
 	  </section>
 
 		<section xml:id="ref.declarations.def.links">
