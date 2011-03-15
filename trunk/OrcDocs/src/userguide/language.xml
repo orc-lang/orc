@@ -1171,7 +1171,7 @@ Multi-line comments may be nested. They may appear anywhere, even in the middle 
 
 
 
-<section><title>Orc: Orchestrating services</title>
+<section id="orc"><title>Orc: Orchestrating services</title>
 
 <para>
 Cor is a pure declarative language. It has no state, since variables are bound at most once 
@@ -1515,7 +1515,7 @@ site Buffer = orc.lib.state.Buffer
 </section>
 
 
-<section><title>The concurrency combinators of Orc</title>
+<section id="combinators"><title>The concurrency combinators of Orc</title>
 
 <para>
 Orc has four <firstterm>combinators</firstterm>: parallel, sequential, pruning, and otherwise. 
@@ -1905,7 +1905,7 @@ of variable name <code>x</code>).
 </section>
 
 
-<section><title>Nesting Orc expressions</title>
+<section xml:id="expression.nesting"><title>Nesting Orc expressions</title>
 
 <para>
 The execution of an Orc expression may publish many values. What does such an expression 
