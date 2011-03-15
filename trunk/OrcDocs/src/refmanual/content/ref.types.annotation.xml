@@ -19,7 +19,7 @@
 	type information from a program without any help from the programmer. In many contexts, the typechecker can
 	find all of the type information it needs; however, there are some cases where extra information is needed.
 	For this purpose, there are four kinds of <firstterm>annotations</firstterm> that may be used to
-	enrich an Orc program with additional type information. Orc also allows <firstterm>assertions</firstterm>,
+	enrich an Orc program with additional type information. Orc also allows <emphasis>assertions</emphasis>,
 	which may be used to override the typechecker.
 	</para>
 	

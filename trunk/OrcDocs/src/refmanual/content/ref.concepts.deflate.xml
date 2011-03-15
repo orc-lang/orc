@@ -16,7 +16,7 @@
 		<section xml:id="ref.concepts.deflate.definition">
 		<title>Definition</title>
 			<para>
-			Deflating is an evaluation mechanism which extracts a single value from an <ind>expression</ind> that
+			Deflating is an evaluation mechanism which extracts a single value from an expression that
 			might publish many values, so that such an expression can be evaluated in a context that expects
 			at most one value.
 			</para>
@@ -47,7 +47,7 @@
 			</para>
 			<para>
 			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a <ind>function call</ind>
-			  it does not halt, since function evaluation is <ind>lenient</ind>.
+			  it does not halt, since function evaluation is lenient.
 			</para>
 			<para>
 		    Notice that each deflated expression is evaluated concurrently, due to the behavior of the

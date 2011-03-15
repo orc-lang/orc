@@ -15,7 +15,7 @@
 
 <para>
 Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
-which in this implementation is the Java virtual machine (<ind>JVM</ind>).
+which in this implementation is the Java virtual machine (JVM).
 In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
 arbitrary <ind>Java</ind> classes using the <code><ind>class</ind></code> declaration.
 Values in Java fields, values returned from Java methods, and values returned from Java constructors

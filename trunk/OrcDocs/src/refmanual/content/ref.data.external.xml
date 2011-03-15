@@ -16,7 +16,7 @@
 <para>Orc's value set is "open" &#x2014; any value returned from a <ind>site call</ind> can be used in Orc expressions.
 Combined with Orc's ability to invoke arbitrary functions of the environment in with the Orc runtime engine is running,
 this permits Orc programs to use any expressible value in its environment.
-For example, Orc programs running on a <ind>Java virtual machine</ind> (<ind>JVM</ind>) can interact with any <ind>Java</ind> object.</para>
+For example, Orc programs running on a Java virtual machine (JVM) can interact with any <ind>Java</ind> object.</para>
 
 <section xml:id="ref.data.external.types">
   <title>Type</title>

@@ -44,7 +44,7 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 <title>Constructors</title>
 
 <para>
-  Each <ind>constructor</ind> creates a new <ind>site</ind> of the same name. The site takes one argument for each slot
+  Each constructor creates a new <ind>site</ind> of the same name. The site takes one argument for each slot
   in the constructor, and publishes a datatype value consisting of the sequence of argument
   values, tagged with that constructor's unique tag.
 </para>

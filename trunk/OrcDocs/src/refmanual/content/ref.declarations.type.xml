@@ -16,7 +16,7 @@
 
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: <ind>aliases</ind>, <ind>imports</ind>, and <ind>datatypes</ind>.
+			type declarations: <ind>aliases</ind>, <ind>imports</ind>, and datatypes.
 			</para>
 			
 	<section xml:id="ref.declarations.type.syntax">
@@ -69,7 +69,7 @@
 	    slots of the constructors. A datatype declaration is the only way to define type recursively in Orc.
 	  </para>
 	  <para>
-	    The datatype declaration also assigns types to each of the <link linkend="ref.data.datatype.type"><ind>constructor sites</ind></link> that it defines.
+	    The datatype declaration also assigns types to each of the <link linkend="ref.data.datatype.type">constructor sites</link> that it defines.
 	  </para>   
 	</section>
 			

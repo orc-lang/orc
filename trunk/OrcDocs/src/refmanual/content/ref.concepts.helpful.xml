@@ -21,7 +21,7 @@
 		</para>
 
 		<para>
-		All <ind>library sites</ind> in Orc are helpful. Thus, <code><ind>Ift</ind></code> 
+		All library sites in Orc are helpful. Thus, <code><ind>Ift</ind></code> 
 		is a helpful site, and <code><ind>Ift</ind>(false)</code> 
 		sends an indication to the caller that it will never
 		publish. A <link linkend="ref.stdlib.state.Buffer"><code><ind>Buffer</ind></code></link> 

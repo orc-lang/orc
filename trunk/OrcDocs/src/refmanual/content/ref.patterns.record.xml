@@ -16,7 +16,7 @@
 		<section xml:id="ref.patterns.record.body">
 			<para>
 				In Orc pattern matching, when a record value is compared to a <firstterm>record pattern</firstterm>, each key mentioned
-				in the record pattern must have a mapping in the <ind>record value</ind>, and each such mapped
+				in the record pattern must have a mapping in the record value, and each such mapped
 				value must match its corresponding pattern. The record value may contain additional
 				<ind>keys</ind> not mentioned by the record pattern.
 			</para>
@@ -35,7 +35,7 @@
 	  <title>Type</title>
 	  <para>
 	    When a record pattern <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>P<subscript>n</subscript></replaceable> <code>.}</code> 
-	    is matched against a <ind>record type</ind> <replaceable>R</replaceable>, each <replaceable>K<subscript>i</subscript></replaceable>
+	    is matched against a record type <replaceable>R</replaceable>, each <replaceable>K<subscript>i</subscript></replaceable>
 	    must have a binding in <replaceable>R</replaceable>. Then each <replaceable>P<subscript>i</subscript></replaceable> is
 	    matched against the type bound to <replaceable>K<subscript>i</subscript></replaceable> in <replaceable>R</replaceable>,
 	    producing a typing context Γ<subscript>i</subscript>. 

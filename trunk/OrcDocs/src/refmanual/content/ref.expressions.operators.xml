@@ -15,14 +15,14 @@
 	<title>Operators</title>
 
 <para>
-Orc has a standard set of <ind>infix</ind>, <ind>prefix</ind>, and <ind>postfix</ind> operators. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call"><ind>site calls</ind></link>.
+Orc has a standard set of infix, prefix, and postfix operators. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call"><ind>site calls</ind></link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
 Recall that site calls only <ind>publish</ind> once, and arguments are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>.
 </para>
 
 <para>
-Operators are <ind>parsed</ind> using <link linkend="ref.syntax.precedence">the <ind>precedence</ind> and <ind>associativity</ind> rules</link> of Orc. 
-In particular, these rules describe the relationship between <ind>operators</ind> and <ind>combinators</ind>.
+Operators are parsed using <link linkend="ref.syntax.precedence">the <ind>precedence</ind> and <ind>associativity</ind> rules</link> of Orc. 
+In particular, these rules describe the relationship between <ind>operators</ind> and combinators.
 </para>
 
 <section xml:id="ref.expressions.operators.syntax">
@@ -48,40 +48,40 @@ In particular, these rules describe the relationship between <ind>operators</ind
 	<colspec align="left"/>
   <row>
     <entry><code>+</code></entry>
-    <entry><ind>Addition</ind></entry>
+    <entry>Addition</entry>
   </row>
   <row>
     <entry><code>-</code></entry>
-    <entry><ind>Subtraction</ind></entry>
+    <entry>Subtraction</entry>
   </row>
   <row>
     <entry><code>*</code></entry>
-    <entry><ind>Multiplication</ind></entry>
+    <entry>Multiplication</entry>
   </row>
   <row>
     <entry><code>/</code></entry>
-    <entry><ind>Division</ind></entry>
+    <entry>Division</entry>
   </row>
   <row>
     <entry><code>%</code></entry>
-    <entry><ind>Modulus</ind></entry>
+    <entry>Modulus</entry>
   </row>
   <row>
     <entry><code>**</code></entry>
-    <entry><ind>Exponentiation</ind></entry>
+    <entry>Exponentiation</entry>
   </row>
   <row>
     <entry><code>-</code> (unary prefix form)</entry>
-    <entry><ind>Arithmetic negation</ind></entry>
+    <entry>Arithmetic negation</entry>
   </row>
 </tbody></tgroup></informaltable>
 
 <para>
 Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
-an integer operation and return an integer result; for example, <code>5 / 2</code> performs <ind>integer division</ind> and returns <code>2</code>.
+an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and returns <code>2</code>.
 However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
-be <ind>promoted</ind>, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
-perform <ind>decimal division</ind> and return <code>2.5</code>.
+be promoted, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 
+perform decimal division and return <code>2.5</code>.
 </para>
 
 </section>
@@ -95,33 +95,33 @@ perform <ind>decimal division</ind> and return <code>2.5</code>.
 	<colspec align="left"/>
   <row>
     <entry><code>=</code></entry>
-    <entry><ind>Equal to</ind></entry>
+    <entry>Equal to</entry>
   </row>
   <row>
     <entry><code>/=</code></entry>
-    <entry><ind>Not equal to</ind></entry>
+    <entry>Not equal to</entry>
   </row>
   <row>
     <entry><code>&lt;:</code></entry>
-    <entry><ind>Less than</ind></entry>
+    <entry>Less than</entry>
   </row>
   <row>
     <entry><code>:&gt;</code></entry>
-    <entry><ind>Greater than</ind></entry>
+    <entry>Greater than</entry>
   </row>
   <row>
     <entry><code>&lt;=</code></entry>
-    <entry><ind>Less than or equal to</ind></entry>
+    <entry>Less than or equal to</entry>
   </row>
   <row>
     <entry><code>=&gt;</code></entry>
-    <entry><ind>Greater than or equal to</ind></entry>
+    <entry>Greater than or equal to</entry>
   </row>
 </tbody></tgroup></informaltable>
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> <ind>publishes</ind> <code><ind>false</ind></code>.
+<code>10 = true</code> <ind>publishes</ind> <code>false</code>.
 </para>
 
 </section>
@@ -158,7 +158,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="left"/>
   <row>
     <entry><code>+</code></entry>
-    <entry><ind>Concatenation</ind></entry>
+    <entry>Concatenation</entry>
   </row>
 </tbody></tgroup></informaltable>
 
@@ -173,7 +173,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="left"/>
   <row>
     <entry><code>:</code></entry>
-    <entry><ind>List construction</ind></entry>
+    <entry>List construction</entry>
   </row>
 </tbody></tgroup></informaltable>
 
@@ -188,7 +188,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="left"/>
   <row>
     <entry><code>+</code></entry>
-    <entry><ind>Extension</ind></entry>
+    <entry>Extension</entry>
   </row>
 </tbody></tgroup></informaltable>
 
@@ -203,11 +203,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="left"/>
   <row>
     <entry><code>?</code></entry>
-    <entry><ind>Dereference</ind></entry>
+    <entry>Dereference</entry>
   </row>
   <row>
     <entry><code>:=</code></entry>
-    <entry><ind>Assignment</ind></entry>
+    <entry>Assignment</entry>
   </row>
 </tbody></tgroup></informaltable>
 
@@ -231,7 +231,7 @@ To disambiguate the unary prefix operator <code>-</code> from the
 binary infix operator <code>-</code>, Orc translates the
 unary prefix operator as <code>(0-)</code>. Binding a value to such
 an identifier redefines the corresponding operator in the scope of
-that <ind>binding</ind>.
+that binding.
 </para>
 </section>
 
@@ -245,7 +245,7 @@ that <ind>binding</ind>.
     If any operand has type <code><ind>Number</ind></code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
   </listitem>
   <listitem>
-    A comparison operation allows operands of any type, and publishes a <code><ind>Boolean</ind></code>.
+    A comparison operation allows operands of any type, and publishes a <code>Boolean</code>.
   </listitem>
   <listitem>
     A logical operation allows only <code>Boolean</code> operands, and publishes a <code>Boolean</code>.
@@ -261,7 +261,7 @@ that <ind>binding</ind>.
     It publishes a <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
   </listitem>
   <listitem>
-    Record extension takes two <link linkend="ref.data.record.type"><ind>records</ind></link> and publishes a record.
+    Record extension takes two <link linkend="ref.data.record.type">records</link> and publishes a record.
   </listitem>
   <listitem>
     Dereference takes an operand of type <code><ind>Ref</ind></code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.

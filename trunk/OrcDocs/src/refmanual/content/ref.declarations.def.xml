@@ -15,7 +15,7 @@
 		<title><code>def</code>:  Define Function</title>
 		
 		<para>
-			The <code><ind>def</ind></code> declaration defines a function. A function definition consists of an <ind>identifier</ind>, a sequence of <firstterm>parameters</firstterm>,
+			The <code><ind>def</ind></code> declaration defines a function. A function definition consists of an identifier, a sequence of <firstterm baseform="parameter">parameters</firstterm>,
 		  and a <firstterm>body</firstterm> expression.
 		</para>
 		  
@@ -44,7 +44,7 @@
 		  the body executes, and in parallel the argument expressions are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>. 
 		  If the execution of the body encounters a parameter which is not yet bound to a value,
 		  whose corresponding argument expression 
-		  has not yet published a value, that parameter <link linkend="ref.concepts.block"><ind>blocks</ind></link> until the argument value is available,
+		  has not yet published a value, that parameter <link linkend="ref.concepts.block">blocks</link> until the argument value is available,
 			but the rest of the body continues to execute. 
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
 		  If execution of the body <link linkend="ref.concepts.halt"><ind>halts</ind></link>, the function call also halts. 
@@ -64,7 +64,7 @@
 			Orc functions are <firstterm>lenient</firstterm>, since the execution of the function body
 			occurs in parallel with the execution of the argument expressions. 
 			This is unlike <firstterm>strict</firstterm> functions,
-			which evaluate their arguments before evaluating the body, and also unlike <firstterm>lazy</firstterm>
+			which evaluate their arguments before evaluating the body, and also unlike lazy
 			functions, which evaluate the body but do not begin to evaluate the arguments until they
 			are encountered during the evaluation of the body.
 			</para></listitem>
@@ -78,7 +78,7 @@
   		<section xml:id="ref.declarations.def.clausal">
 			<title>Clausal Definition of Functions</title>
 			<para>
-			  A function can be defined by a sequence of <ind>clauses</ind>, where each clause specifies
+			  A function can be defined by a sequence of <firstterm baseform="clause">clauses</firstterm>, where each clause specifies
 			  a <ind>pattern</ind> of arguments and the code to be executed in case the arguments match
 			  the pattern.
 			</para>

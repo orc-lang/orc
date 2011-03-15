@@ -14,14 +14,14 @@
 <title>Closures</title>
 
 <para>
-In Orc, <ind>functions</ind> are <ind>first-class values</ind>. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
+In Orc, functions are first-class values. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
 <firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
- is the closure. A closure can be <ind>published</ind>, passed to a <ind>site</ind>, or put into a <ind>data structure</ind>, just 
+ is the closure. A closure can be <ind>published</ind>, passed to a <ind>site</ind>, or put into a data structure, just 
  like any other value.
 </para>
 <para>
-Since all declarations - including function declarations - are <ind>lexically scoped</ind>, these closures are
-<emphasis><ulink url="http://en.wikipedia.org/wiki/Lexical_closure"><ind>lexical closures</ind></ulink></emphasis>. 
+Since all declarations - including function declarations - are lexically scoped, these closures are
+<emphasis><ulink url="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</ulink></emphasis>. 
 When a closure is created, if the body of the function contains any variables other than the formal parameters, 
 the bindings for those variables are stored in the closure. Then, when the closure is called, the evaluation 
 of the function body uses those stored variable bindings.  
