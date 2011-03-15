@@ -14,20 +14,20 @@
 	<section xml:id="ref.syntax.lexical">
 		<title>Lexical Specifications</title>
 			<para>
-				This page specifies Orc's processing of an input byte stream into an Orc lexical <ind>token sequence</ind>. 
+				This page specifies Orc's processing of an input byte stream into an Orc lexical token sequence. 
 				This token sequence is the input to the Orc parsing procedure. 
 			</para>
 			<section xml:id="ref.syntax.lexical.inputstream">
 				<title>Input Byte Stream</title>
 				<para>
 					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
-					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf"><ind>UTF-8</ind></ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
+					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
 				</para>
 			</section>
 			<section xml:id="ref.syntax.lexical.tokens">
 				<title>Lexical Tokens</title>
 				<para>
-					Orc lexical scanning reads <ind>Unicode</ind> characters and emits corresponding Orc lexical tokens. 
+					Orc lexical scanning reads Unicode characters and emits corresponding Orc lexical tokens. 
 					Orc uses seven lexical token types: identifier, keyword, operator, delimiter, integer literal, floating-point literal, string literal. Orc comments and whitespace are scanned as separators among other tokens and disregarded. 
 				</para>
 				<section xml:id="ref.syntax.lexical.tokens.identifier">

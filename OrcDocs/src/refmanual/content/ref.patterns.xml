@@ -23,16 +23,16 @@ Patterns are used in <code><ind>val</ind></code> declarations, in combinators, a
 </para>
 
 <para>
-A pattern is given by a shape and a set of variables. A <firstterm>shape</firstterm> is either a <ind>tuple</ind>, a <ind>list</ind>, 
+A pattern is given by a shape and a set of variables. A <emphasis>shape</emphasis> is either a tuple, a <ind>list</ind>, 
 a record, a call, a literal value,
-or <ind>wildcard</ind> (written as <code>_</code>). If the shape describes a structured value (such as a tuple), its components may
+or wildcard (written as <code>_</code>). If the shape describes a structured value (such as a tuple), its components may
 also be shapes. For example, the shape <code>(_,3)</code> describes all pairs whose second element is <code>3</code>, 
 and the pattern <code>(x,3)</code> binds <code>x</code> to the first element of all such pairs.      
 </para>
 
 <para>
 A pattern such as <code>(x,y)</code> may bind multiple variables. 
-However, patterns are <firstterm>linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
+However, patterns are <firstterm baseform="linear pattern">linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
 For example, <code>(x,y,x)</code> is not a valid pattern.
 </para>
 

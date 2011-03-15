@@ -15,9 +15,9 @@
 		<title>Dot Access</title>
 		
 		<para>
-			A <firstterm>dot access</firstterm> is an expression which retrieves a named <firstterm>member</firstterm> of a value.
+			A <firstterm baseform="dot">dot access</firstterm> is an expression which retrieves a named <firstterm>member</firstterm> of a value.
 			It consists of a <firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <firstterm>key</firstterm> <replaceable>K</replaceable>.
-			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate"><ind>deflated</ind></link> to a value <replaceable>v</replaceable>.
+			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>v</replaceable>.
 			If the value <replaceable>v</replaceable> has a member named <replaceable>K</replaceable>, that member
 			is published. Otherwise, the expression halts.
 		</para>
@@ -25,7 +25,7 @@
 		<para>
 			Not all values have members. 
 			<link linkend="ref.data.record">Records</link> have members, as do many <ind>sites</ind>.
-			A value created by an <link linkend="ref.declarations.class"><ind>imported class</ind></link> has
+			A value created by an <link linkend="ref.declarations.class">imported class</link> has
 			a member for each method and field of the corresponding class.
 			A value created by a <link linkend="ref.declarations.class">defined class</link> has
 			a member for each <code>def</code> and <code>val</code> declaration in the class.
@@ -34,7 +34,7 @@
 		<para>
 			Like many expressions in Orc, a dot access is simply another form of <ind>site call</ind>. The key
 			is converted to a special value and passed to the site call as the only argument. The
-			site call <ind>publishes</ind> the member named by the key if it exists, and <ind>halts</ind> otherwise.
+			site call <ind>publishes</ind> the member named by the key if it exists, and halts otherwise.
 		</para>
 		
 		<section xml:id="ref.expressions.dot.syntax">
@@ -53,7 +53,7 @@
 	    	then the dot access <replaceable>E</replaceable><code>.</code><replaceable>K<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>.
 	    </para>
 	    <para>
-	    	If the target has a <ind>Java</ind> class or object type, the <link linkend="ref.declarations.class.type">usual Java typing rules</link> apply.
+	    	If the target has a Java class or object type, the <link linkend="ref.declarations.class.type">usual Java typing rules</link> apply.
 	    </para>
 	    <para>
 	      If the target is a site, then the type of the dot access is determined entirely by the site, like any other site call.

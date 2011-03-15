@@ -32,8 +32,8 @@ It may be empty; the empty list is written as <code>[]</code>.
 
 <para>
 The list expression <code>[</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>]</code> publishes the list <code>[</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>]</code>
-only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate"><ind>deflates</ind></link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
-Otherwise, it <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent"><ind>silently</ind></link>.
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
+Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
 </section>
@@ -80,7 +80,7 @@ have the same type <replaceable>T</replaceable>, then the list will have type <c
 <title>Java calls</title>
 
 <para>
-Orc lists do not correspond to any <ind>Java</ind> value, so if a list is passed to Java code, 
+Orc lists do not correspond to any Java value, so if a list is passed to Java code, 
 it will be as a <code language="java">java.lang.Object</code> of a type not specified here.
 </para>
 

@@ -16,9 +16,9 @@
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
 <para>Orc's character sequence representation is <code><ind>String</ind></code>.
-Characters in Orc <code>String</code>s are drawn from the <ind>Unicode</ind>
-character set, and are encoded in the <ind>UTF-16</ind> encoding form.
-(Note that Orc source code files are encoded in the <ind>UTF-8</ind> encoding form.)
+Characters in Orc <code>String</code>s are drawn from the Unicode
+character set, and are encoded in the UTF-16 encoding form.
+(Note that Orc source code files are encoded in the UTF-8 encoding form.)
 Orc <code>String</code>s have an explicit length and are not zero-terminated.
 <code>String</code>s are limited to a maximum length of 2^31-1 (2 147 483 647) characters.</para>
 
@@ -81,7 +81,7 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 class java.lang.String
 
 Orc <code>String</code> values are passed in calls to and returns
-from <ind>Java</ind> code as <code language="java">java.lang.String</code>.</para>
+from Java code as <code language="java">java.lang.String</code>.</para>
 
 </section>
 

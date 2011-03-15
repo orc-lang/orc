@@ -14,10 +14,10 @@
 <title>Custom sites</title>
 
 <para>
-For services beyond those available as library sites, Java sites, and <ind>Web services sites</ind>,
+For services beyond those available as library sites, Java sites, and Web service sites,
 Orc programs may call sites developed specifically as Orc sites.
 The calling Orc program names the site with a <code>site</code> declaration.
-This declaration causes the Orc engine to load the <ind>Java</ind> class of the given name from
+This declaration causes the Orc engine to load the Java class of the given name from
 the Orc site classpath or JVM classpath.
 Calls to this site are dispatched via Orc's site interface,
 which permit the site to interact with the calling program natively.
@@ -29,7 +29,7 @@ which permit the site to interact with the calling program natively.
 
 <para>
 Orc sites may be implemented in any language that can produce Java class files.
-However, the Orc team recommends the <ind>Scala</ind> programming language from Martin Odersky and team at EPFL (École Polytechnique Fédérale de Lausanne).
+However, the Orc team recommends the Scala programming language from Martin Odersky and team at EPFL (École Polytechnique Fédérale de Lausanne).
 For information on Scala, see <link xlink:href="http://www.scala-lang.org/">http://www.scala-lang.org/</link>.
 </para>
 
@@ -40,7 +40,7 @@ for the site to respond to the site call.  The <code language="java">Handle</cod
 to respond by either:
 <itemizedlist>
 <listitem>Publishing a value</listitem>
-<listitem><link linkend="ref.concepts.halt"><ind>Halting</ind> </link> <link linkend="ref.concepts.silent"><ind>silently</ind></link></listitem>
+<listitem><link linkend="ref.concepts.halt">Halting</link> <link linkend="ref.concepts.silent">silently</link></listitem>
 <listitem>Throwing an exception</listitem>
 </itemizedlist>
 Additionally, sites may notify the Orc runtime engine of events via the <code language="java">Handle</code>,

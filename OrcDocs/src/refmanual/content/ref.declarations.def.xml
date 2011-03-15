@@ -14,9 +14,12 @@
 	<section xml:id="ref.declarations.def">
 		<title><code>def</code>:  Define Function</title>
 		
+		<!-- Index pointers for unwritten terms -->
+		<indexterm><primary>argument type</primary></indexterm>
+		
 		<para>
 			The <code><ind>def</ind></code> declaration defines a function. 
-			A function definition consists of an <ind>identifier</ind>, a sequence of <firstterm>parameters</firstterm>,
+			A function definition consists of an identifier, a sequence of <firstterm baseform="parameter">parameters</firstterm>,
 		  and a <firstterm>body</firstterm> expression. 
 		</para>
 		
@@ -69,19 +72,19 @@
 		
 			<para>
 		   When such a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
-		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>.
+		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><ind>deflate</ind>d</link>.
 		   </para>
 		   
 		   <para>
 		   If the execution of the body encounters a use of a parameter whose corresponding argument expression 
-		  has not yet published a value, that use <link linkend="ref.concepts.block"><ind>blocks</ind></link> 
+		  has not yet published a value, that use <link linkend="ref.concepts.block">blocks</link> 
 		  until the argument value is available,
 			but the rest of the body continues to execute. 
 			</para>
 			
 			<para>
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
-		  If execution of the body <link linkend="ref.concepts.halt"><ind>halts</ind></link>, the function call also halts.
+		  If execution of the body <link linkend="ref.concepts.halt">halts</link>, the function call also halts.
 		  As a result, a function call might publish any number of times, including zero.
 		  </para>
 		  

@@ -75,7 +75,7 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ << ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			 <para>
-				This is equivalent to using a <ind>wildcard</ind> pattern, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
+				This is equivalent to using a wildcard pattern, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
 				until it publishes a value.  Any value published by <replaceable>G</replaceable> will match the pattern. After the successful match, 
 				<replaceable>G</replaceable> is killed, but no bindings are made in <replaceable>F</replaceable>.
 				No part of execution of <replaceable>F</replaceable> is suspended by the pruning combinator since there is no variable to be bound.

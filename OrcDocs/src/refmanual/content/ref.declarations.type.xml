@@ -14,9 +14,13 @@
 	<section xml:id="ref.declarations.type">
 		<title><code>type</code>:  Declare Type</title>
 
+			<!-- Index pointers for unwritten terms -->
+			<indexterm><primary>import type</primary></indexterm>
+
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: <ind>aliases</ind>, <ind>imports</ind>, and datatypes.
+			type declarations: <firstterm baseform="type alias">aliases</firstterm>, 
+			<emphasis>imports</emphasis>, and <emphasis>datatypes</emphasis>.
 			</para>
 			
 	<section xml:id="ref.declarations.type.syntax">
@@ -59,8 +63,12 @@
 	
 	<section xml:id="ref.declarations.type.datatype">
 	  <title>Datatype</title>	  
+	  
+	  <!-- Index pointers for unwritten terms -->
+		<indexterm><primary>import type</primary></indexterm>
+	  
 	  <para>
-	    A <firstterm>datatype declaration</firstterm> defines a new type, called a <firstterm>sum type</firstterm>, which is the
+	    A <emphasis><ind>datatype</ind> declaration</emphasis> defines a new type, called a <firstterm>sum type</firstterm>, which is the
 	    type of all values produced by any of the declared constructors. 
 	  </para>
 	  <para>

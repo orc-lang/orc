@@ -15,9 +15,9 @@
 	<title>Operators</title>
 
 <para>
-Orc has a standard set of infix, prefix, and postfix operators. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call"><ind>site calls</ind></link>.
+Orc has a standard set of infix, prefix, and postfix operators. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call">site calls</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Recall that site calls only <ind>publish</ind> once, and arguments are <link linkend="ref.concepts.deflate"><ind>deflated</ind></link>.
+Recall that site calls only <ind>publish</ind> once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
@@ -220,7 +220,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <title>Redefining Operators</title>
 
 <para>
-The <link linkend="ref.syntax.precedence">operators' syntax</link> (<ind>fixity</ind>, <ind>precedence</ind>, and <ind>associativity</ind>) is fixed by the Orc grammar; however, the site
+The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, <ind>precedence</ind>, and <ind>associativity</ind>) is fixed by the Orc grammar; however, the site
 called is defined by the library and can be changed by a <code>def</code>
 or <code>site</code> declaration.
 </para>
@@ -241,7 +241,7 @@ that binding.
   Assuming that an operator has not been redefined, it obeys the following typing rules:
   <itemizedlist>
   <listitem>
-    An arithmetic operation publishes an <code><ind>Integer</ind></code> if all of its operands have type <code>Integer</code>. 
+    An arithmetic operation publishes an <code>Integer</code> if all of its operands have type <code>Integer</code>. 
     If any operand has type <code><ind>Number</ind></code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
   </listitem>
   <listitem>
@@ -267,7 +267,7 @@ that binding.
     Dereference takes an operand of type <code><ind>Ref</ind></code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.
   </listitem>
   <listitem>
-    Assignment takes operands of types <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and <replaceable>T</replaceable>, and publishes a <code><ind>Signal</ind></code>. 
+    Assignment takes operands of types <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and <replaceable>T</replaceable>, and publishes a <code>Signal</code>. 
   </listitem>
   </itemizedlist>
 </para>

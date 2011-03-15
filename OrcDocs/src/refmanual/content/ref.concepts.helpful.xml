@@ -13,6 +13,9 @@
 <!-- Helpful Sites -->
 <section xml:id="ref.concepts.helpful">
 	<title>Helpful Sites</title>
+	
+		<!-- Index pointers for unwritten terms -->
+		<indexterm><primary>halt</primary></indexterm>
 		
 		<para>
 		A <firstterm>helpful site</firstterm> responds with an indication that it will never 
@@ -32,7 +35,7 @@
 		</para>
 
 		<para>
-		We do not expect arbitrary <ind>web services</ind> to be helpful. 
+		We do not expect arbitrary web services to be helpful. 
 		</para>
 
 		<para>

@@ -13,6 +13,7 @@
 <!-- Cons Pattern -->
 	<section xml:id="ref.patterns.cons">
 		<title>Cons Pattern</title>
+		
 		<para>
 			The <firstterm>cons pattern</firstterm> matches the head and the tail of a nonempty list.
 		</para>
