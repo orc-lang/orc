@@ -13,11 +13,9 @@
 <!-- Tuple Pattern -->
 	<section xml:id="ref.patterns.tuple">
 		<title>Tuple Pattern</title>
-		<section xml:id="ref.patterns.tuple.body">
 			<para>
 				Each element of a <firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.
 			</para>
-		</section>
 		
 		<section xml:id="ref.patterns.tuple.syntax">
 	  <title>Syntax</title>

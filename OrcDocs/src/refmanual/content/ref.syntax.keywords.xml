@@ -13,7 +13,6 @@
 <!-- Syntax: Keywords -->
 	<section xml:id="ref.syntax.keywords">
 		<title>Keywords</title>
-		<section xml:id="ref.syntax.keywords.body">
 			<para>
 				The reserved keywords in the Orc programming language are the following:
 			</para>
@@ -71,7 +70,6 @@
 </tgroup>
 </table>
 </para>
-		</section>
 		
 		<section xml:id="ref.syntax.keywords.links">
 		  <title>Related Links</title>

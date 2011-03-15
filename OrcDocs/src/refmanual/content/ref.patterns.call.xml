@@ -13,17 +13,15 @@
 <!-- Call Pattern -->
 	<section xml:id="ref.patterns.call">
 		<title>Call Pattern</title>
-		<section xml:id="ref.patterns.call.body">
-			<para>
-				A <firstterm>call pattern</firstterm> matches a value produced by a previous call to a site. Each argument pattern
-				is matched against the corresponding argument to the original call. 
-			</para>
-			<para>
-			  Call patterns can only be used with values that have an <code><ind>unapply</ind></code> member. All
-			  <link linkend="ref.data.datatype">datatype constructors</link> support <code>unapply</code>. 
-			  Matching against datatype values is the most common use of the call pattern.
-			</para>
-		</section>
+		<para>
+			A <firstterm>call pattern</firstterm> matches a value produced by a previous call to a site. Each argument pattern
+			is matched against the corresponding argument to the original call. 
+		</para>
+		<para>
+		  Call patterns can only be used with values that have an <code><ind>unapply</ind></code> member. All
+		  <link linkend="ref.data.datatype">datatype constructors</link> support <code>unapply</code>. 
+		  Matching against datatype values is the most common use of the call pattern.
+		</para>
 		
 		<section xml:id="ref.patterns.call.syntax">
 	  <title>Syntax</title>

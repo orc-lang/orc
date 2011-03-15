@@ -13,19 +13,17 @@
 <!-- Site -->
 	<section xml:id="ref.declarations.site">
 		<title><code>site</code>:  Import Site</title>
-		<section xml:id="ref.declarations.site.body">
-			<para>
+		<para>
 A <code></code> declaration makes some service available as a site and
 binds it to a variable. The service might be an object in the host language 
 (e.g. a class instance in <ind>Scala</ind> or <ind>Java</ind>), or an external Web service, 
 or even a primitive operation like addition.
-			</para>
-			<para>
+		</para>
+		<para>
 A site declaration loads a platform object, specifically a Java class, to be 
 used as a site in an Orc program. The declaration uses a fully qualified Java class 
 name to find and load a class, and creates an instance of that class to provide the service. 
-			</para>
-		</section>
+		</para>
 		
 		<section xml:id="ref.declarations.site.syntax">
 	  <title>Syntax</title>

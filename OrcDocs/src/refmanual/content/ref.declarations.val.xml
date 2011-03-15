@@ -13,12 +13,10 @@
 <!-- Val -->
 	<section xml:id="ref.declarations.val">
 		<title><code>val</code>:  Bind Value</title>
-		<section xml:id="ref.declarations.val.body">
-			<para>
-				The declaration <code><ind>val</ind></code> <replaceable>x</replaceable> <code>=</code> <replaceable>G</replaceable>, followed by expression <replaceable>F</replaceable>, is a different way of writing the expression <replaceable>F</replaceable> <code>&lt;</code><replaceable>x</replaceable><code>&lt;</code> <replaceable>G</replaceable>.
-				Thus, <code>val</code> shares all of the behavior of the <link linkend="ref.combinators.pruning"><ind>pruning</ind> combinator</link>.
-			</para>
-		</section>
+		<para>
+			The declaration <code><ind>val</ind></code> <replaceable>x</replaceable> <code>=</code> <replaceable>G</replaceable>, followed by expression <replaceable>F</replaceable>, is a different way of writing the expression <replaceable>F</replaceable> <code>&lt;</code><replaceable>x</replaceable><code>&lt;</code> <replaceable>G</replaceable>.
+			Thus, <code>val</code> shares all of the behavior of the <link linkend="ref.combinators.pruning"><ind>pruning</ind> combinator</link>.
+		</para>
 		
 		<section xml:id="ref.declarations.val.syntax">
 	  <title>Syntax</title>

@@ -13,8 +13,6 @@
 <!-- Type context -->
 <section xml:id="ref.types.context">
 	<title>Typing Contexts</title>
-	
-	<section xml:id="ref.types.context.body">
 
   <para>
   Whenever one or more variables is bound, the type checker records information from that
@@ -37,9 +35,7 @@
   is a free variable, which is a syntactic error.
   </para>
 
-	</section>
-		
-		 
+
 	<section xml:id="ref.types.context.links">
 	  <title>Related Links</title>
 	  

@@ -13,11 +13,9 @@
 <!-- List Pattern -->
 	<section xml:id="ref.patterns.list">
 		<title>List Pattern</title>
-		<section xml:id="ref.patterns.list.body">
-			<para>
-				Each element of a <firstterm>list pattern</firstterm> matches the corresponding element of a list value.
-			</para>
-		</section>
+		<para>
+			Each element of a <firstterm>list pattern</firstterm> matches the corresponding element of a list value.
+		</para>
 		
 		<section xml:id="ref.patterns.list.syntax">
 	  <title>Syntax</title>
