@@ -10,275 +10,250 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Precedence -->
-	<section xml:id="ref.syntax.precedence">
-		<title>Precedence</title>
-		<section xml:id="ref.syntax.precedence.body">
-			<para>
-			The following table represents the precedence, fixity, and associativity of combinators and operators in Orc.  
-			Within an expression, the combinators/operators are executed in descending table order.
-			</para>
-			
-			<!-- 
-			<para>
-			<segmentedlist><title>Combinator Precedence</title>
-			<?dbhtml list-presentation="table"?>
-			<segtitle>Name</segtitle>
-			<segtitle>Symbol</segtitle>
-			<segtitle>Expression</segtitle>
-			<segtitle>Notes</segtitle>
-			<seglistitem>
-				<seg>Sequential</seg>
-				<seg><code><![CDATA[ >> ]]></code></seg>
-				<seg><code><![CDATA[F >P> G]]></code></seg>
-				<seg>Evaluates first</seg>	
-			</seglistitem>
-			<seglistitem>
-				<seg>Parallel</seg>
-				<seg><code><![CDATA[ | ]]></code></seg>
-				<seg><code><![CDATA[F | G]]></code></seg>
-				<seg></seg>	
-			</seglistitem>
-			<seglistitem>
-				<seg>Pruning</seg>
-				<seg><code><![CDATA[ << ]]></code></seg>
-				<seg><code><![CDATA[F <P< G]]></code></seg>
-				<seg></seg>	
-			</seglistitem>
-			<seglistitem>
-				<seg>Otherwise</seg>
-				<seg><code><![CDATA[ ; ]]></code></seg>
-				<seg><code><![CDATA[F ; G]]></code></seg>
-				<seg>Evaluates last</seg>	
-			</seglistitem>
-			</segmentedlist>
-			</para>
-			-->
-			
-			
-			<table frame="all">
-      <title>Orc Combinator/Operator Precedence</title>
-      <tgroup cols="4" align="center">
-        <colspec colname="Order"/>
-        <colspec colname="Name"/>
-        <colspec colname="Symbol"/>
-        <colspec colname="Fixity"/>
-        <colspec colname="Associativity"/>
-        <thead>
-          <row>
-            <entry><emphasis>Evaluation Order</emphasis></entry>
-			<entry><emphasis>Name</emphasis></entry>
-			<entry><emphasis>Symbol</emphasis></entry>
-			<entry><emphasis>Fixity</emphasis></entry>
-			<entry><emphasis>Associativity</emphasis></entry>
-          </row>
-        </thead>
-        <tbody>
-		   <row>
-		   	<entry>0</entry>
-		   	<entry>Dereference</entry>
-		   	<entry><code><![CDATA[ ? ]]></code></entry>
-		   	<entry>Postfix</entry>
-		   	<entry>--</entry>
-		   </row>
-		   <row>
-		   	<entry morerows="1">1</entry>
-		   	<entry>Arithmetic Negation</entry>
-		   	<entry><code><![CDATA[ - ]]></code></entry>
-		   	<entry>Prefix</entry>
-		   	<entry>--</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 1 -->
-		   	<entry>Negation (Logical Complement)</entry>
-		   	<entry><code><![CDATA[ ~ ]]></code></entry>
-		   	<entry>Prefix</entry>
-		   	<entry>--</entry>
-		   </row>
-		   <row>
-		   	<entry>2</entry>
-		   	<entry>Exponentiation</entry>
-		   	<entry><code><![CDATA[ ** ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Right</entry>
-		   </row>
-		   <row>
-		   	<entry morerows="2">3</entry>
-		   	<entry>Multiplication</entry>
-		   	<entry><code><![CDATA[ * ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 3 -->
-		   	<entry>Division</entry>
-		   	<entry><code><![CDATA[ / ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 3 -->
-		   	<entry>Modulus</entry>
-		   	<entry><code><![CDATA[ % ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<entry morerows="1">4</entry>
-		   	<entry>Addition/Concatenation</entry>
-		   	<entry><code><![CDATA[ + ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 4 -->
-		   	<entry>Subtraction</entry>
-		   	<entry><code><![CDATA[ - ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<entry>5</entry>
-		   	<entry>List Construction</entry>
-		   	<entry><code><![CDATA[ : ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Right</entry>
-		   </row>
-		   <row>
-		   	<entry morerows="5">6</entry>
-		   	<entry>Equal To</entry>
-		   	<entry><code><![CDATA[ = ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 6 -->
-		   	<entry>Not Equal To</entry>
-		   	<entry><code><![CDATA[ /= ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 6 -->
-		   	<entry>Less Than</entry>
-		   	<entry><code><![CDATA[ <: ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 6 -->
-		   	<entry>Greater Than</entry>
-		   	<entry><code><![CDATA[ :> ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 6 -->
-		   	<entry>Less Than or Equal To</entry>
-		   	<entry><code><![CDATA[ <= ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 6 -->
-		   	<entry>Greater Than or Equal To</entry>
-		   	<entry><code><![CDATA[ >= ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-		   	<entry morerows="1">7</entry>
-		   	<entry>Logical OR</entry>
-		   	<entry><code><![CDATA[ || ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<!-- Level 7 -->
-		   	<entry>Logical AND</entry>
-		   	<entry><code><![CDATA[ && ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>Left</entry>
-		   </row>
-		   <row>
-		   	<entry>8</entry>
-		   	<entry>Assignment</entry>
-		   	<entry><code><![CDATA[ := ]]></code></entry>
-		   	<entry>Infix</entry>
-		   	<entry>None</entry>
-		   </row>
-		   <row>
-            <entry>9</entry>
-            <entry>Sequential</entry>
-            <entry><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></entry>
-            <entry>Infix</entry>
-            <entry>Right</entry>
-	      </row>
-           <row>
-            <entry>10</entry>
-            <entry>Parallel</entry>
-            <entry><code><![CDATA[ | ]]></code></entry>
-            <entry>Infix</entry>
-            <entry>Left</entry>
-		   </row>
-           <row>
-            <entry>11</entry>
-            <entry>Pruning</entry>
-            <entry><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></entry>
-            <entry>Infix</entry>
-            <entry>Left</entry>
-		   </row>
-           <row>
-            <entry>12</entry>
-            <entry>Otherwise</entry>
-            <entry><code><![CDATA[ ; ]]></code></entry>
-            <entry>Infix</entry>
-            <entry>Left</entry>
-		   </row>
-        </tbody>
-      </tgroup>
-    </table>
-			
-		</section>
-		
-		<section xml:id="ref.syntax.precedence.links">
-		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        				<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
-	        				<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem> 
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        		<listitem><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
- 
-	  </section>
+<section xml:id="ref.syntax.precedence">
+	<title>Precedence, Fixity, and Associativity</title>
+	<section xml:id="ref.syntax.precedence.body">
+<para>
+The following table represents the precedence, fixity, and associativity of combinators and operators in Orc.
+</para>
+
+<para>
+<firstterm baseform="precedence">Precedence</firstterm> rules specify the order in which parts of an expression are parsed, in absence of parenthesis.
+For example, in <code>1 + 2 * 3</code>, Orc's precedence rules prescribe that the mutiplication be parsed as a sub-expression of the addition.
+Operations or combinators listed in the table below with higher precedence will be parsed in preference to lower precedence operations or combinators.
+</para>
+
+<para>
+<firstterm baseform="fixity">Fixity</firstterm> specifies the relative position of an operator and it operands.
+For example, <code>+</code> is infix, so the <code>+</code> operator is written in between its operands.
+However, <code>?</code> is postfix, so it is writeen after its operand.
+</para>
+
+<para>
+<firstterm baseform="associativity">Associativity</firstterm> specifies the grouping of a series of infix operator (or combinator) expressions, in absence of parenthesis.
+For example, division is left associative, so <code>40 / 4 / 2</code> is grouped as <code>(40 / 4) / 2</code> which is 5. It is not <code>40 / (4 / 2)</code> = 20.
+Similarly, the sequential combinator is right associative, so <code>e >x> f >y> g</code> is equivalent to <code>e >x> (f >y> g)</code>.
+</para>
+
+
+		<table frame="all">
+			<title>Orc Combinator/Operator Precedence, Fixity, and Associativity</title>
+			<tgroup cols="4" align="center">
+				<thead>
+					<row>
+						<entry><emphasis>Precedence Level</emphasis></entry>
+						<entry><emphasis>Name</emphasis></entry>
+						<entry><emphasis>Symbol</emphasis></entry>
+						<entry><emphasis>Fixity</emphasis></entry>
+						<entry><emphasis>Associativity</emphasis></entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry>12</entry>
+						<entry>Dereference</entry>
+						<entry><code><![CDATA[ ? ]]></code></entry>
+						<entry>Postfix</entry>
+						<entry>--</entry>
+					</row>
+					<row>
+						<entry morerows="1">11</entry>
+						<entry>Arithmetic Negation</entry>
+						<entry><code><![CDATA[ - ]]></code></entry>
+						<entry>Prefix</entry>
+						<entry>--</entry>
+					</row>
+					<row>
+						<!-- Level 11 -->
+						<entry>Negation (Logical Complement)</entry>
+						<entry><code><![CDATA[ ~ ]]></code></entry>
+						<entry>Prefix</entry>
+						<entry>--</entry>
+					</row>
+					<row>
+						<entry>10</entry>
+						<entry>Exponentiation</entry>
+						<entry><code><![CDATA[ ** ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Right</entry>
+					</row>
+					<row>
+						<entry morerows="2">9</entry>
+						<entry>Multiplication</entry>
+						<entry><code><![CDATA[ * ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<!-- Level 9 -->
+						<entry>Division</entry>
+						<entry><code><![CDATA[ / ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<!-- Level 9 -->
+						<entry>Modulus</entry>
+						<entry><code><![CDATA[ % ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<entry morerows="1">8</entry>
+						<entry>Addition/Concatenation</entry>
+						<entry><code><![CDATA[ + ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<!-- Level 8 -->
+						<entry>Subtraction</entry>
+						<entry><code><![CDATA[ - ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<entry>7</entry>
+						<entry>List Construction</entry>
+						<entry><code><![CDATA[ : ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Right</entry>
+					</row>
+					<row>
+						<entry morerows="5">6</entry>
+						<entry>Equal To</entry>
+						<entry><code><![CDATA[ = ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<!-- Level 6 -->
+						<entry>Not Equal To</entry>
+						<entry><code><![CDATA[ /= ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<!-- Level 6 -->
+						<entry>Less Than</entry>
+						<entry><code><![CDATA[ <: ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<!-- Level 6 -->
+						<entry>Greater Than</entry>
+						<entry><code><![CDATA[ :> ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<!-- Level 6 -->
+						<entry>Less Than or Equal To</entry>
+						<entry><code><![CDATA[ <= ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<!-- Level 6 -->
+						<entry>Greater Than or Equal To</entry>
+						<entry><code><![CDATA[ >= ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<entry morerows="1">5</entry>
+						<entry>Logical OR</entry>
+						<entry><code><![CDATA[ || ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<!-- Level 5 -->
+						<entry>Logical AND</entry>
+						<entry><code><![CDATA[ && ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<entry>4</entry>
+						<entry>Assignment</entry>
+						<entry><code><![CDATA[ := ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>None</entry>
+					</row>
+					<row>
+						<entry>3</entry>
+						<entry>Sequential</entry>
+						<entry><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Right</entry>
+					</row>
+					<row>
+						<entry>2</entry>
+						<entry>Parallel</entry>
+						<entry><code><![CDATA[ | ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<entry>1</entry>
+						<entry>Pruning</entry>
+						<entry><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+					<row>
+						<entry>0</entry>
+						<entry>Otherwise</entry>
+						<entry><code><![CDATA[ ; ]]></code></entry>
+						<entry>Infix</entry>
+						<entry>Left</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+
 	</section>
+
+
+	<section xml:id="ref.syntax.precedence.links">
+		<title>Related Links</title>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Reference Topics</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry><itemizedlist>
+							<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
+							<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
+						</itemizedlist></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Tutorial Sections</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry><itemizedlist>
+							<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
+						</itemizedlist></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+	</section>
+</section>
