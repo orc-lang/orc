@@ -5,8 +5,8 @@ val disp = canvas(10)
 -- List switch
 def lswitch(n,l) =
 	l >h:t>
-	( (IfT(n=0) >> h) |
-	  (IfT(~(n=0)) >> lswitch(n-1,t) )
+	( (Ift(n=0) >> h) |
+	  (Ift(~(n=0)) >> lswitch(n-1,t) )
 	)
 
 {--------------------------------------------------------------------
@@ -25,13 +25,13 @@ def randRange(mn,mx) =
 	Random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
-	( IfT(n>=1) 
+	( Ift(n>=1) 
 	  >> randRange(tMin,tMax)
 	  >d> Vwait(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
 			) 
-	| IfT(n<=0)
+	| Ift(n<=0)
 	  >> false
 	)
 	
@@ -43,9 +43,9 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 		<tMin< randRange(mnMn,mnMx)
 		<tMax< randRange(mxMn,mxMx)
 		) 
-	>x>	( 	IfT(x=false)
+	>x>	( 	Ift(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
-		|	IfT(~(x=false)) >> x
+		|	Ift(~(x=false)) >> x
 		) 
 ----------------------------------------------------------------------	
 
@@ -75,8 +75,8 @@ def rightDone() =
 	link.  Once you own the next link, you release the first.
 -}
 def makeRope(len,lb,ls) =
-	(IfT(len=0) >> Let(signal,false,lb,ls)
-	|	(  IfT(1<=len) 
+	(Ift(len=0) >> Let(signal,false,lb,ls)
+	|	(  Ift(1<=len) 
 		>> Buffer()
 		>b> makeRope(len-1,b,true)
 		>(rb,rs,eb,es)> b.put((lb,ls,rb,rs,len))
@@ -90,20 +90,20 @@ def makeRope(len,lb,ls) =
 	Between links, we logically delay for d units. 
 -}
 def followRight(b,s,f,d) =
-	(	( IfT(~s) >> (Let() | f()>>stop)
+	(	( Ift(~s) >> (Let() | f()>>stop)
 		)
-	|	(  IfT(s) 
+	|	(  Ift(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
 							| (Vwait(d) >> true)
 							)
-		>c>	(	( IfT(c)
+		>c>	(	( Ift(c)
 				>> followRight(rb,rs,f,d)
 				>> b.put((lb,ls,rb,rs,len))
 				>> disp.setLink(len,0)
 				>> stop
 				)
-			|	IfT(~c)
+			|	Ift(~c)
 			)
 		)
 	)
@@ -114,20 +114,20 @@ def followRight(b,s,f,d) =
 	Between links, we logically delay for d units. 
 -}
 def followLeft(b,s,f,d) =
-	(	( IfT(~s) >> (Let() | f()>>stop)
+	(	( Ift(~s) >> (Let() | f()>>stop)
 		)
-	|	(  IfT(s) 
+	|	(  Ift(s) 
 		>> b.get()
 		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
 							| (Vwait(d) >> true)
 							)
-		>c>	(	( IfT(c)
+		>c>	(	( Ift(c)
 				>> followLeft(lb,ls,f,d)
 				>> disp.setLink(len,0)
 				>> b.put((lb,ls,rb,rs,len))
 				>> stop
 				)
-			|	IfT(~c)
+			|	Ift(~c)
 			)
 		)
 	)	
@@ -163,7 +163,7 @@ def bManager(mainLine,aPack,oPack) =
 			>> oPop()
 			>> bManager(mainLine,oPack,aPack)
 		)|(
-			IfT(~rdy) -- No opposite monkey to worry about.
+			Ift(~rdy) -- No opposite monkey to worry about.
 			>> aFlag.get() -- Assume this is true (one has to be)
 			>> aFlag.put(false) -- Reset
 			>> aDeck.get() -- Get the waiting monkey
