@@ -41,8 +41,8 @@ tuple elements.
 <para>
 The tuple expression <code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code> 
 publishes the tuple value <code>(</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>)</code>
-only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate"><ind>deflates</ind></link> to value <replaceable>v<subscript>i</subscript></replaceable>.
-Otherwise, it <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent"><ind>silently</ind></link>.
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>.
+Otherwise, it <link linkend="ref.concepts.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 </section>
 
@@ -71,7 +71,7 @@ is a tuple type, written <code>(</code><replaceable>T<subscript>0</subscript></r
 <section xml:id="ref.data.tuple.javacalls">
 <title>Java calls</title>
 
-<para>Orc tuples don't correspond to any <ind>Java</ind> value, so if a tuple is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
+<para>Orc tuples don't correspond to any Java value, so if a tuple is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
 
 </section>
 

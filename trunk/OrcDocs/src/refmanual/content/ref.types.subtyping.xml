@@ -14,6 +14,9 @@
 <section xml:id="ref.types.subtyping">
 	<title>Subtyping</title>
 	
+		<!-- Index pointers for unwritten terms -->
+		<indexterm><primary>Bot</primary></indexterm>
+	
 		<!--  add subtyping info in individual type sections -->	
 	
 	
@@ -34,7 +37,7 @@
 	
 	<para>
 	If an expression has type <replaceable>S</replaceable> and <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>,
-	then that expression also has type <replaceable>T</replaceable>. This is called <firstterm>subsumption</firstterm>.
+	then that expression also has type <replaceable>T</replaceable>. This is called <emphasis>subsumption</emphasis>.
 	</para>
 	
 	<para>

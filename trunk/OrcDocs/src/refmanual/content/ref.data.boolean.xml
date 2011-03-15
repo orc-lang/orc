@@ -65,7 +65,7 @@ as well as the comparison operators, which yield Boolean results:
 <title>Java calls</title>
 
 <para>Orc <code>Boolean</code> values are passed in calls to and returns
-from <ind>Java</ind> code as <code language="java">java.lang.Boolean</code>, which is boxed and
+from Java code as <code language="java">java.lang.Boolean</code>, which is boxed and
 unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle> as <code language="java">boolean</code>.</para>
 
 </section>

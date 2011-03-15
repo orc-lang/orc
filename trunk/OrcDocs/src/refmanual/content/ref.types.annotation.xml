@@ -14,11 +14,14 @@
 <section xml:id="ref.types.annotation">
 	<title>Annotations</title>
 	
+	<!-- Index pointers for unwritten terms -->
+	<indexterm><primary>argument type</primary></indexterm>
+	
 	<para>
 	The Orc typechecker uses a <link linkend="ref.types.metatheory.origin">type inference algorithm</link> to deduce
 	type information from a program without any help from the programmer. In many contexts, the typechecker can
 	find all of the type information it needs; however, there are some cases where extra information is needed.
-	For this purpose, there are four kinds of <firstterm>annotations</firstterm> that may be used to
+	For this purpose, there are four kinds of <firstterm baseform="type annotation">annotations</firstterm> that may be used to
 	enrich an Orc program with additional type information. Orc also allows <emphasis>assertions</emphasis>,
 	which may be used to override the typechecker.
 	</para>

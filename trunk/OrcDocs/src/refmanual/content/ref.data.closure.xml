@@ -16,7 +16,7 @@
 <para>
 In Orc, functions are first-class values. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
 <firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
- is the closure. A closure can be <ind>published</ind>, passed to a <ind>site</ind>, or put into a data structure, just 
+ is the closure. A closure can be <ind>published</ind>, passed to a site, or put into a data structure, just 
  like any other value.
 </para>
 <para>

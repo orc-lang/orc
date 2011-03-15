@@ -21,7 +21,7 @@ way to do this. It names a source file containing a sequence of Orc declarations
 those declarations are incorporated into the program as if they had textually
 replaced the include declaration. An included file may itself contain 
 <code>include</code> declarations.  Included files may come from local files, any
-URI recognized by the <ind>Java</ind> library (http, https, ftp, etc.), and include resources
+URI recognized by the Java library (http, https, ftp, etc.), and include resources
 found in the Orc JAR files.
 			</para>
 		

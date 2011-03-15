@@ -33,7 +33,7 @@ This class proxy may be called as an Orc site, which invokes the Java class cons
 The class proxy also presents the class static methods and class static fields in the same manner as
 an Orc record with keys corresponding to the Java class members' names.
 <ind>Methods</ind> appear as record elements that are sites, and are invoked by projecting the record element
-using the <ind>dot notation</ind> and calling the site.
+using the <ind>dot</ind> notation and calling the site.
 Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
@@ -112,7 +112,7 @@ Specifically, Orc applies conversions to the following:
 <para>
 The conversions applied are the following:
 <itemizedlist>
-<listitem><para><code language="java">void</code> Java methods return <code><ind>signal</ind></code> in Orc.</para></listitem>
+<listitem><para><code language="java">void</code> Java methods return <code>signal</code> in Orc.</para></listitem>
 <listitem><para>Orc integer values are converted to Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, <code language="java">Long</code>, <code language="java">Float</code>, or <code language="java">Double</code>, as needed.</para></listitem>
 <listitem><para>Orc floating-point values are converted to Java <code language="java">Float</code> or <code language="java">Double</code>, as needed.</para></listitem>
 <listitem><para>Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, and <code language="java">Long</code> are converted to Orc integers.</para></listitem>

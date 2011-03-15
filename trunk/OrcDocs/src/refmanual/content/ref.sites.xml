@@ -29,7 +29,7 @@ Sites may also provide complex services, such as a database management system.
 </para>
 
 <para>
-Sites may be provided by various types of software components, such as <ind>Java</ind> classes, <ind>Web services</ind>, or custom
+Sites may be provided by various types of software components, such as Java classes, <ind>Web services</ind>, or custom
 Orc sites.  An Orc program's views of sites, however, remains uniform across these types.
 </para>
 

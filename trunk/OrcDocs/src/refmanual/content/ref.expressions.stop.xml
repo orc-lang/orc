@@ -13,10 +13,12 @@
 <!-- Lambda -->
 	<section xml:id="ref.expressions.stop">
 		<title><code>stop</code></title>
+
 		<para>
 		The <code><ind>stop</ind></code> expression does nothing. 
-		Execution of <code>stop</code> immediately <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent"><ind>silently</ind></link>.
+		Execution of <code>stop</code> immediately <link linkend="ref.concepts.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent">silently</link>.
 		</para>		
+
 		
 		<section xml:id="ref.expressions.stop.syntax">
 		  <title>Syntax</title>

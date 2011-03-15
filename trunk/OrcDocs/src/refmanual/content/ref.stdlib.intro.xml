@@ -12,7 +12,7 @@
 
 <para>
      <para>
-     The <firstterm>standard library</firstterm> is a set of declarations implicitly available to all Orc
+     The standard library is a set of declarations implicitly available to all Orc
      programs.  In this section we give an informal description of the standard library,
      including the type of each declaration and a short explanation of its use.
      

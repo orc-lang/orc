@@ -58,7 +58,7 @@
 			  copies of <replaceable>G</replaceable>); in that instance of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
 			  published by <replaceable>F</replaceable>. Values 
 			  published by copies of <replaceable>G</replaceable> are published by the whole expression, but the values published 
-			  by <replaceable>F</replaceable> are not published by the whole expression; they are consumed by the <ind>variable binding</ind>. 
+			  by <replaceable>F</replaceable> are not published by the whole expression; they are consumed by the variable binding. 
 			</para>
 			</listitem>
 			</varlistentry>
@@ -77,7 +77,7 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >> ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  This is equivalent to using a <ind>wildcard</ind> pattern: <replaceable>F</replaceable><code><![CDATA[ >_> ]]></code><replaceable>G</replaceable>.  Every publication
+			  This is equivalent to using a wildcard pattern: <replaceable>F</replaceable><code><![CDATA[ >_> ]]></code><replaceable>G</replaceable>.  Every publication
 			  of <replaceable>F</replaceable> will match the combinator pattern, causing an execution of <replaceable>G</replaceable> for every individual
 			  publication of <replaceable>F</replaceable>.  No bindings will be made in <replaceable>G</replaceable> from these publications.
 			</para>

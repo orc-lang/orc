@@ -20,7 +20,7 @@
 		be used to: (1) Define object classes with <ind>methods</ind>, (2) Create new
 		sites and extend behaviors of existing sites, (3) Allow concurrent
 		method invocation on objects, and (4) Create active objects, whose
-		executions may be based on <ind>time</ind> or other external stimulus, not
+		executions may be based on time or other external stimulus, not
 		necessarily explicitly called methods.
       </para>
 	  <section xml:id="ref.declarations.defclass.syntax">
@@ -45,7 +45,7 @@ def class Newset(n) =
 		  <para>
 		  	The body of a class may include definitions of both functions and
 			classes. The name of every definition in the body is exported to the
-			surrounding scope as a <ind>dot method</ind>. A class body must include at least
+			surrounding scope as a <ind>dot</ind> method. A class body must include at least
 			one definition, which could be a function or a class.
 		  </para>
 		  <para>
@@ -205,11 +205,11 @@ OUTPUT:
 			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
 			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
-			publishes a <code><ind>signal</ind></code>.
+			publishes a <code>signal</code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code><ind>Semaphore</ind></code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
-			value has been written) and <code><ind>Ref</ind></code> to store the value.
+		  	We use two library sites, <code>Semaphore</code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
+			value has been written) and <code>Ref</code> to store the value.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite"><title>Create a Site</title>
 <programlisting language="orc"><![CDATA[
@@ -263,7 +263,7 @@ no output
 		  <para>
 		  	The methods of a class instance may be executed concurrently through
 			concurrent invocations. Concurrent execution may cause interference,
-			as in the example of the <code>Newset</code> example. Typically, <ind>semaphores</ind> are used to
+			as in the example of the <code>Newset</code> example. Typically, semaphores are used to
 			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
@@ -373,7 +373,7 @@ no-output
 	    <title>Type</title>
 	    <para>
 	      A <code>def class</code> declaration is typechecked in the same way as a <link linkend="ref.declarations.def"><code>def</code> declaration</link>, with one exception.
-	      The return type of a <ind>closure</ind> created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
+	      The return type of a closure created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
 	      <code>{.</code> <replaceable>d<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>d<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
 	      where each <replaceable>d<subscript>i</subscript></replaceable> is the name of a <code>def</code> or <code>def class</code> declaration in the body,
 	      and <replaceable>T<subscript>i</subscript></replaceable> is its type.

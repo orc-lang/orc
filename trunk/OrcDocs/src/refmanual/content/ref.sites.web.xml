@@ -27,7 +27,7 @@ these capabilities are sufficient to interact with many simple web services, esp
 The <link linkend="ref.stdlib.web.HTTP"><code>HTTP</code></link> site provides a simple mechanism to send GET and POST requests to a URL.
 <itemizedlist>
 <listitem><code>HTTP(</code><replaceable>U</replaceable><code>)</code>, where <replaceable>U</replaceable> is a <code>java.net.URL</code>, publishes a site which accepts HTTP requests on the URL <replaceable>U</replaceable>.</listitem>
-<listitem><code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the string <replaceable>S</replaceable> as an absolute <ind>URL</ind> <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.</listitem>
+<listitem><code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the string <replaceable>S</replaceable> as an absolute URL <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.</listitem>
 <listitem><code>HTTP(</code><replaceable>S</replaceable><code>,</code><replaceable>Q</replaceable><code>)</code> maps the record <replaceable>Q</replaceable> to a URL query string <replaceable>QS</replaceable> by translating each record binding to a query pair, escaping characters
 if necessary. The call then behaves as <code>HTTP(</code><replaceable>S</replaceable>+<replaceable>QS</replaceable><code>)</code>.</listitem>
 </itemizedlist>  
