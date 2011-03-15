@@ -78,14 +78,12 @@ public class Buffer extends EvalSite implements TypedSite {
 							if (closed) {
 								reader.halt();
 							} else {
-								//FIXME:reader.setQuiescent();
 								readers.addLast(reader);
 							}
 						} else {
 							// If there is an item available, pop it and return it.
 							reader.publish(object2value(buffer.removeFirst()));
 							if (closer != null && buffer.isEmpty()) {
-								//FIXME:closer.unsetQuiescent();
 								closer.publish(signal());
 								closer = null;
 							}
@@ -108,7 +106,6 @@ public class Buffer extends EvalSite implements TypedSite {
 						} else {
 							// If there are callers waiting, give this item to the top caller.
 							final Handle receiver = readers.removeFirst();
-							//FIXME:receiver.unsetQuiescent();
 							receiver.publish(object2value(item));
 						}
 						// Since this is an asynchronous buffer, a put call always returns.
@@ -125,7 +122,6 @@ public class Buffer extends EvalSite implements TypedSite {
 						} else {
 							reader.publish(object2value(buffer.removeFirst()));
 							if (closer != null && buffer.isEmpty()) {
-								//FIXME:closer.unsetQuiescent();
 								closer.publish(signal());
 								closer = null;
 							}
@@ -140,7 +136,6 @@ public class Buffer extends EvalSite implements TypedSite {
 						final Object out = buffer.clone();
 						buffer.clear();
 						if (closer != null) {
-							//FIXME:closer.unsetQuiescent();
 							closer.publish(signal());
 							closer = null;
 						}
@@ -160,14 +155,12 @@ public class Buffer extends EvalSite implements TypedSite {
 					synchronized (BufferInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
-							//FIXME:reader.unsetQuiescent();
 							reader.halt();
 						}
 						if (buffer.isEmpty()) {
 							token.publish(signal());
 						} else {
 							closer = token;
-							//FIXME:closer.setQuiescent();
 						}
 					}
 				}
@@ -178,7 +171,6 @@ public class Buffer extends EvalSite implements TypedSite {
 					synchronized (BufferInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
-							//FIXME:reader.unsetQuiescent();
 							reader.halt();
 						}
 						token.publish(signal());

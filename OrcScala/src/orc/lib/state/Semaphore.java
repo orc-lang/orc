@@ -59,11 +59,9 @@ public class Semaphore extends EvalSite implements TypedSite {
 				public void callSite(final Args args, final Handle waiter) {
 					synchronized (SemaphoreInstance.this) {
 						if (0 == n) {
-							//FIXME:waiter.setQuiescent();
 							waiters.offer(waiter);
 							if (!snoopers.isEmpty()) {
 								for (final Handle snooper : snoopers) {
-									//FIXME:snooper.unsetQuiescent();
 									snooper.publish(signal());
 								}
 								snoopers.clear();
@@ -96,7 +94,6 @@ public class Semaphore extends EvalSite implements TypedSite {
 							++n;
 						} else {
 							final Handle waiter = waiters.poll();
-							//FIXME:waiter.unsetQuiescent();
 							waiter.publish(signal());
 						}
 						sender.publish(signal());
@@ -108,7 +105,6 @@ public class Semaphore extends EvalSite implements TypedSite {
 				public void callSite(final Args args, final Handle snooper) throws TokenException {
 					synchronized (SemaphoreInstance.this) {
 						if (waiters.isEmpty()) {
-							//FIXME:snooper.setQuiescent();
 							snoopers.offer(snooper);
 						} else {
 							snooper.publish(signal());

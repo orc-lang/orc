@@ -80,7 +80,6 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
-					//FIXME:receiver.setQuiescent();
 					receiverQueue.addLast(receiver);
 				}
 				// If there is a waiting sender, both sender and receiver return
@@ -90,7 +89,6 @@ public class SyncChannel extends EvalSite implements TypedSite {
 					final Object item = si.sent;
 
 					receiver.publish(object2value(item));
-					//FIXME:sender.unsetQuiescent();
 					sender.publish(signal());
 				}
 
@@ -105,7 +103,6 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
-					//FIXME:sender.setQuiescent();
 					senderQueue.addLast(new SenderItem(sender, item));
 				}
 
@@ -113,7 +110,6 @@ public class SyncChannel extends EvalSite implements TypedSite {
 				else {
 					final Handle receiver = receiverQueue.removeFirst();
 
-					//FIXME:receiver.unsetQuiescent();
 					receiver.publish(object2value(item));
 					sender.publish(signal());
 				}

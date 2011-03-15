@@ -59,7 +59,6 @@ public class Counter extends EvalSite implements TypedSite {
 								--count;
 								if (count == 0) {
 									for (final Handle waiter : waiters) {
-										//FIXME:waiter.unsetQuiescent();
 										waiter.publish(signal());
 									}
 									waiters.clear();
@@ -78,7 +77,6 @@ public class Counter extends EvalSite implements TypedSite {
 							if (count == 0) {
 								caller.publish(signal());
 							} else {
-								//FIXME:caller.setQuiescent();
 								waiters.add(caller);
 							}
 						}

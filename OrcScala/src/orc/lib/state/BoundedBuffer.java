@@ -74,7 +74,6 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 							if (closed) {
 								reader.halt();
 							} else {
-								//FIXME:reader.setQuiescent();
 								readers.addLast(reader);
 							}
 						} else {
@@ -83,11 +82,9 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
-								//FIXME:writer.unsetQuiescent();
 								writer.publish(signal());
 							}
 							if (closer != null && buffer.isEmpty()) {
-								//FIXME:closer.unsetQuiescent();
 								closer.publish(signal());
 								closer = null;
 							}
@@ -107,11 +104,9 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
-								//FIXME:writer.unsetQuiescent();
 								writer.publish(signal());
 							}
 							if (closer != null && buffer.isEmpty()) {
-								//FIXME:closer.unsetQuiescent();
 								closer.publish(signal());
 								closer = null;
 							}
@@ -128,12 +123,10 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 							writer.halt();
 						} else if (!readers.isEmpty()) {
 							final Handle reader = readers.removeFirst();
-							//FIXME:reader.unsetQuiescent();
 							reader.publish(object2value(item));
 							writer.publish(signal());
 						} else if (open == 0) {
 							buffer.addLast(item);
-							//FIXME:writer.setQuiescent();
 							writers.addLast(writer);
 						} else {
 							buffer.addLast(item);
@@ -152,7 +145,6 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 							writer.halt();
 						} else if (!readers.isEmpty()) {
 							final Handle reader = readers.removeFirst();
-							//FIXME:reader.unsetQuiescent();
 							reader.publish(object2value(item));
 							writer.publish(signal());
 						} else if (open == 0) {
@@ -176,13 +168,11 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 						buffer.clear();
 						// resume all writers
 						for (final Handle writer : writers) {
-							//FIXME:writer.unsetQuiescent();
 							writer.publish(signal());
 						}
 						writers.clear();
 						// notify closer if necessary
 						if (closer != null) {
-							//closer.unsetQuiescent();
 							closer.publish(signal());
 							closer = null;
 						}
@@ -214,14 +204,12 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					synchronized (BufferInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
-							//FIXME:reader.unsetQuiescent();
 							reader.halt();
 						}
 						if (buffer.isEmpty()) {
 							token.publish(signal());
 						} else {
 							closer = token;
-							//FIXME:closer.setQuiescent();
 						}
 					}
 				}
@@ -232,7 +220,6 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 					synchronized (BufferInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
-							//FIXME:reader.unsetQuiescent();
 							reader.halt();
 						}
 						token.publish(signal());

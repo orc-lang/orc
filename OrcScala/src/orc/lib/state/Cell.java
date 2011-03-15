@@ -92,7 +92,6 @@ public class Cell extends EvalSite implements TypedSite {
 					 * Add this caller to the read queue.
 					 */
 					if (readQueue != null) {
-						//FIXME:reader.setQuiescent();
 						readQueue.add(reader);
 					}
 					/* Otherwise, return the contents of the cell */
@@ -117,7 +116,6 @@ public class Cell extends EvalSite implements TypedSite {
 
 						/* Wake up all queued readers and report the written value to them. */
 						for (final Handle reader : readQueue) {
-							//FIXME:reader.unsetQuiescent();
 							reader.publish(object2value(val));
 						}
 
