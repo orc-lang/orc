@@ -19,7 +19,7 @@ Real and virtual time.
 @site Rwait(Integer) :: Signal
 
 <sitepropset>
-   <siteprop propname="blocking"/>
+   <siteprop propname="indefinite"/>
 </sitepropset>
 
 Publish a signal after the given number of milliseconds.
@@ -27,7 +27,7 @@ Publish a signal after the given number of milliseconds.
 @method Rwait.time() :: Integer
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
 </sitepropset>
 
 Return the current real time in milliseconds, as
@@ -58,7 +58,7 @@ def Clock() =
 @site Vwait(Integer) :: Signal
 
 <sitepropset>
-   <siteprop propname="blocking"/>
+   <siteprop propname="indefinite"/>
 </sitepropset>
 
 Publish a signal after the given amount of virtual time.
@@ -66,7 +66,7 @@ Publish a signal after the given amount of virtual time.
 @site Vclock() :: Integer
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
 </sitepropset>
 
 Return the current virtual time.

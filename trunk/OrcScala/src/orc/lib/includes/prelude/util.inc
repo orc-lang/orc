@@ -44,7 +44,7 @@ site UUID = "orc.lib.util.UUID"
 @site Prompt(String) :: String
 
 <sitepropset>
-   <siteprop propname="blocking"/>
+   <siteprop propname="indefinite"/>
 </sitepropset>
 
 Prompt the user for some input. The user may cancel the prompt,
