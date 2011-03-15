@@ -55,7 +55,7 @@ Example:
 @site Print(Top) :: Signal
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
 </sitepropset>
 
 Print a value as a string to standard output.
@@ -65,7 +65,7 @@ the object to a String.
 @site Println(Top) :: Signal
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
 </sitepropset>
 
 Same as <code>Print</code>, appending a newline.
@@ -77,7 +77,7 @@ site Println = "orc.lib.str.Println"
 @site Read[A](String) :: A
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
    <siteprop propname="pure"/>
 </sitepropset>
 
@@ -99,7 +99,7 @@ site Read = "orc.lib.str.Read"
 @site Write(Top) :: String
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
    <siteprop propname="pure"/>
 </sitepropset>
 

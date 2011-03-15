@@ -36,7 +36,7 @@ type Signal = "orc.types.SignalType"
 @site Let() :: Signal
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
    <siteprop propname="pure"/>
 </sitepropset>
 
@@ -55,7 +55,7 @@ site Let = "orc.lib.builtin.Let"
 @site Ift(Boolean) :: Signal
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
    <siteprop propname="pure"/>
 </sitepropset>
 
@@ -77,7 +77,7 @@ site Ift = "orc.lib.builtin.If"
 @site Iff(Boolean) :: Signal
 
 <sitepropset>
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
    <siteprop propname="pure"/>
 </sitepropset>
 
@@ -103,7 +103,7 @@ site Unless = "orc.lib.builtin.Unless"
 @site Error(String) :: Bot
 
 <sitepropset>   
-   <siteprop propname="nonblocking"/>
+   <siteprop propname="definite"/>
 </sitepropset>
 
 <link linkend="ref.concepts.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
