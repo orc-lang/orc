@@ -13,36 +13,32 @@
 <!-- Helpful Sites -->
 <section xml:id="ref.concepts.helpful">
 	<title>Helpful Sites</title>
-	
-		<!-- Index pointers for unwritten terms -->
-		<indexterm><primary>halt</primary></indexterm>
-		
-		<para>
-		A <firstterm>helpful site</firstterm> responds with an indication that it will never 
-		<link linkend="ref.concepts.publish"><ind>publish</ind></link>
-		when it knows this outcome for a call. 
-		</para>
 
-		<para>
-		All library sites in Orc are helpful. Thus, <code><ind>Ift</ind></code> 
-		is a helpful site, and <code><ind>Ift</ind>(false)</code> 
-		sends an indication to the caller that it will never
-		publish. A <link linkend="ref.stdlib.state.Buffer"><code><ind>Buffer</ind></code></link> 
-		is a helpful site, and some of its methods will send
+	<!-- Index pointers for unwritten terms -->
+	<indexterm><primary>halt</primary></indexterm>
+
+	<para>
+		A <firstterm>helpful site</firstterm> responds with an indication that it will never <link linkend="ref.concepts.publish"><ind>publish</ind></link>
+		when it knows this outcome for a call. 
+	</para>
+
+	<para>
+		All library sites in Orc are helpful. Thus, <link linkend="ref.stdlib.core.Ift"><code>Ift</code></link> is a helpful site, and
+		<code>Ift(false)</code> sends an indication to the caller that it will never
+		publish. A <link linkend="ref.stdlib.state.Buffer"><code>Buffer</code></link> is a helpful site, and some of its methods will send
 		an indication that they will never publish. In particular, the <code>get</code>
 		method is blocked on an empty buffer, but it sends an indication it
 		will never publish if the buffer is closed.
-		</para>
+	</para>
 
-		<para>
-		We do not expect arbitrary web services to be helpful. 
-		</para>
+	<para>
+		We do not expect arbitrary Web services to be helpful. 
+	</para>
 
-		<para>
+	<para>
 		The indication from a helpful site that it will never publish can be
-		exploited by the caller using the 
-		<link linkend="ref.combinators.otherwise"><ind>otherwise combinator</ind></link>.
-		</para>
+		exploited by the caller using the <link linkend="ref.combinators.otherwise">otherwise combinator</link>.
+	</para>
 
 	<section xml:id="ref.concepts.helpful.links">
 		<title>Related Links</title>
