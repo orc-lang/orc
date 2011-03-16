@@ -14,253 +14,224 @@
 <section xml:id="ref.concepts.states">
 	<title>Expression States</title>
 
-		<!-- Index pointers for unwritten terms -->
-		<indexterm><primary>halt</primary></indexterm>
-		<indexterm><primary>kill</primary></indexterm>
+	<!-- Index pointers for unwritten terms -->
+	<indexterm><primary>halt</primary></indexterm>
+	<indexterm><primary>kill</primary></indexterm>
 
-		<para>
-			<emphasis>BEGIN ORIGINAL</emphasis>
-		</para>
-		
-		<para>
-			During execution of an expression, it is either <firstterm>active</firstterm>, <firstterm>passive</firstterm> or
-			<firstterm>killed</firstterm>. An active expression will eventually make a <link linkend="ref.expressions.call">site call</link> or
-			publish a value without receiving a response from a site. A passive
-			expression waits for response from sites or functions it has called;
-			it can not take any steps without receiving a response from a site. A
-			killed expression has been terminated because of a <link linkend="ref.combinators.pruning">pruning combinator</link>;
-			so, it can take no further steps. Expression <replaceable>G</replaceable> is killed 
-			in <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> if
-			<replaceable>G</replaceable> has published; a component of a killed expression is killed.
-		</para>
-			
-		<para>
-			There are three passive states: pending, blocked 
-			and halted. A pending
-			expression will definitely receive a response from some called site
-			(or function), a blocked expression may receive a response, and a
-			halted expression will never receive a response.
-		</para>
-
-		<para>
-			The transitions among the states are as follows:
-		</para>
-		
-		<orderedlist>
-			<listitem><para>An active or passive expression may be killed. A killed expression stays killed.</para></listitem>
-			<listitem><para>An active expression may transit to any passive state.</para></listitem>
-			<listitem><para>A pending expression definitely transits to active eventually.</para></listitem>
-			<listitem><para>A blocked expression may transit to another passive state, pending or halted.</para></listitem>
-			<listitem><para>A halted expression stays halted unless is killed.</para></listitem>
-		</orderedlist>
-		
-		<para>
-			<emphasis>END ORIGINAL</emphasis>
-		</para>
-		
-		<para>
-			<emphasis>BEGIN NEW</emphasis>
-		</para>
-		
-		<para>
+	<para>
 		A site call, from the site's perspective, has three possible outcomes:
 		the site will definitely publish a value, the site knows that it will
 		never publish a value, and the site does not know if it will ever
-		publish a value. For example, a call to Ift(true) publishes a signal,
-		Ift(false) never publishes, and c.get() on buffer c that is currently
+		publish a value. For example, a call to
+		<code>Ift(true)</code>
+		publishes a signal,
+		<code>Ift(false)</code>
+		never publishes, and
+		<code>c.get()</code>
+		on buffer
+		<code>c</code>
+		that is currently
 		empty may eventually publish or remain non-responsive, depending on
-		whether a value is put in c in the future.
-		</para>
-		
-		<para>
-		A site call, from the caller's perspective, is unready, ready, blocked
-		or halted. A site call is ready (when its execution is being
-		attempted) if all its argument variables are bound to values, so that
-		a call can be made; it is unready otherwise. A call is blocked if the
-		site has been called and the caller is waiting for a response. A site
-		call is halted if the caller has already received a response or the
-		site indicates that it will never send a response. Sites that indicate
-		absence of response are called helpful (see Section ...); not all
-		sites are helpful.
-		</para>
-		
-		<para>
-		An unready call becomes ready when all its arguments are bound to
-		values. A ready call becomes blocked once the call is made; a blocked
-		call transits to halted if it receives a response or if the called
-		site can determine that it will never respond; a blocked call may
-		remain blocked forever if the called site can not determine if if it
-		will ever respond. Note that a halted call stays halted (unless it is
-		killed, see below).
-		</para>
-		
-		<para>
-		We extend these concepts to execution of an expression. During its
-		execution an expression may have spawned many copies of its
-		components, as in f &gt;x&gt; g. At any moment during its execution, an
-		expression has an associated set of site calls under consideration. If
-		all such calls are unready, the expression is unready; if some call is
-		ready, the expression is ready; if all calls are blocked, the
-		expression is blocked and if all calls are halted the expression is
-		halted. Note that all component expressions of a halted/blocked
-		expression are halted/blocked; further a halted expression stays
-		halted (unless it is killed, see below). A halted expression never
-		makes site calls nor publishes any value.
-		</para>
-		
-		<para>
-		Expression G is killed in F &lt;x&lt; G if G has published; any
-		component of a killed expression is also killed.
-		</para>
-		
-		<para>
-		Example: Let c be a buffer. Consider the following
-		expressions. 
-		</para>
-		
-		<para>
-		f: x &gt;&gt; c.get() &gt;&gt; true
-		g: c.get() | Rwait(1000)
-		e: (f ; false) &lt;x&lt; g
-		</para>
-		
-		<para>
-		Expression e written out in full is:
-		</para>
-		
-		<para>
-		(x &gt;&gt; c.get() &gt;&gt; true ; false) 
-		         &lt;x&lt; (c.get() | Rwait(1000) )
-		</para>
-		
-		<para>
-		In starting an execution of e, expression (f ; false) is unready
-		because x is not bound.  Expression g is ready, so e is ready. After
-		the calls in g are made (one call to c.get() and one to Rwait(1000)),
-		e is blocked. Independent of the status of c, expression g always
-		publishes because of the call to Rwait. Once g publishes, it is
-		killed. Then x binds to a value making f ready. Now, the call to
-		c.get() within f is made causing e to become blocked. If c is empty
-		and remains empty forever (without being closed), e remains
-		blocked. If e is not empty or some item is put in c by another caller
-		eventually, c.get() responds, true is published and the expression
-		halts. If c is empty and it is then closed by another caller, c.get()
-		halts causing f to halt; so, false is published.
-		</para>
-		
-		<para>
-			<emphasis>END NEW</emphasis>
-		</para>
+		whether a value is put in
+		<code>c</code>
+		in the future.
+	</para>
 
-		<figure>
-			<title>Expression States Diagram</title>
-			<mediaobject>
-				<imageobject>
-					<imagedata fileref="images/stateTransition.svg" format="SVG" contentwidth="800px" contentdepth="480px" width="80%" align="center"/>
-				</imageobject>
-			</mediaobject>
-		</figure>
-		
+	<para>
+		A site call, from the caller's perspective, is ready, blocked or
+		halted. A call is ready if all its argument variables are bound to
+		values, so that a call can be made. A call is blocked if either (1)
+		the caller can not make the call because not all argument values are
+		bound (since site calls are strict); this is an internally blocked
+		call, or (2) the caller is waiting for the response after having
+		called the site; this is an externally blocked call. A site call is
+		halted if the caller has already received a response or the site has
+		indicated that it will never send a response. A site call is killed if
+		it is part of <replaceable>G</replaceable> in
+		<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+		and <replaceable>G</replaceable> publishes.
+	</para>
+
+	<para>
+		An internally blocked call becomes ready when all its arguments are
+		bound to values. An internally blocked call halts if one of its
+		arguments will never be bound because the expression that computes its
+		value has been halted or killed. A ready call becomes blocked once
+		the call is made. A blocked call transitions to halted if it receives a
+		response or if the called site can determine that it will never
+		respond; a blocked call may remain blocked forever if the called site
+		can not determine if if it will ever respond. Note that a halted call
+		stays halted unless it is killed.
+	</para>
+
+	<para>
+		We extend these concepts to execution of an expression. At any moment,
+		an expression has an associated set of site calls under consideration
+		for execution; if the expression has spawned copies of its components
+		as in
+		<replaceable>F</replaceable><code> &gt;x&gt; </code><replaceable>G</replaceable>,
+		all the copies contribute to this set; if the
+		expression includes function calls, those calls initiate execution of
+		the function bodies which are also expressions that contribute to this
+		set. If some site call in this set is ready, the expression is ready;
+		if all calls are blocked, the expression is blocked, and if all calls
+		are halted the expression is halted.
+	</para>
+
+	<figure>
+		<title>Expression States Diagram</title>
+		<mediaobject>
+			<imageobject>
+				<imagedata fileref="images/stateTransition.svg" format="SVG"
+					contentwidth="800px" contentdepth="480px" width="80%" align="center" />
+			</imageobject>
+		</mediaobject>
+	</figure>
+
+	<section>
+		<title>Ready</title>
+		<para>
+			A site call is <firstterm>ready</firstterm> if all its argument
+			variables are bound to values, so that a call can be made. An
+			expression is ready if some site call in its set of associated
+			site calls is ready.
+		</para>
+	</section>
+
 	<section xml:id="ref.concepts.states.block">
-	<title>Blocked</title>
+		<title>Blocked</title>
 		<para>
-			Execution of an expression is <firstterm baseform="block">blocked</firstterm> if it can not take an autonomous
-			step, it is not halted, and none of the outstanding site calls can
-			respond immediately. That is, there is some outstanding site call that may
-			respond in the future. For example, an expression that calls <code>c.get()</code>,
-			where channel <code>c</code> is empty, is blocked; the call may receive
-			a response or may remain blocked forever, depending on whether a value
-			is put in <code>c</code> in the future.
+			A site call is <firstterm>blocked</firstterm> if (1) the call can not be made because some
+			argument of the call is unbound, the call is then internally blocked,
+			or (2) the caller is waiting for a response, the call is then
+			externally blocked. An expression is blocked if its set of associated
+			site calls are all blocked. All component expressions of a blocked
+			expression are blocked. A blocked expression stays blocked unless (1)
+			an internally blocked site call is made ready by the bindings of its
+			arguments, or (2) it is halted, or (3) killed. A halted
+			expression never makes site calls nor publishes any value.
 		</para>
-		
-		<section xml:id="ref.concepts.states.block.examples">
-			<title>Examples</title>
-
-		<example xml:id="ref.concepts.states.block.examples.one">
-<title>Blocked on Call</title>
-<programlisting language="orc-demo"><![CDATA[
-{- A "get" call to an empty channel blocks until a
-   value is placed on the channel.
-   
-   This program runs forever as a blocked execution.
--}
-
-val c = Buffer()
-   
-c.get()
-   
-{-
-OUTPUT:
-no output
--}
-]]></programlisting>
-</example>
-		</section>
 	</section>
-	
+
 	<section xml:id="ref.concepts.states.halt">
-	<title>Halted</title>
+		<title>Halted</title>
 		<para>
-			Execution of an expression is <firstterm>halted</firstterm> if it can not take an autonomous
-			step, nor will it ever receive a response to any outstanding site
-			call. Therefore, a halted expression will have no further execution.
+			A site call is <firstterm>halted</firstterm> if (1) it was internally blocked and one of its
+			arguments will never be bound because the expression that computes its
+			value has been halted or killed, or (2) it was externally blocked and
+			either a response has been received or an indication that there never
+			will be a response. An expression is halted if the set of associated
+			site calls have all halted. All component expressions of a halted
+			expression are halted. A halted expression stays halted unless it is
+			killed. A halted expression never makes site calls nor publishes any
+			value.
 		</para>
-		
-		<section xml:id="ref.concepts.states.halt.examples">
-			<title>Examples</title>
-
-		<example xml:id="ref.concepts.states.halt.examples.one">
-<title>Halted on Close</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Create a channel c.  After 500ms, "close" the channel
-   and halt any blocked "get" calls to the empty channel.
--}
-
-val c = Buffer()
-
-c.get() | Rwait(500) >> c.close()
-
-{-
-OUTPUT:
-signal
--}
-]]></programlisting>
-</example>
-		<para>See the <link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link>.</para>
-		</section>
 	</section>
-		
+
 	<section xml:id="ref.concepts.states.kill">
-	<title>Killed</title>
+		<title>Killed</title>
 		<para>
-			Execution of an expression is <firstterm>killed</firstterm> when it is forced to take no more
-		    autonomous steps.  Only a <link linkend="ref.combinators.pruning">pruning combinator</link>
-			may kill an expression.  For example,
-			expression <replaceable>G</replaceable> is killed in 
-			<replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
-			if <replaceable>G</replaceable> has published.
-			A component of a killed expression is killed.
+			Expression <replaceable>G</replaceable> is <firstterm>killed</firstterm> in
+			<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+			if <replaceable>G</replaceable> has published. All component
+			expressions of a killed expression are killed. A killed expression
+			stays killed. A killed expression never makes site calls nor publishes
+			any value.
 		</para>
+	</section>
+
+	<section xml:id="ref.concepts.states.helpful">
+		<title>Helpful Sites</title>
+		<para>
+			Sites that indicate absence of response are called <firstterm>helpful</firstterm> (see
+			<link linkend="ref.concepts.helpful">Helpful Sites</link>); not all sites are helpful.
+		</para>
+	</section>
+
+	<section xml:id="ref.concepts.states.definite">
+		<title>Definite/Indefinite Call</title>
+		<para>
+			For an externally blocked call if the called site knows the
+			outcome&#x2014;either the response value or that there will be no
+			response&#x2014;then the call is<firstterm>definite</firstterm>;
+			if it does not know the outcome the call is <firstterm>indefinite</firstterm>.
+		</para>
+	</section>
+
+	<section xml:id="ref.concepts.states.examples">
+		<title>Examples</title>
+	
+		<example xml:id="ref.concepts.states.examples.parallel">
+			<title>Parallel site calls; ready and blocked states</title>
+			<para>
+				Let <code>c</code> be a buffer. Consider expression <replaceable>G</replaceable> given by
+			</para>
+
+			<para>
+				<replaceable>G</replaceable>:: <code>c.get() | Rwait(1000)</code>
+			</para>
 		
-		<section xml:id="ref.concepts.states.kill.examples">
-			<title>Examples</title>
+			<para>
+				The expression is ready because it can make both calls. After both
+				calls have been made, the expression is blocked waiting for their
+				responses. Suppose <code>Rwait(1000)</code> responds first. Then
+				the expression stays blocked waiting for the response to
+				<code>c.get()</code>. If a response is received, the expression
+				halts; if <code>c</code> is empty and another caller closes
+				<code>c</code>, then <code>c.get()</code>	indicates that there will
+				be no response, causing <replaceable>G</replaceable> to halt; otherwise,
+				<replaceable>G</replaceable> stays blocked forever.
+			</para>
+		</example>
 
-		<example xml:id="ref.concepts.states.kill.examples.one">
-<title>Killed Queries</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Query multiple search engines.
-   Publish the query result that arrives first and 
-   kill executions of the other queries.
--}
+		<example xml:id="ref.concepts.states.examples.prune">
+			<title>Pruning combinator; killed state</title>
+			<para>
+				Consider the expression
+			</para>
+		
+			<para>
+				<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+			</para>
+		
+			<para>
+				where <replaceable>G</replaceable> from the previous example is
+			</para>
+		
+			<para>
+				<replaceable>G</replaceable>:: <code>c.get() | Rwait(1000)</code>
+			</para>
+		
+			<para>
+				As we have shown, <replaceable>G</replaceable> will definitely publish. Then <replaceable>G</replaceable> is killed, and so
+				are its sub-expressions.
+			</para>
+		</example>
 
-println(result) <result< ( Google("survivor") | Yahoo("survivor") | Bing("survivor") )
-
-{-
-NONRUNNABLE
--}
-]]></programlisting>
-</example>
-		</section>
+		<example xml:id="ref.concepts.states.examples.otherwise">
+			<title>Sequential and otherwise combinators</title>
+			<para>
+				In the previous example let <replaceable>F</replaceable> be
+			</para>
+		
+			<para>
+				<replaceable>F</replaceable>:: <code>x &gt;&gt; c.get() &gt;&gt; true ; false</code>
+			</para>
+		
+			<para>
+				In
+				<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>,
+				expression <replaceable>F</replaceable> is blocked until <code>x</code> is bound to a value. Since
+				<replaceable>G</replaceable> eventually publishes, <code>x</code> will be bound eventually. Then the call
+				<code>c.get()</code> is made in <replaceable>F</replaceable>. As we have discussed, this call (1) may receive
+				a response, in which case true will be published, and the entire
+				expression halts, (2) the call receives an indication that there will
+				be no response (in case <code>c</code> is empty and it is closed) in which case
+				<code>x &gt;&gt; c.get() &gt;&gt; true</code>
+				halts silently, causing false to be published, or (3) the
+				call remains blocked forever, causing <replaceable>F</replaceable> to remain blocked.
+			</para>
+		</example>
 	</section>
 
 	<section xml:id="ref.concepts.states.links">
@@ -288,7 +259,6 @@ NONRUNNABLE
 			</tgroup>
 		</informaltable>
 
-<!-- 
 		<informaltable frame="none">
 			<tgroup cols="1" align="left">
 				<thead>
@@ -300,13 +270,13 @@ NONRUNNABLE
 					<row>
 						<entry>
 							<itemizedlist>
+								<listitem><para><link linkend="TODO">TODO</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
 				</tbody>
 			</tgroup>
 		</informaltable>
--->
 
 	</section>
 </section>
