@@ -61,17 +61,19 @@
 		    	<productionrecap linkend="ebnf.guard"/>
 		    </productionset>
 		  </para>
-    </section>  
+    </section>
+    
+    
 		 
 		<section xml:id="ref.declarations.def.execution">
 		<title>Function Execution</title>
 		
 		  <para>
-		  Suppose that a function definition uses only variables and wildcards as parameters.
+		  We first consider the simplest case of argument binding, with only variables and wildcards as parameters.
 		  </para>
 		
 			<para>
-		   When such a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
+		   When a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
 		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><ind>deflate</ind>d</link>.
 		   </para>
 		   
@@ -86,6 +88,11 @@
 		  Whenever the execution of the body would publish a value, the function call publishes that value.
 		  If execution of the body <link linkend="ref.concepts.states.halt">halts</link>, the function call also halts.
 		  As a result, a function call might publish any number of times, including zero.
+		  </para>
+		  
+		  <para>
+		  If the function call is <link linkend="ref.concepts.states.killed">killed</link>,
+		  execution of the body expression is also immediately <link linkend="ref.concepts.states.killed">killed</link>.
 		  </para>
 		  
 		  <para>
@@ -104,26 +111,89 @@ E
 
 		</para>
 		   
+		   <!-- 
+		     This is tutorial material, and so it is commented out here. 
+		     In the tutorial, at Jay's suggestion, we'll add an example which
+		     has three different behaviors in each of the three evaluation modes.
+		     - dkitchin
+		   -->
+		   <!-- 
 		  <para>
-		 			 Lenient functions are different from <firstterm>strict</firstterm> functions,
-			which evaluate their arguments before evaluating the body. They are also unlike <firstterm>lazy</firstterm>
-			functions, which evaluate the body but do not begin to evaluate the arguments until they
-			are encountered during the evaluation of the body.
+		 			 We contrast lenient execution with strict and lazy evaluations of
+functions, which are common paradigms for function execution. In a
+strict execution, the arguments of a function are first evaluated, and
+then the function body. In lazy evaluation, the function body starts
+executing until the value of an argument is needed; only then is the
+argument evaluated. Lenient execution differs from both in that the
+body and the arguments are evaluated in parallel.
+...
 			</para>
-			
+			 -->
+
 
 		</section> 
 		
+		<section xml:id="ref.declarations.def.recursion">
+    <title>Recursion</title>
+    
+      <para>
+        Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
+      </para>
+        
+        <example xml:id="ref.declarations.def.recursion.examples.factorial">
+<programlisting language="orc"><![CDATA[
+{- A recursive factorial function -}
+def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
+]]></programlisting>
+      </example>
+        
+      <para>
+        A recursive function might continue executing indefinitely, producing an infinite number of publications.
+      </para>  
+        
+      <example xml:id="ref.declarations.def.recursion.examples.factorial">
+<programlisting language="orc"><![CDATA[
+{- Publishes a signal every second, forever -}
+def metronome() = signal | Rwait(1000) >> metronome()
+
+{- NONRUNNABLE -}
+]]></programlisting>
+      </example>
+        
+        
+        <para>
+        A set of functions may be mutually recursive by naming each other in their bodies.
+        There is no special keyword for <ind>mutual recursion</ind>; whenever two or more function
+        definitions are adjacent, the compiler detects whether they mutually recurse.
+        </para>
+<example>       
+<programlisting language="orc"><![CDATA[
+{- Test if a number is even or odd, using mutual recursion -}
+def even(n) = Ift(n = 0) >> true
+            | Ift(n <: 0) >> odd(n+1) 
+            | Ift(n :> 0) >> odd(n-1)
+    
+def odd(n) = Ift(n = 0) >> false
+           | Ift(n <: 0) >> even(n+1) 
+           | Ift(n :> 0) >> even(n-1)
+
+odd(-4)
+
+{- 
+OUTPUT:
+false
+-}
+]]></programlisting>
+</example>       
+    </section>  
+		
 		<section xml:id="ref.declarations.def.pattern">
-		<title>Pattern Matching</title>
+		<title>Patterns as Parameters</title>
 		
 		  <para>
-		  A function parameter may be any pattern. If all parameters are variables or wildcards, calls to the function execute
-		  as described above. If other patterns are used, they increase the strictness of a call.
-		  </para>
-		  
-		  <para>
-		  A <firstterm>lenient pattern</firstterm> is either a variable pattern or a wildcard pattern; such patterns will never fail to match. 
+		  A function parameter may be any pattern. 
+		  A <firstterm>lenient pattern</firstterm> is either a variable pattern or a wildcard pattern; 
+		  such patterns will never fail to match. 
 		  Any other pattern is a <firstterm>strict pattern</firstterm>, which could fail to match. 
 		  </para>
 		  
@@ -160,7 +230,7 @@ z >P> E
 		  When a function is called, and each strict pattern matches successfuly as described earlier, then the guard expression
 		  <replaceable>E</replaceable> is deflated. If <replaceable>E</replaceable> deflates to <code>true</code>, then the function
 		  body is executed. If <replaceable>E</replaceable> deflates to some other value, or halts without publishing a value,
-		  then the function call halts. 
+		  then the function call halts silently. 
 		  </para>
 			
 			<para>
@@ -192,80 +262,31 @@ z >P> Ift(Gd) >> E
 			</para>
 			
 			<para>
-			  When a function with multiple clauses is called, the first clause is executed, as described earlier.
-			  If that clause halts without executing the function body, either because some strict pattern failed to
-			  match, because some argument expression halted, or because a guard did not deflate to <code>true</code>,
-			  then the next clause is executed. If the last clause halts, then the call halts.
+			  When a function with multiple clauses is called, the argument expressions are deflated, and in
+			  parallel the first clause is executed.
+			  The clause will <firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
+			  <orderedlist>
+			  <listitem>One of the parameters is a strict pattern, and that pattern fails to match.</listitem>
+			  <listitem>One of the parameters is a strict pattern, and the corresponding argument expression has halted silently.</listitem>
+			  <listitem>There is a guard expression, and it did not deflate to <code>true</code>.</listitem>
+			  </orderedlist>
+			  
+			  If each strict pattern matches successfully, and the guard deflates to <code>true</code>, 
+			  then the corresponding function body executes. 
+			  If the clause fails, then the next clause is executed.
+			  If the last clause fails, then the function call halts silently. 
 			</para>
-			
-			<para>
-			  If a clause halts, then the argument expressions are not reexecuted. They deflate in parallel with 
-			  the entire series of clauses; if an argument expression deflates to a value, or halts, that same outcome
-			  is used for every clause. 
-			</para> 
 
 	  </section>
 		 
-		<section xml:id="ref.declarations.def.recursion">
-		<title>Recursion</title>
 		
-		  <para>
-			  Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
-			</para>
-			  
-			  <example xml:id="ref.declarations.def.recursion.examples.factorial">
-<programlisting language="orc"><![CDATA[
-{- A recursive factorial function -}
-def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
-]]></programlisting>
-		  </example>
-			  
-			<para>
-			  A recursive function might continue executing indefinitely, producing an infinite number of publications.
-			</para>  
-			  
-			<example xml:id="ref.declarations.def.recursion.examples.factorial">
-<programlisting language="orc"><![CDATA[
-{- Publishes a signal every second, forever -}
-def metronome() = signal | Rwait(1000) >> metronome()
-
-{- NONRUNNABLE -}
-]]></programlisting>
-		  </example>
-			  
-			  
-			  <para>
-			  A set of functions may be mutually recursive by naming each other in their bodies.
-			  There is no special keyword for <ind>mutual recursion</ind>; whenever two or more function
-			  definitions are adjacent, the compiler detects whether they mutually recurse.
-			  </para>
-<example>			  
-<programlisting language="orc"><![CDATA[
-{- Test if a number is even or odd, using mutual recursion -}
-def even(n) if (n < 0) = odd(n+1)
-def even(n) if (n = 0) = true
-def even(n) if (n > 0) = odd(n-1)
-
-def odd(n) if (n < 0) = even(n+1)
-def odd(n) if (n = 0) = false
-def odd(n) if (n > 0) = even(n-1)
-
-odd(-4)
-
-{- 
-OUTPUT:
-false
--}
-]]></programlisting>
-</example>			 
-	  </section>
 		
 	  
 	  <section xml:id="ref.declarations.def.currying">
 		<title>Curried Definition</title>
 		
 		<para>
-		  A function definition may have more than one group of arguments. 
+		  A function definition may have more than one group of parameters. 
 		  If it does, it is a <firstterm baseform="curry">curried</firstterm> definition.
 		  When such a function is called, it executes as described earlier,
 		  except that rather than executing the function body, it instead immediately
@@ -285,8 +306,33 @@ def fn(x) = ( lambda (y) = E )
     </para>
     
     <para>
-		  Combining curried definition with clausal definition is not recommended.
+		  Combining curried definitions and clausal definitions may result
+		  in counterintuitive program behavior.
+		  When a function clause has multiple parameter groups, only the first
+		  parameter group participates in pattern matching. Subsequent parameter
+		  groups are irrelevant until after a clause has been chosen.
 		</para>
+		
+		<para>
+		  The following two programs are equivalent:
+		  
+<programlisting language="orc"><![CDATA[
+def fn([x])([y]) = E
+def fn(x)(y) = F
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+def fn([x]) = ( lambda ([y]) = E )
+def fn(x) = ( lambda (y) = F )
+]]></programlisting>
+
+      Consequently, the call <code>fn([0])([])</code> will halt silently,
+      rather than matching the clause <code>fn(x)(y) = F</code>,
+      since the clause <code>fn([x])([y]) = E</code> is chosen based on the first argument group
+      <code>[0]</code>, even though the subsequent parameter <code>[y]</code> does not match the 
+      argument <code>[]</code>.
+    </para>
+		
 		
 		</section>
 	  
