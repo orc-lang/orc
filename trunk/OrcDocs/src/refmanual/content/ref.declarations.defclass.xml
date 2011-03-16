@@ -12,17 +12,30 @@
 
 <!-- def class -->
    <section xml:id="ref.declarations.defclass">
-      <title><code>def class</code>:  Define Site in Orc</title>
+      <title><code>def class</code>: Define Site in Orc</title>
       
       <para>
-      	Class is an abstraction mechanism in Orc, much like function. It
-		allows a programmer to code a site in Orc. More generally, a <ind>class</ind> can
-		be used to: (1) Define object classes with <ind>methods</ind>, (2) Create new
-		sites and extend behaviors of existing sites, (3) Allow concurrent
-		method invocation on objects, and (4) Create active objects, whose
-		executions may be based on time or other external stimulus, not
-		necessarily explicitly called methods.
+      The <code>def class</code> declaration provides the capability to implement sites within Orc itself.
+      It is syntactically similar to the <code>def</code> declaration, but serves a different purpose. 
       </para>
+      
+      <para>
+      The body of a <code>def class</code> consists of a sequence of declarations followed by a 
+      <firstterm baseform="goal expression">goal</firstterm> expression. Each <code>def</code> or
+			<code>def class</code> declaration in this sequence is called a <firstterm>method</firstterm>; 
+			a class must have at least one method.       
+      </para>
+      
+      <para>
+      </para>
+      
+      <para>
+      Orc's <code>def class</code> provides encapsulation in a manner similar to classes in object-oriented
+      languages. In addition to colocating methods and the shared resources on which they operate,
+      an Orc class may also encapsulate some computation via the goal expression, colocating methods 
+      and resources with some orchestration which manages or monitors those resources.  
+      </para>
+      
 	  <section xml:id="ref.declarations.defclass.syntax">
 	  <title>Syntax</title>
 	  <para>
@@ -31,137 +44,110 @@
 	    </productionset>
 	  </para>
 	  </section>
-	  <section xml:id="ref.declarations.defclass.declaration">
-		  <title>Declaration</title>
-		  <para> A class is defined much like a a function, as shown below. </para>
-		  <programlisting language="orc"><![CDATA[
-def class Newset(n) = 
-]]></programlisting>
-		  <para> 
-		  	The keyword <code>class</code> denotes that a class is being defined, not just a
-			function.  A class definition may have parameters like a function
-			definition. In particular, a class or class instance could be a parameter.
-		  </para>
-		  <para>
-		  	The body of a class may include definitions of both functions and
-			classes. The name of every definition in the body is exported to the
-			surrounding scope as a <ind>dot</ind> method. A class body must include at least
-			one definition, which could be a function or a class.
-		  </para>
-		  <para>
-		  	A class may be defined by a set of clauses. In that case, each clausal
-			body must include the definitions of the same set of functions and
-			classes.
-		  </para>
-		  <example xml:id="ref.declarations.defclass.declaration.defset"><title>Defining a Set</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Define a set of maximum length n.
-   Export methods "add", "remove" and "size".
--}
-
-def class Newset(n) =
- val b = BoundedBuffer(n) -- to store the elements of the set
- val ne = Ref(0)          -- number of elements currently in the set
-
- {- Add an element to the set if it is non-full.
-    If the set is full, wait until the set becomes non-full.
-    Return a signal on completion.
- -}
- def add(x) = b.put(x) >> ne := ne? + 1
-
- {- Remove some element from the set if it is non-empty.
-    If the set is empty, wait until the set becomes non-empty.
-    Return the removed value.
- -}
- def remove() = b.get() >x> ne := ne? - 1 >> x
-
- {- Return the size, i.e., the number of elements currently in the set -}
- def size() = ne?
-
-
- {- Goal -} stop
- 
-{-
-OUTPUT:
-no output
--}
-]]></programlisting>
-		  </example>
+	  
+	  <section xml:id="ref.declarations.defclass.constructor">
+	  <title>Creating Instances</title>
+	  
+	  <para>
+	  A <code>def class</code> declaration binds its identifier to a new site, which we call an Orc class. 
+	  When this site is called, it creates and publishes an <firstterm>instance</firstterm>, 
+	  a site which has all of the methods defined in the class.
+	  </para>
+	  
+	  <para>
+	  In parallel, execution of the goal expression begins. 
+	  Any value published by the goal expression is discarded. 
+	  The class is a site, meaning that the execution of the goal expression cannot be killed by Orc; 
+	  it continues independently of the rest of the program.
+	  </para>
+	  
+	  <para>
+	  When an instance is created, each <code>val</code> declaration begins to execute, 
+	  and each method is captured as a <link linkend="ref.data.closure">closure</link>.
+	  This has two important implications:
+	  
+	  <itemizedlist>
+      <listitem>
+        Different instances will have different values for each <code>val</code> declaration,
+        created by separate computations, and these bindings are captured by the method closures.
+        In particular, this means that an instance could create some mutable resource, such as
+        a mutable cell or a semaphore, which is then manipulated by the methods; different
+        instances will have different underlying mutable resources. Instances are thus very similar 
+        to objects in object-oriented languages.
+      </listitem>
+      <listitem>
+        Recall that creation of a closure is strict in the closure's free variables. Thus,
+        the creation of the instance may block on some free variable within the class (i.e.
+        a variable bound by <code>val</code>), or a free variable in the scope of the class.
+        In practice, this means that instance creation will block on every <code>val</code>
+        declaration whose name is mentioned in any method.
+      </listitem>
+    </itemizedlist>
+	  
+	  </para>
+	  	  
 	  </section>
-	  <section xml:id="ref.declarations.defclass.semantics">
-		  <title>Semantics</title>
-		  <para> A class call such as</para>
-		  <programlisting language="orc"><![CDATA[
-Newset(5)
-]]></programlisting>
-		  <para>
-		  	creates and <ind>publishes</ind> a site (an instance of the class). The created
-			site can be accessed through the methods defined for the
-			class. Unlike <ind>goal expressions</ind> of functions, the publications of the
-			goal expression of a class are ignored. Yet, the goal expression is
-			executed, and its execution may have side effects.
-		  </para>
-		  <programlisting language="orc"><![CDATA[
-{- Let st be an instance of Newset created through -}
-
-  val st = Newset(5)
-
-{- The methods defined in Newset can be applied as dot methods
-   on st, as shown below. 
--}
-
-  st.add(3) >> st.add(5) >> st.remove() >x> st.size() >y> (x,y)
-]]></programlisting>
-	  <section xml:id="ref.declarations.defclass.semantics.restrictions">
-	  	<title>Restrictions</title>
-	  	<para>
-	  		A class definition obeys all the rules of function definition except:
-	  	</para>
-	  	<itemizedlist>
-	  		<listitem><para>Any publication by the goal expression of a class is ignored.</para></listitem>
-	  		<listitem><para>Each function defined within a class can publish at most once.</para></listitem>
-	  	</itemizedlist>
+	  
+	  <section xml:id="ref.declarations.defclass.constructor">
+	  <title>Calling Methods</title>
+	  
+	  <para>
+	  Each instance returned by a call to the class has a method for each <code>def</code> or <code>def class</code>
+	  declaration in the class body. A method is accessed using a <link linkend="ref.expressions.dot">dot access</link>;
+	  the identifier name of the declaration is used as the key. When a method is called, the corresponding definition
+	  executes.
+	  </para>
+	  
+	  <para>
+	  Each method behaves as a site, in particular a <link linkend="ref.concepts.helpful">helpful</link> site. Therefore,
+	  
+	  <itemizedlist>
+	    <listitem>
+	      A method call, unlike a function call, is strict in all of its arguments.
+	    </listitem>
+	    <listitem>
+        A method call returns at most one value. If the method is a <code>def</code>, its first publication
+        is used, and execution of the body continues, but subsequent publications are discarded. From the
+        perspective of the rest of the program, the method call returned a single value and then halted.  
+      </listitem>
+      <listitem>
+        If the method is a <code>def</code>, and execution of its body expression halts silently,
+        then the method call also halts silently, exactly like a helpful site.   
+      </listitem>
+      <listitem>
+        A method call cannot be <link linkend="ref.concepts.kill"><ind>killed</ind></link> by the pruning combinator.
+        Once the method has been called, its execution continues independently of the rest of the Orc program. 
+      </listitem>
+	  </itemizedlist>
+	  
+	  </para>
+	  
+	  <para>
+	    The <ind>methods</ind> of an instance may be executed concurrently through concurrent invocations;
+	    there is no synchronization or serialization mechanism to prevent this. Different calls to the same
+	    method may even execute concurrently with each other.
+	    If any method uses a shared resource, care must be taken to ensure that different method invocations
+	    do not interfere with each other in unexpected ways.
+    </para>
+	  
 	  </section>
-	  <section xml:id="ref.declarations.defclass.semantics.concurrent">
-	  	<title>Concurrent Executions of Methods</title>
-	  	<para>
-	  		The <ind>methods</ind> of a class instance may be executed concurrently through
-			concurrent invocations. The class must be designed for concurrent
-			execution, otherwise the different executions may interfere. For
-			example,
-	  	</para>
-	  	<programlisting language="orc"><![CDATA[
-st.add(3) | st.add(5)
-]]></programlisting>
-		<para>may not add two items to <code>st</code> because of possible interference in their executions.</para>
-	  </section>
-	  <section xml:id="ref.declarations.defclass.semantics.site">
-	  	<title>Class Instance is a Site</title>
-	  	<para>
-	  		Any instance of a class, such as <code>st</code> above, is a site.  
-	  		Calls to methods of any class instance are treated exactly like external site
-			calls.  Therefore,
-		</para>
-		<itemizedlist>
-			<listitem><para>A call is not <link linkend="ref.concepts.states.kill"><ind>killed</ind></link> by <ind>prune</ind>; see example below.</para></listitem>
-			<listitem><para>Unlike calls to functions, calls to class methods are strict;
-  							i.e., the call is made only when all the parameters are bound.</para></listitem>
-		</itemizedlist>
-		<programlisting language="orc"><![CDATA[
-v <v< (st.add(3) >> true | Rwait(1) >> false)
-]]></programlisting>
-		<para>		
-			The value published by this expression is either <code>true</code> or <code>false</code>. In
-			the first case, item 3 is added to <code>st</code>. In the second case, item 3 is
-			also added to <code>st</code>; the call <code>st.add(3)</code> is not <link linkend="ref.concepts.states.kill">killed</link> when
-			the execution of <code>Rwait(1) >> false</code> is completed, though the
-			publication of <code>st.add(3)</code> is subsequently ignored.
-		</para>
-	  </section>
-	</section>
+	  
+	  
 	
-	  <section xml:id="ref.declarations.defclass.semantics.examples">
-	  	<title>Longer Examples</title>
+	  <section xml:id="ref.declarations.defclass.type">
+	    <title>Type</title>
+	    <para>
+	      A <code>def class</code> declaration is typechecked in the same way as a <link linkend="ref.declarations.def"><code>def</code> declaration</link>, with one exception.
+	      The return type of a <ind>closure</ind> created by <code>def class</code>, rather than being the type of the body expression, is instead a <link linkend="ref.data.record.type">record type</link>
+	      <code>{.</code> <replaceable>m<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>m<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
+	      where each <replaceable>m<subscript>i</subscript></replaceable> is the name of a method,
+	      and <replaceable>T<subscript>i</subscript></replaceable> is its type.
+	    </para>
+	  </section>
+	  
+	   <section xml:id="ref.declarations.defclass.examples">
+	   <title>Examples</title>
+	   
 	  	<section>
 	  	<title>Matrix Definition</title>
 	  	<para>
@@ -202,14 +188,14 @@ OUTPUT:
 		  <title>Create a Site</title>
 		  <para>
 		  	We create a site, <code><ind>Cell</ind></code>, that defines a write-once variable. It
-			supports two methods: <code>read</code> <link linkend="ref.concepts.states.block">blocks</link> until the variable has been
-			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.states.block">blocks</link> forever if a value has
+			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
+			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
-			publishes a <code>signal</code>.
+			publishes a <code><ind>signal</ind></code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code>Semaphore</code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a
-			value has been written) and <code>Ref</code> to store the value.
+		  	We use two library sites, <code><ind>Semaphore</ind></code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
+			value has been written) and <code><ind>Ref</ind></code> to store the value.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite"><title>Create a Site</title>
 <programlisting language="orc"><![CDATA[
@@ -258,12 +244,52 @@ no output
 ]]></programlisting>
 		  </example>
 		  </section>
+		  
+		  
+		  <section>
+      <title>Defining a Set</title>
+     <example xml:id="ref.declarations.defclass.declaration.defset"><title>Defining a Set</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Define a set of maximum length n.
+   Export methods "add", "remove" and "size".
+-}
+
+def class Newset(n) =
+ val b = BoundedBuffer(n) {- to store the elements of the set -}
+ val ne = Ref(0)          {- number of elements currently in the set -}
+
+ {- Add an element to the set if it is non-full.
+    If the set is full, wait until the set becomes non-full.
+    Return a signal on completion.
+ -}
+ def add(x) = b.put(x) >> ne := ne? + 1
+
+ {- Remove some element from the set if it is non-empty.
+    If the set is empty, wait until the set becomes non-empty.
+    Return the removed value.
+ -}
+ def remove() = b.get() >x> ne := ne? - 1 >> x
+
+ {- Return the size, i.e., the number of elements currently in the set -}
+ def size() = ne?
+
+
+ {- Goal -} stop
+ 
+{-
+OUTPUT:
+no output
+-}
+]]></programlisting>
+      </example>
+     </section>
+		  
 		  <section>
 		  <title>Managing Concurrent Access</title>
 		  <para>
 		  	The methods of a class instance may be executed concurrently through
 			concurrent invocations. Concurrent execution may cause interference,
-			as in the example of the <code>Newset</code> example. Typically, semaphores are used to
+			as in the example of the <code>Newset</code> example. Typically, <ind>semaphores</ind> are used to
 			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
@@ -352,7 +378,7 @@ OUTPUT:
 -}
 
 def class Stopwatch() =
- val clk = Clock() -- create a new instance of Clock with time value 0
+ val clk = Clock() {- create a new instance of Clock with time value 0 -}
  val (timeshown, laststart) = (Ref(0), Ref(0))
 
  def start() = laststart := clk()
@@ -367,18 +393,9 @@ no-output
 ]]></programlisting>
 		  </example>
 		  </section>
-	  </section>
-	
-	  <section xml:id="ref.declarations.defclass.type">
-	    <title>Type</title>
-	    <para>
-	      A <code>def class</code> declaration is typechecked in the same way as a <link linkend="ref.declarations.def"><code>def</code> declaration</link>, with one exception.
-	      The return type of a closure created by <code>def class</code>, rather than being the type of the body expression, is instead a record type
-	      <code>{.</code> <replaceable>d<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>d<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
-	      where each <replaceable>d<subscript>i</subscript></replaceable> is the name of a <code>def</code> or <code>def class</code> declaration in the body,
-	      and <replaceable>T<subscript>i</subscript></replaceable> is its type.
-	    </para>
-	  </section>
+	 
+	   
+	   </section>
 	
 	  <section xml:id="ref.declarations.defclass.links">
 		  <title>Related Links</title>
