@@ -175,7 +175,7 @@ fn(G,H)
 <programlisting language="orc"><![CDATA[
 val x = G
 val z = H
-z >P> Gd >true> E
+z >P> Ift(Gd) >> E
 ]]></programlisting>
 
 			</para>
