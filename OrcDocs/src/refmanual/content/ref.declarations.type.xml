@@ -19,7 +19,7 @@
 
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: <firstterm baseform="type alias">aliases</firstterm>, 
+			type declarations: <indexterm significance="preferred"><primary>type alias</primary></indexterm><firstterm baseform="type alias">aliases</firstterm>, 
 			<emphasis>imports</emphasis>, and <emphasis>datatypes</emphasis>.
 			</para>
 			
@@ -37,7 +37,7 @@
   <section xml:id="ref.declarations.type.alias">
 	  <title>Type Alias</title>
 	  <para>
-	    A <firstterm>type alias</firstterm> gives an existing type a new name, for the programmer's ease of use.
+	    A <indexterm significance="preferred"><primary>type alias</primary></indexterm><firstterm>type alias</firstterm> gives an existing type a new name, for the programmer's ease of use.
 			There is no distinction between the alias and the aliased type; they can be used
 			interchangeably. A type alias may not be recursive.
 	  </para>
@@ -52,7 +52,7 @@
 	  <title>Type Import</title>
 	  
 	  <para>
-			A <firstterm>type import</firstterm> gives a name to a type described by some external service.
+			A <indexterm significance="preferred"><primary>type import</primary></indexterm><firstterm>type import</firstterm> gives a name to a type described by some external service.
 			This allows new types to be added to Orc, in much the same way that
 			the <code>site</code> declaration allows new sites to be added to Orc.
 			Type imports are often used in conjunction with the <link linkend="ref.declarations.site"><code>site</code> declaration</link>,
@@ -68,7 +68,7 @@
 		<indexterm><primary>import type</primary></indexterm>
 	  
 	  <para>
-	    A <emphasis><ind>datatype</ind> declaration</emphasis> defines a new type, called a <firstterm>sum type</firstterm>, which is the
+	    A <emphasis><indexterm><primary>datatype</primary></indexterm>datatype declaration</emphasis> defines a new type, called a <indexterm significance="preferred"><primary>sum type</primary></indexterm><firstterm>sum type</firstterm>, which is the
 	    type of all values produced by any of the declared constructors. 
 	  </para>
 	  <para>

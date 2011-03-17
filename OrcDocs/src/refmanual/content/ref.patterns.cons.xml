@@ -15,7 +15,7 @@
 		<title>Cons Pattern</title>
 		
 		<para>
-			The <firstterm>cons pattern</firstterm> matches the head and the tail of a nonempty list.
+			The <indexterm significance="preferred"><primary>cons pattern</primary></indexterm><firstterm>cons pattern</firstterm> matches the head and the tail of a nonempty list.
 		</para>
 		
 		<section xml:id="ref.patterns.cons.syntax">

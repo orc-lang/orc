@@ -16,14 +16,14 @@
 <!-- Index pointers for unwritten terms -->
 <indexterm><primary>call pattern</primary></indexterm>
 
-<para>An Orc <firstterm>datatype</firstterm> is an <ind>algebraic data type</ind>, or "tagged union".
-A datatype value contains a sequence of values enclosed by a <firstterm>tag</firstterm>.
+<para>An Orc <indexterm significance="preferred"><primary>datatype</primary></indexterm><firstterm>datatype</firstterm> is an <indexterm><primary>algebraic data type</primary></indexterm>algebraic data type, or "tagged union".
+A datatype value contains a sequence of values enclosed by a <indexterm significance="preferred"><primary>tag</primary></indexterm><firstterm>tag</firstterm>.
 This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
 
 <para>
   Datatypes are defined by a <link linkend="ref.declarations.type.datatype"><code>type</code> declaration</link>.
-  Each <firstterm>constructor</firstterm> in the declaration introduces a new tag, followed by a sequence of <emphasis>slots</emphasis>.
+  Each <indexterm significance="preferred"><primary>constructor</primary></indexterm><firstterm>constructor</firstterm> in the declaration introduces a new tag, followed by a sequence of <emphasis>slots</emphasis>.
   The <code>|</code> separator allows multiple constructors to be defined at the same time.
 </para>
 
@@ -56,12 +56,12 @@ This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
 <title>Type</title>
 
 <para>
-A datatype declaration defines a new <firstterm>sum type</firstterm>.
+A datatype declaration defines a new <indexterm significance="preferred"><primary>sum type</primary></indexterm><firstterm>sum type</firstterm>.
 </para>
 
 <para>
 Each of the constructor sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
-<code><ind>lambda</ind></code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
+<code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
 where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
 and <replaceable>S</replaceable> is the sum type.
 </para>
@@ -71,7 +71,7 @@ with type <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscri
 </para>
 
 <para>
-A datatype declaration may define a <firstterm>recursive type</firstterm>: the name of the type
+A datatype declaration may define a <indexterm significance="preferred"><primary>recursive type</primary></indexterm><firstterm>recursive type</firstterm>: the name of the type
 may be used in the definition of the type itself. In fact, this is the only way to declare a recursive
 type in Orc.
 </para>

@@ -15,8 +15,8 @@
 		<title>Dot Access</title>
 		
 		<para>
-			A <firstterm baseform="dot">dot access</firstterm> is an expression which retrieves a named <firstterm>member</firstterm> of a value.
-			It consists of a <firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <firstterm>key</firstterm> <replaceable>K</replaceable>.
+			A <indexterm significance="preferred"><primary>dot</primary></indexterm><firstterm baseform="dot">dot access</firstterm> is an expression which retrieves a named <indexterm significance="preferred"><primary>member</primary></indexterm><firstterm>member</firstterm> of a value.
+			It consists of a <indexterm significance="preferred"><primary>target</primary></indexterm><firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <indexterm significance="preferred"><primary>key</primary></indexterm><firstterm>key</firstterm> <replaceable>K</replaceable>.
 			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>v</replaceable>.
 			If the value <replaceable>v</replaceable> has a member named <replaceable>K</replaceable>, that member
 			is published. Otherwise, the expression halts.
@@ -32,9 +32,9 @@
 		</para>
 			
 		<para>
-			Like many expressions in Orc, a dot access is simply another form of <ind>site call</ind>. The key
+			Like many expressions in Orc, a dot access is simply another form of <indexterm><primary>site call</primary></indexterm>site call. The key
 			is converted to a special value and passed to the site call as the only argument. The
-			site call <ind>publishes</ind> the member named by the key if it exists, and halts otherwise.
+			site call <indexterm><primary>publishes</primary></indexterm>publishes the member named by the key if it exists, and halts otherwise.
 		</para>
 		
 		<section xml:id="ref.expressions.dot.syntax">

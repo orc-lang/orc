@@ -15,7 +15,7 @@
 
 <para>
 The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites (as well as functions and types) for use in Orc programs.
-These sites are declared in the Orc <firstterm>prelude</firstterm>, which is implicitly included in Orc programs.
+These sites are declared in the Orc <indexterm significance="preferred"><primary>prelude</primary></indexterm><firstterm>prelude</firstterm>, which is implicitly included in Orc programs.
 </para>
 
 <para>

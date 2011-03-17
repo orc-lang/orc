@@ -15,8 +15,8 @@
 		<title><code>stop</code></title>
 
 		<para>
-		The <code><ind>stop</ind></code> expression does nothing. 
-		Execution of <code>stop</code> immediately <link linkend="ref.concepts.states.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent">silently</link>.
+		The <code><indexterm><primary>stop</primary></indexterm>stop</code> expression does nothing. 
+		Execution of <code>stop</code> immediately <link linkend="ref.concepts.states.halt"><indexterm><primary>halts</primary></indexterm>halts</link> <link linkend="ref.concepts.silent">silently</link>.
 		</para>		
 
 		

@@ -18,7 +18,7 @@
 <title>Combinators</title>
 
 <para>
-Orc has four <firstterm baseform="combinator">combinators</firstterm>: parallel, sequential, pruning, and otherwise. A combinator forms an
+Orc has four <indexterm significance="preferred"><primary>combinator</primary></indexterm><firstterm baseform="combinator">combinators</firstterm>: parallel, sequential, pruning, and otherwise. A combinator forms an
 expression from two component expressions. Each combinator captures a different aspect of concurrency.
 Syntactically, the combinators are written infix, and have lower <link linkend="ref.syntax.precedence">precedence</link> than operators, but higher
 precedence than conditionals or declarations.

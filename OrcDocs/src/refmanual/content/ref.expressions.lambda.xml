@@ -16,8 +16,8 @@
 
 		<para>
 		Sometimes one would like to create a closure directly, without bothering to give it a name. 
-		There is a special keyword <code><ind>lambda</ind></code> for this purpose. By writing a function
-		definition without the keyword <code><ind>def</ind></code> and replacing the function name with
+		There is a special keyword <code><indexterm><primary>lambda</primary></indexterm>lambda</code> for this purpose. By writing a function
+		definition without the keyword <code><indexterm><primary>def</primary></indexterm>def</code> and replacing the function name with
 		the keyword <code>lambda</code>, that definition becomes an expression which publishes a closure. 
 		</para>
 		<para>

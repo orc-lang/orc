@@ -13,15 +13,15 @@
 <section xml:id="ref.data.numeric" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Numerics</title>
 
-<para>Orc includes two numeric types, <code><ind>Integer</ind></code> and <code><ind>Number</ind></code>.
+<para>Orc includes two numeric types, <code><indexterm><primary>Integer</primary></indexterm>Integer</code> and <code><indexterm><primary>Number</primary></indexterm>Number</code>.
 Orc's <code>Integer</code> is an arbitrary-precision two's complement integer. 
-Orc's <code>Number</code> is a <ind>floating point</ind> number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
+Orc's <code>Number</code> is a <indexterm><primary>floating point</primary></indexterm>floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
 <code>Number</code> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
 Namely, "infinite, NaN, or subnormal results are always treated as errors, and –0 results are hidden".
 </para>
 
 <para>
-Note that the <ind>divide</ind> operation on <code>Number</code>s can encounter a
+Note that the <indexterm><primary>divide</primary></indexterm>divide operation on <code>Number</code>s can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
 using IEEE 754 binary64 (formerly called double precision)
@@ -77,7 +77,7 @@ If a numeric literal contains a decimal point or an "<code>E</code>", it is a <c
 
 <para>
 	Arithmetic operators with two integer arguments will perform an integer operation and 
-	return an integer result; for example, <code>5 / 2</code> performs integer <ind>division</ind> and 
+	return an integer result; for example, <code>5 / 2</code> performs integer <indexterm><primary>division</primary></indexterm>division and 
 	returns 2. However, if either argument to an operator has a decimal part 
 	(even if it is trivial, as in <code>3.0</code>), the other argument will be promoted, and 
 	a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 

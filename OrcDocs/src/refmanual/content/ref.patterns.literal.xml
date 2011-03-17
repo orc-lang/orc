@@ -14,7 +14,7 @@
 	<section xml:id="ref.patterns.literal">
 		<title>Literal Pattern</title>
 		<para>
-			A <firstterm>literal pattern</firstterm> matches only the same literal value. 
+			A <indexterm significance="preferred"><primary>literal pattern</primary></indexterm><firstterm>literal pattern</firstterm> matches only the same literal value. 
 			It is often used in clausal definition of functions.   
 		</para>
 		<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>

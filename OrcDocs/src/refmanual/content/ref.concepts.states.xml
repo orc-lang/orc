@@ -91,7 +91,7 @@
 	<section>
 		<title>Ready</title>
 		<para>
-			A site call is <firstterm>ready</firstterm> if all its argument
+			A site call is <indexterm significance="preferred"><primary>ready</primary></indexterm><firstterm>ready</firstterm> if all its argument
 			variables are bound to values, so that a call can be made. An
 			expression is ready if some site call in its set of associated
 			site calls is ready.
@@ -101,7 +101,7 @@
 	<section xml:id="ref.concepts.states.block">
 		<title>Blocked</title>
 		<para>
-			A site call is <firstterm baseform="block">blocked</firstterm> if (1) the call can not be made because some
+			A site call is <indexterm significance="preferred"><primary>block</primary></indexterm><firstterm baseform="block">blocked</firstterm> if (1) the call can not be made because some
 			argument of the call is unbound, the call is then internally blocked,
 			or (2) the caller is waiting for a response, the call is then
 			externally blocked. An expression is blocked if its set of associated
@@ -116,7 +116,7 @@
 	<section xml:id="ref.concepts.states.halt">
 		<title>Halted</title>
 		<para>
-			A site call is <firstterm baseform="halt">halted</firstterm> if (1) it was internally blocked and one of its
+			A site call is <indexterm significance="preferred"><primary>halt</primary></indexterm><firstterm baseform="halt">halted</firstterm> if (1) it was internally blocked and one of its
 			arguments will never be bound because the expression that computes its
 			value has been halted or killed, or (2) it was externally blocked and
 			either a response has been received or an indication that there never
@@ -131,7 +131,7 @@
 	<section xml:id="ref.concepts.states.kill">
 		<title>Killed</title>
 		<para>
-			Expression <replaceable>G</replaceable> is <firstterm>killed</firstterm> in
+			Expression <replaceable>G</replaceable> is <indexterm significance="preferred"><primary>killed</primary></indexterm><firstterm>killed</firstterm> in
 			<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
 			if <replaceable>G</replaceable> has published. All component
 			expressions of a killed expression are killed. A killed expression
@@ -143,7 +143,7 @@
 	<section xml:id="ref.concepts.states.helpful">
 		<title>Helpful Sites</title>
 		<para>
-			Sites that indicate absence of response are called <firstterm>helpful</firstterm> (see
+			Sites that indicate absence of response are called <indexterm significance="preferred"><primary>helpful</primary></indexterm><firstterm>helpful</firstterm> (see
 			<link linkend="ref.concepts.helpful">Helpful Sites</link>); not all sites are helpful.
 		</para>
 	</section>
@@ -153,8 +153,8 @@
 		<para>
 			For an externally blocked call if the called site knows the
 			outcome&#x2014;either the response value or that there will be no
-			response&#x2014;then the call is<firstterm>definite</firstterm>;
-			if it does not know the outcome the call is <firstterm>indefinite</firstterm>.
+			response&#x2014;then the call is<indexterm significance="preferred"><primary>definite</primary></indexterm><firstterm>definite</firstterm>;
+			if it does not know the outcome the call is <indexterm significance="preferred"><primary>indefinite</primary></indexterm><firstterm>indefinite</firstterm>.
 		</para>
 	</section>
 

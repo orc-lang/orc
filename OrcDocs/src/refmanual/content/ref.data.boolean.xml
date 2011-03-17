@@ -13,7 +13,7 @@
 <section xml:id="ref.data.boolean" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Booleans</title>
 
-  <para>Orc supports <firstterm>Boolean</firstterm> values, <code>true</code> and <code>false</code>.</para>
+  <para>Orc supports <indexterm significance="preferred"><primary>Boolean</primary></indexterm><firstterm>Boolean</firstterm> values, <code>true</code> and <code>false</code>.</para>
 
 	<section xml:id="ref.data.boolean.syntax">
 	  <title>Syntax</title>

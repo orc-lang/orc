@@ -21,12 +21,12 @@
 	
 	
 	<para>
-	A type <replaceable>S</replaceable> is a <firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <firstterm>≤</firstterm> <replaceable>T</replaceable>,
+	A type <replaceable>S</replaceable> is a <indexterm significance="preferred"><primary>subtype</primary></indexterm><firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <indexterm significance="preferred"><primary>≤</primary></indexterm><firstterm>≤</firstterm> <replaceable>T</replaceable>,
 	if a value of type <replaceable>S</replaceable> can be used in any context expecting a value of type <replaceable>T</replaceable>.
 	</para>
 	
 	<para>
-	A type <replaceable>U</replaceable> is a <firstterm>supertype</firstterm> of a type <replaceable>T</replaceable> if <replaceable>T</replaceable> <firstterm>≤</firstterm> <replaceable>U</replaceable>.
+	A type <replaceable>U</replaceable> is a <indexterm significance="preferred"><primary>supertype</primary></indexterm><firstterm>supertype</firstterm> of a type <replaceable>T</replaceable> if <replaceable>T</replaceable> <indexterm significance="preferred"><primary>≤</primary></indexterm><firstterm>≤</firstterm> <replaceable>U</replaceable>.
 	</para>
 	
 	<para>
@@ -42,7 +42,7 @@
 	
 	<para>
 		Types in Orc form a bounded lattice. The lattice is ordered by the subtyping relation,
-		its maximal element is the special type <code><ind>Top</ind></code>, and its minimal element is 
+		its maximal element is the special type <code><indexterm><primary>Top</primary></indexterm>Top</code>, and its minimal element is 
 		the special type <code>Bot</code>.
   </para>
 		
@@ -83,9 +83,9 @@
 	<section xml:id="ref.types.subtyping.join">
 	<title>Join</title>
 		<para>
-		  A <firstterm>common supertype</firstterm> of two types <replaceable>S</replaceable> and <replaceable>T</replaceable> is any type <replaceable>U</replaceable> such that 
+		  A <indexterm significance="preferred"><primary>common supertype</primary></indexterm><firstterm>common supertype</firstterm> of two types <replaceable>S</replaceable> and <replaceable>T</replaceable> is any type <replaceable>U</replaceable> such that 
 		<replaceable>S</replaceable> ≤ <replaceable>U</replaceable> and <replaceable>T</replaceable> ≤ <replaceable>U</replaceable>. 
-		The <firstterm>join</firstterm> of <replaceable>S</replaceable> and <replaceable>T</replaceable> is the <emphasis>least</emphasis> common 
+		The <indexterm significance="preferred"><primary>join</primary></indexterm><firstterm>join</firstterm> of <replaceable>S</replaceable> and <replaceable>T</replaceable> is the <emphasis>least</emphasis> common 
 		supertype of <replaceable>S</replaceable> and <replaceable>T</replaceable>: it is a subtype of every common supertype of <replaceable>S</replaceable> and <replaceable>T</replaceable>.
 		</para>
 		
@@ -105,9 +105,9 @@
 	<section xml:id="ref.types.subtyping.meet">
 	<title>Meet</title>
 		<para>
-		  A <firstterm>common subtype</firstterm> of two types <replaceable>S</replaceable> and <replaceable>T</replaceable> is any type <replaceable>U</replaceable> such that 
+		  A <indexterm significance="preferred"><primary>common subtype</primary></indexterm><firstterm>common subtype</firstterm> of two types <replaceable>S</replaceable> and <replaceable>T</replaceable> is any type <replaceable>U</replaceable> such that 
 		<replaceable>U</replaceable> ≤ <replaceable>S</replaceable> and <replaceable>U</replaceable> ≤ <replaceable>T</replaceable>. 
-		The <firstterm>meet</firstterm> of <replaceable>S</replaceable> and <replaceable>T</replaceable> is the <emphasis>greatest</emphasis> common 
+		The <indexterm significance="preferred"><primary>meet</primary></indexterm><firstterm>meet</firstterm> of <replaceable>S</replaceable> and <replaceable>T</replaceable> is the <emphasis>greatest</emphasis> common 
 		subtype of <replaceable>S</replaceable> and <replaceable>T</replaceable>: it is a supertype of every common subtype of <replaceable>S</replaceable> and <replaceable>T</replaceable>.
 		</para>
 		<para>
@@ -131,7 +131,7 @@
 		their components. If a component of a type <replaceable>S</replaceable> is a subtype of the 
 		corresponding component in another type <replaceable>T</replaceable>, does that imply that
 		<replaceable>S</replaceable> ≤ <replaceable>T</replaceable>? To answer this question, we need
-		a concept called <firstterm>variance</firstterm>.
+		a concept called <indexterm significance="preferred"><primary>variance</primary></indexterm><firstterm>variance</firstterm>.
 		</para>
 		
 		<para>
@@ -140,9 +140,9 @@
 		which it appears. Variance is a property of the context <replaceable>C</replaceable>, defined as follows:
 		
 		<itemizedlist>
-		<listitem><replaceable>C</replaceable> is <firstterm>covariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>S</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>T</replaceable>}</listitem>
-		<listitem><replaceable>C</replaceable> is <firstterm>contravariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>T</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>S</replaceable>}</listitem>
-		<listitem><replaceable>C</replaceable> is <firstterm>invariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> does not imply any relationship between <replaceable>C</replaceable>{<replaceable>S</replaceable>} and <replaceable>C</replaceable>{<replaceable>T</replaceable>}.</listitem>
+		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>covariant</primary></indexterm><firstterm>covariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>S</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>T</replaceable>}</listitem>
+		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>contravariant</primary></indexterm><firstterm>contravariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>T</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>S</replaceable>}</listitem>
+		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>invariant</primary></indexterm><firstterm>invariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> does not imply any relationship between <replaceable>C</replaceable>{<replaceable>S</replaceable>} and <replaceable>C</replaceable>{<replaceable>T</replaceable>}.</listitem>
 		</itemizedlist>
 		
 		</para>

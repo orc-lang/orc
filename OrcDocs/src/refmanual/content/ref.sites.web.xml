@@ -16,8 +16,8 @@
 <para>
 Some sites provide access to remote services, rather than performing local computation.
 In particular, a site could provide access to a web service. 
-The Orc library provides sites which perform basic <ind>HTTP</ind> requests and manipulate <ind>JSON</ind> and <ind>XML</ind> data representations;
-these capabilities are sufficient to interact with many simple web services, especially <ind>REST</ind>ful services.
+The Orc library provides sites which perform basic <indexterm><primary>HTTP</primary></indexterm>HTTP requests and manipulate <indexterm><primary>JSON</primary></indexterm>JSON and <indexterm><primary>XML</primary></indexterm>XML data representations;
+these capabilities are sufficient to interact with many simple web services, especially <indexterm><primary>REST</primary></indexterm>RESTful services.
 </para>
 
 <section xml:id="ref.sites.web.http">
@@ -90,7 +90,7 @@ equal to <replaceable>S</replaceable>.
 <title>SOAP Web Services</title>
 
 <para>
-Though Orc does not provide direct bindings to <ind>SOAP</ind> web services, it is possible to access such services through Java bindings.
+Though Orc does not provide direct bindings to <indexterm><primary>SOAP</primary></indexterm>SOAP web services, it is possible to access such services through Java bindings.
 Frameworks such as JAX-WS map SOAP web service functionality to Java classes; these classes can then be <link linkend="ref.sites.java">used as sites in Orc</link>.
 </para>
 

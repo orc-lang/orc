@@ -18,7 +18,7 @@
 		<title>Definition</title>
 
 		<para>
-			An expression is <firstterm>silent</firstterm> in an execution if it never publishes in that execution. 
+			An expression is <indexterm significance="preferred"><primary>silent</primary></indexterm><firstterm>silent</firstterm> in an execution if it never publishes in that execution. 
 			An expression is always silent if it does not publish in any execution.
 			A silent expression may call sites. 
 			The type of a silent expression is <code>Bot</code>. 

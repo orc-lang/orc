@@ -12,7 +12,7 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class">
-	<title><code><ind>class</ind></code>:  Import Class from Java</title>
+	<title><code><indexterm><primary>class</primary></indexterm>class</code>:  Import Class from Java</title>
 
 	<!-- Index pointers for unwritten terms -->
 	<indexterm><primary>import class</primary></indexterm>
@@ -20,13 +20,13 @@
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
 In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
-<ind>Java</ind> classes may be imported into Orc programs and invoked as Orc sites.
+<indexterm><primary>Java</primary></indexterm>Java classes may be imported into Orc programs and invoked as Orc sites.
 	</para>
 
 	<para>
 The declaration <code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
 binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
-Calls to <replaceable>S</replaceable> invoke the corresponding <ind>constructor</ind> of the Java class <replaceable>J</replaceable>.
+Calls to <replaceable>S</replaceable> invoke the corresponding <indexterm><primary>constructor</primary></indexterm>constructor of the Java class <replaceable>J</replaceable>.
 The created class instance is published from the site call.
 Instance methods may be invoked on this published value.
 Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the class static method of the Java class <replaceable>J</replaceable>.
@@ -46,7 +46,7 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
    <section xml:id="ref.declarations.class.type">
 	  <title>Type</title>
 	  <para>
-	    When typechecking declared classes, the Orc typechecker interfaces with the <ind>Java</ind> type system, so that operations on
+	    When typechecking declared classes, the Orc typechecker interfaces with the <indexterm><primary>Java</primary></indexterm>Java type system, so that operations on
 	    Java objects typecheck as one would expect in a Java program, with a few exceptions.
 	    
 	    <itemizedlist>

@@ -14,7 +14,7 @@
 	<section xml:id="ref.patterns.tuple">
 		<title>Tuple Pattern</title>
 			<para>
-				Each element of a <firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.
+				Each element of a <indexterm significance="preferred"><primary>tuple pattern</primary></indexterm><firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.
 			</para>
 		
 		<section xml:id="ref.patterns.tuple.syntax">
