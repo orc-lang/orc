@@ -534,11 +534,4 @@
 		<delete dir="${build.dir}"/>
 	</target>
 
-	<!--
-	  - target:  test
-	  -->
-	<target name="test" depends="clean,rm-html-chunk,ug-html-single" description="Test build for modifications.">
-		<echo message="Test build complete" level="info"/>
-	</target>
-
 </project>
