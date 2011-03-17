@@ -169,25 +169,7 @@ def metronome() = signal | Rwait(1000) >> metronome()
         There is no special keyword for <ind>mutual recursion</ind>; whenever two or more function
         definitions are adjacent, the compiler detects whether they mutually recurse.
         </para>
-<example>       
-<programlisting language="orc"><![CDATA[
-{- Test if a number is even or odd, using mutual recursion -}
-def even(n) = Ift(n = 0) >> true
-            | Ift(n <: 0) >> odd(n+1) 
-            | Ift(n :> 0) >> odd(n-1)
-    
-def odd(n) = Ift(n = 0) >> false
-           | Ift(n <: 0) >> even(n+1) 
-           | Ift(n :> 0) >> even(n-1)
 
-odd(-4)
-
-{- 
-OUTPUT:
-false
--}
-]]></programlisting>
-</example>       
     </section>  
 		
 		<section xml:id="ref.declarations.def.pattern">
@@ -279,6 +261,8 @@ z >P> Ift(Gd) >> E
 			  If the clause fails, then the next clause is executed.
 			  If the last clause fails, then the function call halts silently. 
 			</para>
+			
+			
 
 	  </section>
 		 
@@ -352,35 +336,116 @@ def fn(x) = ( lambda (y) = F )
 
     <section xml:id="ref.declarations.def.examples">
 			<title>Examples</title>
-			
-		  <example xml:id="ref.declarations.def.recursive.examples.three"><title>Mutually Recursive Parity v2</title>
+			 
+			 <example xml:id="ref.declarations.def.examples.lenientpairs">
+			 <title>Available Pairs</title>       
 <programlisting language="orc"><![CDATA[
-{- Return true if parity of 1s in a binary string is even -}
+{- 
+  Publish pairs of results from three computations, as they become available.
+-}
+def pairs(x, y, z) = (x, y) | (x, z) | (y, z)
+			
+pairs(Rwait(2000) >> 0, 1, Rwait(1000) >> 2)
 
-def even([]) = true
-def even(1:xs) = odd(xs)
-def even(0:xs) = even(xs)
+{-
+OUTPUT:
+(1,2)
+(0,1)
+(0,2)
 
-def odd([]) = false
-def odd(1:xs) = even(xs)
-def odd(0:xs) = odd(xs)
-
-even([1,0,1,0])
+OUTPUT:
+(1,2)
+(0,2)
+(0,1)
+-}
+]]></programlisting>
+</example>
+			  
+			<example xml:id="ref.declarations.def.examples.parallelor">
+			<title>Parallel-Or Function</title>       
+<programlisting language="orc"><![CDATA[
+{- 
+  Define a parallel-or function. 
+-}
+def parallelor(x,y) = 
+  val first = Ift(x) >> true | Ift(y) >> true | (x || y)
+  first
+			
+parallelor(false, Rwait(1000) >> true)
 
 {-
 OUTPUT:
 true
 -}
 ]]></programlisting>
+</example>
+			
+			
+		  <example xml:id="ref.declarations.def.examples.evenodd">
+		  <title>Even/Odd Using Mutual Recursion</title>       
+<programlisting language="orc"><![CDATA[
+{- Test if a number is even or odd, using mutual recursion -}
+def even(n) = Ift(n = 0) >> true
+            | Ift(n <: 0) >> odd(n+1) 
+            | Ift(n :> 0) >> odd(n-1)
+    
+def odd(n) = Ift(n = 0) >> false
+           | Ift(n <: 0) >> even(n+1) 
+           | Ift(n :> 0) >> even(n-1)
+
+odd(-4)
+
+{- 
+OUTPUT:
+false
+-}
+]]></programlisting>
+</example>       
+			
+			<example xml:id="ref.declarations.def.examples.listhead">
+			<title>List Head</title>
+<programlisting language="orc"><![CDATA[
+{- 
+  Publish the head of a nonempty list.
+  If the list is empty, halt silently.
+-}
+def head(h:_) = h
+
+head([2, 3]) | head([])
+
+{-
+OUTPUT:
+2
+-}
+]]></programlisting>
 		  </example>
 			
-			<example xml:id="ref.declarations.def.clausal.examples.sum"><title>Simple example of a clausal function</title>
+			
+			<example xml:id="ref.declarations.def.examples.listlength">
+			<title>List Length</title>
 <programlisting language="orc"><![CDATA[
-{- Simple clausal function -}
+{- Find the length of a list -}
+def length([]) = 0
+def length(_:rest) = length(rest) + 1
+			
+length([1, 2, 4])
+
+{-
+OUTPUT:
+3
+-}
+]]></programlisting>
+		  </example>
+			
+			
+			<example xml:id="ref.declarations.def.examples.listsum">
+			<title>List Sum</title>
+<programlisting language="orc"><![CDATA[
+{- Sum the elements of a list -}
 
 def sum([]) = 0
 def sum(h:t) = h + sum(t)
-sum([1,2,3])
+sum([1, 2, 3])
 
 {-
 OUTPUT:
@@ -389,14 +454,36 @@ OUTPUT:
 
 ]]></programlisting>
 		  </example>
+		  
+		  <example xml:id="ref.declarations.def.examples.zip">
+			<title>Same-Length Zip</title>
+<programlisting language="orc"><![CDATA[
+{- 
+  "Zip" a pair of lists together into a list of pairs.
+  If the lists are of inequal length, halt silently.
+-}
+def zip(x:xs, y:ys) = (x, y):zip(xs, ys)
+def zip([], []) = []
 
-		  <example xml:id="ref.declarations.def.clausal.examples.fib"><title>Clausal function with constant patterns</title>
+  zip([0, 1], [false, true]) 
+| zip([1, 2, 3], signal)
+
+{-
+OUTPUT:
+[(0, false), (1, true)]
+-}
+
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.declarations.def.clausal.examples.fib">
+		  <title>Fibonacci Function</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Fibonacci numbers -}
 
 def fib(0) = 1
 def fib(1) = 1
-def fib(n) = if (n < 0) then 0 else fib(n-1) + fib(n-2)
+def fib(n) if (n > 1) = fib(n-1) + fib(n-2)
 
 fib(5)
 
@@ -407,26 +494,22 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-		  <example xml:id="ref.declarations.def.clausal.examples.evenodd"><title>Parity</title>
-<programlisting language="orc"><![CDATA[
-{- Return true if parity of 1s in a binary string is even -}
+		<example xml:id="ref.declarations.def.clausal.examples.curried">
+		  <title>Curried Addition</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Curried addition -}
+def add(x)(y) = x + y
 
-def even([]) = true
-def odd([]) = false
-def even(1:xs) = odd(xs)
-def odd(1:xs) = even(xs)
-def even(_:xs) = even(xs)
-def odd(_:xs) = odd(xs)
-
-even([1,1,1,0])
+val f = add(3)
+f(4)
 
 {-
 OUTPUT:
-false
+7
 -}
 ]]></programlisting>
 		  </example>
-		  
+
 	  </section>
 
 		<section xml:id="ref.declarations.def.links">
