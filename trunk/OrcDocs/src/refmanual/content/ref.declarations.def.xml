@@ -143,26 +143,19 @@ body and the arguments are evaluated in parallel.
         Functions can be recursive; that is, the name of a function may be used in its own body.
       </para>
         
-        <example xml:id="ref.declarations.def.recursion.examples.factorial">
 <programlisting language="orc"><![CDATA[
 {- A recursive factorial function -}
 def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
 ]]></programlisting>
-      </example>
-        
+
       <para>
         A recursive function might continue executing indefinitely, producing an infinite number of publications.
       </para>  
         
-      <example xml:id="ref.declarations.def.recursion.examples.metronome">
 <programlisting language="orc"><![CDATA[
 {- Publishes a signal every second, forever -}
 def metronome() = signal | Rwait(1000) >> metronome()
-
-{- NONRUNNABLE -}
 ]]></programlisting>
-      </example>
-        
         
         <para>
         A set of functions may be mutually recursive by naming each other in their bodies.
