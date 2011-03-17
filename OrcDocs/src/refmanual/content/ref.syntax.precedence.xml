@@ -25,14 +25,14 @@ The following table represents the precedence, fixity, and associativity of comb
 
 <para>
 <indexterm significance="preferred"><primary>precedence</primary></indexterm><firstterm baseform="precedence">Precedence</firstterm> rules specify the order in which parts of an expression are parsed, in absence of parenthesis.
-For example, in <code>1 + 2 * 3</code>, Orc's precedence rules prescribe that the mutiplication be parsed as a sub-expression of the addition.
+For example, in <code>1 + 2 * 3</code>, Orc's precedence rules prescribe that the multiplication be parsed as a sub-expression of the addition.
 Operations or combinators listed in the table below with higher precedence will be parsed in preference to lower precedence operations or combinators.
 </para>
 
 <para>
 <indexterm significance="preferred"><primary>fixity</primary></indexterm><firstterm baseform="fixity">Fixity</firstterm> specifies the relative position of an operator and it operands.
 For example, <code>+</code> is infix, so the <code>+</code> operator is written in between its operands.
-However, <code>?</code> is postfix, so it is writeen after its operand.
+However, <code>?</code> is postfix, so it is written after its operand.
 </para>
 
 <para>
