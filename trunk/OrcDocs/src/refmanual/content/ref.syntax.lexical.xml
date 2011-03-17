@@ -100,7 +100,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.stringliteral">
 					<title>String Literal</title>
 					<para>
-						Double quotes demarcate a <ind>string</ind> literal. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
+						Double quotes demarcate a <indexterm><primary>string</primary></indexterm>string literal. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
 					</para>
 					<para>
 						The backslash escape convention is recognized as follows:

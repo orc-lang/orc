@@ -12,7 +12,7 @@
 
 <!-- if then else -->
 	<section xml:id="ref.expressions.ifthenelse">
-		<title><code><ind>if then else</ind></code></title>
+		<title><code><indexterm><primary>if then else</primary></indexterm>if then else</code></title>
 		
 		<para>
 		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>

@@ -15,13 +15,13 @@
 	<title>Operators</title>
 
 <para>
-Orc has a standard set of infix, prefix, and postfix <firstterm baseform="operator">operators</firstterm>. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call"><ind>site call</ind>s</link>.
+Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. Operators in Orc are syntatic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Recall that site calls only <ind>publish</ind> once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
+Recall that site calls only <indexterm><primary>publish</primary></indexterm>publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
-Operators are parsed using <link linkend="ref.syntax.precedence">the precedence and <ind>associativity</ind> rules</link> of Orc. 
+Operators are parsed using <link linkend="ref.syntax.precedence">the precedence and <indexterm><primary>associativity</primary></indexterm>associativity rules</link> of Orc. 
 In particular, these rules describe the relationship between operators and combinators.
 </para>
 
@@ -121,7 +121,7 @@ perform decimal division and return <code>2.5</code>.
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> <ind>publishes</ind> <code>false</code>.
+<code>10 = true</code> <indexterm><primary>publishes</primary></indexterm>publishes <code>false</code>.
 </para>
 
 </section>
@@ -135,15 +135,15 @@ The <code>=</code> operator can compare values of any type. Values of different 
 	<colspec align="left"/>
   <row>
     <entry><code>&#x26;&#x26;</code></entry>
-    <entry><ind>Logical and</ind></entry>
+    <entry><indexterm><primary>Logical and</primary></indexterm>Logical and</entry>
   </row>
   <row>
     <entry><code>||</code></entry>
-    <entry><ind>Logical or</ind></entry>
+    <entry><indexterm><primary>Logical or</primary></indexterm>Logical or</entry>
   </row>
   <row>
     <entry><code>~</code></entry>
-    <entry><ind>Logical negation</ind></entry>
+    <entry><indexterm><primary>Logical negation</primary></indexterm>Logical negation</entry>
   </row>
 </tbody></tgroup></informaltable>
 
@@ -220,7 +220,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <title>Redefining Operators</title>
 
 <para>
-The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, precedence, and <ind>associativity</ind>) is fixed by the Orc grammar; however, the site
+The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, precedence, and <indexterm><primary>associativity</primary></indexterm>associativity) is fixed by the Orc grammar; however, the site
 called is defined by the library and can be changed by a <code>def</code>
 or <code>site</code> declaration.
 </para>
@@ -242,7 +242,7 @@ that binding.
   <itemizedlist>
   <listitem>
     An arithmetic operation publishes an <code>Integer</code> if all of its operands have type <code>Integer</code>. 
-    If any operand has type <code><ind>Number</ind></code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
+    If any operand has type <code><indexterm><primary>Number</primary></indexterm>Number</code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
   </listitem>
   <listitem>
     A comparison operation allows operands of any type, and publishes a <code>Boolean</code>.
@@ -264,7 +264,7 @@ that binding.
     Record extension takes two <link linkend="ref.data.record.type">records</link> and publishes a record.
   </listitem>
   <listitem>
-    Dereference takes an operand of type <code><ind>Ref</ind></code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.
+    Dereference takes an operand of type <code><indexterm><primary>Ref</primary></indexterm>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.
   </listitem>
   <listitem>
     Assignment takes operands of types <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and <replaceable>T</replaceable>, and publishes a <code>Signal</code>. 

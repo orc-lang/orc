@@ -18,9 +18,9 @@
 		<indexterm><primary>argument type</primary></indexterm>
 		
 		<para>
-			The <code><ind>def</ind></code> declaration defines a function. 
-			A function definition consists of an identifier, a sequence of <firstterm baseform="parameter">parameters</firstterm>,
-		  and a <firstterm>body</firstterm> expression. 
+			The <code><indexterm><primary>def</primary></indexterm>def</code> declaration defines a function. 
+			A function definition consists of an identifier, a sequence of <indexterm significance="preferred"><primary>parameter</primary></indexterm><firstterm baseform="parameter">parameters</firstterm>,
+		  and a <indexterm significance="preferred"><primary>body</primary></indexterm><firstterm>body</firstterm> expression. 
 		</para>
 		
 		<para>
@@ -30,7 +30,7 @@
 		
 		<para>
 		<itemizedlist>
-		<listitem>Orc functions are <ind>lenient</ind>: when a function is called, the argument expressions and the 
+		<listitem>Orc functions are <indexterm><primary>lenient</primary></indexterm>lenient: when a function is called, the argument expressions and the 
 		function body are evaluated in parallel. </listitem>
 		<listitem>Orc functions may <link linkend="ref.concepts.publish">publish</link> any number of values, including zero,
 		during the execution of the function body.</listitem>		  
@@ -47,7 +47,7 @@
 		  <listitem>Patterns may be used as function parameters.</listitem>
 		  <listitem>A function may have a guard, which allows the function body to be executed only if a given condition holds.</listitem>
 		  <listitem>A function may be defined by multiple clauses.</listitem>
-		  <listitem>A function may be defined in a <firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</listitem>
+		  <listitem>A function may be defined in a <indexterm significance="preferred"><primary>currying</primary></indexterm><firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</listitem>
 		</itemizedlist>
 		</para>
 	
@@ -74,7 +74,7 @@
 		
 			<para>
 		   When a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
-		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><ind>deflate</ind>d</link>.
+		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><indexterm><primary>deflate</primary></indexterm>deflated</link>.
 		   </para>
 		   
 		   <para>
@@ -166,7 +166,7 @@ def metronome() = signal | Rwait(1000) >> metronome()
         
         <para>
         A set of functions may be mutually recursive by naming each other in their bodies.
-        There is no special keyword for <ind>mutual recursion</ind>; whenever two or more function
+        There is no special keyword for <indexterm><primary>mutual recursion</primary></indexterm>mutual recursion; whenever two or more function
         definitions are adjacent, the compiler detects whether they mutually recurse.
         </para>
 
@@ -177,9 +177,9 @@ def metronome() = signal | Rwait(1000) >> metronome()
 		
 		  <para>
 		  A function parameter may be any pattern. 
-		  A <firstterm>lenient pattern</firstterm> is either a variable pattern or a wildcard pattern; 
+		  A <indexterm significance="preferred"><primary>lenient pattern</primary></indexterm><firstterm>lenient pattern</firstterm> is either a variable pattern or a wildcard pattern; 
 		  such patterns will never fail to match. 
-		  Any other pattern is a <firstterm>strict pattern</firstterm>, which could fail to match. 
+		  Any other pattern is a <indexterm significance="preferred"><primary>strict pattern</primary></indexterm><firstterm>strict pattern</firstterm>, which could fail to match. 
 		  </para>
 		  
 		  <para>
@@ -241,7 +241,7 @@ z >P> Ift(Gd) >> E
 		<title>Clausal Definition</title>
 		
 		  <para>
-			  A function can be defined by a sequence of <firstterm baseform="clause">clauses</firstterm>: repeated
+			  A function can be defined by a sequence of <indexterm significance="preferred"><primary>clause</primary></indexterm><firstterm baseform="clause">clauses</firstterm>: repeated
 			  function definitions with the same identifier but different parameters. Each clause must have
 			  the same number of parameters.  
 			</para>
@@ -249,7 +249,7 @@ z >P> Ift(Gd) >> E
 			<para>
 			  When a function with multiple clauses is called, the argument expressions are deflated, and in
 			  parallel the first clause is executed.
-			  The clause will <firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
+			  The clause will <indexterm significance="preferred"><primary>clause failure</primary></indexterm><firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
 			  <orderedlist>
 			  <listitem>One of the parameters is a strict pattern, and that pattern fails to match.</listitem>
 			  <listitem>One of the parameters is a strict pattern, and the corresponding argument expression has halted silently.</listitem>
@@ -274,7 +274,7 @@ z >P> Ift(Gd) >> E
 		
 		<para>
 		  A function definition may have more than one group of parameters. 
-		  If it does, it is a <firstterm baseform="curry">curried</firstterm> definition.
+		  If it does, it is a <indexterm significance="preferred"><primary>curry</primary></indexterm><firstterm baseform="curry">curried</firstterm> definition.
 		  When such a function is called, it executes as described earlier,
 		  except that rather than executing the function body, it instead immediately
 		  publishes a closure of an equivalent function definition, minus the first group of arguments.

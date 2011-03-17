@@ -17,7 +17,7 @@
   <para>
   Whenever one or more variables is bound, the type checker records information from that
   binding to typecheck the uses of that variable in its scope. This information is stored
-  in a <firstterm>typing context</firstterm>, which is just a sequence of variable names and
+  in a <indexterm significance="preferred"><primary>typing context</primary></indexterm><firstterm>typing context</firstterm>, which is just a sequence of variable names and
   their types. When an expression in the scope of many declarations is typechecked, the
   typechecker will carry a composite context of all of the typing contexts created by all
   of the declarations. 

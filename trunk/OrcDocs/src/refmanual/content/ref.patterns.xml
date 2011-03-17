@@ -21,7 +21,7 @@
 <indexterm><primary>typing context</primary></indexterm>
 
 <para>
-A <firstterm>pattern</firstterm> describes a set of values and may bind variables to their components. 
+A <indexterm significance="preferred"><primary>pattern</primary></indexterm><firstterm>pattern</firstterm> describes a set of values and may bind variables to their components. 
 Patterns are used in <code>val</code> declarations, in combinators, and in clausal definitions of functions. 
 </para>
 
@@ -35,7 +35,7 @@ and the pattern <code>(x,3)</code> binds <code>x</code> to the first element of 
 
 <para>
 A pattern such as <code>(x,y)</code> may bind multiple variables. 
-However, patterns are <firstterm baseform="linear pattern">linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
+However, patterns are <indexterm significance="preferred"><primary>linear pattern</primary></indexterm><firstterm baseform="linear pattern">linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
 For example, <code>(x,y,x)</code> is not a valid pattern.
 </para>
 

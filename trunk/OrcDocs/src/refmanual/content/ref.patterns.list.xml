@@ -14,7 +14,7 @@
 	<section xml:id="ref.patterns.list">
 		<title>List Pattern</title>
 		<para>
-			Each element of a <firstterm>list pattern</firstterm> matches the corresponding element of a list value.
+			Each element of a <indexterm significance="preferred"><primary>list pattern</primary></indexterm><firstterm>list pattern</firstterm> matches the corresponding element of a list value.
 		</para>
 		
 		<section xml:id="ref.patterns.list.syntax">

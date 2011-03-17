@@ -17,7 +17,7 @@
 Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
 which in this implementation is the Java virtual machine (JVM).
 In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
-arbitrary <ind>Java</ind> classes using the <code><ind>class</ind></code> declaration.
+arbitrary <indexterm><primary>Java</primary></indexterm>Java classes using the <code><indexterm><primary>class</primary></indexterm>class</code> declaration.
 Values in Java fields, values returned from Java methods, and values returned from Java constructors
 may be used in Orc programs just as any other Orc value.
 </para>
@@ -32,8 +32,8 @@ In the scope of such a declaration, the declared name is bound to a value that a
 This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
 The class proxy also presents the class static methods and class static fields in the same manner as
 an Orc record with keys corresponding to the Java class members' names.
-Class <ind>methods</ind> appear as record elements that are sites, and are invoked by projecting the record element
-using the <ind>dot</ind> notation and calling the site.
+Class <indexterm><primary>methods</primary></indexterm>methods appear as record elements that are sites, and are invoked by projecting the record element
+using the <indexterm><primary>dot</primary></indexterm>dot notation and calling the site.
 Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
@@ -69,7 +69,7 @@ Java objects' methods and fields appear in the same manner as
 an Orc record with keys corresponding to the members' names.
 Methods appear as record elements that are sites, and are invoked by projecting the record element
 using the dot notation and calling the site.
-<ind>Fields</ind> appear as record elements that are references, and are accessed and assigned
+<indexterm><primary>Fields</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
 If a Java object is called as a site without projecting a member, the method name "apply" is implicitly used.

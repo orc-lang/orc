@@ -21,7 +21,7 @@
 	The Orc typechecker uses a <link linkend="ref.types.metatheory.origin">type inference algorithm</link> to deduce
 	type information from a program without any help from the programmer. In many contexts, the typechecker can
 	find all of the type information it needs; however, there are some cases where extra information is needed.
-	For this purpose, there are four kinds of <firstterm baseform="type annotation">annotations</firstterm> that may be used to
+	For this purpose, there are four kinds of <indexterm significance="preferred"><primary>type annotation</primary></indexterm><firstterm baseform="type annotation">annotations</firstterm> that may be used to
 	enrich an Orc program with additional type information. Orc also allows <emphasis>assertions</emphasis>,
 	which may be used to override the typechecker.
 	</para>
@@ -57,7 +57,7 @@
   </para>
 
 	<para>
-	  The most comprehensive way to provide type information about a function is through a <firstterm>signature</firstterm>.
+	  The most comprehensive way to provide type information about a function is through a <indexterm significance="preferred"><primary>signature</primary></indexterm><firstterm>signature</firstterm>.
 		A signature precedes a function definition, providing a sequence of type parameters, a sequence of argument types,
 		and a return type.
 	</para>
@@ -158,7 +158,7 @@ program, and the rest of the program still benefits from typechecking.
 
 <para>
 The typechecker may be selectively disabled for parts of a program. For this purpose,
-the typechecker supports a special annotation on expressions called an <firstterm>assertion</firstterm>
+the typechecker supports a special annotation on expressions called an <indexterm significance="preferred"><primary>assertion</primary></indexterm><firstterm>assertion</firstterm>
 An assertion is used like an annotation, but rather than verifying that an expression
 has the stated type, the typechecker instead assumes that the stated type is correct,
 without examining the expression at all. Thus, the programmer can supply any type

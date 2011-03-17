@@ -15,7 +15,7 @@
 	<title>Parametric Polymorphism</title>
 	
 	<para>
-	The Orc type system supports <firstterm>parametric polymorphism</firstterm>: functions,
+	The Orc type system supports <indexterm significance="preferred"><primary>parametric polymorphism</primary></indexterm><firstterm>parametric polymorphism</firstterm>: functions,
 	sites, and types may accept type parameters. This is the same theory that 
 	underlies Java's generics.
 	</para>
@@ -35,7 +35,7 @@
 	  </para>
 
 		<para>
-			Orc has a special form of type, called a <firstterm>type application</firstterm>, which
+			Orc has a special form of type, called a <indexterm significance="preferred"><primary>type application</primary></indexterm><firstterm>type application</firstterm>, which
 			applies a type operator to a sequence of type arguments. This permits the instantiation
 			of multiple variations of the same type. The simplest example of this feature is the
 			<code>List</code> type operator. For example, the list value <code>[1,2,3]</code> has the type <code>List[Integer]</code>,

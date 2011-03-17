@@ -14,7 +14,7 @@
 <title>Records</title>
 
 <para>
-A <firstterm>record</firstterm> is an unordered finite map from <ind>key</ind>s to values. 
+A <indexterm significance="preferred"><primary>record</primary></indexterm><firstterm>record</firstterm> is an unordered finite map from <indexterm><primary>key</primary></indexterm>keys to values. 
 It may be empty; the empty record is written as <code>{. .}</code>. 
 </para>
 
@@ -53,7 +53,7 @@ be used in the resulting record value.</para>
 <para>Notable record operations include:
 <itemizedlist>
 <listitem><para>
-<replaceable>R</replaceable><code>.</code><replaceable>key</replaceable>, a <ind>dot</ind> access, which publishes the value bound to <replaceable>key</replaceable> in <replaceable>R</replaceable>.
+<replaceable>R</replaceable><code>.</code><replaceable>key</replaceable>, a <indexterm><primary>dot</primary></indexterm>dot access, which publishes the value bound to <replaceable>key</replaceable> in <replaceable>R</replaceable>.
 If <replaceable>R</replaceable> has no binding for <replaceable>key</replaceable>, <replaceable>R</replaceable><code>.</code><replaceable>key</replaceable> halts silently.
 </para></listitem>
 <listitem><para>

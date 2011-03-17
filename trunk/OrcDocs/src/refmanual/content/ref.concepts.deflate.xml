@@ -21,7 +21,7 @@
 			at most one value.
 			</para>
 			<para>
-			Orc <firstterm baseform="deflate">deflates</firstterm> a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
+			Orc <indexterm significance="preferred"><primary>deflate</primary></indexterm><firstterm baseform="deflate">deflates</firstterm> a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
 			<replaceable>C</replaceable> by rewriting</para> 
 			<para><replaceable>C</replaceable>[<replaceable>E</replaceable>]</para>
 			<para>to</para>
@@ -40,7 +40,7 @@
 			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
 			</para>
 			<para>
-			  If any deflated expression <link linkend="ref.concepts.states.halt"><ind>halts</ind></link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
+			  If any deflated expression <link linkend="ref.concepts.states.halt"><indexterm><primary>halts</primary></indexterm>halts</link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
 			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
 			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
 			  would also halt silently. 
@@ -51,7 +51,7 @@
 			</para>
 			<para>
 		    Notice that each deflated expression is evaluated concurrently, due to the behavior of the
-		    <ind>pruning</ind> combinator. This is what makes Orc a functional concurrent language: when an expression is
+		    <indexterm><primary>pruning</primary></indexterm>pruning combinator. This is what makes Orc a functional concurrent language: when an expression is
 		    evaluated recursively, all such evaluations take place simultaneously. 
 		  </para>   
 		</section>

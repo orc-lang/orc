@@ -14,7 +14,7 @@
 <title>Tuples</title>
 
 <para>
-A <firstterm>tuple</firstterm> is a sequence of at least two values. Orc does not have 0-tuples or 1-tuples.
+A <indexterm significance="preferred"><primary>tuple</primary></indexterm><firstterm>tuple</firstterm> is a sequence of at least two values. Orc does not have 0-tuples or 1-tuples.
 </para>
 
 <para>Tuples are intended to be used for sequences with a fixed length and varying element types,

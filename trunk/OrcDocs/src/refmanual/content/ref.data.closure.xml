@@ -15,8 +15,8 @@
 
 <para>
 In Orc, functions are first-class values. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
-<firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
- is the closure. A closure can be <ind>published</ind>, passed to a site, or put into a data structure, just 
+<indexterm significance="preferred"><primary>closure</primary></indexterm><firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
+ is the closure. A closure can be <indexterm><primary>published</primary></indexterm>published, passed to a site, or put into a data structure, just 
  like any other value.
 </para>
 <para>
@@ -31,7 +31,7 @@ of the function body uses those stored variable bindings.
 <section xml:id="ref.data.closure.type">
   <title>Type</title>
 	<para>
-		The type of a closure is a <firstterm>function type</firstterm> <code><ind>lambda</ind></code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+		The type of a closure is a <indexterm significance="preferred"><primary>function type</primary></indexterm><firstterm>function type</firstterm> <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
 		where <replaceable>T<subscript>i</subscript></replaceable> are the argument types of the closure, <replaceable>R</replaceable> is its return type,
 		and <replaceable>X<subscript>j</subscript></replaceable> are the type parameters if the function is <link linkend="ref.types.polymorphism">polymorphic</link>.
 		This type is derived from the original <link linkend="ref.declarations.def.type">definition of the function</link>.

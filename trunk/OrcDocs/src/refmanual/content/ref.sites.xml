@@ -18,7 +18,7 @@
 <title>Sites and Services</title>
 
 <para>
-Orc programs communicate with their environment by calling <firstterm baseform="site">sites</firstterm>.
+Orc programs communicate with their environment by calling <indexterm significance="preferred"><primary>site</primary></indexterm><firstterm baseform="site">sites</firstterm>.
 These sites perform services, which the Orc program orchestrates.
 A site call may return a value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
 </para>
@@ -29,7 +29,7 @@ Sites may also provide complex services, such as a database management system.
 </para>
 
 <para>
-Sites may be provided by various types of software components, such as Java classes, <ind>Web services</ind>, or custom
+Sites may be provided by various types of software components, such as Java classes, <indexterm><primary>Web services</primary></indexterm>Web services, or custom
 Orc sites.  An Orc program's views of sites, however, remains uniform across these types.
 </para>
 
