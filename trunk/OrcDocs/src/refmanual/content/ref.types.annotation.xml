@@ -48,7 +48,8 @@
 	<section xml:id="ref.types.annotation.function">
 	<title>Function Annotation</title>
 	<para>
-		Whenever a function is defined (using the <code>def</code> keyword), 
+		Whenever a function is defined (using the <code>def</code> keyword),
+		in order for the typechecker to determine its type, 
 		the definition must be accompanied by annotations which describe the argument types and return type
 		of the function. If the function is polymorphic, the names of its type parameters must also be given.
 		This is the same information that a <link linkend="ref.data.closure.type">function type</link> carries.
