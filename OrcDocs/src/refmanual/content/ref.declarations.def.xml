@@ -154,7 +154,7 @@ def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
         A recursive function might continue executing indefinitely, producing an infinite number of publications.
       </para>  
         
-      <example xml:id="ref.declarations.def.recursion.examples.factorial">
+      <example xml:id="ref.declarations.def.recursion.examples.metronome">
 <programlisting language="orc"><![CDATA[
 {- Publishes a signal every second, forever -}
 def metronome() = signal | Rwait(1000) >> metronome()
