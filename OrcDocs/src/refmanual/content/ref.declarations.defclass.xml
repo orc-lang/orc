@@ -45,7 +45,7 @@
 	  </para>
 	  </section>
 	  
-	  <section xml:id="ref.declarations.defclass.constructor">
+	  <section xml:id="ref.declarations.defclass.instances">
 	  <title>Creating Instances</title>
 	  
 	  <para>
@@ -88,7 +88,7 @@
 	  	  
 	  </section>
 	  
-	  <section xml:id="ref.declarations.defclass.constructor">
+	  <section xml:id="ref.declarations.defclass.methods">
 	  <title>Calling Methods</title>
 	  
 	  <para>
@@ -99,7 +99,7 @@
 	  </para>
 	  
 	  <para>
-	  Each method behaves as a site, in particular a <link linkend="ref.concepts.helpful">helpful</link> site. Therefore,
+	  Each method behaves as a site, in particular a <link linkend="ref.concepts.states.helpful">helpful</link> site. Therefore,
 	  
 	  <itemizedlist>
 	    <listitem>
@@ -115,7 +115,7 @@
         then the method call also halts silently, exactly like a helpful site.   
       </listitem>
       <listitem>
-        A method call cannot be <link linkend="ref.concepts.kill"><ind>killed</ind></link> by the pruning combinator.
+        A method call cannot be <link linkend="ref.concepts.states.kill"><ind>killed</ind></link> by the pruning combinator.
         Once the method has been called, its execution continues independently of the rest of the Orc program. 
       </listitem>
 	  </itemizedlist>
@@ -188,13 +188,13 @@ OUTPUT:
 		  <title>Create a Site</title>
 		  <para>
 		  	We create a site, <code><ind>Cell</ind></code>, that defines a write-once variable. It
-			supports two methods: <code>read</code> <link linkend="ref.concepts.block">blocks</link> until the variable has been
-			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.block">blocks</link> forever if a value has
+			supports two methods: <code>read</code> <link linkend="ref.concepts.states.block">blocks</link> until the variable has been
+			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.states.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
 			publishes a <code><ind>signal</ind></code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code><ind>Semaphore</ind></code> (to ensure <link linkend="ref.concepts.block">blocking</link> of write if a
+		  	We use two library sites, <code><ind>Semaphore</ind></code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a
 			value has been written) and <code><ind>Ref</ind></code> to store the value.
 		  </para>
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite"><title>Create a Site</title>

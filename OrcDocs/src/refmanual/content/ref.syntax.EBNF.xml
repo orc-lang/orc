@@ -189,7 +189,7 @@
 		  <lhs>Declaration</lhs>
 		  <rhs>
 		    <nonterminal def="#ebnf.declaration.val">DeclareVal</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.definition">DeclareDefinition</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.def">DeclareDefinition</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.defclass">DeclareDefclass</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.signature">DeclareSignature</nonterminal>
 			  <sbr/>&#x2759; <nonterminal def="#ebnf.declaration.site">DeclareSite</nonterminal>
@@ -206,7 +206,7 @@
 		  </rhs>
 		</production>
 		
-		<production xml:id="ebnf.declaration.definition">
+		<production xml:id="ebnf.declaration.def">
 		  <lhs>DeclareDefinition</lhs>
 		  <rhs>
 		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <nonterminal def="#ebnf.guard">Guard</nonterminal><link linkend="ebnf.meta.questionmark">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
