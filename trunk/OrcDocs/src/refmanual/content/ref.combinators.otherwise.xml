@@ -89,7 +89,7 @@
 	  <section xml:id="ref.combinators.otherwise.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.combinators.otherwise.examples.fallback"><title>Fallback Search</title>
+		  <example xml:id="ref.combinators.otherwise.examples.fallback"><title>Fall-back Search</title>
 <programlisting language="orc"><![CDATA[
 {- Attempt to retrieve search results from Google.
    If Google does not respond, then use Yahoo.
@@ -103,7 +103,7 @@ NONRUNNABLE
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.combinators.otherwise.examples.sublist"><title>Lexographic sublist</title>
+		  <example xml:id="ref.combinators.otherwise.examples.sublist"><title>Lexicographic sublist</title>
 <programlisting language="orc-demo"><![CDATA[
 {- A call to sum(n, xs), where n is an integer and xs is a list
    of integers, find the first sublist of xs lexicographically

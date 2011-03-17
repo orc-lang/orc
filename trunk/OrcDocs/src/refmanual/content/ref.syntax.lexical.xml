@@ -43,10 +43,10 @@
 						</itemizedlist>
 					</para>
 					<para>
-						Examples of allowed Orc identifiers: orchestrate, iscenesætte, ενορχηστρώνω, الانسجام, 編排, 練り上げる, 관현악으로_편곡하다, оркестровать, आर्केस्ट्रा_करना. (These are all translations of "orchestrate" using Google translate, but it's often comically wrong.) 
+						Examples of allowed Orc identifiers: orchestrate, iscenesætte, ενορχηστρώνω, الانسجام, 編排, 練り上げる, 관현악으로_편곡하다, оркестровать, आर्केस्ट्रा_करना. <!-- These are all translations of "orchestrate" using Google translate, but it's often comically wrong.  --> 
 					</para>
 					<para>
-						Also, mathematical letter-like characters are allowed, such as ℤ, ℏ, ℵ0, and, of course, greek letters. 
+						Also, mathematical letter-like characters are allowed, such as ℤ, ℏ, ℵ0, and, of course, Greek letters. 
 					</para>
 					<para>
 						Orc also treats an operator (defined below) placed in parenthesis, such as <code>(+)</code>, as an identifier with the name of the operator (without the parenthesis). 

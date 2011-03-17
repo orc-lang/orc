@@ -14,7 +14,7 @@
 	<section xml:id="ref.syntax.EBNF">
 		<title>EBNF Grammar</title>
 		<para>
-			The Orc language grammar is expressed in Extended Backus-Naur Form (EBNF), with the following metanotation:
+			The Orc language grammar is expressed in Extended Backus-Naur Form (EBNF), with the following meta-notation:
 		</para>
 		
 		<para xml:id="ebnf.meta.questionmark">
@@ -26,7 +26,7 @@
 		</para>
 		
 		<para xml:id="ebnf.meta.ellipsis">
-		G <emphasis>sep</emphasis> &#x2026; <emphasis>sep</emphasis> G denotes zero or more occurences of G, separated by <emphasis>sep</emphasis>.
+		G <emphasis>sep</emphasis> &#x2026; <emphasis>sep</emphasis> G denotes zero or more occurrences of G, separated by <emphasis>sep</emphasis>.
 		</para>
 		
 		<para>

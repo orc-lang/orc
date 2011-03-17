@@ -48,7 +48,7 @@ def foldr(f,l,s) = foldl(f,rev(l),s)
 ]]></programlisting>
 		  </example>
 		  
-		<example xml:id="ref.declarations.include.examples.include"><title>Include a seperate file</title>
+		<example xml:id="ref.declarations.include.examples.include"><title>Include a separate file</title>
 		<programlisting language="orc"><![CDATA[
 {- This is the same as inserting the contents of fold.inc here -}
 include "fold.inc"
