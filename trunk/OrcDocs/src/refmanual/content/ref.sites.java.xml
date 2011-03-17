@@ -281,7 +281,7 @@ OUTPUT:
 					<listitem><para><link linkend="ref.declarations.class"><code>class</code> declaration</link></para></listitem>
 					<listitem><para><link linkend="ref.data.external">External data values</link></para></listitem>
 					<listitem><para><link linkend="ref.sites.custom">Custom sites</link></para></listitem>
-					<listitem><para><link linkend="ref.types.java">Types: Interacting with Java</link></para></listitem>
+					<listitem><para><link linkend="ref.declarations.class.type">Interacting with Java Types</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -37,7 +37,7 @@
 	<para>
 		<link linkend="ref.expressions.call">Calls</link> to polymorphic sites or functions 
 		may be annotated by providing explicit type arguments, as described for 
-		<link linkend="ref.types.polymorphism.call">polymorphic calls</link>. The typechecker
+		<link linkend="ref.types.polymorphism.calls">polymorphic calls</link>. The typechecker
 		can usually infer type parameters, but there are certain cases where it does not have
 		enough information, such as when calling polymorphic factory sites like <code>Buffer</code>
 		or <code>Ref</code>.
