@@ -148,14 +148,13 @@
 	   <section xml:id="ref.declarations.defclass.examples">
 	   <title>Examples</title>
 	   
-	  	<section>
+	  	<example xml:id="ref.declarations.defclass.semantics.examples.matrix">
 	  	<title>Matrix Definition</title>
 	  	<para>
 	  		Orc's standard library supports only one dimensional arrays, and array
 			indices always start at 0. We define a template for a 2-dimensional matrix whose
 			row and column indices range over arbitrary intervals.
 	  	</para>
-	  	<example xml:id="ref.declarations.defclass.semantics.examples.matrix"><title>Matrix Definition</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Create a (rowhi-rowlo) x (colhi-collo) matrix 
    with a method to access its elements.
@@ -177,14 +176,16 @@ OUTPUT:
 3
 -}
 ]]></programlisting>
-		  </example>
-		  <para>
+	
+			<para>
 		  	Note: We have defined <code>A</code> as the "access" method of the defined
 			matrix. This allows us to retrieve and update the matrix elements using
 			traditional notation.
 		  </para>
-		  </section>
-		  <section>
+
+		  </example>
+
+		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite">
 		  <title>Create a Site</title>
 		  <para>
 		  	We create a site, <code><indexterm><primary>Cell</primary></indexterm>Cell</code>, that defines a write-once variable. It
@@ -197,7 +198,6 @@ OUTPUT:
 		  	We use two library sites, <code><indexterm><primary>Semaphore</primary></indexterm>Semaphore</code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a
 			value has been written) and <code><indexterm><primary>Ref</primary></indexterm>Ref</code> to store the value.
 		  </para>
-		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite"><title>Create a Site</title>
 <programlisting language="orc"><![CDATA[
 {- Create a mutable cell site -}
 
@@ -215,15 +215,14 @@ NONRUNNABLE
 -}
 ]]></programlisting>
 		  </example>
-		  </section>
-		  <section>
+
+		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite">
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
 		  	The <code><indexterm><primary>Buffer</primary></indexterm>Buffer</code> site implements an unbounded channel. We add a new method,
 			<code>length</code>, that returns the number of items in the channel. We have to
 			assign a name different from "Buffer" (e.g. "Channel") to this class.
 		  </para>
-		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite"><title>Extend Functionality of an Existing Site</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Extend the pre existing channel site -}
 
@@ -243,11 +242,7 @@ no output
 -}
 ]]></programlisting>
 		  </example>
-		  </section>
-		  
-		  
-		  <section>
-      <title>Defining a Set</title>
+
      <example xml:id="ref.declarations.defclass.declaration.defset"><title>Defining a Set</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Define a set of maximum length n.
@@ -282,9 +277,8 @@ no output
 -}
 ]]></programlisting>
       </example>
-     </section>
-		  
-		  <section>
+
+		  <example xml:id="ref.declarations.defclass.semantics.examples.concaccess">
 		  <title>Managing Concurrent Access</title>
 		  <para>
 		  	The methods of a class instance may be executed concurrently through
@@ -293,7 +287,6 @@ no output
 			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
-		  <example xml:id="ref.declarations.defclass.semantics.examples.concaccess"><title>Managing Concurrent Access</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Manage access to a set via a site -}
 
@@ -326,8 +319,8 @@ no output
 -}
 ]]></programlisting>
 		  </example>
-		  </section>
-		  <section>
+
+		  <example xml:id="ref.declarations.defclass.semantics.examples.goal">
 		  <title>Computing with the Goal Expression</title>
 		  <para>
 		  	All the goal expressions shown so far have been merely <code>stop</code>. In the
@@ -335,7 +328,6 @@ no output
 			unending computation in which <code>tick</code> is printed every second; all the
 			publications of the goal expression are ignored.
 		  </para>
-		  <example xml:id="ref.declarations.defclass.semantics.examples.goal"><title>Computing with the Goal Expression</title>
 <programlisting language="orc"><![CDATA[
 {- Perform a print action with the goal expression 
    of a class.
@@ -356,9 +348,7 @@ OUTPUT:
 -}
 ]]></programlisting>
 		  </example>
-		  </section>
-		  <section>
-		  <title>Stopwatch</title>
+
 		  <example xml:id="ref.declarations.defclass.semantics.examples.stopwatch"><title>Stopwatch</title>
 <programlisting language="orc-demo"><![CDATA[
 {- An instance of Stopwatch has the initial stopwatch value 0.
@@ -392,9 +382,7 @@ no-output
 -}
 ]]></programlisting>
 		  </example>
-		  </section>
-	 
-	   
+
 	   </section>
 	
 	  <section xml:id="ref.declarations.defclass.links">
