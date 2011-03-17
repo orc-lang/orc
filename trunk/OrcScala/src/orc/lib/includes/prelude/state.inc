@@ -279,12 +279,13 @@ When the buffer is empty, return a signal.
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-
+<para xml:id="ref.stdlib.state.Buffer.close">
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+</para>
 
 @method Buffer[A].isClosed() :: Boolean
 
@@ -375,7 +376,7 @@ If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</li
 </sitepropset>
 
 <!-- XSL/FO doesn't like me using an anchor tag here -->
-<para id="orc.lib.BoundedBuffer.close">
+<para id="ref.stdlib.state.BoundedBuffer.close">
 Close the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
