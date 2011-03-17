@@ -24,7 +24,7 @@
 			
 		<para>
 			Not all values have members. 
-			<link linkend="ref.data.record">Records</link> have members, as do many <ind>sites</ind>.
+			<link linkend="ref.data.record">Records</link> have members, as do many sites.
 			A value created by an <link linkend="ref.declarations.class">imported class</link> has
 			a member for each method and field of the corresponding class.
 			A value created by a <link linkend="ref.declarations.class">defined class</link> has

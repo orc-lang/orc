@@ -14,7 +14,7 @@
 <title>Lists</title>
 
 <para>
-A <firstterm>list</firstterm> consists of a finite sequence of <ind>values</ind>. 
+A <firstterm>list</firstterm> consists of a finite sequence of values. 
 It may be empty; the empty list is written as <code>[]</code>.
 </para>
 
@@ -70,7 +70,7 @@ Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linken
 <section xml:id="ref.data.list.type">
 <title>Type</title>
 <para>
-The type of a list is <code><ind>List</ind>[</code><replaceable>U</replaceable><code>]</code>, where <replaceable>U</replaceable> is the join 
+The type of a list is <code>List[</code><replaceable>U</replaceable><code>]</code>, where <replaceable>U</replaceable> is the join 
 of the types of each of its elements. In particular, if all of the elements 
 have the same type <replaceable>T</replaceable>, then the list will have type <code>List[</code><replaceable>T</replaceable><code>]</code>.
 </para>

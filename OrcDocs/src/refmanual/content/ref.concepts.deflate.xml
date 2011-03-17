@@ -51,7 +51,7 @@
 			</para>
 			<para>
 		    Notice that each deflated expression is evaluated concurrently, due to the behavior of the
-		    <ind>pruning combinator</ind>. This is what makes Orc a functional concurrent language: when an expression is
+		    <ind>pruning</ind> combinator. This is what makes Orc a functional concurrent language: when an expression is
 		    evaluated recursively, all such evaluations take place simultaneously. 
 		  </para>   
 		</section>

@@ -16,6 +16,7 @@
 
 	<!-- Index pointers for unwritten terms -->
 	<indexterm><primary>halt</primary></indexterm>
+	<indexterm><primary>otherwise combinator</primary></indexterm>
 
 	<para>
 		A <firstterm>helpful site</firstterm> responds with an indication that it will never <link linkend="ref.concepts.publish"><ind>publish</ind></link>

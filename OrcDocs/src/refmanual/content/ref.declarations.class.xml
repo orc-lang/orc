@@ -27,7 +27,7 @@ In this implementation of Orc, this platform is the Java Runtime Environment (JR
 The declaration <code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
 binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
 Calls to <replaceable>S</replaceable> invoke the corresponding <ind>constructor</ind> of the Java class <replaceable>J</replaceable>.
-The created class instance is published from the <ind>site call</ind>.
+The created class instance is published from the site call.
 Instance methods may be invoked on this published value.
 Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the class static method of the Java class <replaceable>J</replaceable>.
 The return value of the method is published from the site call.

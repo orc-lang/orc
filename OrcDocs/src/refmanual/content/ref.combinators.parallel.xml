@@ -12,7 +12,11 @@
 
 <!-- Parallel Combinator -->
    <section xml:id="ref.combinators.parallel">
-      <title><ind>Parallel Combinator</ind></title>
+      <title>Parallel Combinator</title>
+      
+      <!-- Index pointers for unwritten terms -->
+	  <indexterm><primary>parallel combinator</primary></indexterm>
+      
 	  <section xml:id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
 		  <para>

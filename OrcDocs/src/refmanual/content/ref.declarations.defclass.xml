@@ -330,7 +330,7 @@ no output
 		  <section>
 		  <title>Computing with the Goal Expression</title>
 		  <para>
-		  	All the goal expressions shown so far have been merely <code><ind>stop</ind></code>. In the
+		  	All the goal expressions shown so far have been merely <code>stop</code>. In the
 			following example, the goal expression of the class initiates an
 			unending computation in which <code>tick</code> is printed every second; all the
 			publications of the goal expression are ignored.

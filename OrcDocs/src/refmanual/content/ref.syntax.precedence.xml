@@ -16,6 +16,8 @@
 	<!-- Index pointers for unwritten terms -->
 	<indexterm><primary>associativity</primary></indexterm>
 	<indexterm><primary>fixity</primary></indexterm>
+	<indexterm><primary>precedence</primary></indexterm>
+	<indexterm><primary>operator</primary></indexterm>
 
 <para>
 The following table represents the precedence, fixity, and associativity of combinators and operators in Orc.

@@ -14,7 +14,7 @@
 <title><code>signal</code></title>
 
 <para>A <firstterm>signal</firstterm> is a value that carries no information. It typically indicates
-completion of a <ind>site call</ind>, when there is no other meaningful value to return. It is analagous
+completion of a site call, when there is no other meaningful value to return. It is analagous
 to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
 </para>
 

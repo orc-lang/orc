@@ -42,7 +42,7 @@
 	
 	<para>
 		Types in Orc form a bounded lattice. The lattice is ordered by the subtyping relation,
-		its maximal element is the special type <code>Top</code>, and its minimal element is 
+		its maximal element is the special type <code><ind>Top</ind></code>, and its minimal element is 
 		the special type <code>Bot</code>.
   </para>
 		

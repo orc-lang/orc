@@ -18,9 +18,9 @@
 <title>Sites and Services</title>
 
 <para>
-Orc programs communicate with their environment by calling <firstterm>sites</firstterm>.
+Orc programs communicate with their environment by calling <firstterm baseform="site">sites</firstterm>.
 These sites perform services, which the Orc program orchestrates.
-A site call may return a value, or may be <link linkend="ref.concepts.silent"><ind>silent</ind></link>, returning no value.
+A site call may return a value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
 </para>
 
 <para>

@@ -12,7 +12,11 @@
 
 <!-- Sequential Combinator -->
    <section xml:id="ref.combinators.sequential">
-      <title><ind>Sequential Combinator</ind></title>
+      <title>Sequential Combinator</title>
+      
+      <!-- Index pointers for unwritten terms -->
+	  <indexterm><primary>sequential combinator</primary></indexterm>
+      
 	  <section xml:id="ref.combinators.sequential.syntax">
 		  <title>Syntax</title>
 		  <para>
@@ -66,7 +70,7 @@
 			<listitem>
 			<para>
 			  The sequential combinator may be written as <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>, 
-			  where <replaceable>P</replaceable> is a <ind>pattern</ind> instead of 
+			  where <replaceable>P</replaceable> is a pattern instead of 
 			  just a variable name. Any value published by <replaceable>F</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. 
 			  If this match is successful, a new instance of <replaceable>G</replaceable> is started with all of the bindings 
 			  from the match. Otherwise, the published value is simply ignored, and no new instance 

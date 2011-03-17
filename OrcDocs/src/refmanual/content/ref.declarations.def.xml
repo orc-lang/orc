@@ -136,8 +136,11 @@ body and the arguments are evaluated in parallel.
 		<section xml:id="ref.declarations.def.recursion">
     <title>Recursion</title>
     
+    	<!-- Index pointers for unwritten terms -->
+		<indexterm><primary>recursion</primary></indexterm>
+    
       <para>
-        Functions can be <ind>recursive</ind>; that is, the name of a function may be used in its own body.
+        Functions can be recursive; that is, the name of a function may be used in its own body.
       </para>
         
         <example xml:id="ref.declarations.def.recursion.examples.factorial">
