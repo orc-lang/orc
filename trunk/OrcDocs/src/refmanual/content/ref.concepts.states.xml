@@ -101,7 +101,7 @@
 	<section xml:id="ref.concepts.states.block">
 		<title>Blocked</title>
 		<para>
-			A site call is <firstterm>blocked</firstterm> if (1) the call can not be made because some
+			A site call is <firstterm baseform="block">blocked</firstterm> if (1) the call can not be made because some
 			argument of the call is unbound, the call is then internally blocked,
 			or (2) the caller is waiting for a response, the call is then
 			externally blocked. An expression is blocked if its set of associated
@@ -116,7 +116,7 @@
 	<section xml:id="ref.concepts.states.halt">
 		<title>Halted</title>
 		<para>
-			A site call is <firstterm>halted</firstterm> if (1) it was internally blocked and one of its
+			A site call is <firstterm baseform="halt">halted</firstterm> if (1) it was internally blocked and one of its
 			arguments will never be bound because the expression that computes its
 			value has been halted or killed, or (2) it was externally blocked and
 			either a response has been received or an indication that there never

@@ -13,7 +13,7 @@
 <section xml:id="ref.data.external">
 <title>External Values</title>
 
-<para>Orc's value set is "open" &#x2014; any value returned from a <ind>site call</ind> can be used in Orc expressions.
+<para>Orc's value set is "open" &#x2014; any value returned from a site call can be used in Orc expressions.
 Combined with Orc's ability to invoke arbitrary functions of the environment in with the Orc runtime engine is running,
 this permits Orc programs to use any expressible value in its environment.
 For example, Orc programs running on a Java virtual machine (JVM) can interact with any Java object.</para>

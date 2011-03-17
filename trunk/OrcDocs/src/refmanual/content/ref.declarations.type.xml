@@ -39,7 +39,7 @@
 	  <para>
 	    A <firstterm>type alias</firstterm> gives an existing type a new name, for the programmer's ease of use.
 			There is no distinction between the alias and the aliased type; they can be used
-			interchangeably. A type alias may not be <ind>recursive</ind>.
+			interchangeably. A type alias may not be recursive.
 	  </para>
 	  
 	  <para>
@@ -72,7 +72,7 @@
 	    type of all values produced by any of the declared constructors. 
 	  </para>
 	  <para>
-	    A datatype declaration may be <ind>polymorphic</ind>, introducing new type variables which may be used within
+	    A datatype declaration may be polymorphic, introducing new type variables which may be used within
 	    the slots of the constructors. It may also be recursive; the type name itself can be used within the
 	    slots of the constructors. A datatype declaration is the only way to define type recursively in Orc.
 	  </para>

@@ -13,9 +13,12 @@
 <section xml:id="ref.data.string">
 <title>Character Strings</title>
 
+<!-- Index pointers for unwritten terms -->
+<indexterm><primary>string</primary></indexterm>
+
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
-<para>Orc's character sequence representation is <code><ind>String</ind></code>.
+<para>Orc's character sequence representation is <code>String</code>.
 Characters in Orc <code>String</code>s are drawn from the Unicode
 character set, and are encoded in the UTF-16 encoding form.
 (Note that Orc source code files are encoded in the UTF-8 encoding form.)
@@ -58,7 +61,7 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <itemizedlist>
 <listitem><para>All <code language="java">java.lang.String</code> operations</para></listitem>
 <listitem><para>Convert Orc value to <code>String</code>: <code>write</code></para></listitem>
-<listitem><para>Split a <code>String</code> into a <code><ind>List</ind></code> of <code>String</code>s corresponding to its lines: <code>lines</code></para></listitem>
+<listitem><para>Split a <code>String</code> into a <code>List</code> of <code>String</code>s corresponding to its lines: <code>lines</code></para></listitem>
 <listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-line <code>String</code>: <code>unlines</code></para></listitem>
 <listitem><para>Split a <code>String</code> into a <code>List</code> of <code>String</code>s corresponding to its words: <code>words</code></para></listitem>
 <listitem><para>Combine a <code>List</code> of <code>String</code>s into one multi-word <code>String</code>: <code>unwords</code></para></listitem>

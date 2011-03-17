@@ -15,7 +15,7 @@
 		<title>As Pattern</title>
 
 		<para>
-			The <code><firstterm>as</firstterm></code> keyword binds a variable to the value matched by a <ind>pattern</ind>.
+			The <code><firstterm>as</firstterm></code> keyword binds a variable to the value matched by a pattern.
 			It is a more general way of binding variables than using variable patterns alone.
 		</para>
 		

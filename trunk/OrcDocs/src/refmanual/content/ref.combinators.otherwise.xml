@@ -12,7 +12,12 @@
 
 <!-- Otherwise Combinator -->
    <section xml:id="ref.combinators.otherwise">
-      <title><ind>Otherwise Combinator</ind></title>
+      <title>Otherwise Combinator</title>
+      
+      <!-- Index pointers for unwritten terms -->
+	  <indexterm><primary>halt</primary></indexterm>
+	  <indexterm><primary>silent</primary></indexterm>
+      
 	  <section xml:id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
 		  <para>
@@ -65,7 +70,7 @@
 				If <replaceable>F</replaceable> <ind>publishes</ind> one or more values, 
 				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
 				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
-				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent"><ind>silent</ind></link>.
+				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent">silent</link>.
 			</para>
 			</listitem>
 			</varlistentry>
