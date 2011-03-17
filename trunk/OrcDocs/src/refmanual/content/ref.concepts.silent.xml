@@ -88,6 +88,7 @@ OUTPUT:
 					<row>
 						<entry>
 							<itemizedlist>
+								<listitem><para><link linkend="TODO">TODO</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
@@ -106,6 +107,7 @@ OUTPUT:
 					<row>
 						<entry>
 							<itemizedlist>
+								<listitem><para><olink targetdoc="userguide" targetptr="TODO">TODO</olink></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
@@ -114,4 +116,5 @@ OUTPUT:
 		</informaltable>
 
 	</section>
+
 </section>
