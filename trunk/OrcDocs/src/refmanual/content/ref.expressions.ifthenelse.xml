@@ -11,7 +11,7 @@
   -->
 
 <!-- if then else -->
-	<section xml:id="ref.expressions.ifthenelse">
+	<section xml:id="ref.expressions.ifthenelse" xmlns="http://docbook.org/ns/docbook">
 		<title><code><indexterm><primary>if then else</primary></indexterm>if then else</code></title>
 		
 		<para>

@@ -11,7 +11,7 @@
   -->
 
 <!-- Sequential Combinator -->
-   <section xml:id="ref.combinators.sequential">
+   <section xml:id="ref.combinators.sequential" xmlns="http://docbook.org/ns/docbook">
       <title>Sequential Combinator</title>
       
       <!-- Index pointers for unwritten terms -->

@@ -11,7 +11,7 @@
   -->
 
 <!-- Syntax: Keywords -->
-	<section xml:id="ref.syntax.keywords">
+	<section xml:id="ref.syntax.keywords" xmlns="http://docbook.org/ns/docbook">
 		<title>Keywords</title>
 			<para>
 				The reserved keywords in the Orc programming language are the following:

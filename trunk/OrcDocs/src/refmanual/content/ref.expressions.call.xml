@@ -11,7 +11,7 @@
   -->
 
 <!-- Site and Function Calls -->
-	<section xml:id="ref.expressions.call">
+	<section xml:id="ref.expressions.call" xmlns="http://docbook.org/ns/docbook">
 		<title>Site and Function Calls</title>
 			<para>
 			A <indexterm significance="preferred"><primary>call</primary></indexterm><firstterm>call</firstterm> is an invocation of a <indexterm significance="preferred"><primary>target</primary></indexterm><firstterm>target</firstterm> expression on a sequence of <indexterm significance="preferred"><primary>argument</primary></indexterm><firstterm>argument</firstterm> expressions. 

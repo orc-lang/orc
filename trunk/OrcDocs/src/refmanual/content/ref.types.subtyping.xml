@@ -11,7 +11,7 @@
   -->
 
 <!-- Type subtyping -->
-<section xml:id="ref.types.subtyping">
+<section xml:id="ref.types.subtyping" xmlns="http://docbook.org/ns/docbook">
 	<title>Subtyping</title>
 	
 		<!-- Index pointers for unwritten terms -->

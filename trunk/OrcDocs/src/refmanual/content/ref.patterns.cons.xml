@@ -11,7 +11,7 @@
   -->
 
 <!-- Cons Pattern -->
-	<section xml:id="ref.patterns.cons">
+	<section xml:id="ref.patterns.cons" xmlns="http://docbook.org/ns/docbook">
 		<title>Cons Pattern</title>
 		
 		<para>

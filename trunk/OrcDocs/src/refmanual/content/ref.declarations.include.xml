@@ -11,7 +11,7 @@
   -->
 
 <!-- Include -->
-	<section xml:id="ref.declarations.include">
+	<section xml:id="ref.declarations.include" xmlns="http://docbook.org/ns/docbook">
 		<title><code>include</code>:  Include Orc File</title>
 
 			<para>

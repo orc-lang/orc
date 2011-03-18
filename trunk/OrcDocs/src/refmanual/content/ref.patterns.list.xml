@@ -11,7 +11,7 @@
   -->
 
 <!-- List Pattern -->
-	<section xml:id="ref.patterns.list">
+	<section xml:id="ref.patterns.list" xmlns="http://docbook.org/ns/docbook">
 		<title>List Pattern</title>
 		<para>
 			Each element of a <indexterm significance="preferred"><primary>list pattern</primary></indexterm><firstterm>list pattern</firstterm> matches the corresponding element of a list value.

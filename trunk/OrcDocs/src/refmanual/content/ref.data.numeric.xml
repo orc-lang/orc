@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.numeric" xmlns:xlink="http://www.w3.org/1999/xlink">
+<section xml:id="ref.data.numeric" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Numerics</title>
 
 <para>Orc includes two numeric types, <code><indexterm><primary>Integer</primary></indexterm>Integer</code> and <code><indexterm><primary>Number</primary></indexterm>Number</code>.

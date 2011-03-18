@@ -1,4 +1,7 @@
-<chapter id="chapter.services" xmlns:xlink="http://www.w3.org/1999/xlink"><title>Accessing and Creating External Services</title>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="chapter.services" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Accessing and Creating External Services</title>
 
 <section id="section.services.intro"><title>Introduction</title>
 

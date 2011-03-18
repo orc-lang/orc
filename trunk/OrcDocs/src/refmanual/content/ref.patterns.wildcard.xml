@@ -11,7 +11,7 @@
   -->
 
 <!-- Wildcard Pattern -->
-	<section xml:id="ref.patterns.wildcard">
+	<section xml:id="ref.patterns.wildcard" xmlns="http://docbook.org/ns/docbook">
 		<title>Wildcard Pattern</title>
 		<para>
 			The <indexterm significance="preferred"><primary>wildcard pattern</primary></indexterm><firstterm>wildcard pattern</firstterm> matches any value and binds no variables.

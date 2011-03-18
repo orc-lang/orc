@@ -11,7 +11,7 @@
   -->
 
 <!-- Call Pattern -->
-	<section xml:id="ref.patterns.call">
+	<section xml:id="ref.patterns.call" xmlns="http://docbook.org/ns/docbook">
 		<title>Call Pattern</title>
 		<para>
 			A <indexterm significance="preferred"><primary>call pattern</primary></indexterm><firstterm>call pattern</firstterm> matches a value produced by a previous call to a site. Each argument pattern

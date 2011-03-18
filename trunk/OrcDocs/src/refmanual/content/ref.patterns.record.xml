@@ -11,7 +11,7 @@
   -->
 
 <!-- Record Pattern -->
-	<section xml:id="ref.patterns.record">
+	<section xml:id="ref.patterns.record" xmlns="http://docbook.org/ns/docbook">
 		<title>Record Pattern</title>
 		
 		<para>

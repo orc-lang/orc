@@ -11,7 +11,7 @@
   -->
 
 <!-- Literal Pattern -->
-	<section xml:id="ref.patterns.literal">
+	<section xml:id="ref.patterns.literal" xmlns="http://docbook.org/ns/docbook">
 		<title>Literal Pattern</title>
 		<para>
 			A <indexterm significance="preferred"><primary>literal pattern</primary></indexterm><firstterm>literal pattern</firstterm> matches only the same literal value. 

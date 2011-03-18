@@ -11,7 +11,7 @@
   -->
 
 <!-- Lambda -->
-	<section xml:id="ref.expressions.lambda">
+	<section xml:id="ref.expressions.lambda" xmlns="http://docbook.org/ns/docbook">
 		<title><code>lambda</code></title>
 
 		<para>

@@ -1,4 +1,7 @@
-<chapter id="chapter.methodology" xmlns:xlink="http://www.w3.org/1999/xlink"><title>Programming Methodology</title>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="chapter.methodology" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Programming Methodology</title>
 
 <para>
 In <link linkend="chapter.language">Chapter 1</link>, we described the syntax and semantics of the Orc language. 

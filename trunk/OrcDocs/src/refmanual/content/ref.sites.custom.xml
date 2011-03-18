@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.sites.custom" xmlns:xlink="http://www.w3.org/1999/xlink">
+<section xml:id="ref.sites.custom" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Custom sites</title>
 
 <para>

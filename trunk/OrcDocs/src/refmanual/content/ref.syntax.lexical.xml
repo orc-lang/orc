@@ -11,7 +11,7 @@
   -->
 
 <!-- Syntax: Lexical Specifications -->
-	<section xml:id="ref.syntax.lexical">
+	<section xml:id="ref.syntax.lexical" xmlns="http://docbook.org/ns/docbook">
 		<title>Lexical Specifications</title>
 			<para>
 				This page specifies Orc's processing of an input byte stream into an Orc lexical token sequence. 

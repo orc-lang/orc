@@ -11,7 +11,7 @@
   -->
 
 <!-- Logical Time -->
-   <section xml:id="ref.time.virtual">
+   <section xml:id="ref.time.virtual" xmlns="http://docbook.org/ns/docbook">
       <title>Virtual Time</title>
 	  <section xml:id="ref.time.virtual.behavior">
 		  <title>Behavior</title>

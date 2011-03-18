@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.mutable">
+<section xml:id="ref.data.mutable" xmlns="http://docbook.org/ns/docbook">
 <title>Mutable State</title>
 
 <para>A mutable object is value on which operations may

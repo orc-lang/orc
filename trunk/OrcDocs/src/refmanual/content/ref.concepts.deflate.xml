@@ -11,7 +11,7 @@
   -->
 
 <!-- Deflate Concept -->
-	<section xml:id="ref.concepts.deflate">
+	<section xml:id="ref.concepts.deflate" xmlns="http://docbook.org/ns/docbook">
 		<title>Deflating</title>
 		<section xml:id="ref.concepts.deflate.definition">
 		<title>Definition</title>
