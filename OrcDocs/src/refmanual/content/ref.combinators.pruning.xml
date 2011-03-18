@@ -11,7 +11,7 @@
   -->
 
 <!-- Pruning Combinator -->
-   <section xml:id="ref.combinators.pruning">
+   <section xml:id="ref.combinators.pruning" xmlns="http://docbook.org/ns/docbook">
       <title>Pruning Combinator</title>
       
       <!-- Index pointers for unwritten terms -->

@@ -11,7 +11,7 @@
   -->
 
 <!-- Class from Java -->
-<section xml:id="ref.declarations.class">
+<section xml:id="ref.declarations.class" xmlns="http://docbook.org/ns/docbook">
 	<title><code><indexterm><primary>class</primary></indexterm>class</code>:  Import Class from Java</title>
 
 	<!-- Index pointers for unwritten terms -->

@@ -11,7 +11,7 @@
   -->
 
 <!-- Type -->
-	<section xml:id="ref.declarations.type">
+	<section xml:id="ref.declarations.type" xmlns="http://docbook.org/ns/docbook">
 		<title><code>type</code>:  Declare Type</title>
 
 			<!-- Index pointers for unwritten terms -->

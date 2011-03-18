@@ -11,7 +11,7 @@
   -->
 
 <!-- Variable Pattern -->
-	<section xml:id="ref.patterns.variable">
+	<section xml:id="ref.patterns.variable" xmlns="http://docbook.org/ns/docbook">
 		<title>Variable Pattern</title>
 		<para>
 			A <indexterm><primary>variable</primary></indexterm>variable that occurs in a pattern is bound to the value matched to that pattern.

@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.signal">
+<section xml:id="ref.data.signal" xmlns="http://docbook.org/ns/docbook">
 <title><code>signal</code></title>
 
 <para>A <indexterm significance="preferred"><primary>signal</primary></indexterm><firstterm>signal</firstterm> is a value that carries no information. It typically indicates

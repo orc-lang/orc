@@ -10,7 +10,7 @@
    URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.boolean" xmlns:xlink="http://www.w3.org/1999/xlink">
+<section xml:id="ref.data.boolean" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Booleans</title>
 
   <para>Orc supports <indexterm significance="preferred"><primary>Boolean</primary></indexterm><firstterm>Boolean</firstterm> values, <code>true</code> and <code>false</code>.</para>

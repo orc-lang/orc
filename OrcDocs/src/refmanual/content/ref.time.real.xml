@@ -11,7 +11,7 @@
   -->
 
 <!-- Rwait -->
-   <section xml:id="ref.time.real">
+   <section xml:id="ref.time.real" xmlns="http://docbook.org/ns/docbook">
       <title>Real Time</title>
 	  <section xml:id="ref.time.real.behavior">
 		  <title>Behavior</title>

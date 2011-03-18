@@ -1,4 +1,7 @@
-<chapter id="chapter.language" xmlns:xlink="http://www.w3.org/1999/xlink"><title>The Orc Programming Language</title>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id="chapter.language" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>The Orc Programming Language</title>
 
 <section><title>Introduction</title>
 

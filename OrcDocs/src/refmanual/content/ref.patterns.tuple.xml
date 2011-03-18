@@ -11,7 +11,7 @@
   -->
 
 <!-- Tuple Pattern -->
-	<section xml:id="ref.patterns.tuple">
+	<section xml:id="ref.patterns.tuple" xmlns="http://docbook.org/ns/docbook">
 		<title>Tuple Pattern</title>
 			<para>
 				Each element of a <indexterm significance="preferred"><primary>tuple pattern</primary></indexterm><firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.

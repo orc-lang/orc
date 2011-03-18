@@ -1,4 +1,8 @@
-<appendix id="appendix.library" xmlns:xi="http://www.w3.org/2001/XInclude"><title>Standard Library</title>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<appendix id="appendix.library" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Standard Library</title>
+
 <section><title>Overview</title>
 <para>
 The standard library is a set of declarations implicitly available to all Orc

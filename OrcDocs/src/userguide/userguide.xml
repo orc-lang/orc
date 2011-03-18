@@ -1,15 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-<!DOCTYPE chapter PUBLIC " -//OASIS//DTD DocBook XML V5.0//EN" "../docbook-xml/dtd/docbook.dtd" >
--->
+<!-- userguide.xml - DocBook source for the Orc user guide
 
-<book
-	id="userguide"
-	xmlns:xlink="http://www.w3.org/1999/xlink"
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<book xml:id="userguide" version="5.0" xml:lang="en"
+	xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xi="http://www.w3.org/2001/XInclude">
-<title>Orc User Guide v<xi:include href="../../VERSION" parse="text"/></title>
- 
+
+<title>
+	Orc User Guide v<xi:include href="../../VERSION" parse="text" />
+</title>
+<info>
+	<author>
+		<orgname>The University of Texas at Austin</orgname>
+		<address>1 University Station, Stop C0500, Austin, TX 78712-0233, USA
+		</address>
+		<uri>http://orc.csres.utexas.edu/</uri>
+	</author>
+	<copyright>
+		<year>2011</year>
+		<holder>The University of Texas at Austin</holder>
+	</copyright>
+	<legalnotice>
+		<para>
+			Use and redistribution of this file is governed by the license terms in
+			the LICENSE file found in the project's top-level directory and also
+			found at
+			URL: http://orc.csres.utexas.edu/license.shtml .
+	</para>
+		<para>
+			This research is supported in part by funding from the National
+			Science Foundation. Any opinions, findings, and conclusions or
+			recommendations expressed in this document are those of the authors
+			and do not necessarily reflect the views of the National Science
+			Foundation.
+	</para>
+	</legalnotice>
+</info>
+
 <preface><title>Introduction</title>
 	
 <para>

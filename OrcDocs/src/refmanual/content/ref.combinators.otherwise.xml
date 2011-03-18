@@ -11,7 +11,7 @@
   -->
 
 <!-- Otherwise Combinator -->
-   <section xml:id="ref.combinators.otherwise">
+   <section xml:id="ref.combinators.otherwise" xmlns="http://docbook.org/ns/docbook">
       <title>Otherwise Combinator</title>
       
       <!-- Index pointers for unwritten terms -->

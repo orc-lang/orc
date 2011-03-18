@@ -11,7 +11,7 @@
   -->
 
 <!-- Lambda -->
-	<section xml:id="ref.expressions.stop">
+	<section xml:id="ref.expressions.stop" xmlns="http://docbook.org/ns/docbook">
 		<title><code>stop</code></title>
 
 		<para>

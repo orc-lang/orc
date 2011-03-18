@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.external">
+<section xml:id="ref.data.external" xmlns="http://docbook.org/ns/docbook">
 <title>External Values</title>
 
 <para>Orc's value set is "open" &#x2014; any value returned from a site call can be used in Orc expressions.

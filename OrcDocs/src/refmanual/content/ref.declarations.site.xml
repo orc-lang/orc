@@ -11,7 +11,7 @@
   -->
 
 <!-- Site -->
-	<section xml:id="ref.declarations.site">
+	<section xml:id="ref.declarations.site" xmlns="http://docbook.org/ns/docbook">
 
 	<title><code>site</code>:  Import Site</title>
 	

@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.datatype">
+<section xml:id="ref.data.datatype" xmlns="http://docbook.org/ns/docbook">
 <title>Algebraic Data Types</title>
 
 <!-- Index pointers for unwritten terms -->

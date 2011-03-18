@@ -11,7 +11,7 @@
   -->
 
 <!-- Type context -->
-<section xml:id="ref.types.context">
+<section xml:id="ref.types.context" xmlns="http://docbook.org/ns/docbook">
 	<title>Typing Contexts</title>
 
   <para>

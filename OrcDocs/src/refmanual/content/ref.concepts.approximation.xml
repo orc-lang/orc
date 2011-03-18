@@ -11,7 +11,7 @@
   -->
 
 <!-- Approximation -->
-<section xml:id="ref.concepts.approximation">
+<section xml:id="ref.concepts.approximation" xmlns="http://docbook.org/ns/docbook">
 	<title>Approximation in Orc Implementation</title>
 
 		<para>

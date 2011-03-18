@@ -11,7 +11,7 @@
   -->
 
 <!-- def -->
-	<section xml:id="ref.declarations.def">
+	<section xml:id="ref.declarations.def" xmlns="http://docbook.org/ns/docbook">
 		<title><code>def</code>:  Define Function</title>
 		
 		<!-- Index pointers for unwritten terms -->

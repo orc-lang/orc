@@ -11,7 +11,7 @@
   -->
 
 <!-- Syntax: EBNF -->
-	<section xml:id="ref.syntax.EBNF">
+	<section xml:id="ref.syntax.EBNF" xmlns="http://docbook.org/ns/docbook">
 		<title>EBNF Grammar</title>
 		<para>
 			The Orc language grammar is expressed in Extended Backus-Naur Form (EBNF), with the following meta-notation:

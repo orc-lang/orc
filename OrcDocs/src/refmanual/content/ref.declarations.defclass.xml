@@ -11,7 +11,7 @@
   -->
 
 <!-- def class -->
-   <section xml:id="ref.declarations.defclass">
+   <section xml:id="ref.declarations.defclass" xmlns="http://docbook.org/ns/docbook">
       <title><code>def class</code>: Define Site in Orc</title>
       
       <para>
