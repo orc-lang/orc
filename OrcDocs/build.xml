@@ -28,7 +28,7 @@
 	<property name="xalan.lib.dir" value="lib"/>
 	<property name="database.olink.dir" value="${src.dir}"/>
 	<property name="orc.prelude.dir" value="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
-	<property name="orc.orcdoc-out.dir" value="${basedir}/${src.dir}/refmanual/content/"/>
+	<property name="orc.orcdoc-out.dir" value="${basedir}/${src.dir}/refmanual/"/>
 
 	<!--
 	  - Sets up the classpath for the Xalan and Xerces implementations
@@ -157,7 +157,7 @@
 		</docbooktargetdb>
 
 		<!-- Create olink databases for modular chapters/sections -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual/content" destdir="${build.dir}/targetdb">
+		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb">
 			<include name="*.xml"/>
 		</docbooktargetdb>
 	</target>
@@ -370,10 +370,10 @@
 			</fileset>
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
-			<fileset dir="src/xsl/images"/>
+			<fileset dir="${src.dir}/xsl/images"/>
 		</copy>
 		<copy todir="${build.dir}/html/refmanual/images">
-			<fileset dir="src/refmanual/content/images"/>
+			<fileset dir="${src.dir}/refmanual/images"/>
 		</copy>
 	</target>
 
@@ -454,7 +454,7 @@
 			<fileset dir="src/xsl/images"/>
 		</copy>
 		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
-			<fileset dir="src/refmanual/content/images"/>
+			<fileset dir="src/refmanual/images"/>
 		</copy>
 		<!-- Remove useless generated files -->
 		<delete file="${build.dir}/eclipsehelp/refmanual/plugin.xml"/>
@@ -482,6 +482,9 @@
 			<!-- when table layout is used, default to 12em width for terms -->
 			<param name="variablelist.max.termlength" expression="12"/>
 			<include name="refmanual.xml"/>
+
+			<param name="keep.relative.image.uris" expression="1"/>
+			<param name="img.src.path" expression="${basedir}/${src.dir}/refmanual/"/>
 
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
