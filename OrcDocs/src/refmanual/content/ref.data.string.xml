@@ -33,7 +33,6 @@ Orc <code>String</code>s have an explicit length and are not zero-terminated.
 <productionset>
 <productionrecap linkend="ebnf.literal.string"/>
 </productionset>
-</section>
 
 <para>String literals are enclosed in quotation marks (U+0022).
 Any Unicode character can be placed between the quotation marks, except:
@@ -50,6 +49,8 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <listitem><para><code>\</code> followed by any other character: represents that character</para></listitem>
 </itemizedlist>
 </para>
+
+</section>
 
 </section>
 

@@ -46,12 +46,13 @@ This fall back may result in a loss of precision for this operation.
 <productionrecap linkend="ebnf.literal.decimalpart"/>
 <productionrecap linkend="ebnf.literal.exponentpart"/>
 </productionset>
-</section>
 
 <para>Numeric literals in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
 If a numeric literal contains a decimal point or an "<code>E</code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
 </para>
+
+</section>
 
 </section>
 

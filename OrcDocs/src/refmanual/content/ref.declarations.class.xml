@@ -50,9 +50,9 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 	    Java objects typecheck as one would expect in a Java program, with a few exceptions.
 	    
 	    <itemizedlist>
-	    <listitem>Methods with return type <code language="java">void</code> in Java have return type <code>Signal</code> in Orc.</listitem>
-	    <listitem>Interfaces are not fully supported.</listitem>
-	    <listitem>Type parameter bounds are not supported.</listitem>
+	    <listitem><para>Methods with return type <code language="java">void</code> in Java have return type <code>Signal</code> in Orc.</para></listitem>
+	    <listitem><para>Interfaces are not fully supported.</para></listitem>
+	    <listitem><para>Type parameter bounds are not supported.</para></listitem>
 	    </itemizedlist>
 	    
 	  </para>

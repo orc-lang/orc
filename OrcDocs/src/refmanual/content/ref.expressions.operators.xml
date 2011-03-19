@@ -26,15 +26,15 @@ In particular, these rules describe the relationship between operators and combi
 </para>
 
 <section xml:id="ref.expressions.operators.syntax">
-		  <title>Syntax</title>
-		  <para>
-		    <productionset>
-		    	<productionrecap linkend="ebnf.expression.prefixoperation"/>
-		    	<productionrecap linkend="ebnf.expression.infixoperation"/>
-		    	<productionrecap linkend="ebnf.expression.postfixoperation"/>
-		    </productionset>
-		  </para>
-	  </section>
+	<title>Syntax</title>
+	<para>
+		<productionset>
+			<productionrecap linkend="ebnf.expression.prefixoperation" />
+			<productionrecap linkend="ebnf.expression.infixoperation" />
+			<productionrecap linkend="ebnf.expression.postfixoperation" />
+		</productionset>
+	</para>
+</section>
 
 <section>
 <title>Standard Orc Operators</title>
@@ -42,10 +42,11 @@ In particular, these rules describe the relationship between operators and combi
 <section>
 <title>Arithmetic Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>Arithmetic Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
     <entry>Addition</entry>
@@ -89,10 +90,11 @@ perform decimal division and return <code>2.5</code>.
 <section>
 <title>Comparison Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>Comparison Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>=</code></entry>
     <entry>Equal to</entry>
@@ -129,10 +131,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>Logical Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>Logical Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>&#x26;&#x26;</code></entry>
     <entry><indexterm><primary>Logical and</primary></indexterm>Logical and</entry>
@@ -152,10 +155,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>String Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>String Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
     <entry>Concatenation</entry>
@@ -167,10 +171,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>List Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>List Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>:</code></entry>
     <entry>List construction</entry>
@@ -182,10 +187,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>Record Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>Record Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
     <entry>Extension</entry>
@@ -197,10 +203,11 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <section>
 <title>Reference Operators</title>
 
-<informaltable frame="none" pgwide="0"><tgroup cols="2"><tbody valign="top">
-	<info><title>Reference Operators</title></info>
-	<colspec align="center"/>
-	<colspec align="left"/>
+<informaltable frame="none" pgwide="0">
+	<tgroup cols="2">
+		<colspec align="center"/>
+		<colspec align="left"/>
+		<tbody valign="top">
   <row>
     <entry><code>?</code></entry>
     <entry>Dereference</entry>
@@ -240,35 +247,35 @@ that binding.
 <para>
   Assuming that an operator has not been redefined, it obeys the following typing rules:
   <itemizedlist>
-  <listitem>
+  <listitem><para>
     An arithmetic operation publishes an <code>Integer</code> if all of its operands have type <code>Integer</code>. 
     If any operand has type <code><indexterm><primary>Number</primary></indexterm>Number</code> (but not <code>Integer</code>), the operation publishes a <code>Number</code>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     A comparison operation allows operands of any type, and publishes a <code>Boolean</code>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     A logical operation allows only <code>Boolean</code> operands, and publishes a <code>Boolean</code>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     A string concatenation requires at least one <code>String</code> operand.
     Other operands may be of type <code>Top</code>; they are converted to strings. 
     String concatenation publishes a <code>String</code>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     List construction is polymorphic.
     It takes an operand of type <replaceable>T</replaceable> and an operand of type <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
     It publishes a <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     Record extension takes two <link linkend="ref.data.record.type">records</link> and publishes a record.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     Dereference takes an operand of type <code><indexterm><primary>Ref</primary></indexterm>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and publishes a <replaceable>T</replaceable>.
-  </listitem>
-  <listitem>
+  </para></listitem>
+  <listitem><para>
     Assignment takes operands of types <code>Ref</code><code>[</code><replaceable>T</replaceable><code>]</code> and <replaceable>T</replaceable>, and publishes a <code>Signal</code>. 
-  </listitem>
+  </para></listitem>
   </itemizedlist>
 </para>
 </section>

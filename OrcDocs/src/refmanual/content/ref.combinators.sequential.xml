@@ -36,16 +36,16 @@
 	  <section xml:id="ref.combinators.sequential.identities">
 		<title>Notable Identities</title>	  
 			  <para>
-			  <informaltable class="identitylist">
+			  <informaltable tabstyle="identitylist"><tgroup cols="4">
 				<tbody>
-				  <tr>
-				    <td><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></code><replaceable>H</replaceable></td>
-				    <td> = </td>
-				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><code><![CDATA[) >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></code><replaceable>H</replaceable></td>
-				    <td>  (Left Associative)</td>
-				  </tr>
+				  <row>
+				    <entry><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>H</replaceable></entry>
+				    <entry>  (Left Associative)</entry>
+				  </row>
 				</tbody>
-				</informaltable>
+				</tgroup></informaltable>
 			  </para>
       </section>
 	  

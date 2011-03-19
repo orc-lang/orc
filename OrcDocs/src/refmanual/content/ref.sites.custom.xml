@@ -39,9 +39,9 @@ This interface specifies an abstract <code language="java">call</code> method th
 for the site to respond to the site call.  The <code language="java">Handle</code> interface provides methods
 to respond by either:
 <itemizedlist>
-<listitem>Publishing a value</listitem>
-<listitem><link linkend="ref.concepts.states.halt">Halting</link> <link linkend="ref.concepts.silent">silently</link></listitem>
-<listitem>Throwing an exception</listitem>
+<listitem><para>Publishing a value</para></listitem>
+<listitem><para><link linkend="ref.concepts.states.halt">Halting</link> <link linkend="ref.concepts.silent">silently</link></para></listitem>
+<listitem><para>Throwing an exception</para></listitem>
 </itemizedlist>
 Additionally, sites may notify the Orc runtime engine of events via the <code language="java">Handle</code>,
 such as the need to write a string to the standard output stream.
