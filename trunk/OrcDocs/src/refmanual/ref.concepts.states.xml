@@ -83,7 +83,8 @@
 		<mediaobject>
 			<imageobject>
 				<imagedata fileref="images/stateTransition.svg" format="SVG"
-					contentwidth="800px" contentdepth="480px" width="80%" align="center" />
+					contentwidth="800px" contentdepth="480px" width="80%" scalefit="1"
+					align="center" />
 			</imageobject>
 		</mediaobject>
 	</figure>
