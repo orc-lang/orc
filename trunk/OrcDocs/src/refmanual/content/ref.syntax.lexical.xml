@@ -11,7 +11,7 @@
   -->
 
 <!-- Syntax: Lexical Specifications -->
-	<section xml:id="ref.syntax.lexical" xmlns="http://docbook.org/ns/docbook">
+	<section xml:id="ref.syntax.lexical" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 		<title>Lexical Specifications</title>
 			<para>
 				This page specifies Orc's processing of an input byte stream into an Orc lexical token sequence. 
@@ -21,7 +21,7 @@
 				<title>Input Byte Stream</title>
 				<para>
 					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
-					Orc source code input byte streams must encode a Unicode character sequence using the <ulink url="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</ulink> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
+					Orc source code input byte streams must encode a Unicode character sequence using the <link xlink:href="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</link> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
 				</para>
 			</section>
 			<section xml:id="ref.syntax.lexical.tokens">
@@ -33,7 +33,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.identifier">
 					<title>Identifier</title>
 					<para>
-						Orc scans identifiers per <ulink url="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</ulink>, namely: 
+						Orc scans identifiers per <link xlink:href="http://unicode.org/reports/tr31/">Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax</link>, namely: 
 					</para>
 					<para>
 						<itemizedlist>
@@ -134,7 +134,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.whitespace">
 					<title>Whitespace</title>
 					<para>
-						Per <ulink url="http://unicode.org/reports/tr31/#Pattern_Syntax">Unicode Standard Annex #31, section 4, recommendation R3</ulink>, Orc treats all Unicode Pattern_White_Space characters as whitespace. 
+						Per <link xlink:href="http://unicode.org/reports/tr31/#Pattern_Syntax">Unicode Standard Annex #31, section 4, recommendation R3</link>, Orc treats all Unicode Pattern_White_Space characters as whitespace. 
 					</para>
 					<para>
 						<itemizedlist>
@@ -150,7 +150,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.newline">
 					<title>Newlines</title>
 					<para>
-						Orc follows the newline definition of <ulink url="http://unicode.org/versions/Unicode5.2.0/ch05.pdf">Unicode standard section 5.8, Newline Guidelines, recommendation R4</ulink>. 
+						Orc follows the newline definition of <link xlink:href="http://unicode.org/versions/Unicode5.2.0/ch05.pdf">Unicode standard section 5.8, Newline Guidelines, recommendation R4</link>. 
 					</para>
 					<para>
 						Namely, Orc stops reading a line when it encounters one of the following characters: 
@@ -181,7 +181,7 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><link linkend="ref.syntax.EBNF">EBNF Grammar</link></listitem>
+	          			<listitem><para><link linkend="ref.syntax.EBNF">EBNF Grammar</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

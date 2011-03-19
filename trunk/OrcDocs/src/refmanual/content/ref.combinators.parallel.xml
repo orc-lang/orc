@@ -36,28 +36,28 @@
 		<section xml:id="ref.combinators.parallel.identities">
 		<title>Notable Identities</title>	  
 			  <para>
-			  <informaltable class="identitylist">
+			  <informaltable tabstyle="identitylist"><tgroup cols="4">
 				<tbody>
-				  <tr>
-				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
-				    <td> = </td>
-				    <td><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[)]]></code><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
-				    <td>  (Left Associative)</td>
-				  </tr>
-				  <tr>
-				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></td>
-				    <td> = </td>
-				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]><![CDATA[(]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></td>
-				    <td>  (Right Associative)</td>
-				  </tr>
-				  <tr>
-				    <td><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></td>
-				    <td> = </td>
-				    <td><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>F</replaceable></td>
-				    <td>  (Commutative)</td>
-				  </tr>
+				  <row>
+				    <entry><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[)]]></code><code><![CDATA[ | ]]></code><replaceable>H</replaceable></entry>
+				    <entry>  (Left Associative)</entry>
+				  </row>
+				  <row>
+				    <entry><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><replaceable>F</replaceable><code><![CDATA[ | ]]><![CDATA[(]]></code><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
+				    <entry>  (Right Associative)</entry>
+				  </row>
+				  <row>
+				    <entry><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><replaceable>G</replaceable><code><![CDATA[ | ]]></code><replaceable>F</replaceable></entry>
+				    <entry>  (Commutative)</entry>
+				  </row>
 				</tbody>
-				</informaltable>
+				</tgroup></informaltable>
 			  </para>
     	</section>
     

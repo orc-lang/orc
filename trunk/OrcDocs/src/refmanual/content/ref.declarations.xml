@@ -21,7 +21,7 @@
 <para>
 A declaration precedes an expression.
 It binds one or more variables to values, or type variables to types, in that expression. 
-Declarations follow the rules of <ulink url="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</ulink>.
+Declarations follow the rules of <link xlink:href="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</link>.
 </para>
 
 <para>

@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.data.closure" xmlns="http://docbook.org/ns/docbook">
+<section xml:id="ref.data.closure" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Closures</title>
 
 <para>
@@ -21,7 +21,7 @@ In Orc, functions are first-class values. <link linkend="ref.declarations.def">D
 </para>
 <para>
 Since all declarations - including function declarations - are lexically scoped, these closures are
-<emphasis><ulink url="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</ulink></emphasis>. 
+<emphasis><link xlink:href="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</link></emphasis>. 
 When a closure is created, if the body of the function contains any variables other than the formal parameters, 
 the bindings for those variables are stored in the closure. Then, when the closure is called, the evaluation 
 of the function body uses those stored variable bindings.  

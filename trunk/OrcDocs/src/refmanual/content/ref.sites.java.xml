@@ -141,7 +141,7 @@ view of the types of values than the Java compiler.
 However, in most cases, this difference has no effect.
 At present, Orc does not recognize Java variable arity methods.
 (In practice, this is a very rarely used feature of Java.
-Please let the <ulink url="http://orc.csres.utexas.edu">Orc team</ulink> know if this should be a feature of Orc.)
+Please let the <link xlink:href="http://orc.csres.utexas.edu">Orc team</link> know if this should be a feature of Orc.)
 </para>
 
 <para>

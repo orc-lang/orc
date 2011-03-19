@@ -115,7 +115,7 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem>TODO</listitem>
+	          			<listitem><para><link linkend="TODO">TODO</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
@@ -132,7 +132,7 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-          				<listitem>TODO</listitem>
+          				<listitem><para><olink targetdoc="userguide" targetptr="TODO">TODO</olink></para></listitem>
         			</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
