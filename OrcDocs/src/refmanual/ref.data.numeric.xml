@@ -141,9 +141,10 @@ OUTPUT:
 14
 -}
 ]]></programlisting>
-</example>
 
 <para>See the Orc <link linkend="ref.syntax.precedence">precedence table</link>.</para>
+
+</example>
 
 <example xml:id="ref.data.numeric.examples.int2float">
 <title>Integer to Number Promotion</title>

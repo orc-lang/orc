@@ -88,7 +88,9 @@ OUTPUT:
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="TODO">TODO</link></para></listitem>
+								<listitem><para><link linkend="ref.concepts.publish">Publish</link></para></listitem>
+								<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
+								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
