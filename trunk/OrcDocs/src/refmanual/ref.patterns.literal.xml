@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ref.patterns.constant.xml - DocBook source for an Orc reference manual section
+<!-- ref.patterns.literal.xml - DocBook source for an Orc reference manual section
 
      $Id$
 
@@ -11,39 +11,41 @@
   -->
 
 <!-- Literal Pattern -->
-	<section xml:id="ref.patterns.literal" xmlns="http://docbook.org/ns/docbook">
-		<title>Literal Pattern</title>
-		<para>
-			A <indexterm significance="preferred"><primary>literal pattern</primary></indexterm><firstterm>literal pattern</firstterm> matches only the same literal value. 
-			It is often used in clausal definition of functions.   
-		</para>
-		<para><emphasis role="strong">EBNF</emphasis>: <emphasis>P ::= C</emphasis></para>
-		
-		
-		<section xml:id="ref.patterns.literal.syntax">
-	  <title>Syntax</title>
-	  <para>
-	    <productionset>
-	    	<productionrecap linkend="ebnf.pattern.literal"/>
-	    </productionset>
-	  </para>
-	  </section>
-	  
-	  <section xml:id="ref.patterns.literal.type">
-	  <title>Type</title>
-	  <para>
-	    When a literal pattern is matched against a type <replaceable>T</replaceable>,
-	    the type of the literal value must be a subtype of the type <replaceable>T</replaceable>.
-	    The match produces an empty typing context, since it binds no variables.
-	  </para>
-	  </section>
-		
-		 <section xml:id="ref.patterns.literal.examples">
-		  <title>Examples</title>
+<section xml:id="ref.patterns.literal" xmlns="http://docbook.org/ns/docbook">
+	<title>Literal Pattern</title>
+	<para>
+		A <indexterm significance="preferred"><primary>literal pattern</primary></indexterm><firstterm>literal pattern</firstterm> matches only the same literal value.
+		It is often used in clausal definition of functions.
+	</para>
 
-		  <example xml:id="ref.patterns.literal.examples.factorial">
-		  <title>Factorial Function</title>
-<programlisting language="orc-demo"><![CDATA[
+	<section xml:id="ref.patterns.literal.syntax">
+		<title>Syntax</title>
+		<para>
+			<productionset>
+				<productionrecap linkend="ebnf.pattern.literal" />
+			</productionset>
+		</para>
+	</section>
+
+	<section xml:id="ref.patterns.literal.type">
+		<title>Type</title>
+		<para>
+			When a literal pattern is matched against a type
+			<replaceable>T</replaceable>
+			,
+			the type of the literal value must be a subtype of the type
+			<replaceable>T</replaceable>
+			.
+			The match produces an empty typing context, since it binds no variables.
+		</para>
+	</section>
+
+	<section xml:id="ref.patterns.literal.examples">
+		<title>Examples</title>
+
+		<example xml:id="ref.patterns.literal.examples.factorial">
+			<title>Factorial Function</title>
+			<programlisting language="orc-demo"><![CDATA[
 {- Factorial function -}
 
 def fact(0) = 1
@@ -56,11 +58,11 @@ OUTPUT:
 6
 -}
 ]]></programlisting>
-		  </example>
-		  
-		  		  <example xml:id="ref.patterns.literal.examples.implication">
-		  <title>Implication by Cases</title>
-<programlisting language="orc-demo"><![CDATA[
+		</example>
+
+		<example xml:id="ref.patterns.literal.examples.implication">
+			<title>Implication by Cases</title>
+			<programlisting language="orc-demo"><![CDATA[
 {- Defining logical implication by cases -}
 
 def implies(true, false) = false
@@ -73,46 +75,50 @@ OUTPUT:
 true
 -}
 ]]></programlisting>
-		  </example>
-		  
-		</section>
-		
-		<section xml:id="ref.patterns.literal.links">
-		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><link linkend="ref.patterns">Patterns</link></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-	  </section>
+		</example>
+
 	</section>
+
+	<section xml:id="ref.patterns.literal.links">
+		<title>Related Links</title>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Reference Topics</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+								<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<informaltable frame="none">
+			<tgroup cols="1" align="left">
+				<thead>
+					<row>
+						<entry align="left">Related Tutorial Sections</entry>
+					</row>
+				</thead>
+				<tbody valign="top">
+					<row>
+						<entry>
+							<itemizedlist>
+								<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+							</itemizedlist>
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+	</section>
+</section>
