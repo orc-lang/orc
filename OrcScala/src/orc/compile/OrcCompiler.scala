@@ -15,7 +15,7 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer}
+import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer, FileOutputStream}
 import java.net.URI
 import orc.{ OrcCompilationOptions, OrcCompiler }
 import orc.compile.optimize._
@@ -200,20 +200,24 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   {
     val phaseName = "outputOil"
     override def apply(co: CompilerOptions) = { ast =>
-      lazy val xml = OrcXML.astToXml(ast)
-      lazy val xmlnice = {
-        val pp = new scala.xml.PrettyPrinter(80,2)
-        val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
-        xmlheader + pp.format(xml)
-      }
+    
       
-      if (co.options.echoOil) { println(xmlnice) }
+      if (co.options.echoOil) { 
+        val xml = OrcXML.astToXml(ast)
+        val xmlnice = {
+          val pp = new scala.xml.PrettyPrinter(80,2)
+          val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
+          xmlheader + pp.format(xml)
+        }
+        println("Echoing OIL to console.")
+        println("Caution: Echo on console will not accurately reproduce whitespace in string constants.")
+        println()
+        println(xmlnice)   
+      }
       
       co.options.oilOutputFile match {
         case Some(f) => {
-          val writer = new PrintWriter(f, "UTF-8")
-          writer.println(xmlnice)
-          writer.close()
+          OrcXML.writeOilToStream(ast, new FileOutputStream(f))
         }
         case None => {}
       }
