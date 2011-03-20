@@ -129,6 +129,18 @@ trait Site2 extends Site {
 
 
 
+trait PartialSite1 extends PartialSite {
+  
+  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+    args match {
+      case List(x) => eval(x)
+      case _ => throw new ArityMismatchException(1, args.size)
+    }
+  }
+  
+  def eval(x: AnyRef): Option[AnyRef]
+}
+
 /* Enforce arity and totality */
 trait TotalSite0 extends TotalSite {
   

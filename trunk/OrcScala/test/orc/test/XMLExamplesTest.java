@@ -80,7 +80,7 @@ public class XMLExamplesTest {
 					final ClassLoader clY = getClass().getClassLoader();
 					final ClassLoader clZ = ClassLoader.getSystemClassLoader();
 					final ClassLoader classLoader = clX != null ? clX : (clY != null ? clY : clZ);
-					final java.io.InputStream xsdStream = classLoader.getResource("orc/ast/oil/xml/orc.xsd").openStream();
+					final java.io.InputStream xsdStream = classLoader.getResource("orc/ast/oil/xml/oil.xsd").openStream();
 					
 					// Schema validation
 					try {

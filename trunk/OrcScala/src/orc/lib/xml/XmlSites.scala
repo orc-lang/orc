@@ -20,6 +20,7 @@ import orc.values.OrcRecord
 import orc.values.sites.TotalSite
 import orc.values.sites.TotalSite1
 import orc.values.sites.PartialSite
+import orc.values.sites.PartialSite1
 import orc.values.sites.UntypedSite
 import scala.xml._
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -33,7 +34,7 @@ import orc.error.runtime.ArityMismatchException
  * @author dkitchin
  */
 
-class XmlElementSite extends TotalSite with Extractable with UntypedSite {
+class XMLElementSite extends TotalSite with Extractable with UntypedSite {
 
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -70,12 +71,12 @@ class XmlElementSite extends TotalSite with Extractable with UntypedSite {
       }
     }
   
-  override def name = "Element"
+  override def name = "XMLElement"
   
 }
 
 
-class XmlTextSite extends TotalSite1 with Extractable with UntypedSite {
+class XMLTextSite extends TotalSite1 with Extractable with UntypedSite {
 
   def eval(x: AnyRef): AnyRef = {
     x match {
@@ -96,6 +97,47 @@ class XmlTextSite extends TotalSite1 with Extractable with UntypedSite {
       }
   }
   
-  override def name = "Text"
+  override def name = "XMLText"
+  
+}
+
+
+
+class XMLCDataSite extends TotalSite1 with Extractable with UntypedSite {
+
+  def eval(x: AnyRef): AnyRef = {
+    x match {
+      case data: String => new PCData(data)
+      case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
+    }
+  }
+  
+  override def extract = 
+    new PartialSite with UntypedSite {
+      override def evaluate(args: List[AnyRef]) = {
+        args match {
+          case List(xml: PCData) => {
+            Some(xml._data)
+          }
+          case _ => None
+        }
+      }
+  }
+  
+  override def name = "XMLCData"
+  
+}
+
+
+class IsXMLSite extends PartialSite1 with UntypedSite {
+
+  def eval(x: AnyRef): Option[AnyRef] = {
+    x match {
+      case _ : Node => Some(x)
+      case _ => None
+    }
+  }
+  
+  override def name = "IsXML"
   
 }

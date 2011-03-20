@@ -126,8 +126,10 @@ object OrcXML {
   
   def writeOilToStream(ast: Expression, dest: java.io.OutputStream): Unit = {
     val writer = new java.io.OutputStreamWriter(dest)
-    val xml = astToXml(ast)
-    XML.write(writer, xml, "UTF-8", true, null)
+    val node = astToXml(ast)
+    val xml = Utility.toXML(node, preserveWhitespace = true, minimizeTags = true).toString
+    writer.write("<?xml version='1.0' encoding='UTF-8'?>\n")
+    writer.write(xml)    
     writer.close()
   }
    
@@ -282,7 +284,7 @@ object OrcXML {
     a match {
       case i@ (_:Int | _:Short | _:Long | _:Char | _:BigInt) => <integer>{i.toString()}</integer> 
       case n@ (_:Float | _:Double | _:BigDecimal) => <number>{n.toString()}</number> 
-      case s:String => <string>{s}</string>
+      case s:String => <string>{PCData(s)}</string>
       case true => <true/>
       case false => <false/>
       case orc.values.Signal => <signal/>

@@ -29,6 +29,6 @@ import orc.run.extensions.SupportForXMLInvocation
 /* The first behavior in the trait list will be tried last */
 trait StandardInvocationBehavior extends InvocationBehavior
 with ErrorOnUndefinedInvocation
-with SupportForSiteInvocation
 with SupportForJavaObjectInvocation
 with SupportForXMLInvocation
+with SupportForSiteInvocation
