@@ -2,7 +2,7 @@
 // SupportForSynchronousExecution.scala -- Scala trait SupportForSynchronousExecution
 // Project OrcScala
 //
-// $Id$
+// $Id: SupportForSynchronousExecution.scala 2326 2011-01-13 22:51:10Z jthywissen $
 //
 // Created by dkitchin on Jul 10, 2010.
 //

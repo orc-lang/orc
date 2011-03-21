@@ -2,7 +2,7 @@
 // AST.scala -- Scala class AST
 // Project OrcScala
 //
-// $Id$
+// $Id: AST.scala 2196 2010-11-18 21:39:54Z dkitchin $
 //
 // Created by dkitchin on May 27, 2010.
 //

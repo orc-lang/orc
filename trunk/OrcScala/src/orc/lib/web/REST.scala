@@ -2,7 +2,7 @@
 // REST.scala -- Scala class REST
 // Project OrcScala
 //
-// $Id$
+// $Id: REST.scala 2329 2011-01-14 20:55:15Z dkitchin $
 //
 // Created by dkitchin on Sep 27, 2010.
 //

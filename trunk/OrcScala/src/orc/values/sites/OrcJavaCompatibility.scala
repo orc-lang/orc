@@ -2,7 +2,7 @@
 // OrcJavaCompatibility.scala -- Scala class/trait/object OrcJavaCompatibility
 // Project OrcScala
 //
-// $Id$
+// $Id: OrcJavaCompatibility.scala 2247 2010-12-13 23:22:51Z dkitchin $
 //
 // Created by dkitchin on Dec 8, 2010.
 //

@@ -2,7 +2,7 @@
 // Sites.scala -- Scala traits Site, PatialSite, and UntypedSite
 // Project OrcScala
 //
-// $Id$
+// $Id: Sites.scala 2581 2011-03-21 07:41:38Z dkitchin $
 //
 // Created by dkitchin on May 28, 2010.
 //

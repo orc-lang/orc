@@ -2,7 +2,7 @@
 // ClassForms.scala -- Scala object ClassForms
 // Project OrcScala
 //
-// $Id$
+// $Id: ClassForms.scala 2306 2010-12-27 21:22:43Z dkitchin@gmail.com $
 //
 // Created by dkitchin on Aug 5, 2010.
 //

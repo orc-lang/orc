@@ -2,7 +2,7 @@
 // JavaType.scala -- Scala class/trait/object JavaType
 // Project OrcScala
 //
-// $Id$
+// $Id: JavaType.scala 2265 2010-12-16 15:49:41Z jthywissen $
 //
 // Created by dkitchin on Dec 13, 2010.
 //

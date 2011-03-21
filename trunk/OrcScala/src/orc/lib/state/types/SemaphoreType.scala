@@ -2,7 +2,7 @@
 // SemaphoreType.scala -- Scala object SemaphoreType
 // Project OrcScala
 //
-// $Id$
+// $Id: SemaphoreType.scala 2540 2011-03-14 22:26:54Z jthywissen $
 //
 // Created by dkitchin on Dec 3, 2010.
 //

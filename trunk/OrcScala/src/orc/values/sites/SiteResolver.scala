@@ -2,7 +2,7 @@
 // SiteResolver.scala -- Scala traits SiteResolver, SiteResolution, and SiteForm
 // Project OrcScala
 //
-// $Id$
+// $Id: SiteResolver.scala 1964 2010-08-03 17:41:10Z jthywissen $
 //
 // Created by jthywiss on May 30, 2010.
 //

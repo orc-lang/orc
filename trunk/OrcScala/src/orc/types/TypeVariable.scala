@@ -2,7 +2,7 @@
 // TypeVariable.scala -- Scala class TypeVariable
 // Project OrcScala
 //
-// $Id$
+// $Id: TypeVariable.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Nov 26, 2010.
 //

@@ -2,7 +2,7 @@
 // OrcBindings.scala -- Scala class OrcBindings
 // Project OrcScala
 //
-// $Id$
+// $Id: OrcBindings.scala 2379 2011-01-27 21:10:08Z dkitchin $
 //
 // Created by jthywiss on May 26, 2010.
 //

@@ -2,7 +2,7 @@
 // SupportForJavaObjectInvocation.scala -- Scala class/trait/object SupportForJavaObjectInvocation
 // Project OrcScala
 //
-// $Id$
+// $Id: SupportForJavaObjectInvocation.scala 2581 2011-03-21 07:41:38Z dkitchin $
 //
 // Created by dkitchin on Jan 24, 2011.
 //

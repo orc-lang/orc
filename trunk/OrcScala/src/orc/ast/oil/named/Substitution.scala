@@ -2,7 +2,7 @@
 // Substitution.scala -- Scala trait Substitution
 // Project OrcScala
 //
-// $Id$
+// $Id: Substitution.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Jul 13, 2010.
 //

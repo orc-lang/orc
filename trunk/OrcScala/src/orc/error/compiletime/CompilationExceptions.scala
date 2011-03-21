@@ -2,7 +2,7 @@
 // CompilationExceptions.scala -- Scala child classes of CompilationException
 // Project OrcScala
 //
-// $Id$
+// $Id: CompilationExceptions.scala 2394 2011-02-02 01:24:40Z dkitchin $
 //
 // Created by jthywiss on Aug 11, 2010.
 //

@@ -2,7 +2,7 @@
 // OrcParsers.scala -- Scala objects Orc...Parser, and class OrcParsers
 // Project OrcScala
 //
-// $Id$
+// $Id: OrcParsers.scala 2493 2011-03-04 00:03:51Z jthywissen $
 //
 // Created by dkitchin on May 10, 2010.
 //

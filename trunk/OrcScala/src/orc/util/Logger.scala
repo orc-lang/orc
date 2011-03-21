@@ -2,7 +2,7 @@
 // Logger.scala -- Scala class Logger
 // Project OrcScala
 //
-// $Id$
+// $Id: Logger.scala 2048 2010-08-21 15:04:10Z jthywissen $
 //
 // Created by jthywiss on Jul 10, 2010.
 //

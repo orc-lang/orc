@@ -2,7 +2,7 @@
 // SupportForClasses.scala -- Scala trait SupportForClasses
 // Project OrcScala
 //
-// $Id$
+// $Id: SupportForClasses.scala 2349 2011-01-18 04:40:48Z dkitchin $
 //
 // Created by dkitchin on Jul 10, 2010.
 //
