@@ -14,7 +14,6 @@
 //
 package orc.lib.xml
 
-import orc.lib.builtin.Extractable
 import orc.values.OrcTuple
 import orc.values.OrcRecord
 import orc.values.sites.TotalSite
@@ -22,6 +21,7 @@ import orc.values.sites.TotalSite1
 import orc.values.sites.PartialSite
 import orc.values.sites.PartialSite1
 import orc.values.sites.UntypedSite
+import orc.values.sites.Extractable
 import scala.xml._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
@@ -56,11 +56,11 @@ class XMLElementSite extends TotalSite with Extractable with UntypedSite {
     }
   }
   
-  override def extract = 
-    new PartialSite with UntypedSite {
-      override def evaluate(args: List[AnyRef]) = {
-        args match {
-          case List(xml: Elem) => {
+  val extractor = 
+    new PartialSite1 with UntypedSite {
+      override def eval(arg: AnyRef): Option[AnyRef] = {
+        arg match {
+          case xml: Elem => {
             val tag = xml.label
             val attr = OrcRecord(xml.attributes.asAttrMap)
             val children = xml.child.toList
@@ -85,17 +85,15 @@ class XMLTextSite extends TotalSite1 with Extractable with UntypedSite {
     }
   }
   
-  override def extract = 
-    new PartialSite with UntypedSite {
-      override def evaluate(args: List[AnyRef]) = {
-        args match {
-          case List(xml: Text) => {
-            Some(xml._data)
-          }
+  val extractor = 
+    new PartialSite1 with UntypedSite {
+      override def eval(arg: AnyRef): Option[AnyRef] = {
+        arg match {
+          case xml: Text => Some(xml._data)
           case _ => None
         }
       }
-  }
+    }
   
   override def name = "XMLText"
   
@@ -112,17 +110,15 @@ class XMLCDataSite extends TotalSite1 with Extractable with UntypedSite {
     }
   }
   
-  override def extract = 
-    new PartialSite with UntypedSite {
-      override def evaluate(args: List[AnyRef]) = {
-        args match {
-          case List(xml: PCData) => {
-            Some(xml._data)
-          }
+  val extractor = 
+    new PartialSite1 with UntypedSite {
+      override def eval(arg: AnyRef): Option[AnyRef] = {
+        arg match {
+          case xml: PCData => Some(xml._data)
           case _ => None
         }
       }
-  }
+    }
   
   override def name = "XMLCData"
   

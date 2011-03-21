@@ -68,14 +68,12 @@ class DataSite(name: String, arity: Int) extends TotalSite with Extractable  {
       TaggedValue(this,args)
   }
   
-  override def extract = new PartialSite  with UntypedSite {
- 
-    override def evaluate(args: List[AnyRef]) = {
-        args match {
-          case List(TaggedValue(tag,values)) if (tag == DataSite.this) => Some(OrcValue.letLike(values))
-          case List(_) => None
-          case _ => throw new ArityMismatchException(1, args.size)
-        }
+  val extractor = new PartialSite1 with UntypedSite {
+    override def eval(arg: AnyRef): Option[AnyRef] = {
+      arg match {
+        case TaggedValue(tag,values) if (tag == DataSite.this) => Some(OrcValue.letLike(values))
+        case _ => None
+      }
     }
   }
   

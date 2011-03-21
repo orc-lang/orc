@@ -1,5 +1,5 @@
 //
-// Extractors.scala -- Scala trait Extractable and objects ___Extractor
+// Extractors.scala -- Scala objects ___Extractor
 // Project OrcScala
 //
 // $Id$
@@ -22,11 +22,6 @@ import orc.error.compiletime.typing._
 import orc.util.OptionMapExtension._
 import orc.types._
 import orc.Handle
-
-trait Extractable extends Site {
-  def extract: PartialSite
-}
-
 
 object NoneExtractor extends PartialSite with TypedSite {
   override def name = "None?"
@@ -151,22 +146,6 @@ object TupleArityChecker extends PartialSite with TypedSite {
   }
   
 }
-
-
-object FindExtractor extends Site {
-  override def name = "FindExtractor"
-  def call(args: List[AnyRef], callingToken: Handle) {
-    args match {
-      case List(s: Extractable) => callingToken.publish(s.extract)
-      case List(s: Site) => s.call(List(Field("unapply")), callingToken)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Site", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
-  }
-}
-
-
-
 
 
 object RecordMatcher extends PartialSite with TypedSite {

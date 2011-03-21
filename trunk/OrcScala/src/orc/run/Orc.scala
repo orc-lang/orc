@@ -16,6 +16,8 @@
 package orc.run
 
 import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
+import orc.values.OrcRecord
+import orc.values.Field
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
@@ -626,6 +628,31 @@ trait Orc extends OrcRuntime {
         case e => { halt(); notifyOrc(CaughtEvent(e)) }
       }
     }
+    
+    def makeCall(target: AnyRef, params: List[Binding]): Unit = {
+      target match {
+        case c: Closure => {
+          functionCall(c.code, c.context, params)
+        }
+        
+        /* I wish this didn't need a special case... 
+         * but if the record element is a closure,
+         * it can't be handled by an invocation trait.
+         * -dkitchin
+         */
+        case r@ OrcRecord(entries) if entries contains "apply" => {
+          leftToRight(resolve, params) {
+            case args@ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supercede other member accesses
+            case _ => makeCall(entries("apply"), params)
+          }
+        }
+        
+        case s => {
+          leftToRight(resolve, params) { siteCall(s, _) }
+        }
+      }
+    }
+    
 
     def isLive = { state = Live }
 
@@ -668,11 +695,7 @@ trait Orc extends OrcRuntime {
           val params = args map lookup
           lookup(target) match {
             case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
-            case b =>
-              resolve(b) {
-                case c: Closure => functionCall(c.code, c.context, params)
-                case s => leftToRight(resolve, params) { siteCall(s, _) }
-              }
+            case b => resolve(b) { makeCall(_, params) }
           }
         }
 
