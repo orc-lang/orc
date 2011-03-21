@@ -2,7 +2,7 @@
 // Variance.scala -- Scala trait Variance and its child object
 // Project OrcScala
 //
-// $Id$
+// $Id: Variance.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Nov 27, 2010.
 //

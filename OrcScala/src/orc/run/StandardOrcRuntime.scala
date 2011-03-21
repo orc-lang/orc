@@ -2,7 +2,7 @@
 // StandardOrcRuntime.scala -- Scala class StandardOrcRuntime
 // Project OrcScala
 //
-// $Id$
+// $Id: StandardOrcRuntime.scala 2473 2011-03-01 21:04:16Z dkitchin $
 //
 // Created by dkitchin on Jun 24, 2010.
 //

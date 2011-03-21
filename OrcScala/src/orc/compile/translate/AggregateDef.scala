@@ -2,7 +2,7 @@
 // AggregateDef.scala -- Scala class AggregateDef
 // Project OrcScala
 //
-// $Id$
+// $Id: AggregateDef.scala 2163 2010-10-12 20:57:12Z dkitchin $
 //
 // Created by dkitchin on Jun 3, 2010.
 //

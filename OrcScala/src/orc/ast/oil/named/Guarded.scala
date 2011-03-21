@@ -2,7 +2,7 @@
 // Guarded.scala -- Scala trait Guarding
 // Project OrcScala
 //
-// $Id$
+// $Id: Guarded.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Aug 4, 2010.
 //

@@ -2,7 +2,7 @@
 // Datatype.scala -- Scala trait Datatype and child classes
 // Project OrcScala
 //
-// $Id$
+// $Id: Datatype.scala 2257 2010-12-15 19:55:16Z dkitchin $
 //
 // Created by dkitchin on Dec 5, 2010.
 //

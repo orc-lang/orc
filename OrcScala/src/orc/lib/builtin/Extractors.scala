@@ -2,7 +2,7 @@
 // Extractors.scala -- Scala objects ___Extractor
 // Project OrcScala
 //
-// $Id$
+// $Id: Extractors.scala 2581 2011-03-21 07:41:38Z dkitchin $
 //
 // Created by dkitchin on Jun 24, 2010.
 //

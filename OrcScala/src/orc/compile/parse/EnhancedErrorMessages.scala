@@ -2,7 +2,7 @@
 // EnhancedErrorMessages.scala -- Scala trait EnhancedErrorMessages
 // Project OrcScala
 //
-// $Id$
+// $Id: EnhancedErrorMessages.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Sep 10, 2010.
 //

@@ -2,7 +2,7 @@
 // Value.scala -- Scala class Value
 // Project OrcScala
 //
-// $Id$
+// $Id: OrcValue.scala 2175 2010-10-29 23:45:34Z dkitchin $
 //
 // Created by dkitchin on May 10, 2010.
 //

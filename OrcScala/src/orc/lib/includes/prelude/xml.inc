@@ -2,7 +2,7 @@
 -- xml.inc -- Orc standard prelude include, XML section
 -- Project OrcScala
 --
--- $Id: web.inc 2529 2011-03-09 23:25:43Z dkitchin $
+-- $Id$
 --
 -- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
@@ -35,3 +35,25 @@ site XMLText = orc.lib.xml.XMLTextSite
 site XMLCData = orc.lib.xml.XMLCDataSite
 site IsXML = orc.lib.xml.IsXMLSite
 
+
+val xml = 
+		def toxml(String, List[Top]) :: XML
+		def toxml(tag, children) = 
+		  def liftChild(Top) :: XML
+		  def liftChild(x) = IsXML(x) ; XMLText("" + x)
+		  XMLElement(tag, {. .}, map(liftChild, children))
+		def fromxml(XML) :: (String, Top)
+		def fromxml(XMLElement(tag,attr,children)) = each(children) >c> (tag,c)
+		def fromxml(XMLText(s)) = s
+		def fromxml(XMLCData(s)) = s
+		{. apply = toxml, unapply = fromxml .}
+  
+val xattr =
+		def toattr(XML, {. .}) :: XML
+		def toattr(XMLElement(tag, attr, children), moreattr) = 
+		  XMLElement(tag, attr + moreattr, children)
+		
+		def fromattr(XML) :: (XML, {. .})
+		def fromattr(XMLElement(tag, attr, children)) =
+		  (XMLElement(tag, {. .}, children), attr)
+  {. apply = toattr, unapply = fromattr .}

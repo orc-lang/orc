@@ -2,7 +2,7 @@
 // TypeOperator.scala -- Scala trait TypeOperator
 // Project OrcScala
 //
-// $Id$
+// $Id: TypeOperator.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by dkitchin on Dec 1, 2010.
 //

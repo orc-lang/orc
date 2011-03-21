@@ -2,7 +2,7 @@
 // FirstNonNull.scala -- Scala object FirstNonNull
 // Project OrcScala
 //
-// $Id$
+// $Id: FirstNonNull.scala 1951 2010-07-26 17:22:42Z jthywissen $
 //
 // Created by jthywiss on Jul 26, 2010.
 //

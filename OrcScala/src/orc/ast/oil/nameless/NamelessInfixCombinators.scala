@@ -2,7 +2,7 @@
 // NamelessInfixCombinators.scala -- Scala trait NamelessInfixCombinators
 // Project OrcScala
 //
-// $Id$
+// $Id: NamelessInfixCombinators.scala 2035 2010-08-17 20:13:45Z dkitchin $
 //
 // Created by dkitchin on May 31, 2010.
 //

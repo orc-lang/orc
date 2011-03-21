@@ -2,7 +2,7 @@
 // ExceptionCompileLogger.scala -- Scala class ExceptionCompileLogger
 // Project OrcScala
 //
-// $Id$
+// $Id: ExceptionCompileLogger.scala 2228 2010-12-07 19:13:50Z jthywissen $
 //
 // Created by jthywiss on Jun 8, 2010.
 //

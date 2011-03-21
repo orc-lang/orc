@@ -2,7 +2,7 @@
 // NamedToNameless.scala -- Scala trait NamedToNameless
 // Project OrcScala
 //
-// $Id$
+// $Id: NamedToNameless.scala 2257 2010-12-15 19:55:16Z dkitchin $
 //
 // Created by dkitchin on Jul 10, 2010.
 //

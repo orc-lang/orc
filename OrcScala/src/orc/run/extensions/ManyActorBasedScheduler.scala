@@ -2,7 +2,7 @@
 // ManyActorBasedScheduler.scala -- Scala trait ManyActorBasedScheduler
 // Project OrcScala
 //
-// $Id$
+// $Id: ManyActorBasedScheduler.scala 2329 2011-01-14 20:55:15Z dkitchin $
 //
 // Created by amshali on Aug 10, 2010.
 //

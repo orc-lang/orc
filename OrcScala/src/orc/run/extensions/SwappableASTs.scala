@@ -2,7 +2,7 @@
 // SwappableASTs.scala -- Scala trait/object SwappableASTs
 // Project OrcScala
 //
-// $Id$
+// $Id: SwappableASTs.scala 2359 2011-01-20 17:38:04Z jthywissen $
 //
 // Created by jthywiss on Oct 23, 2010.
 //

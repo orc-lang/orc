@@ -2,7 +2,7 @@
 // FractionDefs.scala -- Scala object FractionDefs
 // Project OrcScala
 //
-// $Id$
+// $Id: FractionDefs.scala 2035 2010-08-17 20:13:45Z dkitchin $
 //
 // Created by dkitchin on Jul 10, 2010.
 //

@@ -2,7 +2,7 @@
 // MakeSite.scala -- Scala classes MakeSite and RunLikeSite
 // Project OrcScala
 //
-// $Id$
+// $Id: MakeSite.scala 2349 2011-01-18 04:40:48Z dkitchin $
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //

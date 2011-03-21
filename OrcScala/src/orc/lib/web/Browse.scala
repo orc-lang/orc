@@ -2,7 +2,7 @@
 // Browse.scala -- Scala class/trait/object Browse
 // Project OrcScala
 //
-// $Id$
+// $Id: Browse.scala 2378 2011-01-25 16:41:09Z dkitchin $
 //
 // Created by dkitchin on Jan 18, 2011.
 //
