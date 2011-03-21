@@ -2,7 +2,7 @@
 // SupportForXMLInvocation.scala -- Scala class/trait/object SupportForXMLInvocation
 // Project OrcScala
 //
-// $Id: SupportForXMLInvocation.scala 2376 2011-01-25 00:34:19Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jan 24, 2011.
 //

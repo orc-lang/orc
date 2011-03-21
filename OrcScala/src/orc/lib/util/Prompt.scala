@@ -2,7 +2,7 @@
 // Prompt.scala -- Scala class/trait/object Prompt
 // Project OrcScala
 //
-// $Id: Prompt.scala 2376 2011-01-25 00:34:19Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jan 20, 2011.
 //

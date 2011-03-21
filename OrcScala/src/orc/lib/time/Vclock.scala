@@ -2,7 +2,7 @@
 // Vclock.scala -- Scala class Vclock
 // Project OrcScala
 //
-// $Id: Vclock.scala 2329 2011-01-14 20:55:15Z dkitchin $
+// $Id$
 //
 // Created by amshali on Oct 2, 2010.
 //

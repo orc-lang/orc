@@ -2,7 +2,7 @@
 // Clause.scala -- Scala class Clause
 // Project OrcScala
 //
-// $Id: Clause.scala 2163 2010-10-12 20:57:12Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jun 3, 2010.
 //

@@ -2,7 +2,7 @@
 // ActorBasedScheduler.scala -- Scala trait ActorBasedScheduler
 // Project OrcScala
 //
-// $Id: ActorBasedScheduler.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //

@@ -2,7 +2,7 @@
 // OverloadedType.scala -- Scala class OverloadedType
 // Project OrcScala
 //
-// $Id: OverloadedType.scala 2247 2010-12-13 23:22:51Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Nov 30, 2010.
 //

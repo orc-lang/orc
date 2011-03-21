@@ -2,7 +2,7 @@
 // XmlSite.scala -- Scala classes XmlElementSite and XmlTextSite
 // Project OrcScala
 //
-// $Id: XmlSites.scala 2581 2011-03-21 07:41:38Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Sep 29, 2010.
 //

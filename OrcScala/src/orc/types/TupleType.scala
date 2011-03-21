@@ -2,7 +2,7 @@
 // TupleType.scala -- Scala class TupleType
 // Project OrcScala
 //
-// $Id: TupleType.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Nov 20, 2010.
 //

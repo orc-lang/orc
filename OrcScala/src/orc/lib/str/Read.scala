@@ -2,7 +2,7 @@
 // Read.scala -- Scala object Read
 // Project OrcScala
 //
-// $Id: Read.scala 2207 2010-12-01 18:21:32Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Jun 9, 2010.
 //

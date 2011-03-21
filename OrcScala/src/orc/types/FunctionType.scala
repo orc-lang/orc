@@ -2,7 +2,7 @@
 // FunctionType.scala -- Scala class FunctionType
 // Project OrcScala
 //
-// $Id: FunctionType.scala 2245 2010-12-13 08:20:52Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Nov 19, 2010.
 //

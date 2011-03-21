@@ -2,7 +2,7 @@
 // CurriedForms.scala -- Scala object CurriedForms
 // Project OrcScala
 //
-// $Id: CurriedForms.scala 2167 2010-10-14 19:20:48Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Aug 5, 2010.
 //

@@ -2,7 +2,7 @@
 // Translator.scala -- Scala object Translator
 // Project OrcScala
 //
-// $Id: Translator.scala 2394 2011-02-02 01:24:40Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on May 27, 2010.
 //

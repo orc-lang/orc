@@ -2,7 +2,7 @@
 // TypeConstructor.scala -- Scala trait TypeConstructor
 // Project OrcScala
 //
-// $Id: TypeConstructor.scala 2257 2010-12-15 19:55:16Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Nov 28, 2010.
 //

@@ -2,7 +2,7 @@
 // Vwait.scala -- Scala class Vwait
 // Project OrcScala
 //
-// $Id: Vwait.scala 2545 2011-03-14 23:23:26Z jthywissen $
+// $Id$
 //
 // Created by amshali on Sep 30, 2010.
 //

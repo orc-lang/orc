@@ -2,7 +2,7 @@
 // ErrorOnUndefinedInvocation.scala -- Scala class/trait/object ErrorOnUndefinedInvocation
 // Project OrcScala
 //
-// $Id: ErrorOnUndefinedInvocation.scala 2376 2011-01-25 00:34:19Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jan 24, 2011.
 //

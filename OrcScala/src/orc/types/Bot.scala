@@ -2,7 +2,7 @@
 // Bot.scala -- Scala object Bot
 // Project OrcScala
 //
-// $Id: Bot.scala 2303 2010-12-27 02:54:30Z dkitchin@gmail.com $
+// $Id$
 //
 // Created by dkitchin on Nov 26, 2010.
 //

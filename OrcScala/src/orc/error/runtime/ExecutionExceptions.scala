@@ -2,7 +2,7 @@
 // ExecutionExceptions.scala -- Scala subclasses of ExecutionException
 // Project OrcScala
 //
-// $Id: ExecutionExceptions.scala 2262 2010-12-16 14:55:25Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Aug 11, 2010.
 //

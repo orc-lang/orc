@@ -2,7 +2,7 @@
 // SupportForRwait.scala -- Scala trait SupportForRwait
 // Project OrcScala
 //
-// $Id: SupportForRwait.scala 2474 2011-03-01 21:08:12Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //

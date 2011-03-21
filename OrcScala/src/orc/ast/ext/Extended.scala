@@ -2,7 +2,7 @@
 // Extended.scala -- Scala class and objects for the Orc extended AST
 // Project OrcScala
 //
-// $Id: Extended.scala 2175 2010-10-29 23:45:34Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on May 19, 2010.
 //

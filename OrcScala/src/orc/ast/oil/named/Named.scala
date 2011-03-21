@@ -2,7 +2,7 @@
 // Named.scala -- Named representation of OIL syntax
 // Project OrcScala
 //
-// $Id: Named.scala 2362 2011-01-21 03:05:30Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on May 28, 2010.
 //

@@ -2,7 +2,7 @@
 // OrcXML.scala -- Scala object OrcXML
 // Project OrcScala
 //
-// $Id: OrcXML.scala 2579 2011-03-20 23:49:00Z dkitchin $
+// $Id$
 //
 // Created by amshali on Jul 12, 2010.
 //
