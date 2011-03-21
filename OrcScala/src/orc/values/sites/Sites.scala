@@ -15,7 +15,7 @@
 
 package orc.values.sites
 
-import orc.values.OrcValue
+import orc.values.{OrcValue, Field}
 import orc.Handle
 import orc.error.OrcException
 import orc.error.NotYetImplementedException
@@ -39,6 +39,27 @@ trait Site extends OrcValue with SiteMetadata {
   
   override def toOrcSyntax() = this.name
 }
+
+
+
+/* A site which has a companion extractor site, accessed by unapply.
+ * Since Extractable overrides call, it should appear as late as
+ * possible in the trait sequence, and definitely after TotalSite,
+ * PartialSite, etc.
+ */
+trait Extractable extends Site {
+  
+  val extractor: AnyRef /* typically PartialSite1 */
+  
+  abstract override def call(args: List[AnyRef], callingToken: Handle) {
+    args match {
+      case List(Field("unapply")) => callingToken.publish(extractor)
+      case _ => super.call(args, callingToken)
+    }
+  
+  }
+}
+
 
 trait TypedSite extends Site {
   def orcType(): Type

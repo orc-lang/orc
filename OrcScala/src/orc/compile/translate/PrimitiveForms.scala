@@ -51,7 +51,7 @@ object PrimitiveForms {
   
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
-    val getExtractor = Call(Constant(FindExtractor), List(constructor), None)
+    val getExtractor = Call(constructor, List(Constant(Field("unapply"))), None)
     val invokeExtractor = Call(extractor, List(a), None)
     getExtractor > extractor > invokeExtractor
   }

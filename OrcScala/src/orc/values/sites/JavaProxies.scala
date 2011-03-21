@@ -40,14 +40,34 @@ import orc.compile.typecheck.Typeloader._
  *
  * @author jthywiss
  */
-object JavaCall extends Function3[Object, List[AnyRef], Handle, Unit] {
-  def apply(target: Object, args: List[AnyRef], h: Handle) {
+object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
+  
+  /* Return true if the call was successfully dispatched.
+   * Return false if the call could not be dispatched.
+   */
+  def apply(target: Object, args: List[AnyRef], h: Handle): Boolean = {
     args match {
-      case List(OrcField(memberName)) => h.publish(new JavaMemberProxy(target, memberName))
-      case _ if (!target.getClass.isArray) => h.publish(JavaObjectProxy(target).invoke(target, "apply", args))
-      case List(i: BigInt) if (target.getClass.isArray) => h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
+      case List(OrcField(memberName)) => {
+        h.publish(new JavaMemberProxy(target, memberName))
+        true
+      }
+      case List(i: BigInt) if (target.getClass.isArray) => {
+        h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
+        true
+      }
       // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
       case _ if (target.getClass.isArray) => throw new MalformedArrayAccessException(args)
+      case _ if (!target.getClass.isArray) => {
+        val proxy = JavaObjectProxy(target)
+        if (proxy.hasMember("apply")) {
+          h.publish(proxy.invoke(target, "apply", args))
+          true
+        }
+        else {
+          false
+        }
+      }
+      case _ => false
     }
   }
 }
@@ -136,7 +156,9 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
   
   override lazy val name = javaClass.getName()
 
-  override def call(args: List[AnyRef], h: Handle) = JavaCall(theObject, args, h)
+  override def call(args: List[AnyRef], h: Handle) {
+    JavaCall(theObject, args, h)
+  }
   
   def orcType = liftJavaType(javaClass)
   

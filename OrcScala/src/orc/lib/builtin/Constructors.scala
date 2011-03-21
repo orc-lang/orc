@@ -41,7 +41,7 @@ object NoneConstructor extends TotalSite with Extractable with TypedSite {
       case List() => None
       case _ => throw new ArityMismatchException(0, args.size)
   }
-  override def extract = NoneExtractor
+  val extractor = NoneExtractor
   
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
@@ -53,7 +53,7 @@ object SomeConstructor extends TotalSite with Extractable with TypedSite {
       case List(v) => Some(v)
       case _ => throw new ArityMismatchException(1, args.size)
   }
-  override def extract = SomeExtractor
+  val extractor = SomeExtractor
   
   def orcType() = new UnaryCallableType { def call(t: Type) = OptionType(t) }
 }
@@ -67,7 +67,7 @@ object NilConstructor extends TotalSite with Extractable with TypedSite {
       case List() => Nil
       case _ => throw new ArityMismatchException(0, args.size)
   }
-  override def extract = NilExtractor
+  val extractor = NilExtractor
   
   def orcType() = SimpleFunctionType(ListType(Bot))
 }
@@ -80,7 +80,7 @@ object ConsConstructor extends TotalSite with Extractable with TypedSite {
       case List(_, vs) => throw new ArgumentTypeMismatchException(1, "List", if (vs != null) vs.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(2, args.size)
   }
-  override def extract = ConsExtractor
+  val extractor = ConsExtractor
   
   def orcType() = {
     val X = new TypeVariable()

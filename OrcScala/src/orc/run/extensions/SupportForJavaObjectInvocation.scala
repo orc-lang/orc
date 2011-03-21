@@ -29,7 +29,10 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
   override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { 
     v match {
       case v : OrcValue => super.invoke(h, v, vs)
-      case _ => JavaCall(v, vs, h)
+      case _ => {
+        val successful = JavaCall(v, vs, h)
+        if (!successful) { super.invoke(h, v, vs) }
+      }
     }
   }
 

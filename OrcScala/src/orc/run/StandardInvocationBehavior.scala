@@ -15,10 +15,7 @@
 package orc.run
 
 import orc.InvocationBehavior
-import orc.run.extensions.ErrorOnUndefinedInvocation
-import orc.run.extensions.SupportForSiteInvocation
-import orc.run.extensions.SupportForJavaObjectInvocation
-import orc.run.extensions.SupportForXMLInvocation
+import orc.run.extensions._
 
 /**
  * 
