@@ -2,7 +2,7 @@
 // Orc.scala -- Scala class Orc
 // Project OrcScala
 //
-// $Id: Orc.scala 2581 2011-03-21 07:41:38Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on May 10, 2010.
 //
@@ -642,7 +642,7 @@ trait Orc extends OrcRuntime {
          */
         case r@ OrcRecord(entries) if entries contains "apply" => {
           leftToRight(resolve, params) {
-            case args@ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supercede other member accesses
+            case args@ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supersede other member accesses
             case _ => makeCall(entries("apply"), params)
           }
         }

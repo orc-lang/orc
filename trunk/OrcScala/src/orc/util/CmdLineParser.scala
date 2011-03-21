@@ -2,7 +2,7 @@
 // CmdLineParser.scala -- Scala trait CmdLineParser
 // Project OrcScala
 //
-// $Id: CmdLineParser.scala 2227 2010-12-07 17:06:13Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jul 19, 2010.
 //

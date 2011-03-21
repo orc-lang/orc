@@ -2,7 +2,7 @@
 // JvmObjectType.scala -- Scala class JvmObjectType
 // Project OrcScala
 //
-// $Id: JavaObjectType.scala 2305 2010-12-27 03:26:33Z dkitchin@gmail.com $
+// $Id$
 //
 // Created by dkitchin on Nov 29, 2010.
 //

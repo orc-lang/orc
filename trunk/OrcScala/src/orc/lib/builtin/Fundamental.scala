@@ -2,7 +2,7 @@
 // Fundamental.scala -- Scala objects If, Unless, Eq, and Let
 // Project OrcScala
 //
-// $Id: Fundamental.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jun 24, 2010.
 //

@@ -2,7 +2,7 @@
 // Rwait.scala -- Scala class/trait/object Rwait
 // Project OrcScala
 //
-// $Id: Rwait.scala 2474 2011-03-01 21:08:12Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jan 13, 2011.
 //

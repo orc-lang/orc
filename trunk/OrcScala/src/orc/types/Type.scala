@@ -2,7 +2,7 @@
 // Types.scala -- Scala package orc.types
 // Project OrcScala
 //
-// $Id: Type.scala 2247 2010-12-13 23:22:51Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on May 24, 2010.
 //

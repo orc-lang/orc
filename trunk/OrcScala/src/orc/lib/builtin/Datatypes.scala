@@ -2,7 +2,7 @@
 // Datatypes.scala -- Scala class DataSite and Object DatatypeBuilder
 // Project OrcScala
 //
-// $Id: Datatypes.scala 2581 2011-03-21 07:41:38Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on June 24, 2010.
 //

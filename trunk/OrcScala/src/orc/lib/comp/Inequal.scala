@@ -2,7 +2,7 @@
 // NotEq.scala -- Scala object Inequal
 // Project OrcScala
 //
-// $Id: Inequal.scala 2341 2011-01-15 17:06:23Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jun 9, 2010.
 //

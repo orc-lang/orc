@@ -2,7 +2,7 @@
 // RecordType.scala -- Scala class RecordType
 // Project OrcScala
 //
-// $Id: RecordType.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Nov 20, 2010.
 //

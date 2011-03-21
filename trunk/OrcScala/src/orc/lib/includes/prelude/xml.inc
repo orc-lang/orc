@@ -29,12 +29,11 @@ Serializes Orc's representation of XML to a string.
 --}
 site WriteXML = orc.lib.xml.WriteXML
 
-
 site XMLElement = orc.lib.xml.XMLElementSite
 site XMLText = orc.lib.xml.XMLTextSite
 site XMLCData = orc.lib.xml.XMLCDataSite
-site IsXML = orc.lib.xml.IsXMLSite
 
+site IsXML = orc.lib.xml.IsXMLSite
 
 val xml = 
 		def toxml(String, List[Top]) :: XML

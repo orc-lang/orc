@@ -2,7 +2,7 @@
 // OrcLexical.scala -- Scala class OrcLexical
 // Project OrcScala
 //
-// $Id: OrcLexical.scala 2277 2010-12-18 08:04:41Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jun 1, 2010.
 //

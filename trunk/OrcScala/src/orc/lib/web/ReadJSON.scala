@@ -2,7 +2,7 @@
 // OrcJSON.scala -- Scala class ReadJSON and objects OrcJSONLexical and OrcJSONParser
 // Project OrcScala
 //
-// $Id: ReadJSON.scala 2529 2011-03-09 23:25:43Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Oct 25, 2010.
 //

@@ -2,7 +2,7 @@
 // RemoveUnusedTypes.scala -- Scala object RemoveUnusedTypes
 // Project OrcScala
 //
-// $Id: RemoveUnusedTypes.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //

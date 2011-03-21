@@ -2,7 +2,7 @@
 // RemoveUnusedDefs.scala -- Scala object RemoveUnusedDefs
 // Project OrcScala
 //
-// $Id: RemoveUnusedDefs.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //

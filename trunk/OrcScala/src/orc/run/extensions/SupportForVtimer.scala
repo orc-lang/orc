@@ -2,7 +2,7 @@
 // SupportForVtimer.scala -- Scala trait SupportForVtimer
 // Project OrcScala
 //
-// $Id: SupportForVtimer.scala 2329 2011-01-14 20:55:15Z dkitchin $
+// $Id$
 //
 // Created by amshali on Oct 1, 2010.
 //

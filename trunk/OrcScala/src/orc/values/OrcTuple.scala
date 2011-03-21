@@ -2,7 +2,7 @@
 // OrcTuple.scala -- Scala class OrcTuple
 // Project OrcScala
 //
-// $Id: OrcTuple.scala 2202 2010-11-28 12:26:10Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //

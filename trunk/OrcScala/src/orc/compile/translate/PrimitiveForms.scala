@@ -2,7 +2,7 @@
 // PrimitiveForms.scala -- Scala object PrimitiveForms
 // Project OrcScala
 //
-// $Id: PrimitiveForms.scala 2581 2011-03-21 07:41:38Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jun 3, 2010.
 //

@@ -2,7 +2,7 @@
 // OrcExceptionExtension.scala -- Scala class ExtendedOrcException and object OrcExceptionExtension
 // Project OrcScala
 //
-// $Id: OrcExceptionExtension.scala 2235 2010-12-08 05:48:20Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Aug 16, 2010.
 //

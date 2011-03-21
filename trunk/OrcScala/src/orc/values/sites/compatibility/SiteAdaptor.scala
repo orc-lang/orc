@@ -2,7 +2,7 @@
 // SiteAdaptor.scala -- Scala class ClassAdaptor
 // Project OrcScala
 //
-// $Id: SiteAdaptor.scala 2329 2011-01-14 20:55:15Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Jun 2, 2010.
 //

@@ -2,7 +2,7 @@
 // Not.scala -- Scala object Not
 // Project OrcScala
 //
-// $Id: Not.scala 2341 2011-01-15 17:06:23Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //

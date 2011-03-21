@@ -2,7 +2,7 @@
 // Typeloader.scala -- Scala object Typeloader
 // Project OrcScala
 //
-// $Id: Typeloader.scala 2281 2010-12-19 18:01:13Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Nov 29, 2010.
 //

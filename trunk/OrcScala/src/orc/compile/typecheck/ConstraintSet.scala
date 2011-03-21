@@ -2,7 +2,7 @@
 // ConstraintSet.scala -- Scala class ConstraintSet
 // Project OrcScala
 //
-// $Id: ConstraintSet.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Nov 28, 2010.
 //

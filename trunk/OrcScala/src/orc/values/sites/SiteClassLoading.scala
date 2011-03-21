@@ -2,7 +2,7 @@
 // SiteClassLoading.scala -- Scala trait and object SiteClassLoading
 // Project OrcScala
 //
-// $Id: SiteClassLoading.scala 2048 2010-08-21 15:04:10Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jul 26, 2010.
 //

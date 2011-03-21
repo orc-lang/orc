@@ -2,7 +2,7 @@
 // ReadXML.scala -- Scala class ReadXML
 // Project OrcScala
 //
-// $Id: ReadXML.scala 2527 2011-03-09 22:15:38Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Nov 17, 2010.
 //

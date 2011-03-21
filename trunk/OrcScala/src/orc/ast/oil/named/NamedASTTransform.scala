@@ -2,7 +2,7 @@
 // Transformation.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
 // Project OrcScala
 //
-// $Id: NamedASTTransform.scala 2257 2010-12-15 19:55:16Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //

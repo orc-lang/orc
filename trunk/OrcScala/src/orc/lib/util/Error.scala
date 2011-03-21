@@ -2,7 +2,7 @@
 // Error.scala -- Scala object Error
 // Project OrcScala
 //
-// $Id: Error.scala 2281 2010-12-19 18:01:13Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Dec 16, 2010.
 //

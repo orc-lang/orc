@@ -2,7 +2,7 @@
 // OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandradOrcCompiler
 // Project OrcScala
 //
-// $Id: OrcCompiler.scala 2579 2011-03-20 23:49:00Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on May 26, 2010.
 //

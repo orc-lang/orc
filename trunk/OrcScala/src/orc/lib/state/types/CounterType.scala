@@ -2,7 +2,7 @@
 // BufferType.scala -- Scala object BufferType
 // Project OrcScala
 //
-// $Id: CounterType.scala 2228 2010-12-07 19:13:50Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Dec 1, 2010.
 //

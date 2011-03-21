@@ -2,7 +2,7 @@
 // JavaProxies.scala -- Scala class JavaProxy
 // Project OrcScala
 //
-// $Id: JavaProxies.scala 2581 2011-03-21 07:41:38Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Jul 9, 2010.
 //

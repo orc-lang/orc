@@ -2,7 +2,7 @@
 // TypeExceptions.scala -- Scala child classes of TypeException
 // Project OrcScala
 //
-// $Id: TypeExceptions.scala 2247 2010-12-13 23:22:51Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Aug 11, 2010.
 //

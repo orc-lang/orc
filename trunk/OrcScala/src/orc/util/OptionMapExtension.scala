@@ -2,7 +2,7 @@
 // PartialMapExtension.scala -- Scala object PartialMapExtension
 // Project OrcScala
 //
-// $Id: OptionMapExtension.scala 1927 2010-07-15 20:41:55Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on May 19, 2010.
 //

@@ -2,7 +2,7 @@
 // BufferType.scala -- Scala object BufferType
 // Project OrcScala
 //
-// $Id: RefType.scala 2540 2011-03-14 22:26:54Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Dec 1, 2010.
 //

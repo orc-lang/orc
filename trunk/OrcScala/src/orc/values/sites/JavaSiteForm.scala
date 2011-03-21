@@ -2,7 +2,7 @@
 // JavaSiteForm.scala -- Scala object JavaSiteForm
 // Project OrcScala
 //
-// $Id: JavaSiteForm.scala 2235 2010-12-08 05:48:20Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on May 30, 2010.
 //

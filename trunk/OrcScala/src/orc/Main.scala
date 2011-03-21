@@ -2,7 +2,7 @@
 // Main.scala -- Scala object Main
 // Project OrcScala
 //
-// $Id: Main.scala 2379 2011-01-27 21:10:08Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Jul 20, 2010.
 //
