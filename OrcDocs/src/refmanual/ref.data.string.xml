@@ -13,12 +13,9 @@
 <section xml:id="ref.data.string" xmlns="http://docbook.org/ns/docbook">
 <title>Character Strings</title>
 
-<!-- Index pointers for unwritten terms -->
-<indexterm><primary>string</primary></indexterm>
-
 <para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
 
-<para>Orc's character sequence representation is <code>String</code>.
+<para>Orc's character sequence representation is <indexterm><primary>character string</primary><see>string</see></indexterm><indexterm><primary>string</primary></indexterm><code>String</code>.
 Characters in Orc <code>String</code>s are drawn from the Unicode
 character set, and are encoded in the UTF-16 encoding form.
 (Note that Orc source code files are encoded in the UTF-8 encoding form.)
