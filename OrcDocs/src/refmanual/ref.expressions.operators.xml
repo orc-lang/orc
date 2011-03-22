@@ -123,7 +123,7 @@ perform decimal division and return <code>2.5</code>.
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> <indexterm><primary>publishes</primary></indexterm>publishes <code>false</code>.
+<code>10 = true</code> <indexterm><primary>publish</primary></indexterm>publishes <code>false</code>.
 </para>
 
 </section>
@@ -138,15 +138,15 @@ The <code>=</code> operator can compare values of any type. Values of different 
 		<tbody valign="top">
   <row>
     <entry><code>&#x26;&#x26;</code></entry>
-    <entry><indexterm><primary>Logical and</primary></indexterm>Logical and</entry>
+    <entry><indexterm><primary>logical and</primary></indexterm>Logical and</entry>
   </row>
   <row>
     <entry><code>||</code></entry>
-    <entry><indexterm><primary>Logical or</primary></indexterm>Logical or</entry>
+    <entry><indexterm><primary>logical or</primary></indexterm>Logical or</entry>
   </row>
   <row>
     <entry><code>~</code></entry>
-    <entry><indexterm><primary>Logical negation</primary></indexterm>Logical negation</entry>
+    <entry><indexterm><primary>logical negation</primary></indexterm>Logical negation</entry>
   </row>
 </tbody></tgroup></informaltable>
 

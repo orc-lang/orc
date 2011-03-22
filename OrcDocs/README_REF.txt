@@ -4,16 +4,13 @@ TO BUILD THE REFERENCE MANUAL:
 
 0) Enter the OrcDocs directory and type the following:
 	
-	ANT_OPTS=-Xmx2G ant rm-build-html-chunk
+	ANT_OPTS=-Xmx2G ant all
 	
    This increases the memory allotted for ANT to 2GB.
    Also, for a fresh build that updates the links, etc.
    build the following targets in order:
      clean
-     targetdb
-     rm-html-chunk
-   or use the 'test' target and make it depend on the above.
-
+     all
 
 
 PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL:
@@ -56,11 +53,7 @@ PROCEDURES FOR LINKING BETWEEN REFERENCE MANUAL PAGES:
    chapter to which you are referring and a targetptr as the xml:id of
    the particular part of the document to which you are referring
       For example:
-         <olink targetdoc="ref.combinators" targetptr="ref.combinators">TEXT</olink>
-         
-         or
-         
-         <olink targetdoc="ref.combinators.parallel" targetptr="ref.combinators.parallel.behavior">TEXT</olink>
+         <link linkend="ref.combinators.parallel.behavior">TEXT</link>
          
          
          

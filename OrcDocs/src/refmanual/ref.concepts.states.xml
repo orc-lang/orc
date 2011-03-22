@@ -144,7 +144,7 @@
 	<section xml:id="ref.concepts.states.helpful">
 		<title>Helpful Sites</title>
 		<para>
-			Sites that indicate absence of response are called <indexterm significance="preferred"><primary>helpful</primary></indexterm><firstterm>helpful</firstterm> (see
+			Sites that indicate absence of response are called <firstterm>helpful</firstterm> (see
 			<link linkend="ref.concepts.helpful">Helpful Sites</link>); not all sites are helpful.
 		</para>
 	</section>

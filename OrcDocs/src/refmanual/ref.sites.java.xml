@@ -32,7 +32,7 @@ In the scope of such a declaration, the declared name is bound to a value that a
 This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
 The class proxy also presents the class static methods and class static fields in the same manner as
 an Orc record with keys corresponding to the Java class members' names.
-Class <indexterm><primary>methods</primary></indexterm>methods appear as record elements that are sites, and are invoked by projecting the record element
+Class <indexterm><primary>method</primary></indexterm>methods appear as record elements that are sites, and are invoked by projecting the record element
 using the <indexterm><primary>dot</primary></indexterm>dot notation and calling the site.
 Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
@@ -69,7 +69,7 @@ Java objects' methods and fields appear in the same manner as
 an Orc record with keys corresponding to the members' names.
 Methods appear as record elements that are sites, and are invoked by projecting the record element
 using the dot notation and calling the site.
-<indexterm><primary>Fields</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
+<indexterm><primary>fields</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
 If a Java object is called as a site without projecting a member, the method name "apply" is implicitly used.
