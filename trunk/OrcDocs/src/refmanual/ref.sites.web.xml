@@ -58,7 +58,7 @@ and structured representations which Orc can manipulate.
 
 </para>
 
-<section xml:id="ref.sites.web.rest">
+<section xml:id="ref.sites.web.json">
 <title>JSON</title>
 <para>
 <ulink url="http://www.json.org">JSON</ulink> (JavaScript Object Notation) is a lightweight data format often used 
@@ -72,18 +72,152 @@ values and Orc representations of those values. <code>ReadJSON</code> parses a s
 and creates an Orc value, where each JSON array becomes an Orc <link linkend="ref.data.list">list</link>,
 each JSON object becomes an Orc <link linkend="ref.data.record">record</link>, and literal values map to their
 Orc counterparts. <code>WriteJSON</code> performs the inverse operation, taking a structured value of this form
-and producing a string representation of an equivalent JSON value. If <replaceable>S</replaceable> is a string
-representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> is
-equal to <replaceable>S</replaceable>.
+and producing a string representation of an equivalent JSON value. If <replaceable>j</replaceable> is an Orc
+representation of a JSON value, then <code>ReadJSON(WriteJSON(</code><replaceable>j</replaceable><code>))</code> is
+equal to <replaceable>j</replaceable>.
 </para>
+
 
 </section>
 
 <section xml:id="ref.sites.web.xml">
 <title>XML</title>
+
+<para>
+<ulink url="http://www.w3.org/XML/">XML</ulink> (Extensible Markup Language) is a structured data format used in many contexts,
+including Web services. 
+</para>
+
+<para>
+The library sites <code>ReadXML</code> and <code>WriteXML</code> convert between string representations of XML
+values and Orc representations of those values. <code>ReadXML</code> parses a string representation of XML
+and creates an Orc representation, which can be manipulated by Orc's XML library sites. <code>WriteXML</code> 
+performs the inverse operation, taking an Orc representation of XML and serializing it to a string.
+If <replaceable>x</replaceable> is an Orc representation of an XML fragment, 
+then <code>ReadXML(WriteXML(</code><replaceable>x</replaceable><code>))</code> is equal to <replaceable>x</replaceable>.
+</para>
+
+<para>
+Unlike JSON, the structure of XML does not map directly to Orc's structured values.
+Instead, Orc provides a set of library sites and functions which manipulate XML in a manner similar to Orc's
+<link linkend="ref.data.datatype">datatypes</link>. Orc's XML manipulation capabilities are incomplete; in particular, it does not handle namespaces. 
+All constructed elements have the default namespace, element and attribute tags have no prefixes,
+and element matching discards namespace and prefix information.
+For more comprehensive XML manipulation, use of underlying platform capabilities 
+(such as Scala or Java libraries) is recommended.
+</para>
+
+<section xml:id="ref.sites.web.xml.primitives">
+<title>Primitive XML Sites</title>
+<para>
+There are three library sites that construct XML nodes directly. Each of these sites may also be used in a 
+<link linkend="ref.patterns.call">call pattern</link> to match the corresponding constructed value.
+</para>
+
+<para>
+<itemizedlist>
+  <listitem><para>
+    <code>XMLElement(</code><replaceable>tag</replaceable><code>,</code> <replaceable>attr</replaceable><code>,</code> <replaceable>children</replaceable><code>)</code> 
+    creates a new XML element with the tag given by string <replaceable>tag</replaceable>, 
+    the set of attributes specified by the record <replaceable>attr</replaceable>,
+    and the sequence of child elements given by the list <replaceable>children</replaceable>. 
+    Each value mapped by <replaceable>attr</replaceable> is converted to a string in the XML representation.
+    <replaceable>attr</replaceable> may be an empty record. 
+    Each element of <replaceable>children</replaceable> must be an XML node.
+    <replaceable>children</replaceable> may be an empty list.
+  </para></listitem>
+  <listitem><para>
+    <code>XMLText(</code><replaceable>txt</replaceable><code>)</code> creates a new XML text node
+    whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
+    which are not permitted in XML text will be encoded.
+  </para></listitem>
+  <listitem><para>
+    <code>XMLCData(</code><replaceable>txt</replaceable><code>)</code> creates a new XML CDATA node
+    whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
+    are <emphasis>not</emphasis> encoded.
+  </para></listitem>
+</itemizedlist>
+</para>
+
+<para>
+The library site <code>IsXML</code> verifies that its argument is an XML node of some type. 
+<code>IsXML(</code><replaceable>x</replaceable><code>)</code> publishes <replaceable>x</replaceable> if <replaceable>x</replaceable> is an XML node;
+otherwise it halts silently.
+</para>
+
+</section>
+
+<section xml:id="ref.sites.web.xml.manipulation">
+<title>Manipulating XML</title>
+
+<para>
+The library provides two tools to manipulate XML in a more convenient way than using the primitive XML sites.
+</para>
+
+<para>
+The library value <code>xml</code> is a record with an <code>apply</code> member and an <code>unapply</code> member,
+so it may be called or used in a call pattern. <code>xml</code> is convenient when working only with the tree structure
+of XML, and not with the attributes of the element nodes.
+</para>
+
+<para>
+<itemizedlist>
+<listitem>
+<para><code>xml(</code><replaceable>t</replaceable><code>,</code> <replaceable>cs</replaceable><code>)</code> returns a new XML
+element with the tag <replaceable>t</replaceable>, the list of children <replaceable>cs</replaceable>, and no attributes. If any element
+of <replaceable>cs</replaceable> is not an XML node, it is converted to a string and enclosed in a text node. 
+</para>
+</listitem>
+<listitem>
+<para>
+The pattern <code>xml(</code><replaceable>p<subscript>tag</subscript></replaceable><code>,</code> <replaceable>p<subscript>child</subscript></replaceable><code>)</code>
+matches an XML element. 
+The pattern <replaceable>p<subscript>tag</subscript></replaceable> is matched against the element tag. 
+The pattern <replaceable>p<subscript>child</subscript></replaceable> is matched against each child of the element;
+it is a multimatch, so it may succeed multiple times and produces a result on each success. Additionally, when <replaceable>p<subscript>child</subscript></replaceable>
+matches a text or CDATA node rather than an element node, it is bound to the string contents of the node, rather than the node itself. 
+<!-- 
+Note that this makes <code>xml</code>'s behavior as a pattern asymmetric from its behavior as a function, 
+since the pattern matches each child individually, rather than matching the list of children. 
+ -->
+</para>
+</listitem>
+</itemizedlist>
+</para>
+
+<para>
+The library value <code>xattr</code> is a record with an <code>apply</code> member and an <code>unapply</code> member,
+so it may be called or used in a call pattern. <code>xattr</code> is convenient when working only with the attributes
+of XML element nodes, and not with the overall tree structure.
+</para>
+
+<para>
+<itemizedlist>
+<listitem>
+<para><code>xattr(</code><replaceable>x</replaceable><code>,</code> <replaceable>attr</replaceable><code>)</code> 
+returns a new XML element which is the same as <replaceable>x</replaceable> except that all bindings in the record <replaceable>attr</replaceable>
+have been added to the attributes of the element. 
+If <replaceable>attr</replaceable> binds any attribute names already bound in <replaceable>x</replaceable>, 
+<replaceable>attr</replaceable> takes precedence and overwrites those bindings. 
+</para>
+</listitem>
+<listitem>
+<para>
+The pattern <code>xattr(</code><replaceable>p<subscript>e</subscript></replaceable><code>,</code> <replaceable>p<subscript>a</subscript></replaceable><code>)</code>
+matches an XML element. 
+The pattern <replaceable>p<subscript>e</subscript></replaceable> is matched against a copy of the element with no attributes. 
+The pattern <replaceable>p<subscript>a</subscript></replaceable> is matched against a record containing the attributes of the element.  
+</para>
+</listitem>
+</itemizedlist>
+</para>
+
 </section>
 
 </section>
+
+</section>
+
 
 
 <section xml:id="ref.sites.web.soap">
@@ -105,20 +239,17 @@ Frameworks such as JAX-WS map SOAP web service functionality to Java classes; th
 <title>Random Bytes from Fourmilab</title>
 <programlisting language="orc"><![CDATA[
 {-
-   Make a request to the HotBits service at Fourmilab
+   Make a request to the Fourmilab HotBits service 
    to produce a sequence of 4 random bytes in hex.
 -}
-site ReadXML = orc.lib.xml.ReadXML
-site Elem = orc.lib.xml.XmlElementSite
-site Text = orc.lib.xml.XmlTextSite
 
-{- Returns a hexadecimal string of n random bytes -}
+{- Returns a string of n random hexadecimal bytes -}
 def randombytes(n) =
   val query = {. nbytes = n, fmt = "xml" .} 
   val location = "https://www.fourmilab.ch/cgi-bin/Hotbits"
   val response = HTTP(location, query).get()
-  val [Elem(_,_,[Text(datastring)])] = ReadXML(response)("random-data") 
-  datastring.replaceAll("\\s+","")
+  val xml("hotbits", xml("random-data", data)) = ReadXML(response) 
+  data.trim()
 
 randombytes(4)
 ]]></programlisting>
