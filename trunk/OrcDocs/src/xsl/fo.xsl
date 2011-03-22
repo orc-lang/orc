@@ -5,12 +5,33 @@
     xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 <xsl:import href="../../docbook-xsl/fo/docbook.xsl"/>
-<xsl:import href="common.xsl"/>
 <xsl:output method="xml" indent="no"/>
 
 <xsl:attribute-set name="section.level1.properties">
   <xsl:attribute name="break-before">page</xsl:attribute>
 </xsl:attribute-set>
+
+
+<!--  Add site properties for the site library using the <sitepropset> tag -->
+<xsl:template match="sitepropset">
+	<fo:block>
+   		<xsl:for-each select="siteprop">
+   			<xsl:if test="@propname='indefinite'">
+   				<fo:inline background-color="#CC0000" color="#FFFFFF" space-end="1em" padding="0.17em"> Indefinite </fo:inline>
+   			</xsl:if>
+   			<xsl:if test="@propname='definite'">
+   				<fo:inline background-color="#00CC00" color="#FFFFFF" space-end="1em" padding="0.17em"> Definite </fo:inline>
+   			</xsl:if>
+   			<xsl:if test="@propname='idempotent'">
+   				<fo:inline background-color="#0000CC" color="#FFFFFF" space-end="1em" padding="0.17em"> Idempotent </fo:inline>
+   			</xsl:if>
+   			<xsl:if test="@propname='pure'">
+   				<fo:inline background-color="#6600FF" color="#FFFFFF" space-end="1em" padding="0.17em"> Pure </fo:inline>
+   			</xsl:if>
+		</xsl:for-each>
+	</fo:block>
+</xsl:template>
+
 
 <xsl:template match='xslthl:literal' mode="xslthl">
   <xsl:apply-templates mode="xslthl"/>
