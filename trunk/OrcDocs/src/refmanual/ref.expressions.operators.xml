@@ -17,7 +17,7 @@
 <para>
 Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Recall that site calls only <indexterm><primary>publish</primary></indexterm>publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
+Site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
@@ -123,7 +123,7 @@ perform decimal division and return <code>2.5</code>.
 
 <para>
 The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> <indexterm><primary>publish</primary></indexterm>publishes <code>false</code>.
+<code>10 = true</code> publishes <code>false</code>.
 </para>
 
 </section>

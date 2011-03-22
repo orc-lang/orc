@@ -15,7 +15,7 @@
 
 <para>
 Some sites provide access to remote services, rather than performing local computation.
-In particular, a site could provide access to a web service. 
+In particular, a site could provide access to a <indexterm><primary>Web service</primary></indexterm>Web service. 
 The Orc library provides sites which perform basic <indexterm><primary>HTTP</primary></indexterm>HTTP requests and manipulate <indexterm><primary>JSON</primary></indexterm>JSON and <indexterm><primary>XML</primary></indexterm>XML data representations;
 these capabilities are sufficient to interact with many simple web services, especially <indexterm><primary>REST</primary></indexterm>RESTful services.
 </para>

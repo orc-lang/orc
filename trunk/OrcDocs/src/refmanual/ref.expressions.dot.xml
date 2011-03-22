@@ -34,7 +34,7 @@
 		<para>
 			Like many expressions in Orc, a dot access is simply another form of <indexterm><primary>site call</primary></indexterm>site call. The key
 			is converted to a special value and passed to the site call as the only argument. The
-			site call <indexterm><primary>publish</primary></indexterm>publishes the member named by the key if it exists, and halts otherwise.
+			site call publishes the member named by the key if it exists, and halts otherwise.
 		</para>
 		
 		<section xml:id="ref.expressions.dot.syntax">

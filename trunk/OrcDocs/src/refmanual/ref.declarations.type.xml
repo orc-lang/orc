@@ -68,7 +68,7 @@
 		<indexterm><primary>import type</primary></indexterm>
 	  
 	  <para>
-	    A <emphasis><indexterm><primary>datatype</primary></indexterm>datatype declaration</emphasis> defines a new type, called a <indexterm significance="preferred"><primary>sum type</primary></indexterm><firstterm>sum type</firstterm>, which is the
+	    A <emphasis><indexterm><primary>algebraic data type</primary></indexterm>datatype declaration</emphasis> defines a new type, called a <indexterm significance="preferred"><primary>sum type</primary></indexterm><firstterm>sum type</firstterm>, which is the
 	    type of all values produced by any of the declared constructors. 
 	  </para>
 	  <para>

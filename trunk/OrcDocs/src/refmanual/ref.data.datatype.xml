@@ -13,12 +13,9 @@
 <section xml:id="ref.data.datatype" xmlns="http://docbook.org/ns/docbook">
 <title>Algebraic Data Types</title>
 
-<!-- Index pointers for unwritten terms -->
-<indexterm><primary>call pattern</primary></indexterm>
-
-<para>An Orc <indexterm significance="preferred"><primary>datatype</primary></indexterm><firstterm>datatype</firstterm> is an <indexterm><primary>algebraic data type</primary></indexterm>algebraic data type, or "tagged union".
+<para>An Orc <indexterm><primary>datatype</primary><see>algebraic data type</see></indexterm><indexterm significance="preferred"><primary>algebraic data type</primary></indexterm><firstterm>datatype</firstterm> is an <indexterm><primary>algebraic data type</primary></indexterm>algebraic data type, or "tagged union".
 A datatype value contains a sequence of values enclosed by a <indexterm significance="preferred"><primary>tag</primary></indexterm><firstterm>tag</firstterm>.
-This value can be <link linkend="ref.patterns.call">matched by a pattern</link>.
+This value can be <indexterm><primary>call pattern</primary></indexterm><link linkend="ref.patterns.call">matched by a pattern</link>.
 </para>
 
 <para>
@@ -194,6 +191,7 @@ NONRUNNABLE
         		<entry><itemizedlist>
           			<listitem><para><link linkend="ref.types">Orc types</link></para></listitem>
           			<listitem><para><link linkend="ref.declarations.type"><code>type</code>:  Declare Type</link></para></listitem>
+          			<listitem><para><link linkend="ref.patterns.call">Call Pattern</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
