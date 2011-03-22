@@ -123,7 +123,7 @@
 	  </para>
 	  
 	  <para>
-	    The <indexterm><primary>methods</primary></indexterm>methods of an instance may be executed concurrently through concurrent invocations;
+	    The <indexterm><primary>method</primary></indexterm>methods of an instance may be executed concurrently through concurrent invocations;
 	    there is no synchronization or serialization mechanism to prevent this. Different calls to the same
 	    method may even execute concurrently with each other.
 	    If any method uses a shared resource, care must be taken to ensure that different method invocations
@@ -195,7 +195,7 @@ OUTPUT:
 			publishes a <code><indexterm><primary>signal</primary></indexterm>signal</code>.
 		  </para>
 		  <para>
-		  	We use two library sites, <code><indexterm><primary>Semaphore</primary></indexterm>Semaphore</code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a
+		  	We use two library sites, <code><indexterm><primary>semaphore</primary></indexterm>Semaphore</code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a
 			value has been written) and <code><indexterm><primary>Ref</primary></indexterm>Ref</code> to store the value.
 		  </para>
 <programlisting language="orc"><![CDATA[
@@ -283,7 +283,7 @@ no output
 		  <para>
 		  	The methods of a class instance may be executed concurrently through
 			concurrent invocations. Concurrent execution may cause interference,
-			as in the example of the <code>Newset</code> example. Typically, <indexterm><primary>semaphores</primary></indexterm>semaphores are used to
+			as in the example of the <code>Newset</code> example. Typically, <indexterm><primary>semaphore</primary></indexterm>semaphores are used to
 			restrict access to methods and/or data. We rewrite <code>Newset</code> in which all
 			accesses to shared data <code>ne</code> are protected using a semaphore.
 		  </para>
