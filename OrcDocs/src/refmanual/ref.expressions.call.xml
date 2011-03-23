@@ -18,6 +18,7 @@
 			First, the target expression is <link linkend="ref.concepts.deflate"><indexterm><primary>deflate</primary></indexterm>deflated</link> to a value <replaceable>g</replaceable>.
 			If <replaceable>g</replaceable> is a site, then the call is a <indexterm significance="preferred"><primary>site call</primary></indexterm><firstterm>site call</firstterm>. 
 			If <replaceable>g</replaceable> is a closure, then the call is a <indexterm significance="preferred"><primary>function call</primary></indexterm><firstterm>function call</firstterm>.
+			If <replaceable>g</replaceable> is a <link linkend="ref.data.record">record</link>, then the call is a <indexterm significance="preferred"><primary>record application</primary></indexterm><firstterm>record application</firstterm>.
 			Each of these cases is described below.		
 			</para>
 		
@@ -56,6 +57,22 @@
 	  <para>
 	    Since a function call executes an arbitrary expression, it may <indexterm><primary>publish</primary></indexterm>publish any number of values.
 	  </para>
+	  </section>
+	  
+	  <section xml:id="ref.expressions.call.record">
+	  <title>Record Application</title>
+	  <para>
+	    A record may be called if it has a member named <indexterm significance="preferred"><primary>apply</primary></indexterm><code>apply</code>.
+	    In this case, the value <replaceable>v</replaceable> bound to <code>apply</code> in the record is retrieved,
+	    and then <replaceable>v</replaceable> is called on the arguments.
+	    <replaceable>v</replaceable> may be a site, a closure, or even another record.
+	    The call behaves exactly as if <replaceable>v</replaceable> had been the original call target. 
+	  </para>
+	  
+	  <para>
+	    If a record without an <code>apply</code> member is called, the call halts silently.
+	  </para>
+
 	  </section>
 		
 		<section xml:id="ref.expressions.call.type">

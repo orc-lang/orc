@@ -34,7 +34,7 @@
 	
 	<para>
 	If an expression has type <replaceable>S</replaceable> and <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>,
-	then that expression also has type <replaceable>T</replaceable>. This is called <emphasis>subsumption</emphasis>.
+	then that expression also has type <replaceable>T</replaceable>. This is called <firstterm>subsumption</firstterm>.
 	</para>
 	
 	<para>

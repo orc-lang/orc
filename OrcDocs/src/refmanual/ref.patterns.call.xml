@@ -14,14 +14,33 @@
 	<section xml:id="ref.patterns.call" xmlns="http://docbook.org/ns/docbook">
 		<title>Call Pattern</title>
 		<para>
-			A <indexterm significance="preferred"><primary>call pattern</primary></indexterm><firstterm>call pattern</firstterm> matches a value produced by a previous call to a site. Each argument pattern
-			is matched against the corresponding argument to the original call. 
-		</para>
-		<para>
-		  Call patterns can only be used with values that have an <code><indexterm><primary>unapply</primary></indexterm>unapply</code> member. All
-		  <link linkend="ref.data.datatype">datatype constructors</link> support <code>unapply</code>. 
-		  Matching against datatype values is the most common use of the call pattern.
-		</para>
+			A <indexterm significance="preferred"><primary>call pattern</primary></indexterm><firstterm>call pattern</firstterm>
+			allows a call to be made within a pattern match.
+	  </para>
+	  
+	  <para> 
+			A pattern <replaceable>x</replaceable><code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code>,
+			is matched against a value <replaceable>v</replaceable> by calling 
+			<replaceable>x</replaceable><code>.unapply(</code><replaceable>v</replaceable><code>)</code>,
+			and matching each value published by that call against the tuple pattern
+			<code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code>.
+			If there is only one pattern <replaceable>P</replaceable>, then <replaceable>P</replaceable> is matched on its own, instead of using a tuple pattern.
+			If there are no patterns, <code>_</code> is used.
+	  </para>
+	  
+	  <para>
+	    If <replaceable>x</replaceable><code>.unapply(</code><replaceable>v</replaceable><code>)</code> halts silently,
+	    or halts without producing any matching values, then the match fails.
+	  </para>
+	  
+	  <para>
+	    If multiple values are published and successfully match, then a <indexterm significance="preferred"><primary>multimatch</primary></indexterm><firstterm>multimatch</firstterm> occurs:
+	    the entire pattern succeeds multiple times. 
+	    In a function call, the matching clause is executed multiple times, once for each match.
+	    In a sequential combinator, the right hand side is executed multiple times, once for each match.
+	    In a pruning combinator, one of the matches is chosen arbitrarily.
+	  </para>
+			 
 		
 		<section xml:id="ref.patterns.call.syntax">
 	  <title>Syntax</title>
@@ -35,9 +54,10 @@
 	  <section xml:id="ref.patterns.call.type">
 	  <title>Type</title>
 	  <para>
-	    When a call pattern is matched against a type <replaceable>T</replaceable>,
-	    the <code>unapply</code> member is used to recover the argument types
-	    <replaceable>T<subscript>i</subscript></replaceable> from <replaceable>T</replaceable>.
+	    When a call pattern is matched against a type <replaceable>S</replaceable>,
+	    the <code>unapply</code> member of the target must have the function type
+	    <code>lambda</code> <code>(</code><replaceable>T</replaceable><code>)</code> <code>::</code> <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>,
+	    where <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>.
 	    Then each argument pattern <replaceable>P<subscript>i</subscript></replaceable>
 	    is matched against the corresponding type <replaceable>T<subscript>i</subscript></replaceable>,
 	    producing typing contexts Γ<subscript>i</subscript>. The typing context
@@ -78,12 +98,12 @@ OUTPUT:PERMUTABLE
 		  <example xml:id="ref.patterns.call.examples.isqrt"><title>Integer square root</title>
 <programlisting language="orc"><![CDATA[
 {- 
-   A user-defined call pattern match, using a class with an unapply member.
+   A user-defined call pattern match, using a record with an unapply member.
    
    The integer square root function, isqrt, returns the square root of a
    perfect square, and halts on any input that is not a perfect square.
    
-   isqrt is then used to define a value Square that matches perfect squares.
+   isqrt is then used to define a value 'square' that matches perfect squares.
 -}
 
 def isqrt(n) =
@@ -96,15 +116,47 @@ def isqrt(n) =
         else stop
     )
 
-val Square = {. unapply = isqrt .}
+val square = {. unapply = isqrt .}
 
-signal >> (9 | 12 | 16 | 24 | 25) >Square(n)> n
+each([9, 12, 16, 24, 25]) >square(n)> n
 
 {-
-OUTPUT:PERMUTABLE
+OUTPUT:PERMUTABLE:
 3
 4
 5
+-}
+
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.patterns.call.examples.factoring"><title>Factoring Using Multimatch</title>
+<programlisting language="orc"><![CDATA[
+{- 
+   A user-defined call pattern match, using a record with an unapply member.
+   
+   The factors function publishes all nontrivial factors of its argument n 
+   (any factor greater than 1 and less than n) 
+   
+   factors is then used to define a value 'multipleOf' that matches all
+   nontrivial factors of an integer.
+-}
+
+def factors(n) if (n <: 0) = factors(-n)
+def factors(n) = for(2, n/2 + 1) >i> Ift(n % i = 0) >> i
+
+val multipleOf = {. unapply = factors .}
+
+30 >multipleOf(n)> n
+
+{-
+OUTPUT:PERMUTABLE:
+2
+3
+5
+6
+10
+15
 -}
 
 ]]></programlisting>

@@ -74,6 +74,25 @@ is equivalent to the expression
 
 </section>
 
+<section xml:id="ref.data.record.specialkeys">
+<title>Special Keys</title>
+<para>
+There are two record keys that have special meanings:
+</para>
+
+<para> 
+<itemizedlist>
+<listitem><para>
+If a record has a binding for the <indexterm><primary>apply</primary></indexterm><code>apply</code> key, then the record may be <link linkend="ref.expressions.call.record">called like a site or function</link>.
+</para></listitem>
+<listitem><para>
+If a record has a binding for the <indexterm><primary>unapply</primary></indexterm><code>unapply</code> key, then the record may be <link linkend="ref.patterns.call">used in a call pattern</link>.
+</para></listitem>
+</itemizedlist>
+</para>
+
+</section>
+
 <section xml:id="ref.data.record.type">
 <title>Type</title>
 <para>
