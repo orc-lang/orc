@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE project PUBLIC "-//ANT//DTD project//EN" "ant.dtd">
 
 <!-- build.xml - Ant buildfile (tasks for project build)
 	 Project OrcDocs
