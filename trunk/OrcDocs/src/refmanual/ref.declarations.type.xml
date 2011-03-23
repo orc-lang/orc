@@ -19,7 +19,7 @@
 
 			<para>
 			A type declaration binds a type variable to a type. There are three kinds of 
-			type declarations: <indexterm significance="preferred"><primary>type alias</primary></indexterm><firstterm baseform="type alias">aliases</firstterm>, 
+			type declarations: <firstterm baseform="type alias">aliases</firstterm>, 
 			<emphasis>imports</emphasis>, and <emphasis>datatypes</emphasis>.
 			</para>
 			
