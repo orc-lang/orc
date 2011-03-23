@@ -44,9 +44,16 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
 <title>Constructors</title>
 
 <para>
-  Each constructor creates a new site of the same name. The site takes one argument for each slot
+  Each constructor is a site, which takes one argument for each slot
   in the constructor, and publishes a datatype value consisting of the sequence of argument
   values, tagged with that constructor's unique tag.
+</para>
+
+<para>
+  Each constructor also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
+  which takes a value with that constructor's tag, removes the tag, and publishes the sequence of values as a tuple.
+  If its argument does not have the tag, it halts. 
+  Thus, datatype values can be used in pattern matching. 
 </para>
 
 <section xml:id="ref.data.datatype.type">

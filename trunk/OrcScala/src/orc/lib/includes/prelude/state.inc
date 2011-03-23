@@ -85,9 +85,7 @@ type Cell = orc.lib.state.types.CellType
 
 {--
 @site Ref[A]() :: Ref[A]
-<para id="orc.lib.state.Ref">
 Create a rewritable storage location without an initial value.
-</para>
 
 Example:
 <programlisting language="orc-demo"><![CDATA[

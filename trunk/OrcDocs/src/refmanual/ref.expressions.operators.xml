@@ -21,7 +21,7 @@ Site calls only publish once, and arguments are <link linkend="ref.concepts.defl
 </para>
 
 <para>
-Operators are parsed using <link linkend="ref.syntax.precedence">the precedence and <indexterm><primary>associativity</primary></indexterm>associativity rules</link> of Orc. 
+Operators are parsed using the <indexterm><primary>associativity</primary></indexterm><link linkend="ref.syntax.precedence">precedence and associativity</link> rules of Orc. 
 In particular, these rules describe the relationship between operators and combinators.
 </para>
 
