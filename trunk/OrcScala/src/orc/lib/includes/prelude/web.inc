@@ -96,22 +96,3 @@ If <replaceable>V</replaceable> is an Orc representation of a JSON value, then <
 --}
 site WriteJSON = orc.lib.web.WriteJSON
 
-
-
-{- We use Scala's Node class as the underlying type of Orc XML trees -}
-class XML = scala.xml.Node
-
-{--
-@site ReadXML(String) :: XML  
-
-Parses a string representation of XML into a structured form
-that Orc can manipulate.
---}
-site ReadXML = orc.lib.xml.ReadXML
-
-{--
-@site WriteXML(XML) :: String
-
-Serializes Orc's representation of XML to a string.
---}
-site WriteXML = orc.lib.xml.WriteXML
