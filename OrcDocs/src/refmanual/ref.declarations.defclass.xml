@@ -115,7 +115,7 @@
         then the method call also halts silently, exactly like a helpful site.   
       </listitem>
       <listitem>
-        A method call cannot be <link linkend="ref.concepts.states.kill"><indexterm><primary>killed</primary></indexterm>killed</link> by the pruning combinator.
+        A method call cannot be <link linkend="ref.concepts.states.kill"><indexterm><primary>kill</primary></indexterm>killed</link> by the pruning combinator.
         Once the method has been called, its execution continues independently of the rest of the Orc program. 
       </listitem>
 	  </itemizedlist>
@@ -186,13 +186,13 @@ OUTPUT:
 		  </example>
 
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite">
-		  <title>Create a Site</title>
+		  <title>Create a Write-Once Site (Cell) using Semaphore and Ref</title>
 		  <para>
 		  	We create a site, <code><indexterm><primary>Cell</primary></indexterm>Cell</code>, that defines a write-once variable. It
 			supports two methods: <code>read</code> <link linkend="ref.concepts.states.block">blocks</link> until the variable has been
 			written, and then it publishes its value; <code>write(v)</code> <link linkend="ref.concepts.states.block">blocks</link> forever if a value has
 			already been written, otherwise it writes <code>v</code> as the value and
-			publishes a <code><indexterm><primary>signal</primary></indexterm>signal</code>.
+			publishes a <code>signal</code>.
 		  </para>
 		  <para>
 		  	We use two library sites, <code><indexterm><primary>semaphore</primary></indexterm>Semaphore</code> (to ensure <link linkend="ref.concepts.states.block">blocking</link> of write if a

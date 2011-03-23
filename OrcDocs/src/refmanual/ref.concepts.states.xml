@@ -14,10 +14,6 @@
 <section xml:id="ref.concepts.states" xmlns="http://docbook.org/ns/docbook">
 	<title>Expression States</title>
 
-	<!-- Index pointers for unwritten terms -->
-	<indexterm><primary>halt</primary></indexterm>
-	<indexterm><primary>kill</primary></indexterm>
-
 	<para>
 		A site call, from the site's perspective, has three possible outcomes:
 		the site will definitely publish a value, the site knows that it will
@@ -132,7 +128,7 @@
 	<section xml:id="ref.concepts.states.kill">
 		<title>Killed</title>
 		<para>
-			Expression <replaceable>G</replaceable> is <indexterm significance="preferred"><primary>killed</primary></indexterm><firstterm>killed</firstterm> in
+			Expression <replaceable>G</replaceable> is <indexterm significance="preferred"><primary>kill</primary></indexterm><firstterm>killed</firstterm> in
 			<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
 			if <replaceable>G</replaceable> has published. All component
 			expressions of a killed expression are killed. A killed expression
@@ -154,7 +150,7 @@
 		<para>
 			For an externally blocked call if the called site knows the
 			outcome&#x2014;either the response value or that there will be no
-			response&#x2014;then the call is<indexterm significance="preferred"><primary>definite</primary></indexterm><firstterm>definite</firstterm>;
+			response&#x2014;then the call is <indexterm significance="preferred"><primary>definite</primary></indexterm><firstterm>definite</firstterm>;
 			if it does not know the outcome the call is <indexterm significance="preferred"><primary>indefinite</primary></indexterm><firstterm>indefinite</firstterm>.
 		</para>
 	</section>

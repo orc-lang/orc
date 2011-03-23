@@ -69,7 +69,7 @@ Java objects' methods and fields appear in the same manner as
 an Orc record with keys corresponding to the members' names.
 Methods appear as record elements that are sites, and are invoked by projecting the record element
 using the dot notation and calling the site.
-<indexterm><primary>fields</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
+<indexterm><primary>field</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
 If a Java object is called as a site without projecting a member, the method name "apply" is implicitly used.

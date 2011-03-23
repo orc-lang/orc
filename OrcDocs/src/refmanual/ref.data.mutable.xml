@@ -21,8 +21,8 @@ Most of Orc's value types are immutable.</para>
 
 <para>Orc provides the following standard mutable value types:
 <itemizedlist>
-<listitem><para><code>Ref</code>: Reference to a value that can be changed</para></listitem>
-<listitem><para><code>Cell</code>: A write-once <code>Ref</code></para></listitem>
+<listitem><para><code><indexterm><primary>Ref</primary></indexterm>Ref</code>: Reference to a value that can be changed</para></listitem>
+<listitem><para><code><indexterm><primary>Cell</primary></indexterm>Cell</code>: A write-once <code>Ref</code></para></listitem>
 <listitem><para><code>Buffer</code>: A queue of values</para></listitem>
 <listitem><para><code>BoundedBuffer</code>: A queue of values with a maximum size</para></listitem>
 <listitem><para><code>Array</code>: A mutable integer-indexed sequence of values</para></listitem>

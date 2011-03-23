@@ -16,13 +16,13 @@
 <para>
 Some sites provide access to remote services, rather than performing local computation.
 In particular, a site could provide access to a <indexterm><primary>Web service</primary></indexterm>Web service. 
-The Orc library provides sites which perform basic <indexterm><primary>HTTP</primary></indexterm>HTTP requests and manipulate <indexterm><primary>JSON</primary></indexterm>JSON and <indexterm><primary>XML</primary></indexterm>XML data representations;
+The Orc library provides sites which perform basic HTTP requests and manipulate JSON and XML data representations;
 these capabilities are sufficient to interact with many simple web services, especially <indexterm><primary>REST</primary></indexterm>RESTful services.
 </para>
 
 <section xml:id="ref.sites.web.http">
 <title>HTTP</title>
-
+<indexterm><primary>HTTP</primary></indexterm>
 <para>
 The <link linkend="ref.stdlib.web.HTTP"><code>HTTP</code></link> site provides a simple mechanism to send GET and POST requests to a URL.
 <itemizedlist>
@@ -60,6 +60,7 @@ and structured representations which Orc can manipulate.
 
 <section xml:id="ref.sites.web.json">
 <title>JSON</title>
+<indexterm><primary>JSON</primary></indexterm>
 <para>
 <ulink url="http://www.json.org">JSON</ulink> (JavaScript Object Notation) is a lightweight data format often used 
 by Web services, especially by services with simple interfaces. The structure of JSON values maps quite naturally
@@ -82,7 +83,7 @@ equal to <replaceable>j</replaceable>.
 
 <section xml:id="ref.sites.web.xml">
 <title>XML</title>
-
+<indexterm><primary>XML</primary></indexterm>
 <para>
 <ulink url="http://www.w3.org/XML/">XML</ulink> (Extensible Markup Language) is a structured data format used in many contexts,
 including Web services. 

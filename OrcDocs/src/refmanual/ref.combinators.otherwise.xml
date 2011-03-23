@@ -15,7 +15,7 @@
       <title>Otherwise Combinator</title>
       
       <!-- Index pointers for unwritten terms -->
-	  <indexterm><primary>halt</primary></indexterm>
+      <indexterm><primary>otherwise combinator</primary></indexterm>
 	  <indexterm><primary>silent</primary></indexterm>
       
 	  <section xml:id="ref.combinators.otherwise.syntax">

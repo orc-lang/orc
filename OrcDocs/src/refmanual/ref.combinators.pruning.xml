@@ -15,7 +15,7 @@
       <title>Pruning Combinator</title>
       
       <!-- Index pointers for unwritten terms -->
-	  <indexterm><primary>pruning</primary></indexterm>
+	  <indexterm><primary>pruning combinator</primary></indexterm>
       
 	  <section xml:id="ref.combinators.pruning.syntax">
 		  <title>Syntax</title>
@@ -63,7 +63,7 @@
 			  	The execution of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
 			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
 				<replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
-				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.states.kill"><indexterm><primary>killed</primary></indexterm>killed</link>. 
+				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.states.kill"><indexterm><primary>kill</primary></indexterm>killed</link>. 
 				A killed expression cannot call any sites or publish any values. During the execution of <replaceable>F</replaceable>, 
 				any part of the execution that depends on <replaceable>x</replaceable> 
 				will be suspended until <replaceable>x</replaceable> is bound (to
