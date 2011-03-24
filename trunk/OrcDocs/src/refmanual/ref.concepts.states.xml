@@ -245,10 +245,11 @@
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
-								<listitem><para><link linkend="ref.concepts.silent">Silent</link></para></listitem>
-								<listitem><para><link linkend="ref.sites">Sites</link></para></listitem>
+								<listitem><para><link linkend="ref.expressions">Expressions</link></para></listitem>
 								<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
+								<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
+								<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
+								<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
@@ -267,7 +268,7 @@
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="TODO">TODO</link></para></listitem>
+								<listitem><para>TODO</para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>

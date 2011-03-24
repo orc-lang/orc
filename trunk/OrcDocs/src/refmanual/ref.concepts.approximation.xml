@@ -35,7 +35,7 @@
 			aware of such limitations, and program around them.
 		</para>
 
-<!-- 
+
 	<section xml:id="ref.concepts.approximation.links">
 		<title>Related Links</title>
 
@@ -50,8 +50,8 @@
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
-								<listitem><para><link linkend="ref.stdlib">Orc standard library</link></para></listitem>
+								<listitem><para><link linkend="ref.time.real"><code>Rwait</code></link></para></listitem>
+								<listitem><para><link linkend="ref.data.numeric">Numerics</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
@@ -71,6 +71,7 @@
 					<row>
 						<entry>
 							<itemizedlist>
+							  <listitem><para>TODO</para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
@@ -80,5 +81,5 @@
 
 
 	</section>
-	-->
+	
 </section>

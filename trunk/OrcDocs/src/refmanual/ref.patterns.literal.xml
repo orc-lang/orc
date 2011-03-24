@@ -94,7 +94,7 @@ true
 						<entry>
 							<itemizedlist>
 								<listitem><para><link linkend="ref.data.boolean">Boolean literals</link></para></listitem>
-								<listitem><para><link linkend="ref.data.numerics">Numeric literals</link></para></listitem>
+								<listitem><para><link linkend="ref.data.numeric">Numeric literals</link></para></listitem>
 								<listitem><para><link linkend="ref.data.string">String literals</link></para></listitem>
 							</itemizedlist>
 						</entry>

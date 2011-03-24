@@ -90,6 +90,7 @@ OUTPUT:
 							<itemizedlist>
 								<listitem><para><link linkend="ref.concepts.publish">Publish</link></para></listitem>
 								<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
+								<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
 								<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
 							</itemizedlist>
 						</entry>
@@ -109,7 +110,7 @@ OUTPUT:
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><olink targetdoc="userguide" targetptr="TODO">TODO</olink></para></listitem>
+								<listitem><para>TODO</para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>
