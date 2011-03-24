@@ -60,10 +60,10 @@
 			Consider the following definition of the <code>append</code> function, which appends two lists:
 			
 			<programlisting language="orc"><![CDATA[
-			def append[T](List[T], List[T]) :: List[T]
-			def append([], l) = l
-			def append(h::t, l) = h::append(t,l)
-			]]></programlisting>
+def append[T](List[T], List[T]) :: List[T]
+def append([], l) = l
+def append(h::t, l) = h::append(t,l)
+]]></programlisting>
 			
 			The function <code>append</code> has a type parameter,<replaceable>T</replaceable>, in its signature. 
 			The type<replaceable>T</replaceable> is the type of elements in the lists that we are appending. 
@@ -82,8 +82,8 @@
 			also provide its type argument:
 			
 			<programlisting language="orc"><![CDATA[
-			append[Integer]([1,2,3], [4,5])
-			]]></programlisting>
+append[Integer]([1,2,3], [4,5])
+]]></programlisting>
 			
 			However, it would be very burdensome and verbose to provide type arguments to all such calls. Fortunately,
 			in most cases, the type checker can infer the correct type arguments, in the same way that it infers
@@ -91,8 +91,8 @@
 			simply write:
 			
 			<programlisting language="orc"><![CDATA[
-			append([1,2,3], [4,5])
-			]]></programlisting>
+append([1,2,3], [4,5])
+]]></programlisting>
 			
 			and the typechecker infers that the parameter <replaceable>T</replaceable> is <code>Integer</code>, since both argument lists are
 			of type <code>List[Integer]</code>. For a more thorough explanation of how this inference occurs, please
