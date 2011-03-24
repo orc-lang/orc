@@ -72,7 +72,8 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-					<listitem><para><link linkend="ref.stdlib">Standard library</link></para></listitem>
+					    <listitem><para><link linkend="ref.stdlib">Standard Library</link></para></listitem>
+					    <listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

@@ -125,7 +125,11 @@ append([1,2,3], [4,5])
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
+        			<listitem><para><link linkend="ref.types.subtyping.variance">Variance</link></para></listitem>
+        			<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
+        			<listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
+        			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -142,7 +146,7 @@ append([1,2,3], [4,5])
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para>TODO</para></listitem>
        			</itemizedlist></entry>
         	</row>
     	</tbody>

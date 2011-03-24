@@ -118,7 +118,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.comment">
 					<title>Comments</title>
 					<para>
-						Orc comments take two forms: 
+						Orc <indexterm significance="preferred"><primary>comment</primary></indexterm>comments take two forms: 
 					</para>
 					<para>
 						<orderedlist>
@@ -181,7 +181,9 @@
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.syntax.EBNF">EBNF Grammar</link></para></listitem>
+	          		<listitem><para><link linkend="ref.syntax.EBNF">EBNF Grammar</link></para></listitem>
+	          		<listitem><para><link linkend="ref.data.numeric">Numeric values</link></para></listitem>
+	          		<listitem><para><link linkend="ref.data.string">Strings</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
