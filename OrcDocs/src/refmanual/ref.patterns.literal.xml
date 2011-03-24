@@ -93,7 +93,9 @@ true
 					<row>
 						<entry>
 							<itemizedlist>
-								<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+								<listitem><para><link linkend="ref.data.boolean">Boolean literals</link></para></listitem>
+								<listitem><para><link linkend="ref.data.numerics">Numeric literals</link></para></listitem>
+								<listitem><para><link linkend="ref.data.string">String literals</link></para></listitem>
 							</itemizedlist>
 						</entry>
 					</row>

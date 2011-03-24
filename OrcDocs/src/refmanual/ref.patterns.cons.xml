@@ -72,8 +72,8 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
-	          			<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
+	          	  <listitem><para><link linkend="ref.patterns.list">List Pattern</link></para></listitem>
+          			<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
