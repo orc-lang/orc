@@ -189,7 +189,9 @@ they are not recommended for production code.
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
+        			<listitem><para><link linkend="ref.expressions.lambda"><code>lambda</code> Expressions</link></para></listitem>
+        			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -206,7 +208,7 @@ they are not recommended for production code.
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para>TODO</para></listitem>
        			</itemizedlist></entry>
         	</row>
     	</tbody>

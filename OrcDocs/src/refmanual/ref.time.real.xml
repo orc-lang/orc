@@ -68,7 +68,8 @@ NONRUNNABLE
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.stdlib.time">Time Standard Library</link></para></listitem>
+	          		<listitem><para><link linkend="ref.stdlib.time">Standard Library: Time</link></para></listitem>
+	          		<listitem><para><link linkend="ref.stdlib.time.metronome"><code>metronome</code> function</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

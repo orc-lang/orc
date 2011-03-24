@@ -49,7 +49,7 @@
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
@@ -66,7 +66,7 @@
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para>TODO</para></listitem>
        			</itemizedlist></entry>
         	</row>
     	</tbody>

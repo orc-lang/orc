@@ -176,7 +176,7 @@
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-        			<listitem></listitem>
+        			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
