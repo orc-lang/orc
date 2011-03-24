@@ -153,8 +153,9 @@ Node(Node(Empty(), 0, Empty()), 1, Node(Empty(), 2, Empty()))
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.data.datatype">Datatypes</link></para></listitem>
-	          			<listitem><para><link linkend="ref.types">Orc Types</link></para></listitem>
+	          			<listitem><para><link linkend="ref.data.datatype">Algebraic Data Types</link></para></listitem>
+	          			<listitem><para><link linkend="ref.types.polymorphism.types">Parametric Types</link></para></listitem>
+	          			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

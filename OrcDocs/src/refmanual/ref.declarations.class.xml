@@ -152,7 +152,9 @@ OUTPUT:
 				<tbody valign="top">
 					<row>
 		        		<entry><itemizedlist>
-							<listitem><para><link linkend="ref.sites.java">Java sites</link></para></listitem>
+							<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
+							<listitem><para><link linkend="ref.expressions.dot">Dot Access</link></para></listitem>
+							<listitem><para><link linkend="ref.expressions.call.site">Site Calls</link></para></listitem>
 						</itemizedlist></entry>
 					</row>
 				</tbody>
