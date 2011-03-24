@@ -176,8 +176,9 @@ OUTPUT:PERMUTABLE:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
-	          			<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
+	          		<listitem><para><link linkend="ref.data.datatype">Algebraic Data Types</link></para></listitem>
+	          		<listitem><para><link linkend="ref.data.record.specialkeys"><code>unapply</code> key</link></para></listitem>
+	          		<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

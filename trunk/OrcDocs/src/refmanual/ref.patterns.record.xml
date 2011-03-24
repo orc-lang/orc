@@ -84,8 +84,7 @@ OUTPUT:PERMUTABLE
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
-	          			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
+	          	  <listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
