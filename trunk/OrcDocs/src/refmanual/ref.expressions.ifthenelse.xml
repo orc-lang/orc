@@ -40,7 +40,7 @@
 		  <title>Type</title>
 		  <para>
 		    The type of <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
-		    is the join of the types of <replaceable>E<subscript>t</subscript></replaceable> and <replaceable>E<subscript>f</subscript></replaceable>.
+		    is the <link linkend="ref.types.subtyping.join">join</link> of the types of <replaceable>E<subscript>t</subscript></replaceable> and <replaceable>E<subscript>f</subscript></replaceable>.
 		    Additionally, <replaceable>E<subscript>c</subscript></replaceable> must have type <code>Boolean</code>.
 		  </para>
 		</section>
@@ -59,6 +59,8 @@
 	     		<row>
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.data.boolean">Booleans</link></para></listitem>
+	          			<listitem><para><link linkend="ref.stdlib.core.Ift"><code>Ift</code></link></para></listitem>
+	          			<listitem><para><link linkend="ref.stdlib.core.Iff"><code>Iff</code></link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

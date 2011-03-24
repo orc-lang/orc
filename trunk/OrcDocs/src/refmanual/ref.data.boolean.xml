@@ -147,6 +147,8 @@ false
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><link linkend="ref.expressions.ifthenelse"><code>if then else</code></link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Ift"><code>Ift</code></link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Iff"><code>Iff</code></link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

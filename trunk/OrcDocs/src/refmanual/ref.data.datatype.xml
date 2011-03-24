@@ -196,9 +196,8 @@ NONRUNNABLE
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.types">Orc types</link></para></listitem>
+          			<listitem><para><link linkend="ref.patterns.call">Call pattern</link></para></listitem>
           			<listitem><para><link linkend="ref.declarations.type"><code>type</code>:  Declare Type</link></para></listitem>
-          			<listitem><para><link linkend="ref.patterns.call">Call Pattern</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

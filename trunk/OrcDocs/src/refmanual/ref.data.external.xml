@@ -84,6 +84,7 @@ NONRUNNABLE
           			<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
           			<listitem><para><link linkend="ref.sites.web">Web Services</link></para></listitem>
           			<listitem><para><link linkend="ref.sites.custom">Custom Sites</link></para></listitem>
+          			<listitem><para><link linkend="ref.declarations.site.type">Typing of Sites</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
