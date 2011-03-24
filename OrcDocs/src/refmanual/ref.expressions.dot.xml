@@ -115,13 +115,16 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="TODO">TODO</link></para></listitem>
+	          			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.defclass"><code>def class</code>: Define Site in Orc</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.class"><code>class</code>:  Import Class from Java</link></para></listitem>
+	          			<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
-		  
+		  <!-- 
 		  <informaltable frame="none">
 	  		<tgroup cols="1" align="left">
 	    	<thead>
@@ -138,6 +141,6 @@ OUTPUT:
 	    	</tbody>
 	  		</tgroup>
 		  </informaltable>
-
+       -->
 	  </section>
 	</section>

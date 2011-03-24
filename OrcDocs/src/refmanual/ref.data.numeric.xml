@@ -208,13 +208,13 @@ OUTPUT:PERMUTABLE
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><link linkend="ref.syntax.lexical.tokens.numericliteral">Numeric literal</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Add"><code>Add</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>Sub</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.UMinus"><code>UMinus</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Mult"><code>Mult</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Exponent"><code>Exponent</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Div"><code>Div</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>Mod</code> site</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Add"><code>+</code> operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>-</code> operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.UMinus">unary <code>-</code> operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Mult"><code>*</code> operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Exponent"><code>**</code> (exponentiation) operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Div"><code>/</code> operator</link></para></listitem>
+          			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>%</code> (modulus) operator</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.abs"><code>abs</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.signum"><code>signum</code> function</link></para></listitem>
           			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> site</link></para></listitem>

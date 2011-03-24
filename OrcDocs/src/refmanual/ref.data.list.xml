@@ -160,6 +160,8 @@ OUTPUT:PERMUTABLE:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
+        		  <listitem><para><link linkend="ref.patterns.list">List pattern</link></para></listitem>
+        		  <listitem><para><link linkend="ref.patterns.cons">Cons pattern</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list">Standard library list functions</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.each"><code>each</code> function</link></para></listitem>
         			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>

@@ -83,6 +83,10 @@ OUTPUT:
 	     		<row>
 	        		<entry><itemizedlist>
 	          			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
+	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
+	          			<listitem><para><link linkend="ref.stdlib.idioms">Higher-Order Idioms</link></para></listitem>
+	          			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>
+	          			<listitem><para><link linkend="ref.stdlib.list.filter"><code>filter</code> function</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>

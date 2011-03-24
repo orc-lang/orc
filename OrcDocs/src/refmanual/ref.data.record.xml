@@ -53,11 +53,11 @@ be used in the resulting record value.</para>
 <para>Notable record operations include:
 <itemizedlist>
 <listitem><para>
-<replaceable>R</replaceable><code>.</code><replaceable>key</replaceable>, a <indexterm><primary>dot</primary></indexterm>dot access, which publishes the value bound to <replaceable>key</replaceable> in <replaceable>R</replaceable>.
+<replaceable>R</replaceable><code>.</code><replaceable>key</replaceable>, a <indexterm><primary>dot</primary></indexterm><link linkend="ref.expressions.dot">dot access</link>, which publishes the value bound to <replaceable>key</replaceable> in <replaceable>R</replaceable>.
 If <replaceable>R</replaceable> has no binding for <replaceable>key</replaceable>, <replaceable>R</replaceable><code>.</code><replaceable>key</replaceable> halts silently.
 </para></listitem>
 <listitem><para>
-<replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, a <emphasis>record extension</emphasis>, which publishes
+<replaceable>R</replaceable><code> + </code><replaceable>S</replaceable>, a <indexterm significance="preferred"><primary>record extension</primary></indexterm><firstterm>record extension</firstterm>, which publishes
 a new record with all of the bindings of <replaceable>S</replaceable>, plus all of the bindings in <replaceable>R</replaceable>
 which do not bind keys mentioned in <replaceable>S</replaceable>. In other words, <replaceable>S</replaceable>
 overrides <replaceable>R</replaceable>. 
@@ -173,8 +173,8 @@ OUTPUT:
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          	    <listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
-          	    <listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+          	    <listitem><para><link linkend="ref.patterns.record">Record pattern</link></para></listitem>
+          	    <listitem><para><link linkend="ref.expressions.dot">Dot access</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>
