@@ -143,7 +143,8 @@ NONRUNNABLE
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+          			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+          			<listitem><para><link linkend="ref.types.subtyping.join">Join</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

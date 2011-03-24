@@ -191,10 +191,13 @@ signal
     	<tbody valign="top">
      		<row>
         		<entry><itemizedlist>
+        		  <listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
         			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
         			<listitem><para><link linkend="ref.declarations.val"><code>val</code> Declaration</link></para></listitem>
-          			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
-          			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
+          		<listitem><para><link linkend="ref.concepts.states.block">Blocking</link></para></listitem>
+          		<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
+          	  <listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+          	  <listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

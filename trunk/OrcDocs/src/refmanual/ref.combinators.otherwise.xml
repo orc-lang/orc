@@ -182,6 +182,11 @@ NONRUNNABLE
      		<row>
         		<entry><itemizedlist>
           			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+          			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+          			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+          			<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
+          			<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
+          			<listitem><para><link linkend="ref.types.subtyping.join">Join</link></para></listitem>
         		</itemizedlist></entry>
         	</row>
     	</tbody>

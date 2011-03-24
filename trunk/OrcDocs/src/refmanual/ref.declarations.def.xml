@@ -518,8 +518,15 @@ OUTPUT:
 	    	<tbody valign="top">
 	     		<row>
 	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.expressions.lambda">Lambda</link></para></listitem>
-	          			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
+		        		<listitem><para><link linkend="ref.expressions.call.function">Function Calls</link></para></listitem>
+		        		<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+		        		<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+		        		<listitem><para><link linkend="ref.concepts.block">Blocking</link></para></listitem>
+		        		<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
+		        		<listitem><para><link linkend="ref.expressions.lambda"><code>lambda</code> Expressions</link></para></listitem>
+	          		<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
+	        		  <listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
+	          		<listitem><para><link linkend="ref.declarations.defclass"><code>def class</code>: Define Site in Orc</link></para></listitem>
 	        		</itemizedlist></entry>
 	        	</row>
 	    	</tbody>
