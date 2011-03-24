@@ -29,7 +29,7 @@ binds the variable <replaceable>S</replaceable> to a site representing the Java 
 Calls to <replaceable>S</replaceable> invoke the corresponding <indexterm><primary>constructor</primary></indexterm>constructor of the Java class <replaceable>J</replaceable>.
 The created class instance is published from the site call.
 Instance methods may be invoked on this published value.
-Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the class static method of the Java class <replaceable>J</replaceable>.
+Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the corresponding class static method of the Java class <replaceable>J</replaceable>.
 The return value of the method is published from the site call.
 Further details of the Orc-Java interface are in the <link linkend="ref.sites.java">Java sites</link> section.
 	</para>
