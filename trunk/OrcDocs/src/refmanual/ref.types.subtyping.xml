@@ -18,12 +18,12 @@
 	
 	
 	<para>
-	A type <replaceable>S</replaceable> is a <indexterm significance="preferred"><primary>subtype</primary></indexterm><firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <indexterm significance="preferred"><primary><symbol>≤</symbol></primary></indexterm><firstterm><symbol>≤</symbol></firstterm> <replaceable>T</replaceable>,
+	A type <replaceable>S</replaceable> is a <indexterm significance="preferred"><primary>subtype</primary></indexterm><firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <symbol><indexterm significance="preferred"><primary>≤</primary></indexterm></symbol><firstterm><symbol>≤</symbol></firstterm> <replaceable>T</replaceable>,
 	if a value of type <replaceable>S</replaceable> can be used in any context expecting a value of type <replaceable>T</replaceable>.
 	</para>
 	
 	<para>
-	A type <replaceable>U</replaceable> is a <indexterm significance="preferred"><primary>supertype</primary></indexterm><firstterm>supertype</firstterm> of a type <replaceable>T</replaceable> if <replaceable>T</replaceable> <indexterm significance="preferred"><primary><symbol>≤</symbol></primary></indexterm><firstterm><symbol>≤</symbol></firstterm> <replaceable>U</replaceable>.
+	A type <replaceable>U</replaceable> is a <indexterm significance="preferred"><primary>supertype</primary></indexterm><firstterm>supertype</firstterm> of a type <replaceable>T</replaceable> if <replaceable>T</replaceable> <symbol>≤</symbol> <replaceable>U</replaceable>.
 	</para>
 	
 	<para>
