@@ -11,7 +11,7 @@
   -->
 
 <!-- Type Metatheory -->
-<section xml:id="ref.types.metatheory" xmlns="http://docbook.org/ns/docbook">
+<section xml:id="ref.types.metatheory" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 	<title>Metatheory</title>
 	
 		<!-- Index pointers for unwritten terms -->
@@ -19,7 +19,7 @@
 	
 		<para xml:id="ref.types.metatheory.origin">
 		The typechecker uses the local <indexterm significance="preferred"><primary>type inference</primary></indexterm><firstterm>type inference</firstterm> algorithm described by Pierce and Turner in the paper 
-		<ulink url="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</ulink>.
+		<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
 		The typechecker extends this algorithm with polymorphic type operators (e.g. <code>List</code> or
 		<code>Buffer</code>), forming a second-order type system. It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link>,
 		and a typing procedure for external services.
