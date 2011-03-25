@@ -141,53 +141,27 @@ Waiting
 		  		
 		<section xml:id="ref.expressions.call.links">
 		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.patterns.call">Call Pattern</link></para></listitem>
-	          			<listitem><para><link linkend="ref.expressions.dot">Dot Access</link></para></listitem>
-	          			<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
-	          			<listitem><para><link linkend="ref.sites">Sites and Services</link></para></listitem>
-	          			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
-	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.states.block">Blocking</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
-	          			<listitem><para><link linkend="ref.types.polymorphism.calls">Polymorphic Calls</link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.patterns.call">Call Pattern</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.dot">Dot Access</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
+			<listitem><para><link linkend="ref.sites">Sites and Services</link></para></listitem>
+			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.block">Blocking</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
+			<listitem><para><link linkend="ref.types.polymorphism.calls">Polymorphic Calls</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
+		</itemizedlist>
 
 	  </section>
 	</section>

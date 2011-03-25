@@ -59,8 +59,4 @@
   <xsl:apply-templates mode="xslthl"/>
 </xsl:template>
 	
-<xsl:template match='examplescript'>
-	<!-- Ignore <examplescript> tags -->
-</xsl:template>
-
 </xsl:stylesheet>

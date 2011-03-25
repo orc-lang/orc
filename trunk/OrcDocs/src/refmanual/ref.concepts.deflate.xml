@@ -77,48 +77,22 @@ NONRUNNABLE
 		
 		<section xml:id="ref.concepts.deflate.links">
 		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        		  <listitem><para><link linkend="ref.combinators.pruning">Pruning Combinator</link></para></listitem>
-	        		  <listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
-	        		  <listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
-	        		  <listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
-        				<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
-          			<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
-        				<listitem><para><link linkend="ref.data.tuple">Tuples</link></para></listitem>
-        				<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
-          			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        		<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-join</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.combinators.pruning">Pruning Combinator</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
+			<listitem><para><link linkend="ref.data.tuple">Tuples</link></para></listitem>
+			<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
+			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-join</olink></para></listitem>
+		</itemizedlist>
 		  
 	  </section>
 	</section>

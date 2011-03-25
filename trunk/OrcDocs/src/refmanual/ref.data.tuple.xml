@@ -112,43 +112,17 @@ join
 
 <section xml:id="ref.data.tuple.links">
 <title>Related Links</title>
-
-	<informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-        		<listitem><para><link linkend="ref.patterns.tuple">Tuple pattern</link></para></listitem>
-					  <listitem><para><link linkend="ref.stdlib.state.fst"><code>fst</code> function</link></para></listitem>
-					  <listitem><para><link linkend="ref.stdlib.state.snd"><code>snd</code> function</link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-Join</olink></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.patterns.tuple">Tuple pattern</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.fst"><code>fst</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.snd"><code>snd</code> function</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-Join</olink></para></listitem>
+		</itemizedlist>
 </section>
 
 </section>

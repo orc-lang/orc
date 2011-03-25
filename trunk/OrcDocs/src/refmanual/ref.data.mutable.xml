@@ -36,48 +36,22 @@ See the <olink targetdoc="ref.stdlib.state">state library</olink> section for mo
 
 <section xml:id="ref.data.mutable.links">
 <title>Related Links</title>
-
-	<informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.stdlib.state.Ref"><code>Ref</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Cell"><code>Cell</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Array"><code>Array</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Set"><code>Set</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Counter"><code>Counter</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.state.Dictionary"><code>Dictionary</code> site</link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="methodology.mutable">Mutable References</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="methodology.channels">Channels</olink></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.stdlib.state.Ref"><code>Ref</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Cell"><code>Cell</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Array"><code>Array</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Set"><code>Set</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Counter"><code>Counter</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.Dictionary"><code>Dictionary</code> site</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="methodology.mutable">Mutable References</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="methodology.channels">Channels</olink></para></listitem>
+		</itemizedlist>
 </section>
 
 </section>

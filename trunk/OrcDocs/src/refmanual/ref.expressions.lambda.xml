@@ -71,44 +71,18 @@ OUTPUT:
 		
 		<section xml:id="ref.expressions.lambda.links">
 		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
-	          			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
-	          			<listitem><para><link linkend="ref.stdlib.idioms">Higher-Order Idioms</link></para></listitem>
-	          			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>
-	          			<listitem><para><link linkend="ref.stdlib.list.filter"><code>filter</code> function</link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="orc.language.lambda">Lambda</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.idioms">Higher-Order Idioms</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.filter"><code>filter</code> function</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc.language.lambda">Lambda</olink></para></listitem>
+		</itemizedlist>
 
 	  </section>
 	</section>

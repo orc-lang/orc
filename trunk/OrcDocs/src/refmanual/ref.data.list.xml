@@ -149,86 +149,60 @@ OUTPUT:PERMUTABLE:
 
 <section xml:id="ref.data.list.links">
 <title>Related Links</title>
-
-	<informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-        		  <listitem><para><link linkend="ref.patterns.list">List pattern</link></para></listitem>
-        		  <listitem><para><link linkend="ref.patterns.cons">Cons pattern</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list">Standard library list functions</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.each"><code>each</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.reverse"><code>reverse</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.filter"><code>filter</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.head"><code>head</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.tail"><code>tail</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.init"><code>init</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.last"><code>last</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.empty"><code>empty</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.index"><code>index</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.append"><code>append</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.foldl"><code>foldl</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.foldl1"><code>foldl1</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.foldr"><code>foldr</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.foldr1"><code>foldr1</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.afold"><code>afold</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.cfold"><code>cfold</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.zip"><code>zip</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.unzip"><code>unzip</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.concat"><code>concat</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.length"><code>length</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.take"><code>take</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.drop"><code>drop</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.member"><code>member</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.merge"><code>merge</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.mergeBy"><code>mergeBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.mergeUnique"><code>mergeUnique</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.mergeUniqueBy"><code>mergeUniqueBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.sort"><code>sort</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.sortBy"><code>sortBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.sortUnique"><code>sortUnique</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.sortUniqueBy"><code>sortUniqueBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.group"><code>group</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.groupBy"><code>groupBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.range"><code>range</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.rangeBy"><code>rangeBy</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.any"><code>any</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.all"><code>all</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.sum"><code>sum</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.product"><code>product</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.and"><code>and</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.or"><code>or</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.minimum"><code>minimum</code> function</link></para></listitem>
-        			<listitem><para><link linkend="ref.stdlib.list.maximum"><code>maximum</code> function</link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.patterns.list">List pattern</link></para></listitem>
+			<listitem><para><link linkend="ref.patterns.cons">Cons pattern</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list">Standard library list functions</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.each"><code>each</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.map"><code>map</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.reverse"><code>reverse</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.filter"><code>filter</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.head"><code>head</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.tail"><code>tail</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.init"><code>init</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.last"><code>last</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.empty"><code>empty</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.index"><code>index</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.append"><code>append</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.foldl"><code>foldl</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.foldl1"><code>foldl1</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.foldr"><code>foldr</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.foldr1"><code>foldr1</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.afold"><code>afold</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.cfold"><code>cfold</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.zip"><code>zip</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.unzip"><code>unzip</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.concat"><code>concat</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.length"><code>length</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.take"><code>take</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.drop"><code>drop</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.member"><code>member</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.merge"><code>merge</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.mergeBy"><code>mergeBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.mergeUnique"><code>mergeUnique</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.mergeUniqueBy"><code>mergeUniqueBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.sort"><code>sort</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.sortBy"><code>sortBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.sortUnique"><code>sortUnique</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.sortUniqueBy"><code>sortUniqueBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.group"><code>group</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.groupBy"><code>groupBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.range"><code>range</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.rangeBy"><code>rangeBy</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.any"><code>any</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.all"><code>all</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.sum"><code>sum</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.product"><code>product</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.and"><code>and</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.or"><code>or</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.minimum"><code>minimum</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.list.maximum"><code>maximum</code> function</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
+		</itemizedlist>
 </section>
 
 </section>

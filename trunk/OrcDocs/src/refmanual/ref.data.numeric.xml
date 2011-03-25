@@ -194,54 +194,29 @@ OUTPUT:PERMUTABLE
 		  
 </section>
 
-<section xml:id="ref.data.numeric.links">
-<title>Related Links</title>
+	<section xml:id="ref.data.numeric.links">
+		<title>Related Links</title>
 
-	<informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.syntax.lexical.tokens.numericliteral">Numeric literal</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Add"><code>+</code> operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>-</code> operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.UMinus">unary <code>-</code> operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Mult"><code>*</code> operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Exponent"><code>**</code> (exponentiation) operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Div"><code>/</code> operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>%</code> (modulus) operator</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.abs"><code>abs</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.signum"><code>signum</code> function</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> site</link></para></listitem>
-          			<listitem><para><link linkend="ref.stdlib.core.Ceil"><code>Ceil</code> site</link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="orc.constants">Constants</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.syntax.lexical.tokens.numericliteral">Numeric literal</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Add"><code>+</code> operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>-</code> operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.UMinus">unary <code>-</code> operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Mult"><code>*</code> operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Exponent"><code>**</code> (exponentiation) operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Div"><code>/</code> operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Mod"><code>%</code> (modulus) operator</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.abs"><code>abs</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.signum"><code>signum</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Floor"><code>Floor</code> site</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Ceil"><code>Ceil</code> site</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc.constants">Constants</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
+		</itemizedlist>
 </section>
 
 </section>

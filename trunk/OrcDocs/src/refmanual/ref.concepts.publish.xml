@@ -78,51 +78,21 @@ OUTPUT:
 
 	<section xml:id="ref.concepts.publish.links">
 		<title>Related Links</title>
-
-		<informaltable frame="none">
-			<tgroup cols="1" align="left">
-				<thead>
-					<row>
-						<entry align="left">Related Reference Topics</entry>
-					</row>
-				</thead>
-				<tbody valign="top">
-					<row>
-						<entry>
-							<itemizedlist>
-								<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
-								<listitem><para><link linkend="ref.expressions.call.site">Site Call</link></para></listitem>
-								<listitem><para><link linkend="ref.expressions.call.function">Function Call</link></para></listitem>
-								<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
-								<listitem><para><link linkend="ref.concepts.silent">Silent</link></para></listitem>
-							</itemizedlist>
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
-
-		<informaltable frame="none">
-			<tgroup cols="1" align="left">
-				<thead>
-					<row>
-						<entry align="left">Related Tutorial Sections</entry>
-					</row>
-				</thead>
-				<tbody valign="top">
-					<row>
-						<entry>
-							<itemizedlist>
-								<listitem><para><olink targetdoc="userguide" targetptr="orc">Orc expressions</olink></para></listitem>
-								<listitem><para><olink targetdoc="userguide" targetptr="combinators">Combinators</olink></para></listitem>
-								<listitem><para><olink targetdoc="userguide" targetptr="expression.nesting">Nesting expressions</olink></para></listitem>
-								<listitem><para><olink targetdoc="userguide" targetptr="orc.sites.calling">Calling a site</olink></para></listitem>
-							</itemizedlist>
-						</entry>
-					</row>
-				</tbody>
-			</tgroup>
-		</informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.call.site">Site Call</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.call.function">Function Call</link></para></listitem>
+			<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silent</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc">Orc expressions</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="combinators">Combinators</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="expression.nesting">Nesting expressions</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites.calling">Calling a site</olink></para></listitem>
+		</itemizedlist>
 
 	</section>
 </section>

@@ -40,42 +40,16 @@
 		 
 	<section xml:id="ref.types.metatheory.links">
 	  <title>Related Links</title>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-        			<listitem><para><link linkend="ref.types.polymorphism">Parametric Polymorphism</link></para></listitem>
-        			<listitem><para><link linkend="ref.types.subtyping">Subtyping</link></para></listitem>
-        			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-        			<listitem><para>TODO</para></listitem>
-       			</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>		  
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.types.polymorphism">Parametric Polymorphism</link></para></listitem>
+			<listitem><para><link linkend="ref.types.subtyping">Subtyping</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para>TODO</para></listitem>
+		</itemizedlist>		  
 	  </section>
 	  
 </section>
