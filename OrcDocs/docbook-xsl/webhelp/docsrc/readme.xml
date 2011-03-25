@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<book>
-  <title>README: Web-based Help from DocBook XML</title>
+<!-- Converted by db4-upgrade version 1.0 -->
+<book xmlns="http://docbook.org/ns/docbook" version="5.0">
+  
 
-  <bookinfo>
+  <info>
     <legalnotice>
       <para>Permission is hereby granted, free of charge, to any person
       obtaining a copy of this software and associated documentation files
@@ -36,8 +34,8 @@
           </listitem>
         </itemizedlist></para>
 
-      <formalpara>
-        <title>Warranty:</title>
+      <formalpara><info><title>Warranty:</title></info>
+        
 
         <para>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
         EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -55,9 +53,8 @@
       <para>This package also includes the following software written and
       copyrighted by others:<itemizedlist>
           <listitem>
-            <para>Files in <filename
-            class="directory">template/common/jquery</filename> are
-            copyrighted by <ulink url="http://jquery.com/">JQuery</ulink>
+            <para>Files in <filename class="directory">template/common/jquery</filename> are
+            copyrighted by <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://jquery.com/">JQuery</link>
             under the MIT License. The file
             <filename>jquery.cookie.js</filename> Copyright (c) 2006 Klaus
             Hartl under the MIT license.</para>
@@ -68,13 +65,10 @@
           </listitem>
 
           <listitem>
-            <para>Some files in the <filename
-            class="directory">template/content/search</filename> and <filename
-            class="directory">indexer</filename> directories were originally
+            <para>Some files in the <filename class="directory">template/content/search</filename> and <filename class="directory">indexer</filename> directories were originally
             part of N. Quaine's htmlsearch DITA plugin. The htmlsearch DITA
-            plugin is available from the <ulink
-            url="http://tech.groups.yahoo.com/group/dita-users/files/Demos/">files
-            page</ulink> of the DITA-users yahoogroup. The htmlsearch plugin
+            plugin is available from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://tech.groups.yahoo.com/group/dita-users/files/Demos/">files
+            page</link> of the DITA-users yahoogroup. The htmlsearch plugin
             was released under a BSD-style license. See
             <filename>indexer/license.txt</filename> for details. <indexterm>
                 <primary>htmlsearch</primary>
@@ -86,19 +80,18 @@
           </listitem>
 
           <listitem>
-            <para>Stemmers from the <ulink
-            url="http://snowball.tartarus.org/texts/stemmersoverview.html">Snowball
-            project</ulink> released under a BSD license.</para>
+            <para>Stemmers from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://snowball.tartarus.org/texts/stemmersoverview.html">Snowball
+            project</link> released under a BSD license.</para>
           </listitem>
 
           <listitem>
-            <para>Code from the <ulink url="http://lucene.apache.org/">Apache
-            Lucene</ulink> search engine provides support for tokenizing
+            <para>Code from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://lucene.apache.org/">Apache
+            Lucene</link> search engine provides support for tokenizing
             Chinese, Japanese, and Korean content released under the Apache
             2.0 license. </para>
           </listitem>
         </itemizedlist>
-		Webhelp for DocBook was developed as a <ulink url="http://socghop.appspot.com">Google Summer of Code</ulink> project. 
+		Webhelp for DocBook was developed as a <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://socghop.appspot.com">Google Summer of Code</link> project. 
 	  </para>
     </legalnotice>
 
@@ -110,37 +103,23 @@
       <holder>David Cramer</holder>
     </copyright>
 
-    <author>
-      <firstname>David</firstname>
+    <author><personname><firstname>David</firstname><surname>Cramer</surname></personname><email>dcramer AT motive DOT com</email><email>david AT thingbag DOT net</email></author>
 
-      <surname>Cramer</surname>
-
-      <email>dcramer AT motive DOT com</email>
-
-      <email>david AT thingbag DOT net</email>
-    </author>
-
-    <author>
-      <firstname>Kasun</firstname>
-
-      <surname>Gajasinghe</surname>
-
-      <email>kasunbg AT gmail DOT com</email>
-    </author>
+    <author><personname><firstname>Kasun</firstname><surname>Gajasinghe</surname></personname><email>kasunbg AT gmail DOT com</email></author>
 
     <pubdate>August 2010</pubdate>
-  </bookinfo>
+  </info>
 
   <chapter>
-    <chapterinfo>
+    <info><title>Introduction</title>
       <abstract>
         <!-- This becomes the brief description that appears in search results UNLESS there's a para or phrase with role="summary". If there is, then the role="summary" text wins. -->
 
         <para>Overview of the package.</para>
       </abstract>
-    </chapterinfo>
+    </info>
 
-    <title>Introduction</title>
+    
 
     <para>A common requirement for technical publications groups is to produce a Web-based help
       format that includes a table of contents pane, a search feature, and an index similar to what
@@ -149,8 +128,8 @@
       then it is impossible to use services like Google to add search. <indexterm class="singular">
         <primary>features</primary>
       </indexterm>
-      <itemizedlist>
-        <title>Features</title>
+      <itemizedlist><info><title>Features</title></info>
+        
         <listitem>
           <para>Full text search.<indexterm class="singular">
               <primary>search</primary>
@@ -177,8 +156,7 @@
                 </indexterm></para>
             </listitem>
             <listitem>
-              <para>Search results can include brief descriptions of the target.<indexterm
-                  class="singular">
+              <para>Search results can include brief descriptions of the target.<indexterm class="singular">
                   <primary>search</primary>
                   <secondary>descriptions</secondary>
                 </indexterm></para>
@@ -200,14 +178,14 @@
             output format into your own build system.</para>
         </listitem>
       </itemizedlist>
-      <itemizedlist>
-        <title>Possible future enhancements</title>
+      <itemizedlist><info><title>Possible future enhancements</title></info>
+        
         <listitem>
           <para>Move webhelp-specific parameters and gentext strings into base DocBook stylesheets.
           </para>
         </listitem>
         <listitem>
-          <para>Use <sgmltag class="attribute">tabindex</sgmltag> attributes to control the tab
+          <para>Use <tag class="attribute">tabindex</tag> attributes to control the tab
             order in the output. The Contents and Search tabs should be first and second, then the
             search box and button, then the table of contents items, and so on.</para>
         </listitem>
@@ -278,9 +256,7 @@
             the header.</para>
         </listitem>
         <listitem>
-          <para>Add <ulink
-              url="http://www.comparenetworks.com/developers/jqueryplugins/jbreadcrumb.html"
-              >breadcrumbs</ulink> so the user will know what topics he's been to.</para>
+          <para>Add <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.comparenetworks.com/developers/jqueryplugins/jbreadcrumb.html">breadcrumbs</link> so the user will know what topics he's been to.</para>
         </listitem>
         <listitem>
           <para>Consider using more advanced Lucene indexers for Chinese and Japanese than the
@@ -289,23 +265,23 @@
       </itemizedlist></para>
   </chapter>
 
-  <chapter>
-    <title>Using the package</title>
+  <chapter><info><title>Using the package</title></info>
+    
 
     <para role="summary">The following sections describe how to install and
     use the package on Windows.</para>
 
     <section>
-      <sectioninfo>
+      <info><title>Generating webhelp output</title>
         <abstract>
           <para>Installation instructions</para>
         </abstract>
-      </sectioninfo>
+      </info>
 
-      <title>Generating webhelp output</title>
+      
 
-      <procedure>
-        <title>To install the package on Windows</title>
+      <procedure><info><title>To install the package on Windows</title></info>
+        
 
         <note>
           <para>The examples in this procedure assume a Windows installation,
@@ -313,13 +289,12 @@
           <foreignphrase>mutatis mutandis</foreignphrase>.</para>
         </note>
 
-        <step>
-          <para>If necessary, install <ulink
-          url="http://www.java.com/en/download/manual.jsp">Java 1.6</ulink> or
+        <step performance="required">
+          <para>If necessary, install <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.java.com/en/download/manual.jsp">Java 1.6</link> or
           higher.</para>
 
-          <substeps>
-            <step>
+          <substeps performance="required">
+            <step performance="required">
               <para>Confirm that Java is installed and in your
               <envar>PATH</envar> by typing the following at a command prompt:
               <programlisting>java -version</programlisting></para>
@@ -330,36 +305,34 @@
           </substeps>
         </step>
 
-        <step>
-          <para>If necessary, install <ulink
-          url="http://ant.apache.org/bindownload.cgi">Apache Ant</ulink> 1.6.5 
+        <step performance="required">
+          <para>If necessary, install <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ant.apache.org/bindownload.cgi">Apache Ant</link> 1.6.5 
           or higher.</para>
 
-          <substeps>
-            <step>
+          <substeps performance="required">
+            <step performance="required">
               <para>Unzip the Ant binary distribution to a convenient location
               on your system. For example: <filename>c:\Program
               Files</filename>.</para>
             </step>
 
-            <step>
+            <step performance="required">
               <para>Set the environment variable <envar>ANT_HOME</envar> to
               the top-level Ant directory. For example: <filename>c:\Program
               Files\apache-ant-1.7.1</filename>. <tip>
-                  <para>See <ulink
-                  url="http://support.microsoft.com/kb/310519">How To Manage
-                  Environment Variables in Windows XP</ulink> for information
+                  <para>See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://support.microsoft.com/kb/310519">How To Manage
+                  Environment Variables in Windows XP</link> for information
                   on setting environment variables.</para>
                 </tip></para>
             </step>
 
-            <step>
+            <step performance="required">
               <para>Add the Ant <filename>bin</filename> directory to your
               <envar>PATH</envar>. For example: <filename>c:\Program
               Files\apache-ant-1.7.1\bin</filename></para>
             </step>
 
-            <step>
+            <step performance="required">
               <para>Confirm that Ant is installed by typing the following at a
               command prompt: <programlisting>ant -version</programlisting></para>
 
@@ -372,11 +345,10 @@
           </substeps>
         </step>
 
-        <step>
-          <para>Download <ulink url="http://prdownloads.sourceforge.net/saxon/saxon6-5-5.zip">Saxon
-              6.5.x</ulink> and unzip the distribution to a convenient location on your file system.
-            You will use the path to <filename>saxon.jar</filename> in <xref
-              linkend="edit-build-properties"/> below.<note>
+        <step performance="required">
+          <para>Download <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://prdownloads.sourceforge.net/saxon/saxon6-5-5.zip">Saxon
+              6.5.x</link> and unzip the distribution to a convenient location on your file system.
+            You will use the path to <filename>saxon.jar</filename> in <xref linkend="edit-build-properties"/> below.<note>
               <para>The <filename>build.xml</filename> has only been tested with Saxon 6.5, though
                 it could be adapted to work with other XSLT processors. However, when you generate
                 output, the Saxon jar must <emphasis role="bold">not</emphasis> be in your
@@ -384,7 +356,7 @@
             </note></para>
         </step>
 
-        <step id="edit-build-properties">
+        <step xml:id="edit-build-properties" performance="required">
           <para>In a text editor, edit the
           <filename>build.properties</filename> file in the webhelp directory
           and make the changes indicated by the comments:<programlisting># The path (relative to the build.xml file) to your input document.
@@ -430,26 +402,25 @@ webhelp.include.search.tab=true
 webhelp.indexer.language=en</programlisting></para>
         </step>
 
-        <step>
+        <step performance="required">
           <para>Test the package by running the command <code>ant webhelp
               -Doutput-dir=test-ouput</code> at the command line in the webhelp directory. It should
             generate a copy of this documentation in the <filename class="directory">doc</filename>
             directory. Type <code>start test-output\index.html</code> to open the output in a
-            browser. Once you have confirmed that the process worked, you can delete the <filename
-              class="directory">test-output</filename> directory. <important>
+            browser. Once you have confirmed that the process worked, you can delete the <filename class="directory">test-output</filename> directory. <important>
               <para>The Saxon 6.5 jar should <emphasis>not</emphasis> be in your
                   <envar>CLASSPATH</envar> when you generate the webhelp output. If you have any
                 problems, try running ant with an empty <envar>CLASSPATH</envar>.</para>
             </important></para>
         </step>
 
-        <step>
+        <step performance="required">
           <para>To process your own document, simply refer to this package
           from another <filename>build.xml</filename> in arbitrary location on
           your system:</para>
 
-          <substeps>
-            <step>
+          <substeps performance="required">
+            <step performance="required">
               <para>Create a new <filename>build.xml</filename> file that
               defines the name of your source file, the desired output
               directory, and imports the <filename>build.xml</filename> from
@@ -461,7 +432,7 @@ webhelp.indexer.language=en</programlisting></para>
 &lt;/project&gt;</programlisting></para>
             </step>
 
-            <step>
+            <step performance="required">
               <para>From the directory containing your newly created
               <filename>build.xml</filename> file, type <code>ant
               webhelp</code> to build your document.</para>
@@ -476,31 +447,29 @@ webhelp.indexer.language=en</programlisting></para>
       </procedure>
     </section>
 
-    <section>
-      <title>Using and customizing the output</title>
+    <section><info><title>Using and customizing the output</title></info>
+      
 
       <para>To deep link to a topic inside the help set, simply link directly
       to the page. This help system uses no frameset, so nothing further is
       necessary. <tip>
-          <para>See <ulink
-          url="http://www.sagehill.net/docbookxsl/Chunking.html">Chunking into
-          multiple HTML files</ulink> in Bob Stayton's <ulink
-          url="http://www.sagehill.net/docbookxsl/index.html">DocBook XSL: The
-          Complete Guide</ulink> for information on controlling output file
+          <para>See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sagehill.net/docbookxsl/Chunking.html">Chunking into
+          multiple HTML files</link> in Bob Stayton's <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sagehill.net/docbookxsl/index.html">DocBook XSL: The
+          Complete Guide</link> for information on controlling output file
           names and which files are chunked in DocBook.</para>
         </tip></para>
 
       <para>When you perform a search, the results can include brief
       summaries. These are populated in one of two ways:<itemizedlist>
           <listitem>
-            <para>By adding <sgmltag>role="summary"</sgmltag> to a
-            <sgmltag>para</sgmltag> or <sgmltag>phrase</sgmltag> in the
-            <sgmltag>chapter</sgmltag> or <sgmltag>section</sgmltag>.</para>
+            <para>By adding <tag>role="summary"</tag> to a
+            <tag>para</tag> or <tag>phrase</tag> in the
+            <tag>chapter</tag> or <tag>section</tag>.</para>
           </listitem>
 
           <listitem>
-            <para>By adding an <sgmltag>abstract</sgmltag> to the
-            <sgmltag>chapterinfo</sgmltag> or <sgmltag>sectioninfo</sgmltag>
+            <para>By adding an <tag>abstract</tag> to the
+            <tag>chapterinfo</tag> or <tag>sectioninfo</tag>
             element.</para>
           </listitem>
         </itemizedlist></para>
@@ -519,8 +488,7 @@ webhelp.indexer.language=en</programlisting></para>
           <listitem>
             <para><filename>docs/common/jquery/theme-redmond/jquery-ui-1.8.2.custom.css</filename>:
             This is the theming part which adds colors and stuff. This is a
-            default theme comes with <ulink
-            url="http://jqueryui.com/download">jqueryui</ulink> unchanged. You
+            default theme comes with <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://jqueryui.com/download">jqueryui</link> unchanged. You
             can get any theme based your interest from this. (Themes are on
             right navigation bar.) Then replace the css theme folder
             (theme-redmond) with it, and change the xsl to point to the new
@@ -534,19 +502,17 @@ webhelp.indexer.language=en</programlisting></para>
           </listitem>
         </itemizedlist></para>
 
-      <section>
-        <title>Recommended Apache configurations</title>
+      <section><info><title>Recommended Apache configurations</title></info>
+        
 
         <para>If you are serving a long document from an Apache web server, we
         recommend you make the following additions or changes to your
         <filename>httpd.conf</filename> or <filename>.htaccess</filename>
         file. <remark>TODO: Explain what each thing
-        does.</remark><programlisting>AddDefaultCharSet UTF-8 # <co
-              id="AddDefaultCharSet" />
+        does.</remark><programlisting>AddDefaultCharSet UTF-8 # <co xml:id="AddDefaultCharSet"/>
   
       # 480 weeks
-      &lt;FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf)$"&gt; # <co
-                    id="CachingSettings" />
+      &lt;FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|js|css|swf)$"&gt; # <co xml:id="CachingSettings"/>
       Header set Cache-Control "max-age=290304000, public"
       &lt;/FilesMatch&gt;
       
@@ -561,7 +527,7 @@ webhelp.indexer.language=en</programlisting></para>
       &lt;/FilesMatch&gt;
       
       # compress text, html, javascript, css, xml:
-      AddOutputFilterByType DEFLATE text/plain # <co id="CompressSetting" />
+      AddOutputFilterByType DEFLATE text/plain # <co xml:id="CompressSetting"/>
       AddOutputFilterByType DEFLATE text/html
       AddOutputFilterByType DEFLATE text/xml
       AddOutputFilterByType DEFLATE text/css
@@ -577,9 +543,8 @@ webhelp.indexer.language=en</programlisting></para>
       &lt;/Files&gt;
       </programlisting><calloutlist>
             <callout arearefs="AddDefaultCharSet">
-              <para>See <ulink
-              url="http://www.sagehill.net/docbookxsl/SpecialChars.html">Odd
-              characters in HTML output</ulink> in Bob Stayton's book
+              <para>See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sagehill.net/docbookxsl/SpecialChars.html">Odd
+              characters in HTML output</link> in Bob Stayton's book
               <citetitle>DocBook XSL: The Complete Guide</citetitle> for more
               information about this setting.</para>
             </callout>
@@ -601,8 +566,8 @@ webhelp.indexer.language=en</programlisting></para>
       </section>
     </section>
 
-    <section>
-      <title>Building the indexer</title>
+    <section><info><title>Building the indexer</title></info>
+      
 
       <para role="summary">To build the indexer, you must have installed the
       JDK version 1.5 or higher and set the <envar>ANT_HOME</envar>
@@ -620,8 +585,8 @@ webhelp.indexer.language=en</programlisting></para>
       </indexterm>
     </section>
 
-    <section>
-      <title>Adding support for other (non-CJKV) languages</title>
+    <section><info><title>Adding support for other (non-CJKV) languages</title></info>
+      
 
       <para>To support stemming for a language, the search mechanism requires
       a stemmer implemented in both Java and JavaScript. The Java version is
@@ -631,9 +596,8 @@ webhelp.indexer.language=en</programlisting></para>
       for the following languages. Therefore, to support these languages, you
       only need to implement the stemmer in JavaScript and add it to the
       template. If you do undertake this task, please consider contributing
-      the JavaScript version back to this project and to <ulink
-      url="http://snowball.tartarus.org/texts/stemmersoverview.html">Martin
-      Porter's project</ulink>.<itemizedlist>
+      the JavaScript version back to this project and to <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://snowball.tartarus.org/texts/stemmersoverview.html">Martin
+      Porter's project</link>.<itemizedlist>
           <listitem>
             <para>Danish</para>
           </listitem>
@@ -685,8 +649,8 @@ webhelp.indexer.language=en</programlisting></para>
     </section>
   </chapter>
 
-  <chapter>
-    <title>Developer Docs</title>
+  <chapter><info><title>Developer Docs</title></info>
+    
 
     <para role="summary">This chapter provides an overview of how webhelp is implemented.</para>
 
@@ -698,8 +662,8 @@ webhelp.indexer.language=en</programlisting></para>
     tree and search. The result is that the help system behaves exactly as if
     it were a frameset.</para>
     
-    <section>
-      <title>Design</title>
+    <section><info><title>Design</title></info>
+      
       <para role="summary">An overview of webhelp page structure.</para>
       <para>DocBook WebHelp page structure is fully built on css-based design
         abandoning frameset structure. Overall page structure can be divided in to three main sections
@@ -711,32 +675,31 @@ webhelp.indexer.language=en</programlisting></para>
           
           <listitem>
             <para>Content: This includes the content of the documentation. The processing of this part is
-              done by <ulink
-                url="http://docbook.sourceforge.net/release/xsl/current/xhtml/chunk.xsl">
-                DocBook XSL Chunking customization</ulink>. Few further css-styling applied from 
+              done by <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docbook.sourceforge.net/release/xsl/current/xhtml/chunk.xsl">
+                DocBook XSL Chunking customization</link>. Few further css-styling applied from 
               <filename>positioning.css</filename>.            
             </para>
           </listitem>
           
           <listitem>
             <para>Left Navigation: This includes the table of contents and search tab. This 
-              is customized using <ulink url="http://jqueryui.com/">jquery-ui</ulink> styling.</para>
+              is customized using <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://jqueryui.com/">jquery-ui</link> styling.</para>
             <itemizedlist>
               <listitem>
                 <para>Tabbed Navigation: The navigation pane is organized in to two tabs. 
                   Contents tab, and Search tab. Tabbed output is achieved using 
-                  <ulink url="http://docs.jquery.com/UI/Tabs">JQuery Tabs plugin</ulink>.
+                  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docs.jquery.com/UI/Tabs">JQuery Tabs plugin</link>.
                 </para>  
               </listitem>
               
               <listitem>
                 <para>Table of Contents (TOC) tree: When building the chunked html from the 
                   docbook file, Table of Contents is generated as an Unordered List (a list 
-                  made from <code>&lt;ul> &lt;li></code> tags). When page loads in the browser,
+                  made from <code>&lt;ul&gt; &lt;li&gt;</code> tags). When page loads in the browser,
                   we apply styling to it to achieve the nice look that you see. Styling for TOC 
                   tree is done by a JQuery UI plugin called 
-                  <ulink url="http://bassistance.de/jquery-plugins/jquery-plugin-treeview/">
-                  TreeView</ulink>. We can generate the tree easily by following javascript code:
+                  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://bassistance.de/jquery-plugins/jquery-plugin-treeview/">
+                  TreeView</link>. We can generate the tree easily by following javascript code:
                   
 <programlisting>
 //Generate the tree
@@ -760,8 +723,8 @@ persist: "cookie"
       </para>       
     </section>
     
-    <section>
-      <title>Search</title>
+    <section><info><title>Search</title></info>
+      
       <para role="summary">Overview design of Search mechanism.</para>
       <para>
         The searching is a fully client-side implementation of querying texts for
@@ -828,8 +791,8 @@ persist: "cookie"
         </itemizedlist>
       </para>
       
-      <section>
-        <title>New Stemmers</title>
+      <section><info><title>New Stemmers</title></info>
+        
         <para role="summary">Adding new Stemmers is very simple.</para>
         <para>Currently, only English, French, and German stemmers are integrated in to WebHelp. But the code is
         extensible such that you can add new stemmers easily by few steps.</para>
@@ -838,13 +801,13 @@ persist: "cookie"
           <listitem>
             <para>You'll need two versions of the stemmer; One written in JavaScript, and another in Java. But fortunately, 
               Snowball contains Java stemmers for number of popular languages, and are already included with the package. 
-              You can see the full list in <ulink url="ch02s04.html">Adding support for other (non-CJKV) languages</ulink>. 
+              You can see the full list in <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="ch02s04.html">Adding support for other (non-CJKV) languages</link>. 
               If your language is listed there,
               Then you have to find javascript version of the stemmer. Generally, new stemmers are getting added in to
-              <ulink url="http://snowball.tartarus.org/otherlangs/index.html">Snowball Stemmers in other languages</ulink> location.
+              <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://snowball.tartarus.org/otherlangs/index.html">Snowball Stemmers in other languages</link> location.
               If javascript stemmer for your language is available, then download it. Else, you can write a new stemmer in 
               JavaScript using SnowBall algorithm fairly easily. Algorithms are at  
-              <ulink url="http://snowball.tartarus.org/">Snowball</ulink>. 
+              <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://snowball.tartarus.org/">Snowball</link>. 
             </para>
           </listitem>
           <listitem>
@@ -867,8 +830,8 @@ persist: "cookie"
               <listitem>
                 <para>Open <filename>docbook-webhelp/indexer/src/com/nexwave/nquindexer/IndexerTask.java</filename> in 
                   a text editor and add your language code to the <code>supportedLanguages</code> String Array. </para>
-                <example>
-                  <title>Add new language to supportedLanguages array</title>
+                <example><info><title>Add new language to supportedLanguages array</title></info>
+                  
                   <para>
                     change the Array from,
 <programlisting>
@@ -893,8 +856,8 @@ private String[] supportedLanguages= {"en", "de", "fr", "cn", "ja", "ko", <empha
                   It's self understandable. See the example. The class names are at: 
                   <filename>docbook-webhelp/indexer/src/com/nexwave/stemmer/snowball/ext/</filename>.
                 </para>                  
-                  <example>
-                    <title>initialize correct stemmer based on the <code>webhelp.indexer.language</code> specified</title>
+                  <example><info><title>initialize correct stemmer based on the <code>webhelp.indexer.language</code> specified</title></info>
+                    
 <programlisting>
       SnowballStemmer stemmer;
       if(indexerLanguage.equalsIgnoreCase("en")){
