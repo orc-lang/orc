@@ -10,9 +10,9 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.stdlib.intro" xmlns="http://docbook.org/ns/docbook">
+<section xml:id="ref.stdlib.intro" xmlns="http://docbook.org/ns/docbook" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd">
 <title>Introduction</title>
-<para>
+     <para>
      The standard library is a set of declarations implicitly available to all Orc
      programs.  In this section we give an informal description of the standard library,
      including the type of each declaration and a short explanation of its use.
@@ -42,27 +42,27 @@
 	<para>
 		<variablelist><title>Site Property Set</title>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="indefinite"/></sitepropset></term>
+		    <term><od:sitepropset><od:siteprop propname="indefinite"/></od:sitepropset></term>
 		    <listitem>
 		      <para>The site may block execution of an expression, since it is not 
 		            guaranteed to always eventually publish a value or halt.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="definite"/></sitepropset></term>
+		    <term><od:sitepropset><od:siteprop propname="definite"/></od:sitepropset></term>
 		    <listitem>
 		      <para>The site will never block execution of an expression, since it is 
 		            guaranteed to always eventually publish a value or halt.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="pure"/></sitepropset></term>
+		    <term><od:sitepropset><od:siteprop propname="pure"/></od:sitepropset></term>
 		    <listitem>
 		      <para>The site is pure.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
-		    <term><sitepropset><siteprop propname="idempotent"/></sitepropset></term>
+		    <term><od:sitepropset><od:siteprop propname="idempotent"/></od:sitepropset></term>
 		    <listitem>
 		      <para>The site is idempotent, therefore applying it multiple times to the same
 		      		argument will not change the result.</para> 
@@ -72,4 +72,4 @@
 	
 	</para>
 	
-</section>
+</para>

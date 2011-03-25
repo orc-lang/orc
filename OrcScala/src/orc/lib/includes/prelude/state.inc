@@ -54,28 +54,28 @@ val c = Cell()
 
 @method Cell[A].read() :: A
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
 
 @method Cell[A].readD() :: A
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Cell[A].write(A) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
@@ -160,27 +160,27 @@ lock.release()]]></programlisting>
 
 @method Semaphore.acquire() :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
 
 @method Semaphore.acquireD() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Semaphore.release() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, allow the oldest such call
@@ -189,18 +189,18 @@ increment the value beyond that with which the semaphore was constructed.
 
 @method Semaphore.snoop() :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
 
 @method Semaphore.snoopD() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
@@ -227,9 +227,9 @@ val b = Buffer()
 
 @method Buffer[A].get() :: A
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Get an item from the buffer. If the buffer is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
@@ -237,27 +237,27 @@ linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available
 
 @method Buffer[A].getD() :: A
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].put(A) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Put an item in the buffer. If the buffer is <link
 linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method Buffer[A].close() :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 <firstterm xml:id="ref.stdlib.state.Buffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
@@ -269,10 +269,10 @@ When the buffer is empty, return a signal.
 
 @method Buffer[A].closeD() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
@@ -282,17 +282,17 @@ will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.con
 
 @method Buffer[A].isClosed() :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 If the buffer is currently closed, return true, otherwise return false.
 
 @method Buffer[A].getAll() :: List[A]
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
@@ -327,9 +327,9 @@ val c = BoundedBuffer(1)
 
 @method BoundedBuffer[A].get() :: A
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Get an item from the buffer. If the buffer is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
@@ -337,36 +337,36 @@ linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are av
 
 @method BoundedBuffer[A].getD() :: A
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].put(A) :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
 If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].putD(A) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method BoundedBuffer[A].close() :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 <firstterm xml:id="ref.stdlib.state.BoundedBuffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
@@ -377,10 +377,10 @@ initiated prior to closing the buffer may still be allowed to return as usual.
 
 @method BoundedBuffer[A].closeD() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="idempotent"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
@@ -391,17 +391,17 @@ initiated prior to closing the buffer may still be allowed to return as usual.
 
 @method BoundedBuffer[A].isClosed() :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 If the buffer is currently closed, return true, otherwise return false.
 
 @method BoundedBuffer[A].getOpen() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return the number of open slots in the buffer. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
@@ -409,18 +409,18 @@ or statistical measurements.
 
 @method BoundedBuffer[A].getBound() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 Return the total number of slots (open or filled) in the buffer.
 
 @method BoundedBuffer[A].getAll() :: [A]
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Get all of the items currently in the buffer or waiting to be added, emptying
 the buffer and returning a list of the items in the order they were added. If
@@ -471,46 +471,46 @@ programs will just use the  <code>Array(Integer)</code> constructor.
 
 @method Array[A].get(Integer) :: A
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
 @method Array[A].set(Integer, A) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
 @method Array[A].slice(Integer, Integer) :: Array[A]
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.
 
 @method Array[A].length? :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 Return the size of the array.
 
 @method Array[A].fill(A) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Set every element of the array to the given value. The given value is not
 copied, but is shared by every element of the array, so for example
@@ -588,51 +588,51 @@ elements rather than Java rules.
 
 @method Set[A].add(A) :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Add a value to the set, returning true if the set did not already contain the value,
 and false otherwise.
 
 @method Set[A].remove(Signal) :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Remove a value from the set, returning true if the set contained the value,
 and false otherwise.
 
 @method Set[A].contains(Signal) :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return true if the set contains the given value, and false otherwise.
 
 @method Set[A].isEmpty() :: Boolean
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return true if the set contains no values.
 
 @method Set[A].clear() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Remove all values from the set.
 
 @method Set[A].size() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return the number of unique values currently contained in the set.
 --}
@@ -648,35 +648,35 @@ Create a new counter initialized to zero.
 
 @method Counter.inc() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Increment the counter.
 
 @method Counter.dec() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 If the counter is already at zero, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
 the counter and return a signal.
 
 @method Counter.onZero() :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 If the counter is at zero, return a signal. Otherwise,
 <link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
 
 @method Counter.value() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return the current value of the counter.
 

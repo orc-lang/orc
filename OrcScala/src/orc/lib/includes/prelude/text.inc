@@ -54,9 +54,9 @@ Example:
 {--
 @site Print(Top) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Print a value as a string to standard output.
 For Java objects, this will call <code>toString()</code> to convert
@@ -64,9 +64,9 @@ the object to a String.
 
 @site Println(Top) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Same as <code>Print</code>, appending a newline.
 --}
@@ -76,10 +76,10 @@ site Println = "orc.lib.str.Println"
 {--
 @site Read[A](String) :: A
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
@@ -98,10 +98,10 @@ site Read = "orc.lib.str.Read"
 {--
 @site Write(Top) :: String
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 Given an Orc value, return its string representation
 using standard Orc literal syntax.  If the value is

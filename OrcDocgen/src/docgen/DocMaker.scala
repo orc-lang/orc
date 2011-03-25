@@ -65,7 +65,7 @@ class DocMaker(toplevelName: String) {
 	
   
   def renderChapter(targets: List[File]): Node = {
-    <chapter xml:id={toplevelName} xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <chapter xml:id={toplevelName} xmlns="http://docbook.org/ns/docbook" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:xi="http://www.w3.org/2001/XInclude">
       { generateHeaderComment(None) }
       <title>Standard Library</title>
         <xi:include href={toplevelName + ".intro" + ".xml"}/>
@@ -86,7 +86,7 @@ class DocMaker(toplevelName: String) {
       }
     }
     val content = {
-    	<section xmlns="http://docbook.org/ns/docbook"> 
+    	<section xmlns="http://docbook.org/ns/docbook" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"> 
         { generateHeaderComment(Some(source.getName())) }
         <title>{ sectionName + optionalDescription }</title>
         { renderItems(docItemList, "") }

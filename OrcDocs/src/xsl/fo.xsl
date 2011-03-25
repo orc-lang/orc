@@ -12,6 +12,7 @@
 
 <xsl:stylesheet xmlns:xslthl="http://xslthl.sf.net"
 	exclude-result-prefixes="xslthl" xmlns:fo="http://www.w3.org/1999/XSL/Format"
+	xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	
 <!-- Import unedited Docbook FO file -->
@@ -33,9 +34,9 @@
 </xsl:attribute-set>
 
 	<!-- Add site properties for the site library using the <sitepropset> tag -->
-	<xsl:template match="sitepropset">
+	<xsl:template match="od:sitepropset">
 		<fo:block>
-			<xsl:for-each select="siteprop">
+			<xsl:for-each select="od:siteprop">
 				<xsl:if test="@propname='indefinite'">
 					<fo:inline background-color="#CC0000" color="#FFFFFF"
 						font-weight="bold" space-end="1em" padding="0.17em"> Indefinite </fo:inline>
