@@ -69,7 +69,7 @@
 			<para>
 				The execution of
 				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
-				If <replaceable>F</replaceable> <link linkend="ref.concepts.states.halt"><indexterm><primary>halt</primary></indexterm>halts</link>, 
+				If <replaceable>F</replaceable> <indexterm><primary>halt</primary></indexterm><link linkend="ref.concepts.states.halt">halts</link>, 
 				and has not published any values, then <replaceable>G</replaceable> executes. 
 				If <replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes one or more values, 
 				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
@@ -143,7 +143,6 @@ def xfer(b) =
 
 {-
 OUTPUT:
-no output
 -}
 ]]></programlisting>
 		  </example>

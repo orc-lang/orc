@@ -44,7 +44,7 @@
 		halted if the caller has already received a response or the site has
 		indicated that it will never send a response. A site call is killed if
 		it is part of <replaceable>G</replaceable> in
-		<replaceable>F</replaceable><code> &lt;x&lt; </code><replaceable>G</replaceable>
+		<replaceable>F</replaceable><code> &lt;</code>x<code>&lt; </code><replaceable>G</replaceable>
 		and <replaceable>G</replaceable> publishes.
 	</para>
 
@@ -65,7 +65,7 @@
 		an expression has an associated set of site calls under consideration
 		for execution; if the expression has spawned copies of its components
 		as in
-		<replaceable>F</replaceable><code> &gt;x&gt; </code><replaceable>G</replaceable>,
+		<replaceable>F</replaceable><code> &gt;</code>x<code>&gt; </code><replaceable>G</replaceable>,
 		all the copies contribute to this set; if the
 		expression includes function calls, those calls initiate execution of
 		the function bodies which are also expressions that contribute to this
