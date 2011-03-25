@@ -12,7 +12,7 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class" xmlns="http://docbook.org/ns/docbook">
-	<title><code><indexterm><primary>class</primary></indexterm>class</code>:  Import Class from Java</title>
+	<title><code>class</code>:  Import Class from Java</title>
 
 	<!-- Index pointers for unwritten terms -->
 	<indexterm><primary>import class</primary></indexterm>
@@ -24,7 +24,7 @@ In this implementation of Orc, this platform is the Java Runtime Environment (JR
 	</para>
 
 	<para>
-The declaration <code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
+The declaration <indexterm><primary>class</primary></indexterm><code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
 binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
 Calls to <replaceable>S</replaceable> invoke the corresponding <indexterm><primary>constructor</primary></indexterm>constructor of the Java class <replaceable>J</replaceable>.
 The created class instance is published from the site call.

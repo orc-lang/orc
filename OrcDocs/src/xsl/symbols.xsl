@@ -43,4 +43,13 @@
   </fo:inline>
 </xsl:template>
 
+<!-- 
+<xsl:template match="para[contains(.,'ενορχηστρώνω')]">
+    <fo:inline font-family="Symbol">
+	Examples of allowed Orc identifiers: orchestrate, iscenesætte, ενορχηστρώνω, الانسجام, 編排, 練り上げる, 관현악으로_편곡하다, оркестровать, आर्केस्ट्रा_करना.
+  	</fo:inline>
+    <xsl:apply-templates />
+</xsl:template>
+-->
+
 </xsl:stylesheet>
