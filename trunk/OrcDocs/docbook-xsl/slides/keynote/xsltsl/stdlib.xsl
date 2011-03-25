@@ -30,7 +30,7 @@
     <bookinfo>
       <title>XSLT Standard Library</title>
       <subtitle>Version &version;</subtitle>
-      <!-- $Id$ -->
+      <!-- $Id: stdlib.xsl 3991 2004-11-10 06:51:55Z balls $ -->
 
       <author>
         <surname>Ball</surname>

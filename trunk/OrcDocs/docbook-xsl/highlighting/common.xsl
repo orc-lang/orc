@@ -1,6 +1,5 @@
 <?xml version='1.0'?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns:d="http://docbook.org/ns/docbook"
 
 		xmlns:s6hl="http://net.sf.xslthl/ConnectorSaxon6" 
 		xmlns:sbhl="http://net.sf.xslthl/ConnectorSaxonB" 
@@ -11,11 +10,11 @@
 		
 		xmlns:exsl="http://exslt.org/common"
 		xmlns:xslthl="http://xslthl.sf.net"
-		exclude-result-prefixes="exsl d xslthl s6hl sbhl xhl"
+		exclude-result-prefixes="exsl xslthl s6hl sbhl xhl"
 		version='1.0'>
 
 <!-- ********************************************************************
-     $Id$
+     $Id: common.xsl 8257 2009-02-20 04:40:16Z abdelazer $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
@@ -25,15 +24,15 @@
      ******************************************************************** -->
 
 <!-- this construction is needed to have the saxon and xalan connectors working alongside each other -->
-<xalan:component prefix="xhl" functions="highlight">
-	<xalan:script lang="javaclass" src="xalan://net.sf.xslthl.ConnectorXalan" />
-</xalan:component>
+<xalan:component prefix="xhl" functions="highlight"> 
+  <xalan:script lang="javaclass" src="xalan://net.sf.xslthl.ConnectorXalan" /> 
+</xalan:component> 
 
 <!-- for saxon 6 -->
 <saxon6:script implements-prefix="s6hl" language="java" src="java:net.sf.xslthl.ConnectorSaxon6" />
 
 <!-- for saxon 8.5 and later -->
-<saxonb:script implements-prefix="sbhl" language="java" src="java:net.sf.xslthl.ConnectorSaxonB" />  
+<saxonb:script implements-prefix="sbhl" language="java" src="java:net.sf.xslthl.ConnectorSaxonB" />
 
 
 <!-- You can override this template to do more complex mapping of

@@ -14,7 +14,7 @@
 # Organization for the Advancement of Structured Information
 # Standards (OASIS).
 #
-# Release: $Id$
+# Release: $Id: db4-upgrade.xsl 7660 2008-02-06 13:48:36Z nwalsh $
 #
 # Permission to use, copy, modify and distribute this stylesheet
 # and its accompanying documentation for any purpose and without fee

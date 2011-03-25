@@ -2,7 +2,7 @@
 
 <reference><info><title>manpages Processing Instruction Reference</title>
     <releaseinfo role="meta">
-      $Id$
+      $Id: pi.xsl 7644 2008-01-16 11:04:07Z xmldoc $
     </releaseinfo>
   </info>
   <partintro xml:id="partintro">
@@ -34,7 +34,7 @@
     <synopsis><tag class="xmlpi">dbman funcsynopsis-style="kr"|"ansi"</tag></synopsis>
   
 </refsynopsisdiv>
-<refsect1><title/>
+<refsect1><title>Description</title>
     
 <para>Use the <tag class="xmlpi">dbman
         funcsynopsis-style</tag> PI as a child of a

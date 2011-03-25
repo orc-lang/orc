@@ -3,7 +3,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
 <!-- ********************************************************************
-     $Id$
+     $Id: param.xweb 6633 2007-02-21 18:33:33Z xmldoc $
      ********************************************************************
 
      This file is part of the DocBook Slides Stylesheet distribution.
@@ -30,8 +30,8 @@
       <xsl:attribute name="font-family">
         <xsl:value-of select="$slide.font.family"/>
       </xsl:attribute>
-      <xsl:attribute name="margin-left">1in</xsl:attribute>
-      <xsl:attribute name="margin-right">1in</xsl:attribute>
+      <xsl:attribute name="margin-{$direction.align.start}">1in</xsl:attribute>
+      <xsl:attribute name="margin-{$direction.align.end}">1in</xsl:attribute>
       <xsl:attribute name="font-size">
         <xsl:value-of select="$body.font.size"/>
       </xsl:attribute>

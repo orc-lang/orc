@@ -11,7 +11,7 @@
   <doc:reference xmlns="">
     <referenceinfo>
       <releaseinfo role="meta">
-        $Id$
+        $Id: uri.xsl 3991 2004-11-10 06:51:55Z balls $
       </releaseinfo>
       <author>
         <surname>Diamond</surname>

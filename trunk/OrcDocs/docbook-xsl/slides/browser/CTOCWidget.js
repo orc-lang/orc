@@ -1,6 +1,6 @@
 /*
  * CTOCWidget.js
- * $Revision$ $Date$
+ * $Revision: 1.3 $ $Date: 2003/07/14 06:02:50 $
  */
 
 /* ***** BEGIN LICENSE BLOCK *****

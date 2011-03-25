@@ -5,7 +5,7 @@
                 version='1.0'>
 
   <!-- ********************************************************************
-       $Id$
+       $Id: table.xsl 8400 2009-04-08 07:44:54Z bobstayton $
        ********************************************************************
 
        This file is part of the XSL DocBook Stylesheet distribution.
@@ -600,7 +600,7 @@
       <xsl:apply-templates select="."/>
     </xsl:variable>
     <xsl:choose>
-      <xsl:when test="function-available('exsl:node-set')">
+      <xsl:when test="$exsl.node.set.available != 0">
         <xsl:variable name="html-nodes" select="exsl:node-set($html)"/>
         <xsl:choose>
           <xsl:when test="$html-nodes//p">

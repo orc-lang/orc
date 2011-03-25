@@ -11,7 +11,7 @@
 	 status="&standard;">
 <info>
 <releaseinfo role="cvs">
-$Id$
+$Id: docbook.xml 7664 2008-02-06 14:01:48Z nwalsh $
 </releaseinfo>
 
 <!-- product -->        <productname>docbook</productname>
