@@ -34,19 +34,19 @@
 			<xsl:for-each select="siteprop">
 				<xsl:if test="@propname='indefinite'">
 					<fo:inline background-color="#CC0000" color="#FFFFFF"
-						space-end="1em" padding="0.17em"> Indefinite </fo:inline>
+						font-weight="bold" space-end="1em" padding="0.17em"> Indefinite </fo:inline>
 				</xsl:if>
 				<xsl:if test="@propname='definite'">
 					<fo:inline background-color="#00CC00" color="#FFFFFF"
-						space-end="1em" padding="0.17em"> Definite </fo:inline>
+						font-weight="bold" space-end="1em" padding="0.17em"> Definite </fo:inline>
 				</xsl:if>
 				<xsl:if test="@propname='idempotent'">
 					<fo:inline background-color="#0000CC" color="#FFFFFF"
-						space-end="1em" padding="0.17em"> Idempotent </fo:inline>
+						font-weight="bold" space-end="1em" padding="0.17em"> Idempotent </fo:inline>
 				</xsl:if>
 				<xsl:if test="@propname='pure'">
 					<fo:inline background-color="#6600FF" color="#FFFFFF"
-						space-end="1em" padding="0.17em"> Pure </fo:inline>
+						font-weight="bold" space-end="1em" padding="0.17em"> Pure </fo:inline>
 				</xsl:if>
 			</xsl:for-each>
 		</fo:block>
