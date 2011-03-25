@@ -149,3 +149,9 @@ div.variablelist > table > tbody > tr > td:first-child {
 div.variablelist > table > tbody > tr > td {
 	padding-top: 1em;
 }
+
+/* Correctly size the State Transition diagram */
+#stateTransitions {
+	width: 800px 
+	height: 480px
+}

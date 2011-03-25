@@ -78,8 +78,8 @@
 		<title>Expression States Diagram</title>
 		<mediaobject>
 			<imageobject>
-				<imagedata fileref="images/stateTransition.svg" format="SVG"
-					contentwidth="800px" contentdepth="480px" width="80%" scalefit="1"
+				<imagedata xml:id="stateTransitions" fileref="images/stateTransition.svg" format="SVG"
+					width="80%" scalefit="1"
 					align="center" />
 			</imageobject>
 		</mediaobject>
