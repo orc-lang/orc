@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                version="1.0">
+<xsl:stylesheet exclude-result-prefixes="d"
+                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:d="http://docbook.org/ns/docbook"
+version="1.0">
 
 <!-- ********************************************************************
      $Id: olink.xsl 8592 2010-03-16 16:40:43Z bobstayton $
