@@ -159,45 +159,19 @@ OUTPUT:
 	  
 	  <section xml:id="ref.combinators.sequential.links">
 		  <title>Related Links</title>
-		  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Reference Topics</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
-          			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
-          			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
-          			<listitem><para><link linkend="ref.data.signal"><code>signal</code></link></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
-	  
-	  <informaltable frame="none">
-  		<tgroup cols="1" align="left">
-    	<thead>
-      		<row>
-        		<entry align="left">Related Tutorial Sections</entry>
-        	</row>
-    	</thead>
-    	<tbody valign="top">
-     		<row>
-        		<entry><itemizedlist>
-          			<listitem><para><olink targetdoc="userguide" targetptr="combinators.sequential">Sequential Combinator</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
-          			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites">Sites</olink></para></listitem>
-        		</itemizedlist></entry>
-        	</row>
-    	</tbody>
-  		</tgroup>
-	  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+			<listitem><para><link linkend="ref.data.signal"><code>signal</code></link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="combinators.sequential">Sequential Combinator</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites">Sites</olink></para></listitem>
+		</itemizedlist>
 
 	  </section>
    </section>

@@ -81,43 +81,18 @@ OUTPUT:
 		
 		<section xml:id="ref.expressions.stop.links">
 		  <title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+			<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
+		</itemizedlist>
 		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
-	          			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
-	          			<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <!-- 
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
+		  <!--
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
           				<listitem>TODO</listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		</itemizedlist>
 		  -->
 
 	  </section>

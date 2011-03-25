@@ -11,106 +11,47 @@
   -->
 
 <!-- Syntax: Keywords -->
-	<section xml:id="ref.syntax.keywords" xmlns="http://docbook.org/ns/docbook">
-		<title>Keywords</title>
-			<para>
-				The reserved keywords in the Orc programming language are the following:
-			</para>
-			<para>
-<table xml:id="orc-keyword-table" frame="none" rowsep="0" colsep="0">
-<title>Orc Keywords</title>  
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="7" >
-	<!--
-<colspec colnum="1" colname="word1" colwidth="1*" align="right"/>
-<colspec colnum="2" colname="word2" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="word3" colwidth="10*" align="left"/>
+<section xml:id="ref.syntax.keywords" xmlns="http://docbook.org/ns/docbook">
+	<title>Keywords</title>
+	<para>
+		The reserved keywords in the Orc programming language are the following:
+	</para>
+	<para>
+		<simplelist xml:id="orc-keyword-table" type="horiz" columns="7">
+			<?dbhtml list-width="80%"?>
+			<member>&#xA0;&#xA0;<code>true</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>false</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>signal</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>_</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>null</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>lambda</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>stop</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>if</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>then</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>else</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>as</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>val</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>def</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>class</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>type</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>site</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>include</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>Top</code>&#xA0;&#xA0;</member>
+			<member>&#xA0;&#xA0;<code>Bot</code>&#xA0;&#xA0;</member>
+		</simplelist>
+	</para>
+
+	<section xml:id="ref.syntax.keywords.links">
+		<title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para></listitem>
+		</itemizedlist>
+		<!--
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para>TODO</para></listitem>
+		</itemizedlist>
 		-->
-<colspec colnum="1" colname="word1" colwidth="1*" align="left"/>
-<colspec colnum="2" colname="word2" colwidth="1*" align="left"/>
-<colspec colnum="3" colname="word3" colwidth="1*" align="left"/>
-<colspec colnum="4" colname="word4" colwidth="1*" align="left"/>
-<colspec colnum="5" colname="word5" colwidth="1*" align="left"/>
-<colspec colnum="6" colname="word6" colwidth="1*" align="left"/>
-<colspec colnum="7" colname="word7" colwidth="1*" align="left"/>
-<tbody>
-	
-<row>
-		<entry><code>true</code></entry>
-		<entry><code>false</code></entry>
-		<entry><code>signal</code></entry>
-		<entry><code>_</code></entry>
-		<entry><code>null</code></entry>
-		<entry><code>lambda</code></entry>
-		<entry><code>stop</code></entry>
-</row>
-	
-<row>
-		<entry><code>if</code></entry>
-		<entry><code>then</code></entry>
-		<entry><code>else</code></entry>
-		<entry><code>as</code></entry>
-		<entry><code>val</code></entry>
-		<entry><code>def</code></entry>
-</row>
-	
-<row>
-		<entry><code>class</code></entry>
-		<entry><code>type</code></entry>
-		<entry><code>site</code></entry>
-		<entry><code>include</code></entry>
-<!--		<entry><code>within</code></entry> -->
-		<entry><code>Top</code></entry>
-		<entry><code>Bot</code></entry>
-</row>
-	
-</tbody>
-</tgroup>
-</table>
-</para>
-		
-		<section xml:id="ref.syntax.keywords.links">
-		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          			<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <!-- 
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="orc">Orchestrating Services</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		 -->
-		  
-	  </section>
 	</section>
+</section>

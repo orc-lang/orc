@@ -52,40 +52,14 @@ NONRUNNABLE
 		
 		<section xml:id="ref.patterns.wildcard.links">
 		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          		<listitem><link linkend="ref.combinators.sequential.behavior">Sequential Combinator, <code><![CDATA[ >> ]]></code> Form</link></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-          				<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.combinators.sequential.behavior">Sequential Combinator, <code><![CDATA[ >> ]]></code> Form</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+		</itemizedlist>
 		  
 	  </section>
 	</section>

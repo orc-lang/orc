@@ -57,41 +57,15 @@ NONRUNNABLE
 	  </section>
 	  <section xml:id="ref.time.real.links">
 		  <title>Related Links</title>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Reference Topics</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	          		<listitem><para><link linkend="ref.stdlib.time">Standard Library: Time</link></para></listitem>
-	          		<listitem><para><link linkend="ref.stdlib.time.metronome"><code>metronome</code> function</link></para></listitem>
-	        		</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
-		  
-		  <informaltable frame="none">
-	  		<tgroup cols="1" align="left">
-	    	<thead>
-	      		<row>
-	        		<entry align="left">Related Tutorial Sections</entry>
-	        	</row>
-	    	</thead>
-	    	<tbody valign="top">
-	     		<row>
-	        		<entry><itemizedlist>
-	        			<listitem><para><olink targetdoc="userguide" targetptr="orc.language.time">Time</olink></para></listitem>
-        			</itemizedlist></entry>
-	        	</row>
-	    	</tbody>
-	  		</tgroup>
-		  </informaltable>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.stdlib.time">Standard Library: Time</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.time.metronome"><code>metronome</code> function</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="orc.language.time">Time</olink></para></listitem>
+		</itemizedlist>
 		  
 	  </section>
    </section>

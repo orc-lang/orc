@@ -21,7 +21,7 @@
 <info>
 	<author>
 		<orgname>The University of Texas at Austin</orgname>
-		<address>1 University Station, Stop C0500, Austin, TX 78712-0233, USA</address>
+		<address><street>1 University Station, Stop C0500</street>, <city>Austin</city>, <state>TX</state> <postcode>78712-0233</postcode>, <country>USA</country></address>
 		<uri>http://orc.csres.utexas.edu/</uri>
 	</author>
 	<copyright>
@@ -44,6 +44,7 @@
 			Foundation.
 		</para>
 	</legalnotice>
+	<pubdate><?dbtimestamp format="Y b d"?></pubdate>
 </info>
 
 <xi:include href="ref.data.xml" />
