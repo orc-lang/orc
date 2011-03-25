@@ -30,10 +30,14 @@
 		
 		<para>
 		<itemizedlist>
-		<listitem>Orc functions are <indexterm><primary>lenient</primary></indexterm>lenient: when a function is called, the argument expressions and the 
-		function body are evaluated in parallel. </listitem>
-		<listitem>Orc functions may <link linkend="ref.concepts.publish">publish</link> any number of values, including zero,
-		during the execution of the function body.</listitem>		  
+		<listitem><para>
+		Orc functions are <indexterm><primary>lenient</primary></indexterm>lenient: when a function is called, the argument expressions and the 
+		function body are evaluated in parallel. 
+		</para></listitem>
+		<listitem><para>
+		Orc functions may <link linkend="ref.concepts.publish">publish</link> any number of values, including zero,
+		during the execution of the function body.
+		</para></listitem>		  
 		</itemizedlist>
 		</para>
 		
@@ -43,11 +47,11 @@
 		
 		<para>
 		<itemizedlist>
-		  <listitem>Orc functions may be recursive. A group of functions may be mutually recursive.</listitem>
-		  <listitem>Patterns may be used as function parameters.</listitem>
-		  <listitem>A function may have a guard, which allows the function body to be executed only if a given condition holds.</listitem>
-		  <listitem>A function may be defined by multiple clauses.</listitem>
-		  <listitem>A function may be defined in a <indexterm significance="preferred"><primary>currying</primary></indexterm><firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</listitem>
+		  <listitem><para>Orc functions may be recursive. A group of functions may be mutually recursive.</para></listitem>
+		  <listitem><para>Patterns may be used as function parameters.</para></listitem>
+		  <listitem><para>A function may have a guard, which allows the function body to be executed only if a given condition holds.</para></listitem>
+		  <listitem><para>A function may be defined by multiple clauses.</para></listitem>
+		  <listitem><para>A function may be defined in a <indexterm significance="preferred"><primary>currying</primary></indexterm><firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</para></listitem>
 		</itemizedlist>
 		</para>
 	
@@ -244,9 +248,9 @@ z >P> Ift(Gd) >> E
 			  parallel the first clause is executed.
 			  The clause will <indexterm significance="preferred"><primary>clause failure</primary></indexterm><firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
 			  <orderedlist>
-			  <listitem>One of the parameters is a strict pattern, and that pattern fails to match.</listitem>
-			  <listitem>One of the parameters is a strict pattern, and the corresponding argument expression has halted silently.</listitem>
-			  <listitem>There is a guard expression, and it did not deflate to <code>true</code>.</listitem>
+			  <listitem><para>One of the parameters is a strict pattern, and that pattern fails to match.</para></listitem>
+			  <listitem><para>One of the parameters is a strict pattern, and the corresponding argument expression has halted silently.</para></listitem>
+			  <listitem><para>There is a guard expression, and it did not deflate to <code>true</code>.</para></listitem>
 			  </orderedlist>
 			  
 			  If each strict pattern matches successfully, and the guard deflates to <code>true</code>, 

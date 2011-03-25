@@ -91,10 +91,18 @@
 		<para>
 		  Some common cases:
 		  <itemizedlist>
-		  <listitem>The join of <replaceable>T</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.</listitem>
-		  <listitem>If <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>, then the join of <replaceable>S</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.</listitem>
-		  <listitem>The join of <replaceable>T</replaceable> and <code>Top</code> is <code>Top</code>.</listitem>
-		  <listitem>The join of <replaceable>T</replaceable> and <code>Bot</code> is <replaceable>T</replaceable>.</listitem>
+		  <listitem><para>
+		  The join of <replaceable>T</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.
+		  </para></listitem>
+		  <listitem><para>
+		  If <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>, then the join of <replaceable>S</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.
+		  </para></listitem>
+		  <listitem><para>
+		  The join of <replaceable>T</replaceable> and <code>Top</code> is <code>Top</code>.
+		  </para></listitem>
+		  <listitem><para>
+		  The join of <replaceable>T</replaceable> and <code>Bot</code> is <replaceable>T</replaceable>.
+		  </para></listitem>
 		  </itemizedlist>
 		  The join of two unrelated types is usually <code>Top</code>.
 		</para>
@@ -112,10 +120,18 @@
 		<para>
 		  Some common cases:
 		  <itemizedlist>
-		  <listitem>The meet of <replaceable>T</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.</listitem>
-		  <listitem>If <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>, then the meet of <replaceable>S</replaceable> and <replaceable>T</replaceable> is <replaceable>S</replaceable>.</listitem>
-		  <listitem>The meet of <replaceable>T</replaceable> and <code>Top</code> is <replaceable>T</replaceable>.</listitem>
-		  <listitem>The meet of <replaceable>T</replaceable> and <code>Bot</code> is <code>Bot</code>.</listitem>
+		  <listitem><para>
+		  The meet of <replaceable>T</replaceable> and <replaceable>T</replaceable> is <replaceable>T</replaceable>.
+		  </para></listitem>
+		  <listitem><para>
+		  If <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>, then the meet of <replaceable>S</replaceable> and <replaceable>T</replaceable> is <replaceable>S</replaceable>.
+		  </para></listitem>
+		  <listitem><para>
+		  The meet of <replaceable>T</replaceable> and <code>Top</code> is <replaceable>T</replaceable>.
+		  </para></listitem>
+		  <listitem><para>
+		  The meet of <replaceable>T</replaceable> and <code>Bot</code> is <code>Bot</code>.
+		  </para></listitem>
 		  </itemizedlist>
 		  The meet of two unrelated types is usually <code>Bot</code>.
 		</para>
@@ -139,9 +155,15 @@
 		which it appears. Variance is a property of the context <replaceable>C</replaceable>, defined as follows:
 		
 		<itemizedlist>
-		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>covariant</primary></indexterm><firstterm>covariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>S</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>T</replaceable>}</listitem>
-		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>contravariant</primary></indexterm><firstterm>contravariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>T</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>S</replaceable>}</listitem>
-		<listitem><replaceable>C</replaceable> is <indexterm significance="preferred"><primary>invariant</primary></indexterm><firstterm>invariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> does not imply any relationship between <replaceable>C</replaceable>{<replaceable>S</replaceable>} and <replaceable>C</replaceable>{<replaceable>T</replaceable>}.</listitem>
+		<listitem><para>
+		<replaceable>C</replaceable> is <indexterm significance="preferred"><primary>covariant</primary></indexterm><firstterm>covariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>S</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>T</replaceable>}
+		</para></listitem>
+		<listitem><para>
+		<replaceable>C</replaceable> is <indexterm significance="preferred"><primary>contravariant</primary></indexterm><firstterm>contravariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> implies that <replaceable>C</replaceable>{<replaceable>T</replaceable>} ≤ <replaceable>C</replaceable>{<replaceable>S</replaceable>}
+		</para></listitem>
+		<listitem><para>
+		<replaceable>C</replaceable> is <indexterm significance="preferred"><primary>invariant</primary></indexterm><firstterm>invariant</firstterm> if <replaceable>S</replaceable> ≤ <replaceable>T</replaceable> does not imply any relationship between <replaceable>C</replaceable>{<replaceable>S</replaceable>} and <replaceable>C</replaceable>{<replaceable>T</replaceable>}.
+		</para></listitem>
 		</itemizedlist>
 		
 		</para>

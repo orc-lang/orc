@@ -67,21 +67,21 @@
 	  This has two important implications:
 	  
 	  <itemizedlist>
-      <listitem>
+      <listitem><para>
         Different instances will have different values for each <code>val</code> declaration,
         created by separate computations, and these bindings are captured by the method closures.
         In particular, this means that an instance could create some mutable resource, such as
         a mutable cell or a semaphore, which is then manipulated by the methods; different
         instances will have different underlying mutable resources. Instances are thus very similar 
         to objects in object-oriented languages.
-      </listitem>
-      <listitem>
+      </para></listitem>
+      <listitem><para>
         Recall that creation of a closure is strict in the closure's free variables. Thus,
         the creation of the instance may block on some free variable within the class (i.e.
         a variable bound by <code>val</code>), or a free variable in the scope of the class.
         In practice, this means that instance creation will block on every <code>val</code>
         declaration whose name is mentioned in any method.
-      </listitem>
+      </para></listitem>
     </itemizedlist>
 	  
 	  </para>
@@ -102,22 +102,22 @@
 	  Each method behaves as a site, in particular a <link linkend="ref.concepts.states.helpful">helpful</link> site. Therefore,
 	  
 	  <itemizedlist>
-	    <listitem>
+	    <listitem><para>
 	      A method call, unlike a function call, is strict in all of its arguments.
-	    </listitem>
-	    <listitem>
+	    </para></listitem>
+	    <listitem><para>
         A method call returns at most one value. If the method is a <code>def</code>, its first publication
         is used, and execution of the body continues, but subsequent publications are discarded. From the
         perspective of the rest of the program, the method call returned a single value and then halted.  
-      </listitem>
-      <listitem>
+      </para></listitem>
+      <listitem><para>
         If the method is a <code>def</code>, and execution of its body expression halts silently,
         then the method call also halts silently, exactly like a helpful site.   
-      </listitem>
-      <listitem>
+      </para></listitem>
+      <listitem><para>
         A method call cannot be <link linkend="ref.concepts.states.kill"><indexterm><primary>kill</primary></indexterm>killed</link> by the pruning combinator.
         Once the method has been called, its execution continues independently of the rest of the Orc program. 
-      </listitem>
+      </para></listitem>
 	  </itemizedlist>
 	  
 	  </para>
