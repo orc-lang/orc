@@ -43,9 +43,9 @@ site UUID = "orc.lib.util.UUID"
 {--
 @site Prompt(String) :: String
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Prompt the user for some input. The user may cancel the prompt,
 in which case the site fails <link linkend="ref.concepts.silent">silently</link>. Otherwise their response

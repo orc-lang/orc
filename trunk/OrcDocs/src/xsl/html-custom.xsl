@@ -11,7 +11,8 @@
   -->
 
 <xsl:stylesheet xmlns:xslthl="http://xslthl.sf.net"
-	exclude-result-prefixes="xslthl" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	exclude-result-prefixes="xslthl" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	version="1.0">
 
 	<xsl:param name="orc.demo" select="0" />
@@ -84,10 +85,10 @@ function toggle(link, divId) {
 	</xsl:template>
 
 	<!-- Add site properties for the site library using the <sitepropset> tag -->
-	<xsl:template match="sitepropset">
+	<xsl:template match="od:sitepropset">
 		<table class="proptable">
 			<tr>
-				<xsl:for-each select="siteprop">
+				<xsl:for-each select="od:siteprop">
 					<xsl:if test="@propname='indefinite'">
 						<td bgcolor="#CC0000">
 							<font color="#FFFFFF">Indefinite</font>

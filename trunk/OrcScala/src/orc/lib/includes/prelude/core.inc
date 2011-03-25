@@ -35,10 +35,10 @@ type Signal = "orc.types.SignalType"
 {--
 @site Let() :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 When applied to no arguments, return a signal.
 
@@ -54,10 +54,10 @@ site Let = "orc.lib.builtin.Let"
 {--
 @site Ift(Boolean) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 <link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
 
@@ -76,10 +76,10 @@ site Ift = "orc.lib.builtin.If"
 {--
 @site Iff(Boolean) :: Signal
 
-<sitepropset>
-   <siteprop propname="definite"/>
-   <siteprop propname="pure"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
 <link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
 
@@ -102,9 +102,9 @@ site Unless = "orc.lib.builtin.Unless"
 {--
 @site Error(String) :: Bot
 
-<sitepropset>   
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>   
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 <link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
 

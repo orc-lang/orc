@@ -18,17 +18,17 @@ Real and virtual time.
 {--
 @site Rwait(Integer) :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Publish a signal after the given number of milliseconds.
 
 @method Rwait.time() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return the current real time in milliseconds, as
 measured from midnight January 1, 1970 UTC.
@@ -57,17 +57,17 @@ def Clock() =
 {--
 @site Vwait(Integer) :: Signal
 
-<sitepropset>
-   <siteprop propname="indefinite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 Publish a signal after the given amount of virtual time.
 
 @site Vclock() :: Integer
 
-<sitepropset>
-   <siteprop propname="definite"/>
-</sitepropset>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
 Return the current virtual time.
 --}
