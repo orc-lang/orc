@@ -193,9 +193,9 @@ class DocMaker(toplevelName: String) {
   def renderImplementation(code: String) = {
     <formalpara>
       <title>Implementation</title>
-      <programlisting language="orc-demo">
+      <para><programlisting language="orc-demo">
         { PCData(code) }
-      </programlisting>
+      </programlisting></para>
     </formalpara>
   }
    
