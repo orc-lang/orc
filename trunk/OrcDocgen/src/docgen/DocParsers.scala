@@ -56,6 +56,7 @@ object DocParsers extends RegexParsers {
     val reader = scala.util.parsing.input.StreamReader(new java.io.FileReader(f))
     phrase(parseDocument)(reader) match {
       case Success(items,_) => items
+      case _ => throw new Exception("Parser failure while parsing file " + f.toString() + " in Docgen.")
     }
   }
   
