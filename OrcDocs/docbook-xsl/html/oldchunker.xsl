@@ -8,7 +8,7 @@
                 extension-element-prefixes="saxon redirect lxslt">
 
 <!-- ********************************************************************
-     $Id$
+     $Id: oldchunker.xsl 6910 2007-06-28 23:23:30Z xmldoc $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.

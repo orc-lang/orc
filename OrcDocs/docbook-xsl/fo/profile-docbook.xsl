@@ -9,7 +9,7 @@
 <xsl:output method="xml" indent="no"/>
 
 <!-- ********************************************************************
-     $Id$
+     $Id: docbook.xsl 8913 2010-10-01 04:44:57Z bobstayton $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
@@ -127,7 +127,6 @@
     <!-- Hack! If someone hands us a DocBook V5.x or DocBook NG document,
          toss the namespace and continue.  Use the docbook5 namespaced
          stylesheets for DocBook5 if you don't want to use this feature.-->
-    <!-- include extra test for Xalan quirk -->
     <xsl:when test="false()"/>
     <!-- Can't process unless namespace removed -->
     <xsl:when test="false()"/>
@@ -231,6 +230,7 @@
     </xsl:if>
 
     <xsl:if test="$fop1.extensions != 0">
+      <xsl:call-template name="fop1-document-information"/>
       <xsl:variable name="bookmarks">
         <xsl:apply-templates select="$document.element" mode="fop1.outline"/>
       </xsl:variable>
@@ -239,6 +239,7 @@
           <xsl:copy-of select="$bookmarks"/>
         </fo:bookmark-tree>
       </xsl:if>
+      <xsl:apply-templates select="$document.element" mode="fop1.foxdest"/>
     </xsl:if>
 
     <xsl:if test="$xep.extensions != 0">

@@ -31,7 +31,7 @@
   <xsl:output method="xml" indent='yes'/>
 
   <!-- ********************************************************************
-       $Id$
+       $Id: dbk2ooo.xsl 7701 2008-02-22 06:07:31Z balls $
        ********************************************************************
 
        This file is part of the XSL DocBook Stylesheet distribution.

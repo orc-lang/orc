@@ -16,7 +16,7 @@
   <xsl:output method="xml" indent='yes' standalone='yes' encoding='UTF-8'/>
 
   <!-- ********************************************************************
-       $Id$
+       $Id: dbk2wordml.xsl 7701 2008-02-22 06:07:31Z balls $
        ********************************************************************
 
        This file is part of the XSL DocBook Stylesheet distribution.

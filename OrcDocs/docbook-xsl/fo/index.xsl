@@ -1,8 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE xsl:stylesheet [
-<!ENTITY primary   'normalize-space(concat(primary/@sortas, primary[not(@sortas)]))'>
-<!ENTITY secondary 'normalize-space(concat(secondary/@sortas, secondary[not(@sortas)]))'>
-<!ENTITY tertiary  'normalize-space(concat(tertiary/@sortas, tertiary[not(@sortas)]))'>
+<!ENTITY % common.entities SYSTEM "../common/entities.ent">
+%common.entities;
 ]>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:fo="http://www.w3.org/1999/XSL/Format"
@@ -10,7 +9,7 @@
                 version='1.0'>
 
 <!-- ********************************************************************
-     $Id$
+     $Id: index.xsl 8724 2010-07-15 07:53:27Z kosek $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
@@ -116,7 +115,8 @@
         <xsl:with-param name="master-reference" select="$master-reference"/>
       </xsl:call-template>
 
-      <fo:block id="{$id}">
+      <fo:block id="{$id}"
+                xsl:use-attribute-sets="component.titlepage.properties">
         <xsl:call-template name="index.titlepage"/>
       </fo:block>
       <xsl:apply-templates/>
@@ -446,8 +446,12 @@
   <fo:block>
     <xsl:attribute name="start-indent">
       <xsl:choose>
-        <xsl:when test="preceding-sibling::tertiaryie">3pc</xsl:when>
-        <xsl:when test="preceding-sibling::secondaryie">2pc</xsl:when>
+        <xsl:when test="(preceding-sibling::tertiaryie |
+                         preceding-sibling::secondaryie)[last()]
+                         [self::tertiaryie]">3pc</xsl:when>
+        <xsl:when test="(preceding-sibling::tertiaryie |
+                         preceding-sibling::secondaryie)[last()]
+                         [self::secondaryie]">2pc</xsl:when>
         <xsl:otherwise>1pc</xsl:otherwise>
       </xsl:choose>
     </xsl:attribute>

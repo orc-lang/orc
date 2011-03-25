@@ -13,7 +13,7 @@
   <doc:reference xmlns="">
     <referenceinfo>
       <releaseinfo role="meta">
-        $Id$
+        $Id: cmp.xsl 6297 2006-09-14 01:32:27Z xmldoc $
       </releaseinfo>
       <author>
         <surname>Hummel</surname>

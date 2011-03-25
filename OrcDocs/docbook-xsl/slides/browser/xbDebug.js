@@ -1,6 +1,6 @@
 /*
  * xbDebug.js
- * $Revision$ $Date$
+ * $Revision: 1.2 $ $Date: 2003/02/07 16:04:19 $
  */
 
 /* ***** BEGIN LICENSE BLOCK *****

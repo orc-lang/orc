@@ -4,7 +4,7 @@
 <!-- This file is generated from param.xweb -->
 
 <!-- ********************************************************************
-     $Id$
+     $Id: param.xweb 8235 2009-02-09 16:22:14Z xmldoc $
      ********************************************************************
 
      This file is part of the XSL DocBook Stylesheet distribution.
@@ -84,6 +84,7 @@ or
 <xsl:param name="man.output.lang.in.name.enabled" select="0"/>
 <xsl:param name="man.output.manifest.enabled" select="0"/>
 <xsl:param name="man.output.manifest.filename">MAN.MANIFEST</xsl:param>
+<xsl:param name="man.output.better.ps.enabled">0</xsl:param>
 <xsl:param name="man.output.quietly" select="0"/>
 <xsl:param name="man.output.subdirs.enabled" select="1"/>
 <xsl:param name="man.segtitle.suppress" select="0"/>
