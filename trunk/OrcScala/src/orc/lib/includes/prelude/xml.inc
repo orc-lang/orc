@@ -11,6 +11,10 @@
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
 
+{--
+XML manipulation.
+--}
+
 {- We use Scala's Node class as the underlying type of Orc XML trees -}
 class XML = scala.xml.Node
 

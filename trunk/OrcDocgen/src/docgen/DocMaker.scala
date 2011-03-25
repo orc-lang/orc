@@ -77,8 +77,11 @@ class DocMaker(toplevelName: String) {
   def renderSection(source: File)(implicit sectionName: String): Elem = {
     val docItemList = DocParsers.parseFile(source)
     val optionalDescription = {
-      docItemList match {
-        case DocText(s) :: _ if nonblank(s) => ": " + s.lines.next()
+      docItemList find { 
+      	case DocText(s) if nonblank(s) => true
+      	case _ => false 
+      } match {
+        case Some(DocText(s)) => ": " + s.lines.next()
         case _ => "" 
       }
     }

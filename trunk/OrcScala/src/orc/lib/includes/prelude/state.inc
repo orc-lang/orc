@@ -210,11 +210,8 @@ type Semaphore = orc.lib.state.types.SemaphoreType
 
 {--
 @site Buffer[A]() :: Buffer[A]
-<!-- XSL/FO doesn't like me using an anchor tag here -->
-<para>
 Create a new buffer (FIFO channel) of unlimited size. A buffer supports
 get, put and close operations.
-</para>
 
 A buffer may be either empty or non-empty, and either open or closed.  When
 empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and closed, calls
@@ -262,7 +259,7 @@ linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concep
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-Close the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+<firstterm xml:id="ref.stdlib.state.Buffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
@@ -277,13 +274,11 @@ When the buffer is empty, return a signal.
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-<para xml:id="ref.stdlib.state.Buffer.close">
 Close the buffer and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
-</para>
 
 @method Buffer[A].isClosed() :: Boolean
 
@@ -373,15 +368,12 @@ If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</li
    <siteprop propname="idempotent"/>
 </sitepropset>
 
-<!-- XSL/FO doesn't like me using an anchor tag here -->
-<para id="ref.stdlib.state.BoundedBuffer.close">
-Close the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+<firstterm xml:id="ref.stdlib.state.BoundedBuffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the buffer may still be allowed to return as usual.
-</para>
 
 @method BoundedBuffer[A].closeD() :: Signal
 

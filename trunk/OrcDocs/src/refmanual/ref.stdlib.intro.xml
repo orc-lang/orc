@@ -10,8 +10,9 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<para xmlns="http://docbook.org/ns/docbook">
-     <para>
+<section xml:id="ref.stdlib.intro" xmlns="http://docbook.org/ns/docbook">
+<title>Introduction</title>
+<para>
      The standard library is a set of declarations implicitly available to all Orc
      programs.  In this section we give an informal description of the standard library,
      including the type of each declaration and a short explanation of its use.
@@ -71,4 +72,4 @@
 	
 	</para>
 	
-</para>
+</section>
