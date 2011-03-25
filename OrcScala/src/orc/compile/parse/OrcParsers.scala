@@ -297,7 +297,7 @@ with CustomParserCombinators
   )
 
   val parseExpression: Parser[Expression] = (
-        "lambda" ~> (ListOf(parseType)?)
+        "lambda" ~> (ListOf(parseTypeVariable)?)
         ~ (TupleOf(parsePattern)+)
         ~ (parseReturnType?)
         ~ (parseGuard?)

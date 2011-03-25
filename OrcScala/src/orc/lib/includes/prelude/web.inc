@@ -11,6 +11,10 @@
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
 
+{--
+Web browsing, HTTP, and JSON capabilities.
+--}
+
 {-- 
 @site Browse(String) :: Signal
 
