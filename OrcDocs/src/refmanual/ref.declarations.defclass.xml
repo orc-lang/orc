@@ -186,7 +186,7 @@ OUTPUT:
 		  </example>
 
 		  <example xml:id="ref.declarations.defclass.semantics.examples.createsite">
-		  <title>Create a Write-Once Site (Cell) using Semaphore and Ref</title>
+		  <title>Create a Write-Once Site</title>
 		  <para>
 		  	We create a site, <code><indexterm><primary>Cell</primary></indexterm>Cell</code>, that defines a write-once variable. It
 			supports two methods: <code>read</code> <link linkend="ref.concepts.states.block">blocks</link> until the variable has been
@@ -238,7 +238,6 @@ stop
 
 {-
 OUTPUT:
-no output
 -}
 ]]></programlisting>
 		  </example>
@@ -273,7 +272,6 @@ def class Newset(n) =
  
 {-
 OUTPUT:
-no output
 -}
 ]]></programlisting>
       </example>
@@ -315,7 +313,6 @@ stop
 
 {-
 OUTPUT:
-no output
 -}
 ]]></programlisting>
 		  </example>
@@ -378,11 +375,19 @@ stop
 
 {-
 OUTPUT:
-no-output
 -}
 ]]></programlisting>
 		  </example>
 
+<para>For more information on sites used in the examples:
+	<itemizedlist>
+		<listitem><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></listitem>
+		<listitem><link linkend="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</link></listitem>
+		<listitem><link linkend="ref.stdlib.state.Ref"><code>Ref</code> site</link></listitem>
+		<listitem><link linkend="ref.stdlib.state.Semaphore"><code>Semaphore</code> site</link></listitem>
+		<listitem><link linkend="ref.stdlib.state.Cell"><code>Cell</code> site</link></listitem>
+	</itemizedlist>
+</para>
 	   </section>
 	
 	  <section xml:id="ref.declarations.defclass.links">

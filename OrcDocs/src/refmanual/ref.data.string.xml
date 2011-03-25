@@ -13,7 +13,7 @@
 <section xml:id="ref.data.string" xmlns="http://docbook.org/ns/docbook">
 <title>Character Strings</title>
 
-<para><emphasis role="strong">Type</emphasis>: <code>String</code></para>
+<!-- <para><emphasis role="strong">Type</emphasis>: <code>String</code></para> -->
 
 <para>Orc's character sequence representation is <indexterm><primary>character string</primary><see>string</see></indexterm><indexterm><primary>string</primary></indexterm><code>String</code>.
 Characters in Orc <code>String</code>s are drawn from the Unicode

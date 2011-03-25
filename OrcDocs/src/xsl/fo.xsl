@@ -13,20 +13,24 @@
 <xsl:stylesheet xmlns:xslthl="http://xslthl.sf.net"
 	exclude-result-prefixes="xslthl" xmlns:fo="http://www.w3.org/1999/XSL/Format"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+	
+<!-- Import unedited Docbook FO file -->
+<xsl:import href="../../docbook-xsl/fo/docbook.xsl"/>
 
-	<xsl:import href="../../docbook-xsl/fo/docbook.xsl" />
+<!-- Import EBNF customization for FO -->
+<xsl:import href="ebnf-custom.xsl"/>
 
-	<!-- Enable DocBook syntax highlighting extension -->
-	<xsl:import href="../../docbook-xsl/fo/highlight.xsl" />
+<!-- Import needed Unicode symbol coercions for PDF -->
+<xsl:import href="symbols.xsl"/>
 
-	<!-- Enable syntax highlighting of code elements -->
-	<xsl:import href="highlighting.xsl" />
+<!-- Enable syntax highlighting of code elements -->
+<xsl:import href="highlighting.xsl" />
 
-	<xsl:output method="xml" indent="no" />
+<xsl:output method="xml" indent="no" />
 
-	<xsl:attribute-set name="section.level1.properties">
-		<xsl:attribute name="break-before">page</xsl:attribute>
-	</xsl:attribute-set>
+<xsl:attribute-set name="section.level1.properties">
+	<xsl:attribute name="break-before">page</xsl:attribute>
+</xsl:attribute-set>
 
 	<!-- Add site properties for the site library using the <sitepropset> tag -->
 	<xsl:template match="sitepropset">

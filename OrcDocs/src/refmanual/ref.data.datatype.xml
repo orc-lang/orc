@@ -56,6 +56,8 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
   Thus, datatype values can be used in pattern matching. 
 </para>
 
+</section>
+
 <section xml:id="ref.data.datatype.type">
 <title>Type</title>
 
@@ -197,6 +199,5 @@ NONRUNNABLE
 			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
 		</itemizedlist>
 
-</section>
 </section>
 </section>
