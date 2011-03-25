@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ref.sites.web" xmlns="http://docbook.org/ns/docbook">
+<section xml:id="ref.sites.web" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Web Services</title>
 
 <para>
@@ -72,7 +72,7 @@ and structured representations which Orc can manipulate.
 <title>JSON</title>
 <indexterm><primary>JSON</primary></indexterm>
 <para>
-<ulink url="http://www.json.org">JSON</ulink> (JavaScript Object Notation) is a lightweight data format often used 
+<link xlink:href="http://www.json.org">JSON</link> (JavaScript Object Notation) is a lightweight data format often used 
 by Web services, especially by services with simple interfaces. The structure of JSON values maps quite naturally
 onto Orc values, using nested lists and records.
 </para> 
@@ -95,7 +95,7 @@ equal to <replaceable>j</replaceable>.
 <title>XML</title>
 <indexterm><primary>XML</primary></indexterm>
 <para>
-<ulink url="http://www.w3.org/XML/">XML</ulink> (Extensible Markup Language) is a structured data format used in many contexts,
+<link xlink:href="http://www.w3.org/XML/">XML</link> (Extensible Markup Language) is a structured data format used in many contexts,
 including Web services. 
 </para>
 
