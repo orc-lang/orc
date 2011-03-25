@@ -38,10 +38,10 @@
 		  <title>Notable Identities</title>	  
 			  <para>
 			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
-			    <colspec align="right"/>
-			    <colspec align="center"/>
-			    <colspec align="left"/>
-			    <colspec align="right"/>
+			    <colspec align="right" colwidth="10*"/>
+			    <colspec align="center" colwidth="1*"/>
+			    <colspec align="left" colwidth="10*"/>
+			    <colspec align="right" colwidth="7*"/>
 				<tbody>
 				  <row>
 				    <entry><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable><code><![CDATA[ ; ]]></code><replaceable>H</replaceable></entry>

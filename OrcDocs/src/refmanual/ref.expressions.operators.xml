@@ -44,8 +44,8 @@ In particular, these rules describe the relationship between operators and combi
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
@@ -92,8 +92,8 @@ perform decimal division and return <code>2.5</code>.
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>=</code></entry>
@@ -133,8 +133,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>&#x26;&#x26;</code></entry>
@@ -157,8 +157,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
@@ -173,8 +173,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>:</code></entry>
@@ -189,8 +189,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>+</code></entry>
@@ -205,8 +205,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <informaltable frame="none" pgwide="0">
 	<tgroup cols="2">
-		<colspec align="center"/>
-		<colspec align="left"/>
+		<colspec align="center" colwidth="1*"/>
+		<colspec align="left" colwidth="9*"/>
 		<tbody valign="top">
   <row>
     <entry><code>?</code></entry>
