@@ -44,6 +44,11 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 	<table frame="all">
 		<title>Orc Combinator/Operator Precedence, Fixity, and Associativity</title>
 		<tgroup cols="5" align="center">
+			<colspec align="center" colwidth="1*"/>
+			<colspec align="left" colwidth="2*"/>
+			<colspec align="center" colwidth="1*"/>
+			<colspec align="center" colwidth="1*"/>
+			<colspec align="center" colwidth="1*"/>
 			<thead>
 				<row>
 					<entry><emphasis>Precedence Level</emphasis></entry>
