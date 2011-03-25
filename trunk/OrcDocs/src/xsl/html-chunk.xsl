@@ -7,7 +7,10 @@
 <!-- Import profiling customizations (for index) and chunking -->
 <xsl:import href="profiledchunk.xsl"/>
 
-<!-- Import syntax highlighting -->
+<!-- Enable DocBook syntax highlighting extension -->
+<xsl:import href="../../docbook-xsl/html/highlight.xsl"/>
+
+<!-- Enable syntax highlighting of code elements -->
 <xsl:import href="highlighting.xsl"/>
 
 <!-- Import customization layers -->

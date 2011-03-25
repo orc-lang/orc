@@ -7,7 +7,10 @@
 <!-- Import unedited docbook stylesheet -->
 <xsl:import href="../../docbook-xsl/html/docbook.xsl"/>	
 
-<!-- Import syntax highlighting -->
+<!-- Enable DocBook syntax highlighting extension -->
+<xsl:import href="../../docbook-xsl/html/highlight.xsl"/>
+
+<!-- Enable syntax highlighting of code elements -->
 <xsl:import href="highlighting.xsl"/>
 
 <!-- Import customization layer -->

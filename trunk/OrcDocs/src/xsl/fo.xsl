@@ -4,8 +4,15 @@
     exclude-result-prefixes="xslthl"
     xmlns:fo="http://www.w3.org/1999/XSL/Format"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
 <xsl:import href="../../docbook-xsl/fo/docbook.xsl"/>
 <xsl:output method="xml" indent="no"/>
+
+<!-- Enable DocBook syntax highlighting extension -->
+<xsl:import href="../../docbook-xsl/fo/highlight.xsl"/>
+
+<!-- Enable syntax highlighting of code elements -->
+<xsl:import href="highlighting.xsl"/>
 
 <xsl:attribute-set name="section.level1.properties">
   <xsl:attribute name="break-before">page</xsl:attribute>
