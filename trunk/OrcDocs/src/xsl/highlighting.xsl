@@ -11,11 +11,12 @@
   -->
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+xmlns:db="http://docbook.org/ns/docbook"
 	version="1.0">
 
 	<!-- Copied from http://xslthl.wiki.sourceforge.net/DocBook+XSL+Updates 
 		to enable syntax highlighting of <code/> -->
-	<xsl:template match="code">
+	<xsl:template match="db:code">
 		<xsl:variable name="content">
 			<xsl:call-template name="apply-highlighting" />
 		</xsl:variable>
