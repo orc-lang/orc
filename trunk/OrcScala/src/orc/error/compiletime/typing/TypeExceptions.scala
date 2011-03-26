@@ -27,9 +27,14 @@ class TypeArgumentArityException(val arityExpected: Int, val arityReceived: Int)
 class DefinitionArityException(val arityFromType: Int, val arityFromSyntax: Int) extends
   TypeException("Definition should have " + arityFromType + " arguments according to its type, observed " + arityFromSyntax + " arguments instead.") with SeverityError
 
-class ArgumentTypeMismatchException(val argPosition: Int, val expectedType: Type, val providedType: Type) extends
-  TypeException("Expected type " + expectedType + " for argument " + argPosition + ", got " + providedType + " instead")
-  
+class ArgumentTypecheckingException(val argPosition: Int, val expectedType: Type, val providedType: Type) extends
+  TypeException("Expected type " + expectedType + " or some subtype for argument " + argPosition + ", got " + providedType + " instead")
+
+/* Stub type for error messages to describe a missing type which might not be constructible
+ * directly as a type, for example "a tuple of any size".
+ */
+case class ExpectedType(description: String) extends Type { override def toString = description }
+
 class MissingTypeException() extends
   TypeException("Type checker failed: couldn't obtain sufficient type information from a service or value.") with SeverityError
 

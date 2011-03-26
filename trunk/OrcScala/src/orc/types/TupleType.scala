@@ -14,7 +14,7 @@
 //
 package orc.types
 
-import orc.error.compiletime.typing.ArgumentTypeMismatchException
+import orc.error.compiletime.typing.ArgumentTypecheckingException
 
 /**
  * 
@@ -65,7 +65,7 @@ case class TupleType(elements: List[Type]) extends UnaryCallableType {
         }
       }
       case IntegerType => elements reduceLeft { _ join _ }
-      case t => throw new ArgumentTypeMismatchException(0, IntegerType, t)
+      case t => throw new ArgumentTypecheckingException(0, IntegerType, t)
     }
   }
   
