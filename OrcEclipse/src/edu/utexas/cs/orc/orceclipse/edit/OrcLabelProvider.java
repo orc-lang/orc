@@ -257,6 +257,13 @@ public class OrcLabelProvider implements ILabelProvider {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
+
+		if (d.typeformals() != null && d.typeformals().isDefined()) {
+			s.append('[');
+			s.append(listMkString(JavaConversions.asIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
+			s.append(']');
+		}
+
 		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
 			s.append('(');
 			if (ps != null) {
@@ -273,9 +280,9 @@ public class OrcLabelProvider implements ILabelProvider {
 
 		s.append(d.name());
 
-		if (d.typeformals() != null && d.typeformals().size() > 0) {
+		if (d.typeformals() != null && d.typeformals().isDefined()) {
 			s.append('[');
-			s.append(listMkString(JavaConversions.asIterable(d.typeformals()), ", ")); //$NON-NLS-1$
+			s.append(listMkString(JavaConversions.asIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
 			s.append(']');
 		}
 
