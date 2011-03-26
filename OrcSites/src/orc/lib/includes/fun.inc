@@ -1,1 +1,1 @@
-site Eliza = orc.lib.fun.Eliza
+site Eliza = "orc.lib.fun.Eliza"

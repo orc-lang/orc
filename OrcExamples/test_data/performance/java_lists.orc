@@ -1,4 +1,4 @@
-class LinkedList = java.util.LinkedList
+class LinkedList = "java.util.LinkedList"
 val l = LinkedList()
 val r = Ref()
 

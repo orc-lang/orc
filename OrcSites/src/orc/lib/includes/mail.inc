@@ -1,1 +1,1 @@
-site MailerFactory = orc.lib.net.MailerFactory
+site MailerFactory = "orc.lib.net.MailerFactory"

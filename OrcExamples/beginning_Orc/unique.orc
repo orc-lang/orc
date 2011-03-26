@@ -6,7 +6,7 @@ Hint: use a Set to record the values seen in the
 channel.
 --}
 
-class Object = java.lang.Object
+class Object = "java.lang.Object"
 
 def unique[X](Buffer[X]) :: X
 def unique(c) =

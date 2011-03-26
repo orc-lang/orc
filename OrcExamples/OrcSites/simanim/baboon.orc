@@ -1,4 +1,4 @@
-class canvas = orc.lib.simanim.MonkeyCross
+class canvas = "orc.lib.simanim.MonkeyCross"
 val sideLock = Buffer()
 val disp = canvas(10)
 

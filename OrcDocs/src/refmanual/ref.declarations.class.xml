@@ -122,7 +122,7 @@ OUTPUT:
 		<programlisting language="orc"><![CDATA[
 {- Use a Java class to represent tree data structures -}
 
-class TreeSet = java.util.TreeSet
+class TreeSet = "java.util.TreeSet"
 
 val s = TreeSet[String]()
 s.add("Orc") >> s.add("Java") >> s.add("Orc") >> s.size()

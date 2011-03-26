@@ -249,7 +249,7 @@ OUTPUT:
 <programlisting><![CDATA[
 {- Demonstrate an Orc-to-Java integer conversion of an out-of-range value -}
 
-class JavaInteger = java.lang.Integer
+class JavaInteger = "java.lang.Integer"
 
 val x = 1230000000000000000456789
 

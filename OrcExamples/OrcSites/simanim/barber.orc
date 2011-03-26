@@ -1,4 +1,4 @@
-class canvas = orc.lib.simanim.BarberShop
+class canvas = "orc.lib.simanim.BarberShop"
 {----------------------------------------------------------------
 	Non-blocking buffer.  Sets up a 'try' functionality that returns
 	a pair.  Second value of the pair indicates success or failure of

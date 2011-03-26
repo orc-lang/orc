@@ -20,13 +20,13 @@ Implement a parallel version of this algorithm using these facts.
 
 Note: you can compute the "floored" square root of a number like this:
 
-class Math = java.lang.Math
+class Math = "java.lang.Math"
 Math.floor(Math.sqrt(5))
 --}
 
 def sqrt(Number) :: Integer
 def sqrt(n) =
-  class Math = java.lang.Math
+  class Math = "java.lang.Math"
   (Math.floor(Math.sqrt(n.doubleValue()))).intValue()
 
 def primes(Number) :: List[Number]

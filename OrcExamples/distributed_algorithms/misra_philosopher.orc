@@ -6,7 +6,7 @@ K. M. Chandy and J. Misra.
 
 -- Having a set data structure is convenient,
 -- although Orc lists would do in a pinch
-class Set = java.util.HashSet
+class Set = "java.util.HashSet"
 
 {-
 Make a set initialized to contain
