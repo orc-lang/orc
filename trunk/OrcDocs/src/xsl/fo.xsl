@@ -12,26 +12,23 @@
 
 <xsl:stylesheet xmlns:xslthl="http://xslthl.sf.net"
 	exclude-result-prefixes="xslthl" xmlns:fo="http://www.w3.org/1999/XSL/Format"
-	xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-	
-<!-- Import unedited Docbook FO file -->
-<xsl:import href="../../docbook-xsl/fo/docbook.xsl"/>
+	xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	version="1.0">
 
-<!-- Import EBNF customization for FO -->
-<xsl:import href="ebnf-custom.xsl"/>
+	<!-- Import unedited Docbook FO file -->
+	<xsl:import href="../../docbook-xsl/fo/docbook.xsl"/>
 
-<!-- Import needed Unicode symbol coercions for PDF -->
-<xsl:import href="symbols.xsl"/>
+	<!-- Import EBNF customization for FO -->
+	<xsl:import href="ebnf-custom.xsl"/>
 
-<!-- Enable syntax highlighting of code elements -->
-<xsl:import href="highlighting.xsl" />
+	<!-- Enable syntax highlighting of code elements -->
+	<xsl:import href="highlighting.xsl"/>
 
-<xsl:output method="xml" indent="no" />
+	<xsl:output method="xml" indent="no"/>
 
-<xsl:attribute-set name="section.level1.properties">
-	<xsl:attribute name="break-before">page</xsl:attribute>
-</xsl:attribute-set>
+	<xsl:attribute-set name="section.level1.properties">
+		<xsl:attribute name="break-before">page</xsl:attribute>
+	</xsl:attribute-set>
 
 	<!-- Add site properties for the site library using the <sitepropset> tag -->
 	<xsl:template match="od:sitepropset">
@@ -59,12 +56,12 @@
 
 
 	<xsl:template match='xslthl:literal' mode="xslthl">
-		<xsl:apply-templates mode="xslthl" />
+		<xsl:apply-templates mode="xslthl"/>
 	</xsl:template>
 
 	<xsl:template match='xslthl:combinator' mode="xslthl">
 		<fo:inline font-weight="bold">
-			<xsl:apply-templates mode="xslthl" />
+			<xsl:apply-templates mode="xslthl"/>
 		</fo:inline>
 	</xsl:template>
 	<xsl:template match='xslthl:combinator[text()="FATBAR"]'
@@ -73,11 +70,11 @@
 	</xsl:template>
 
 	<xsl:template match='xslthl:variable' mode="xslthl">
-		<xsl:apply-templates mode="xslthl" />
+		<xsl:apply-templates mode="xslthl"/>
 	</xsl:template>
 
 	<xsl:template match='xslthl:site' mode="xslthl">
-		<xsl:apply-templates mode="xslthl" />
+		<xsl:apply-templates mode="xslthl"/>
 	</xsl:template>
 
 </xsl:stylesheet>

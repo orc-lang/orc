@@ -44,7 +44,7 @@
 			Foundation.
 	</para>
 	</legalnotice>
-	<pubdate><?dbtimestamp format="Y b d"?></pubdate>
+	<pubdate><?dbtimestamp format="Y-m-d"?></pubdate>
 </info>
 
 <preface><title>Introduction</title>
