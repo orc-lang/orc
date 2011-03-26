@@ -16,9 +16,10 @@ package orc.lib.builtin
 
 import orc.values._
 import orc.values.sites._
+import orc.error.compiletime.typing.ArgumentTypecheckingException
+import orc.error.compiletime.typing.ExpectedType
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
-import orc.types.SimpleCallableType
 import orc.types._
 
 
@@ -34,51 +35,48 @@ object TupleConstructor extends TotalSite with TypedSite {
   }
 }
 
-object NoneConstructor extends TotalSite with Extractable with TypedSite {
+object NoneConstructor extends TotalSite0 with Extractable with TypedSite {
   override def name = "None"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List() => None
-      case _ => throw new ArityMismatchException(0, args.size)
-  }
+    
+  def eval() = None
+  
   val extractor = NoneExtractor
   
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
 
-object SomeConstructor extends TotalSite with Extractable with TypedSite {
+object SomeConstructor extends TotalSite1 with Extractable with TypedSite {
   override def name = "Some"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(v) => Some(v)
-      case _ => throw new ArityMismatchException(1, args.size)
-  }
+    
+  def eval(a: AnyRef) = Some(a)
+  
   val extractor = SomeExtractor
   
-  def orcType() = new UnaryCallableType { def call(t: Type) = OptionType(t) }
+  def orcType() = {
+    val X = new TypeVariable()
+    new FunctionType(List(X), List(X), OptionType(X))
+  }
 }
 
 
 
-object NilConstructor extends TotalSite with Extractable with TypedSite {
+object NilConstructor extends TotalSite0 with Extractable with TypedSite {
   override def name = "Nil"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List() => Nil
-      case _ => throw new ArityMismatchException(0, args.size)
-  }
+  
+  def eval() = Nil
+  
   val extractor = NilExtractor
   
   def orcType() = SimpleFunctionType(ListType(Bot))
 }
 
-object ConsConstructor extends TotalSite with Extractable with TypedSite {
+object ConsConstructor extends TotalSite2 with Extractable with TypedSite {
   override def name = "Cons"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(v, vs : List[_]) => v :: vs
-      case List(_, vs) => throw new ArgumentTypeMismatchException(1, "List", if (vs != null) vs.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(2, args.size)
+  def eval(h: AnyRef, t: AnyRef) = {
+    t match {
+      case tl : List[_] => h :: tl
+      case _ => throw new ArgumentTypeMismatchException(1, "List", if (t != null) t.getClass().toString() else "null")
+    }
   }
   val extractor = ConsExtractor
   
@@ -116,7 +114,7 @@ object RecordConstructor extends TotalSite with TypedSite {
       val bindings = 
         (argTypes.zipWithIndex) map {
           case (TupleType(List(FieldType(f), t)), _) => (f, t)
-          case (t, i) => throw new ArgumentTypeMismatchException(i, "(Field, _)", t.toString)
+          case (t, i) => throw new ArgumentTypecheckingException(i, TupleType(List(ExpectedType("of some field"), Top)), t)
         }
       RecordType(bindings.toMap)
     }

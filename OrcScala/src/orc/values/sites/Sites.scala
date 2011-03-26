@@ -18,6 +18,7 @@ package orc.values.sites
 import orc.values.{OrcValue, Field}
 import orc.Handle
 import orc.error.OrcException
+import orc.error.compiletime.typing.TypeException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
@@ -62,6 +63,7 @@ trait Extractable extends Site {
 
 
 trait TypedSite extends Site {
+  @throws(classOf[TypeException])
   def orcType(): Type
 }
 

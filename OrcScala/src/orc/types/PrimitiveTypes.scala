@@ -62,7 +62,6 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
   }
 }
 
-
 /* A dependent type, used to index into records, objects, and the like. */
 case class FieldType(f: String) extends Type {
 
@@ -75,7 +74,6 @@ case class FieldType(f: String) extends Type {
     }
   }
 }
-
 
 
 object StringType extends JavaObjectType(classOf[java.lang.String])
