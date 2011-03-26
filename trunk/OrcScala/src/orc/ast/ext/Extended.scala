@@ -67,8 +67,8 @@ sealed abstract class NamedDeclaration extends Declaration {
 }
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
-case class Def(name: String, typeformals: Option[List[String]], formals: List[List[Pattern]],returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-case class DefClass(name: String, formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class Def(name: String, typeformals: Option[List[String]], formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefClass(name: String, typeformals: Option[List[String]], formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
 case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
 
 // Convenience extractor for sequences of definitions enclosing some scope
