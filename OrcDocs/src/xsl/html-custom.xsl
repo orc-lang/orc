@@ -11,14 +11,15 @@
   -->
 
 <xsl:stylesheet xmlns:xslthl="http://xslthl.sf.net"
-	exclude-result-prefixes="xslthl" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"
+	exclude-result-prefixes="xslthl" xmlns:db="http://docbook.org/ns/docbook"
+	xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	version="1.0">
 
 	<xsl:param name="orc.demo" select="0" />
 
 	<!-- Orc examples must use the "orc" CSS class. -->
-	<xsl:template match="programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
+	<xsl:template match="db:programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
 
 	<!-- Include orc.js if desired -->
 	<xsl:template name="user.footer.content">
@@ -28,7 +29,7 @@
 	</xsl:template>
 
 	<!-- Match template for collapsible example boxes -->
-	<xsl:template match="example">
+	<xsl:template match="db:example">
 		<xsl:variable name="ex_id" select="./@id" />
 		<xsl:variable name="ex_link" select="concat($ex_id,'_link')" />
 		<xsl:variable name="ex_content" select="concat($ex_id,'_content')" />
