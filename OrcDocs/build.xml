@@ -497,6 +497,14 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+
+			<param name="body.font.family" expression="Times New Roman,serif"/>
+			<param name="title.font.family" expression="Arial,sans-serif"/>
+			<!-- symbol.font.family appended to body & title font families as a fall-back for glyphs not contained in those fonts -->
+			<param name="symbol.font.family" expression="Arial Unicode,Symbol,ZapfDingbats"/>
+			<param name="monospace.font.family" expression="monospace"/>
+			<!-- dingbat.font.family used for template-generated copyright and trademark symbols, etc. -->
+			<param name="dingbat.font.family" expression="serif"/>
 		</xslt>
 
 		<property name="fop.home" value="lib/fop"/>
@@ -514,7 +522,7 @@
 		</taskdef>
 
 		<fop format="application/pdf" fofile="${build.dir}/fo/refmanual/refmanual.fo"
-			outfile="${build.dir}/pdf/refmanual/refmanual.pdf"/>
+			outfile="${build.dir}/pdf/refmanual/refmanual.pdf" userconfig="${basedir}/fop-conf.xml"/>
 	</target>
 
 	<!-- =================================
