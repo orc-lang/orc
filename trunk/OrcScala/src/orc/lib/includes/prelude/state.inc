@@ -79,8 +79,8 @@ Read a value from the cell. If the cell does not yet have a value, <link linkend
 
 Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Cell = orc.lib.state.Cell
-type Cell = orc.lib.state.types.CellType
+site Cell = "orc.lib.state.Cell"
+type Cell = "orc.lib.state.types.CellType"
 
 
 {--
@@ -205,8 +205,8 @@ Otherwise, <link linkend="ref.concepts.states.block">block</link> until some cal
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Semaphore = orc.lib.state.Semaphore
-type Semaphore = orc.lib.state.types.SemaphoreType
+site Semaphore = "orc.lib.state.Semaphore"
+type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
 @site Buffer[A]() :: Buffer[A]
@@ -298,8 +298,8 @@ Get all of the items currently in the buffer, emptying the buffer and returning
 a list of the items in the order they were added. If there are no items in the
 buffer, return an empty list.
 --}
-site Buffer = orc.lib.state.Buffer
-type Buffer = orc.lib.state.types.BufferType
+site Buffer = "orc.lib.state.Buffer"
+type Buffer = "orc.lib.state.types.BufferType"
 
 
 {--
