@@ -47,19 +47,20 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: DefDeclaration): AggregateDef =
     defn -> {
-      case Def(_, List(formals), maybeReturnType, maybeGuard, body) => {
+      case Def(_, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
         val newclause = defn ->> Clause(newformals, maybeGuard, body)
+        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn)) 
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+        AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
       }
-      case DefClass(name, List(formals), maybeReturnType, maybeGuard, body) => {
-        this + Def(name, List(formals), maybeReturnType, maybeGuard, new DefClassBody(body))
+      case DefClass(name, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, body) => {
+        this + Def(name, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, new DefClassBody(body))
       }
-      case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
+      case DefSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
         val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
-        val newTypeFormals = unifyList(typeformals, Some(typeformals2), reportProblem(RedundantTypeParameters() at defn))
+        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, Some(argtypes3), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
@@ -69,9 +70,10 @@ case class AggregateDef(clauses: List[Clause],
   def +(lambda: Lambda): AggregateDef = {
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals.head)
     val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
+    val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+    AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
   }
 
   def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {

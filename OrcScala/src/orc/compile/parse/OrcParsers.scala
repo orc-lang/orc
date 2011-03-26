@@ -392,14 +392,14 @@ with CustomParserCombinators
 /* Declarations */
   
   val parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+        ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> Def
-
-      | ("class" ~> ident) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+      
+      | ("class" ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> DefClass
-
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType
-      -> { (id, tvs, ts, rt) => DefSig(id, tvs getOrElse Nil, ts, rt) }
+      
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType 
+      -> DefSig
   )
 
   val parseDeclaration: Parser[Declaration] = (

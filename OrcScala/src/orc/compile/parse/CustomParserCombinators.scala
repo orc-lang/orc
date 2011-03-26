@@ -73,11 +73,15 @@ trait CustomParserCombinators {
   }
   class Maps4[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]) {
     def ->[X <: AST](f: (A,B,C,D) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ w => f(x,y,z,w) })
+      markLocation(parser ^^ { case x ~ y ~ z ~ u => f(x,y,z,u) })
   }
   class Maps5[A,B,C,D,E](parser: Parser[A ~ B ~ C ~ D ~ E]) {
     def ->[X <: AST](f: (A,B,C,D,E) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ w ~ v => f(x,y,z,w,v) })
+      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v => f(x,y,z,u,v) })
+  }
+  class Maps6[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]) {
+    def ->[X <: AST](f: (A,B,C,D,E,F) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v ~ w => f(x,y,z,u,v,w) })
   }
   
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
@@ -86,6 +90,7 @@ trait CustomParserCombinators {
   implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
   implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
   implicit def CreateMaps5Parser[A,B,C,D,E](parser: Parser[A ~ B ~ C ~ D ~ E]): Maps5[A,B,C,D,E] = new Maps5(parser)
+  implicit def CreateMaps5Parser[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]): Maps6[A,B,C,D,E,F] = new Maps6(parser)
 
   
   

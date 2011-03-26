@@ -36,14 +36,14 @@ object CurriedForms {
   def reduceParamLists(d: ext.DefDeclaration): ext.DefDeclaration = {
     import orc.error.compiletime.typing._
     d -> {
-      case ext.Def(_, List(formals), _, _, _) => d
-      case ext.Def(name, formals :: tail, retType, guard, body) => {
+      case ext.Def(_, _, List(formals), _, _, _) => d
+      case ext.Def(name, typeformals, formals :: tail, retType, guard, body) => {
         val newbody = uncurry(tail, body, retType, guard)
         /* Return the outermost Def */
-        ext.Def(name, List(formals), None, None, newbody)
+        ext.Def(name, typeformals, List(formals), None, None, newbody)
       }
-      case ext.DefClass(name, formals, retType, guard, body) => {
-        reduceParamLists(ext.Def(name, formals, retType, guard, ext.DefClassBody(body)))
+      case ext.DefClass(name, typeformals, formals, retType, guard, body) => {
+        reduceParamLists(ext.Def(name, typeformals, formals, retType, guard, ext.DefClassBody(body)))
       }
       case ext.DefSig(name, typFormals, List(argTypes), retType) => d
       case ext.DefSig(name, typFormals, argTypes :: tail, retType) => {
