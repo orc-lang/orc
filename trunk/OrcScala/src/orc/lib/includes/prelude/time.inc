@@ -54,7 +54,7 @@ def Clock() =
   val time = Rwait.time()
   lambda () = Rwait.time() - time
 
-{--
+{-
 @site Vwait(Integer) :: Signal
 
 <od:sitepropset>
@@ -70,7 +70,7 @@ Publish a signal after the given amount of virtual time.
 </od:sitepropset>
 
 Return the current virtual time.
---}
+ -}
 -- site Vwait = "orc.lib.time.Vwait"
 def Vwait(Integer) :: Bot
 def Vwait(_) = Error("Vwait not yet implemented")

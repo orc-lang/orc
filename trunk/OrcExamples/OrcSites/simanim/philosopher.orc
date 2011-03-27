@@ -24,7 +24,7 @@ def releaseAnimate(p,s,i) =
     true
   else
     canvas.setFork(p,s,i) >>
-    Vwait(50) >>
+    Rwait(50) >>
     releaseAnimate(p,s,i-1)
      
 def grabAnimate(p,s,i) =
@@ -32,7 +32,7 @@ def grabAnimate(p,s,i) =
     true
   else
     canvas.setFork(p,s,11-i) >>
-    Vwait(50) >>
+    Rwait(50) >>
     grabAnimate(p,s,i-1)
 
 def getForks(n,fl,fr) =
@@ -41,7 +41,7 @@ def getForks(n,fl,fr) =
       getFork(n,0,fr)
       ; releaseFork(n, 1, fl) >> stop
     )
-    ; Vwait(Random(100)*10+1) >>
+    ; Rwait(Random(100)*10+1) >>
       getForks(n, fl, fr)
   )
 
@@ -58,7 +58,7 @@ def eatAnimate(p,i,speed) =
     true
   else
     canvas.setEat(p,i) >>
-    Vwait(speed) >>
+    Rwait(speed) >>
     eatAnimate(p,i-1,speed)
 
 def eat(n) = 
@@ -68,13 +68,13 @@ def eat(n) =
 def thinkAnimate(p,i) =
   (if i = 11 then 1 else i) >x>
   canvas.setThink(p, x) >>
-  Vwait(100) >>
+  Rwait(100) >>
   thinkAnimate(p,x+1)
 
 def think(n) =
   Let(
     thinkAnimate(n,1)
-    | Vwait(index([500,1000,2000,10000],Random(4)))
+    | Rwait(index([500,1000,2000,10000],Random(4)))
   ) >>
   canvas.setThink(n,0)
 
@@ -90,12 +90,12 @@ def philosopher(n,fl,fr) =
 
 def redraw() =
   canvas.redraw() >>
-  Vwait(50) >>
+  Rwait(50) >>
   redraw()
   
 def clock() =
   Rwait(1) >>
-  Vwait(1) >>
+  Rwait(1) >>
   clock()
 
 def philosophers(n,lf,rf) =
