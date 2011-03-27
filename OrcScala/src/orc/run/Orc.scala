@@ -449,6 +449,7 @@ trait Orc extends OrcRuntime {
     def blockOn(blocker: Blocker) = synchronized {
       state match {
         case Live => state = Blocked(blocker)
+        case Killed => {}
         case _ => throw new AssertionError("Only live tokens may be blocked: state="+state)
       }
     }
