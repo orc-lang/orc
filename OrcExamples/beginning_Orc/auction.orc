@@ -18,7 +18,7 @@ type Bid = Number
 def auction(List[lambda(Bid) :: Bid], Bid) :: Bid
 def auction(bidders, max) =
   val (done, bid) =
-    Vwait(1) >> (true, max)
+    Rwait(5000) >> (true, max)
     | each(bidders) >bidder>
       bidder(max) >bid>
       If(bid :> max) >>
