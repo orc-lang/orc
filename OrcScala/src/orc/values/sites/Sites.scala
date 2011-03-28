@@ -27,12 +27,6 @@ import orc.types.Bot
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
-
-  /**
-   * Virtual time taken by this site. By default, the virtual time
-   * taken by any site is considered to be 0. 
-   */ 
-  def virtualTime(): Int = 0   // -1 represents infinity
 }
 
 trait Site extends OrcValue with SiteMetadata {
