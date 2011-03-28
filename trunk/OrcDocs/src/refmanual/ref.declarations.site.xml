@@ -22,9 +22,9 @@ A site declaration makes an Orc site that is present in the environment availabl
 
 	<para>
 Orc sites provide operations such as arithmetic functions, platform facilities, or Web services for Orc programs to invoke.
-The Orc standard prelude, which is implicitly included in Orc programs by the compiler, contains declarations for all items in the Orc standard library.
+The Orc standard prelude, which is implicitly included in Orc programs by the compiler, contains declarations for all items in the Orc <link linkend="ref.stdlib">standard library</link>.
 Sites beyond those in the standard library are made available by a site declaration.
-A site declaration names a variable to bind to the site and specifies a location from with the site is obtained (<indexterm><primary>site resolution</primary></indexterm>site resolution).
+A site declaration names a variable to bind to the site and specifies a location from with the site is obtained (<indexterm significance="preferred"><primary>site resolution</primary></indexterm>site resolution).
 In the present Orc implementation, this location is specified as a fully qualified name of a class that can be loaded from the JVM classpath.
 	</para>
 

@@ -184,10 +184,12 @@ they are not recommended for production code.
 			<listitem><para><link linkend="ref.expressions.lambda"><code>lambda</code> Expressions</link></para></listitem>
 			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
-		</itemizedlist>		  
+		</itemizedlist>
+		-->		  
 	  </section>
 	  
 </section>

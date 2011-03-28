@@ -122,10 +122,12 @@ append([1,2,3], [4,5])
 			<listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
-		</itemizedlist>		  
+		</itemizedlist>		
+		-->  
 	  </section>
 	  
 </section>

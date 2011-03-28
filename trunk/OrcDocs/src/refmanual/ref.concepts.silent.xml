@@ -83,11 +83,13 @@ OUTPUT:
 			<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
 			<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
 		</itemizedlist>
-
+		-->
+		
 	</section>
 
 </section>

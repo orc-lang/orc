@@ -49,11 +49,12 @@
 			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
 			<listitem><para><link linkend="ref.stdlib">Standard Library</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
 		</itemizedlist>
-
+		-->
 
 	</section>
 </section>
