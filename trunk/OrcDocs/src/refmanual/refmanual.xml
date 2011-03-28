@@ -18,7 +18,8 @@
 <title>
 	Orc Reference Manual v<xi:include href="../../VERSION" parse="text" />
 </title>
-<info>
+<bookinfo>
+	<!-- Modify "titlepage-html-src.xml to change what metadata appears in output -->
 	<author>
 		<orgname>The University of Texas at Austin</orgname>
 		<address><street>1 University Station, Stop C0500</street>, <city>Austin</city>, <state>TX</state> <postcode>78712-0233</postcode>, <country>USA</country></address>
@@ -45,7 +46,7 @@
 		</para>
 	</legalnotice>
 	<pubdate><?dbtimestamp format="Y-m-d"?></pubdate>
-</info>
+</bookinfo>
 
 <xi:include href="ref.data.xml" />
 <xi:include href="ref.expressions.xml" />

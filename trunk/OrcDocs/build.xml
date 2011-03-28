@@ -328,9 +328,19 @@
 	</target>
 
 	<!-- =================================
+		  target: rm-html-titlepage
+		 ================================= -->
+	<target name="rm-html-titlepage" depends="" description="Generate titlepage stylesheet">
+		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl" extension=".xsl"
+			in="${src.dir}/xsl/titlepage-html-src.xml" out="${src.dir}/xsl/titlepage-html.xsl"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+		</xslt>
+	</target>
+	
+	<!-- =================================
 		  target: rm-html-chunk
 		 ================================= -->
-	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb" description="Generates chunked Reference Manual HTML doc">
+	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generates chunked Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/html/refmanual/index.html"
@@ -387,7 +397,7 @@
 	<!-- =================================
 		  target: rm-html-single
 		 ================================= -->
-	<target name="rm-html-single" depends="mkdirs,depends,targetdb" description="Generates single Reference Manual HTML doc">
+	<target name="rm-html-single" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
@@ -421,7 +431,7 @@
 	<!-- =================================
 		  target: rm-eclipsehelp
 		 ================================= -->
-	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb" description="Generate Reference Manual in Eclipse Help format">
+	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generate Reference Manual in Eclipse Help format">
 		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/eclipsehelp/refmanual"
 				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/eclipsehelp/refmanual/index.html"
