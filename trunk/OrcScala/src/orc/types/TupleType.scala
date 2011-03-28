@@ -22,7 +22,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
  *
  * @author dkitchin
  */
-case class TupleType(elements: List[Type]) extends UnaryCallableType {
+case class TupleType(elements: List[Type]) extends UnaryCallableType with StrictType {
  
    assert(elements.size > 1)
    

@@ -26,7 +26,7 @@ import orc.compile.typecheck.Typeloader._
  *
  * @author dkitchin
  */
-case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType {
+case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType {
 
   override def toString = "(class " + Option(cl.getCanonicalName).getOrElse(cl.getName) + ")"
   

@@ -67,7 +67,7 @@ object Let extends TotalSite with TypedSite {
       case (vs : List[_]) => OrcTuple(vs)
     }
   
-  def orcType() = new SimpleCallableType {
+  def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]): Type = { 
       argTypes match {
         case Nil => SignalType

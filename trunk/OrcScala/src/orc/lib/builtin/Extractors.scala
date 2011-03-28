@@ -119,7 +119,7 @@ object TupleArityChecker extends PartialSite with TypedSite {
       case _ => throw new ArityMismatchException(2, args.size)
   }
   
-  def orcType() = new SimpleCallableType {
+  def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]): Type = {
       argTypes match {
         case List(t@ TupleType(elements), IntegerConstantType(i)) => {
@@ -158,7 +158,7 @@ object RecordMatcher extends PartialSite with TypedSite {
     } 
   
   
-  def orcType() = new SimpleCallableType {
+  def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]): Type = {
       argTypes match {
         case List(rt @ RecordType(entries), shape @ _*) => {

@@ -24,7 +24,7 @@ import orc.error.compiletime.typing.UncallableTypeException
  *
  * @author dkitchin
  */
-case class RecordType(entries: Map[String,Type]) extends CallableType {
+case class RecordType(entries: Map[String,Type]) extends CallableType with StrictType {
 
   def this(entries: (String, Type)*) = {
     this(entries.toMap)
