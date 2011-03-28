@@ -18,7 +18,7 @@
 	
 	
 	<para>
-	A type <replaceable>S</replaceable> is a <indexterm significance="preferred"><primary>subtype</primary></indexterm><firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <indexterm significance="preferred"><primary>≤</primary></indexterm><firstterm>≤</firstterm> <replaceable>T</replaceable>,
+	A type <replaceable>S</replaceable> is a <indexterm significance="preferred"><primary>subtype</primary></indexterm><firstterm>subtype</firstterm> of a type <replaceable>T</replaceable>, written <replaceable>S</replaceable> <indexterm significance="preferred"><primary>≤</primary></indexterm>≤ <replaceable>T</replaceable>,
 	if a value of type <replaceable>S</replaceable> can be used in any context expecting a value of type <replaceable>T</replaceable>.
 	</para>
 	
@@ -191,10 +191,12 @@
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
-		</itemizedlist>		  
+		</itemizedlist>
+		-->		  
 	  </section>
 	  
 </section>

@@ -367,6 +367,8 @@
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 			
+			<param name="generate.legalnotice.link" expression="1"/>
+			
 		</xslt>
 		<!-- Copy the stylesheet and navigational/content images -->
 		<copy todir="${build.dir}/html/refmanual">
@@ -405,6 +407,9 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+			
+			<param name="generate.legalnotice.link" expression="1"/>
+			
 		</xslt>
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="${src.dir}/css">

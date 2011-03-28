@@ -42,10 +42,12 @@
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
 		</itemizedlist>
+		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
 			<listitem><para>TODO</para></listitem>
-		</itemizedlist>		  
+		</itemizedlist>
+		-->		  
 	  </section>
 	  
 </section>

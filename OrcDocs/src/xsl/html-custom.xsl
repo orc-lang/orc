@@ -16,6 +16,9 @@
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	version="1.0">
 
+	<!-- Import customized titlepage -->
+	<!-- <xsl:import href="title-custom.xsl"/> -->
+
 	<xsl:param name="orc.demo" select="0" />
 
 	<!-- Orc examples must use the "orc" CSS class. -->
