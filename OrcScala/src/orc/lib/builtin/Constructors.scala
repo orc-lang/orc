@@ -30,7 +30,7 @@ object TupleConstructor extends TotalSite with TypedSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
   
-  def orcType() = new SimpleCallableType {
+  def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
   }
 }
@@ -109,7 +109,7 @@ object RecordConstructor extends TotalSite with TypedSite {
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
   }
   
-  def orcType() = new SimpleCallableType {
+  def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]) = { 
       val bindings = 
         (argTypes.zipWithIndex) map {

@@ -284,7 +284,12 @@ object Typechecker {
   
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
     
-    if (targetType eq Bot) { return (syntacticTypeArgs, Bot) }
+    if (targetType eq Bot) { 
+      return (syntacticTypeArgs, Bot) 
+    }
+    if (targetType.isInstanceOf[StrictType] && (argTypes contains Bot)) {
+      return (syntacticTypeArgs, Bot)   
+    }
     
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {

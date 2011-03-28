@@ -32,7 +32,7 @@ object DatatypeBuilder extends TotalSite with TypedSite {
     OrcTuple(datasites)
   }
      
-  def orcType() = new CallableType {
+  def orcType() = new CallableType with StrictType {
     
     def call(typeArgs: List[Type], argTypes: List[Type]) = {
       

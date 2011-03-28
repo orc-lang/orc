@@ -25,6 +25,13 @@ trait CallableType extends Type {
   def call(typeArgs: List[Type], argTypes: List[Type]): Type
 }
 
+/* 
+ * Indicates that this callable type is strict in its arguments.
+ * If any argument has type Bot, the return type will also be Bot.
+ */
+trait StrictType extends CallableType
+
+
 /* Use case: no type arguments */
 trait SimpleCallableType extends CallableType {
   
