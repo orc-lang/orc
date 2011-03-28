@@ -89,17 +89,17 @@ class DocMaker(toplevelName: String) {
     	<section xmlns="http://docbook.org/ns/docbook" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd"> 
         { generateHeaderComment(Some(source.getName())) }
         <title>{ sectionName + optionalDescription }</title>
-        { renderItems(docItemList, "") }
+        { renderItems(docItemList, "", true) }
       </section>
     }
     addId(content, Some(toplevelName + "." + sectionName))
   }
   
-  def renderItems(items: List[DocItem], nextCode: String)(implicit sectionName: String): List[Node] = {
+  def renderItems(items: List[DocItem], nextCode: String, toplevel: Boolean)(implicit sectionName: String): List[Node] = {
     items match {
       case DocText(s) :: rest => {
         val paraNodes = paragraphs(s) map { p: String => <para>{ Unparsed(p) }</para> }
-        paraNodes ::: renderItems(rest, nextCode)
+        paraNodes ::: renderItems(rest, nextCode, toplevel)
       }
       case (_ : DocDecl) :: _ => {
         val (decls, rest) = items span { _.isInstanceOf[DocDecl] }
@@ -109,19 +109,16 @@ class DocMaker(toplevelName: String) {
             case None => ""
           }
         }
-        val declChunk = {
-          <variablelist>
-            <?dbfo list-presentation="list"?>
-            { decls map { d: DocItem => renderDecl(d.asInstanceOf[DocDecl], newNextCode) } }
-          </variablelist>  
+        val declNodes = {
+        	(decls map { d: DocItem => renderDecl(d.asInstanceOf[DocDecl], newNextCode, toplevel) }).flatten
         }
-        declChunk :: renderItems(rest, nextCode)
+        declNodes ::: renderItems(rest, nextCode, toplevel)
       }
       case DocImpl :: rest => {
-        renderImplementation(nextCode) :: renderItems(rest, nextCode)
+        renderImplementation(nextCode) :: renderItems(rest, nextCode, toplevel)
       }
       // If we encounter uncommented content, ignore it.
-      case (_ : DocOutside) :: rest => renderItems(rest, nextCode)
+      case (_ : DocOutside) :: rest => renderItems(rest, nextCode, toplevel)
       
       // No more input
       case Nil => Nil
@@ -129,67 +126,89 @@ class DocMaker(toplevelName: String) {
     
   }
   
+  def convertOpName(opname: String): Option[String] = {
+  	opname match {
+			case "(+)" => Some("Add")
+			case "(-)" => Some("Sub")
+			case "(0-)" => Some("UMinus")
+			case "(*)" => Some("Mult")
+			case "(**)" => Some("Exponent")
+			case "(/)" => Some("Div")
+			case "(%)" => Some("Mod")
+			case "(<:)" => Some("Less")
+		  case "(<=)" => Some("Leq")
+			case "(:>)" => Some("Greater")
+			case "(>=)" => Some("Greq")
+			case "(=)" => Some("Eq")
+			case "(/=)" => Some("Inequal")
+			case "(~)" => Some("Not")
+			case "(&&)" => Some("And")
+			case "(||)" => Some("Or")
+			case "(:)" => Some("Cons")
+			case _ => None
+		}
+  }
   
-  def processDeclName(name: String): Option[String] = {
+  def processDeclName(name: String, makeIdent: Boolean): Option[String] = {
   	"""^\w+$""".r.findPrefixOf(name) match {
   	  case Some(ident) => Some(ident)
   	  case None => {
 				"""^\([^\)]+\)$""".r.findPrefixOf(name) match {
-					case Some(s) => s match {
-						case "(+)" => Some("Add")
-						case "(-)" => Some("Sub")
-						case "(0-)" => Some("UMinus")
-						case "(*)" => Some("Mult")
-						case "(**)" => Some("Exponent")
-						case "(/)" => Some("Div")
-						case "(%)" => Some("Mod")
-						case "(<:)" => Some("Less")
-					  case "(<=)" => Some("Leq")
-						case "(:>)" => Some("Greater")
-						case "(>=)" => Some("Greq")
-						case "(=)" => Some("Eq")
-						case "(/=)" => Some("Inequal")
-						case "(~)" => Some("Not")
-						case "(&&)" => Some("And")
-						case "(||)" => Some("Or")
-						case "(:)" => Some("Cons")
-						case _ => None
-					}
+					case Some(op) => if (makeIdent) { convertOpName(op) } else { Some(op) }
 					case None => None
 				}
 			}
 		}
-  }
+  } 
     
-  def renderDecl(decl: DocDecl, nextCode: String)(implicit sectionName: String) = {
+  def renderDecl(decl: DocDecl, nextCode: String, toplevel: Boolean)(implicit sectionName: String): List[Node] = {
   	
   	val optionalId = {
-  		processDeclName(decl.name) match {
+  		processDeclName(decl.name, true) match {
   			case Some(ident) => {
-  			  val longId = toplevelName + "." + sectionName + "." + ident
-  			  if (claimedIdentifiers contains longId) {
-  			  	None
-  			  }
-  			  else {
-  			  	claimedIdentifiers += longId
-  			  	Some(longId)
-  			  }
+  				val longId = toplevelName + "." + sectionName + "." + ident
+				  if (claimedIdentifiers contains longId) {
+				  	None
+				  }
+				  else {
+				  	claimedIdentifiers += longId
+				  	Some(longId)
+				  }
   			}
   			case None => None
   		}
   	}
   	
-  	val content = {
-  		<varlistentry>
-  		  <term><code>{ decl.name }</code></term>
-        <listitem>
-  		 	  <para><code>{ decl.keyword + decl.typeDeclaration }</code></para>
-  			  { renderItems(decl.body, nextCode) }
-  			</listitem>
-  		</varlistentry>
+  	val optionalIndexTerm = {
+  		processDeclName(decl.name, false) match {
+  			case Some(ident) => {
+  				val suffix = 
+  					decl.keyword match {
+  					  case "site" => " (site)"
+  					  case "def" => " (function)"
+  					  case _ => ""
+  				  }
+  				List(<indexterm><primary>{ ident + suffix }</primary></indexterm>)
+  			}
+  			case None => Nil
+  		}
   	}
   	
-  	addId(content, optionalId)
+  	val header = { <para><code>{ decl.keyword + decl.typeDeclaration }</code></para> }
+  	
+  	val core = addId(header, optionalId) :: renderItems(decl.body, nextCode, false)
+  	
+  	if (toplevel) {
+  		List({
+  			<section>
+  	  	  <title><code>{ decl.name }</code></title>
+  	  	  { optionalIndexTerm ::: core }
+  		  </section>
+  		})
+  	}
+  	else {
+  	  core
+  	}
   }  
   
   
