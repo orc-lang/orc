@@ -41,7 +41,7 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
         }
         TypeInstance(tycon, joinArgs)
       }
-      case _ => Top
+      case _ => super.join(that)
     }
   }
   
@@ -60,7 +60,7 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
         }
         TypeInstance(tycon, meetArgs)
       }
-      case _ => Bot
+      case _ => super.meet(that)
     }
   }
   
