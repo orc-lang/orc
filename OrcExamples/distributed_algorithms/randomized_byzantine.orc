@@ -1,3 +1,5 @@
+class Map = "scala.collection.mutable.HashMap"
+
 -- number of bad processes
 val t = 2
 -- total number of processes
@@ -8,19 +10,22 @@ val channels = collect(lambda () = upto(p) >> Buffer())
 -- Return a random boolean
 def coin() = Random(2) :> 0
 
--- Return a default value if the first argument is null
-def default(null, v) = v
-def default(v, _) = v
+-- Return a default value if the first argument is None
+def default(None(), v) = v
+def default(Some(v), _) = v
 
 -- Tally a list of votes and return
 -- (majority vote value, majority vote count)
 def tallyVotes(votes) =
   val table = Map()
   def tallyVote((mv, mt), v) =
-    table(v) >t>
-    t := default(t?, 0) + 1 >>
-    if t? :> mt then (v, mt+1)
-    else (mv, mt)
+    val t = default(table.get(v), 0)
+    val newt = t+1
+    table.put(v, newt) >>
+    if newt :> mt then 
+      (v, newt)
+    else 
+      (mv, mt)
   foldl(tallyVote, (0, 0), votes)
   
 -- decision algorithm for a good process
