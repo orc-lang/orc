@@ -17,7 +17,7 @@
 	version="1.0">
 
 	<!-- Import customized titlepage -->
-	<xsl:import href="titlepage-html.xsl"/>
+	<xsl:import href="../../build/xsl/titlepage-html.xsl"/>
 
 	<xsl:param name="orc.demo" select="0" />
 
