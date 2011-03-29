@@ -4,25 +4,15 @@ described in "The Drinking Philosophers Problem", by
 K. M. Chandy and J. Misra.
 -}
 
--- Having a set data structure is convenient,
--- although Orc lists would do in a pinch
-class Set = "java.util.HashSet"
+-- Use a Scala set implementation.
+-- Operations on this set are _not_ synchronized.
+class ScalaSet = "scala.collection.mutable.HashSet"
 
 {-
 Make a set initialized to contain
 the items in the given list.
 -}
-def makeSet(items) =
-  val s = Set()
-  map(s.add, items) >> s
-
-{-
-Map a function over a Java set.
--}
-def mapSet(f, s) =
-  val t = Set()
-  val it = s.iterator()
-  repeat(If(it.hasNext()) >> t.add(f(it.next())))
+def Set(items) = ScalaSet() >s> joinMap(s.add, items) >> s
 
 
 {-
@@ -38,7 +28,7 @@ def philosopher(name, mbox, missing) =
   -- deferred requests for forks
   val deferred = Buffer()
   -- forks we hold which are clean
-  val clean = Set()
+  val clean = Set([])
 
   def sendFork(p) =
     missing.add(p) >>
@@ -60,7 +50,7 @@ def philosopher(name, mbox, missing) =
   def thinking() =
     def on(("rumble", _)) =
       Println(name + " hungry") >>
-      mapSet(requestFork, missing) >>
+      map(requestFork, missing.toList()) >>
       hungry()
     def on(("request", p)) =
       sendFork(p) >>
@@ -104,15 +94,15 @@ def philosophers(n) =
   val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Buffer))))
 
   {- first row -}
-  philosopher((0,0), cs(0,0), makeSet([]))
+  philosopher((0,0), cs(0,0), Set([]))
   | for(1, n) >j>
-    philosopher((0,j), cs(0,j), makeSet([cs(0,j-1).put]))
+    philosopher((0,j), cs(0,j), Set([cs(0,j-1).put]))
 
   {- remaining rows -}
   | for(1, n) >i> (
-      philosopher((i,0), cs(i,0), makeSet([cs(i-1,0).put]))
+      philosopher((i,0), cs(i,0), Set([cs(i-1,0).put]))
       | for(1, n) >j>
-        philosopher((i,j), cs(i,j), makeSet([cs(i-1,j).put, cs(i,j-1).put]))
+        philosopher((i,j), cs(i,j), Set([cs(i-1,j).put, cs(i,j-1).put]))
     )
 
 philosophers(2)
