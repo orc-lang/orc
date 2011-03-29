@@ -332,7 +332,7 @@
 		 ================================= -->
 	<target name="rm-html-titlepage" depends="" description="Generate titlepage stylesheet">
 		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl" extension=".xsl"
-			in="${src.dir}/xsl/titlepage-html-src.xml" out="${src.dir}/xsl/titlepage-html.xsl"
+			in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
 			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		</xslt>
 	</target>

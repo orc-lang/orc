@@ -8,6 +8,7 @@
 	<!--  Show the following metadata in the HTML output -->
     <t:titlepage-content t:side="recto">
       <title/>
+      <author/>
       <pubdate/>
       <copyright/>
       <legalnotice/>
