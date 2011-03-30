@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter xml:id="ug.methodology" 
+		 xmlns="http://docbook.org/ns/docbook" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Programming Methodology</title>
+
+<para>
+In <link linkend="ug.language"/>, we described the syntax and semantics of the Orc language. 
+Now, we turn our attention to how the language is used in practice, with guidelines on style and programming 
+methodology, including a number of common concurrency patterns.
+</para>
+
+<xi:include href="ug.methodology.convention.xml"/>
+<xi:include href="ug.methodology.idiom.xml"/>
+<xi:include href="ug.methodology.example.xml"/>
+  
+</chapter>

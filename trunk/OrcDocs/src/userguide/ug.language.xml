@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter xml:id="ug.language" 
+		 xmlns="http://docbook.org/ns/docbook" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>The Orc Programming Language</title>
+
+ 
+<xi:include href="ug.language.introduction.xml"/>
+<xi:include href="ug.language.cor.xml"/>
+<xi:include href="ug.language.orc.xml"/>
+<xi:include href="ug.language.advanced.xml"/>
+
+</chapter>
