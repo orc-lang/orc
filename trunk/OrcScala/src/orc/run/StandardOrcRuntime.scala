@@ -21,7 +21,7 @@ import orc.run.extensions._
 
 class StandardOrcRuntime extends Orc
 with StandardInvocationBehavior
-with ManyActorBasedScheduler
+with ThreadPoolScheduler
 with SupportForRwait
 with SupportForClasses
 with SupportForSynchronousExecution
