@@ -33,6 +33,8 @@ they are not essential to the understanding of the language.
 </section> 
 
 
+<!-- Replace Cor with Orc everywhere, and fix minor inconsistencies which result  -->
+<!-- Cut all reference material in this section. Maybe cut the entire section. -->
 <section><title>Cor: A Functional Subset</title>
 
  
@@ -58,278 +60,6 @@ introduce variables and binding, as a way to give a name to the value of an expr
 After that, we talk about constructing data structures, and examining those structures
 using patterns. Lastly, we introduce functions.
 </para> 
-
-<para>
-Table 1.1 describes the syntax of Cor. Each part of the syntax is explained 
-in a subsequent section.
-</para>
-
-<para>
-<table id="cor-ebnf-table" frame="none" rowsep="0" colsep="0">
-<title>Syntax of the Functional Subset of Orc (Cor)</title> 
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="5" >
-<colspec colnum="1" colwidth="1*" align="right"/>
-<colspec colnum="2" colwidth="1*" align="center"/>
-<colspec colnum="3" colwidth="10*" align="left"/>
-<colspec colnum="4" colwidth="4*" align="left"/>
-<colspec colnum="5" colwidth="7*" align="left"/>
-<tbody>
-
-<row>
-<entry>E</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Expression</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry>C</entry>
-
-<entry></entry>
-<entry><emphasis>constant value</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>X</entry>
-
-<entry></entry>
-<entry><emphasis>variable</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>tuple</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>[</code> E <code>,</code> ... <code>,</code> E <code>]</code></entry>
-
-<entry></entry>
-<entry><emphasis>list</emphasis></entry>
-</row>
-
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>{. </code> X<code> = </code> E <code>,</code> ... <code>,</code> X<code> = </code> E <code> .}</code></entry>
-
-<entry></entry>
-<entry><emphasis>record</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>X<code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>function call</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E <emphasis>op</emphasis> E</entry>
-
-<entry></entry>
-<entry><emphasis>operator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>if</code> E <code>then</code> E <code>else</code> E </entry>
-
-<entry></entry>
-<entry><emphasis>conditional</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>lambda (</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>closure</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>D E</entry>
-
-<entry></entry>
-<entry><emphasis>scoped declaration</emphasis></entry>
-</row>
-
-<!--
-<row>
-<entry></entry>
-<entry>|</entry>
-	
-<entry>D <code>within</code> E</entry>
-	
-<entry></entry>
-<entry><emphasis>goal expression w/declarations</emphasis></entry>
-</row>
-	-->
-	
-<row>
-<entry>C</entry>
-<entry>::=</entry>
-
-<entry><emphasis>Boolean</emphasis> | <emphasis>Number</emphasis> | <emphasis>String</emphasis></entry>
-
-<entry><emphasis>Constant</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>X</entry>
-<entry>::=</entry>
-
-<entry><emphasis>Identifier</emphasis></entry>
-
-<entry><emphasis>Identifier</emphasis></entry>
-<entry></entry>
-</row>
-
-
-<row>
-<entry>D</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Declaration</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry><code>val</code> P <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>value declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>def</code> X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code> <code>=</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>function declaration</emphasis></entry>
-</row>
-
-
-<row>
-<entry>P</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Pattern</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry>X</entry>
-
-<entry></entry>
-<entry><emphasis>variable</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>C</entry>
-
-<entry></entry>
-<entry><emphasis>constant</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>_</code></entry>
-
-<entry></entry>
-<entry><emphasis>wildcard</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>tuple</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>[</code> P <code>,</code> ... <code>,</code> P <code>]</code></entry>
-
-<entry></entry>
-<entry><emphasis>list</emphasis></entry>
-</row>
-
-</tbody>
-</tgroup>
-</table>
-</para>
-
-<para>
-Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
-operators, which in turn have higher precedence than conditionals.
-</para>
 
 
 <section id="orc.constants"><title>Constants</title>
@@ -378,126 +108,6 @@ overridden by adding parentheses.
 <listitem><code><![CDATA[true && (false || true)]]></code> evaluates to <code>true</code>.</listitem>
 <listitem><code>"leap" + "frog"</code> evaluates to <code>"leapfrog"</code>.</listitem>
 </itemizedlist>
-</para>
-
-<para>
-Here is the full set of operators that Cor supports:
-
-<table id="ops-table" frame="none" rowsep="0" colsep="0"> 
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="95%" ?>
-<?dbfo keep-together="always" ?>
-<title>Operators of Cor</title>
-<tgroup cols="8" >
-<colspec colnum="1" colname="arith-names" colwidth="1*" align="left"/>
-<colspec colnum="2" colname="arith-ops" colwidth="4*" align="left"/>
-<colspec colnum="3" colname="comp-names" colwidth="1*" align="left"/>
-<colspec colnum="4" colname="comp-ops" colwidth="6*" align="left"/>
-<colspec colnum="5" colname="logic-names" colwidth="1*" align="left"/>
-<colspec colnum="6" colname="logic-ops" colwidth="3*" align="left"/>
-<colspec colnum="7" colname="string-names" colwidth="1*" align="left"/>
-<colspec colnum="8" colname="string-ops" colwidth="4*" align="left"/>
-
-<thead>
-<row>
-<entry namest="arith-names" nameend="arith-ops" align="left">Arithmetic</entry>
-<entry namest="comp-names" nameend="comp-ops" align="left">Comparison</entry>
-<entry namest="logic-names" nameend="logic-ops" align="left">Logical</entry>
-<entry namest="string-names" nameend="string-ops" align="left">String</entry>
-</row>
-</thead>
-<tbody>
-
-<row>
-<entry><code><![CDATA[+]]></code></entry>
-<entry>addition</entry>
-
-<entry><code><![CDATA[=]]></code></entry>
-<entry>equality</entry>
-
-<entry><code><![CDATA[&&]]></code></entry>
-<entry>logical and</entry>
-
-<entry><code><![CDATA[+]]></code></entry>
-<entry>concatenation</entry>
-
-</row>
-
-<row>
-<entry><code><![CDATA[-]]></code></entry>
-<entry>subtraction</entry>
-
-<entry><code><![CDATA[/=]]></code></entry>
-<entry>inequality</entry>
-
-<entry><code><![CDATA[||]]></code></entry>
-<entry>logical or</entry>
-
-<entry namest="string-names" nameend="string-ops"/>
-
-</row>
-
-
-<row>
-<entry><code><![CDATA[*]]></code></entry>
-<entry>multiplication</entry>
-
-<entry><code><![CDATA[<]]></code></entry>
-<entry>less than</entry>
-
-<entry><code><![CDATA[~]]></code></entry>
-<entry>logical not</entry>
-
-<entry namest="string-names" nameend="string-ops"/>
-
-</row>
-
-<row>
-<entry><code><![CDATA[/]]></code></entry>
-<entry>division</entry>
-
-<entry><code><![CDATA[>]]></code></entry>
-<entry>greater than</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-<row>
-<entry><code><![CDATA[%]]></code></entry>
-<entry>modulus</entry>
-
-<entry><code><![CDATA[<=]]></code></entry>
-<entry>less than or equal</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-<row>
-<entry><code><![CDATA[**]]></code></entry>
-<entry>exponent</entry>
-
-<entry><code><![CDATA[>=]]></code></entry>
-<entry>greater than or equal</entry>
-
-<entry namest="logic-names" nameend="logic-ops"/>
-<entry namest="string-names" nameend="string-ops"/>
-</row>
-
-</tbody>
-</tgroup>
-</table>
-
-</para>
-
-<para>
-There is also a unary negation operator, written <code>-</code>, for example <code>-(2 ** 5)</code>.
-</para>
-
-<para>
-The <code>=</code> operator can compare values of any type. Values of different type are always unequal; for example,
-<code>10 = true</code> evaluates to <code>false</code>.
 </para>
 
 <para>
@@ -561,69 +171,6 @@ For example, <code>if false then 1 else 2 + 3</code> is equivalent to
 <code>if false then 1 else (2 + 3)</code>, not <code>(if false then 1 else 2) + 3</code>.
 </para>
 
-<para>
-The behavior of conditionals is summarized by the following table
-(<emphasis>v</emphasis> denotes a value).
-
-<informaltable id="cond-table" frame="none" rowsep="0" colsep="0"> 
-<?dbhtml table-width="60%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="4" >
-<colspec colnum="1" colname="E" colwidth="1*" align="center"/>
-<colspec colnum="2" colname="F" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="G" colwidth="1*" align="center"/>
-<colspec colnum="4" colname="result" colwidth="3*" align="center"/>
-<thead>
-<row>
-<entry>E</entry>
-<entry>F</entry>
-<entry>G</entry>
-<entry><code>if</code> E <code>then</code> F <code>else</code> G</entry>
-</row>
-</thead>
-<tbody>
-
-<row>
-<entry><code>true</code></entry>
-<entry><emphasis>v</emphasis></entry>
-<entry>-</entry>
-<entry><emphasis>v</emphasis></entry>
-</row>
-
-<row>
-<entry><code>true</code></entry>
-<entry>silent</entry>
-<entry>-</entry>
-<entry>silent</entry>
-</row>
-
-<row>
-<entry><code>false</code></entry>
-<entry>-</entry>
-<entry><emphasis>v</emphasis></entry>
-<entry><emphasis>v</emphasis></entry>
-</row>
-
-<row>
-<entry><code>false</code></entry>
-<entry>-</entry>
-<entry>silent</entry>
-<entry>silent</entry>
-</row>
-
-<row>
-<entry>silent</entry>
-<entry>-</entry>
-<entry>-</entry>
-<entry>silent</entry>
-</row>
-
-</tbody>
-</tgroup>
-</informaltable>
-
-</para>
 
 <para>
 <itemizedlist><title>Examples</title>
@@ -672,17 +219,6 @@ Evaluation of the declaration <code>val y = 4+5</code> and the expression <code>
 may continue even though <code>x</code> is not bound. The expression evaluates to 9.
 
 </para>
-
-<!-- 
-<note>
-<code>val</code> expresses a limited form of concurrency called <emphasis>declarative concurrency</emphasis> (add
-biblio reference to CTMCP). A declaration may be evaluated in parallel with the declarations and expressions that
-follow it; any expression which uses a variable introduced by a declaration that is still evaluating will wait for
-that evaluation to complete. However, since Cor is a purely declarative language, and cannot express state changes
-or the progress of time, it is impossible to distinguish a parallel evaluation from a sequential evaluation within
-Cor.
-</note>
- -->
 
 </section>
 
@@ -800,6 +336,7 @@ This use of <code>+</code> is left-associative and does not commute.
 </section>
 
 
+<!--  TODO: add record patterns -->
 <section xml:id="orc.language.patterns"><title>Patterns</title>
 
 <para>
@@ -830,11 +367,6 @@ and <code>c</code> to <code>(2,false)</code>.
 </para>
 
 <para>
-Patterns are <firstterm>linear</firstterm>; that is, a pattern may mention a variable name at most once. 
-For example, <code>(x,y,x)</code> is not a valid pattern.
-</para>
-
-<para>
 Note that a pattern may fail to match a value, if it does not have the same shape as that value. In a <code>val</code>
 declaration, this has the same effect as evaluating a silent expression. No variable in the pattern is bound, and
 if any one of those variables is later evaluated, it is silent.
@@ -855,6 +387,7 @@ variables.
 
 </section>
 
+<!--  TODO: link to advanced features, such as curried definition and guards -->
 <section id="cor.functions"><title>Functions</title>
 
 <para>
@@ -1205,189 +738,6 @@ reprise some of those topics; some Cor constructs exhibit new behaviors in the
 concurrent, stateful context of Orc.
 </para>
 
-<para>
-The following figure summarizes the syntax of Orc as an extension of the syntax of Cor. 
-The original Cor grammar rules are abbreviated by ellipses (...). 
-</para>
-
-<para>
-<table id="orc-ebnf-table" frame="none" rowsep="0" colsep="0">
-<title>Basic Syntax of Orc</title>  
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="5" >
-<colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
-<colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="fexp" colwidth="10*" align="left"/>
-<colspec colnum="4" colname="whole exp" colwidth="4*" align="left"/>
-<colspec colnum="5" colname="whole exp" colwidth="7*" align="left"/>
-<tbody>
-
-<row>
-<entry>D</entry>
-<entry>::=</entry>
-
-<entry> ... </entry>
-
-<entry><emphasis>Declaration</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>site</code> X <code>=</code> <emphasis>address</emphasis></entry>
-
-<entry></entry>
-<entry><emphasis>site declaration</emphasis></entry>
-</row>
-
-<row>
-<entry>C</entry>
-<entry>::=</entry>
-
-<entry> ... </entry>
-
-<entry><emphasis>Constant</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>signal</code></entry>
-
-<entry></entry>
-<entry><emphasis>signal value</emphasis></entry>
-</row>
-
-
-<row>
-<entry>E</entry>
-<entry>::=</entry>
-
-<entry>...</entry>
-
-<entry><emphasis>Expression</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>stop</code></entry>
-
-<entry></entry>
-<entry><emphasis>silent expression</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>E</entry>
-
-<entry></entry>
-<entry><emphasis>sequential combinator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E <code>FATBAR</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>parallel combinator</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E<code><![CDATA[ <]]></code>P<code><![CDATA[< ]]></code>E</entry>
-
-<entry></entry>
-<entry><emphasis>pruning combinator</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E <code>;</code> E</entry>
-
-<entry></entry>
-<entry><emphasis>otherwise combinator</emphasis></entry>
-</row>
-
-
-</tbody>
-</tgroup>
-</table>
-</para>
-	
-<para>
-<table id="orc-keyword-table" frame="none" rowsep="0" colsep="0">
-<title>Orc Keywords</title>  
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="7" >
-	<!--
-<colspec colnum="1" colname="word1" colwidth="1*" align="right"/>
-<colspec colnum="2" colname="word2" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="word3" colwidth="10*" align="left"/>
-		-->
-<colspec colnum="1" colname="word1" colwidth="1*" align="left"/>
-<colspec colnum="2" colname="word2" colwidth="1*" align="left"/>
-<colspec colnum="3" colname="word3" colwidth="1*" align="left"/>
-<colspec colnum="4" colname="word4" colwidth="1*" align="left"/>
-<colspec colnum="5" colname="word5" colwidth="1*" align="left"/>
-<colspec colnum="6" colname="word6" colwidth="1*" align="left"/>
-<colspec colnum="7" colname="word7" colwidth="1*" align="left"/>
-<tbody>
-	
-<row>
-		<entry><code>true</code></entry>
-		<entry><code>false</code></entry>
-		<entry><code>signal</code></entry>
-		<entry><code>stop</code></entry>
-		<entry><code>null</code></entry>
-		<entry><code>lambda</code></entry>
-		<entry><code>_</code></entry>
-</row>
-	
-<row>
-		<entry><code>if</code></entry>
-		<entry><code>then</code></entry>
-		<entry><code>else</code></entry>
-		<entry><code>as</code></entry>
-		<entry><code>val</code></entry>
-		<entry><code>def</code></entry>
-</row>
-	
-<row>
-		<entry><code>class</code></entry>
-		<entry><code>type</code></entry>
-		<entry><code>site</code></entry>
-		<entry><code>include</code></entry>
-<!--		<entry><code>within</code></entry> -->
-		<entry><code>Top</code></entry>
-		<entry><code>Bot</code></entry>
-</row>
-	
-</tbody>
-</tgroup>
-</table>
-</para>
-
 		
 <section xml:id="orc.sites"><title>Communicating with external services</title>
 
@@ -1423,6 +773,7 @@ arguments must be bound before the call can proceed. If any argument is silent, 
 Second, a site call publishes at most one value, since at most one response is received.
 </para>
 
+<!--  maybe cut this -->
 <para>
 A call to a site has exactly one of the following effects: 
 
@@ -1481,40 +832,6 @@ println("Hello, World!")
 </section>
 
 
-<section id="orc-declaring-a-site"><title>Declaring a site</title>
-
-<para>
-A <code>site</code> declaration makes some service available as a site and
-binds it to a variable. The service might be an object in the host language 
-(e.g. a class instance in Scala or Java), or an external service on the web which is accessed 
-through some protocol like SOAP or REST, or even a primitive operation like addition. 
-
-
-We will discuss the particulars of these declarations, and the guidelines for accessing 
-web-based services or creating one's own services, in <link linkend="chapter.services">Chapter 3</link>.
-Also, Many useful sites are already defined in the Orc standard library, documented
-in <link linkend="appendix.library">Appendix B</link>. For now, we present a simple 
-type of site declaration: using an object in the host language as a site.  
-</para>
-
-<para>
-The following example instantiates a Java object to be used as a site in an Orc program, specifically
-a Java object which provides an asynchronous buffer service. The declaration uses a
-fully qualified Java class name to find and load a class, and creates an instance of that
-class to provide the service. 
-
-<programlisting><![CDATA[
-{-  Define the Buffer site  -}
-site Buffer = orc.lib.state.Buffer
-]]></programlisting>  
-</para>
-
-<para>
-
-</para>
-  
-</section>
-
 </section>
 
 
@@ -1560,16 +877,6 @@ may be published in arbitrary order.
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
 </para>  
-
-<para>
-The parallel combinator is fully associative: (F <code>|</code> G) <code>|</code> H and
-F <code>|</code> (G <code>|</code> H) and F <code>|</code> G <code>|</code> H are all
-equivalent.
-</para> 
-
-<para>
-It is also commutative: F <code>|</code> G is equivalent to G <code>|</code> F.  
-</para>
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
@@ -1686,14 +993,7 @@ We can do this using <code><![CDATA[ >> ]]></code> together with the special exp
 </para>
 
 <para>
-The sequential combinator is right associative: F<code><![CDATA[ >x> ]]></code>G<code><![CDATA[ >y> ]]></code>H
-is equivalent to F<code><![CDATA[ >x> (]]></code>G<code><![CDATA[ >y> ]]></code>H<code>)</code>. It has higher
-precedence than the parallel combinator: F<code><![CDATA[ >x> ]]></code>G <code>|</code> H is equivalent to
-<code>(</code>F<code><![CDATA[ >x> ]]></code>G <code>) |</code> H.
-</para>
-
-<para>
-The right associativity of the sequential combinator makes it easy to bind variables in sequence and use
+The sequential combinator makes it easy to bind variables in sequence and use
 them together.
 </para>
 
@@ -1719,7 +1019,7 @@ a computation waiting for a result, or terminate a computation. The execution of
 F<code><![CDATA[ <x< ]]></code>G starts by executing F and G in parallel. Whenever
 F publishes a value, that value is published by the entire execution. When G publishes
 its first value, that value is bound to x in F, and then the execution of G is immediately 
-<firstterm>terminated</firstterm>. A terminated expression cannot call any sites or 
+<firstterm>killed</firstterm>. A killed expression cannot call any sites or 
 publish any values.
 </para>
 
@@ -1786,15 +1086,6 @@ it is ignored. The right side continues to execute and will publish one of <code
 <code>(5,true)</code>.
 </para>
 
-
-<para>
-The pruning combinator is left associative: F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[ <y< ]]></code>H
-is equivalent to <code>(</code>F<code><![CDATA[ <x< ]]></code>G<code><![CDATA[) <y< ]]></code>H. It has lower
-precedence than the parallel combinator: F<code><![CDATA[ <x< ]]></code>G <code>|</code> H is equivalent to
-F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
-</para>
-
-
 </section>
 
 
@@ -1803,44 +1094,13 @@ F<code><![CDATA[ <x< (]]></code>G <code>|</code> H<code>)</code>.
 <para>
 Orc has a fourth concurrency combinator: the <firstterm>otherwise</firstterm> combinator,
 written F<code> ; </code>G. The execution of F<code> ; </code> G proceeds as follows.
-First, F is executed. If F <firstterm>completes</firstterm>, and has not published any values, 
+First, F is executed. If F <firstterm>halts</firstterm>, and has not published any values, 
 then G executes. If F did publish one or more values, then G is ignored. The publications of 
 F <code>;</code> G are those of F if F publishes, or those of G otherwise.
 </para>
 
-<para>
-We determine when an expression completes using the following rules.
-
-<itemizedlist>
-<listitem>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</listitem>
-<listitem>A site call completes when it has published a value or halted.</listitem>
-<listitem>F <code>|</code> G completes when its subexpressions F and G have both completed.</listitem>
-<listitem>F<code><![CDATA[ >x> ]]></code>G completes when F has completed and all instantiated copies of G have completed.</listitem>
-<listitem>F<code><![CDATA[ <x< ]]></code>G completes when F has completed, and G has either completed or
-published a value. Also, if G completes without publishing a value, then all expressions in F which
-use <code>x</code> also complete, since they will never be able to proceed.</listitem>
-<listitem>F <code>;</code> G completes either when F has published a value and subsequently completed,
-or when F and G have both completed.</listitem>
-<listitem><code>stop</code> completes immediately.</listitem>
-</itemizedlist>
-
-</para>
-
-<para>
-The otherwise combinator is fully associative, so F <code>;</code> G <code>;</code> H and
-(F <code>;</code> G) <code>;</code> H and F <code>;</code> (G <code>;</code> H) are
-all equivalent. It has lower precedence than the other three combinators. 
-</para>
-
-<para>
-The otherwise combinator was not present in the original formulation of the Orc concurrency 
-calculus; it has been added to support computation and iteration over strictly finite data. 
-Sequential programs conflate the concept of producing a value with the concept of completion. 
-Orc separates these two concepts; variable binding combinators like <code><![CDATA[ >x> ]]></code> 
-and <code><![CDATA[ <x< ]]></code> handle values, whereas <code>;</code> detects the completion 
-of an execution.
-</para>
-
+<!-- TODO: may need a 1 sentence description of 'halts' -->
+<!--  TODO: may need an example too -->
 </section>
 
 
@@ -1856,6 +1116,8 @@ Some Cor expressions have new behaviors in the context of Orc, due to the introd
 of concurrency and of sites.
 </para>
 
+
+<!--  TODO: Cut -->
 <section><title>Operators</title>
 
 <para>
@@ -1869,7 +1131,7 @@ the name of the site is the operator enclosed by parentheses, e.g. <code>(**)</c
 
 </section>
 
-
+<!--  TODO: Cut -->
 <section xml:id="orc.conditionals"><title>Conditionals</title>
 
 <para>
@@ -1885,16 +1147,10 @@ is <code>false</code> or remains silent if the argument is <code>true</code>.
 to <code>(<![CDATA[ If(b) >> ]]></code>F<code><![CDATA[ | Unless(b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
 </para>
 
-<!--
-<para>
- When the <code>else</code> branch of a conditional is unneeded, we can write <code>if</code> F <code>then</code> G,
- with no <code>else</code> branch. This is equivalent to <code>IfT(</code>E<code>) >> </code>F.
-</para>
--->
 	
 </section>
 
-
+<!--  TODO: Move to val (variables) section from Cor, maybe inline with pruning combinator -->
 <section><title><code>val</code></title>
 
 <para>
@@ -1917,48 +1173,6 @@ publish?
 </para>
 
 <para>
-The specific contexts in which we are interested are as follows (where E is any Orc expression):
-
-<informaltable id="value-context-table" frame="none" rowsep="0" colsep="0"> 
-<?dbhtml table-width="40%" ?>
-<?dbfo table-width="80%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="2">
-<colspec colnum="1" colwidth="1*" align="left"/>
-<colspec colnum="2" colwidth="1*" align="right"/>
-<tbody>
-
-<row>
-<entry>E <emphasis>op</emphasis> E</entry>
-<entry><emphasis>operand</emphasis></entry>
-</row>
-
-<row>
-<entry><code>if</code> E <code>then</code> ...</entry>
-<entry><emphasis>conditional test</emphasis></entry>
-</row>
-
-<row>
-<entry>X<code>(</code> ... <code>,</code> E <code>,</code> ... <code>)</code></entry>
-<entry><emphasis>call argument</emphasis></entry>
-</row>
-
-<row>
-<entry><code>(</code> ... <code>,</code> E <code>,</code> ... <code>)</code></entry>
-<entry><emphasis>tuple element</emphasis></entry>
-</row>
-
-<row>
-<entry><code>[</code> ... <code>,</code> E <code>,</code> ... <code>]</code></entry>
-<entry><emphasis>list element</emphasis></entry>
-</row>
-
-</tbody>
-</tgroup>
-</informaltable>
-</para>
-
-<para>
 Whenever an Orc expression appears in such a context, it executes until it publishes its first value, 
 and then it is terminated. The published value is used in the context as if it were the result of evaluating
 the expression.
@@ -1978,6 +1192,7 @@ the expression.
 ]]></programlisting>
 </para>
 
+<!--  TODO: Add link to deflation -->
 <para>
 To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
 on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
@@ -1997,11 +1212,10 @@ and publish multiple values.
 </para>
 
 <para>
-A function call in Orc, as in Cor, binds the values of its actual parameters
-to its formal parameters, and then executes the function body with those bindings.
-Whenever the function body publishes a value, the function call publishes that
-value. Thus, unlike a site call, or a pure functional Cor call, an Orc function
-call may publish many values.
+A function call in Orc binds the values of its arguments
+to the function's parameters, and then executes the function body in parallel with the
+computation of the bindings. Whenever the function body publishes a value, the function call publishes that
+value. Thus, unlike a site call, a function call may publish many values.
 </para>
 
 <para>
@@ -2014,14 +1228,18 @@ range(3)
 ]]></programlisting>
 </para>
 
+<!--  TODO: link to deflation -->
 <para>
 In the context of Orc, function calls are not strict. When a function call executes,
 it begins to execute the function body immediately, and also executes the argument
-expressions in parallel. When an argument expression publishes a value, it is terminated,
-and the corresponding formal parameter is bound to that value in the execution of
-the function body. Any part of the function body which uses a formal parameter
-that has not yet been bound suspends until that parameter is bound to a value.
+expressions in parallel. When an argument expression publishes a value, it is killed,
+and the corresponding parameter is bound to that value in the execution of
+the function body. Any part of the function body which uses a parameter
+that has not yet been bound blocks until that parameter is bound to a value.
 </para>
+
+
+<!--  TODO: add example about blocking on function parameters -->
 
 </section>
 
@@ -2040,9 +1258,10 @@ services which take time to respond. However, Orc can also explicitly
 wait for some amount of time, using the special site <code>Rwait</code>. 
 </para>
 
+<!--  TODO: link approximately to ref manual -->
 <para>
 The site <code>Rwait</code> is a relative timer. It takes as an argument
-a number of milliseconds to wait. It waits for exactly that amount of time,
+a number of milliseconds to wait. It waits for approximately that amount of time,
 and then responds with a signal.
 </para>
 
@@ -2082,7 +1301,7 @@ result
 </para>
 
 
-
+<!--  TODO: Change name from Chapter 2 to 'methodology' or some such -->
 We present many more examples of programming techniques using real time in <link linkend="chapter.methodology">Chapter 2</link>.
 
 </section>
@@ -2091,241 +1310,12 @@ We present many more examples of programming techniques using real time in <link
 </section>
 
 
+<!-- TODO: keep dot access -->
+<!-- TODO: keep datatypes -->
+<!-- TODO: keep def class -->
+
 
 <section><title>Advanced Features of Orc</title>
-
-<para>
-In this section we introduce some advanced features of Orc. These include curried
-function definitions and curried calls, writing an arbitrary expression as the
-target of a call, a special syntax for writing calls in an object-oriented style, 
-extensions to pattern matching, and new forms of declarations, and ML-style
-datatypes.
-</para>
-
-
-<para>
-<table id="advanced-ebnf-table" frame="none" rowsep="0" colsep="0">
-<title>Advanced Syntax of Orc</title> 
-<?dbhtml table-width="80%" ?>
-<?dbfo table-width="100%" ?>
-<?dbfo keep-together="always" ?>
-<tgroup cols="5" >
-<colspec colnum="1" colname="bexp" colwidth="1*" align="right"/>
-<colspec colnum="2" colname="texp" colwidth="1*" align="center"/>
-<colspec colnum="3" colname="fexp" colwidth="10*" align="left"/>
-<colspec colnum="4" colname="whole exp" colwidth="5*" align="left"/>
-<colspec colnum="5" colname="whole exp" colwidth="7*" align="left"/>
-<tbody>
-
-<row>
-<entry>E</entry>
-<entry>::=</entry>
-
-<entry>...</entry>
-
-<entry><emphasis>Expression</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>E G+</entry>
-
-<entry></entry>
-<entry><emphasis>generalized call</emphasis></entry>
-</row>
-
-<!-- 
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>T</entry>
-
-<entry></entry>
-<entry><emphasis>throw expression</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>TC</entry>
-
-<entry></entry>
-<entry><emphasis>try/catch block</emphasis></entry>
-</row>
-
- -->
-
-<row>
-<entry>G</entry>
-<entry>::=</entry>
-
-<entry></entry>
-
-<entry><emphasis>Argument group</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry></entry>
-
-<entry> <code>(</code> E <code>,</code> ... <code>,</code> E <code>)</code> </entry>
-
-<entry></entry>
-<entry><emphasis>curried arguments</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry> <code>.</code><emphasis>field</emphasis> </entry>
-
-<entry></entry>
-<entry><emphasis>field access</emphasis></entry>
-</row>
-
-
-<row>
-<entry>P</entry>
-<entry>::=</entry>
-
-<entry>...</entry>
-
-<entry><emphasis>Pattern</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>P <code>as</code> X</entry>
-
-<entry></entry>
-<entry><emphasis>as pattern</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>=</code>X</entry>
-
-<entry></entry>
-<entry><emphasis>equality pattern</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry>X<code>(</code> P <code>,</code> ... <code>,</code> P <code>)</code></entry>
-
-<entry></entry>
-<entry><emphasis>datatype pattern</emphasis></entry>
-</row>
-
-
-<row>
-<entry>D</entry>
-<entry>::=</entry>
-
-<entry> ... </entry>
-
-<entry><emphasis>Declaration</emphasis></entry>
-<entry></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>class</code> X <code>=</code> <emphasis>classname</emphasis></entry>
-
-<entry></entry>
-<entry><emphasis>class declaration</emphasis></entry>
-</row>
-
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>type</code> X <code>=</code> DT <code>|</code> ... <code>|</code> DT</entry>
-
-<entry></entry>
-<entry><emphasis>datatype declaration</emphasis></entry>
-</row>
-
-<row>
-<entry></entry>
-<entry>|</entry>
-
-<entry><code>include</code> <code>"</code> <emphasis>filename</emphasis> <code>"</code></entry>
-
-<entry></entry>
-<entry><emphasis>inclusion</emphasis></entry>
-</row>
-
-<row>
-<entry>DT</entry>
-<entry>::=</entry>
-
-<entry> X<code>(_,</code> ... <code>,_)</code> </entry>
-
-<entry><emphasis>Datatype</emphasis></entry>
-<entry></entry>
-</row>
-
-<!-- 
-<row>
-<entry>T</entry>
-<entry>::=</entry>
-
-<entry> <code>throw </code> E</entry>
-
-<entry><emphasis>Throw</emphasis></entry>
-<entry></entry>
-</row>
-
-
-<row>
-<entry>TC</entry>
-<entry>::=</entry>
-
-<entry> <code>try ( </code> E <code> ) </code> C+</entry>
-
-<entry><emphasis>Try/Catch</emphasis></entry>
-<entry></entry>
-</row>
-
-<row>
-<entry>C</entry>
-<entry>::=</entry>
-
-<entry> <code>catch ( </code> P <code> ) </code> E</entry>
-
-<entry><emphasis>Exception Handler</emphasis></entry>
-<entry></entry>
-</row>
- -->
-
-</tbody>
-</tgroup>
-</table>
-</para>
-
-
-<section><title>Special call forms</title>
 
 <section id="special.dot"><title>The <code>.</code> notation</title>
 
@@ -2359,228 +1349,9 @@ A call such as <code>c.put(6)</code> actually occurs in two steps. First <code>c
 <code>put</code> to the site <code>c</code>; this publishes a site whose only purpose
 is to put values on the channel. Next, that site is called on the argument
 <code>6</code>, sending 6 on the channel. Readers familiar with functional programming
-will recognize this technique as <emphasis>currying</emphasis>.
+will recognize this technique as <emphasis>currying</emphasis>. <!--  TODO: link to ref manual: currying -->
 </para>
 </section>
-
-
-<section xml:id="orc.language.currying"><title>Currying</title>
-
-<para>
-It is sometimes useful to <emphasis>stage</emphasis> the arguments to a function; that is,
-rather than writing a function on two arguments, one instead writes a function on one
-argument which returns a function taking the second argument and performing the remainder
-of the evaluation. 
-</para>
-
-<para>
-This technique is known as <emphasis>currying</emphasis> and it is common in functional
-programming languages. We can write curried functions using <link linkend="cor.closures">closures</link>. Suppose we want to 
-define a curried addition function on two arguments, and later apply that function to the 
-arguments 3 and 4. We could write such a program in the following way:
-
-<programlisting language="orc-demo"><![CDATA[
-def Sum(a) = ( lambda(b) = a+b )  
-val f = Sum(3)
-f(4)
-]]></programlisting>
-
-This defines a function <code>Sum</code> which, given an argument <code>a</code>, creates a function
-which will take an argument <code>b</code> and add <code>a</code> to <code>b</code>. It then creates the
-function which adds <code>3</code> to its argument, binds that to <code>f</code>, and then invokes
-<code>f</code> on <code>4</code> to yield <code>3+4</code>.
-
-</para>
-
-<para>
-When defining a curried function, we have abstracted it in two steps, and when
-applying it we have written two separate calls. However, this is verbose and
-not very clear. Orc has a special syntax for curried function definitions and curried 
-applications that will simplify both of these steps. Function definitions may have multiple 
-argument sequences; they are enclosed in parentheses and concatenated. Curried function calls 
-chain together multiple applications in a similar way. Here is the previous program, written 
-in this simplified syntax:
-
-<programlisting language="orc-demo"><![CDATA[
-def Sum(a)(b) = a+b
-Sum(3)(4)
-]]></programlisting>
-
-Naturally, this syntax is backwards compatible; e.g. both of the following programs are also
-equivalent:  
-
-<programlisting language="orc-demo"><![CDATA[
-def Sum(a) = ( lambda(b) = a+b )  
-Sum(3)(4)
-]]></programlisting>
-
-<programlisting language="orc-demo"><![CDATA[
-def Sum(a)(b) = a+b  
-val f = Sum(3)
-f(4)
-]]></programlisting>
-
-</para>
-
-<warning>
-<para>
-Clauses of a function may be defined with both curried arguments and patterns in arguments.
-However, the combination of these two features can produce unintuitive behavior. Consider
-the following clausal, curried function definition:
-
-<programlisting language="orc-demo"><![CDATA[
-def sum(x)(0) = x
-def sum(x)(y) = x + y
-sum(2)(3)
-]]></programlisting>
-
-One might expect <code>sum(2)(3)</code> to evaluate to <code>5</code>. However, this is not
-the case; instead <code>sum(2)(3)</code> remains silent due to a pattern matching failure.
-This is because the compiler always expands curried definitions before considering patterns,
-so the above program is in fact equivalent to:
-
-<programlisting language="orc-demo"><![CDATA[
-def sum(x) = ( lambda(0) = x )
-def sum(x) = ( lambda(y) = x + y )
-sum(2)(3)
-]]></programlisting>
-
-Now the problem becomes apparent. The first clause will always match when the function is
-applied to its first argument, and then only one clause is available when the second
-argument is available: the clause with succeeds only on <code>0</code>.
-</para>
-
-<para>
-Therefore, use caution when writing function definitions that use both currying and clauses.
-</para>
-</warning>
-
-</section>
-
-<!-- 
-Can't find a compelling example for the use of this feature, so this section is commented for now.
-However, it is still evident from the grammar that this capability exists.
- -->
-<!-- 
-<section><title>Expressions as call targets</title>
-
-As a further generalization of calls, we can also write any expression as the target of a call.
-In other words, rather than writing an identifier followed by some arguments, a call can even
-be a whole expression, whose first publication is used as the site or function to be called.
-
-<programlisting><![CDATA[
- 
-]]></programlisting>
-
-If the arguments are also expressions, they are executed in parallel with the call target
-expression. If the call target expression never publishes, no call occurs.
-
-</section>
- -->
-
-</section>
-
-<section xml:id="patterns.extensions"><title>Extensions to pattern matching</title>
-
-<section><title>As pattern</title>
-
-<para>
-In taking apart a value with a pattern, it is often useful to capture intermediate results.
-
-<programlisting><![CDATA[
-val (a,b) = ((1,2),(3,4))
-val (ax,ay) = a
-val (bx,by) = b
-]]></programlisting>
-
-We can use the <code>as</code> keyword to simplify this program fragment, giving a name to an entire
-sub-pattern. Here is an equivalent version of the above code.
-
-<programlisting><![CDATA[
-val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
-]]></programlisting>
-</para>
-
-</section>
-
-<section><title>Equality pattern</title>
-
-<para>
-When a variable occurs in a pattern, it is bound to the value being matched against that pattern. What
-if instead we would like to use the value of a bound variable as a test pattern, in a way similar to
-a literal value like <code>0</code>? 
-</para>
-
-<para>
-We can use an equality pattern to do this. An equality pattern is a variable name preceded by <code>=</code>.
-Consider the following definition, which compares its argument to the value bound to variable <code>x</code>,
-returning <code>true</code> if they are equal and <code>false</code> otherwise.
-
-<programlisting><![CDATA[
-def isx(=x) = true
-def isx(_) = false
-]]></programlisting>
-
-</para>
-
-<para>
-The equality pattern becomes much more useful when it is embedded within other patterns. For example, consider
-this definition <code>withz</code>. If one of the arguments passed to it is equal to <code>z</code>, then the function
-returns its other argument. Otherwise it remains silent.
-
-<programlisting><![CDATA[
-def withz(=z,y) = y
-def withz(x,=z) = x
-]]></programlisting>
-
-</para>
-
-</section>
-
-<!-- 
-<section><title>Site pattern</title>
-
-<para>
-A site pattern, written <code>M(p,...,p)</code>, matches any value which was published by a call to the
-site <code>M</code> with arguments that match the tuple <code>(p,...,p)</code>. Site patterns only work
-for sites which have unique inverses; datatype patterns are a special case of site patterns.
-</para>
-
-<para>
-Site patterns provide a generalized version of datatype matching, as seen in the <code>case .. of</code>
- or <code>match .. with </code> constructs provided by Haskell and ML.
-</para> 
-
-</section>
-
-
-<section><title>Patterns as views</title>
-
-<para>
-In addition to matching data structures constructed within Orc, patterns can also be used to match
-external data structures and values. In this setting, a pattern does not necessarily observe the
-true structure of the data, but instead provides a <firstterm>view</firstterm> of that data.
-</para>
-
-<para>
-For example, a list pattern can be used to view some sequentially structured data (such as lines
-in a file) as if it were a list. The views allowed on a value are determined by the value itself;
-for example, a value which does not support a list view will be refused by any list pattern it
-is matched against.
-</para>
-
-<para>
-The concept of views and view patterns is not new in programming languages; it has been demonstrated
-in other languages, most notably <link xlink:href="http://www.scala-lang.org/">Scala</link>. In fact, the 
-underlying implementation strategy for using sites as view patterns is very similar to the use of
-extractor objects and the <code>unapply</code> method in Scala.
-</para>
-
-</section>
- -->
-
-</section>
-
 
 
 <section id="section.orc.datatypes"><title>Datatypes</title>
@@ -2640,7 +1411,7 @@ if it successfully performed the lookup but found no suitable result.
 <section id="section.language.class"><title>Classes</title>
 
 <para>
-A <code>class</code> is an abstraction mechanism in Orc, much like the
+A class is an abstraction mechanism in Orc, much like the
 <code>def</code> construct. It extends the <code>def</code> construct, by allowing
 us to convert an Orc program fragment into a site. Specifically, a
 class can be used to: (1) Define object classes with methods,
@@ -3162,84 +1933,6 @@ an implementation is given for the library site, <code>Stopwatch</code>; see
 
 </section>
 
-
-<section><title>New forms of declarations</title>
-
-<section id="section.orc.class"><title><code>class</code> declaration</title>
-
-<para>
-When Orc is run on top of an object-oriented programming language, classes
-from that language may be used as sites in Orc itself, via the <code>class</code>
-declaration. 
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- Use the String class from Java's standard library as a site -}
-class String = java.lang.String
-val s = String("foo")
-s.concat("bar")
-]]></programlisting>
-</para>
-
-<para>
-This program binds the variable <code>String</code> to Java's String class.
-When it is called as a site, it constructs a new instance of String, passing
-the given arguments to the constructor.
-</para>
-
-<para>
-This instance of String is a Java object; its methods are called and its fields
-are accessed using the dot (<code>.</code>) notation, just as one would expect
-in Java.  For complete details of how Orc interacts with Java and Scala, see
-<xref linkend="section.services.java"/>.
-</para>
-</section>
-
-
-<section xml:id="orc.language.include"><title><code>include</code> declaration</title>
-
-<para>
-It is often convenient to group related declarations into units that can be
-shared between programs. The <code>include</code> declaration offers a simple
-way to do this. It names a source file containing a sequence of Orc declarations;
-those declarations are incorporated into the program as if they had textually
-replaced the include declaration. An included file may itself contain 
-<code>include</code> declarations.  Included files may come from local files, any
-URI recognized by the Java library (http, https, ftp, etc.), and include resources
-found in the Orc JAR files.
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- Contents of fold.inc -}
-def foldl(f,[],s) = s
-def foldl(f,h:t,s) = foldl(f,t,f(h,s))
-
-def foldr(f,l,s) = foldl(f,rev(l),s)
-]]></programlisting>
-</para>
-
-<para>
-<programlisting><![CDATA[
-{- This is the same as inserting the contents of fold.inc here -}
-include "fold.inc"
-
-def sum(L) = foldl(lambda(a,b) = a+b, L, 0)
-
-sum([1,2,3])
-]]></programlisting>
-</para>
-
-<para>
-Note that these declarations still obey the rules of lexical scope. Also, Orc 
-does not detect shared declarations; if the same file is included twice, its 
-declarations occur twice.
-</para>
-
-</section>
-
-</section>
 
 </section>
 
