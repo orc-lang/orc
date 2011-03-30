@@ -663,7 +663,7 @@ function orcify(code, defaultConfig) {
 var currentWidget;
 var devKey = Orc.devKey;
 var executorUrl = Orc.mock
-	? "mock-executor.js"
+	? Orc.mock + "mock-executor.js"
 	: "/orchard/json/executor?js";
 
 var config = {

@@ -19,15 +19,18 @@
 	<!-- Import customized titlepage -->
 	<xsl:import href="../../build/xsl/titlepage-html.xsl"/>
 
-	<xsl:param name="orc.demo" select="0" />
+	<xsl:param name="orchard.js.path" select="''" />
+	<xsl:param name="orchard.css.path" select="''" />
 
 	<!-- Orc examples must use the "orc" CSS class. -->
 	<xsl:template match="db:programlisting[@language='orc-demo']" mode="class.value">orc</xsl:template>
 
 	<!-- Include orc.js if desired -->
 	<xsl:template name="user.footer.content">
-		<xsl:if test="$orc.demo">
-			<script src="/orchard/orc.js" type="text/javascript" />
+		<xsl:if test="$orchard.js.path!=''">
+			<script type="text/javascript">
+				<xsl:attribute name="src"><xsl:value-of select="$orchard.js.path" /></xsl:attribute>
+			</script>
 		</xsl:if>
 	</xsl:template>
 
@@ -64,8 +67,10 @@ toggle(document.getElementById('<xsl:value-of select="$ex_link" />'), '<xsl:valu
 	<!-- Include stylesheets, including orc.css if desired, and reveal/hide 
 		toggle Javascript -->
 	<xsl:template name="user.head.content">
-		<xsl:if test="$orc.demo">
-			<link rel="stylesheet" type="text/css" href="/orchard/orc.css" />
+		<xsl:if test="$orchard.css.path!=''">
+			<link rel="stylesheet" type="text/css">
+				<xsl:attribute name="href"><xsl:value-of select="$orchard.css.path" /></xsl:attribute>
+			</link>
 		</xsl:if>
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<script type="text/javascript">
