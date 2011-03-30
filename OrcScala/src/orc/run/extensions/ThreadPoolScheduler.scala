@@ -1,5 +1,5 @@
 //
-// ThreadPoolScheduler.scala -- Scala class/trait/object ThreadPoolScheduler
+// ThreadPoolScheduler.scala -- Scala trait ThreadPoolScheduler
 // Project OrcScala
 //
 // $Id$
@@ -20,18 +20,27 @@ import scala.actors.scheduler.ResizableThreadPoolScheduler
 import scala.concurrent.ManagedBlocker
 
 /**
- * Schedules Orc Tokens to run in a ThreadPoolExecutor, using
+ * An Orc runtime engine extension which
+ * schedules Orc Tokens to run in a ThreadPoolExecutor, using
  * Scala's ResizableThreadPoolScheduler.
  *
  * @author jthywiss
  */
 trait ThreadPoolScheduler extends Orc {
   
+  type ActorScheduler = scala.actors.IScheduler { def start(): Unit; def snapshot(): Unit }
+
   /**
-   * @return the Scala Actor Scheduler that contians the ThreadPoolExecutor
+   * @return the Scala Actor Scheduler that contains the ThreadPoolExecutor
    *    to use for this token scheduler.
    */
-  protected def newActorScheduler() = new ResizableThreadPoolScheduler(true, false)
+  protected def newActorScheduler(): ActorScheduler = new ResizableThreadPoolScheduler(true, false)
+
+  /**
+   * Some schedulers, such as ForkJoinScheduler, need blocking tasks wrapped in
+   * a ManagedBlocker call.  Most do not.
+   */
+  protected val useManagedBlocker = false
 
   private val scalaActorScheduler = newActorScheduler()
   scalaActorScheduler.start()
@@ -55,15 +64,19 @@ trait ThreadPoolScheduler extends Orc {
    * @see orc.OrcRuntime#schedule(orc.OrcRuntime.Token)
    */
   override def schedule(t: Token) {
-    scalaActorScheduler.execute(new Runnable with ManagedBlocker {
-      def run() { scalaActorScheduler.managedBlock(this) }
-      var isReleasable = false
-      def block() = {
-        t.run()
-        isReleasable = true
-        true
-      }
-    })
+    if (useManagedBlocker) {
+      scalaActorScheduler.execute(new Runnable with ManagedBlocker {
+        def run() { scalaActorScheduler.managedBlock(this) }
+        var isReleasable = false
+        def block() = {
+          t.run()
+          isReleasable = true
+          true
+        }
+      })
+    } else {
+      scalaActorScheduler.execute(t)
+    }
   }
 
   /* (non-Javadoc)
