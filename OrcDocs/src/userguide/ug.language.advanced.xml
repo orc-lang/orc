@@ -169,19 +169,26 @@ operation (a <code>push</code> on a full stack or a <code>pop</code> on an empty
 </para>
 
 <programlisting><![CDATA[
+{- Define a simple stack in Orc -}
+
 def class Stack(n) =
   val store = Table(n, Ref)
   val len = Ref (0) -- len is the current stack length
 
-  def push(x) = ift(len? <: n) >> store(len?) := x >> len := len? + 1
+  def push(x) = Ift(len? <: n) >> store(len?) := x >> len := len? + 1
 
-  def pop() = ift(len? :> 0) >> len := len? - 1 >> store(len?)?
+  def pop() = Ift(len? :> 0) >> len := len? - 1 >> store(len?)?
 
   {- class goal -} stop
 
------------ Test
+{- Test the stack -}
 val st = Stack(5)
 st.push(3) >> st.push(5) >> st.pop() >> st.pop()
+
+{-
+OUTPUT:
+3
+-}
 ]]></programlisting>
 
 </section>
@@ -264,7 +271,7 @@ Prune on class call: Like site calls, running class method invocations
   <computeroutput>done</computeroutput> is printed.
 <programlisting><![CDATA[
 def class testprune() =
-  def run() =  Rwait(1000) >> println("done") >> stop
+  def run() =  Rwait(1000) >> Println("done") >> stop
   stop
 
   val x =  Rwait(50) >> 3 |  testprune().run()
@@ -280,13 +287,22 @@ def class testprune() =
 	</para>
 	
 	<programlisting><![CDATA[
--- the mutable integer defined with seed zero
-val seq_num = Ref(0)
--- gen_seq will increase the seq_num and return the new value
+{- Create a sequence number generator -}
+
+{- mutable integer defined with seed zero -}
+val seq_num = Ref(0) 
+
+{- gen_seq will increase the seq_num and return the new value -}
 def gen_seq() =
   seq_num := seq_num?+1 >> seq_num?
   
-gen_seq() >s> println(s) >> gen_seq() >s> println(s) >> stop
+gen_seq() >s> Println(s) >> gen_seq() >s> Println(s) >> stop
+
+{-
+OUTPUT:
+1
+2
+-}
 ]]></programlisting>
 	
 	<para>
@@ -319,16 +335,26 @@ gen_seq() | gen_seq()
 		is as follows:  </para>
 	
 		<programlisting><![CDATA[
--- the mutable integer defined with seed zero
+{- Create a sequence number generator with a semaphore -}
+
+{- the mutable integer defined with seed zero -}
 val seq_num = Ref(0)
--- a semaphore to regulate access to shared variable seq_num
+
+{- a semaphore to regulate access to shared variable seq_num -}
 val seq_num_sem = Semaphore(1)
--- gen_seq will increase the seq_num and return the new value
+
+{- gen_seq will increase the seq_num and return the new value -}
 def gen_seq() =
   seq_num_sem.acquire() >> seq_num := seq_num?+1 >> 
   seq_num? >x> seq_num_sem.release() >> x
   
 gen_seq() | gen_seq()
+
+{-
+OUTPUT:
+1
+2
+-}
 ]]></programlisting>
 	
 	<para>
@@ -361,17 +387,26 @@ y <y< 1+1 | gen_seq()
 	</para>
 	
 			<programlisting><![CDATA[
+{- Create a sequence number generator as a class -}
+
 def class gen_seq(init) =
-	-- the mutable integer defined with seed init
+	{- the mutable integer defined with seed init -}
 	val seq_num = Ref(init)
-	-- the next function will increase the seq_num and return the new value
+	
+	{- the next function will increase the seq_num and return the new value -}
 	def next() =
 		seq_num := seq_num?+1 >> seq_num?
 	signal
 
 	val g = gen_seq(1000)
 
-	g.next() >y> println(y) >> g.next() >y> println(y) >> stop
+	g.next() >y> Println(y) >> g.next() >y> Println(y) >> stop
+
+{-
+OUTPUT:
+1001
+1002
+-}
 		]]></programlisting>
 	
 	<para>
@@ -384,7 +419,7 @@ def class gen_seq(init) =
 val g0 = gen_seq(0)
 val g1 = gen_seq(1000)
 
-g0.next() >y> println(y) >> g1.next() >y> println(y) >> stop
+g0.next() >y> Println(y) >> g1.next() >y> Println(y) >> stop
 		]]></programlisting>
 	
 	<para>
@@ -399,16 +434,24 @@ g0.next() >y> println(y) >> g1.next() >y> println(y) >> stop
 	</para>
 	
 	<programlisting><![CDATA[
+{- Create a sequence number generator as a class with semaphore -}
+
 def class gen_seq(init) =
-	-- the mutable integer defined with seed init
+	{- the mutable integer defined with seed init -}
 	val seq_num = Ref(init)
-	-- a semaphore to regulate access to shared variable seq_num
+	
+	{- a semaphore to regulate access to shared variable seq_num -}
 	val seq_num_sem = Semaphore(1)
-	-- gen_seq will increase the seq_num and return the new value
+	
+	{- gen_seq will increase the seq_num and return the new value -}
 	def next() =
 		seq_num_sem.acquire() >> seq_num := seq_num?+1 >>
 		seq_num? >x> seq_num_sem.release() >> x
 	signal
+	
+{-
+OUTPUT:
+-}
 		]]></programlisting>
 	
 </section>
@@ -448,16 +491,23 @@ Here we show a few more examples of class usage.
 	</para>
 	
 		<programlisting><![CDATA[
+{- Define a class to track passage of time -}
+
 def class nclock(n) = -- tick every n milliseconds
-	-- tick_cnt counts the number of ticks
+	{- tick_cnt counts the number of ticks -}
 	val tick_cnt = Ref(0)
-	-- getTick returns the number of ticks passed so far
+	
+	{- getTick returns the number of ticks passed so far -}
 	def getTick() = tick_cnt?
 	metronome(n) >> tick_cnt:=tick_cnt?+1
 
 	val ticker = nclock(250)
-	-- prints a mutiple of 4 every one second
+	{- prints a mutiple of 4 every one second -}
 	Rwait(1000) >> metronome(1000) >> ticker.getTick()
+	
+{-
+OUTPUT:
+-}
 		]]></programlisting>
 	
 	<para>
@@ -479,14 +529,20 @@ any multi-dimensional matrix.
 </para>
 
 <programlisting><![CDATA[
+{- Define a multi-dimensional matrix -}
+
 def class Matrix((lo1, up1), (lo2, up2)) =
   val mat = Array((up1 - lo1 + 1) * (up2 - lo2 + 1))
   def access(i, j) = mat((i - lo1) * (up2 - lo2 + 1) + j)
   stop
 
------------------ Test
 val A = Matrix((-2, 0), (-1, 3)).access
 A(-1,2) := 5 >> A(-1, 2) := 3 >> A(-1, 2)?
+
+{-
+OUTPUT:
+3
+-}
 ]]></programlisting>
 
 <para>
@@ -627,11 +683,8 @@ the staus of the stopwatch (running or not) should be provided. Such
 an implementation is given for the library site, <code>Stopwatch</code>; see
  the <code>Stopwatch</code> site in <xref linkend="appendix.library"/>.  
 </para>
-</section>
 
 </section>
-
 </section>
-
-
+</section>
 </section>

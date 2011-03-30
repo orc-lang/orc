@@ -396,9 +396,15 @@ parameters with the actual parameters, followed by the body of the function.
 
 <programlisting><![CDATA[
 {- Evaluation of add(1+2,3+4) -}
+
 val x = 1+2
 val y = 3+4
 x+y
+
+{-
+OUTPUT:
+10
+-}
 ]]></programlisting>
 </para>
 
@@ -600,8 +606,6 @@ def fib(n) =
     val (x,_) = H(n) 
     x
   )
-     
-    
 ]]></programlisting>
 </para>
 
