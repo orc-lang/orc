@@ -33,13 +33,12 @@ are typically lowercase but may be made uppercase if it seems stylistically appr
 <section><title>Parallel combinator</title> 
  
 <para>
-When the combined expressions are small, write them all on one line.
+When the expressions to be combined are small, write them all on one line.
 
 <programlisting>
 <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
-Note that we do not need parentheses here, since <code>|</code> is fully associative and commutative.
 </para>
 
 <para>
@@ -74,7 +73,7 @@ combined parallel expressions together.
 <section><title>Sequential combinator</title>
 
 <para>
-When the combined expressions are small, write a cascade of sequential combinators
+When the expressions to be combined are small, write a cascade of sequential combinators
 all on the same line.
 </para> 
 
@@ -83,12 +82,7 @@ all on the same line.
 </programlisting>
 
 <para>
-Remember that sequential is right associative; in this example, <code>x</code> is bound in both G and H, and <code>y</code> is
-bound in H.
-</para>
-
-<para>
-When the combined expressions are large enough to take up a full line, write one expression
+When the expressions to be combined are individually long enough to take up a full line, write one expression
 per line; each line ends with the combinator which binds the publications
 produced by that line.
 
@@ -101,7 +95,7 @@ produced by that line.
 </para>
 
 <para>
-For very long-running expressions, or expressions that span multiple lines, write
+For very long expressions, or expressions that span multiple lines, write
 the combinators on separate lines, indented, between each expression. 
 
 <programlisting>
@@ -119,7 +113,7 @@ the combinators on separate lines, indented, between each expression.
 <section id="style.pruning"><title>Pruning combinator</title>
 
 <para>
-When the combined expressions are small, write them on the same line:
+When the expressions to be combined are small, write them on the same line:
 
 <programlisting>
 <emphasis role="bold">F</emphasis><![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
@@ -173,7 +167,7 @@ M(<emphasis role="bold">G</emphasis>,<emphasis role="bold">H</emphasis>)
 <para>
 Sometimes, we use the pruning combinator simply for its capability to terminate
 expressions and get a single publication; binding a variable is irrelevant. This
-is a special case of nested expressions. We use the identity site <code>let</code>
+is a special case of nested expressions. We use the identity site <code>Let</code>
 to put the expression in the context of a function call.
 </para>
 
@@ -187,7 +181,7 @@ x<![CDATA[ <x< ]]><emphasis role="bold">F</emphasis> | <emphasis role="bold">G</
 is equivalent to
 
 <programlisting>
-let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>)
+Let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>)
 </programlisting>
 </para>
 
@@ -200,21 +194,6 @@ in parentheses as part of the call).
 </section>
 
 <section><title>Declarations</title>
-
-<!--
-<para>
-Declarations should always end with a newline. 
-
-<programlisting>
-def add(x,y) = x + y
-val z = 7
-add(z,z)
-</programlisting>
-
-While the parser does not require a newline to end a declaration, it uses the 
-newline to disambiguate certain corner cases in parsing, such as function application.
-</para>
--->
 	
 <para>
 When the body of a declaration spans multiple lines, start the body on a new line
@@ -283,7 +262,7 @@ separate expressions (in this case, the goal expression of <code>def f</code>). 
 Orc imposes the following syntactic constraint:
 </para>
 		
-<para><code>An expression that follows a declaration begins with an alphanumeric symbol</code></para>
+<para><emphasis>An expression that follows a declaration begins with an alphanumeric symbol</emphasis></para>
 	
 <para>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
 write it as <code>signal >> (x,y)</code>. Similarly, write <code>signal >> -3</code>, in case <code>-3</code> is
@@ -302,8 +281,9 @@ using <code>stop | (x,y)</code> is also valid.</para>
 
 <para>
 In this section we give Orc implementations of some standard idioms from
-concurrent and functional programming. Despite the austerity of Orc's four
-combinators, we are able to encode a variety of idioms straightforwardly.
+concurrent and functional programming. 
+<!-- TODO: remove this sentence? it is awkward. -->
+Despite the austerity of Orc's four combinators, we are able to encode a variety of idioms straightforwardly.
 </para>
 
 <section xml:id="methodology.channels"><title>Channels</title>
@@ -502,7 +482,7 @@ they have been studied extensively in the context of the
 </section>
 
 
-<section><title>Reference syntax</title>
+<section><title>Syntax for manipulating references</title>
 
 <para>Orc provides syntactic sugar for reading and writing mutable storage:</para>
 
@@ -661,9 +641,9 @@ a signal for each 3 that occurs.
 We could write:
 
 <programlisting>
-<emphasis role="bold">F</emphasis><![CDATA[ >(x,y)>
-  ( if(x=3) >> signal
-  | if(y=3) >> signal ) 
+<emphasis role="bold">F</emphasis><![CDATA[ >(x, y)>
+  ( Ift(x = 3) >> signal
+  | Ift(y = 3) >> signal ) 
 ]]>
 </programlisting>
 
@@ -671,8 +651,8 @@ But there is a more general alternative:
 
 <programlisting>
 <emphasis role="bold">F</emphasis><![CDATA[ >x>
-  ( x >(3,_)> signal
-  | x >(_,3)> signal ) 
+  ( x >(3, _)> signal
+  | x >(_, 3)> signal ) 
 ]]>
 </programlisting>
 
@@ -693,13 +673,13 @@ For example,
 def helper([]) = 0
 def helper([_]) = 1
 def helper(_:_:_) = 2
-helper([4,6])
+helper([4, 6])
 </programlisting>
 
 is equivalent to
 
 <programlisting  language="orc-demo"><![CDATA[
-[4,6] >x>
+[4, 6] >x>
   x >[]> 0
 | x >[_]> 1
 | x >_:_:_> 2
@@ -916,23 +896,22 @@ follows:
 </para>
 
 <programlisting>
-let(
-    val a = <emphasis role="bold">F</emphasis>
-    val b = <emphasis role="bold">G</emphasis>
-      signal >> (a || b)
-       | if(a)<![CDATA[ >> ]]>true 
-       | if(b)<![CDATA[ >> ]]>true 
-)
+val result =
+  val a = <emphasis role="bold">F</emphasis>
+  val b = <emphasis role="bold">G</emphasis>
+  Ift(a) <![CDATA[ >> ]]> true | Ift(b) <![CDATA[ >> ]]> true | (a || b)
+
+result
 </programlisting>
 
 <para>
 The expression <code>(a || b)</code> waits for both <code>a</code> and <code>b</code> to become
 available and then publishes their disjunction.  However if either <code>a</code> or
 <code>b</code> is true we can publish <code>true</code> immediately regardless of whether the
-other variable is available.  Therefore we run <code>if(a) >> true</code> and <code>if(b) >> true</code>
+other variable is available.  Therefore we run <code>Ift(a) >> true</code> and <code>Ift(b) >> true</code>
 in parallel to wait for either variable to become <code>true</code> and immediately
 publish the result <code>true</code>.  Since more than one of these expressions may
-publish <code>true</code>, the surrounding <code>let(...)</code> is necessary to select and
+publish <code>true</code>, the surrounding <code>val</code> is necessary to select and
 publish only the first result.
 </para>
 
@@ -950,7 +929,7 @@ available and the value <code>0</code> otherwise.
 </para>
 
 <programlisting>
-let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
+Let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
 </programlisting>
 
 
@@ -1011,7 +990,7 @@ val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rwait(t) >> None(
 It is even possible to encapsulate timeout as a function.
 
 <programlisting><![CDATA[
-def timeout(x, t) = let(Some(x) | Rwait(t) >> None())
+def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())
 ]]></programlisting>
 
 <code><![CDATA[timeout(]]><emphasis role="bold">F</emphasis><![CDATA[, t)]]></code> waits 
@@ -1081,7 +1060,7 @@ is published.
 <programlisting>
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
-let( y | Rwait(1000) >> x )
+Let( y | Rwait(1000) >> x )
 </programlisting>
 
 </para>
@@ -1273,7 +1252,7 @@ signal >>
 
 </section>
 
-<section><title>Publication-Agnostic Otherwise</title>
+<section><title>Sequencing Otherwise</title>
 
 <para>
 We can also use routing to create a modified version of the otherwise combinator. We'll
@@ -1356,41 +1335,6 @@ contained processes die too.
 
 </section>
 
-<section><title>Lifting</title>
-
-It is often useful to explicitly lift an execution, so that it is in some sense protected from
-being terminated. We can do this by running a "lifter" process, to which we can send functions
-that will be executed by the lifter and thus will not be terminated unless the lifter itself
-is terminated.
-
-Such a lifter is written by creating a channel, and running a loop which listens for functions to
-be sent on the channel and executes those functions as they arrive. The lifter publishes only
-the put method for the channel; the loop itself publishes no values, since the values published by the 
-lifted functions are silenced.
-
-Here, we write such a lifter, and then use it to protect a function call from a timeout.
-
-<programlisting language="orc-demo"><![CDATA[
-def lifter() =
-  val c = Buffer()
-  def loop() = c.get() >f> ( f() >> stop | loop() )
-  c.put | loop()
-
-def delayedPrint() = Rwait(1500) >> println("Delayed 1.5 seconds")
-
-lifter() >lift>
-(
-println("Running...") 
-  << Rwait(1000) | delayedPrint() | lift(delayedPrint)
-)
-]]>
-</programlisting>
-
-The timeout stops the execution of <code>delayedPrint()</code>, so it does not print a result.
-However, the lifted execution of <code>delayedPrint</code> does succeed, since it is executing
-within the loop of <code>lifter()</code>, unaffected by the timeout.
-
-</section>
 
 <section><title>Fold</title>
 
@@ -1480,10 +1424,11 @@ def cfold(f, xs) =
 
 <section><title>Larger Examples</title>
 
+<para>
 In this section we show a few larger Orc programs to demonstrate programming techniques. 
 There are many more such examples available at the Orc website, on the
 <link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
-
+</para>
 
 <section><title>Dining Philosophers</title>
 
@@ -1687,7 +1632,7 @@ def philosophers(n) =
     )
 
 {- Simulate a 3x3 grid of philosophers for 10 seconds -}
-let(
+Let(
   philosophers(3)
   | Rwait(10000)
 ) >> "HALTED"]]></programlisting>
@@ -1791,7 +1736,7 @@ def writer(start) = Rwait(start) >>
   Rwait(1000) >> println("END WRITE") >>
   release() >> stop
 
-let(
+Let(
     process()  {- Output:     -}
   | reader(10) {- START READ  -}
   | reader(20) {- START READ  -}
@@ -1898,6 +1843,7 @@ and <code>x := y</code> for <code>x.write(y)</code>.  Also note that the express
 </para>
 </section>
 
+<!--  TODO: Add a note: this example may require Orchard to work -->
 <section><title>Meeting Scheduler</title>
 
 <para>
