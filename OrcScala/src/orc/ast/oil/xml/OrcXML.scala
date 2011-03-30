@@ -284,7 +284,7 @@ object OrcXML {
     a match {
       case i@ (_:Int | _:Short | _:Long | _:Char | _:BigInt) => <integer>{i.toString()}</integer> 
       case n@ (_:Float | _:Double | _:BigDecimal) => <number>{n.toString()}</number> 
-      case s:String => <string>{PCData(s)}</string>
+      case s:String => <string>{s}</string>
       case true => <true/>
       case false => <false/>
       case orc.values.Signal => <signal/>
