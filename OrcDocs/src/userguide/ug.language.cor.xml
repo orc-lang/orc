@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!-- ug.language.cor.xml - DocBook source for the Orc user guide
+
+     $Id: ug.language.cor.xml 2652 2011-03-30 20:58:24Z bmccord09@gmail.com $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
 <!-- Replace Cor with Orc everywhere, and fix minor inconsistencies which result  -->
 <!-- Cut all reference material in this section. Maybe cut the entire section. -->
 <section xml:id="ug.language.cor"
