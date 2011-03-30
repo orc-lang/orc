@@ -153,7 +153,7 @@
 			<!-- Create a database of the combined files by processing includes -->
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
-			<include name="userguide.xml"/>
+			<include name="*.xml"/>
 		</docbooktargetdb>
 
 		<!-- Create database of links for reference manual homepage (TOC) -->
@@ -168,9 +168,19 @@
 	</target>
 
 	<!-- =================================
+		  target: html-titlepage
+		 ================================= -->
+	<target name="html-titlepage" depends="" description="Generate titlepage stylesheet">
+		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl" extension=".xsl"
+			in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+		</xslt>
+	</target>
+	
+	<!-- =================================
 		  target: ug-html-chunk
 		 ================================= -->
-	<target name="ug-html-chunk" depends="mkdirs,depends,targetdb" description="Generate chunked User Guide HTML doc">
+	<target name="ug-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
 				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
 				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/html/userguide/index.html"
@@ -180,8 +190,10 @@
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
 
+			<!-- Allow example programs to run on orchard when published to website -->
 			<param name="orchard.js.path" expression="/orchard/orc.js" />
 			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<!-- Allow example programs to run on mock execution of orchard locally -->
 			<!--
 			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
 			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
@@ -189,8 +201,22 @@
 
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
-			<param name="section.autolabel.max.depth" expression="8"/>
+			<param name="section.autolabel.max.depth" expression="2"/>
+			<param name="chunk.first.sections" expression="1"/>
+			<param name="chapter.autolabel" expression="1"/>
+			<param name="generate.toc" expression="
+				book	  toc
+				chapter	  toc
+			"/>
+			
+			<param name="toc.section.depth" expression="1"/>
+			<param name="header.rule" expression="0"/>
+			<param name="use.id.as.filename" expression="1"/>
+
 			<param name="chunk.quietly" expression="1"/>
+			<param name="chunk.section.depth" expression="1"/>
+			<param name="suppress.footer.navigation" expression="1"/>
+			<param name="navig.graphics" expression="1"/>
 
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
@@ -198,6 +224,9 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+			
+			<param name="generate.legalnotice.link" expression="1"/>
+			
 		</xslt>
 		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/userguide">
@@ -213,7 +242,7 @@
 	<!-- =================================
 		  target: ug-html-single
 		 ================================= -->
-	<target name="ug-html-single" depends="mkdirs,depends,targetdb" description="Generates single User Guide HTML doc">
+	<target name="ug-html-single" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
 				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
@@ -250,7 +279,7 @@
 	<!-- =================================
 		  target: ug-eclipsehelp
 		 ================================= -->
-	<target name="ug-eclipsehelp" depends="mkdirs,depends,targetdb" description="Generate User Guide in Eclipse Help format">
+	<target name="ug-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate User Guide in Eclipse Help format">
 		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
 				basedir="${src.dir}/userguide" destdir="${build.dir}/eclipsehelp/userguide"
 				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/eclipsehelp/userguide/index.html"
@@ -342,21 +371,11 @@
 		 ================================= -->
 	<target name="userguide" depends="mkdirs,ug-html-chunk,ug-html-single,ug-eclipsehelp,ug-pdf" description="Generate the User Guide in various formats">
 	</target>
-
-	<!-- =================================
-		  target: rm-html-titlepage
-		 ================================= -->
-	<target name="rm-html-titlepage" depends="" description="Generate titlepage stylesheet">
-		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl" extension=".xsl"
-			in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
-			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		</xslt>
-	</target>
 	
 	<!-- =================================
 		  target: rm-html-chunk
 		 ================================= -->
-	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generates chunked Reference Manual HTML doc">
+	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates chunked Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/html/refmanual/index.html"
@@ -419,7 +438,7 @@
 	<!-- =================================
 		  target: rm-html-single
 		 ================================= -->
-	<target name="rm-html-single" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generates single Reference Manual HTML doc">
+	<target name="rm-html-single" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
 				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
@@ -457,7 +476,7 @@
 	<!-- =================================
 		  target: rm-eclipsehelp
 		 ================================= -->
-	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb,rm-html-titlepage" description="Generate Reference Manual in Eclipse Help format">
+	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate Reference Manual in Eclipse Help format">
 		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
 				basedir="${src.dir}/refmanual" destdir="${build.dir}/eclipsehelp/refmanual"
 				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/eclipsehelp/refmanual/index.html"

@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<section xml:id="ug.methodology.example"
+		 xmlns="http://docbook.org/ns/docbook" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Larger Examples</title>
+
+<para>
+In this section we show a few larger Orc programs to demonstrate programming techniques. 
+There are many more such examples available at the Orc website, on the
+<link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
+</para>
+
+<section><title>Dining Philosophers</title>
+
+<para>
+The dining philosophers problem is a well known and intensely studied problem
+in concurrent programming. Five philosophers sit around a circular table. Each
+philosopher has two forks that she shares with her neighbors (giving five forks
+in total).  Philosophers think until they become hungry.  A hungry philosopher
+picks up both forks, one at a time, eats, puts down both forks, and then
+resumes thinking.  Without further refinement, this scenario allows deadlock;
+if all philosophers become hungry and pick up their left-hand forks
+simultaneously, no philosopher will be able to pick up her right-hand fork to
+eat.  Lehmann and Rabin's solution<footnote><para>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
+and fully distributed solution to the dining philosophers problem. In <emphasis>POPL</emphasis>, pages
+133–138, 1981.</para></footnote>, which we implement,
+requires that each philosopher pick up her forks in a random order.  If the
+second fork is not immediately available, the philosopher must set down both
+forks and try again.  While livelock is still possible if all philosophers
+take forks in the same order, randomization makes this possibility vanishingly
+unlikely.
+</para>
+
+<programlisting language="orc-demo"><![CDATA[
+def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
+
+def take((a,b)) =    
+  a.acquire() >> b.acquireD() ;
+  a.release() >> take(shuffle(a,b))
+    
+def drop(a,b) = (a.release(), b.release()) >> signal
+
+def phil(n,a,b) =
+  def thinking() = 
+    println(n + " thinking") >> 
+    if (random(10) < 9)
+      then Rwait(random(1000))
+      else stop
+  def hungry() = take((a,b))
+  def eating() = 
+    println(n + " eating") >> 
+    Rwait(random(1000)) >> 
+    println(n + " done eating") >> 
+    drop(a,b)
+  thinking() >> hungry() >> eating() >> phil(n,a,b)
+
+def philosophers(1,a,b) = phil(1,a,b)
+def philosophers(n,a,b) =
+  val c = Semaphore(1)
+  philosophers(n-1,a,c) | phil(n,c,b)
+
+val fork = Semaphore(1)
+philosophers(5,fork,fork)]]></programlisting>
+
+<para>
+The <code>phil</code> function simulates a single philosopher.  It takes as arguments
+two binary semaphores representing the philosopher's forks, and calls
+the <code>thinking</code>, <code>hungry</code>, and <code>eating</code> functions in a continuous
+loop. A <code>thinking</code> philosopher waits for a random amount of time, with a
+10% chance of thinking forever. A <code>hungry</code> philosopher uses the <code>take</code>
+function to acquire two forks. An <code>eating</code> philosopher waits for a random
+time interval and then uses the <code>drop</code> function to relinquish ownership of
+her forks.
+</para>
+
+<para>
+Calling <code>take(a,b)</code> attempts to acquire a pair of forks <code>(a,b)</code> in two steps:
+wait for fork <code>a</code> to become available, then immediately attempt to acquire fork <code>b</code>.
+The call <code>b.acquireD()</code> either acquires <code>b</code> and responds immediately, or halts if <code>b</code> is not available.
+If <code>b</code> is acquired, signal success; otherwise, release <code>a</code>, and
+then try again, randomly changing the order in which the forks are acquired
+using the auxiliary function <code>shuffle</code>.
+</para>
+
+<para>
+The function call <code>philosophers(n,a,b)</code> recursively creates a chain of <code>n</code>
+philosophers, bounded by fork <code>a</code> on the left and <code>b</code> on the right. The
+goal expression of the program calls <code>philosophers</code> to create a chain of
+five philosophers bounded on the left and right by the same fork; hence, a
+ring.
+</para>
+
+<para>
+This Orc solution has several nice properties.  The overall structure of the
+program is functional, with each behavior encapsulated in its own function,
+making the program easy to understand and modify.  Mutable state is isolated to
+the "fork" semaphores and associated <code>take</code> and <code>get</code> functions,
+simplifying the implementation of the philosophers.  The program never
+manipulates threads explicitly, but instead expresses relationships between
+activities using Orc's combinators.
+</para>
+
+</section>
+
+<section xml:id="methodology.examples.hygenic"><title>Hygienic Dining Philosophers</title>
+
+<para>
+Here we implement a different solution to the Dining Philosophers problem,
+described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra.
+Briefly, this algorithm efficiently and fairly solves the dining philosophers
+problem for philosophers connected in an arbitrary graph (as opposed to a
+simple ring).  The algorithm works by augmenting each fork with a clean/dirty
+state.  Initially, all forks are dirty.  A philosopher is only obliged to
+relinquish a fork to its neighbor if the fork is dirty. On receiving a fork,
+the philosopher cleans it. On eating, the philosopher dirties all forks.  For
+full details of the algorithm, consult the original paper.
+</para>
+
+<programlisting language="orc-demo"><![CDATA[
+{-
+Start a philosopher actor; never publishes.
+Messages sent between philosophers include:
+- ("fork", p): philosopher p relinquishes the fork
+- ("request", p): philosopher p requests the fork
+- ("rumble", p): sent by a philosopher to itself when it should
+  become hungry
+
+name: identify this process in status messages
+mbox: our mailbox; the "address" of this philosopher is mbox.put
+missing: set of neighboring philosophers holding our forks
+-}
+def philosopher(name, mbox, missing) =
+  {- deferred requests for forks -}
+  val deferred = Buffer()
+  {- forks we hold which are clean -}
+  val clean = Set()
+
+  def sendFork(p) =
+    {- remember that we no longer hold the fork -}
+    missing.add(p) >>
+    p(("fork", mbox.put))
+ 
+  def requestFork(p) =
+    p(("request", mbox.put))
+  
+  {- Start a timer which will tell us when we're hungry. -}
+  def digesting() =
+      println(name + " thinking") >>
+      thinking()
+    | Rwait(random(1000)) >>
+      mbox.put(("rumble", mbox.put)) >>
+      stop
+
+  {- Wait to become hungry -}
+  def thinking() =
+    def on(("rumble", _)) =
+      println(name + " hungry") >>
+      map(requestFork, missing) >>
+      hungry()
+    def on(("request", p)) =
+      sendFork(p) >> thinking()
+    on(mbox.get())
+
+  {- Eat once we receive all forks -}
+  def hungry() =
+    def on(("fork", p)) =
+      missing.remove(p) >>
+      clean.add(p) >>
+      if missing.isEmpty()
+      then println(name + " eating") >> eating()
+      else hungry()
+    def on(("request", p)) =
+      if clean.contains(p)
+      then deferred.put(p) >> hungry()
+      else sendFork(p) >> requestFork(p) >> hungry()
+    on(mbox.get())
+
+  {- Dirty forks, process deferred requests, then digest -}
+  def eating() =
+    clean.clear() >>
+    Rwait(random(1000)) >>
+    map(sendFork, deferred.getAll()) >>
+    digesting()
+
+  {- All philosophers start out digesting -}
+  digesting()
+
+{-
+Create an NxN 4-connected grid of philosophers.  Each philosopher
+holds the fork for the connections below and to the right (so the
+top left philosopher holds both its forks).
+-}
+def philosophers(n) =
+  {- A set with 1 item -}
+  def Set1(item) = Set() >s> s.add(item) >> s
+  {- A set with 2 items -}
+  def Set2(i1, i2) = Set() >s> s.add(i1) >> s.add(i2) >> s
+
+  {- create an NxN matrix of mailboxes -}
+  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Buffer))))
+
+  {- create the first row of philosophers -}
+  philosopher((0,0), cs(0,0), Set())
+  | for(1, n) >j>
+    philosopher((0,j), cs(0,j), Set1(cs(0,j-1).put))
+
+  {- create remaining rows -}
+  | for(1, n) >i> (
+      philosopher((i,0), cs(i,0), Set1(cs(i-1,0).put))
+      | for(1, n) >j>
+        philosopher((i,j), cs(i,j), Set2(cs(i-1,j).put, cs(i,j-1).put))
+    )
+
+{- Simulate a 3x3 grid of philosophers for 10 seconds -}
+Let(
+  philosophers(3)
+  | Rwait(10000)
+) >> "HALTED"]]></programlisting>
+
+<para>
+Our implementation is based on the <link
+xlink:href="http://en.wikipedia.org/wiki/Actor_model">actor model</link> of
+concurrency.  An actor is a state machine which reacts to messages.  On
+receiving a message, an actor can send asynchronous messages to other actors,
+change its state, or create new actors.  Each actor is single-threaded and
+processes messages sequentially, which makes some concurrent programs easier to
+reason about and avoids explicit locking. <link
+	xlink:href="http://www.erlang.org/">Erlang</link> is one popular
+language based on the actor model.
+</para>
+
+<para>
+Orc emulates the actor model very naturally.  In Orc, an actor is an Orc thread
+of execution, together with a <code>Buffer</code> which serves as a mailbox.  To send a
+message to an actor, you place it in the actor's mailbox, and to receive a
+message, the actor gets the next item from the mailbox.  The internal states of
+the actor are represented by functions: while an actor's thread of execution is
+evaluating a function, it is considered to be in the corresponding state.
+Because Orc implements <link
+xlink:href="http://en.wikipedia.org/wiki/Tail_call">tail-call optimization</link>,
+state transitions can be encoded as function calls without running out of stack
+space.
+</para>
+
+<para>
+In this program, a philosopher is implemented by an actor with three primary
+states: <code>eating</code>, <code>thinking</code>, and <code>hungry</code>.
+An additional transient state, <code>digesting</code>, is used to start a timer
+which will trigger the state change from <code>thinking</code> to
+<code>hungry</code>.  Each state is implemented by a function which reads a
+message from the mailbox, selects the appropriate action using pattern
+matching, performs the action, and finally transitions to the next state
+(possibly the same as the current state) by calling the corresponding function.
+</para>
+
+<para>
+Forks are never represented explicitly.  Instead each philosopher identifies a
+fork with the "address" (sending end of a mailbox) of the neighbor who shares
+the fork.  Every message sent includes the sender's address.  Therefore when a
+philosopher receives a request for a fork, it knows who requested it and
+therefore which fork to relinquish.  Likewise when a philosopher receives a
+fork, it knows who sent it and therefore which fork was received.
+</para>
+</section>
+
+<section><title>Readers-Writers</title>
+
+<para>
+Here we present an Orc solution to the <link
+xlink:href="http://en.wikipedia.org/wiki/Readers-writers_problem">readers-writers
+problem</link>.  Briefly, the readers-writers problem involves concurrent
+access to a mutable resource.  Multiple readers can access the resource
+concurrently, but writers must have exclusive access.  When readers and writers
+conflict, different solutions may resolve the conflict in favor of one or the
+other, or fairly.  In the following solution, when a writer tries to acquire
+the lock, current readers are allowed to finish but new readers are postponed
+until after the writer finishes.  Lock requests are granted in the order
+received, guaranteeing fairness.  Normally, such a service would be provided to
+Orc programs by a site, but it is educational to see how it can be implemented
+directly in Orc.
+</para>
+
+<programlisting language="orc-demo"><![CDATA[
+-- Queue of lock requests
+val m = Buffer()
+-- Count of active readers/writers
+val c = Counter()
+
+{-- Process requests in sequence --}
+def process() =
+  -- Grant read request
+  def grant((false,s)) = c.inc() >> s.release()
+  -- Grant write request
+  def grant((true,s)) =
+    c.onZero() >> c.inc() >> s.release() >> c.onZero()
+  -- Goal expression of process()
+  m.get() >r> grant(r) >> process()
+
+{-- Acquire the lock: argument is "true" if writing --}
+def acquire(write) =
+  val s = Semaphore(0)
+  m.put((write, s)) >> s.acquire()
+
+{-- Release the lock --}
+def release() = c.dec()
+
+-------------------------------------------------
+
+{-- These definitions are for testing only --}
+def reader(start) = Rwait(start) >>
+  acquire(false) >> println("START READ") >>
+  Rwait(1000) >> println("END READ") >>
+  release() >> stop
+def writer(start) = Rwait(start) >>
+  acquire(true) >> println("START WRITE") >>
+  Rwait(1000) >> println("END WRITE") >>
+  release() >> stop
+
+Let(
+    process()  {- Output:     -}
+  | reader(10) {- START READ  -}
+  | reader(20) {- START READ  -}
+               {- END READ    -}
+               {- END READ    -}
+  | writer(30) {- START WRITE -}
+               {- END WRITE   -}
+  | reader(40) {- START READ  -}
+  | reader(50) {- START READ  -}
+               {- END READ    -}
+               {- END READ    -}
+  -- halt after the last reader finishes
+  | Rwait(60) >> acquire(true)
+)]]></programlisting>
+
+<para>
+The lock receives requests over the channel <code>m</code> and processes them
+sequentially with the function <code>grant</code>. Each request includes a
+boolean flag which is true for write requests and false for read requests, and a
+<code>Semaphore</code> which the requester blocks on.  The lock grants access
+by releasing the semaphore, unblocking the requester.
+</para>
+
+<para>
+The counter <code>c</code> tracks the number of readers or writers currently
+holding the lock.  Whenever the lock is granted, <code>grant</code> increments
+<code>c</code>, and when the lock is released, <code>c</code> is decremented.
+To ensure that a writer has exclusive access, <code>grant</code> waits for the
+<code>c</code> to become zero before granting the lock to the writer, and then
+waits for <code>c</code> to become zero again before granting any more requests.
+</para>
+</section>
+
+<section><title>Quicksort</title>
+
+<para>
+The original quicksort algorithm
+<footnote><para>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
+Find: Algorithm 65. <emphasis>Communications of the ACM</emphasis>,
+4(7):321–322, 1961.</para></footnote>
+was designed for efficient execution on a uniprocessor.
+Encoding it as a functional program typically ignores its efficient
+rearrangement of the elements of an array.
+Further, no known implementation highlights its concurrent aspects.
+The following program attempts to overcome these two limitations.
+The program is mostly functional in its structure, though it manipulates the
+array elements in place.
+We encode parts of the algorithm as concurrent activities where sequentiality
+is unneeded.
+</para>
+
+<para>
+The following listing gives the implementation of the <code>quicksort</code>
+function which sorts the array <code>a</code> in place.
+The auxiliary function <code>sort</code> sorts the subarray given by indices
+<code>s</code> through <code>t</code> by calling <code>part</code> to partition
+the subarray and then recursively sorting the partitions.
+</para>
+
+<programlisting><![CDATA[
+def quicksort(a) =
+
+  def swap(x, y) = a(x)? >z> a(x) := a(y)? >> a(y) := z
+
+  def part(p, s, t) =
+    def lr(i) = if i < t && a(i)? <= p then lr(i+1) else i
+    def rl(i) = if a(i)? > p then rl(i-1) else i
+
+    signal >>
+      (lr(s), rl(t)) >(s', t')>
+      ( if (s' + 1 < t') >> swap(s', t') >> part(p, s'+1, t'-1)
+      | if (s' + 1 = t') >> swap(s', t') >> s'
+      | if (s' + 1 > t') >> t'
+      )
+
+  def sort(s, t) =
+     if s >= t then signal
+     else part(a(s)?, s+1, t) >m>
+          swap(m, s) >>
+          (sort(s, m-1), sort(m+1, t)) >>
+          signal
+
+  sort(0, a.length()-1)]]></programlisting>
+
+<para>
+The function <code>part</code> partitions the subarray given by indices
+<code>s</code> through <code>t</code> into two partitions, one containing values
+less than or equal to <code>p</code> and the other containing values &gt; <code>p</code>.  The last index of the lower partition is returned.
+The value at <code>a(s-1)</code> is assumed to be less than or equal to <code>p</code> --- this is satisfied
+by choosing <code>p = a(s-1)?</code> initially.  To create the partitions, <code>part</code>
+calls two auxiliary functions <code>lr</code> and <code>rl</code> concurrently.  These
+functions scan from the left and right of the subarray respectively, looking
+for out-of-place elements.  Once two such elements have been found, they are
+swapped using the auxiliary function <code>swap</code>, and then the unscanned portion
+of the subarray is partitioned further.  Partitioning is complete when the
+entire subarray has been scanned.
+</para>
+
+<para>
+This program uses the syntactic sugar <code>x?</code> for <code>x.read()</code>
+and <code>x := y</code> for <code>x.write(y)</code>.  Also note that the expression
+<code>a(i)</code> returns a reference to the element of array <code>a</code> at index
+<code>i</code>, counting from 0.
+</para>
+</section>
+
+<!--  TODO: Add a note: this example may require Orchard to work -->
+<section><title>Meeting Scheduler</title>
+
+<para>
+Orc makes very few assumptions about the behaviors of services it uses. Therefore
+it is straightforward to write programs which interact with human agents and
+network services.  This makes Orc especially suitable for encoding
+<firstterm>workflows</firstterm>, the coordination of multiple activities
+involving multiple participants.  The following program illustrates a simple
+workflow for scheduling a business meeting.  Given a list of people and a date
+range, the program asks each person when they are available for a meeting.  It
+then combines all the responses, selects a meeting time which is acceptable to
+everyone, and notifies everyone of the selected time.
+</para>
+
+<programlisting><![CDATA[
+include "net.inc"
+val during = Interval(LocalDate(2009, 9, 10),
+                      LocalDate(2009, 10, 17))
+val invitees = ["john@example.com", "jane@example.com"]
+
+def invite(invitee) =
+  Form() >f>
+  f.addPart(DateTimeRangesField("times",
+    "When are you available for a meeting?", during, 9, 17)) >>
+  f.addPart(Button("submit", "Submit")) >>
+  SendForm(f) >receiver>
+  SendMail(invitee, "Meeting Request", receiver.getURL()) >>
+  receiver.get() >response>
+  response.get("times")
+
+def notify([]) =
+  each(invitees) >invitee>
+  SendMail(invitee, "Meeting Request Failed",
+                    "No meeting time found.")
+def notify(first:_) =
+  each(invitees) >invitee>
+  SendMail(invitee, "Meeting Request Succeeded",
+                    first.getStart())
+
+map(invite, invitees) >responses>
+afold(lambda (a,b) = a.intersect(b), responses) >times>
+notify(times)]]></programlisting>
+
+<para>
+This program begins with declarations of <code>during</code> (the date range for the
+proposed meeting) and <code>invitees</code> (the list of people to invite represented
+by email addresses).
+</para>
+
+<para>
+The <code>invite</code> function obtains possible meeting times from a given invitee, as
+follows.  First it uses library sites (<code>Form</code>, <code>DateTimeRangesField</code>,
+<code>Button</code>, and <code>SendForm</code>) to construct a web form which may be used to
+submit possible meeting times.  Then it emails the URL of this form to the
+invitee and blocks waiting for a response.  When the invitee receives the
+email, he or she will use a web browser to visit the URL, complete the form,
+and submit it.  The corresponding execution of <code>invite</code> receives the
+response in the variable <code>response</code> and extracts the chosen meeting times.
+</para>
+
+<para>
+The <code>notify</code> function takes a list of possible meeting times, selects the
+first meeting time in the list, and emails everyone with this time.  If the
+list of possible meeting times is empty, it emails everyone indicating that no
+meeting time was found.
+</para>
+
+<para>
+The goal expression of the program uses the library function <code>map</code> to
+apply <code>notify</code> to each invitee and collect the responses in a list. It
+then uses the library function <code>afold</code> to intersect all of the responses.
+The result is a set of meeting times which are acceptable to everyone. Finally,
+<code>notify</code> is called to select one of these times and notify everyone of the result.
+</para>
+
+<para>
+This program may be extended to add more sophisticated features, such as a
+quorum (to select a meeting as soon as some subset of invitees responds) or
+timeouts (to remind invitees if they don't respond in a timely manner).  These
+modifications are local and do not affect the overall structure of the program.
+For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our website</link>.
+</para>
+</section>
+
+<!--
+Procedural implementation of graphs is terrible for readability. 
+Also, introducing this example would require an extended discussion of logical time.
+
+<section><title>Shortest Path</title>
+
+
+<programlisting><![CDATA[
+def path(source, sink, cell, succ) =
+  val timer = MakeTimer()
+  def run(n,p) =
+    cell(n).write(p) >>
+    succ(n) >(m,d)>
+    timer(d) >>
+    run(m,m:p)
+  run(source, [source])
+  ; reverse(cell(sink).read())
+
+{- A small test graph -}
+val source = 0
+val sink = 3
+
+val cell0 = Cell()
+val cell1 = Cell()
+val cell2 = Cell()
+val cell3 = Cell()
+
+def cell(0) = cell0
+def cell(1) = cell1
+def cell(2) = cell2
+def cell(3) = cell3
+
+def succ(0) = (1,2) | (2,6) | (3,9)
+def succ(1) = (3,7)
+def succ(2) = (3,2)
+def succ(3) = stop
+
+{-
+OUTPUT:
+[0, 2, 3]
+-}
+path(source, sink, cell, succ)
+]]></programlisting>
+
+</section>
+ -->
+ 
+<!-- 
+<section><title>Spellchecker</title>
+</section>
+-->
+
+<!-- 
+<section><title>Meeting Scheduler</title>
+</section>
+ -->
+
+
+</section>
