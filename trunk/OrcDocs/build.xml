@@ -179,7 +179,14 @@
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
-			<param name="orc.demo" expression="1"/>
+
+			<param name="orchard.js.path" expression="/orchard/orc.js" />
+			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<!--
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			-->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -214,7 +221,14 @@
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
-			<param name="orc.demo" expression="1"/>
+
+			<param name="orchard.js.path" expression="/orchard/orc.js" />
+			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<!--
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			-->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -245,7 +259,9 @@
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
-			<param name="orc.demo" expression="1"/>
+
+			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path params -->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -350,8 +366,14 @@
 			<classpath refid="xalan.classpath"/>
 			
 			<param name="index.links.to.section" expression="0"/>
-			
-			<param name="orc.demo" expression="0"/>
+
+			<param name="orchard.js.path" expression="/orchard/orc.js" />
+			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<!--
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			-->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="2"/>
@@ -405,7 +427,14 @@
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="refmanual.xml"/>
 			<classpath refid="xalan.classpath"/>
-			<param name="orc.demo" expression="1"/>
+
+			<param name="orchard.js.path" expression="/orchard/orc.js" />
+			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<!--
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			-->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
@@ -439,7 +468,9 @@
 		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
-			<param name="orc.demo" expression="0"/>
+
+			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path params -->
+
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label" expression="1"/>
 			<param name="section.autolabel.max.depth" expression="2"/>
