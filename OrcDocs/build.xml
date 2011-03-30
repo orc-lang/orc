@@ -591,6 +591,14 @@
 		 ================================= -->
 	<target name="clean" depends="" description="Delete build directory">
 		<delete dir="${build.dir}"/>
+		<!-- Clean up OrcDocgen-generated files -->
+		<delete>
+			<fileset dir="${src.dir}/refmanual">
+				<include name="ref.stdlib.xml"/>
+				<include name="ref.stdlib.*.xml"/>
+				<exclude name="ref.stdlib.intro.xml"/>
+			</fileset>
+		</delete>
 	</target>
 
 </project>
