@@ -399,7 +399,7 @@ trait Orc extends OrcRuntime {
     var stack: List[Frame] = Nil,
     var env: List[Binding] = Nil,
     var group: Group,
-    var state: TokenState = Live) extends GroupMember {
+    var state: TokenState = Live) extends GroupMember with Runnable {
 
     var functionFramesPushed: Int = 0;
 
