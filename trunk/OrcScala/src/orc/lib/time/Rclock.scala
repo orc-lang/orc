@@ -28,7 +28,7 @@ import orc.Handle
 import orc.error.runtime.ArgumentTypeMismatchException
 
 
-object RclockSite extends TotalSite0 with TypedSite {
+object Rclock extends TotalSite0 with TypedSite {
   
   def eval() = {
     new OrcRecord(
