@@ -16,77 +16,45 @@ Real and virtual time.
 --}
 
 {--
-@site Rwait(Integer) :: Signal
+@site Rclock() :: {. time :: (lambda () :: Integer), wait :: (lambda (Integer) :: Signal) .}
 
-<od:sitepropset>
-   <od:siteprop propname="indefinite"/>
-</od:sitepropset>
+Create a new realtime clock instance.
+
+
+@method Rclock.wait(Integer) :: Signal
 
 Publish a signal after the given number of milliseconds.
 
-@method Rwait.time() :: Integer
 
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
+@method Rclock.time() :: Integer
 
-Return the current real time in milliseconds, as
-measured from midnight January 1, 1970 UTC.
+Return the total number of milliseconds that have passed
+since this clock was created.
 Ranges from 0 to <code>Long.MAX_VALUE</code>.
+
 --}
-site Rwait = "orc.lib.time.Rwait"
+site Rclock = "orc.lib.time.Rclock"
 
 {--
-@def Clock()() :: Number
-A call to <code>Clock</code> creates a new relative real-time clock.
-Calling a relative clock returns the number
-of milliseconds which have elapsed since the
-clock was created.
+@site Rwait(Integer) :: Signal
 
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes a value near 1000
-val c = Clock()
-Rwait(1000) >> c()]]></programlisting>
+Publish a signal after the given number of milliseconds.
+
+@site Rtime() :: Integer
+
+Return the total number of milliseconds that have passed
+since this program began executing.
+Ranges from 0 to <code>Long.MAX_VALUE</code>.
 --}
-def Clock()() :: Number
-def Clock() =
-  val time = Rwait.time()
-  lambda () = Rwait.time() - time
-
-{-
-@site Vwait(Integer) :: Signal
-
-<od:sitepropset>
-   <od:siteprop propname="indefinite"/>
-</od:sitepropset>
-
-Publish a signal after the given amount of virtual time.
-
-@site Vclock() :: Integer
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Return the current virtual time.
- -}
--- site Vwait = "orc.lib.time.Vwait"
-def Vwait(Integer) :: Bot
-def Vwait(_) = Error("Vwait not yet implemented")
-
--- site Vclock = "orc.lib.time.Vclock"
-def Vclock() :: Bot
-def Vclock() = Error("Vclock not yet implemented")
+val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
 
 {--
 @def metronome(Integer) :: Signal
-Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.
+Publish a signal at regular intervals, indefinitely. 
+The period is given by the argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal
 def metronome(t) = signal | Rwait(t) >> metronome(t)
-
 
 {-
 @def timeout[A](A, Integer) :: Option[A]
