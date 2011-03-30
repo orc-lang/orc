@@ -26,6 +26,7 @@ import orc.error.OrcException;
 import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
 import orc.script.OrcScriptEngine;
+import orc.script.OrcBindings;
 
 import javax.xml.validation.*;
 import javax.xml.transform.stream.StreamSource;
@@ -68,7 +69,7 @@ public class XMLExamplesTest {
 				@Override
 				public void runTest() throws InterruptedException, IOException, TimeoutException, OrcException, ClassNotFoundException, SecurityException, NoSuchFieldException, IllegalAccessException {
 					System.out.println("\n==== Starting " + file + " ====");
-					final OrcScriptEngine.OrcCompiledScript compiledScript = OrcForTesting.compile(file.getPath());
+					final OrcScriptEngine.OrcCompiledScript compiledScript = OrcForTesting.compile(file.getPath(), new OrcBindings());
 					final Expression expr = getAstRoot(compiledScript);
 					
 					// AST -> XML

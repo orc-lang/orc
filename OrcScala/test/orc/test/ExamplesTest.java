@@ -24,6 +24,8 @@ import junit.framework.TestSuite;
 import orc.error.OrcException;
 import orc.error.compiletime.CompilationException;
 
+import orc.script.OrcBindings;
+
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
  * Each program is given at most 10 seconds to complete.
@@ -35,11 +37,12 @@ import orc.error.compiletime.CompilationException;
  * @author quark, srosario
  */
 public class ExamplesTest {
+  
 	public static Test suite() {
-		return buildSuite();
+		return buildSuite(new OrcBindings());
 	}
 
-	public static TestSuite buildSuite() {
+	public static TestSuite buildSuite(final OrcBindings bindings) {
 		final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
 		final LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(new File("../OrcExamples"), files);
@@ -59,7 +62,7 @@ public class ExamplesTest {
 				public void runTest() throws InterruptedException, IOException, TimeoutException, OrcException, ClassNotFoundException {
 					System.out.println("\n==== Starting " + file + " ====");
 					try {
-					    final String actual = OrcForTesting.compileAndRun(file.getPath(), 10L);
+					    final String actual = OrcForTesting.compileAndRun(file.getPath(), 10L, bindings);
 	                    if (!expecteds.contains(actual)) {
 	                        throw new AssertionError("Unexpected output:\n" + actual);
 	                    }

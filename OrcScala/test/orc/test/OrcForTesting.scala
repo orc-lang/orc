@@ -45,11 +45,10 @@ object OrcForTesting {
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
-  def compile(filename: String): OrcScriptEngine#OrcCompiledScript = {
+  def compile(filename: String, options: OrcBindings): OrcScriptEngine#OrcCompiledScript = {
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     try {
-      val options = new OrcBindings()
       options.filename = filename
       engine.setBindings(options, ENGINE_SCOPE)
       val reader = new FileReader(options.filename)
@@ -124,7 +123,7 @@ object OrcForTesting {
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
-  def compileAndRun(filename: String, timeout: Long): String = {
-      run(compile(filename), timeout)
+  def compileAndRun(filename: String, timeout: Long, bindings: OrcBindings = new OrcBindings()): String = {
+      run(compile(filename, bindings), timeout)
   }
 }
