@@ -15,8 +15,8 @@
 package orc.values.sites.compatibility
 
 import orc.types._
-import orc.lib.builtin.ListType
-import orc.lib.builtin.OptionType
+import orc.lib.builtin.structured.ListType
+import orc.lib.builtin.structured.OptionType
 import orc.compile.typecheck.Typeloader
 
 /**
@@ -50,6 +50,7 @@ object Types {
   def overload(t: CallableType, u: CallableType) = OverloadedType(List(t,u))
   def overload(t: CallableType, u: CallableType, v: CallableType) = OverloadedType(List(t,u,v))
   def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType) = OverloadedType(List(t,u,v,w))
+  def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType, x: CallableType) = OverloadedType(List(t,u,v,w,x))
   def overload(ot: OverloadedType, u: CallableType) = OverloadedType(u :: ot.alternatives)
   
   val emptyRecord = RecordType(Nil.toMap)

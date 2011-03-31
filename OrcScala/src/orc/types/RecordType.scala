@@ -30,6 +30,8 @@ case class RecordType(entries: Map[String,Type]) extends CallableType with Stric
     this(entries.toMap)
   }
   
+  def this() = { this(Map[String,Type]()) }
+  
   override def call(typeArgs: List[Type], argTypes: List[Type]) = {
     argTypes match {
       case List(FieldType(f)) => entries.getOrElse(f, throw new NoSuchMemberException(this, f))
@@ -95,6 +97,14 @@ case class RecordType(entries: Map[String,Type]) extends CallableType with Stric
   
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     RecordType(entries mapValues { _ subst sigma })
+  }
+  
+  /* Create a new record type, extending this record type with the bindings of the other record type.
+   * When there is overlap, the other record type's bindings override this record type.
+   */
+  def +(other: RecordType): RecordType = {
+    val empty = this.entries.empty
+    RecordType(empty ++ this.entries ++ other.entries)
   }
 
 }

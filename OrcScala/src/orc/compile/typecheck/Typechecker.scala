@@ -284,11 +284,44 @@ object Typechecker {
   
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
     
-    if (targetType eq Bot) { 
-      return (syntacticTypeArgs, Bot) 
-    }
-    if (targetType.isInstanceOf[StrictType] && (argTypes contains Bot)) {
-      return (syntacticTypeArgs, Bot)   
+    // Special call cases
+    targetType match {
+      case Bot => {
+        return (syntacticTypeArgs, Bot) 
+      }
+      case _ : StrictType if argTypes contains Bot => {
+        return (syntacticTypeArgs, Bot)
+      }
+      case RecordType(entries) => {
+        argTypes match {
+           /* If this is a field access, do nothing, and check the call as normal. */
+          case List(_ : FieldType) => {}
+          
+          /* If this is not a field access, try to use an 'apply' member. */
+          case _ => {
+            if (entries contains "apply") {
+              return typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType)
+            }
+          }
+        }
+      }
+        
+      case OverloadedType(alternatives) => {
+        var failure = new OverloadedTypeException()
+        for (t <- alternatives) {
+          try {
+            return typeCall(syntacticTypeArgs, t, argTypes, checkReturnType)
+          }
+          catch {
+            case e: TypeException => {
+              failure = failure.addAlternative(t, e)
+            }
+          }
+        }
+        // otherwise
+        throw failure
+      }
+      case _ => {}
     }
     
     val (finalSyntacticTypeArgs, finalReturnType) =

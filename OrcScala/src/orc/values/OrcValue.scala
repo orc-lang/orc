@@ -15,8 +15,6 @@
 
 package orc.values
 
-import orc.lib.builtin.DataSite
-
 /**
  * An Orc-specific value, such as: a closure, a tagged value 
  * of a user-defined Orc datatype, or a signal. 
@@ -69,7 +67,9 @@ case class Field(field: String) extends OrcValue {
   override def toOrcSyntax() = "." + field
 }
 
-case class TaggedValue(tag: DataSite, values: List[AnyRef]) extends OrcValue {
-  override def toOrcSyntax = tag.toOrcSyntax() + "(" + Format.formatSequence(values) + ")"
+class Tag(val name: String)
+
+case class TaggedValue(tag: Tag, values: List[AnyRef]) extends OrcValue {
+  override def toOrcSyntax = tag.name + "(" + Format.formatSequence(values) + ")"
 }
 

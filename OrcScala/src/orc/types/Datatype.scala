@@ -17,7 +17,7 @@ package orc.types
 import orc.types.Variance._
 
 trait Datatype {
-  var constructorTypes: Option[List[FunctionType]] = None
+  var constructorTypes: Option[List[CallableType]] = None
   var optionalDatatypeName: Option[String] = None
   override def toString = optionalDatatypeName.getOrElse("`datatype")
 }

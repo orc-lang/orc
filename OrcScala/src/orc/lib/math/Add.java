@@ -18,6 +18,7 @@ import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
 import orc.types.Type;
+import orc.types.RecordExtensorType;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
@@ -102,6 +103,11 @@ public class Add extends EvalSite implements TypedSite {
 
 	@Override
 	public Type orcType() {
-		return Types.overload(Types.function(Types.integer(), Types.integer(), Types.integer()), Types.function(Types.number(), Types.number(), Types.number()), Types.function(Types.string(), Types.top(), Types.string()), Types.function(Types.top(), Types.string(), Types.string()));
+		return Types.overload(
+		    Types.function(Types.integer(), Types.integer(), Types.integer()), 
+		    Types.function(Types.number(), Types.number(), Types.number()),
+		    new RecordExtensorType(),
+		    Types.function(Types.string(), Types.top(), Types.string()), 
+		    Types.function(Types.top(), Types.string(), Types.string()));
 	}
 }

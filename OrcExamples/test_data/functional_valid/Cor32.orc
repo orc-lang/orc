@@ -5,6 +5,7 @@
  - Created by Brian on Jun 3, 2010 10:06:06 AM
  -}
 
+def onetwosum(lambda (Integer) :: Integer) :: Integer
 def onetwosum(f) = f(1) + f(2)
 onetwosum( lambda(x) = x * 3 )
 

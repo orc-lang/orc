@@ -5,6 +5,7 @@
  - Created by dkitchin on Oct 12, 2010
  -}
 
+def fact(Integer) :: Integer
 def fact(n) if (n :> 0) = n * fact(n-1)
 def fact(0) = 1
 

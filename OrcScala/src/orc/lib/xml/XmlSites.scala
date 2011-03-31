@@ -21,7 +21,6 @@ import orc.values.sites.TotalSite1
 import orc.values.sites.PartialSite
 import orc.values.sites.PartialSite1
 import orc.values.sites.UntypedSite
-import orc.values.sites.Extractable
 import scala.xml._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
@@ -34,7 +33,7 @@ import orc.error.runtime.ArityMismatchException
  * @author dkitchin
  */
 
-class XMLElementSite extends TotalSite with Extractable with UntypedSite {
+class XMLElementSite extends TotalSite with UntypedSite {
 
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -76,7 +75,7 @@ class XMLElementSite extends TotalSite with Extractable with UntypedSite {
 }
 
 
-class XMLTextSite extends TotalSite1 with Extractable with UntypedSite {
+class XMLTextSite extends TotalSite1 with UntypedSite {
 
   def eval(x: AnyRef): AnyRef = {
     x match {
@@ -101,7 +100,7 @@ class XMLTextSite extends TotalSite1 with Extractable with UntypedSite {
 
 
 
-class XMLCDataSite extends TotalSite1 with Extractable with UntypedSite {
+class XMLCDataSite extends TotalSite1 with UntypedSite {
 
   def eval(x: AnyRef): AnyRef = {
     x match {

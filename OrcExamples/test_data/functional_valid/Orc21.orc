@@ -8,6 +8,7 @@
  -}
 
 val x = 7
+def isx(Integer) :: Boolean
 def isx(y) if (y = x) = true
 def isx(_) = false
 isx(7) | isx(9)

@@ -34,7 +34,7 @@ import orc.lib.state.types.RefType
  *
  * @author dkitchin
  */
-object Typeloader extends SiteClassLoading {
+object Typeloader extends SiteClassLoading with TypeListEnrichment {
   
   
   /**
@@ -80,7 +80,10 @@ object Typeloader extends SiteClassLoading {
         val constructorTypes =
           for ((name, variantArgs) <- variants) yield {
             val argTypes = variantArgs map { lift(_)(newTypeContext, typeOperatorContext) }
-            SimpleFunctionType(argTypes, dt)
+            new RecordType(
+              "apply" -> SimpleFunctionType(argTypes, dt),
+              "unapply" -> SimpleFunctionType(List(dt), argTypes.condense)
+            )
           }
         dt.optionalDatatypeName = self.optionalVariableName
         dt.constructorTypes = Some(constructorTypes)
@@ -159,10 +162,27 @@ object Typeloader extends SiteClassLoading {
         val constructorTypes = 
           variantTypes map 
             { argTypes =>
-              val funTypeFormals = newTypeFormals map { x => new TypeVariable(x) }
-              val funArgTypes = argTypes map { _ subst (funTypeFormals, newTypeFormals) }
-              val funReturnType = TypeInstance(dt, funTypeFormals)
-              FunctionType(funTypeFormals, funArgTypes, funReturnType)
+              val applyType = {
+                val funTypeFormals = newTypeFormals map { x => new TypeVariable(x) }
+                val funArgTypes = argTypes map { _ subst (funTypeFormals, newTypeFormals) }
+                val funReturnType = TypeInstance(dt, funTypeFormals)
+                FunctionType(funTypeFormals, funArgTypes, funReturnType)
+              }
+              val unapplyType = new UnaryCallableType() with StrictType {
+                def call(t: Type): Type = {
+                  t match {
+                    case TypeInstance(`dt`, typeActuals) => {
+                      val actualArgTypes = argTypes map { _ subst (typeActuals, newTypeFormals) }
+                      actualArgTypes.condense
+                    }
+                    case u => throw new ArgumentTypecheckingException(0, TypeInstance(dt, newTypeFormals), u)
+                  }
+                }
+              }
+              new RecordType(
+                "apply" -> applyType,
+                "unapply" -> unapplyType
+              )
             }
         
         dt.constructorTypes = Some(constructorTypes)

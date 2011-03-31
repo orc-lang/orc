@@ -29,7 +29,7 @@ trait TypeInterface {
   def subst(sigma: Map[TypeVariable, Type]): Type
 }
 
-trait Type extends TypeInterface {
+trait Type extends TypeInterface with TypeListEnrichment {
  
   override def toString = this.getClass.toString 
   
@@ -227,10 +227,14 @@ trait Type extends TypeInterface {
     }
   }
   
+  
+  
+}
+
+trait TypeListEnrichment {
   /* Extend join, meet, and < to lists of types */
   implicit def enrichTypeList(types: List[Type]): RichTypeList = new RichTypeList(types)
 }
-
 
 class RichTypeList(types: List[Type]) {
   
@@ -244,6 +248,14 @@ class RichTypeList(types: List[Type]) {
   
   def <(otherTypes: List[Type]): Boolean = {
     (types, otherTypes).zipped forall { case (t,u) => t < u }
+  }
+  
+  def condense: Type = {
+    types match {
+      case Nil => SignalType
+      case List(t) => t
+      case ts => TupleType(ts)
+    }
   }
   
 }

@@ -16,7 +16,7 @@ General-purpose supplemental data structures.
 --}
 
 -- Make the List type constructor available
-type List = "orc.lib.builtin.ListType"
+type List = "orc.lib.builtin.structured.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
@@ -36,9 +36,9 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = "orc.lib.builtin.OptionType"
-site Some = "orc.lib.builtin.SomeConstructor"
-site None = "orc.lib.builtin.NoneConstructor"
+type Option = "orc.lib.builtin.structured.OptionType"
+site Some = "orc.lib.builtin.structured.SomeSite"
+site None = "orc.lib.builtin.structured.NoneSite"
 
 
 {--

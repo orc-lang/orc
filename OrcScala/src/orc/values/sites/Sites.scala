@@ -15,7 +15,7 @@
 
 package orc.values.sites
 
-import orc.values.{OrcValue, Field}
+import orc.values.{OrcValue, Field, OrcRecord}
 import orc.Handle
 import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
@@ -24,6 +24,7 @@ import orc.error.runtime.ArityMismatchException
 import orc.run.Logger
 import orc.types.Type
 import orc.types.Bot
+import orc.types.RecordType
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
@@ -35,27 +36,7 @@ trait Site extends OrcValue with SiteMetadata {
   override def toOrcSyntax() = this.name
 }
 
-
-
-/* A site which has a companion extractor site, accessed by unapply.
- * Since Extractable overrides call, it should appear as late as
- * possible in the trait sequence, and definitely after TotalSite,
- * PartialSite, etc.
- */
-trait Extractable extends Site {
-  
-  val extractor: AnyRef /* typically PartialSite1 */
-  
-  abstract override def call(args: List[AnyRef], callingToken: Handle) {
-    args match {
-      case List(Field("unapply")) => callingToken.publish(extractor)
-      case _ => super.call(args, callingToken)
-    }
-  
-  }
-}
-
-
+/* A site which provides type information. */
 trait TypedSite extends Site {
   @throws(classOf[TypeException])
   def orcType(): Type
@@ -67,18 +48,8 @@ trait UntypedSite extends TypedSite {
   def orcType() = Bot
 }
 
-trait PartialSite extends Site {
-  def call(args: List[AnyRef], h: Handle) {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    evaluate(args) match {
-      case Some(v) => h.publish(v)
-      case None => h.halt
-    }
-  }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef]
-}
-
+/* Enforce totality */
 trait TotalSite extends Site {
   def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
@@ -92,6 +63,20 @@ trait TotalSite extends Site {
   def evaluate(args: List[AnyRef]): AnyRef
 }
 
+/* Enforce nonblocking, but do not enforce totality */
+trait PartialSite extends Site {
+  def call(args: List[AnyRef], h: Handle) {
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    evaluate(args) match {
+      case Some(v) => h.publish(v)
+      case None => h.halt
+    }
+  }
+
+  def evaluate(args: List[AnyRef]): Option[AnyRef]
+}
+
+
 trait UnimplementedSite extends Site {
   override def name = "(unimplemented)"
   def orcType(argTypes: List[Type]): Nothing = {
@@ -104,7 +89,7 @@ trait UnimplementedSite extends Site {
 
 
 
-/* Enforce arity, but don't assume totality */
+/* Enforce arity only */
 trait Site0 extends Site {
   
   def call(args: List[AnyRef], h: Handle) {
@@ -145,7 +130,7 @@ trait Site2 extends Site {
 }
 
 
-
+/* Enforce arity and nonblocking, but do not enforce totality */
 trait PartialSite1 extends PartialSite {
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
@@ -157,6 +142,21 @@ trait PartialSite1 extends PartialSite {
   
   def eval(x: AnyRef): Option[AnyRef]
 }
+
+
+trait PartialSite2 extends PartialSite {
+  
+  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+    args match {
+      case List(x,y) => eval(x,y)
+      case _ => throw new ArityMismatchException(2, args.size)
+    }
+  }
+  
+  def eval(x: AnyRef, y: AnyRef): Option[AnyRef]
+}
+
+
 
 /* Enforce arity and totality */
 trait TotalSite0 extends TotalSite {
@@ -206,4 +206,23 @@ trait TotalSite3 extends TotalSite {
   }
   
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
+}
+
+
+
+
+/* Template for building values which act as constructor-extractor sites,
+ * such as the Some site.
+ */
+class StructurePairSite(
+  applySite: TotalSite with TypedSite, 
+  unapplySite: PartialSite1 with TypedSite
+) extends OrcRecord(
+  "apply" -> applySite,
+  "unapply" -> unapplySite
+) with TypedSite {
+  def orcType() = new RecordType(
+    "apply" -> applySite.orcType(),
+    "unapply" -> unapplySite.orcType()
+  )
 }
