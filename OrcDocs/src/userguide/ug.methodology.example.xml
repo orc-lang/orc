@@ -45,7 +45,10 @@ unlikely.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
-def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
+{- Dining Philosophers -}
+
+{- Randomly swap order of fork pick-up -}
+def shuffle(a,b) = if (Random(2) = 1) then (a,b) else (b,a)
 
 def take((a,b)) =    
   a.acquire() >> b.acquireD() ;
@@ -53,17 +56,18 @@ def take((a,b)) =
     
 def drop(a,b) = (a.release(), b.release()) >> signal
 
+{- Define a philosopher -}
 def phil(n,a,b) =
   def thinking() = 
-    println(n + " thinking") >> 
-    if (random(10) < 9)
-      then Rwait(random(1000))
+    Println(n + " thinking") >> 
+    if (Random(10) <: 9)
+      then Rwait(Random(1000))
       else stop
   def hungry() = take((a,b))
   def eating() = 
-    println(n + " eating") >> 
-    Rwait(random(1000)) >> 
-    println(n + " done eating") >> 
+    Println(n + " eating") >> 
+    Rwait(Random(1000)) >> 
+    Println(n + " done eating") >> 
     drop(a,b)
   thinking() >> hungry() >> eating() >> phil(n,a,b)
 
@@ -72,8 +76,21 @@ def philosophers(n,a,b) =
   val c = Semaphore(1)
   philosophers(n-1,a,c) | phil(n,c,b)
 
+{- Test the definitions -}
 val fork = Semaphore(1)
-philosophers(5,fork,fork)]]></programlisting>
+philosophers(5,fork,fork)
+
+{-
+OUTPUT:EXAMPLE
+5 thinking
+4 thinking
+3 thinking
+2 thinking
+1 thinking
+1 eating
+4 eating
+...
+-}]]></programlisting>
 
 <para>
 The <code>phil</code> function simulates a single philosopher.  It takes as arguments
@@ -130,18 +147,19 @@ full details of the algorithm, consult the original paper.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
-{-
-Start a philosopher actor; never publishes.
-Messages sent between philosophers include:
-- ("fork", p): philosopher p relinquishes the fork
-- ("request", p): philosopher p requests the fork
-- ("rumble", p): sent by a philosopher to itself when it should
-  become hungry
+{- Start a philosopher actor; never publishes.
+   Messages sent between philosophers include:
+   - ("fork", p): philosopher p relinquishes the fork
+   - ("request", p): philosopher p requests the fork
+   - ("rumble", p): sent by a philosopher to itself when it should
+     become hungry
 
-name: identify this process in status messages
-mbox: our mailbox; the "address" of this philosopher is mbox.put
-missing: set of neighboring philosophers holding our forks
+   name: identify this process in status messages
+   mbox: our mailbox; the "address" of this philosopher is mbox.put
+   missing: set of neighboring philosophers holding our forks
 -}
+
+{- Define philosopher -}
 def philosopher(name, mbox, missing) =
   {- deferred requests for forks -}
   val deferred = Buffer()
@@ -158,16 +176,16 @@ def philosopher(name, mbox, missing) =
   
   {- Start a timer which will tell us when we're hungry. -}
   def digesting() =
-      println(name + " thinking") >>
+      Println(name + " thinking") >>
       thinking()
-    | Rwait(random(1000)) >>
+    | Rwait(Random(1000)) >>
       mbox.put(("rumble", mbox.put)) >>
       stop
 
   {- Wait to become hungry -}
   def thinking() =
     def on(("rumble", _)) =
-      println(name + " hungry") >>
+      Println(name + " hungry") >>
       map(requestFork, missing) >>
       hungry()
     def on(("request", p)) =
@@ -180,7 +198,7 @@ def philosopher(name, mbox, missing) =
       missing.remove(p) >>
       clean.add(p) >>
       if missing.isEmpty()
-      then println(name + " eating") >> eating()
+      then Println(name + " eating") >> eating()
       else hungry()
     def on(("request", p)) =
       if clean.contains(p)
@@ -191,7 +209,7 @@ def philosopher(name, mbox, missing) =
   {- Dirty forks, process deferred requests, then digest -}
   def eating() =
     clean.clear() >>
-    Rwait(random(1000)) >>
+    Rwait(Random(1000)) >>
     map(sendFork, deferred.getAll()) >>
     digesting()
 
@@ -321,12 +339,12 @@ def release() = c.dec()
 
 {-- These definitions are for testing only --}
 def reader(start) = Rwait(start) >>
-  acquire(false) >> println("START READ") >>
-  Rwait(1000) >> println("END READ") >>
+  acquire(false) >> Println("START READ") >>
+  Rwait(1000) >> Println("END READ") >>
   release() >> stop
 def writer(start) = Rwait(start) >>
-  acquire(true) >> println("START WRITE") >>
-  Rwait(1000) >> println("END WRITE") >>
+  acquire(true) >> Println("START WRITE") >>
+  Rwait(1000) >> Println("END WRITE") >>
   release() >> stop
 
 Let(
