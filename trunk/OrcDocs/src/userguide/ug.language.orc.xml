@@ -108,11 +108,11 @@ as an argument, or published by an execution, just like any other value.
 
 <para>
 <programlisting><![CDATA[
-{-
-  Create a search site from a search engine URL,
-  bind the variable Search to that site,
-  then use that site to search for a term.
+{- Create a search site from a search engine URL,
+   bind the variable Search to that site,
+   then use that site to search for a term.
 -}
+
 val Search = SearchEngine("http://www.google.com/")
 Search("first class value")
 ]]></programlisting>
@@ -127,12 +127,12 @@ can be written as <code>signal</code> within Orc programs.
 
 
 <programlisting language="orc-demo"><![CDATA[
-{- 
-  Use the 'println' site to print a string, followed by
-  a newline, to an output console.
-  The return value of this site call is a signal.
+{- Use the 'println' site to print a string, followed by
+   a newline, to an output console.
+   The return value of this site call is a signal.
 -}
-println("Hello, World!")
+
+Println("Hello, World!")
 ]]></programlisting>
 </para>
 
@@ -164,23 +164,26 @@ may be published in arbitrary order.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1 and 2 in parallel  
+{- Publish 1 and 2 in parallel -}  
+
 1 | 1+1
 
--- Note the publication order may be either 1 then 2
--- or 2 then 1
+{-
+OUTPUT:PERMUTABLE
+1
+2
+-}
 ]]></programlisting>
 </para>  
 
 <para>
 <programlisting><![CDATA[
-{- 
-  Access two search sites, Google and Yahoo, in parallel.
+{- Access two search sites, Google and Yahoo, in parallel.
 
-  Publish any results they return.
+   Publish any results they return.
   
-  Since each call may publish a value, the expression
-  may publish up to two values.
+   Since each call may publish a value, the expression
+   may publish up to two values.
 -}  
 Google("cupcake") | Yahoo("cupcake")
 ]]></programlisting>
@@ -188,8 +191,16 @@ Google("cupcake") | Yahoo("cupcake")
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1, 2, and 3 in parallel  
+{- Publish 1, 2, and 3 in parallel -}
+  
 1+0 | 1+1 | 1+2
+
+{-
+OUTPUT:PERMUTABLE
+1
+2
+3
+-}
 ]]></programlisting>
 </para>  
 
@@ -221,31 +232,55 @@ by the whole expression; they are consumed by the variable binding.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 1 and 2 in parallel  
+{- Publish 1 and 2 in parallel -}
+  
 (0 | 1) >n> n+1
+
+{-
+OUTPUT:PERMUTABLE
+1
+2
+-}
 ]]></programlisting>
 </para>  
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 3 and 4 in parallel  
+{- Publish 3 and 4 in parallel -}
+  
 2 >n> (n+1 | n+2)
+
+{-
+OUTPUT:PERMUTABLE
+3
+4
+-}
 ]]></programlisting>
 </para>  
 
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 0, 1, 2 and 3 in parallel  
+{- Publish 0, 1, 2 and 3 in parallel -}
+  
 (0 | 2) >n> (n | n+1)
+
+{-
+OUTPUT:PERMUTABLE
+0
+1
+2
+3
+-}
 ]]></programlisting>
 </para>  
 
 
 <para>
 <programlisting><![CDATA[
--- Prepend the site name to each published search result
--- The cat site concatenates any number of arguments into one string  
+{- Prepend the site name to each published search result
+   The cat site concatenates any number of arguments into one string
+-}  
   Google("cupcake") >s> cat("Google: ", s)
 | Yahoo("cupcake") >s> cat("Yahoo: ", s)
 ]]></programlisting>
@@ -263,17 +298,31 @@ Otherwise, the published value is simply ignored, and no new instance of G is ex
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish 3, 6, and 9 in arbitrary order.
+{- Publish 3, 6, and 9 in arbitrary order. -}
+
 (3,6,9)  >(x,y,z)>  ( x | y | z )
+
+{-
+OUTPUT:PERMUTABLE
+3
+6
+9
+-}
 ]]></programlisting>
 </para>
 
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Filter out values of the form (_,false)
+{- Filter out values of the form (_,false) -}
+
 ( (4,true) | (5,false) | (6,true) )  >(x,true)> x
--- Publishes 4 and 6 
+
+{-
+OUTPUT:PERMUTABLE
+4
+6
+-} 
 ]]></programlisting>
 </para>
  
@@ -292,11 +341,17 @@ We can do this using <code><![CDATA[ >> ]]></code> together with the special exp
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-  Print two strings to the console,
-  but don't publish the return values of the calls.
+{- Print two strings to the console,
+   but don't publish the return values of the calls.
 -}
-( println("goodbye") | println("world") ) >> stop
+
+( Println("goodbye") | Println("world") ) >> stop
+
+{-
+OUTPUT:
+goodbye
+world
+-}
 ]]></programlisting>
 </para>
 
@@ -307,11 +362,17 @@ them together.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
-{- 
-  Publish the cross product of {1,2} and {3,4}:
-  (1,3), (1,4), (2,3), and (2,4).
--}
+{- Publish the cross product of {1,2} and {3,4} -}
+
 (1 | 2) >x> (3 | 4) >y> (x,y)
+
+{-
+OUTPUT:PERMUTABLE
+(1,3)
+(1,4)
+(2,3)
+(2,4)
+-}
 ]]></programlisting>
 </para>
 
@@ -339,16 +400,27 @@ never publishes a value, that part of the execution is suspended forever.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish either 5 or 6, but not both
+{- Publish either 5 or 6, but not both -}
+
 x+2 <x< (3 | 4)
+
+{-
+OUTPUT:
+5
+
+OUTPUT:
+6
+-}
 ]]></programlisting>
 </para>  
 
 <para>
 <programlisting><![CDATA[
--- Query Google and Yahoo for a search result
--- Print out the result that arrives first; ignore the other result
-println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
+{- Query Google and Yahoo for a search result
+   Print out the result that arrives first; ignore the other result
+-}
+
+Println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 ]]></programlisting>
 </para>  
 
@@ -359,11 +431,17 @@ ignored. This may have surprising consequences when a call has side effects,
 as in the following example.
 
 <programlisting language="orc-demo"><![CDATA[
-{- 
-  This example actually prints both "true" and "false" to the
-  console, regardless of which call responds first.
+{- This example actually prints both "true" and "false" to the
+   console, regardless of which call responds first.
 -}
-stop <x< println("true") | println("false")
+
+stop <x< Println("true") | Println("false")
+
+{-
+OUTPUT:PERMUTABLE
+true
+false
+-}
 ]]></programlisting>
 
 Both of the <code>println</code> calls are initiated before either one of
@@ -383,8 +461,17 @@ value is simply ignored and G continues to execute.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish either 9 or 25, but not 16.
+{- Publish either 9 or 25, but not 16. -}
+
 x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
+
+{-
+OUTPUT:
+9
+
+OUTPUT:
+25
+-}
 ]]></programlisting>
 </para>  
 
@@ -452,7 +539,7 @@ is <code>false</code> or remains silent if the argument is <code>true</code>.
 
 <para>
 <code>if</code> E <code>then</code> F <code>else</code> G is equivalent 
-to <code>(<![CDATA[ If(b) >> ]]></code>F<code><![CDATA[ | Unless(b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
+to <code>(<![CDATA[ Ift(b) >> ]]></code>F<code><![CDATA[ | Unless(b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
 </para>
 
 	
@@ -488,15 +575,39 @@ the expression.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish either 5 or 6
+{- Publish either 5 or 6 -}
+
 2 + (3 | 4)
+
+{-
+OUTPUT:
+5
+
+OUTPUT:
+6
+-}
 ]]></programlisting>
 </para>
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish exactly one of 0, 1, 2 or 3
+{- Publish exactly one of 0, 1, 2 or 3 -}
+
 (0 | 2) + (0 | 1)
+
+{-
+OUTPUT:
+0
+
+OUTPUT:
+1
+
+OUTPUT:
+2
+
+OUTPUT:
+3
+-}
 ]]></programlisting>
 </para>
 
@@ -528,11 +639,18 @@ value. Thus, unlike a site call, a function call may publish many values.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Publish all integers in the interval 1..n, in arbitrary order. 
+{- Publish all integers in the interval 1..n, in arbitrary order. -}
 def range(n) = if (n > 0) then (n | range(n-1)) else stop 
 
--- Publish 1, 2, and 3 in arbitrary order.
+{- Publish 1, 2, and 3 in arbitrary order. -}
 range(3)
+
+{-
+OUTPUT:PERMUTABLE
+1
+2
+3
+-}
 ]]></programlisting>
 </para>
 
@@ -575,8 +693,15 @@ and then responds with a signal.
 
 <para>
 <programlisting language="orc-demo"><![CDATA[
--- Print "red", wait for 3 seconds (3000 ms), and then print "green" 
-println("red") >> Rwait(3000) >> println("green") >> stop
+{- Print "red", wait for 3 seconds (3000 ms), and then print "green" -}
+ 
+Println("red") >> Rwait(3000) >> Println("green") >> stop
+
+{-
+OUTPUT:
+red
+green
+-}
 ]]></programlisting>
 </para>
 
@@ -598,9 +723,8 @@ to enforce a timeout.
 
 <para>
 <programlisting><![CDATA[
-{-
-  Publish the result of a Google search.
-  If it takes more than 5 seconds, time out.
+{- Publish the result of a Google search.
+   If it takes more than 5 seconds, time out.
 -}
 result 
   <result< ( Google("impatience") 

@@ -240,7 +240,7 @@ non-alphanumeric symbol. Consider these example programs:
 
 <para>
 <programlisting><![CDATA[
-def f() =       -- example 1
+def f() =       
   def g() = h
   (x,y)
 ]]></programlisting>
@@ -248,7 +248,7 @@ def f() =       -- example 1
 		
 <para>
 <programlisting><![CDATA[
-def f() =       -- example 2
+def f() =      
   val t = h
   (x,y)
 ]]></programlisting>
@@ -256,7 +256,7 @@ def f() =       -- example 2
 		
 <para>
 <programlisting><![CDATA[
-def f() =       -- example 3
+def f() =       
   val t = u
   -3
 ]]></programlisting>
