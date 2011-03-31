@@ -5,7 +5,7 @@
  - Created by Brian on Jun 3, 2010 1:35:00 PM
  -}
 
-val a = Buffer()
+val a = Buffer[Integer]()
 a.put(8) >> a.get()
 
 {-

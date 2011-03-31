@@ -60,3 +60,17 @@ trait UnaryCallableType extends SimpleCallableType {
   }
   
 }
+
+/* Use case: no type arguments, two arguments */
+trait BinaryCallableType extends SimpleCallableType {
+  
+  def call(t: Type, u: Type): Type
+  
+  def call(argTypes: List[Type]) = {
+    argTypes match {
+      case List(t,u) => call(t,u)
+      case _ => throw new ArgumentArityException(2, argTypes.size)
+    }
+  }
+  
+}

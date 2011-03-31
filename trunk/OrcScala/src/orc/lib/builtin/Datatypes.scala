@@ -26,8 +26,12 @@ object DatatypeBuilder extends TotalSite with TypedSite {
   override def name = "Datatype"
   def evaluate(args: List[AnyRef]) = {
     val datasites: List[AnyRef] = 
-      for ( OrcTuple(List(name: String, arity: BigInt)) <- args) yield {
-        new DataSite(name,arity.intValue)
+      for ( OrcTuple(List(siteName: String, arity: BigInt)) <- args) yield {
+        val tag = new Tag(siteName)
+        new OrcRecord(
+          "apply" -> new DatatypeConstructor(arity.intValue, tag) { override def name = siteName + ".apply" },
+          "unapply" -> new DatatypeExtractor(tag) { override def name = siteName + ".unapply" }
+        )
       }
     OrcTuple(datasites)
   }
@@ -59,23 +63,21 @@ object DatatypeBuilder extends TotalSite with TypedSite {
   }
 }
 
-class DataSite(name: String, arity: Int) extends TotalSite with Extractable  {
-  
+class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
-      if(args.size != arity) {
-        throw new ArityMismatchException(arity, args.size)
-      }
-      TaggedValue(this,args)
-  }
-  
-  val extractor = new PartialSite1 with UntypedSite {
-    override def eval(arg: AnyRef): Option[AnyRef] = {
-      arg match {
-        case TaggedValue(tag,values) if (tag == DataSite.this) => Some(OrcValue.letLike(values))
-        case _ => None
-      }
+    if (args.size != arity) {
+      throw new ArityMismatchException(arity, args.size)
+    }
+    else {
+      TaggedValue(tag, args)
     }
   }
-  
-  override def toOrcSyntax() = name
+}
+class DatatypeExtractor(tag: Tag) extends PartialSite1 {
+  def eval(arg: AnyRef): Option[AnyRef] = {
+    arg match {
+      case TaggedValue(`tag`,values) => Some(OrcValue.letLike(values))
+      case _ => None
+    }
+  }
 }

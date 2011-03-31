@@ -258,7 +258,7 @@ Example:
 -- Publishes: (3, [4, 5])
 3:4:5:[] >x:xs> (x,xs)]]></programlisting>
 --}
-site (:) = "orc.lib.builtin.ConsConstructor"
+site (:) = "orc.lib.builtin.structured.ConsConstructor"
 
 {--
 @def abs(Number) :: Number
