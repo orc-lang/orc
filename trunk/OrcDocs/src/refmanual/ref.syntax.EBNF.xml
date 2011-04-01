@@ -132,14 +132,14 @@
 		<production xml:id="ebnf.expression.sequential">
 		  <lhs>Sequence</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[>]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><code><![CDATA[>]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[>]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link><code><![CDATA[>]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.pruning">
 		  <lhs>Prune</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[<]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><code><![CDATA[<]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[<]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link><code><![CDATA[<]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		

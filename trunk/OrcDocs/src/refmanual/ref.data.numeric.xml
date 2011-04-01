@@ -13,15 +13,15 @@
 <section xml:id="ref.data.numeric" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
 <title>Numerics</title>
 
-<para>Orc includes two numeric types, <code><indexterm><primary>Integer</primary></indexterm>Integer</code> and <code><indexterm><primary>Number</primary></indexterm>Number</code>.
-Orc's <code>Integer</code> is an arbitrary-precision two's complement integer. 
-Orc's <code>Number</code> is a <indexterm><primary>floating point</primary></indexterm>floating point number, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
-<code>Number</code> behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
+<para>Orc includes two numeric types, <indexterm><primary>Integer</primary></indexterm><firstterm>integers</firstterm> and <indexterm><primary>Number</primary></indexterm><firstterm>numbers</firstterm>.
+Orc's integers are arbitrary-precision two's complement integers. 
+Orc's numbers are <indexterm><primary>floating point</primary></indexterm>floating point numbers, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
+These numbers behaves in accordance with the ANSI INCITS 274-1996 subset of ANSI/IEEE Std 754-2008.
 Namely, "infinite, NaN, or subnormal results are always treated as errors, and –0 results are hidden".
 </para>
 
 <para>
-Note that the <indexterm><primary>divide</primary></indexterm>divide operation on <code>Number</code>s can encounter a
+Note that the <indexterm><primary>divide</primary></indexterm>divide operation on Orc numbers can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
 using IEEE 754 binary64 (formerly called double precision)
@@ -49,7 +49,7 @@ This fall back may result in a loss of precision for this operation.
 
 <para>Numeric literals in Orc are specified in decimal.
 Leading zeros are allowed, but have no significance.  Trailing zeros after a decimal point also have no significance.
-If a numeric literal contains a decimal point or an "<code>E</code>", it is a <code>Number</code> (floating point) literal, otherwise it is an <code>Integer</code> literal.
+If a numeric literal contains a decimal point or an "<code>E</code>", it is a number (floating point) literal, otherwise it is an integer literal.
 </para>
 
 </section>
@@ -95,9 +95,9 @@ A prefix unary minus sign is provided for in the Orc syntax, but not a prefix un
 <title>Java calls</title>
 
 <para>
-Orc <code>Integer</code> values are passed in calls to and returns
+Orc integer values are passed in calls to and returns
 from Java code as <code language="java">java.math.BigInteger</code>, or if the callee
-method expects a specific numeric type, an <code>Integer</code> will be
+method expects a specific numeric type, an Orc integer will be
 converted to a <code language="java">java.lang.Byte</code>, <code language="java">java.lang.Short</code>,
 <code language="java">java.lang.Integer</code>, <code language="java">java.lang.Long</code>,
 <code language="java">java.lang.Float</code>, or <code language="java">java.lang.Double</code>, as appropriate.
@@ -105,9 +105,9 @@ These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="htt
 </para>
 
 <para>
-Orc <code>Number</code> values are passed in calls to and returns
+Orc number values are passed in calls to and returns
 from Java code as <code language="java">java.math.BigDecimal</code>, or if the callee
-method expects a specific numeric type, a <code>Number</code> will be
+method expects a specific numeric type, an Orc number will be
 converted to a <code language="java">java.lang.Float</code> or 
 <code language="java">java.lang.Double</code>, as appropriate.
 These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
@@ -118,7 +118,7 @@ These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="htt
 <section xml:id="ref.data.numeric.type">
   <title>Type</title>
 	<para>
-		All numeric values have type <code>Number</code>. Integer values also
+		All numeric values (integers and numbers) have type <code>Number</code>. Integer values also
 		have the more specific type <code>Integer</code>, which is a subtype of <code>Number</code>.
 	</para>
 </section>

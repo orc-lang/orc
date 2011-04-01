@@ -24,7 +24,7 @@
 		    <productionrecap linkend="ebnf.expression.pruning"/>
 		    </productionset>
 		  </para>
-		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
+		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
 			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
@@ -97,7 +97,7 @@
 	  <section xml:id="ref.combinators.pruning.type">
 	    <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable> <code><![CDATA[<]]></code><replaceable>x</replaceable><code><![CDATA[<]]></code> <replaceable>G</replaceable> 
+				The type of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
 				is the type of <replaceable>F</replaceable> 
 				using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, 
 				where <replaceable>T</replaceable> 
@@ -131,7 +131,7 @@ OUTPUT:
    Print out the result that arrives first; ignore the other result
 -}
 
-println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
+Println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
 
 {-
 NONRUNNABLE
@@ -157,13 +157,13 @@ OUTPUT:
 		  
 		  <example xml:id="ref.combinators.pruning.examples.timed"><title>Timed Termination</title>
 <programlisting language="orc"><![CDATA[
-{- Print all publications of the metronome function for 100 msec 
+{- Print all publications of the metronome function for 90 msec 
    (after the execution of metronome starts). 
    Then kill metronome.  Note that metronome(20) publishes a
    signal every 20 msec.
 -}
 
-stop << (metronome(20) >x> println(x) >> stop | Rwait(100) )
+stop << (metronome(20) >x> Println(x) >> stop | Rwait(90) )
 
 {-
 OUTPUT:

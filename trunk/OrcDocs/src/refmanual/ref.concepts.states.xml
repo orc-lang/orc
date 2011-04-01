@@ -140,7 +140,7 @@
 	<section xml:id="ref.concepts.states.helpful">
 		<title>Helpful Sites</title>
 		<para>
-			Sites that indicate absence of response are called <firstterm>helpful</firstterm> (see
+			Sites that may indicate absence of response are called <firstterm>helpful</firstterm> (see
 			<link linkend="ref.concepts.helpful">Helpful Sites</link>); not all sites are helpful.
 		</para>
 	</section>

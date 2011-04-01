@@ -19,13 +19,13 @@
 <title>Declarations</title>
 
 <para>
-A declaration precedes an expression.
-It binds one or more variables to values, or type variables to types, in that expression. 
+A declaration binds variables to values, or type variables to types, in an expression.
+The values may be as simple as integers or booleans, or as complex as functions, sites, or classes. 
 Declarations follow the rules of <link xlink:href="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</link>.
 </para>
 
 <para>
-Declarations introduce new abstractions, services, and types. 
+ 
 </para>
 
 <xi:include href="ref.declarations.val.xml"/>

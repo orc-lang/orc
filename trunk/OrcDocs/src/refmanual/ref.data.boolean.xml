@@ -48,8 +48,8 @@ as well as the comparison operators, which yield Boolean results:
 	Note:  Unlike the typical symbols <code>&lt;</code> and <code>&gt;</code>
 	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:></code>
 	respectively.  This usage avoids ambiguity with the 
-	<link linkend="ref.combinators.sequential">sequential composition combinator</link>
-	and <link linkend="ref.combinators.pruning">pruning combinator</link>.
+	<link linkend="ref.combinators.sequential">sequential combinator</link>,
+	and the <link linkend="ref.combinators.pruning">pruning combinator</link>.
 </para>
 
 </section>
@@ -72,47 +72,6 @@ unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books
 
 <section xml:id="ref.data.boolean.examples">
 <title>Examples</title>
-
-<example xml:id="ref.data.boolean.examples.implication">
-<title>Boolean Implication</title>
-<programlisting><![CDATA[
-{- Define logical implication -}
-
-def implies(a,b) = ~a || b
-
-implies(true, true) | implies(false, false)
-
-{-
-OUTPUT:
-true
-true
--}
-]]></programlisting>
-</example>
-
-<!-- 
-<example xml:id="ref.data.boolean.examples.ifsites">
-<title>Ift and Iff Sites</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Orc makes use of the Ift and Iff sites to test conditionals 
-   Ift returns a signal if the argument is true,
-   Iff when the argument is false.
--}
-
-  Ift(true) >> "Ift(true) signals" 
-| Iff(true) >> "Iff(true) signals" 
-| Ift(false) >> "Ift(false) signals"
-| Iff(false) >> "Iff(false) signals"
-
-{-
-OUTPUT:PERMUTABLE
-"Ift(true) signals"
-"Iff(false) signals"
--}
-]]></programlisting>
-</example>
-
- -->
 
 <example xml:id="ref.data.boolean.examples.xor">
 <title>Boolean XOR</title>

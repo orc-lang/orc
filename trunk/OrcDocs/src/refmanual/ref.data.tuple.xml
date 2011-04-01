@@ -20,12 +20,6 @@ A <indexterm significance="preferred"><primary>tuple</primary></indexterm><first
 <para>Tuples are intended to be used for sequences with a fixed length and varying element types,
 whereas <link linkend="ref.data.list">lists</link> are intended to be used for sequences with varying length and a fixed element type.</para> 
 
-<para>
-One can explicitly project a tuple element by its index, but it is
-idiomatic, safer, and far more common to <link linkend="ref.patterns.tuple">use pattern matching</link> to extract
-tuple elements.
-</para>
-
 <section xml:id="ref.data.tuple.syntax">
   <title>Syntax</title>
   <para>

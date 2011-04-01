@@ -36,7 +36,8 @@
 	  <section xml:id="ref.expressions.call.site">
 	  <title>Site Calls</title>
 	  <para>
-	    Execution of a <indexterm><primary>site call</primary></indexterm>site call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
+	    A <indexterm><primary>site call</primary></indexterm>site call is <indexterm significance="preferred"><primary>strict</primary></indexterm><firstterm>strict</firstterm>.
+	    Execution of a site call <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable> to a value <replaceable>v<subscript>i</subscript></replaceable>.
 	    The site <replaceable>g</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
 	  </para>
@@ -49,7 +50,7 @@
 	  <section xml:id="ref.expressions.call.function">
 	  <title>Function Calls</title>
 	  <para>
-	    Unlike site calls, function calls are <indexterm significance="preferred"><primary>lenient</primary></indexterm><firstterm>lenient</firstterm>. 
+	    Unlike a site call, a <indexterm><primary>function call</primary></indexterm>function call is <indexterm significance="preferred"><primary>lenient</primary></indexterm><firstterm>lenient</firstterm>. 
 	    <link linkend="ref.declarations.def.execution">Execution of a function call</link> <replaceable>g</replaceable><code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code>
 	    deflates each expression <replaceable>E<subscript>i</subscript></replaceable>, but does not wait for values to be published; instead, the body of the function executes immediately.
 	    
@@ -147,6 +148,7 @@ Waiting
 			<listitem><para><link linkend="ref.expressions.dot">Dot Access</link></para></listitem>
 			<listitem><para><link linkend="ref.expressions.operators">Operators</link></para></listitem>
 			<listitem><para><link linkend="ref.sites">Sites and Services</link></para></listitem>
+			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
 			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.def"><code>def</code>:  Define Function</link></para></listitem>
 			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>

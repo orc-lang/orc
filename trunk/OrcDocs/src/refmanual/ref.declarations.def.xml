@@ -42,7 +42,7 @@
 		</para>
 		
 		<para>
-		Orc functions also have other features, many of them adopted from typed functional programming languages:
+		Orc functions have additional features, many of them adopted from typed functional programming languages:
 		</para>
 		
 		<para>
@@ -73,7 +73,7 @@
 		<title>Function Execution</title>
 		
 		  <para>
-		  We first consider the simplest case of argument binding, with only variables and wildcards as parameters.
+		  The simplest case of argument binding uses only variables and wildcards as parameters.
 		  </para>
 		
 			<para>
@@ -136,38 +136,7 @@ body and the arguments are evaluated in parallel.
 
 
 		</section> 
-		
-		<section xml:id="ref.declarations.def.recursion">
-    <title>Recursion</title>
-    
-    	<!-- Index pointers for unwritten terms -->
-		<indexterm><primary>recursion</primary></indexterm>
-    
-      <para>
-        Functions can be recursive; that is, the name of a function may be used in its own body.
-      </para>
-        
-<programlisting language="orc"><![CDATA[
-{- A recursive factorial function -}
-def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
-]]></programlisting>
-
-      <para>
-        A recursive function might continue executing indefinitely, producing an infinite number of publications.
-      </para>  
-        
-<programlisting language="orc"><![CDATA[
-{- Publishes a signal every second, forever -}
-def metronome() = signal | Rwait(1000) >> metronome()
-]]></programlisting>
-        
-        <para>
-        A set of functions may be mutually recursive by naming each other in their bodies.
-        There is no special keyword for <indexterm><primary>mutual recursion</primary></indexterm>mutual recursion; whenever two or more function
-        definitions are adjacent, the compiler detects whether they mutually recurse.
-        </para>
-
-    </section>  
+		  
 		
 		<section xml:id="ref.declarations.def.pattern">
 		<title>Patterns as Parameters</title>
@@ -203,6 +172,40 @@ z >P> E
 		</para>
 		
 		</section>
+		
+		
+		<section xml:id="ref.declarations.def.recursion">
+    <title>Recursion</title>
+    
+    	<!-- Index pointers for unwritten terms -->
+		<indexterm><primary>recursion</primary></indexterm>
+    
+      <para>
+        Functions can be recursive; that is, the name of a function may be used in its own body.
+      </para>
+        
+<programlisting language="orc"><![CDATA[
+{- A recursive factorial function -}
+def fact(n) = if (n <= 1) then 1 else n * fact(n-1)
+]]></programlisting>
+
+      <para>
+        A recursive function might continue executing indefinitely, producing an infinite number of publications.
+      </para>  
+        
+<programlisting language="orc"><![CDATA[
+{- Publishes a signal every second, forever -}
+def metronome() = signal | Rwait(1000) >> metronome()
+]]></programlisting>
+        
+        <para>
+        A set of functions may be mutually recursive by naming each other in their bodies.
+        There is no special keyword for <indexterm><primary>mutual recursion</primary></indexterm>mutual recursion; 
+        whenever two or more function definitions mutually recurse, their definitions are adjacent.
+        </para>
+
+    </section>
+    
 		
 		<section xml:id="ref.declarations.def.guard">
 		<title>Guards</title>
@@ -253,7 +256,7 @@ z >P> Ift(Gd) >> E
 			  <listitem><para>There is a guard expression, and it did not deflate to <code>true</code>.</para></listitem>
 			  </orderedlist>
 			  
-			  If each strict pattern matches successfully, and the guard deflates to <code>true</code>, 
+			  If each strict pattern matches successfully, and the guard expression (if present) deflates to <code>true</code>, 
 			  then the corresponding function body executes. 
 			  If the clause fails, then the next clause is executed.
 			  If the last clause fails, then the function call halts silently. 
@@ -263,63 +266,6 @@ z >P> Ift(Gd) >> E
 
 	  </section>
 		 
-		
-		
-	  
-	  <section xml:id="ref.declarations.def.currying">
-		<title>Curried Definition</title>
-		
-		<para>
-		  A function definition may have more than one group of parameters. 
-		  If it does, it is a <indexterm significance="preferred"><primary>curry</primary></indexterm><firstterm baseform="curry">curried</firstterm> definition.
-		  When such a function is called, it executes as described earlier,
-		  except that rather than executing the function body, it instead immediately
-		  publishes a closure of an equivalent function definition, minus the first group of arguments.
-		</para>
-		
-		<para>
-		  The following two programs are equivalent:
-		  
-<programlisting language="orc"><![CDATA[
-def fn(x)(y) = E
-]]></programlisting>
-
-<programlisting language="orc"><![CDATA[
-def fn(x) = ( lambda (y) = E )
-]]></programlisting>
-    </para>
-    
-    <para>
-		  Combining curried definitions and clausal definitions may result
-		  in counterintuitive program behavior.
-		  When a function clause has multiple parameter groups, only the first
-		  parameter group participates in pattern matching. Subsequent parameter
-		  groups are irrelevant until after a clause has been chosen.
-		</para>
-		
-		<para>
-		  The following two programs are equivalent:
-		  
-<programlisting language="orc"><![CDATA[
-def fn([x])([y]) = E
-def fn(x)(y) = F
-]]></programlisting>
-
-<programlisting language="orc"><![CDATA[
-def fn([x]) = ( lambda ([y]) = E )
-def fn(x) = ( lambda (y) = F )
-]]></programlisting>
-
-      Consequently, the call <code>fn([0])([])</code> will halt silently,
-      rather than matching the clause <code>fn(x)(y) = F</code>,
-      since the clause <code>fn([x])([y]) = E</code> is chosen based on the first argument group
-      <code>[0]</code>, even though the subsequent parameter <code>[y]</code> does not match the 
-      argument <code>[]</code>.
-    </para>
-		
-		
-		</section>
-	  
 	  
 
 	  <section xml:id="ref.declarations.def.type">

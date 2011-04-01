@@ -42,8 +42,9 @@
 		  <example xml:id="ref.expressions.stop.examples.printsilent">
 		  <title>Print Silently</title>
 <programlisting language="orc-demo"><![CDATA[
-{-  Print three numbers in sequence, and then halt, 
-    without publishing.
+{-  
+  Print three numbers in sequence, and then halt without publishing
+  a signal from Println. 
 -}
 
 Println("1") >> 
@@ -86,6 +87,7 @@ OUTPUT:
 			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
 			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
 			<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
+			<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
 		</itemizedlist>
 		  
 		  <!--

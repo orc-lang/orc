@@ -15,7 +15,7 @@
 
 <para>
 A <indexterm significance="preferred"><primary>record</primary></indexterm><firstterm>record</firstterm> is an unordered finite map from <indexterm><primary>key</primary></indexterm>keys to values. 
-It may be empty; the empty record is written as <code>{. .}</code>. 
+The empty record is written as <code>{. .}</code>. 
 </para>
 
 <section xml:id="ref.data.record.syntax">
@@ -38,7 +38,7 @@ associates a key with an expression.
 <para>
 The record expression <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 
 publishes the record <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
-only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">bindings</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
 Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
 
@@ -105,7 +105,7 @@ is a record type, written <code>{.</code> <replaceable>K<subscript>0</subscript>
 <section xml:id="ref.data.record.javacalls">
 <title>Java calls</title>
 
-<para>Orc records do not correspond to any Java value, so if a record is passed to Java code, it will be as a <type>java.lang.Object</type> of a type not specified here.</para>
+<para>Orc records do not correspond to any Java value, so if a record is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
 
 </section>
 
