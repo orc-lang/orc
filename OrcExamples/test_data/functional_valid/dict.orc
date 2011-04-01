@@ -1,4 +1,4 @@
-val d = Dictionary()
+val d = Dictionary() :!: {. one :: Ref[Integer], two :: Ref[Integer] .}
   Println(d.one?) >>
   Println(d.two?) >>
   stop

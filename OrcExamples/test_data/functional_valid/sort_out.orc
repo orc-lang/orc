@@ -3,9 +3,11 @@
 
 -- sort output
 
+def sort[A](lambda () :: A, lambda (A,A) :: Integer) :: Signal
 def sort(input, comparator) =
-  val b = Buffer()
-  val l = Ref([])
+  val b = Buffer[A]()
+  val l = Ref[List[A]]([])
+  def sort_aux(A, List[A]) :: List[A]
   def sort_aux(x, []) = [x]
   def sort_aux(x, y:[]) = if (comparator(x, y) <: 0) then x:[y] else y:[x]
   def sort_aux(x, y:yl) = if (comparator(x, y) <: 0) then x:y:yl else y:sort_aux(x, yl)

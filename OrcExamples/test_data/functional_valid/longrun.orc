@@ -3,7 +3,7 @@ This file tests the behavior of engine when we have so many long running sites.
 -}
 
 class Thread = "java.lang.Thread"
-def delay(n) = Thread.currentThread().sleep(n)
+def delay(n :: Integer) = Thread.currentThread().sleep(n)
 
 upto(50) >> delay(3000)>> stop
 | delay(2000) >> "delay"

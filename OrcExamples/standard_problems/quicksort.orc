@@ -30,7 +30,7 @@ def quicksort(a) =
       for every i, r' < i <= r, a(i)? >  p.
     Note: Either of the partitioned segments may be empty. -}
 
-def partition(Integer, Integer, Integer) :: Integer
+def partition(X, Integer, Integer) :: Integer
 def partition(p, l, r) =
    ------ Helper functions ------
    {-   lr(i) returns the smallest j, i >= j <= r, such that a(i)? > p,
@@ -80,11 +80,11 @@ def sorted([x])    = true
 def sorted(x:y:xs) = (x <= y) && sorted(y:xs)
 --------------  End of Test Routines -------------
 
-{- Test with a random array -}
+{- Test with a random array 10 times. -}
 signals(10) >>
 fillArray(Array[Integer](20), lambda (_ :: Integer) = Random(20)-10) >a>
 quicksort(a) >>
-map(lambda (x :: Integer) = x {- let -}, a) >l> -- convert array a to list l
+arrayToList(a) >l> -- convert array a to list l
 sorted(l)
 
 {-
