@@ -188,7 +188,7 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 				<row>
 					<entry>3</entry>
 					<entry>Sequential</entry>
-					<entry><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code></entry>
+					<entry><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code></entry>
 					<entry>Infix</entry>
 					<entry>Right</entry>
 				</row>
@@ -202,7 +202,7 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 				<row>
 					<entry>1</entry>
 					<entry>Pruning</entry>
-					<entry><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code></entry>
+					<entry><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>

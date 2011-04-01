@@ -45,7 +45,7 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
 
 <para>
   Each constructor is a site, which takes one argument for each slot
-  in the constructor, and publishes a datatype value consisting of the sequence of argument
+  of the constructor, and publishes a datatype value consisting of the sequence of argument
   values, tagged with that constructor's unique tag.
 </para>
 
@@ -53,7 +53,7 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
   Each constructor also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
   which takes a value with that constructor's tag, removes the tag, and publishes the sequence of values as a tuple.
   If its argument does not have the tag, it halts. 
-  Thus, datatype values can be used in pattern matching. 
+  Thus, constructors can be used in pattern matching. 
 </para>
 
 </section>
@@ -66,13 +66,13 @@ A datatype declaration defines a new <indexterm significance="preferred"><primar
 </para>
 
 <para>
-Each of the constructor sites defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
+Each constructor defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
 <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
 where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
 and <replaceable>S</replaceable> is the sum type.
 </para>
 <para>
-Each constructor site also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
+Each constructor also has a corresponding <link linkend="ref.patterns.call"><code>unapply</code> member</link>,
 with type <code>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code><replaceable>S</replaceable><code>)</code> <code>::</code> <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>.
 </para>
 
@@ -116,14 +116,14 @@ OUTPUT:
 type Shape = Rectangle(_, _) | Circle (_)
 
 def area(Rectangle(width,height)) = width * height
-def area(Circle(diameter)) = 3.1415926535897 * (diameter / 2.0) ** 2
+def area(Circle(radius)) = 3.1415926535897 * radius ** 2
 
-{- Find the area of a rectangle -}
-area(Rectangle(2, 3))
+area(Rectangle(2, 3)) | area(Circle(1))
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 6
+3.14159265358970
 -}
 ]]></programlisting>
 </example>

@@ -16,9 +16,9 @@
 
 <para>
 Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. 
-Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>.
+Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>;
+they publish at most once, and their operands are <link linkend="ref.concepts.deflate">deflated</link>..
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Site calls, and therefore operators, publish at most once, and operands are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>

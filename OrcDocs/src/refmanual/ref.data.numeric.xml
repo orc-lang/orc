@@ -85,10 +85,6 @@ If a numeric literal contains a decimal point or an "<code>E</code>", it is a nu
 	perform decimal division and return 2.5. 
 </para>
 
-<para>
-A prefix unary minus sign is provided for in the Orc syntax, but not a prefix unary plus sign.
-</para>
-
 </section>
 
 <section xml:id="ref.data.numeric.javacalls">

@@ -49,7 +49,7 @@
 {- Factorial function -}
 
 def fact(0) = 1
-def fact(n) = n * fact(n-1)
+def fact(n) if (n :> 0) = n * fact(n-1)
 
 fact(3)
 

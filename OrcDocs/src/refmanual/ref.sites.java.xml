@@ -192,7 +192,7 @@ OUTPUT:
 </example>
 
 <example xml:id="ref.sites.java.examples.static">
-<title>Static field access, constructor invocation, static method access, overloading, and Orc-Java conversion</title>
+<title>Accessing class members</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Access Java's String and Boolean classes -}
 

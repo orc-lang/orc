@@ -39,7 +39,7 @@ For example, <code>(x,y,x)</code> is not a valid pattern.
 
 <para>
 Note that a pattern may fail to match a value, if it does not have the same shape as that value.
-When this occurs, the unmatched value is simply discarded, as if it had never been published.
+When this occurs, the unmatched value is simply discarded.
 </para>
 
 <para>

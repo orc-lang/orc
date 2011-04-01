@@ -100,6 +100,28 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
+		  <example xml:id="ref.expressions.dot.examples.channelmethods"><title>Capture Channel Methods</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Access the 'put' and 'get' members of a channel, and use them as separate sites. -}
+
+val c = Buffer()
+val send = c.put
+val receive = c.get
+
+map(send, [1, 2, 3]) >>
+repeat(receive) >x> 
+Println("Received: " + x) >>
+stop
+
+{-
+OUTPUT:PERMUTABLE:
+Received: 1
+Received: 2
+Received: 3
+-}
+]]></programlisting>
+		  </example>
+		  
 		</section>
 		  		
 		<section xml:id="ref.expressions.dot.links">
