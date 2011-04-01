@@ -30,10 +30,11 @@ object FractionDefs extends NamedASTTransform {
   
     override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
       case DeclareDefs(defs, body) => {
-        val defnames = defs map { _.name }
-        val defslists = fraction(defs) 
-        val newbody = transform(body, defnames ::: context, typecontext)
-        defslists.foldRight(newbody) { DeclareDefs }
+        val newdefs = defs map { transform(_, context, typecontext) }
+        val newdefnames = newdefs map { _.name }
+        val newdeflists = fraction(newdefs)
+        val newbody = transform(body, newdefnames ::: context, typecontext)
+        newdeflists.foldRight(newbody) { DeclareDefs }
       }
     }  
   

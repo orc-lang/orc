@@ -9,13 +9,12 @@
    write(v,is) writes value v at the given node.
 -}
 
-
 def class BBTree(0) =
  def read(is) = stop
  def write(v,is) = stop
 stop
 
-def class BBTree(n) =
+def class BBTree(n :: Integer) =
  val (root, left, right) = (Ref(), BBTree(n-1), BBTree(n-1))
 
  def write(v,[])   = root := v

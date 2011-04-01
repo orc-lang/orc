@@ -19,8 +19,12 @@
    Then a matrix element is accessed by its list of indices.
 -}
 
+
+  def Matrix[A](List[(Integer, Integer)]) :: 
+    {. item :: lambda (List[Integer]) :: A .}
+  
   def class Matrix([]) = 
-     val Mat = Array(1)
+     val Mat = Array[A](1)
      def item([]) = Mat(0)
   stop
 
@@ -30,7 +34,7 @@
     def size([]) = 1
     def size((l,h):ys) = (h-l+1)*size(ys)
 
-    val Mat = Array(size(xs))
+    val Mat = Array[A](size(xs))
     def item(is) =
     {- index(acc,xs,is) has
         acc: an integer
@@ -39,14 +43,14 @@
        It computes acc+j, where j is the linear index of the 
        element at index is.
     -}
-    def index(acc,[],[]) = acc
-    def index(acc,(l,h):ys,i:is) = index(acc*(h-l+1)+(i-l),ys,is)
+      def index(acc,[],[]) = acc
+      def index(acc,(l,h):ys,i:is) = index(acc*(h-l+1)+(i-l),ys,is)
+      Mat(index(0,xs,is))
+      
+    stop
 
-    Mat(index(0,xs,is))
-  stop
-
-val B = Matrix([]).item
-val A = Matrix([(-2,0),(-1,3),(-1,3)]).item
+val B = Matrix[Integer]([]).item
+val A = Matrix[Integer]([(-2,0),(-1,3),(-1,3)]).item
  
 A([-1,2,1]) := 3 >> A([-1,2,1])?
 

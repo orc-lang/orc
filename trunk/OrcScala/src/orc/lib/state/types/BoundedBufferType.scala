@@ -28,7 +28,7 @@ object BoundedBufferType extends SimpleTypeConstructor("BoundedBuffer", Invarian
   
   def getBuilder: Type = {
     val X = new TypeVariable()
-    FunctionType(List(X), Nil, this(X)) 
+    FunctionType(List(X), List(IntegerType), this(X)) 
   }
   
   override def instance(ts: List[Type]) = { 
