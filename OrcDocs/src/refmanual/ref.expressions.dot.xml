@@ -15,7 +15,7 @@
 		<title>Dot Access</title>
 		
 		<para>
-			A <indexterm significance="preferred"><primary>dot</primary></indexterm><firstterm baseform="dot">dot access</firstterm> is an expression which retrieves a named <indexterm significance="preferred"><primary>member</primary></indexterm><firstterm>member</firstterm> of a value.
+			A <indexterm significance="preferred"><primary>dot</primary></indexterm><firstterm baseform="dot">dot access</firstterm> is an expression that retrieves a named <indexterm significance="preferred"><primary>member</primary></indexterm><firstterm>member</firstterm> of a value.
 			It consists of a <indexterm significance="preferred"><primary>target</primary></indexterm><firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <indexterm significance="preferred"><primary>key</primary></indexterm><firstterm>key</firstterm> <replaceable>K</replaceable>.
 			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>v</replaceable>.
 			If the value <replaceable>v</replaceable> has a member named <replaceable>K</replaceable>, that member
@@ -80,15 +80,15 @@ OUTPUT:
 		  
 		  <example xml:id="ref.expressions.dot.examples.channelops"><title>Channel Operations</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Create a channel, and perform some operations on it. -}
+{- Create a buffer, and perform some operations on it. -}
 
-val c = Buffer()
+val b = Buffer()
 
-  c.get() >x> c.put(x+1) >> stop
-| c.get() >y> c.put(y*2) >> stop
-| c.put(3) >> stop
+  b.get() >x> b.put(x+1) >> stop
+| b.get() >y> b.put(y*2) >> stop
+| b.put(3) >> stop
   ;
-  c.get()
+  b.get()
 
 {-
 OUTPUT:

@@ -24,7 +24,7 @@
 		    <productionrecap linkend="ebnf.expression.sequential"/>
 		    </productionset>
 		  </para>
-		  <para><emphasis role="strong">Combinator Precedence</emphasis>: 
+		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
 			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
 			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
 			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
@@ -98,7 +98,7 @@
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable> <code><![CDATA[>]]></code><replaceable>x</replaceable><code><![CDATA[>]]></code> <replaceable>G</replaceable> 
+				The type of <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable> 
 				is the type of <replaceable>G</replaceable> 
 				using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, 
 				where <replaceable>T</replaceable> 
@@ -143,14 +143,14 @@ OUTPUT:PERMUTABLE
    but don't publish the return values of the calls.
 -}
 
-println("goodbye") >>
-println("world") >>
+Println("goodbye") >>
+Println("world") >>
 stop
 
 {-
 OUTPUT:
-"goodbye"
-"world"
+goodbye
+world
 -}
 ]]></programlisting>
 		  </example>

@@ -99,16 +99,15 @@
 	  </para>
 	  
 	  <para>
-	  Each method behaves as a site, in particular a <link linkend="ref.concepts.states.helpful">helpful</link> site. Therefore,
+	  Each method behaves as a site, in particular a <link linkend="ref.concepts.helpful">helpful</link> site. Therefore,
 	  
 	  <itemizedlist>
 	    <listitem><para>
 	      A method call, unlike a function call, is strict in all of its arguments.
 	    </para></listitem>
 	    <listitem><para>
-        A method call returns at most one value. If the method is a <code>def</code>, its first publication
-        is used, and execution of the body continues, but subsequent publications are discarded. From the
-        perspective of the rest of the program, the method call returned a single value and then halted.  
+        A method call publishes at most one value. If the method is a <code>def</code>, its first publication
+        is used, and execution of the body continues, but subsequent publications are discarded.   
       </para></listitem>
       <listitem><para>
         If the method is a <code>def</code>, and execution of its body expression halts silently,
@@ -156,7 +155,8 @@
 			row and column indices range over arbitrary intervals.
 	  	</para>
 <programlisting language="orc-demo"><![CDATA[
-{- Create a (rowhi-rowlo) x (colhi-collo) matrix 
+{- Create a matrix whose indices range from 
+   (rowlo, collo) to (rowhi, colhi) inclusive,
    with a method to access its elements.
 -}
 
@@ -340,8 +340,12 @@ val _ = metro()
 {- Goal of the whole program -}  stop
 
 {-
+NONRUNNABLE
 OUTPUT:
 "tick"
+"tick"
+"tick"
+...
 -}
 ]]></programlisting>
 		  </example>
@@ -379,15 +383,6 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-<para>For more information on sites used in the examples:
-	<itemizedlist>
-		<listitem><link linkend="ref.stdlib.state.Buffer"><code>Buffer</code> site</link></listitem>
-		<listitem><link linkend="ref.stdlib.state.BoundedBuffer"><code>BoundedBuffer</code> site</link></listitem>
-		<listitem><link linkend="ref.stdlib.state.Ref"><code>Ref</code> site</link></listitem>
-		<listitem><link linkend="ref.stdlib.state.Semaphore"><code>Semaphore</code> site</link></listitem>
-		<listitem><link linkend="ref.stdlib.state.Cell"><code>Cell</code> site</link></listitem>
-	</itemizedlist>
-</para>
 	   </section>
 	
 	  <section xml:id="ref.declarations.defclass.links">

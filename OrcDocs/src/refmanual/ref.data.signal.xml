@@ -15,7 +15,7 @@
 
 <para>A <indexterm significance="preferred"><primary>signal</primary></indexterm><firstterm>signal</firstterm> is a value that carries no information. It typically indicates
 completion of a site call, when there is no other meaningful value to return. It is analogous
-to <code>void</code> in Java or <code>()</code>, the unit value, in ML.
+to <code>void</code> in Java or <code>()</code> in ML.
 </para>
 
   <section xml:id="ref.data.signal.syntax">

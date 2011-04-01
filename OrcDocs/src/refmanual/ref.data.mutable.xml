@@ -16,10 +16,9 @@
 <para>A mutable object is value on which operations may
 yield different results when called at different times.
 Mutable objects are common in imperative programming languages.
-They reflect the concept of a storage location in a von Neumann style architecture.  
-Most of Orc's value types are immutable.</para>
+They reflect the concept of a storage location in a von Neumann style architecture.</para>
 
-<para>Orc provides the following standard mutable value types:
+<para>Most of Orc's value types are immutable. Orc provides the following standard mutable value types:
 <itemizedlist>
 <listitem><para><code><indexterm><primary>Ref</primary></indexterm>Ref</code>: Reference to a value that can be changed</para></listitem>
 <listitem><para><code><indexterm><primary>Cell</primary></indexterm>Cell</code>: A write-once <code>Ref</code></para></listitem>

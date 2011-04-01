@@ -15,9 +15,10 @@
 	<title>Operators</title>
 
 <para>
-Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>.
+Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. 
+Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
-Site calls only publish once, and arguments are <link linkend="ref.concepts.deflate">deflated</link>.
+Site calls, and therefore operators, publish at most once, and operands are <link linkend="ref.concepts.deflate">deflated</link>.
 </para>
 
 <para>
@@ -78,7 +79,7 @@ In particular, these rules describe the relationship between operators and combi
 </tbody></tgroup></informaltable>
 
 <para>
-Numbers with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
+Numeric literals with no decimal part, such as <code>3</code>, are treated as integers. Arithmetic operators with two integer arguments will perform
 an integer operation and return an integer result; for example, <code>5 / 2</code> performs integer division and returns <code>2</code>.
 However, if either argument to an operator has a decimal part (even if it is trivial, as in <code>3.0</code>), the other argument will
 be promoted, and a decimal operation will be performed. For example, <code>5 / 2.0</code> and <code>5.0 / 2</code> both 

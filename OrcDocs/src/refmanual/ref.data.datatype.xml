@@ -20,14 +20,14 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
 
 <para>
   Datatypes are defined by a <link linkend="ref.declarations.type.datatype"><code>type</code> declaration</link>.
-  Each <indexterm significance="preferred"><primary>constructor</primary></indexterm><firstterm>constructor</firstterm> in the declaration introduces a new tag, followed by a sequence of <emphasis>slots</emphasis>.
+  Each <indexterm significance="preferred"><primary>constructor</primary></indexterm><firstterm>constructor</firstterm> 
+  in the declaration introduces a new tag, followed by a sequence of <emphasis>slots</emphasis>.
   The <code>|</code> separator allows multiple constructors to be defined at the same time.
 </para>
 
 <para>
-  Datatypes provide many static typing facilities, but they may be used in an untyped
-  program as well. Instead of containing a type, a slot may be empty, written <code>_</code>.
-</para>
+  In an untyped program, slots are written as <code>_</code>. In a typed program, slots contain types.
+]</para>
 
 <section xml:id="ref.data.datatype.syntax">
   <title>Syntax</title>
@@ -113,14 +113,17 @@ OUTPUT:
 <title>Geometric shape datatype</title>
 <programlisting language="orc-demo"><![CDATA[
 {- A Shape type with three data constructors -}
-type Shape = Rectangle(_, _) | Circle (_) | Triangle(_, _, _)
+type Shape = Rectangle(_, _) | Circle (_)
 
-{- Create a rectangle -}
-Rectangle(2, 3)
+def area(Rectangle(width,height)) = width * height
+def area(Circle(diameter)) = 3.1415926535897 * (diameter / 2.0) ** 2
+
+{- Find the area of a rectangle -}
+area(Rectangle(2, 3))
 
 {-
 OUTPUT:
-Rectangle(2, 3)
+6
 -}
 ]]></programlisting>
 </example>
