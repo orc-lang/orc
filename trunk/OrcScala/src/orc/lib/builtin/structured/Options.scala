@@ -2,7 +2,7 @@
 // Options.scala -- Implementations of option manipulation sites
 // Project OrcScala
 //
-// $Id: Constructors.scala 2637 2011-03-28 20:27:25Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on March 31, 2011.
 //
