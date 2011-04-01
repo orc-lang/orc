@@ -83,7 +83,7 @@ object Typechecker {
           case left ow right => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)
-            (newLeft || newRight, typeLeft join typeRight)
+            (newLeft ow newRight, typeLeft join typeRight)
           }
           case left > x > right => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
