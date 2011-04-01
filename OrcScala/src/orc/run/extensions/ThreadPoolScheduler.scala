@@ -27,14 +27,35 @@ import scala.concurrent.ManagedBlocker
  * @author jthywiss
  */
 trait ThreadPoolScheduler extends Orc {
-  
+
   type ActorScheduler = scala.actors.IScheduler { def start(): Unit; def snapshot(): Unit }
+
+  private class OrcWorkerThread(target: Runnable, name: String) extends Thread(target, name)
+
+  private object OrcWorkerThreadFactory extends scala.actors.threadpool.ThreadFactory {
+    var threadCreateCount = 0
+    protected def getNewThreadName() = {
+      var ourThreadNum = 0
+      synchronized {
+        ourThreadNum = threadCreateCount
+        threadCreateCount += 1
+      }
+      "Orc Worker Thread "+ourThreadNum
+    }
+    def newThread(r: Runnable): Thread = {
+      new OrcWorkerThread(r, getNewThreadName())
+    }
+  }
 
   /**
    * @return the Scala Actor Scheduler that contains the ThreadPoolExecutor
    *    to use for this token scheduler.
    */
-  protected def newActorScheduler(): ActorScheduler = new ResizableThreadPoolScheduler(true, false)
+  protected def newActorScheduler(): ActorScheduler = {
+    val s = new ResizableThreadPoolScheduler(true, false)
+    s.setName("Orc Thread Pool Scheduler")
+    s
+  }
 
   /**
    * Some schedulers, such as ForkJoinScheduler, need blocking tasks wrapped in
@@ -43,6 +64,12 @@ trait ThreadPoolScheduler extends Orc {
   protected val useManagedBlocker = false
 
   private val scalaActorScheduler = newActorScheduler()
+  private val executorField = scalaActorScheduler.getClass.getDeclaredField("executor")
+  executorField.setAccessible(true)
+  private val executor = executorField.get(scalaActorScheduler).asInstanceOf[scala.actors.threadpool.ThreadPoolExecutor]
+  //Console.println("corePoolSize = " + executor.getCorePoolSize)
+  //Console.println("maximumPoolSize = " + executor.getMaximumPoolSize)
+  executor.setThreadFactory(OrcWorkerThreadFactory)
   scalaActorScheduler.start()
 
   /* (non-Javadoc)
@@ -83,6 +110,15 @@ trait ThreadPoolScheduler extends Orc {
    * @see orc.run.Orc#stop()
    */
   override def stop = {
+    //Console.println("---- STOPPING ThreadPoolScheduler ----")
+    //Console.println("corePoolSize = " + executor.getCorePoolSize)
+    //Console.println("maximumPoolSize = " + executor.getMaximumPoolSize)
+    //Console.println("poolSize = " + executor.getPoolSize)
+    //Console.println("activeCount = " + executor.getActiveCount)
+    //Console.println("largestPoolSize = " + executor.getLargestPoolSize)
+    //Console.println("taskCount = " + executor.getTaskCount)
+    //Console.println("completedTaskCount = " + executor.getCompletedTaskCount)
+    //Console.println("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
     scalaActorScheduler.snapshot()  // Interrupts running worker threads
     scalaActorScheduler.shutdown()
     super.stop
