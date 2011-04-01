@@ -36,9 +36,9 @@
 as well as the comparison operators, which yield Boolean results:
 <itemizedlist>
 <listitem><para>Less than: <code>&lt;:</code></para></listitem>
-<listitem><para>Greater than: <code>:></code></para></listitem>
+<listitem><para>Greater than: <code>:&gt;</code></para></listitem>
 <listitem><para>Less than or equal to: <code>&lt;=</code></para></listitem>
-<listitem><para>Greater than or equal to: <code>>=</code></para></listitem>
+<listitem><para>Greater than or equal to: <code>&gt;=</code></para></listitem>
 <listitem><para>Equal to: <code>=</code></para></listitem>
 <listitem><para>Not equal to: <code>/=</code></para></listitem>
 </itemizedlist>
@@ -46,7 +46,7 @@ as well as the comparison operators, which yield Boolean results:
 
 <para>
 	Note:  Unlike the typical symbols <code>&lt;</code> and <code>&gt;</code>
-	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:></code>
+	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:&gt;</code>
 	respectively.  This usage avoids ambiguity with the 
 	<link linkend="ref.combinators.sequential">sequential combinator</link>,
 	and the <link linkend="ref.combinators.pruning">pruning combinator</link>.
@@ -64,7 +64,7 @@ as well as the comparison operators, which yield Boolean results:
 <section xml:id="ref.data.boolean.javacalls">
 <title>Java calls</title>
 
-<para>Orc <code>Boolean</code> values are passed in calls to and returns
+<para>Orc Boolean values are passed in calls to and returns
 from Java code as <code language="java">java.lang.Boolean</code>, which is boxed and
 unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle> as <code language="java">boolean</code>.</para>
 

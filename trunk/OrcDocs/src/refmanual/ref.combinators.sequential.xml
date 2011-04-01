@@ -43,9 +43,9 @@
 			    <colspec align="right" colwidth="7*"/>
 				<tbody>
 				  <row>
-				    <entry><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>H</replaceable></entry>
+				    <entry><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
 				    <entry> = </entry>
-				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>H</replaceable></entry>
+				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
 				    <entry>  (Left Associative)</entry>
 				  </row>
 				</tbody>
@@ -57,28 +57,28 @@
 		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
-		  	<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable></term>
+		  	<varlistentry><term><replaceable>F</replaceable><code> &gt;</code><replaceable>x</replaceable><code>&gt; </code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  The execution of <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>
+			  The execution of <replaceable>F</replaceable><code> &gt;</code><replaceable>x</replaceable><code>&gt; </code><replaceable>G</replaceable>
 			   starts by executing <replaceable>F</replaceable>. Whenever <replaceable>F</replaceable> 
-			  <indexterm><primary>publish</primary></indexterm>publishes a value, a new instance of <replaceable>G</replaceable> is executed in parallel with <replaceable>F</replaceable> (and with any previous 
-			  copies of <replaceable>G</replaceable>); in that instance of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
-			  published by <replaceable>F</replaceable>. Values 
-			  published by copies of <replaceable>G</replaceable> are published by the whole expression, but the values published 
+			  <indexterm><primary>publish</primary></indexterm>publishes a value, a new execution of <replaceable>G</replaceable> begins in parallel with <replaceable>F</replaceable> (and with any previous 
+			  executions of <replaceable>G</replaceable>); in that execution of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
+			  published by <replaceable>F</replaceable>. Any value 
+			  published by any executions of <replaceable>G</replaceable> is published by the whole expression, but the values published 
 			  by <replaceable>F</replaceable> are not published by the whole expression; they are consumed by the variable binding. 
 			</para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable></term>
+			<varlistentry><term><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  The sequential combinator may be written as <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>P</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable>, 
+			  The sequential combinator may be written as <replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable>, 
 			  where <replaceable>P</replaceable> is a pattern instead of 
 			  just a variable name. Any value published by <replaceable>F</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. 
-			  If this match is successful, a new instance of <replaceable>G</replaceable> is started with all of the bindings 
-			  from the match. Otherwise, the published value is simply ignored, and no new instance 
-			  of <replaceable>G</replaceable> is created. 
+			  If this match is successful, a new execution of <replaceable>G</replaceable> begins, with all of the bindings 
+			  from the match. Otherwise, the published value is simply ignored, and no new execution
+			  of <replaceable>G</replaceable> is begun.
 			</para>
 			</listitem>
 			</varlistentry>
@@ -98,11 +98,9 @@
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable><code><![CDATA[ >]]></code><replaceable>x</replaceable><code><![CDATA[> ]]></code><replaceable>G</replaceable> 
-				is the type of <replaceable>G</replaceable> 
-				using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, 
-				where <replaceable>T</replaceable> 
-				is the type of <replaceable>F</replaceable>.
+				The type of <replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable> 
+				is the type of <replaceable>G</replaceable> in the <link linkend="ref.types.context">context</link> Γ<subscript>F</subscript>, 
+				where Γ<subscript>F</subscript> is the result of matching the pattern <replaceable>P</replaceable> against the type of <replaceable>F</replaceable>.
 			</para>
 		</section>
 		

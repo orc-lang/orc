@@ -13,9 +13,9 @@
 <section xml:id="ref.data.signal" xmlns="http://docbook.org/ns/docbook">
 <title><code>signal</code></title>
 
-<para>A <indexterm significance="preferred"><primary>signal</primary></indexterm><firstterm>signal</firstterm> is a value that carries no information. It typically indicates
-completion of a site call, when there is no other meaningful value to return. It is analogous
-to <code>void</code> in Java or <code>()</code> in ML.
+<para>A <indexterm significance="preferred"><primary>signal</primary></indexterm><firstterm>signal</firstterm> is a value that carries no information. 
+It typically indicates completion of a site call, when there is no other meaningful value to return. 
+It is analogous to <code>void</code> in Java or <code>()</code> in ML.
 </para>
 
   <section xml:id="ref.data.signal.syntax">
@@ -32,8 +32,9 @@ to <code>void</code> in Java or <code>()</code> in ML.
 
 <para>Notable signal operations include:
 <itemizedlist>
-<listitem><para>The <code>Ift</code> site publishes a <code>signal</code> if its argument is true.</para></listitem>
-<listitem><para>The <code>Iff</code> site publishes a <code>signal</code> if its argument is false.</para></listitem>
+<listitem><para>Publish a signal if an expression is true: <code>Ift</code></para></listitem>
+<listitem><para>Publish a signal if an expression is false: <code>Iff</code></para></listitem>
+<listitem><para>Publish some number of signals simultaneously: <code>signals</code></para></listitem>
 </itemizedlist>
 </para>
 
@@ -49,9 +50,9 @@ to <code>void</code> in Java or <code>()</code> in ML.
 <section xml:id="ref.data.signal.javacalls">
 <title>Java calls</title>
 
-<para>Orc <code>Signal</code>s don't correspond to any Java value, so if a <code>Signal</code>
+<para>Orc signals don't correspond to any Java value, so if a signal
 is passed to Java code, it will be as an <code language="java">java.lang.Object</code> of a type not specified here.
-Returns of type <code language="java">void</code> from Java code are converted into a publication of a <code>Signal</code>.</para>
+Returns of type <code language="java">void</code> from Java code are converted into a publication of a signal.</para>
 
 </section>
 

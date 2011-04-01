@@ -15,7 +15,7 @@
 
 <para>
 A <indexterm significance="preferred"><primary>list</primary></indexterm><firstterm>list</firstterm> consists of a finite sequence of values. 
-It may be empty; the empty list is written as <code>[]</code>.
+The empty list is written as <code>[]</code>.
 </para>
 
 <section xml:id="ref.data.list.syntax">

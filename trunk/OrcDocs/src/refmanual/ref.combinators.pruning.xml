@@ -43,9 +43,9 @@
 			    <colspec align="right" colwidth="7*"/>
 				<tbody>
 				  <row>
-				    <entry><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>H</replaceable></entry>
+				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
 				    <entry> = </entry>
-				    <entry><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
+				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
 				    <entry>  (Right Associative)</entry>
 				  </row>
 				</tbody>
@@ -57,10 +57,10 @@
 		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
-		  	<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable></term>
+		  	<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
 			<listitem>
 			 <para>
-			  	The execution of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
+			  	The execution of <replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable> 
 			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
 				<replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
 				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.states.kill"><indexterm><primary>kill</primary></indexterm>killed</link>. 
@@ -71,7 +71,7 @@
 			  </para>
 			</listitem>
 			</varlistentry>
-			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>P</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable></term>
+			<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
 			<listitem>
 			  <para>
 				The pruning combinator may include a full pattern <replaceable>P</replaceable> instead of just a variable name. Any value published
@@ -97,11 +97,9 @@
 	  <section xml:id="ref.combinators.pruning.type">
 	    <title>Type</title>
 			<para>
-				The type of <replaceable>F</replaceable><code><![CDATA[ <]]></code><replaceable>x</replaceable><code><![CDATA[< ]]></code><replaceable>G</replaceable> 
-				is the type of <replaceable>F</replaceable> 
-				using the assumption <replaceable>x</replaceable> <code>::</code> <replaceable>T</replaceable>, 
-				where <replaceable>T</replaceable> 
-				is the type of <replaceable>G</replaceable>.
+				The type of <replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable> 
+				is the type of <replaceable>F</replaceable> in the <link linkend="ref.types.context">context</link> Γ<subscript>G</subscript>, 
+				where Γ<subscript>G</subscript> is the result of matching the pattern <replaceable>P</replaceable> against the type of <replaceable>G</replaceable>.
 			</para>
 
 		</section>
