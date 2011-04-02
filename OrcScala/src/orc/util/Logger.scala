@@ -57,7 +57,7 @@ class Logger(name: String) {
   
   //TODO: LogRecord caller and method will be wrong -- need to write our own inferCaller and use
   final def log(level: Level, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg)
-  final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, param1)
+  //final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, param1)
   final def log(level: Level, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, params)
   final def log(level: Level, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, thrown)
   final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg)

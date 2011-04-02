@@ -71,12 +71,18 @@ trait OrcRuntimeRequires {
  */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   type Token
+  
+  def startScheduler(options: OrcExecutionOptions): Unit
 
   def schedule(ts: List[Token]): Unit
 
   // Schedule function is overloaded for convenience
   def schedule(t: Token) { schedule(List(t)) }
   def schedule(t: Token, u: Token) { schedule(List(t, u)) }
+
+  def schedule(h: Handle): Unit
+
+  def stopScheduler(): Unit
 }
 
 /* Define invocation behaviors for a runtime */
@@ -89,7 +95,7 @@ trait InvocationBehavior extends OrcRuntime {
 /**
  * The interface through which the environment response to site calls.
  */
-trait Handle {
+trait Handle extends Runnable {
   
   def notifyOrc(event: OrcEvent): Unit
   

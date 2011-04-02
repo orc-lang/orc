@@ -29,12 +29,16 @@ import scala.actors.Actor._
 trait Orc extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
+    startScheduler(options: OrcExecutionOptions)
     val root = new Orc.this.Execution(node, k, options)
     val t = new Token(node, root)
     schedule(t)
   }
 
-  def stop() = { Killer ! "exit" /* By default, do nothing on stop. */ }
+  def stop() = {
+    Killer ! "exit"
+    stopScheduler()
+  }
 
   ////////
   // Groups
@@ -356,11 +360,15 @@ trait Orc extends OrcRuntime {
   /** Live Token with a value to propagate */
   case class Published(v: AnyRef) extends TokenState
 
-  class SiteCallHandle(caller: Token, calledSite: AnyRef) extends Handle with Blocker {
+  class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Blocker {
 
     caller.blockOn(this)
 
     var listener: Option[Token] = Some(caller)
+    
+    def run() {
+      invoke(this, calledSite, actuals)
+    }
 
     def publish(v: AnyRef) =
       synchronized {
@@ -621,9 +629,9 @@ trait Orc extends OrcRuntime {
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       try {
-        val sh = new SiteCallHandle(this, s)
+        val sh = new SiteCallHandle(this, s, actuals)
         state = Blocked(sh)
-        invoke(sh, s, actuals)
+        schedule(sh)
       } catch {
         case e: OrcException => this !! e
         case e => { halt(); notifyOrc(CaughtEvent(e)) }
