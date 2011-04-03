@@ -579,67 +579,6 @@ def Table(n, f) =
 
 
 {--
-@site Set[A]() :: Set[A]
-Construct an empty mutable set. The set considers two
-values <code>a</code> and <code>b</code> to be the same if
-and only if <code>a=b</code>. This site conforms to the Java interface
-<code>java.util.Set</code>, except that it obeys Orc rules for equality of
-elements rather than Java rules.
-
-@method Set[A].add(A) :: Boolean
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Add a value to the set, returning true if the set did not already contain the value,
-and false otherwise.
-
-@method Set[A].remove(Signal) :: Boolean
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Remove a value from the set, returning true if the set contained the value,
-and false otherwise.
-
-@method Set[A].contains(Signal) :: Boolean
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Return true if the set contains the given value, and false otherwise.
-
-@method Set[A].isEmpty() :: Boolean
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Return true if the set contains no values.
-
-@method Set[A].clear() :: Signal
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Remove all values from the set.
-
-@method Set[A].size() :: Integer
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Return the number of unique values currently contained in the set.
---}
-class Set = "orc.lib.state.Set"
-
-
-{--
 @site Counter(Integer) :: Counter
 Create a new counter initialized to the given value.
 

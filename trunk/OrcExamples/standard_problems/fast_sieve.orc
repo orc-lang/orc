@@ -47,7 +47,7 @@ def gen_primes(n) =
 gen_primes(3)
 
 {-
-OUPPUT:
+OUTPUT:
 2
 3
 5

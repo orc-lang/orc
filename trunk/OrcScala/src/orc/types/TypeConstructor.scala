@@ -16,6 +16,9 @@ package orc.types
 
 import orc.types.Variance._
 import orc.error.compiletime.typing.UncallableTypeException
+import orc.error.compiletime.typing.SecondOrderTypeExpectedException
+import orc.compile.typecheck.Typeloader
+
 
 /**
  * 
@@ -58,6 +61,21 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
       case TypeInstance(tycon, ts) if (tycon eq this) => Some(ts.toSeq)
       case _ => None
     }
+  }
+  
+}
+
+
+case class JavaTypeConstructor(cl: Class[_]) 
+extends SimpleTypeConstructor(cl.getName(), (for (_ <- cl.getTypeParameters()) yield Invariant) : _*) {
+  val formals = cl.getTypeParameters().toList
+
+  if (formals.isEmpty) {
+    throw new SecondOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
+  }
+  
+  override def instance(actuals: List[Type]): Type = {
+    Typeloader.liftJavaType(cl, (formals zip actuals).toMap)  
   }
   
 }
