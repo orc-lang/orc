@@ -253,7 +253,7 @@ object Typeloader extends SiteClassLoading with TypeListEnrichment {
           BooleanType
         }
         else {
-          JavaObjectType(cl)
+          JavaObjectType(cl, jctx)
         }
         /*TODO: Add explicit conversions from Java primitive types to Orc primitive types,
          *      or add appropriate subtyping in JavaObjectType and in the primitive types.
@@ -307,23 +307,7 @@ object Typeloader extends SiteClassLoading with TypeListEnrichment {
   def liftJavaTypeOperator(jt: jvm.Type): TypeOperator = {
     
     jt match {
-      case cl: Class[_] => {
-        val formals = cl.getTypeParameters().toList
-        if (formals.isEmpty) {
-          throw new SecondOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
-        }
-        else {
-          val name = cl.getName()
-          val variances = for (_ <- formals) yield Invariant
-          new SimpleTypeConstructor(name, variances: _*) {
-
-            override def instance(actuals: List[Type]): Type = {
-              liftJavaType(cl, (formals zip actuals).toMap)  
-            }
-            
-          }
-        }
-      }
+      case cl: Class[_] => JavaTypeConstructor(cl)
       // At present, due to the type kinding assumptions of the Orc typechecker,
       // (namely, that type arguments are always first order), we can only allow
       // raw generic classes as type operators.

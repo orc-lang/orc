@@ -77,7 +77,12 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
             }
           }
           if (cl.getConstructors() exists valid) {
-            liftJavaType(cl, newJavaContext)
+            if (formals.isEmpty) {
+              liftJavaType(cl)
+            }
+            else {
+              liftJavaTypeOperator(cl).operate(typeArgs)
+            }
           }
           else {
             throw new NoMatchingConstructorException()

@@ -38,7 +38,7 @@ the cancel procedure of the associated instance of Alarm().
 def class Multialarm() =
 
   def class Alarm() =
-    val run = Ref(true)
+    val run = Ref[Boolean](true)
 
     def set(t) = Rwait(t) >> If(run?)
     def cancel() = run := false

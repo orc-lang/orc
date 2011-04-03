@@ -24,6 +24,8 @@ class Math = "java.lang.Math"
 Math.floor(Math.sqrt(5))
 --}
 
+class Set = "java.util.HashSet"
+
 def sqrt(Number) :: Integer
 def sqrt(n) =
   class Math = "java.lang.Math"

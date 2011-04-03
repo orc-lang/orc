@@ -5,8 +5,7 @@ repeated values (so each value published is unique).
 Hint: use a Set to record the values seen in the
 channel.
 --}
-
-class Object = "java.lang.Object"
+class Set = "scala.collection.mutable.HashSet"
 
 def unique[X](Buffer[X]) :: X
 def unique(c) =
@@ -14,16 +13,7 @@ def unique(c) =
   def loop() :: X
   def loop() =
     c.get() >x>
-    {- 
-      Orc Set proxy is not really generic;
-      the contains method takes an Object argument.
-      So we can't check the call seen.contains
-      without the bound X <: Object, but the
-      typechecker does not currently implement
-      bounded polymorphism, so we tell it not
-      to check the method call.
-    -}
-    if (seen.contains(x) :!: Boolean)  
+    if seen.contains(x)  
     then loop()
     else x | seen.add(x) >> loop()
   loop()
@@ -31,7 +21,6 @@ def unique(c) =
 val c = Buffer[Number]()
   unique(c)
 | (upto(50) >n> c.put(n % 10) >> stop; c.close()) >> stop
-
 
 {-
 OUTPUT:PERMUTABLE:

@@ -12,7 +12,7 @@
 --
 
 {--
-Real and virtual time.
+Real time.
 --}
 
 {--
@@ -30,7 +30,7 @@ Publish a signal after the given number of milliseconds.
 
 Return the total number of milliseconds that have passed
 since this clock was created.
-Ranges from 0 to <code>Long.MAX_VALUE</code>.
+Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
 
 --}
 site Rclock = "orc.lib.time.Rclock"
@@ -44,7 +44,7 @@ Publish a signal after the given number of milliseconds.
 
 Return the total number of milliseconds that have passed
 since this program began executing.
-Ranges from 0 to <code>Long.MAX_VALUE</code>.
+Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
 --}
 val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
 

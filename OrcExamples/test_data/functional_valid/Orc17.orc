@@ -5,7 +5,7 @@
  - Created by Brian on Jun 3, 2010 1:12:41 PM
  -}
 
-val x = Ref(5)
+val x = Ref[Integer](5)
 x?
 
 {-
