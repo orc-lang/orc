@@ -54,10 +54,16 @@ trait OrcWithThreadPoolScheduler extends Orc {
    * @see orc.OrcRuntime#schedule(orc.OrcRuntime.Token)
    */
   override def schedule(t: Token) {
+    if (executor == null) {
+      throw new IllegalStateException("Cannot schedule a task without an inited executor")
+    }
     executor.execute(t, false)
   }
   
   override def schedule(h: Handle) {
+    if (executor == null) {
+      throw new IllegalStateException("Cannot schedule a task without an inited executor")
+    }
     executor.execute(h, true)
   }
 
@@ -76,6 +82,8 @@ trait OrcWithThreadPoolScheduler extends Orc {
   override def stopScheduler() {
     if (executor != null) {
       executor.shutdownNow()
+      // Wait long enough for all running workers to receive shutdown 
+      executor.awaitTermination(2L)
       executor = null
     } else {
       throw new IllegalStateException("stopScheduler() mutiply invoked")
@@ -94,18 +102,29 @@ trait OrcRunner {
   type Task = Runnable
 
   /** Begin executing submitted tasks */
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[SecurityException])
   def startup(): Unit
 
   /** Submit task for execution */
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[SecurityException])
   def execute(task: Task, taskMayBlock: Boolean): Unit
 
-  /** Orderly shutdown; let running tasks complete */
+  /** Orderly shutdown; let running & enqueued tasks complete */
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[SecurityException])
   def shutdown(): Unit
 
   /** Attempt immediate shutdown; interrupt running tasks
    * @return List of queued tasks discarded
    */
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[SecurityException])
   def shutdownNow(): java.util.List[Task]
+
+  @throws(classOf[InterruptedException])
+  def awaitTermination(timeoutMillis: Long)
 
 }
 
@@ -122,7 +141,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     //TODO: Make more of these params configurable
     math.max(4, Runtime.getRuntime().availableProcessors * 2),
     if (maxSiteThreads > 0) maxSiteThreads else 256,
-    60L, TimeUnit.SECONDS,
+    60000L, TimeUnit.MILLISECONDS,
     new LinkedBlockingQueue[Runnable],
     new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
@@ -162,6 +181,10 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     }
     //FIXME: Don't allow blocking tasks to consume all worker threads
     super.execute(task)
+  }
+  
+  def awaitTermination(timeoutMillis: Long) = {
+    super.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)
   }
 
   protected val CHECK_PERIOD = 10 /* milliseconds */
