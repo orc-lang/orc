@@ -70,15 +70,15 @@ trait OrcRuntimeRequires {
  * An Orc runtime 
  */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
-  type Token
+  type GroupMember
   
   def startScheduler(options: OrcExecutionOptions): Unit
 
-  def schedule(ts: List[Token]): Unit
+  def schedule(ts: List[GroupMember with Runnable]): Unit
 
   // Schedule function is overloaded for convenience
-  def schedule(t: Token) { schedule(List(t)) }
-  def schedule(t: Token, u: Token) { schedule(List(t, u)) }
+  def schedule(t: GroupMember with Runnable) { schedule(List(t)) }
+  def schedule(t: GroupMember with Runnable, u: GroupMember with Runnable) { schedule(List(t, u)) }
 
   def schedule(h: Handle): Unit
 

@@ -23,9 +23,6 @@ import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
 import scala.collection.mutable.Set
 
-import scala.actors.Actor
-import scala.actors.Actor._
-
 trait Orc extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
@@ -36,7 +33,6 @@ trait Orc extends OrcRuntime {
   }
 
   def stop() = {
-    Killer ! "exit"
     stopScheduler()
   }
 
@@ -57,30 +53,23 @@ trait Orc extends OrcRuntime {
 
   sealed trait Blocker
 
-  object Killer extends Actor {
-    def act() {
-      loop {
-        react {
-          case x: GroupMember => x.kill()
-          case "exit" => this.exit
-        }
-      }
-    }
-  }
-  Killer.start
-
-  trait Group extends GroupMember {
+  trait Group extends GroupMember with Runnable {
     def publish(t: Token, v: AnyRef): Unit
     def onHalt(): Unit
 
     var members: Set[GroupMember] = Set()
+    
+    var pendingKills: Set[GroupMember] = Set()
 
     def halt(t: Token) = synchronized { remove(t) }
 
     /* Note: this is _not_ lazy termination */
     def kill() = synchronized {
-      for (m <- members) Killer ! m
+      pendingKills ++= members
+      schedule(this)
     }
+    
+    def run() = pendingKills.map(_.kill)
 
     def suspend() = synchronized {
       for (m <- members) m.suspend()

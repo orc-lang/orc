@@ -35,25 +35,16 @@ trait OrcWithThreadPoolScheduler extends Orc {
   
   private var executor: OrcRunner = null
 
-  /* (non-Javadoc)
-   * @see orc.OrcRuntime#schedule(scala.collection.immutable.List)
-   */
-  override def schedule(ts: List[Token]) {
+  override def schedule(ts: List[GroupMember with Runnable]) {
     ts.foreach(schedule(_))
   }
 
-  /* (non-Javadoc)
-   * @see orc.OrcRuntime#schedule(orc.OrcRuntime.Token, orc.OrcRuntime.Token)
-   */
-  override def schedule(t: Token, u: Token) {
+  override def schedule(t: GroupMember with Runnable, u: GroupMember with Runnable) {
     schedule(t)
     schedule(u)
   }
 
-  /* (non-Javadoc)
-   * @see orc.OrcRuntime#schedule(orc.OrcRuntime.Token)
-   */
-  override def schedule(t: Token) {
+  override def schedule(t: GroupMember with Runnable) {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
     }
@@ -68,6 +59,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
+    //TODO: pass a exception notification means to the executor?
     if (executor == null) {
       executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
       executor.startup()
