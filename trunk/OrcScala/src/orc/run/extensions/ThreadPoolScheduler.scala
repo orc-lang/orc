@@ -81,9 +81,15 @@ trait OrcWithThreadPoolScheduler extends Orc {
    */
   override def stopScheduler() {
     if (executor != null) {
-      executor.shutdownNow()
-      // Wait long enough for all running workers to receive shutdown 
-      executor.awaitTermination(2L)
+      // First, gently shut down
+      executor.shutdown()
+      // Wait "a little while" 
+      if (!executor.awaitTermination(20L)) {
+        // Now, we insist
+        executor.shutdownNow()
+        // Wait long enough for all running workers to receive shutdown 
+        executor.awaitTermination(2L)
+      }
       executor = null
     } else {
       throw new IllegalStateException("stopScheduler() mutiply invoked")
@@ -124,13 +130,13 @@ trait OrcRunner {
   def shutdownNow(): java.util.List[Task]
 
   @throws(classOf[InterruptedException])
-  def awaitTermination(timeoutMillis: Long)
+  def awaitTermination(timeoutMillis: Long): Boolean
 
 }
 
 
 /**
- * A ThreadPoolExecutor that periodically resizes the work thread pool
+ * A ThreadPoolExecutor that periodically resizes the worker thread pool
  * to ensure there is a minimum number of runnable threads.  I.e., as
  * threads are blocked by their task, new threads are added to serve
  * the work queue.
@@ -141,7 +147,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     //TODO: Make more of these params configurable
     math.max(4, Runtime.getRuntime().availableProcessors * 2),
     if (maxSiteThreads > 0) maxSiteThreads else 256,
-    60000L, TimeUnit.MILLISECONDS,
+    2000L, TimeUnit.MILLISECONDS,
     new LinkedBlockingQueue[Runnable],
     new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
@@ -205,29 +211,37 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
 
         try {
           mainLock.lock()
-          
+
+          // Java thread states are:
+          // NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED
+          // RUNNABLE means can be or is running on a core
+          // BLOCKED means waiting on a monitor (synchronized), so that's like RUNNABLE for us
+          // WAITING, TIMED_WAITING, TERMINATED may never come back to make progress
+          // However, some WAITING/TIMED_WAITING threads are actually waiting for new tasks
+          // We want enough RUNNABLE+BLOCKED threads to keep all CPU cores busy, but not more.
+
+          // This approach is stochastic; and the following calculation is approximate -- there are transients
           val threadBuffer = new Array[Thread](threadGroup.activeCount)
           val liveThreads = threadBuffer.take(threadGroup.enumerate(threadBuffer, false))
-          val supervisor = this
-          val totalThreadCount = liveThreads.count({t => t != supervisor})
-          val runnableThreadCount = liveThreads.count({t => t != supervisor && t.getState == Thread.State.RUNNABLE})
-          val nonRunnableThreadCount = totalThreadCount - runnableThreadCount
-          val nonBlockedThreadCount = liveThreads.count({t => t != supervisor && t.getState != Thread.State.BLOCKED})
+          val workingThreads = getActiveCount // Number of Workers running a Task
+          val supervisor = Thread.currentThread
+          val progressingThreadCount = liveThreads.count({t => t != supervisor && (t.getState == Thread.State.RUNNABLE || t.getState == Thread.State.BLOCKED || t.getState == Thread.State.NEW)})
+          val nonProgressingWorkingThreadCount = workingThreads - progressingThreadCount
 
-          // Thread pool size needs to be adjusted for workers that are consumed by blocking
-          // We want RUNNABLE threads == # CPU cores * 2
-          setCorePoolSize(math.min(math.max(4, numCores + nonRunnableThreadCount), getMaximumPoolSize))
+          //Logger.finest("poolSize = " + getPoolSize)
+          //Logger.finest("workingThreads = " + workingThreads)
+          //Logger.finest(liveThreads.filter({t => t != supervisor}).map(_.getState.toString + "  ").foldLeft("Thread States:  ")({(x,y)=>x+y}))
+          //Logger.finest("progressingThreadCount = " + progressingThreadCount)
+          //Logger.finest("nonProgressingWorkingThreadCount = " + nonProgressingWorkingThreadCount)
+          //Logger.finest("numCores*2 + nonProgressingTaskCount = " + (numCores*2 + nonProgressingWorkingThreadCount))
 
-          if (getQueue.isEmpty && nonBlockedThreadCount == 0) {
-            Logger.finest(getClass.getCanonicalName+".run(): No more work, shutting down")
-            shutdown()
-          }
+          setCorePoolSize(math.min(math.max(4, numCores*2 + nonProgressingWorkingThreadCount), getMaximumPoolSize))
         } finally {
           mainLock.unlock()
         }
       }
     } catch {
-      case t => { t.printStackTrace(); Logger.log(Level.SEVERE, "Exception in "+getClass.getCanonicalName+".run()", t); shutdownNow(); throw t }
+      case t => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in "+getClass.getCanonicalName+".run()", t); shutdownNow(); throw t }
     } finally {
       logThreadExit()
     }
