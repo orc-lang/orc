@@ -17,6 +17,25 @@
       <!-- Index pointers for unwritten terms -->
       <indexterm><primary>otherwise combinator</primary></indexterm>
 	  <indexterm><primary>silent</primary></indexterm>
+	  
+		  <para>
+		  <variablelist>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable></term>
+			<listitem>
+			<para>
+				The execution of
+				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
+				If <replaceable>F</replaceable> <indexterm><primary>halt</primary></indexterm><link linkend="ref.concepts.states.halt">halts</link>, 
+				and has not published any values, then <replaceable>G</replaceable> executes. 
+				If <replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes one or more values, 
+				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
+				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
+				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent">silent</link>.
+			</para>
+			</listitem>
+			</varlistentry>
+			</variablelist>
+		  </para>
       
 	  <section xml:id="ref.combinators.otherwise.syntax">
 		  <title>Syntax</title>
@@ -59,28 +78,6 @@
 				</tgroup></informaltable>
 			  </para>
     	  </section>
-
-	  <section xml:id="ref.combinators.otherwise.behavior">
-		  <title>Behavior</title>
-		  <para>
-		  <variablelist>
-			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable></term>
-			<listitem>
-			<para>
-				The execution of
-				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
-				If <replaceable>F</replaceable> <indexterm><primary>halt</primary></indexterm><link linkend="ref.concepts.states.halt">halts</link>, 
-				and has not published any values, then <replaceable>G</replaceable> executes. 
-				If <replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes one or more values, 
-				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
-				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
-				if <replaceable>F</replaceable> is <link linkend="ref.concepts.silent">silent</link>.
-			</para>
-			</listitem>
-			</varlistentry>
-			</variablelist>
-		  </para>
-	  </section>
 	  
 	  <section xml:id="ref.combinators.otherwise.type">
 		  <title>Type</title>
