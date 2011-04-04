@@ -7,7 +7,7 @@ channel.
 --}
 class Set = "scala.collection.mutable.HashSet"
 
-def unique[X](Buffer[X]) :: X
+def unique[X](Channel[X]) :: X
 def unique(c) =
   val seen = Set[X]()
   def loop() :: X
@@ -18,7 +18,7 @@ def unique(c) =
     else x | seen.add(x) >> loop()
   loop()
 
-val c = Buffer[Number]()
+val c = Channel[Number]()
   unique(c)
 | (upto(50) >n> c.put(n % 10) >> stop; c.close()) >> stop
 

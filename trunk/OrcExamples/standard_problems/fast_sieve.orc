@@ -5,8 +5,8 @@
  - Created by amshali on Mar 31, 2010 10:57:33 PM
  -}
 
--- a buffer to store the primes generated
-val prime_buf = Buffer()
+-- a channel to store the primes generated
+val prime_buf = Channel()
 
 -- a sieve class with value n represent a prime number n
 -- which immediately print itself.
@@ -16,15 +16,15 @@ def class fast_sieve(n) =
   val p = n
   val psq = n * n -- square of n
   val next = Cell() -- next sieve, initially empty
-  val in_buff = Buffer() -- input buffer
+  val in_buff = Channel() -- input channel
   def in(v) = in_buff.put(v)
   def main() = 
     in_buff.get() >v> ( 
     -- if v is divisible by this sieve then discard it 
     if v % p = 0 then signal
     -- if the psq is greater than v then v should be prime
-    -- so put the sieve(v) in prime buffer. If the next sieve
-    -- is empty then get a prime from prime buffer and assign
+    -- so put the sieve(v) in prime channel. If the next sieve
+    -- is empty then get a prime from prime channel and assign
     -- it to next
     -- if the psq is less than v then just send the v to the next sieve 
     else (

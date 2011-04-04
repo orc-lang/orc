@@ -1,4 +1,4 @@
-val c = Buffer[Integer]()
+val c = Channel[Integer]()
 c.get()
 | Rwait(200) >> c.get()
 | Rwait(200) >> c.get()

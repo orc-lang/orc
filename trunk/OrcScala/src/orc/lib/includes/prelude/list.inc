@@ -222,7 +222,7 @@ def cfold(f, []) = stop
 def cfold(f, [x]) = x
 def cfold(f, [x,y]) = f(x,y)
 def cfold(f, L) =
-  val c = Buffer[A]()
+  val c = Channel[A]()
   def work(Number, List[A]) :: A
   def work(i, x:y:rest) =
     c.put(f(x,y)) >> stop | work(i+1, rest)

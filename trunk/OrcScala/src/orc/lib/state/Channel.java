@@ -1,5 +1,5 @@
 //
-// Buffer.java -- Java class Buffer
+// Channel.java -- Java class Channel
 // Project OrcScala
 //
 // $Id$
@@ -17,7 +17,7 @@ import java.util.LinkedList;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
-import orc.lib.state.types.BufferType;
+import orc.lib.state.types.ChannelType;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -26,45 +26,45 @@ import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
- * Implements the local site Buffer, which creates buffers (asynchronous channels).
+ * Implements the local site Channel, which creates asynchronous channels.
  *
  * @author cawellington, dkitchin
  */
-public class Buffer extends EvalSite implements TypedSite {
+public class Channel extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
-		return new BufferInstance();
+		return new ChannelInstance();
 	}
 
 	@Override
 	public Type orcType() {
-		return BufferType.getBuilder();
+		return ChannelType.getBuilder();
 	}
 
 	//	@Override
 	//	public Type type() throws TypeException {
 	//		final Type X = new TypeVariable(0);
-	//		final Type BufferOfX = new BufferType().instance(X);
-	//		return new ArrowType(BufferOfX, 1);
+	//		final Type ChannelOfX = new ChannelType().instance(X);
+	//		return new ArrowType(ChannelOfX, 1);
 	//	}
 
-	protected class BufferInstance extends DotSite {
+	protected class ChannelInstance extends DotSite {
 
-		protected final LinkedList<Object> buffer;
+		protected final LinkedList<Object> Channel;
 		protected final LinkedList<Handle> readers;
 		protected Handle closer;
 		/**
 		 * Once this becomes true, no new items may be put,
-		 * and gets on an empty buffer die rather than blocking.
+		 * and gets on an empty channel die rather than blocking.
 		 */
 		protected boolean closed = false;
 
-		BufferInstance() {
-			buffer = new LinkedList<Object>();
+		ChannelInstance() {
+			Channel = new LinkedList<Object>();
 			readers = new LinkedList<Handle>();
 		}
 
@@ -73,8 +73,8 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("get", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-					synchronized (BufferInstance.this) {
-						if (buffer.isEmpty()) {
+					synchronized (ChannelInstance.this) {
+						if (Channel.isEmpty()) {
 							if (closed) {
 								reader.halt();
 							} else {
@@ -82,8 +82,8 @@ public class Buffer extends EvalSite implements TypedSite {
 							}
 						} else {
 							// If there is an item available, pop it and return it.
-							reader.publish(object2value(buffer.removeFirst()));
-							if (closer != null && buffer.isEmpty()) {
+							reader.publish(object2value(Channel.removeFirst()));
+							if (closer != null && Channel.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -94,21 +94,21 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("put", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						final Object item = args.getArg(0);
 						if (closed) {
 							writer.halt();
 							return;
 						}
 						if (readers.isEmpty()) {
-							// If there are no waiting callers, buffer this item.
-							buffer.addLast(item);
+							// If there are no waiting callers, queue this item.
+							Channel.addLast(item);
 						} else {
 							// If there are callers waiting, give this item to the top caller.
 							final Handle receiver = readers.removeFirst();
 							receiver.publish(object2value(item));
 						}
-						// Since this is an asynchronous buffer, a put call always returns.
+						// Since this is an asynchronous channel, a put call always returns.
 						writer.publish(signal());
 					}
 				}
@@ -116,12 +116,12 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("getD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-					synchronized (BufferInstance.this) {
-						if (buffer.isEmpty()) {
+					synchronized (ChannelInstance.this) {
+						if (Channel.isEmpty()) {
 							reader.halt();
 						} else {
-							reader.publish(object2value(buffer.removeFirst()));
-							if (closer != null && buffer.isEmpty()) {
+							reader.publish(object2value(Channel.removeFirst()));
+							if (closer != null && Channel.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -132,9 +132,9 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					synchronized (BufferInstance.this) {
-						final Object out = buffer.clone();
-						buffer.clear();
+					synchronized (ChannelInstance.this) {
+						final Object out = Channel.clone();
+						Channel.clear();
 						if (closer != null) {
 							closer.publish(signal());
 							closer = null;
@@ -152,12 +152,12 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("close", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						if (buffer.isEmpty()) {
+						if (Channel.isEmpty()) {
 							token.publish(signal());
 						} else {
 							closer = token;
@@ -168,7 +168,7 @@ public class Buffer extends EvalSite implements TypedSite {
 			addMember("closeD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
@@ -181,7 +181,7 @@ public class Buffer extends EvalSite implements TypedSite {
 
 		@Override
 		public String toString() {
-			return super.toString() + buffer.toString();
+			return super.toString() + Channel.toString();
 		}
 
 	}

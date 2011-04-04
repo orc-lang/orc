@@ -14,7 +14,7 @@ val c =
 
 -- Publish the values of each array in
 -- a predictable sequence
-val pubs = Buffer[Integer]()
+val pubs = Channel[Integer]()
 
 signal >>
 (

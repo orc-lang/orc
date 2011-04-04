@@ -2,7 +2,7 @@
 author: Amin Shali
 date: Wednesday, June 09 2010
 -}
-def sum(lambda(Integer)::Integer, Buffer[Integer], Integer) :: Integer
+def sum(lambda(Integer)::Integer, Channel[Integer], Integer) :: Integer
 def sum(a, b, n) =
 	def aux(Integer, Integer) :: Integer
   def aux(l, h) =
@@ -10,12 +10,12 @@ def sum(a, b, n) =
     else aux(l, Floor((l+h)/2)) + aux(Floor((l+h)/2)+1, h)
   aux(0, n-1)
 
-def seq_sum(Buffer[Integer], Integer, Integer) :: Integer
+def seq_sum(Channel[Integer], Integer, Integer) :: Integer
 def seq_sum(b, n, s) =
 	if n = 0 then s
 	else seq_sum(b, n-1, s+b.get())
 
-val b = Buffer[Integer]()
+val b = Channel[Integer]()
 val N = 100
 
 val a = Table(N, lambda(_ :: Integer) :: Integer = Random(10))

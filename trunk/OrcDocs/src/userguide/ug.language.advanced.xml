@@ -480,7 +480,7 @@ Here we show a few more examples of class usage.
 		finish. Therefore, the creation of the class would return immediately. But the goal 
 		expression continues to execute. The goal expression will not publish anything. However, 
 		it can have side effects. For example, it could print something on the screen or it 
-		can initiate some other processes and send and receive data to and/or from buffers. 
+		can initiate some other processes and send and receive data to and/or from channels. 
 	</para>
 	
 	<para>
@@ -555,17 +555,17 @@ traditional style.
 <section><title>Create a new site</title>
 
 <para>
-We create a new site, bounded buffer, using <code>Buffer</code> and
-<code>Semaphore</code> sites. The buffer stores the data items and the
+We create a new site, a bounded channel, using <code>Channel</code> and
+<code>Semaphore</code> sites. The channel stores the data items and the
 semaphores are used to ensure proper blocking. Below, <code>n</code> is the
-maximum buffer size, and <code>p</code> and <code>g</code> are semaphores whose values are the
+maximum channel size, and <code>p</code> and <code>g</code> are semaphores whose values are the
 number of empty and full positions, respectively. A <code>put</code> operation is
 allowed only if <code>p > 0</code> and a <code>get</code> if <code>g > 0</code>.
 </para>
 
 <programlisting><![CDATA[
-def class BBuffer(n) =
-  val b = Buffer()
+def class BChannel(n) =
+  val b = Channel()
   val (p, g) = (Semaphore(n), Semaphore(0))
   def put(x) = p.acquire() >> b.put(x) >> g.release()
   def get() = g.acquire() >> b.get() >x> p.release() >> x
@@ -573,7 +573,7 @@ def class BBuffer(n) =
 ]]></programlisting>
 
 <para>
-Note that setting <code>n = 1</code> lets us define a 1-place buffer in which the
+Note that setting <code>n = 1</code> lets us define a 1-place channel in which the
 executions of 
 <code>put</code> and <code>get</code> operations have to alternate.
 </para>
@@ -582,13 +582,13 @@ executions of
 <section><title>Extend functionality of existing site</title>
 
 <para>
-We add a <code>length</code> function to the <code>Buffer</code> site, that returns
+We add a <code>length</code> function to the <code>Channel</code> site, that returns
 its current length. 
 </para>
 
 <programlisting><![CDATA[
 def class Channel() =
-  val ch = Buffer()
+  val ch = Channel()
   val chlen = Counter(0)
 
   def put(x) = ch.put(x) >> chlen.inc()
@@ -612,13 +612,13 @@ and both can then proceed.
 
 <para>
 We employ semaphore <code>s</code> on which the send operation blocks; <code>s</code> is released by
-the receive operation. The sender then puts its data in a buffer and
-the receiver reads from the buffer. 
+the receive operation. The sender then puts its data in a channel and
+the receiver reads from the channel. 
 </para>
 
 <programlisting><![CDATA[
 def class Rendezvous() =
-  val (s,data) = (Semaphore(0), Buffer())
+  val (s,data) = (Semaphore(0), Channel())
   def send(x) = s.acquire() >> data.put(x)
   def recv() = s.release() >> data.get()
   stop

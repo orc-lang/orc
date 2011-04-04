@@ -9,8 +9,8 @@
 Barrier Synchronization 
 
 n processes do a barrier synchronization by each calling an instance
-of BarrierSync(n). Each process puts a signal on buffer in and waits to receive a signal
-from buffer out. The manager process collects n signals from in, and
+of BarrierSync(n). Each process puts a signal on channel in and waits to receive a signal
+from channel out. The manager process collects n signals from in, and
 then writes n signals on out.
 -}
 

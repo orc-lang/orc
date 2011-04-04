@@ -80,9 +80,9 @@ OUTPUT:
 		  
 		  <example xml:id="ref.expressions.dot.examples.channelops"><title>Channel Operations</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Create a buffer, and perform some operations on it. -}
+{- Create a channel, and perform some operations on it. -}
 
-val b = Buffer()
+val b = Channel()
 
   b.get() >x> b.put(x+1) >> stop
 | b.get() >y> b.put(y*2) >> stop
@@ -104,7 +104,7 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Access the 'put' and 'get' members of a channel, and use them as separate sites. -}
 
-val c = Buffer()
+val c = Channel()
 val send = c.put
 val receive = c.get
 

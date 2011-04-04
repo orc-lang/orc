@@ -1,5 +1,5 @@
 def Counter(n :: Integer) =
-	val nr = Buffer[Integer]()
+	val nr = Channel[Integer]()
 	nr.put(n) >>
 	(lambda () = 
 	  nr.get() >n>

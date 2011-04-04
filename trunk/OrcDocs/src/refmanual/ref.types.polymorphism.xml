@@ -44,7 +44,7 @@
 
 		<para>
 			Lists are not the only parametric type. The standard library includes other parametric types, such as
-			<code>Option</code>, <code>Buffer</code>, and <code>Cell</code>. A type alias
+			<code>Option</code>, <code>Channel</code>, and <code>Cell</code>. A type alias
 			may have type parameters, thus defining a parametric type. Similarly, a datatype definition
 			may also have type parameters.
 		</para>
@@ -102,12 +102,12 @@ append([1,2,3], [4,5])
 			<para>
 			Inference of type arguments will always fail on certain kinds of calls, because the typechecker does
 			not have enough information to infer the correct type. The most common case is a site call which
-			constructs a parametric type without taking any arguments. For example, the call <code>Buffer()</code>
+			constructs a parametric type without taking any arguments. For example, the call <code>Channel()</code>
 			will never typecheck, since there is no way for the typechecker to know what type of elements the
-			buffer should contain. In other languages such as ML, the typechecker might be able to infer this information
+			channel should contain. In other languages such as ML, the typechecker might be able to infer this information
 			from the rest of the program, but Orc's typechecker is based on <emphasis>local</emphasis> type inference,
 			which must find the information locally, such as from the types of the arguments. So, to construct
-			a buffer that will contain Numbers, a type argument must be given: <code>Buffer[Number]()</code>.		
+			a channel that will contain Numbers, a type argument must be given: <code>Channel[Number]()</code>.		
 			</para>
 		
 		</section>

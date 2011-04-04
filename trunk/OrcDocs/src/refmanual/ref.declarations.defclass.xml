@@ -219,15 +219,15 @@ NONRUNNABLE
 		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite">
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
-		  	The <code><indexterm><primary>Buffer</primary></indexterm>Buffer</code> site implements an unbounded channel. We add a new method,
+		  	The <code><indexterm><primary>Channel</primary></indexterm>Channel</code> site implements an unbounded channel. We add a new method,
 			<code>length</code>, that returns the number of items in the channel. We have to
-			assign a name different from "Buffer" (e.g. "Channel") to this class.
+			assign a name different from "Channel" (e.g. "CustomChannel") to this class.
 		  </para>
 <programlisting language="orc-demo"><![CDATA[
 {- Extend the pre existing channel site -}
 
-def class Channel() =
- val ch = Buffer()
+def class CustomChannel() =
+ val ch = Channel()
  val chlen = Counter(0)
 
  def put(x) = ch.put(x) >> chlen.inc()
@@ -249,7 +249,7 @@ OUTPUT:
 -}
 
 def class Newset(n) =
- val b = BoundedBuffer(n) {- to store the elements of the set -}
+ val b = BoundedChannel(n) {- to store the elements of the set -}
  val ne = Ref(0)          {- number of elements currently in the set -}
 
  {- Add an element to the set if it is non-full.
@@ -289,7 +289,7 @@ OUTPUT:
 {- Manage access to a set via a site -}
 
 def class Newset(n) =
- val b = BoundedBuffer(n)
+ val b = BoundedChannel(n)
  val (s , ne) = (semaphore(1) , Ref(0))
 
  {- Add an element to the set if it is non-full.

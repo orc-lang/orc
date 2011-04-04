@@ -29,8 +29,8 @@
      Member names are written in the form Type.member, e.g.  <code>Foo.get</code>
      refers to the <code>get</code> member of an object of type <code>Foo</code>.
      The object type can include type variables which are referenced by the member
-     type, so for example <code>site Buffer[A].get() :: A</code> means that
-     when the <code>get</code> method is called on a <code>Buffer</code> holding an
+     type, so for example <code>site Channel[A].get() :: A</code> means that
+     when the <code>get</code> method is called on a <code>Channel</code> holding an
      arbitrary element type <code>A</code>, it will return a value of the same type.
      </para>
 

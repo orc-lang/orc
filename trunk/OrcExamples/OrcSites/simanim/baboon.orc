@@ -1,5 +1,5 @@
 class canvas = "orc.lib.simanim.MonkeyCross"
-val sideLock = Buffer()
+val sideLock = Channel()
 val disp = canvas(10)
 
 -- List switch
@@ -77,7 +77,7 @@ def rightDone() =
 def makeRope(len,lb,ls) =
 	(Ift(len=0) >> Let(signal,false,lb,ls)
 	|	(  Ift(1<=len) 
-		>> Buffer()
+		>> Channel()
 		>b> makeRope(len-1,b,true)
 		>(rb,rs,eb,es)> b.put((lb,ls,rb,rs,len))
 		>> Let(b,true,eb,es)
@@ -192,15 +192,15 @@ disp.open() >>
 < aPack < Let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
 < oPack < Let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
 <(lb,ls,rb,rs)< makeRope(10,signal,false)
-< mainLine < Buffer()
-< leftDeck < Buffer()
-< rightDeck< Buffer()
-< leftFlag < Buffer() >tmp> tmp.put(false) >> tmp
-< rightFlag< Buffer() >tmp> tmp.put(false) >> tmp
-< leftAck  < Buffer()
-< rightAck < Buffer()
-< leftQ    < Buffer()
-< rightQ   < Buffer()
+< mainLine < Channel()
+< leftDeck < Channel()
+< rightDeck< Channel()
+< leftFlag < Channel() >tmp> tmp.put(false) >> tmp
+< rightFlag< Channel() >tmp> tmp.put(false) >> tmp
+< leftAck  < Channel()
+< rightAck < Channel()
+< leftQ    < Channel()
+< rightQ   < Channel()
 )
 
 

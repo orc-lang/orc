@@ -1,5 +1,5 @@
 //
-// BufferType.scala -- Scala object BufferType
+// ChannelType.scala -- Scala object ChannelType
 // Project OrcScala
 //
 // $Id$
@@ -24,7 +24,7 @@ import orc.lib.builtin.structured.ListType
  * @author dkitchin
  */
 
-object BoundedBufferType extends SimpleTypeConstructor("BoundedBuffer", Invariant) {
+object BoundedChannelType extends SimpleTypeConstructor("BoundedChannel", Invariant) {
   
   def getBuilder: Type = {
     val X = new TypeVariable()

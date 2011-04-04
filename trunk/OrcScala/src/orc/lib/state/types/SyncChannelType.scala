@@ -1,5 +1,5 @@
 //
-// BufferType.scala -- Scala object BufferType
+// SyncChannelType.scala -- Scala object SyncChannelType
 // Project OrcScala
 //
 // $Id$

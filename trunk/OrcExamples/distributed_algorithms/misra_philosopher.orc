@@ -26,7 +26,7 @@ def philosopher(name, mbox, missing) =
   val send = mbox.put
   val receive = mbox.get
   -- deferred requests for forks
-  val deferred = Buffer()
+  val deferred = Channel()
   -- forks we hold which are clean
   val clean = Set([])
 
@@ -91,7 +91,7 @@ holds both its forks).
 -}
 def philosophers(n) =
   {- channels -}
-  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Buffer))))
+  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Channel))))
 
   {- first row -}
   philosopher((0,0), cs(0,0), Set([]))

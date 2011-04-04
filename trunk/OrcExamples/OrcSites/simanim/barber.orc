@@ -1,13 +1,13 @@
 class canvas = "orc.lib.simanim.BarberShop"
 {----------------------------------------------------------------
-	Non-blocking buffer.  Sets up a 'try' functionality that returns
+	Non-blocking channel.  Sets up a 'try' functionality that returns
 	a pair.  Second value of the pair indicates success or failure of
 	the fetch.  Technically, this is not _completely_ non-blocking since
 	it does force single thread access.  However, it should always return
 	quickly.  
 -----------------------------------------------------------------}
-def NBBuffer() =
-	Buffer() >q> Buffer() >cnt> cnt.put(0) >> (cnt,q)
+def NBChannel() =
+	Channel() >q> Channel() >cnt> cnt.put(0) >> (cnt,q)
 	
 def nbPut(mb,v) =
 	mb >(cnt,q)> cnt.get() >size> q.put(v) >> cnt.put(size+1)
@@ -64,16 +64,16 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 ------------------------------------------------------------------
 -- Globals
 ------------------------------------------------------------------
-val shop = NBBuffer() -- No one waits outside to get their hair cut
-val bChair = NBBuffer() -- If I can sit down immediately, I will.
-val wChair = Buffer() -- Waiting-area chairs
-val cashReg = Buffer() -- The cash register
-val job1 = Buffer()
-val job2 = Buffer()
-val job3 = Buffer()
-val ch1 = Buffer()
-val ch2 = Buffer()
-val ch3 = Buffer()
+val shop = NBChannel() -- No one waits outside to get their hair cut
+val bChair = NBChannel() -- If I can sit down immediately, I will.
+val wChair = Channel() -- Waiting-area chairs
+val cashReg = Channel() -- The cash register
+val job1 = Channel()
+val job2 = Channel()
+val job3 = Channel()
+val ch1 = Channel()
+val ch2 = Channel()
+val ch3 = Channel()
 val disp = canvas(8,3)
 
 -----------------
@@ -106,7 +106,7 @@ def tryToEnterShop(cID) =
 				| Rwait(5) >> ok
 				)
 	
--- Put the customer's place back in the buffer
+-- Put the customer's place back in the channel
 def leaveShop(cID) =
 	Print("Cst ",cID," leaves happy\n")
 	>> disp.popRegister()
@@ -181,8 +181,8 @@ def waitForCashRegister(cID,chair) =
 
 -- Ring the bell so a barber will come accept your payment
 def waitForBarber(cID) =
-	Buffer()  -- Create a place to receive the barber
-	>ding> NBBuffer() -- Alert all three barbers of your need
+	Channel()  -- Create a place to receive the barber
+	>ding> NBChannel() -- Alert all three barbers of your need
 	>cust> nbPut(cust,ding)
 	>> 	(job1.put((false,cust))>>stop  
 		|job2.put((false,cust))>>stop
@@ -192,7 +192,7 @@ def waitForBarber(cID) =
 	
 -- Give a hand full of cash, expect a receipt in return
 def presentPayment(cID,brbr) =
-	Buffer() 
+	Channel() 
 	>hand> brbr.put(hand)
 	>> hand
 	
@@ -258,7 +258,7 @@ def takePayment(bID,ding) =
 	>tt> animateTransition(tt,1,5)
 	>> disp.endTransition(tt)
 	>> disp.setBarberState(bID,2)
-	>> Buffer() 
+	>> Channel() 
 	>hand> ding.put(hand)
 	>> disp.setReg(true) 
 	>> hand.get()

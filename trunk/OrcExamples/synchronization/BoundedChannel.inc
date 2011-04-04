@@ -25,8 +25,8 @@ We could have a single semaphore bs instead of fs and rs.
 
 -}
 
-{- Orc standard library provides Bounded Buffer -}
-def class BBuffer(n) =
+{- Orc standard library provides Bounded Channel -}
+def class BChannel(n) =
  val B = Array(n)
  val f = Ref(0)
  val fs = Semaphore(1)   -- to guard f

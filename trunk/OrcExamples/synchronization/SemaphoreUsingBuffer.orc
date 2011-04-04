@@ -1,4 +1,4 @@
-{- SemaphoreUsingBuffer.orc
+{- SemaphoreUsingChannel.orc
  - 
  - $Id$
  - 
@@ -6,7 +6,7 @@
  -}
 
 def class NewSemaphore(n) =
- val b = Buffer()
+ val b = Channel()
  def acquire() = b.get()
  def release() = b.put(signal)
 

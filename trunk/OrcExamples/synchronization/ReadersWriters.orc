@@ -5,23 +5,23 @@
  - Created by misra on Mar 30, 2010 2:25:16 PM
  -}
  
-{-A RelaxedBuffer implements the explicit buffer in a more compact
+{-A RelaxedChannel implements the explicit channel in a more compact
 fashion. It supports the put and get operations as before. But, unlike
-a FIFO buffer it only guarantees that every entry is eventually
+a FIFO channel it only guarantees that every entry is eventually
 removed. 
 
 We can not claim that the readers will get service in the order in
-which they were put in the buffer. When a semaphore, r or w, is
+which they were put in the channel. When a semaphore, r or w, is
 released, it may be acquired by any waiting process. However, we can
 assert the following: every process will acquire the corresponding
 semaphore eventually. This is because Orc implements strong semaphore;
 any waiting process for a semaphore receives the semaphore provided it
-is released arbitrarily often. Keeping a buffer corresponding to the
+is released arbitrarily often. Keeping a channel corresponding to the
 waiting processes ensures that both semaphores will be released
 arbitrarily often. That is, we will not be releasing w only while
 there are waiting readers.
 
-We don't need a FIFO buffer to ensure this property. A RelaxedBuffer
+We don't need a FIFO channel to ensure this property. A RelaxedChannel
 ensures that while there are waiting readers, some reader is
 eventually removed (and similarly for the writers). Two mutable
 entries nwr and nww count the number of waiting readers and waiting
@@ -39,7 +39,7 @@ removed.
 remove. Since coin flip is fair, it will not favor of one kind forever.
 -}
 
-def class RelaxedBuffer() =
+def class RelaxedChannel() =
  val (nwr, nww) = (Ref(0),Ref(0)) -- # waiting readers, writers
  val mutex = Semaphore(1) -- to gain access to (nwr, nww)
  val count = Semaphore(0) -- nwr? + nww? 
@@ -64,7 +64,7 @@ def class RelaxedBuffer() =
  stop
 
 def class ReadersWriters() =
-  val buff = RelaxedBuffer()
+  val buff = RelaxedChannel()
   val cb  = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
 
@@ -95,7 +95,7 @@ val rw = ReadersWriters()
 Readers-Writers written with semaphore pool
 
 def class ReadersWriters() =
-val req      = Buffer()
+val req      = Channel()
 val sempool  = SemaphorePool()
 
 def start(b) = -- read coded as "true", write as "false"

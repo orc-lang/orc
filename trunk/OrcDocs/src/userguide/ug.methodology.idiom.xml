@@ -38,7 +38,7 @@ to create channels of communication.
 </para>
 
 <para>
-The most frequently used of these sites is <code>Buffer</code>. When called, it
+The most frequently used of these sites is <code>Channel</code>. When called, it
 publishes a new asynchronous FIFO channel. That channel is a site with two
 methods: <code>get</code> and <code>put</code>.  The call <code>c.get()</code>
 takes the first value from channel <code>c</code> and publishes it, or blocks
@@ -320,13 +320,13 @@ fillArray(Array(10), lambda(i) = 2 ** i)
 </programlisting>
 
 <programlisting language="orc-demo">
-{- Create an array of 5 elements; each element is a newly created buffer -}
-fillArray(Array(5), lambda(_) = Buffer())
+{- Create an array of 5 elements; each element is a newly created channel -}
+fillArray(Array(5), lambda(_) = Channel())
 </programlisting>
 
 <programlisting language="orc-demo">
 {- Create an array of 2 channels -}
-val A = fillArray(Array(2), lambda(_) = Buffer())
+val A = fillArray(Array(2), lambda(_) = Channel())
 
 {- Send true on channel 0,
    listen for a value on channel 0 and forward it to channel 1, 
@@ -622,16 +622,16 @@ alternatives that are explored until a publication occurs.
 </para>
 
 <para>
-Suppose that we would like to poll a list of buffers for available data.  The
-list of buffers is ordered by priority. The first buffer in the list has the
+Suppose that we would like to poll a list of channels for available data.  The
+list of channels is ordered by priority. The first channel in the list has the
 highest priority, so it is polled first.  If it has no data, then the
-next buffer is polled, and so on.
+next channel is polled, and so on.
 </para>
 
 <para>
-Here is a function which polls a prioritized list of buffers in this way. It
+Here is a function which polls a prioritized list of channels in this way. It
 publishes the first item that it finds, removing it from the originating
-buffer. If all buffers are empty, the function halts.  We use the <code>getnb</code> ("get non-blocking") method of the buffer, which retrieves the first
+channel. If all channels are empty, the function halts.  We use the <code>getnb</code> ("get non-blocking") method of the channel, which retrieves the first
 available item if there is one, and halts otherwise.
 </para>
 
@@ -901,7 +901,7 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 </para>
 
 <programlisting>
-val c = Buffer()
+val c = Channel()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
   | Rwait(1000) >> c.closeD()]]></programlisting>
@@ -927,7 +927,7 @@ executes F until it publishes a negative number, and then terminates it:
 </para>
 
 <programlisting>
-val c = Buffer()
+val c = Channel()
 repeat(c.get)<![CDATA[ << ]]>
   <emphasis role="bold">F</emphasis><![CDATA[ >x> 
     (if x >= 0 
@@ -956,7 +956,7 @@ may publish any number of values.
 </para>
 
 <programlisting><![CDATA[
-val c = Buffer()
+val c = Channel()
 val done = Semaphore(0)
 repeat(c.get) <<
     ]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop
@@ -973,7 +973,7 @@ it publishes 5 values, and then terminates it.
 </para>
 
 <programlisting><![CDATA[
-val c = Buffer()
+val c = Channel()
 val done = Semaphore(0)
 def allow(0) = done.release() >> stop
 def allow(n) = c.get() >x> (x | allow(n-1))
@@ -1023,7 +1023,7 @@ or not.
 </para>
 
 <programlisting><![CDATA[
-val c = Buffer()
+val c = Channel()
 repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop ; c.close() >> ]]><emphasis role="bold">G</emphasis>)  
 </programlisting>
 
@@ -1154,18 +1154,18 @@ each iteration of <code>afold</code>.
 We can make the implementation even more concurrent when the fold operator 
 is both associative and commutative. We define <code>cfold(f,xs)</code>, where 
 <code>f</code> is a associative and commutative binary function and <code>xs</code> is a non-empty list. 
-The implementation initially copies all list items into a buffer in arbitrary
+The implementation initially copies all list items into a channel in arbitrary
 order using the auxiliary function <code>xfer</code>, counting the total
 number of items copied. The auxiliary function <code>combine</code> repeatedly 
-pulls pairs of items from the buffer, reduces
-them, and places the result back in the buffer. Each pair of items is reduced
-in parallel as they become available. The last item in the buffer is the
+pulls pairs of items from the channel, reduces
+them, and places the result back in the channel. Each pair of items is reduced
+in parallel as they become available. The last item in the channel is the
 result of the overall fold.
 </para>
 
 <programlisting><![CDATA[
 def cfold(f, xs) =
-  val c = Buffer()
+  val c = Channel()
   
   def xfer([])    = 0
   def xfer(x:xs)  = c.put(x) >> stop | xfer(xs)+1

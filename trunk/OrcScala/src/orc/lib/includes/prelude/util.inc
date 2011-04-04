@@ -164,7 +164,7 @@ by <code>f()</code> (as they are published), and then
 
 def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
-  val out = Buffer[A]()
+  val out = Channel[A]()
   val c = Counter(n)
   Let(
     f() >x>

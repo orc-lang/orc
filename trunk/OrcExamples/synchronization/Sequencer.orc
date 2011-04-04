@@ -25,8 +25,8 @@ include "../synchronization/BoundedChannel.inc"
 include "../clock_time/StopWatch.inc"
 
 def class Sequencer(n) = 
- val bb = BBuffer(n)  -- waiting customers' semaphores
- val sem = BBuffer(n) -- semaphore pool
+ val bb = BChannel(n)  -- waiting customers' semaphores
+ val sem = BChannel(n) -- semaphore pool
  
  def  incr() =  bb.get() >s> s.release() 
 

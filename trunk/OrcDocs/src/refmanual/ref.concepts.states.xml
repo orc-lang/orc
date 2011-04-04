@@ -24,7 +24,7 @@
 		<code>Ift(false)</code>
 		never publishes, and
 		<code>c.get()</code>
-		on buffer
+		on channel
 		<code>c</code>
 		that is currently
 		empty may eventually publish or remain non-responsive, depending on
@@ -161,7 +161,7 @@
 		<example xml:id="ref.concepts.states.examples.parallel">
 			<title>Parallel site calls; ready and blocked states</title>
 			<para>
-				Let <code>c</code> be a buffer. Consider expression <replaceable>G</replaceable> given by
+				Let <code>c</code> be a channel. Consider expression <replaceable>G</replaceable> given by
 			</para>
 
 			<para>

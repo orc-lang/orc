@@ -128,10 +128,10 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.combinators.otherwise.examples.transfer"><title>Buffer Transfer</title>
+		  <example xml:id="ref.combinators.otherwise.examples.transfer"><title>Channel Transfer</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Transfer all items from a buffer to a list.  Assume that the
-   process has exclusive access to the buffer, so that no other
+{- Transfer all items from a channel to a list.  Assume that the
+   process has exclusive access to the channel, so that no other
    process is adding or removing items.
 -}
 
