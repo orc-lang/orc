@@ -30,9 +30,12 @@ val out = Buffer[outType]()
 def compute(Integer) :: siteType
 def compute(n)(x) = Println("Site " + n) >> x*x
 
+
+
 signal >>
 ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
-  ; out.close() >> stop )
+-- FIXME: Replace the Rwait here with some type of Buffer.awaitEmpty function
+  ; Rwait(15) >> out.close() >> stop )
 | ( upto(10) >n> in.put(n) >> stop
     ; in.close() >> stop )
 | repeat(out.get)
