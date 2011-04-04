@@ -171,6 +171,12 @@ function toggle(link, divId) {
 			<xsl:apply-templates mode="xslthl" />
 		</span>
 	</xsl:template>
+	
+	<xsl:template match='xslthl:operator' mode="xslthl">
+		<span class="hl-operator">
+			<xsl:apply-templates mode="xslthl" />
+		</span>
+	</xsl:template>
 
 	<xsl:template match='xslthl:doccomment' mode="xslthl">
 		<span class="hl-comment">
