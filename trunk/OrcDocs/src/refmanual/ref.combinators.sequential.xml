@@ -16,45 +16,7 @@
       
       <!-- Index pointers for unwritten terms -->
 	  <indexterm><primary>sequential combinator</primary></indexterm>
-      
-	  <section xml:id="ref.combinators.sequential.syntax">
-		  <title>Syntax</title>
-		  <para>
-		    <productionset>
-		    <productionrecap linkend="ebnf.expression.sequential"/>
-		    </productionset>
-		  </para>
-		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
-			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
-			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
-			        [<link linkend="ref.syntax.precedence">Full Table</link>]
-			  </para>
-	  </section>
-	  
-	  <section xml:id="ref.combinators.sequential.identities">
-		<title>Notable Identities</title>	  
-			  <para>
-			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
-			    <colspec align="right" colwidth="10*"/>
-			    <colspec align="center" colwidth="1*"/>
-			    <colspec align="left" colwidth="10*"/>
-			    <colspec align="right" colwidth="7*"/>
-				<tbody>
-				  <row>
-				    <entry><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
-				    <entry> = </entry>
-				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
-				    <entry>  (Left Associative)</entry>
-				  </row>
-				</tbody>
-				</tgroup></informaltable>
-			  </para>
-      </section>
-	  
-	  <section xml:id="ref.combinators.sequential.behavior">
-		  <title>Behavior</title>
+
 		  <para>
 		  <variablelist>
 		  	<varlistentry><term><replaceable>F</replaceable><code> &gt;</code><replaceable>x</replaceable><code>&gt; </code><replaceable>G</replaceable></term>
@@ -93,7 +55,42 @@
 			</varlistentry>
 			</variablelist>
 		  </para>
+      
+	  <section xml:id="ref.combinators.sequential.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.sequential"/>
+		    </productionset>
+		  </para>
+		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
+			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
+			        [<link linkend="ref.syntax.precedence">Full Table</link>]
+			  </para>
 	  </section>
+	  
+	  <section xml:id="ref.combinators.sequential.identities">
+		<title>Notable Identities</title>	  
+			  <para>
+			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
+			    <colspec align="right" colwidth="10*"/>
+			    <colspec align="center" colwidth="1*"/>
+			    <colspec align="left" colwidth="10*"/>
+			    <colspec align="right" colwidth="7*"/>
+				<tbody>
+				  <row>
+				    <entry><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
+				    <entry>  (Left Associative)</entry>
+				  </row>
+				</tbody>
+				</tgroup></informaltable>
+			  </para>
+      </section>
 	  
 	  <section xml:id="ref.combinators.sequential.type">
 	    <title>Type</title>

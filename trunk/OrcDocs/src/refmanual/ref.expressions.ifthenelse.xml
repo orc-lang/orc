@@ -12,7 +12,7 @@
 
 <!-- if then else -->
 	<section xml:id="ref.expressions.ifthenelse" xmlns="http://docbook.org/ns/docbook">
-		<title><code><indexterm><primary>if then else</primary></indexterm>if then else</code></title>
+		<title><code>if then else</code></title><indexterm><primary>if then else</primary></indexterm>
 		
 		<para>
 		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>

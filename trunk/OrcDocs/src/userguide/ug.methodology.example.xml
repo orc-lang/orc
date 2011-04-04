@@ -216,11 +216,11 @@ def philosopher(name, mbox, missing) =
   {- All philosophers start out digesting -}
   digesting()
 
-{-
-Create an NxN 4-connected grid of philosophers.  Each philosopher
-holds the fork for the connections below and to the right (so the
-top left philosopher holds both its forks).
+{- Create an NxN 4-connected grid of philosophers.  Each philosopher
+   holds the fork for the connections below and to the right (so the
+   top left philosopher holds both its forks).
 -}
+
 def philosophers(n) =
   {- A set with 1 item -}
   def Set1(item) = Set() >s> s.add(item) >> s
@@ -246,7 +246,25 @@ def philosophers(n) =
 Let(
   philosophers(3)
   | Rwait(10000)
-) >> "HALTED"]]></programlisting>
+) >> "HALTED"
+
+{-
+OUTPUT:EXAMPLE
+(0, 0) thinking
+(0, 1) thinking
+(0, 2) thinking
+(1, 0) thinking
+(2, 0) thinking
+(1, 1) thinking
+(2, 1) thinking
+(1, 2) thinking
+(2, 2) thinking
+(1, 0) hungry
+(0, 0) hungry
+(0, 1) hungry
+...
+"HALTED"
+-}]]></programlisting>
 
 <para>
 Our implementation is based on the <link
@@ -312,32 +330,34 @@ directly in Orc.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
--- Queue of lock requests
+{- A solution to the readers-writers problem -}
+
+{- Queue of lock requests -}
 val m = Buffer()
--- Count of active readers/writers
+{- Count of active readers/writers -}
 val c = Counter()
 
-{-- Process requests in sequence --}
+{- Process requests in sequence -}
 def process() =
-  -- Grant read request
+  {- Grant read request -}
   def grant((false,s)) = c.inc() >> s.release()
-  -- Grant write request
+  {- Grant write request -}
   def grant((true,s)) =
     c.onZero() >> c.inc() >> s.release() >> c.onZero()
-  -- Goal expression of process()
+  {- Goal expression of process() -}
   m.get() >r> grant(r) >> process()
 
-{-- Acquire the lock: argument is "true" if writing --}
+{- Acquire the lock: argument is "true" if writing -}
 def acquire(write) =
   val s = Semaphore(0)
   m.put((write, s)) >> s.acquire()
 
-{-- Release the lock --}
+{- Release the lock -}
 def release() = c.dec()
 
 -------------------------------------------------
 
-{-- These definitions are for testing only --}
+{- These definitions are for testing only -}
 def reader(start) = Rwait(start) >>
   acquire(false) >> Println("START READ") >>
   Rwait(1000) >> Println("END READ") >>
@@ -359,9 +379,21 @@ Let(
   | reader(50) {- START READ  -}
                {- END READ    -}
                {- END READ    -}
-  -- halt after the last reader finishes
+  {- halt after the last reader finishes -}
   | Rwait(60) >> acquire(true)
-)]]></programlisting>
+)
+
+{-
+OUTPUT:EXAMPLE
+END READ
+START WRITE
+END WRITE
+START READ
+START READ
+END READ
+END READ
+signal
+-}]]></programlisting>
 
 <para>
 The lock receives requests over the channel <code>m</code> and processes them
@@ -408,21 +440,25 @@ the subarray and then recursively sorting the partitions.
 </para>
 
 <programlisting><![CDATA[
+{- Perform Quicksort on a list -}
+
 def quicksort(a) =
 
   def swap(x, y) = a(x)? >z> a(x) := a(y)? >> a(y) := z
 
+  {- Partition the elements based on pivot point 'p' -}
   def part(p, s, t) =
-    def lr(i) = if i < t && a(i)? <= p then lr(i+1) else i
-    def rl(i) = if a(i)? > p then rl(i-1) else i
+    def lr(i) = if i <: t && a(i)? <= p then lr(i+1) else i
+    def rl(i) = if a(i)? :> p then rl(i-1) else i
 
     signal >>
       (lr(s), rl(t)) >(s', t')>
-      ( if (s' + 1 < t') >> swap(s', t') >> part(p, s'+1, t'-1)
-      | if (s' + 1 = t') >> swap(s', t') >> s'
-      | if (s' + 1 > t') >> t'
+      ( Ift (s' + 1 <: t') >> swap(s', t') >> part(p, s'+1, t'-1)
+      | Ift (s' + 1 = t') >> swap(s', t') >> s'
+      | Ift (s' + 1 :> t') >> t'
       )
 
+  {- Sort the elements -}
   def sort(s, t) =
      if s >= t then signal
      else part(a(s)?, s+1, t) >m>
@@ -430,7 +466,9 @@ def quicksort(a) =
           (sort(s, m-1), sort(m+1, t)) >>
           signal
 
-  sort(0, a.length()-1)]]></programlisting>
+  sort(0, a.length()-1)
+  
+quicksort([1,3,2])]]></programlisting>
 
 <para>
 The function <code>part</code> partitions the subarray given by indices

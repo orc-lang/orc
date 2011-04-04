@@ -16,6 +16,24 @@
       
       <!-- Index pointers for unwritten terms -->
 	  <indexterm><primary>parallel combinator</primary></indexterm>
+	  	  
+		  <para>
+		  <variablelist>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></term>
+			<listitem>
+			<para>
+			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
+			   occurs by executing <replaceable>F</replaceable> 
+			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
+			  <indexterm><primary>publish</primary></indexterm>publishes a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
+			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
+			  the publications of <replaceable>F</replaceable>
+			  and <replaceable>G</replaceable> arbitrarily.
+		    </para>
+			</listitem>
+			</varlistentry>
+			</variablelist>
+		  </para>
       
 	  <section xml:id="ref.combinators.parallel.syntax">
 		  <title>Syntax</title>
@@ -64,27 +82,6 @@
 				</tgroup></informaltable>
 			  </para>
     	</section>
-    
-	  <section xml:id="ref.combinators.parallel.behavior">
-		  <title>Behavior</title>		  
-		  <para>
-		  <variablelist>
-			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable></term>
-			<listitem>
-			<para>
-			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
-			   occurs by executing <replaceable>F</replaceable> 
-			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
-			  <indexterm><primary>publish</primary></indexterm>publishes a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
-			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
-			  the publications of <replaceable>F</replaceable>
-			  and <replaceable>G</replaceable> arbitrarily.
-		    </para>
-			</listitem>
-			</varlistentry>
-			</variablelist>
-		  </para>
-	  </section>
 	  
 	  <section xml:id="ref.combinators.parallel.type">
 	    <title>Type</title>

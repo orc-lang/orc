@@ -182,10 +182,17 @@ However, unlike in ML, a reference cell can be left initially empty by calling <
 with no arguments. A read operation on an empty cell blocks until the cell is written.
 
 <programlisting language="orc-demo"><![CDATA[
-{- Create a cell, and wait 1 second before initializing it. -}
-{- The read operation blocks until the write occurs. -}
+{- Create a cell, and wait 1 second before initializing it.
+   The read operation blocks until the write occurs. 
+-}
+
 val r = Ref()
 r.read() | Rwait(1000) >> r.write(1) >> stop
+
+{-
+OUTPUT:
+1
+-}
 ]]></programlisting>
 
 </para>
@@ -201,13 +208,21 @@ written. A write operation succeeds only if the cell is empty; subsequent write 
 simply halt.
 
 <programlisting language="orc-demo"><![CDATA[
-{- Create a cell, try to write to it twice, and read it -}
-{- The read will block until a write occurs
-   and only one write will succeed. -}
+{- Create a cell, try to write to it twice, and read it.
+   The read will block until a write occurs
+   and only one write will succeed. 
+-}
+
 val r = Cell()
   Rwait(1000) >> r.write(2) >> println("Wrote 2") >> stop
 | Rwait(1000) >> r.write(3) >> println("Wrote 3") >> stop
 | r.read()
+
+{-
+OUTPUT:PERMUTABLE
+2
+Wrote 2
+-}
 ]]></programlisting>
 
 Write-once cells are very useful for concurrent programming, and they are often safer
@@ -238,13 +253,21 @@ but lower precedence than any of the other operators.</listitem>
 <para>Here is a previous example rewritten using this syntactic sugar:</para>
 
 <programlisting language="orc-demo"><![CDATA[
-{- Create a cell, try to write to it twice, and read it -}
-{- The read will block until a write occurs
-   and only one write will succeed. -}
+{- Create a cell, try to write to it twice, and read it.
+   The read will block until a write occurs
+   and only one write will succeed.
+-}
+
 val r = Cell()
   Rwait(1000) >> r := 2 >> println("Wrote 2") >> stop
 | Rwait(1000) >> r := 3 >> println("Wrote 3") >> stop
 | r?
+
+{-
+OUTPUT:PERMUTABLE
+2
+Wrote 2
+-}
 ]]></programlisting>
 
 </section>
@@ -271,9 +294,10 @@ ith power of 2. It then reads the array values at indices 3, 6, and 10. The read
 halts because it is out of bounds (arrays are indexed from 0).
 
 <programlisting language="orc-demo"><![CDATA[
+{- Create and initialize an array, then halt on out of bounds read -}
 val a = Array(10)
 def initialize(i) = 
-  if (i < 10) 
+  if (i <: 10) 
     then a(i) := 2 ** i  >>  initialize(i+1)
     else signal
 initialize(0) >> (a(3)? | a(6)? | a(10)?)
@@ -304,11 +328,11 @@ fillArray(Array(5), lambda(_) = Buffer())
 {- Create an array of 2 channels -}
 val A = fillArray(Array(2), lambda(_) = Buffer())
 
-{- 
-   Send true on channel 0,
+{- Send true on channel 0,
    listen for a value on channel 0 and forward it to channel 1, 
    and listen for a value on channel 1 and publish it. 
 -}
+
   A(0)?.put(true) >> stop
 | A(0)?.get() >x> A(1)?.put(x) >> stop
 | A(1)?.get()

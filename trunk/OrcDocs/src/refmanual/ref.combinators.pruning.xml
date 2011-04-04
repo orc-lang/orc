@@ -16,45 +16,7 @@
       
       <!-- Index pointers for unwritten terms -->
 	  <indexterm><primary>pruning combinator</primary></indexterm>
-      
-	  <section xml:id="ref.combinators.pruning.syntax">
-		  <title>Syntax</title>
-		  <para>
-		    <productionset>
-		    <productionrecap linkend="ebnf.expression.pruning"/>
-		    </productionset>
-		  </para>
-		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
-			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
-			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
-			        [<link linkend="ref.syntax.precedence">Full Table</link>]
-			  </para>
-	  </section>
 	  
-	  <section xml:id="ref.combinators.pruning.identities">
-		  <title>Notable Identities</title>	  
-			  <para>
-			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
-			    <colspec align="right" colwidth="10*"/>
-			    <colspec align="center" colwidth="1*"/>
-			    <colspec align="left" colwidth="10*"/>
-			    <colspec align="right" colwidth="7*"/>
-				<tbody>
-				  <row>
-				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
-				    <entry> = </entry>
-				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
-				    <entry>  (Right Associative)</entry>
-				  </row>
-				</tbody>
-				</tgroup></informaltable>
-			  </para>
-      </section>
-	  
-	  <section xml:id="ref.combinators.pruning.behavior">
-		  <title>Behavior</title>
 		  <para>
 		  <variablelist>
 		  	<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
@@ -92,7 +54,42 @@
 			</varlistentry>
 			</variablelist>
 		  </para>	
+      
+	  <section xml:id="ref.combinators.pruning.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.pruning"/>
+		    </productionset>
+		  </para>
+		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
+			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
+			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
+			        [<link linkend="ref.syntax.precedence">Full Table</link>]
+			  </para>
 	  </section>
+	  
+	  <section xml:id="ref.combinators.pruning.identities">
+		  <title>Notable Identities</title>	  
+			  <para>
+			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
+			    <colspec align="right" colwidth="10*"/>
+			    <colspec align="center" colwidth="1*"/>
+			    <colspec align="left" colwidth="10*"/>
+			    <colspec align="right" colwidth="7*"/>
+				<tbody>
+				  <row>
+				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
+				    <entry>  (Right Associative)</entry>
+				  </row>
+				</tbody>
+				</tgroup></informaltable>
+			  </para>
+      </section>
 	  
 	  <section xml:id="ref.combinators.pruning.type">
 	    <title>Type</title>

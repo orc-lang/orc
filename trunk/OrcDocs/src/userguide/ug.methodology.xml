@@ -18,7 +18,7 @@
 <title>Programming Methodology</title>
 
 <para>
-In <link linkend="ug.language"/>, we described the syntax and semantics of the Orc language. 
+In Chapter 1, we described the syntax and semantics of the Orc language. 
 Now, we turn our attention to how the language is used in practice, with guidelines on style and programming 
 methodology, including a number of common concurrency patterns.
 </para>
