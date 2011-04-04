@@ -117,7 +117,7 @@ perform decimal division and return <code>2.5</code>.
     <entry>Less than or equal to</entry>
   </row>
   <row>
-    <entry><code>=&gt;</code></entry>
+    <entry><code>&gt;=</code></entry>
     <entry>Greater than or equal to</entry>
   </row>
 </tbody></tgroup></informaltable>

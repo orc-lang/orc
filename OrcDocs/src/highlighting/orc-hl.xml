@@ -46,16 +46,19 @@
   <keyword>as</keyword>
   <keyword>type</keyword>
   <keyword>atomic</keyword>
-  <keyword>throw</keyword>
+  
+  <!-- Old keywords 
   <keyword>try</keyword>
   <keyword>catch</keyword>
+  <keyword>throw</keyword>
+  -->
 
 </highlighter>
 
 <!-- operators -->
 <highlighter type='regex'>
-  <style>site</style>
-  <pattern><![CDATA[\|\||<=|>=|<:|:>|:=|\?]]></pattern>
+  <style>operator</style>
+  <pattern><![CDATA[\|\||<=|>=|<:|:>|:=|\?|-|~|\*\*|\*|/|%|:|=|/=|&&|\+]]></pattern>
 </highlighter>
 
 <highlighter type='regex'>
