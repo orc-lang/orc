@@ -48,7 +48,7 @@ laststart is the time at which the last call to start was made.
 -} 
 
 def class Stopwatch() =
-val clk        = Clock()
+val clk        = Rclock().time
 val timeshown  = Ref(0)
 val laststart  = Ref(0)
 val running    = Ref(false)
