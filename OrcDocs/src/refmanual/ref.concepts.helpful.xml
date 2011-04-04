@@ -26,10 +26,10 @@
 	<para>
 		All library sites in Orc are helpful. Thus, <link linkend="ref.stdlib.core.Ift"><code>Ift</code></link> is a helpful site, and
 		<code>Ift(false)</code> sends an indication to the caller that it will never
-		publish. A <link linkend="ref.stdlib.state.Buffer"><code>Buffer</code></link> is a helpful site, and some of its methods will send
+		publish. A <link linkend="ref.stdlib.state.Channel"><code>Channel</code></link> is a helpful site, and some of its methods will send
 		an indication that they will never publish. In particular, the <code>get</code>
-		method is blocked on an empty buffer, but it sends an indication it
-		will never publish if the buffer is closed.
+		method is blocked on an empty channel, but it sends an indication it
+		will never publish if the channel is closed.
 	</para>
 
 	<para>

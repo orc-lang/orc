@@ -13,20 +13,20 @@ type inType = Number
 type outType = Number
 type siteType = (lambda(inType) :: outType)
 
-def balance(Buffer[inType], Buffer[outType], List[siteType]) :: Bot
+def balance(Channel[inType], Channel[outType], List[siteType]) :: Bot
 def balance(in, out, ps) =
-  def makeBuffer(_ :: Top) = Buffer[outType]()
-  val bs = map(makeBuffer, ps)
-  def write(List[Buffer[outType]]) :: Bot
-  def read(List[(siteType,Buffer[outType])]) :: Bot
+  def makeChannel(_ :: Top) = Channel[outType]()
+  val bs = map(makeChannel, ps)
+  def write(List[Channel[outType]]) :: Bot
+  def read(List[(siteType,Channel[outType])]) :: Bot
   def write(b:bs) = out.put(b.get()) >> write(append(bs, [b]))
   def read((p,b):pbs) =
     ( in.get() ; b.close() >> stop ) >x>
     ( b.put(p(x)) >> stop | read(append(pbs, [(p,b)])) )
   write(bs) | read(zip(ps,bs))
 
-val in = Buffer[inType]()
-val out = Buffer[outType]()
+val in = Channel[inType]()
+val out = Channel[outType]()
 def compute(Integer) :: siteType
 def compute(n)(x) = Println("Site " + n) >> x*x
 

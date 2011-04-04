@@ -209,11 +209,11 @@ site Semaphore = "orc.lib.state.Semaphore"
 type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
-@site Buffer[A]() :: Buffer[A]
-Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+@site Channel[A]() :: Channel[A]
+Create a new asyncrhonous FIFO channel of unlimited size. A channel supports
 get, put and close operations.
 
-A buffer may be either empty or non-empty, and either open or closed.  When
+A channel may be either empty or non-empty, and either open or closed.  When
 empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and closed, calls
 to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
@@ -221,94 +221,94 @@ other cases, calls return normally.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 10
-val b = Buffer()
+val b = Channel()
   Rwait(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting>
 
-@method Buffer[A].get() :: A
+@method Channel[A].get() :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-Get an item from the buffer. If the buffer is open and no items are available,
-<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
-linkend="ref.stdlib.state.Buffer.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the channel. If the channel is open and no items are available,
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
+linkend="ref.stdlib.state.Channel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].getD() :: A
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
-
-@method Buffer[A].put(A) :: Signal
+@method Channel[A].getD() :: A
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Put an item in the buffer. If the buffer is <link
-linkend="ref.stdlib.state.Buffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].close() :: Signal
+@method Channel[A].put(A) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Put an item in the channel. If the channel is <link
+linkend="ref.stdlib.state.Channel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method Channel[A].close() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-<firstterm xml:id="ref.stdlib.state.Buffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+<firstterm xml:id="ref.stdlib.state.Channel.close">Close</firstterm> the channel and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-When the buffer is empty, return a signal.
+When the channel is empty, return a signal.
 
-@method Buffer[A].closeD() :: Signal
+@method Channel[A].closeD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-Close the buffer and return a signal immediately.
+Close the channel and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].isClosed() :: Boolean
+@method Channel[A].isClosed() :: Boolean
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-If the buffer is currently closed, return true, otherwise return false.
+If the channel is currently closed, return true, otherwise return false.
 
-@method Buffer[A].getAll() :: List[A]
+@method Channel[A].getAll() :: List[A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Get all of the items currently in the buffer, emptying the buffer and returning
+Get all of the items currently in the channel, emptying the channel and returning
 a list of the items in the order they were added. If there are no items in the
-buffer, return an empty list.
+channel, return an empty list.
 --}
-site Buffer = "orc.lib.state.Buffer"
-type Buffer = "orc.lib.state.types.BufferType"
+site Channel = "orc.lib.state.Channel"
+type Channel = "orc.lib.state.types.ChannelType"
 
 
 {--
-@site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
-Create a new buffer (FIFO channel) with the given number of slots.
-Putting an item into the buffer fills a slot, and getting an item opens a slot.
-A buffer with zero slots is equivalent to a synchronous channel.
+@site BoundedChannel[A](Integer) :: BoundedChannel[A]
+Create a new asynchronous FIFO channel with the given number of slots.
+Putting an item into the channel fills a slot, and getting an item opens a slot.
+A channel with zero slots is equivalent to a synchronous channel.
 
-A bounded buffer may be empty, partly filled, or full, and either open or
+A bounded channel may be empty, partly filled, or full, and either open or
 closed.  When empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and
 closed, calls to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. When full and open, calls to
 <code>put</code> <link linkend="ref.concepts.states.block">block</link>. When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
@@ -317,7 +317,7 @@ other cases, calls return normally.
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
-val c = BoundedBuffer(1)
+val c = BoundedChannel(1)
   c.put(1) >> "Put " + 1
 | c.put(2) >> "Put " + 2
 | Rwait(1000) >> (
@@ -325,109 +325,109 @@ val c = BoundedBuffer(1)
   | c.get() >n> "Got " + n
   )]]></programlisting>
 
-@method BoundedBuffer[A].get() :: A
+@method BoundedChannel[A].get() :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-Get an item from the buffer. If the buffer is open and no items are available,
-<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the buffer is <link
-linkend="ref.stdlib.state.BoundedBuffer.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the channel. If the channel is open and no items are available,
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
+linkend="ref.stdlib.state.BoundedChannel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].getD() :: A
+@method BoundedChannel[A].getD() :: A
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Get an item from the buffer. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].put(A) :: Signal
+@method BoundedChannel[A].put(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
-If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
+If the Channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].putD(A) :: Signal
+@method BoundedChannel[A].putD(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Put an item in the buffer. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
-If the buffer is <link linkend="ref.stdlib.state.BoundedBuffer.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].close() :: Signal
+@method BoundedChannel[A].close() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-<firstterm xml:id="ref.stdlib.state.BoundedBuffer.close">Close</firstterm> the buffer and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+<firstterm xml:id="ref.stdlib.state.BoundedChannel.close">Close</firstterm> the channel and <link linkend="ref.concepts.states.block">block</link> until it is empty.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
-initiated prior to closing the buffer may still be allowed to return as usual.
+initiated prior to closing the channel may still be allowed to return as usual.
 
-@method BoundedBuffer[A].closeD() :: Signal
+@method BoundedChannel[A].closeD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-Close the buffer and return a signal immediately.
+Close the channel and return a signal immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
-will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the buffer becomes empty, any subsequent calls to
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
-initiated prior to closing the buffer may still be allowed to return as usual.
+initiated prior to closing the channel may still be allowed to return as usual.
 
-@method BoundedBuffer[A].isClosed() :: Boolean
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-If the buffer is currently closed, return true, otherwise return false.
-
-@method BoundedBuffer[A].getOpen() :: Integer
+@method BoundedChannel[A].isClosed() :: Boolean
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Return the number of open slots in the buffer. Because of concurrency
+If the channel is currently closed, return true, otherwise return false.
+
+@method BoundedChannel[A].getOpen() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Return the number of open slots in the channel. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.
 
-@method BoundedBuffer[A].getBound() :: Integer
+@method BoundedChannel[A].getBound() :: Integer
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-Return the total number of slots (open or filled) in the buffer.
+Return the total number of slots (open or filled) in the channel.
 
-@method BoundedBuffer[A].getAll() :: [A]
+@method BoundedChannel[A].getAll() :: [A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Get all of the items currently in the buffer or waiting to be added, emptying
-the buffer and returning a list of the items in the order they were added. If
-there are no items in the buffer or waiting to be added, return an empty list.
+Get all of the items currently in the channel or waiting to be added, emptying
+the channel and returning a list of the items in the order they were added. If
+there are no items in the channel or waiting to be added, return an empty list.
 --}
-site BoundedBuffer = orc.lib.state.BoundedBuffer
-type BoundedBuffer = orc.lib.state.types.BoundedBufferType
+site BoundedChannel = orc.lib.state.BoundedChannel
+type BoundedChannel = orc.lib.state.types.BoundedChannelType
 
 
 {--

@@ -7,7 +7,7 @@
 
 include "BoundedChannel.inc"
 
-val c = BBuffer(2)
+val c = BChannel(2)
   c.put(5) >> c.put(2) >> c.put(50) >> "yes"
 | Rwait(2000) >> c.get()
 | Rwait(4000) >> c.get() >> c.get()

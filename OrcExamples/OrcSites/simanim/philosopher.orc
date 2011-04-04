@@ -14,7 +14,7 @@ val canvas =
   canvas
 
 def makeFork(n) =
-  Buffer() >f>
+  Channel() >f>
   f.put(true) >>
   Print("Made fork ",n,"\n") >>
   f

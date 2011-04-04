@@ -1,5 +1,5 @@
 //
-// BoundedBuffer.java -- Java class BoundedBuffer
+// BoundedChannel.java -- Java class BoundedChannel
 // Project OrcScala
 //
 // $Id$
@@ -18,7 +18,7 @@ import java.util.LinkedList;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
-import orc.lib.state.types.BoundedBufferType;
+import orc.lib.state.types.BoundedChannelType;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -27,39 +27,39 @@ import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
- * A bounded buffer.
+ * A bounded cchannel.
  * With a bound of zero, behaves as a synchronous channel.
  * 
  * @author quark
  */
-public class BoundedBuffer extends EvalSite implements TypedSite {
+public class BoundedChannel extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-		return new BufferInstance(args.intArg(0));
+		return new ChannelInstance(args.intArg(0));
 	}
 
 	@Override
 	public Type orcType() {
-		return BoundedBufferType.getBuilder();
+		return BoundedChannelType.getBuilder();
 	}
 
-	protected class BufferInstance extends DotSite {
+	protected class ChannelInstance extends DotSite {
 
-		protected final LinkedList<Object> buffer;
+		protected final LinkedList<Object> Channel;
 		protected final LinkedList<Handle> readers;
 		protected final LinkedList<Handle> writers;
 		protected Handle closer;
-		/** The number of open slots in the buffer. */
+		/** The number of open slots in the channel. */
 		protected int open;
 		protected boolean closed = false;
 
-		BufferInstance(final int bound) {
+		ChannelInstance(final int bound) {
 			open = bound;
-			buffer = new LinkedList<Object>();
+			Channel = new LinkedList<Object>();
 			readers = new LinkedList<Handle>();
 			writers = new LinkedList<Handle>();
 		}
@@ -69,22 +69,22 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("get", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-					synchronized (BufferInstance.this) {
-						if (buffer.isEmpty()) {
+					synchronized (ChannelInstance.this) {
+						if (Channel.isEmpty()) {
 							if (closed) {
 								reader.halt();
 							} else {
 								readers.addLast(reader);
 							}
 						} else {
-							reader.publish(object2value(buffer.removeFirst()));
+							reader.publish(object2value(Channel.removeFirst()));
 							if (writers.isEmpty()) {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
 								writer.publish(signal());
 							}
-							if (closer != null && buffer.isEmpty()) {
+							if (closer != null && Channel.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -95,18 +95,18 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("getD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
-					synchronized (BufferInstance.this) {
-						if (buffer.isEmpty()) {
+					synchronized (ChannelInstance.this) {
+						if (Channel.isEmpty()) {
 							reader.halt();
 						} else {
-							reader.publish(object2value(buffer.removeFirst()));
+							reader.publish(object2value(Channel.removeFirst()));
 							if (writers.isEmpty()) {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
 								writer.publish(signal());
 							}
-							if (closer != null && buffer.isEmpty()) {
+							if (closer != null && Channel.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -117,7 +117,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("put", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						final Object item = args.getArg(0);
 						if (closed) {
 							writer.halt();
@@ -126,10 +126,10 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 							reader.publish(object2value(item));
 							writer.publish(signal());
 						} else if (open == 0) {
-							buffer.addLast(item);
+							Channel.addLast(item);
 							writers.addLast(writer);
 						} else {
-							buffer.addLast(item);
+							Channel.addLast(item);
 							--open;
 							writer.publish(signal());
 						}
@@ -139,7 +139,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("putD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						final Object item = args.getArg(0);
 						if (closed) {
 							writer.halt();
@@ -150,7 +150,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 						} else if (open == 0) {
 							writer.halt();
 						} else {
-							buffer.addLast(item);
+							Channel.addLast(item);
 							--open;
 							writer.publish(signal());
 						}
@@ -160,12 +160,12 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("getAll", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						// restore open slots
-						open += buffer.size() - writers.size();
+						open += Channel.size() - writers.size();
 						// collect all values in a list
-						final Object out = buffer.clone();
-						buffer.clear();
+						final Object out = Channel.clone();
+						Channel.clear();
 						// resume all writers
 						for (final Handle writer : writers) {
 							writer.publish(signal());
@@ -189,7 +189,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("getBound", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return BigInteger.valueOf(open + buffer.size() - writers.size());
+					return BigInteger.valueOf(open + Channel.size() - writers.size());
 				}
 			});
 			addMember("isClosed", new EvalSite() {
@@ -201,12 +201,12 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("close", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						if (buffer.isEmpty()) {
+						if (Channel.isEmpty()) {
 							token.publish(signal());
 						} else {
 							closer = token;
@@ -217,7 +217,7 @@ public class BoundedBuffer extends EvalSite implements TypedSite {
 			addMember("closeD", new SiteAdaptor() {
 				@Override
 				public void callSite(final Args args, final Handle token) {
-					synchronized (BufferInstance.this) {
+					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();

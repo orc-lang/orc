@@ -290,7 +290,7 @@ OUTPUT:PERMUTABLE
 
 
 <para>
-The sequential combinator may be written as F<code><![CDATA[ >]]></code>P<code><![CDATA[> ]]></code>G, 
+The sequential combinator may be written as F<code> &gt;</code>P<code>&gt; </code>G, 
 where P is a pattern instead of just a variable name. Any value published by F is matched against the 
 pattern P. If this match is successful, a new instance of G is started with all of the bindings from the match. 
 Otherwise, the published value is simply ignored, and no new instance of G is executed.

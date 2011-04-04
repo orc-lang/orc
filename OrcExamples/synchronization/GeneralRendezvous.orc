@@ -33,12 +33,12 @@ A party calls the rendezvous object with its own identity and data.
 It receives the result value as the effect of the call.
 
 Implementation strategy: 
-b is an array of n buffers. The data submitted by process i is 
+b is an array of n channels. The data submitted by process i is 
 added to b(i). Additionally, a callback cell is is also put in b(i)
 where the result to i will be delivered. The data and cell are put 
 as a pair in b(i).
 
-A manager sweeps through all the buffers from 0 through n-1
+A manager sweeps through all the channels from 0 through n-1
 removing one item from each, and storing them in a list. 
 After one sweep, it applies the distribution function to all the
 data, and computes the result list. Next, it distributes the results
@@ -47,7 +47,7 @@ among the callback cells.
 -}
 
 def class Rendezvous(n,f) =
-  val b = Table(n,Buffer)
+  val b = Table(n,Channel)
 
   def go(i,v) = 
    val c = Cell()
@@ -92,7 +92,7 @@ val rg3 = Rendezvous(3,avg).go
 
 {-
 The following implementation does not use callback mechanism. But, it
-uses two arrays of buffers, b and c. The ith process participating in
+uses two arrays of Channels, b and c. The ith process participating in
 the rendezvous calls it as before, with its identity i and a value v
 that would be used in the rendezvous. The call returns a value after
 rendezvous is accomplished. 
@@ -109,8 +109,8 @@ into b(i) until p has completed its cycle, i.e., removed the result
 from c(i).
 
 def class Rendezvous(n,f) =
-  val b = Table(n,Buffer)
-  val c = Table(n,Buffer)
+  val b = Table(n,Channel)
+  val c = Table(n,Channel)
   val sem = Table(n,Semaphore)
 
   def initsem(0) = signal

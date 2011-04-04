@@ -1,5 +1,5 @@
 //
-// BufferType.scala -- Scala object BufferType
+// RefType.scala -- Scala object RefType
 // Project OrcScala
 //
 // $Id$

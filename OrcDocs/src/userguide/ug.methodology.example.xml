@@ -162,7 +162,7 @@ full details of the algorithm, consult the original paper.
 {- Define philosopher -}
 def philosopher(name, mbox, missing) =
   {- deferred requests for forks -}
-  val deferred = Buffer()
+  val deferred = Channel()
   {- forks we hold which are clean -}
   val clean = Set()
 
@@ -228,7 +228,7 @@ def philosophers(n) =
   def Set2(i1, i2) = Set() >s> s.add(i1) >> s.add(i2) >> s
 
   {- create an NxN matrix of mailboxes -}
-  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Buffer))))
+  val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Channel))))
 
   {- create the first row of philosophers -}
   philosopher((0,0), cs(0,0), Set())
@@ -280,7 +280,7 @@ language based on the actor model.
 
 <para>
 Orc emulates the actor model very naturally.  In Orc, an actor is an Orc thread
-of execution, together with a <code>Buffer</code> which serves as a mailbox.  To send a
+of execution, together with a <code>Channel</code> which serves as a mailbox.  To send a
 message to an actor, you place it in the actor's mailbox, and to receive a
 message, the actor gets the next item from the mailbox.  The internal states of
 the actor are represented by functions: while an actor's thread of execution is
@@ -333,7 +333,7 @@ directly in Orc.
 {- A solution to the readers-writers problem -}
 
 {- Queue of lock requests -}
-val m = Buffer()
+val m = Channel()
 {- Count of active readers/writers -}
 val c = Counter()
 

@@ -12,7 +12,7 @@ http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 
 -}
 
-def threadRing(Integer, Integer, Buffer[Integer], Buffer[Integer]) :: Integer
+def threadRing(Integer, Integer, Channel[Integer], Channel[Integer]) :: Integer
 def threadRing(id, m, in, next) =
     in.get() >x> 
     (if (m = x) then 
@@ -24,7 +24,7 @@ val N = 503
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
-  val ring = Table(N, lambda(_ :: Integer) = Buffer[Integer]()) 
+  val ring = Table(N, lambda(_ :: Integer) = Channel[Integer]()) 
   val _ = ring(0).put(0)
   val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
   Println(lastid)

@@ -5,7 +5,7 @@ val t = 2
 -- total number of processes
 val p = 8*t+1
 -- list of process out channels
-val channels = collect(lambda () = upto(p) >> Buffer())
+val channels = collect(lambda () = upto(p) >> Channel())
 
 -- Return a random boolean
 def coin() = Random(2) :> 0

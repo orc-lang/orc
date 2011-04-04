@@ -13,7 +13,7 @@ manages the shared state.
 type Callback = lambda() :: Signal
 type Message = Dec() | Wait(Callback)
 
-val m = Buffer[Message]()
+val m = Channel[Message]()
 
 def actor(Integer, List[Callback]) :: Signal 
 def actor(n, waiters) =

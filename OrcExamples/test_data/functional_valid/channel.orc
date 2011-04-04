@@ -1,5 +1,5 @@
 def class channel() = 
-  val ch = Buffer[Integer]()
+  val ch = Channel[Integer]()
   val chlen = Ref[Integer](0)
   val s = Semaphore(1)
   val _ = Rwait(3000) >> Println("time up in channel!")

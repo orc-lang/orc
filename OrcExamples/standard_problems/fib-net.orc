@@ -3,16 +3,16 @@ author: Amin Shali
 date: Wednesday, June 09 2010
 -}
 
-def fib(Buffer[Integer], Buffer[Integer], Integer) :: Top
+def fib(Channel[Integer], Channel[Integer], Integer) :: Top
 def fib(in, out, 0) = in.get() >> out.put(0) >> fib(in, out, 0)
 def fib(in, out, 1) = in.get() >> out.put(1) >> fib(in, out, 1)
 def fib(in, out, n) = 
-	val chinn_1 = Buffer[Integer]()
-	val chinn_2 = Buffer[Integer]()
-	val choutn_1 = Buffer[Integer]()
-	val choutn_2 = Buffer[Integer]()
+	val chinn_1 = Channel[Integer]()
+	val chinn_2 = Channel[Integer]()
+	val choutn_1 = Channel[Integer]()
+	val choutn_2 = Channel[Integer]()
 
-	def input(Buffer[Integer], Buffer[Integer], Buffer[Integer], Buffer[Integer], Buffer[Integer]) :: Top
+	def input(Channel[Integer], Channel[Integer], Channel[Integer], Channel[Integer], Channel[Integer]) :: Top
 	def input(i, outn_1, outn_2, outn_1', outn_2') = 
   val s = Semaphore(1)
 		s.acquire() >> i.get() >x> (
@@ -27,7 +27,7 @@ def fib(in, out, n) =
 		) >> s.release() >> 
 		input(i, outn_1, outn_2, outn_1', outn_2')
 
-	def output(Buffer[Integer], Buffer[Integer], Buffer[Integer]) :: Top
+	def output(Channel[Integer], Channel[Integer], Channel[Integer]) :: Top
 	def output(inn_1, inn_2, o) = 
 		(inn_1.get(), inn_2.get()) >(a, b)> o.put(a+b) >> output(inn_1, inn_2, o)
 
@@ -37,8 +37,8 @@ def fib(in, out, n) =
 	fib(chinn_2, choutn_2, n-2) >> stop
 
 
-val in1 = Buffer[Integer]()
-val out1 = Buffer[Integer]()
+val in1 = Channel[Integer]()
+val out1 = Channel[Integer]()
 def userin(Integer) :: Top
 def userin(n) = upto(n) >v> in1.put(v+1) >> stop
 def userout(Integer) :: Top

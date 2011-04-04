@@ -7,5 +7,5 @@
  - Created by brian on Jun 24, 2010 3:46:29 PM
  -}
 
-val a = Buffer()
+val a = Channel()
 a.get().
