@@ -15,7 +15,9 @@
 package orc.lib.xml
 
 import orc.values.sites.TotalSite1
-import orc.values.sites.UntypedSite
+import orc.values.sites.TypedSite
+import orc.types.StringType
+import orc.types.SimpleFunctionType
 import scala.xml.XML
 import org.xml.sax.SAXException
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -27,7 +29,7 @@ import orc.error.runtime.SiteException
  *
  * @author dkitchin
  */
-class ReadXML extends TotalSite1 with UntypedSite {
+class ReadXML extends TotalSite1 with TypedSite {
   
   def eval(arg: AnyRef): AnyRef = {
     arg match {
@@ -45,5 +47,7 @@ class ReadXML extends TotalSite1 with UntypedSite {
       case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
+  
+  def orcType() = SimpleFunctionType(StringType, XMLType)
   
 }

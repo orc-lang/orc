@@ -16,7 +16,7 @@ XML manipulation.
 --}
 
 {- We use Scala's Node class as the underlying type of Orc XML trees -}
-class XML = "scala.xml.Node"
+type XML = "orc.lib.xml.XMLType"
 
 {--
 @site ReadXML(String) :: XML  
@@ -31,7 +31,7 @@ site ReadXML = "orc.lib.xml.ReadXML"
 
 Serializes Orc's representation of XML to a string.
 --}
-site WriteXML = orc.lib.xml.WriteXML
+site WriteXML = "orc.lib.xml.WriteXML"
 
 {--
 @site XMLElement(String, {. .}, List[XML]) :: XML  
@@ -86,7 +86,7 @@ val xml =
     def liftChild(Top) :: XML
     def liftChild(x) = IsXML(x) ; XMLText("" + x)
     XMLElement(tag, {. .}, map(liftChild, children))
-  def fromxml(XML) :: (String, Top)
+  def fromxml(XML) :: Top
   def fromxml(XMLElement(tag,attr,children)) = 
     each(children) >c> 
       ( c >XMLElement(_,_,_)> (tag,c)
@@ -115,3 +115,4 @@ val xattr =
   def fromattr(XMLElement(tag, attr, children)) =
     (XMLElement(tag, {. .}, children), attr)
   {. apply = toattr, unapply = fromattr .}
+

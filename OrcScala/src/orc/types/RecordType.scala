@@ -18,6 +18,9 @@ import scala.collection.immutable.HashMap
 import orc.error.compiletime.typing.NoSuchMemberException
 import orc.error.compiletime.typing.UncallableTypeException
 
+
+object EmptyRecordType extends RecordType(Map[String,Type]())
+
 /**
  * 
  * Semantic type of records.
@@ -29,8 +32,6 @@ case class RecordType(entries: Map[String,Type]) extends CallableType with Stric
   def this(entries: (String, Type)*) = {
     this(entries.toMap)
   }
-  
-  def this() = { this(Map[String,Type]()) }
   
   override def call(typeArgs: List[Type], argTypes: List[Type]) = {
     argTypes match {
