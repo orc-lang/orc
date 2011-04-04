@@ -17,7 +17,7 @@ def queens(N) =
   def extend(x,n) = extend(x,n-1) >y> upto(N) >j> addqueen((n,j), y)
   extend([],N)
 
-val clock = Clock()
+val clock = Rclock().time
 collect(defer(queens, 6)) >x>
 Println("Time elapsed: " + clock() + "ms") >>
 each(x)
