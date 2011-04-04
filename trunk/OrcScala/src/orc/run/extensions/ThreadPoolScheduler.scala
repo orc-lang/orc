@@ -59,7 +59,6 @@ trait OrcWithThreadPoolScheduler extends Orc {
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
-    //TODO: pass a exception notification means to the executor?
     if (executor == null) {
       executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
       executor.startup()

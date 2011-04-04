@@ -356,7 +356,12 @@ trait Orc extends OrcRuntime {
     var listener: Option[Token] = Some(caller)
     
     def run() {
-      invoke(this, calledSite, actuals)
+      try {
+        invoke(this, calledSite, actuals)
+      } catch {
+        case e: OrcException => this !! e
+        case e => { notifyOrc(CaughtEvent(e)); halt() }
+      }
     }
 
     def publish(v: AnyRef) =
@@ -617,14 +622,9 @@ trait Orc extends OrcRuntime {
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
-      try {
-        val sh = new SiteCallHandle(this, s, actuals)
-        state = Blocked(sh)
-        schedule(sh)
-      } catch {
-        case e: OrcException => this !! e
-        case e => { halt(); notifyOrc(CaughtEvent(e)) }
-      }
+      val sh = new SiteCallHandle(this, s, actuals)
+      state = Blocked(sh)
+      schedule(sh)
     }
     
     def makeCall(target: AnyRef, params: List[Binding]): Unit = {
