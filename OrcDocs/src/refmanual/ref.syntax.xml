@@ -21,7 +21,6 @@
 <para>These sections explain the Orc syntax and keywords.</para>
 
 <xi:include href="ref.syntax.EBNF.xml"/>
-<xi:include href="ref.syntax.keywords.xml"/>
 <xi:include href="ref.syntax.lexical.xml"/>
 <xi:include href="ref.syntax.precedence.xml"/>
 

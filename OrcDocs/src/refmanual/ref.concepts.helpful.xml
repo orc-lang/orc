@@ -19,7 +19,7 @@
 	<indexterm><primary>otherwise combinator</primary></indexterm>
 
 	<para>
-		A <indexterm significance="preferred"><primary>helpful site</primary></indexterm><firstterm>helpful site</firstterm> responds with an indication that it will never <link linkend="ref.concepts.publish"><indexterm><primary>publish</primary></indexterm>publish</link>
+		A <indexterm significance="preferred"><primary>helpful site</primary></indexterm><firstterm>helpful site</firstterm> responds with an indication that it will never <link linkend="ref.concepts.publish"><indexterm><primary>publish</primary></indexterm>publish</link>,
 		when it knows this outcome for a call. 
 	</para>
 

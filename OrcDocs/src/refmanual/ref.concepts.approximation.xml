@@ -20,12 +20,18 @@
 			concurrent processing power, and any level of speed of computation
 			demanded by the program. Therefore, we have not treated aspects such
 			as floating point overflow, overhead for concurrent thread creation,
-			nor the exact speeds of computation. Consequently, the program
+			nor the exact speeds of computation. 
 		</para>
 		
+		<para>
+		For example, the program
+		</para>
+		
+		<para>
 		<programlisting language="orc"><![CDATA[
  val z = Rwait(2) >> true | Rwait(3) >> false
 ]]></programlisting>
+		</para>
 		
 		<para>
 			is ideally expected to bind value <code>true</code> to <code>z</code>. In practice, we can only
