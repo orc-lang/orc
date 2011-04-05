@@ -1,10 +1,10 @@
 //
-// TypedExamplesTest.java -- Scala class/trait/object TypedExamplesTest
+// DocExamplesTest.java -- Scala class/trait/object DocExamplesTest
 // Project OrcScala
 //
-// $Id$
+// $Id: TypedExamplesTest.java 2656 2011-03-30 23:41:29Z dkitchin $
 //
-// Created by dkitchin on Mar 30, 2011.
+// Created by dkitchin on Apr 04, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
@@ -25,15 +25,11 @@ import orc.script.OrcBindings;
  *
  * @author dkitchin
  */
-public class TypedExamplesTest extends ExamplesTest {
+public class DocExamplesTest extends ExamplesTest {
 
   public static Test suite() {
     OrcBindings bindings = new OrcBindings();
-    
-    // Turn on typechecking
-    bindings.typecheck_$eq(true);
-    
-    return buildSuite(bindings, new File("../OrcExamples"));
+    return buildSuite(bindings, new File("../OrcDocs/build/examples"));
   }
   
 }
