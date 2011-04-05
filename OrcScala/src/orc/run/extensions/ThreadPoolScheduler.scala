@@ -63,7 +63,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
       executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
       executor.startup()
     } else {
-      throw new IllegalStateException("startScheduler() mutiply invoked")
+      throw new IllegalStateException("startScheduler() multiply invoked")
     }
   }
   
@@ -83,7 +83,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
       }
       executor = null
     } else {
-      throw new IllegalStateException("stopScheduler() mutiply invoked")
+      throw new IllegalStateException("stopScheduler() multiply invoked")
     }
   }
 }

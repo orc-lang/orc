@@ -31,14 +31,16 @@ object OrcSiteForm extends SiteForm {
     try {
       loadedClass = loadClass(name)
     } catch {
-      case e =>
+      case e: InterruptedException => throw e
+      case e: Exception =>
         throw new SiteResolutionException(name, e)
     }
     if (classOf[Site].isAssignableFrom(loadedClass)) {
       try {
         return loadedClass.asInstanceOf[Class[Site]].newInstance()
       } catch {
-        case e =>
+        case e: InterruptedException => throw e
+        case e: Exception =>
           throw new SiteResolutionException(loadedClass.getName, e)
       }
     } else {
@@ -46,7 +48,8 @@ object OrcSiteForm extends SiteForm {
         val loadedClassCompanion = loadClass(name+"$")
         return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Site]
       } catch {
-        case _ => { } //Ignore -- It's not a Scala object, then.
+        case e: InterruptedException => throw e
+        case _: Exception => { } //Ignore -- It's not a Scala object, then.
       }
       throw new SiteResolutionException(loadedClass.getName,new ClassCastException(loadedClass.getClass.getName+" cannot be cast to "+classOf[Site].getName))
     }

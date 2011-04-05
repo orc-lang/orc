@@ -31,11 +31,10 @@ trait SupportForSiteInvocation extends InvocationBehavior {
       case (s: Site) => 
         try {
           s.call(vs, h)
-        }
-        catch {
+        } catch {
           case e: OrcException => h !! e
           case e: InterruptedException => throw e
-          case e: Exception => h !! new JavaException(e) //FIXME: This seems risky
+          case e: Exception => h !! new JavaException(e)
         }
       case _ => super.invoke(h, v, vs)
     }

@@ -360,6 +360,7 @@ trait Orc extends OrcRuntime {
         invoke(this, calledSite, actuals)
       } catch {
         case e: OrcException => this !! e
+        case e: InterruptedException => throw e
         case e => { notifyOrc(CaughtEvent(e)); halt() }
       }
     }

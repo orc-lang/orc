@@ -32,7 +32,8 @@ object JavaSiteForm extends SiteForm {
     try {
       new JavaClassProxy(loadClass(name))
     } catch {
-      case e =>
+      case e: InterruptedException => throw e
+      case e: Exception =>
         throw new SiteResolutionException(name, e)
     }
   }
