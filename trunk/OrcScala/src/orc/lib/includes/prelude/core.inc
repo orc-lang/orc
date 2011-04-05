@@ -40,14 +40,14 @@ type Signal = "orc.types.SignalType"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-When applied to no arguments, return a signal.
+When applied to no arguments, returns a signal.
 
 
 @site Let(A) :: A
-When applied to a single argument, return that argument (behaving as the identity function).
+When applied to a single argument, returns that argument (behaving as the identity function).
 
 @site Let(A, ...) :: (A, ...)
-When applied to two or more arguments, return the arguments as a tuple.
+When applied to two or more arguments, returns the arguments as a tuple.
 --}
 site Let = "orc.lib.builtin.Let"
 
@@ -59,16 +59,13 @@ site Let = "orc.lib.builtin.Let"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is false. Otherwise return a signal.
+Returns a signal if the argument is true, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
   Ift(false) >> "Never publishes"
 | Ift(true) >> "Always publishes"]]></programlisting>
-
-Note: <code>If</code>, <code>IfT</code>, and <code>IfTrue</code>
-are all aliases for <code>If</code>.
 
 --}
 site Ift = "orc.lib.builtin.If"
@@ -81,7 +78,7 @@ site Ift = "orc.lib.builtin.If"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> if the argument is true. Otherwise return a signal.
+Returns a signal if the argument is false, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -89,15 +86,9 @@ Example:
   Iff(false) >> "Always publishes"
 | Iff(true) >> "Never publishes"]]></programlisting>
 
-Note: <code>Unless</code>, <code>IfF</code>, and <code>IfFalse</code>
-are all aliases for <code>Iff</code>.
-
 --}
 site Iff = "orc.lib.builtin.Unless"
 
-{- Aliases for different styles of conditional site usage -}
-site If = "orc.lib.builtin.If"
-site Unless = "orc.lib.builtin.Unless"
 
 {--
 @site Error(String) :: Bot
@@ -106,7 +97,7 @@ site Unless = "orc.lib.builtin.Unless"
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-<link linkend="ref.concepts.states.halt">Halt</link> <link linkend="ref.concepts.silent">silently</link> after outputting the given error message.
+Emits the provided error message, then <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
@@ -319,6 +310,7 @@ site Ceil = "orc.lib.math.Ceil"
 {--
 @def sqrt(Number) :: Integer
 Return the square root of this number.
+If the number is negative, halt silently.
 
 @implementation
 --}

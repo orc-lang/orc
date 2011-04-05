@@ -38,7 +38,7 @@ trait DocDecl extends DocItem {
   
 }
 
-// @site, or @method recursively within the body of @site
+// @site
 // Structured documentation of a site or method
 case class DocSite(name: String, typeDeclaration: String, body: List[DocItem]) extends DocDecl {
   val keyword = "site"

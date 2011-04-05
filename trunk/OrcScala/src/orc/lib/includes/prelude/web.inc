@@ -38,19 +38,19 @@ The HTTP site provides a simple mechanism to send GET and POST requests to a URL
 
 Publishes an HTTP site which accepts HTTP requests on the given URL.
 
-@method HTTP.get() :: String
+@method http.get() :: String
 
 Performs a GET request on the URL used to create this HTTP site. 
 The payload is empty. 
 The response is published as a single string.
 
-@method HTTP.post(String) :: String
+@method http.post(String) :: String
 
 Performs a POST request on the URL used to create this HTTP site. 
 The string argument is used as a UTF-16 encoded payload.
 The response is published as a single string.
 
-@method HTTP.url :: String
+@method http.url :: String
 
 Publishes the URL used to create this HTTP site. If query parameters
 were used, they will be displayed in the query part of the URL,

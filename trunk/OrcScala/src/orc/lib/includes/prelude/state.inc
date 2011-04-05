@@ -52,7 +52,7 @@ val c = Cell()
   c.write(5) >> c.read()
 | Rwait(1) >> ( c.write(10) ; c.read() )]]></programlisting>
 
-@method Cell[A].read() :: A
+@method cell[A].read() :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -61,7 +61,7 @@ val c = Cell()
 
 Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
 
-@method Cell[A].readD() :: A
+@method cell[A].readD() :: A
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -70,7 +70,7 @@ Read a value from the cell. If the cell does not yet have a value, <link linkend
 
 Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Cell[A].write(A) :: Signal
+@method cell[A].write(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -96,16 +96,16 @@ Rwait(1000) >> r := 5 >> stop
   Println(r?) >>
   stop]]></programlisting>
 
-@method Ref[A](A) :: Ref[A]
+@site Ref[A](A) :: Ref[A]
 Create a rewritable storage location initialized to the provided value.
 
-@method Ref[A].read() :: A
+@method ref[A].read() :: A
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
 
-@method Ref[A].readD() :: A
+@method ref[A].readD() :: A
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Ref[A].write(A) :: Signal
+@method ref[A].write(A) :: Signal
 Write a value to the ref.
 
 --}
@@ -158,7 +158,7 @@ Println("Entering critical section") >>
 Println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
-@method Semaphore.acquire() :: Signal
+@method semaphore.acquire() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -167,7 +167,7 @@ lock.release()]]></programlisting>
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
 
-@method Semaphore.acquireD() :: Signal
+@method semaphore.acquireD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -176,7 +176,7 @@ If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.b
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Semaphore.release() :: Signal
+@method semaphore.release() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -187,7 +187,7 @@ If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.bloc
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
-@method Semaphore.snoop() :: Signal
+@method semaphore.snoop() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -196,7 +196,7 @@ increment the value beyond that with which the semaphore was constructed.
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
 
-@method Semaphore.snoopD() :: Signal
+@method semaphore.snoopD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -225,7 +225,7 @@ val b = Channel()
   Rwait(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting>
 
-@method Channel[A].get() :: A
+@method channel[A].get() :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -235,7 +235,7 @@ Get an item from the channel. If the channel is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
 linkend="ref.stdlib.state.Channel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Channel[A].getD() :: A
+@method channel[A].getD() :: A
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -243,7 +243,7 @@ linkend="ref.stdlib.state.Channel.close">closed</link> and no items are availabl
 
 Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Channel[A].put(A) :: Signal
+@method channel[A].put(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -252,7 +252,7 @@ Get an item from the channel. If no items are available, <link linkend="ref.conc
 Put an item in the channel. If the channel is <link
 linkend="ref.stdlib.state.Channel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Channel[A].close() :: Signal
+@method channel[A].close() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -267,7 +267,7 @@ will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.con
 
 When the channel is empty, return a signal.
 
-@method Channel[A].closeD() :: Signal
+@method channel[A].closeD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -280,7 +280,7 @@ This has the effect of immediately causing any <link linkend="ref.concepts.state
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Channel[A].isClosed() :: Boolean
+@method channel[A].isClosed() :: Boolean
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -288,7 +288,7 @@ will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.con
 
 If the channel is currently closed, return true, otherwise return false.
 
-@method Channel[A].getAll() :: List[A]
+@method channel[A].getAll() :: List[A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -325,7 +325,7 @@ val c = BoundedChannel(1)
   | c.get() >n> "Got " + n
   )]]></programlisting>
 
-@method BoundedChannel[A].get() :: A
+@method boundedChannel[A].get() :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -335,7 +335,7 @@ Get an item from the channel. If the channel is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
 linkend="ref.stdlib.state.BoundedChannel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedChannel[A].getD() :: A
+@method boundedChannel[A].getD() :: A
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -343,16 +343,16 @@ linkend="ref.stdlib.state.BoundedChannel.close">closed</link> and no items are a
 
 Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedChannel[A].put(A) :: Signal
+@method boundedChannel[A].put(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
 Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
-If the Channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedChannel[A].putD(A) :: Signal
+@method boundedChannel[A].putD(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -361,7 +361,7 @@ If the Channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</
 Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedChannel[A].close() :: Signal
+@method boundedChannel[A].close() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -375,7 +375,7 @@ will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.con
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the channel may still be allowed to return as usual.
 
-@method BoundedChannel[A].closeD() :: Signal
+@method boundedChannel[A].closeD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -389,7 +389,7 @@ will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.con
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the channel may still be allowed to return as usual.
 
-@method BoundedChannel[A].isClosed() :: Boolean
+@method boundedChannel[A].isClosed() :: Boolean
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -397,7 +397,7 @@ initiated prior to closing the channel may still be allowed to return as usual.
 
 If the channel is currently closed, return true, otherwise return false.
 
-@method BoundedChannel[A].getOpen() :: Integer
+@method boundedChannel[A].getOpen() :: Integer
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -407,7 +407,7 @@ Return the number of open slots in the channel. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.
 
-@method BoundedChannel[A].getBound() :: Integer
+@method boundedChannel[A].getBound() :: Integer
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -416,7 +416,7 @@ or statistical measurements.
 
 Return the total number of slots (open or filled) in the channel.
 
-@method BoundedChannel[A].getAll() :: [A]
+@method boundedChannel[A].getAll() :: [A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -469,7 +469,7 @@ primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.
 
-@method Array[A].get(Integer) :: A
+@method array[A].get(Integer) :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -478,7 +478,7 @@ programs will just use the  <code>Array(Integer)</code> constructor.
 Get the element of the array given by the index, counting from 0.
 <code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
 
-@method Array[A].set(Integer, A) :: Signal
+@method array[A].set(Integer, A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -487,7 +487,7 @@ Get the element of the array given by the index, counting from 0.
 Set the element of the array given by the index, counting from 0.
 <code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
-@method Array[A].slice(Integer, Integer) :: Array[A]
+@method array[A].slice(Integer, Integer) :: Array[A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -497,7 +497,7 @@ Set the element of the array given by the index, counting from 0.
 Return a copy of the portion of the array with indices covered by the given
 half-open range. The result array is still indexed counting from 0.
 
-@method Array[A].length? :: Integer
+@method array[A].length? :: Integer
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -506,7 +506,7 @@ half-open range. The result array is still indexed counting from 0.
 
 Return the size of the array.
 
-@method Array[A].fill(A) :: Signal
+@method array[A].fill(A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -582,10 +582,10 @@ def Table(n, f) =
 @site Counter(Integer) :: Counter
 Create a new counter initialized to the given value.
 
-@method Counter() :: Counter
+@site Counter() :: Counter
 Create a new counter initialized to zero.
 
-@method Counter.inc() :: Signal
+@method counter.inc() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -593,7 +593,7 @@ Create a new counter initialized to zero.
 
 Increment the counter.
 
-@method Counter.dec() :: Signal
+@method counter.dec() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -602,7 +602,7 @@ Increment the counter.
 If the counter is already at zero, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
 the counter and return a signal.
 
-@method Counter.onZero() :: Signal
+@method counter.onZero() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -611,7 +611,7 @@ the counter and return a signal.
 If the counter is at zero, return a signal. Otherwise,
 <link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
 
-@method Counter.value() :: Integer
+@method counter.value() :: Integer
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -702,25 +702,25 @@ def snd((_,y)) = y
 <code>Interval(a,b)</code> returns an object representing the half-open
 interval [<code>a</code>,<code>b</code>).
 
-@method Interval[A].isEmpty() :: Boolean
+@method interval[A].isEmpty() :: Boolean
 Return true if this interval is empty.
 
-@method Interval[A].spans(A) :: Boolean
+@method interval[A].spans(A) :: Boolean
 Return true if the interval spans the given point, false otherwise.
 
-@method Interval[A].intersects(Interval[A]) :: Boolean
+@method interval[A].intersects(Interval[A]) :: Boolean
 Return true if the given interval has a non-empty intersection with this one,
 and false otherwise.
 
-@method Interval[A].intersect(Interval[A]) :: Interval[A]
+@method interval[A].intersect(Interval[A]) :: Interval[A]
 Return the intersection of this interval with another. If
 the two intervals do not intersect, returns an empty interval.
 
-@method Interval[A].contiguous(Interval[A]) :: Boolean
+@method interval[A].contiguous(Interval[A]) :: Boolean
 Return true if the given interval is contiguous with this one
 (overlaps or abuts), and false otherwise.
 
-@method Interval[A].union(Interval[A]) :: Interval[A]
+@method interval[A].union(Interval[A]) :: Interval[A]
 Return the union of this interval with another. <link linkend="ref.concepts.states.halt">Halts</link> with an error if
 the two intervals are not contiguous.
 --}
@@ -731,16 +731,16 @@ class Interval = "orc.lib.state.Interval"
 Return an empty set of intervals. An Intervals object is iterable;
 iterating over the set returns disjoint intervals in increasing order.
 
-@method Intervals[A].isEmpty() :: Boolean
+@method intervals[A].isEmpty() :: Boolean
 Return true if this set of intervals is empty.
 
-@method Intervals[A].spans(A) :: Boolean
+@method intervals[A].spans(A) :: Boolean
 Return true if this set of intervals spans the given point, and false otherwise.
 
-@method Intervals[A].intersect(Intervals[A]) :: Intervals[A]
+@method intervals[A].intersect(Intervals[A]) :: Intervals[A]
 Return the intersection of this set of intervals with another.
 
-@method Intervals[A].union(Interval[A]) :: Intervals[A]
+@method intervals[A].union(Interval[A]) :: Intervals[A]
 Return the union of this set of intervals with the given interval.
 This method is most efficient when the given interval is before
 most of the intervals in the set.

@@ -35,7 +35,6 @@ The typical usage of MakeSite looks like:
 def foo(...) = ...
 val Foo = MakeSite(foo)]]></programlisting>
 
-The typing of MakeSite will enforce the side condition that the type A is an arrow
-type.
+The typing of MakeSite enforces the additional condition that the type A is a function type.
 --}
 site MakeSite = "orc.lib.builtin.MakeSite"

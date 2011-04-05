@@ -123,7 +123,6 @@ function toggle(link, divId) {
 				</xsl:for-each>
 			</tr>
 		</table>
-		<br />
 	</xsl:template>
 
 	<!-- Customize syntax highlighting. -->
