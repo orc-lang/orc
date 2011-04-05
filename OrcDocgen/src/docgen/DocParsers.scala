@@ -93,7 +93,7 @@ object DocParsers extends RegexParsers {
   val methodTag = """@method""".r
   def parseMethod: Parser[DocSite] = 
     methodTag ~> parseFullLine ~ parseDocText ^^ 
-      { case line ~ text => DocSite(getLeadingName(line), line, List(text))} 
+      { case line ~ text => new DocSite(getLeadingName(line), line, List(text)) { override val keyword = "" } } 
   
   
   

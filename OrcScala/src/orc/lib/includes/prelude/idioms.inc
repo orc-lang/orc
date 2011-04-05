@@ -206,7 +206,7 @@ def seq(p:ps) = p() >> seq(ps)
 
 {--
 @def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
-Apply a function to a list in in sequence, publishing
+Apply a function to a list in sequence, publishing
 a signal whenever the last application publishes. The
 actual publications of the given functions are not
 published.

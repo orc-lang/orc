@@ -25,7 +25,7 @@ The methods documented here are only a subset of those available in the Java
 implementation. In practice, strings in the Java implementation support all 
 methods provided by Java's <code>String</code> class.
 
-@method String.length() :: Integer
+@method string.length() :: Integer
 Return the length of the string.
 
 Example:
@@ -33,7 +33,7 @@ Example:
 -- Publishes: 4
 "four".length()]]></programlisting>
 
-@method String.substring(Integer, Integer) :: String
+@method string.substring(Integer, Integer) :: String
 Return the substring of this string covered by the given half-open range.
 
 Example:
@@ -42,7 +42,7 @@ Example:
 val s = "apple orchard"
 s.substring(6,9)]]></programlisting>
 
-@method String.indexOf(String) :: Integer
+@method string.indexOf(String) :: Integer
 Return the starting index of the first occurrence of the given string.
 
 Example:

@@ -22,6 +22,10 @@ import orc.script.OrcBindings;
 
 /**
  * 
+ * Test suite for examples extracted from documentation.
+ * 
+ * Be sure to run the 'examples' target of the OrcDocs project prior
+ * to running these tests.
  *
  * @author dkitchin
  */

@@ -21,12 +21,12 @@ Real time.
 Create a new realtime clock instance.
 
 
-@method Rclock.wait(Integer) :: Signal
+@method rclock.wait(Integer) :: Signal
 
 Publish a signal after the given number of milliseconds.
 
 
-@method Rclock.time() :: Integer
+@method rclock.time() :: Integer
 
 Return the total number of milliseconds that have passed
 since this clock was created.
