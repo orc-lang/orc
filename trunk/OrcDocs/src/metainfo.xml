@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<info>
+<!-- metainfo.xml - DocBook source for Orc document DocBook metadata
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<info xmlns="http://docbook.org/ns/docbook">
 	<!-- Modify "titlepage-html-src.xml to change what metadata appears in output -->
 	<author> 
 		<orgname>The University of Texas at Austin</orgname>
