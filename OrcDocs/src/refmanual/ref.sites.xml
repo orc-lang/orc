@@ -21,7 +21,9 @@
 <para>
 Orc programs communicate with their environment by calling <indexterm significance="preferred"><primary>site</primary></indexterm><firstterm baseform="site">sites</firstterm>.
 Sites perform services, which the Orc program orchestrates.
-A site call may return a value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
+A site call may return a single value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
+Beyond this, there are no restrictions on sites' behavior.
+In prticular, site calls may interact with other site calls, have side effects, or continue to run after returning a value.
 </para>
 
 <para>
@@ -32,6 +34,12 @@ Sites may also provide complex services, such as a database management system.
 <para>
 Sites may be provided by various types of software components, such as Java classes, Web services, or custom
 Orc sites.  An Orc program's views of sites, however, remains uniform across these types.
+</para>
+
+<para>
+Some sites, called <indexterm significance="preferred"><primary>class</primary></indexterm><firstterm baseform="class">classes</firstterm>, create other sites when called.
+Orc programs may import previously-defined sites and classes for use, through use of the <code><link linkend="ref.declarations.site">site</link></code> and <code><link linkend="ref.declarations.class">class</link></code> declarations.
+Programs may also define classes directly in Orc code, using the <code><link linkend="ref.declarations.defclass">def class</link></code> declaration.
 </para>
 
 <xi:include href="ref.sites.library.xml"/>

@@ -266,7 +266,8 @@
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
 			
 			<param name="generate.legalnotice.link" expression="1"/>
-			
+			<param name="ebnf.table.bgcolor" expression=""/>
+			<param name="ebnf.table.border" expression="0"/>
 		</xslt>
 		<!-- Copy the stylesheet and navigational images -->
 		<copy todir="${build.dir}/html/userguide">
@@ -308,6 +309,8 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+			<param name="ebnf.table.bgcolor" expression=""/>
+			<param name="ebnf.table.border" expression="0"/>
 		</xslt>
 		<copy todir="${build.dir}/html/userguide">
 			<fileset dir="${src.dir}/css">
@@ -461,6 +464,8 @@
 			<param name="ebnf.table.bgcolor" expression=""/>
 			
 			<param name="generate.legalnotice.link" expression="1"/>
+			<param name="ebnf.table.bgcolor" expression=""/>
+			<param name="ebnf.table.border" expression="0"/>
 			
 		</xslt>
 		<!-- Copy the stylesheet and navigational/content images -->
@@ -507,8 +512,13 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
+<<<<<<< .mine
+			<param name="ebnf.table.bgcolor" expression=""/>
+			<param name="ebnf.table.border" expression="0"/>
+=======
 			
 			<param name="ebnf.table.bgcolor" expression=""/>
+>>>>>>> .r2698
 		</xslt>
 		<copy todir="${build.dir}/html/refmanual">
 			<fileset dir="${src.dir}/css">

@@ -85,34 +85,11 @@
 						<code>( ) [ ] {. .} , | ; :: :!: </code>
 					</para>
 				</section>
-				<section xml:id="ref.syntax.lexical.tokens.numericliteral">
-					<title>Numeric Literal</title>
+				<section xml:id="ref.syntax.lexical.tokens.literals">
+					<title>Literals</title>
 					<para>
-						Numeric literals are matched per the following regular expression: ([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?
-					</para>
-					<para>
-						If the matched string contains a decimal point, an e, or an E, it is a floating point literal, otherwise it is an integer literal. 
-					</para>
-					<para>
-						All Orc numeric literals are decimal (radix 10). 
-					</para>
-				</section>
-				<section xml:id="ref.syntax.lexical.tokens.stringliteral">
-					<title>String Literal</title>
-					<para>
-						Double quotes demarcate a <indexterm><primary>string</primary></indexterm>string literal. The (possibly empty) sequence of characters in a string literal may be composed of any character except an unescaped double quote or an unescaped newline character (as defined below). 
-					</para>
-					<para>
-						The backslash escape convention is recognized as follows:
-					</para>
-					<para>
-						<itemizedlist>
-							<listitem><para>\f U+000C FF Form Feed</para></listitem>
-							<listitem><para>\n U+000A LF Line Feed</para></listitem>
-							<listitem><para>\r U+000D CR Carriage Return</para></listitem>
-							<listitem><para>\t U+0009 HT Character Tabulation</para></listitem>
-							<listitem><para>Other escaped chars (like \\ or  \" ) are treated as themselves without the backslash.</para></listitem>
-						</itemizedlist>
+						<link linkend="ref.data.numeric.syntax">Numeric literals</link> and ><link linkend="ref.data.string">character string literals</link> are
+						recognized per the syntax given in those sections.
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.tokens.comment">
