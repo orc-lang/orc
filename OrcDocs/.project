@@ -3,6 +3,7 @@
 	<name>OrcDocs</name>
 	<comment></comment>
 	<projects>
+		<project>OrcDocExamples</project>
 		<project>OrcDocgen</project>
 		<project>OrcScala</project>
 	</projects>
