@@ -104,7 +104,7 @@ OUTPUT:
 
 <example xml:id="ref.data.string.examples.functions">
 <title>String Functions</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Showcase some Orc library string functions -}
 
 Println("I go to the console") >>

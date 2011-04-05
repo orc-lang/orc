@@ -112,7 +112,6 @@ Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
   if b then signal else Error("assertion failed")
-
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}

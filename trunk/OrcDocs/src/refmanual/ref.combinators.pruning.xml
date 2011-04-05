@@ -121,16 +121,14 @@ OUTPUT:
 		  </example>
 
 		  <example xml:id="ref.combinators.pruning.examples.printfirst"><title>Print First Result</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
 {- Query Google and Yahoo for a search result
    Print out the result that arrives first; ignore the other result
 -}
 
 Println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
-
-{-
-NONRUNNABLE
--}
 ]]></programlisting>
 		  </example>
 		  

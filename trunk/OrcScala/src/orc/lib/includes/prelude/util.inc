@@ -63,7 +63,7 @@ to its appropriate data type, use the library function
 
 <programlisting language="orc-demo"><![CDATA[
 -- Prompts the user to enter an integer, then parses the response.
-Prompt("Enter an integer:") >r> read(r)]]></programlisting>
+Prompt("Enter an integer:") >r> Read(r)]]></programlisting>
 --}
 site Prompt = "orc.lib.util.Prompt"
 
@@ -137,7 +137,7 @@ For example, to set all elements of an array to zero:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 0 0
 val a = fillArray(Array(3), lambda (_) = 0)
-a.get(0) | a.get(1) | a.get(2)]]></programlisting>
+a(0)? | a(1)? | a(2)?]]></programlisting>
 
 @implementation
 --}

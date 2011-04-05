@@ -92,7 +92,7 @@ it will be as a <code language="java">java.lang.Object</code> of a type not spec
 
 <example xml:id="ref.data.list.examples.sample">
 <title>Sample Lists</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
   []                       -- empty list
 | [1, 2, 3]                -- a list of integers
 | [(1, 2), (2, 3), (3, 4)] -- a list of tuples of integers
@@ -112,7 +112,7 @@ OUTPUT:PERMUTABLE:
 
 <example xml:id="ref.data.list.examples.notsets">
 <title>Lists Are Not Sets</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   Lists do not behave like sets.
   The order and number of elements in a list do matter.
@@ -133,7 +133,7 @@ true
 
 <example xml:id="ref.data.list.examples.cons">
 <title>Building Lists with Cons</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
   3:[]
 | 4:3:[2,1]
 

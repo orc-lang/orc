@@ -53,16 +53,14 @@ OUTPUT:
 		  </example>
 		  
 		  <example xml:id="ref.declarations.val.examples.timeout"><title>Timeout</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
 {- Publish the result of a Google search.
    If it takes more than 5 seconds, time out.
 -}
 
 val result = Google("impatience") | Rwait(5000) >> "Search timed out."
-
-{-
-NONRUNNABLE
--}
 ]]></programlisting>
 		  </example>
 		  
