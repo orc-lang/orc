@@ -1,3 +1,17 @@
+@charset "UTF-8";
+/*
+ * style.css -- CSS style sheet for Orc HTML documentation
+ * Project OrcDocs
+ *
+ * $Id$
+ *
+ * Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+ *
+ * Use and redistribution of this file is governed by the license terms in
+ * the LICENSE file found in the project's top-level directory and also found at
+ * URL: http://orc.csres.utexas.edu/license.shtml .
+ */
+
 /* Copied from Orchard/web/orc.css */
 
 .programlisting, .orc {
@@ -98,6 +112,8 @@ span.hl-site {
 	text-decoration: underline;
 }
 
+/* OrcDocs unique rule sets */
+
 html, body {
 	padding-bottom: 10em;
 	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
@@ -151,8 +167,6 @@ div.variablelist > table > tbody > tr > td {
 	padding-top: 1em;
 }
 
-/* Correctly size the State Transition diagram */
-#stateTransitions {
-	width: 800px 
-	height: 480px
+.productionset .productionset {
+	border: 3px solid #0094D6;
 }
