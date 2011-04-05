@@ -34,13 +34,18 @@ object Main {
   	for (f <- files) {
   		println("Processing " + f.toString)
   		val root = XML.loadFile(f)
+  		var anyExamples = false
   		for ((id, code) <- extractExamples(f)) {
   			val target = new File(targetdir, id + ".orc")
+  			println("-> " + id + ".orc")
   			target.createNewFile()
   			val writer = new java.io.FileWriter(target)
   			writer.write(code)
   			writer.close()
+  			anyExamples = true
   		}
+  		if (!anyExamples) { println("   No examples found.") }
+  		println()
   	}
   	
   }
