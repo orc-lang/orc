@@ -79,7 +79,8 @@ is a tuple type, written <code>(</code><replaceable>T<subscript>0</subscript></r
 {- Unzip a list of tuples into a tuple of lists -}
 
 val squares = [(1,1), (2,4), (3,9), (4,16)]
-( map(fst,squares) , map(snd,squares) ) 
+
+signal >> ( map(fst,squares) , map(snd,squares) ) 
 
 {-
 OUTPUT:
@@ -92,7 +93,7 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Print "fork", but wait at least 500ms before printing "join" -}
 
-( println("fork"), Rwait(500) ) >> println("join") >> stop
+( Println("fork"), Rwait(500) ) >> Println("join") >> stop
 
 {-
 OUTPUT:

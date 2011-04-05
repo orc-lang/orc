@@ -38,7 +38,7 @@ found in the Orc JAR files.
 		<title>Examples</title>
 
 		<example xml:id="ref.declarations.include.examples.fold"><title>fold.inc,used below</title>
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Contents of fold.inc -}
 
 def foldl(f,[],s) = s

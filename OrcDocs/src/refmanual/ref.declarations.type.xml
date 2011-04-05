@@ -111,7 +111,7 @@ NONRUNNABLE
 		  </example>
 		
 		<example xml:id="ref.declarations.type.examples.tree"><title>Binary Tree Type</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
    Define a polymorphic binary tree datatype,
    then construct a tree of integers and a

@@ -246,7 +246,7 @@ OUTPUT:
 
 <example xml:id="ref.sites.java.examples.intoverflow">
 <title>Integer conversion overflow</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Demonstrate an Orc-to-Java integer conversion of an out-of-range value -}
 
 class JavaInteger = "java.lang.Integer"

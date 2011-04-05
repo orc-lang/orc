@@ -61,7 +61,8 @@ HashMap[String, String]() >m> m.put("Mickey", "Minnie") >>
 m.put("Donald", "Daisy") >> m.get("Mickey")
 
 {-
-NONRUNNABLE
+OUTPUT:
+"Minnie"
 -}
 ]]></programlisting>
 </example>

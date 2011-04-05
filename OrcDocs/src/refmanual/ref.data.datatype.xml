@@ -130,7 +130,7 @@ OUTPUT:PERMUTABLE:
 
 <example xml:id="ref.data.datatypes.examples.binarytree">
 <title>Binary tree node</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- This is a binary tree datatype
    Leaf nodes carry integer values
 -}
@@ -153,7 +153,7 @@ InnerNode(LeafNode(1), InnerNode(LeafNode(2), LeafNode(3)))
 
 <example xml:id="ref.data.datatypes.examples.binarytreepoly">
 <title>Polymorphic binary tree node</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- This is a binary tree datatype
    Leaf nodes carry values of type T
 -}
@@ -168,7 +168,8 @@ type Node[T] = LeafNode(T) | InnerNode(Node, Node)
 InnerNode[String](LeafNode("A"),InnerNode(LeafNode("B"),LeafNode("C")))
 
 {-
-NONRUNNABLE
+OUTPUT:
+InnerNode(LeafNode("A"), InnerNode(LeafNode("B"), LeafNode("C")))
 -}
 ]]></programlisting>
 </example>

@@ -282,7 +282,7 @@ z >P> Ift(Gd) >> E
 			 
 			 <example xml:id="ref.declarations.def.examples.lenientpairs">
 			 <title>Available Pairs</title>       
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   Publish pairs of results from three computations, as they become available.
 -}
@@ -306,7 +306,7 @@ OUTPUT:
 			  
 			<example xml:id="ref.declarations.def.examples.parallelor">
 			<title>Parallel-Or Function</title>       
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   Define a parallel-or function. 
 -}
@@ -326,7 +326,7 @@ true
 			
 		  <example xml:id="ref.declarations.def.examples.evenodd">
 		  <title>Even/Odd Using Mutual Recursion</title>       
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Test if a number is even or odd, using mutual recursion -}
 def even(n) = Ift(n = 0) >> true
             | Ift(n <: 0) >> odd(n+1) 
@@ -347,7 +347,7 @@ false
 			
 			<example xml:id="ref.declarations.def.examples.listhead">
 			<title>List Head</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   Publish the head of a nonempty list.
   If the list is empty, halt silently.
@@ -366,7 +366,7 @@ OUTPUT:
 			
 			<example xml:id="ref.declarations.def.examples.listlength">
 			<title>List Length</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Find the length of a list -}
 def length([]) = 0
 def length(_:rest) = length(rest) + 1
@@ -383,7 +383,7 @@ OUTPUT:
 			
 			<example xml:id="ref.declarations.def.examples.listsum">
 			<title>List Sum</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Sum the elements of a list -}
 
 def sum([]) = 0
@@ -400,7 +400,7 @@ OUTPUT:
 		  
 		  <example xml:id="ref.declarations.def.examples.zip">
 			<title>Same-Length Zip</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
   "Zip" a pair of lists together into a list of pairs.
   If the lists are of inequal length, halt silently.
@@ -426,7 +426,7 @@ OUTPUT:
 
 def fib(0) = 1
 def fib(1) = 1
-def fib(n) if (n > 1) = fib(n-1) + fib(n-2)
+def fib(n) if (n :> 1) = fib(n-1) + fib(n-2)
 
 fib(5)
 
