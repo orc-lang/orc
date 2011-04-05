@@ -491,7 +491,6 @@ Set the element of the array given by the index, counting from 0.
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
-   <od:siteprop propname="pure"/>
 </od:sitepropset>
 
 Return a copy of the portion of the array with indices covered by the given

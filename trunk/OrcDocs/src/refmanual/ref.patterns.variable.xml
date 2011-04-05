@@ -53,7 +53,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.patterns.variable.examples.pairsum">
+		  <example xml:id="ref.patterns.variable.examples.pairtolist">
 		  <title>Pair to List</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Convert pairs to lists -}

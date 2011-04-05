@@ -52,7 +52,7 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 		  
-		  <example xml:id="ref.patterns.literal.examples.implication">
+		  <example xml:id="ref.patterns.wildcard.examples.implication">
 			<title>Implication by Fewer Cases</title>
 			
 			<programlisting language="orc-demo"><![CDATA[
