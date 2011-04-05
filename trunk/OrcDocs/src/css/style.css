@@ -82,6 +82,8 @@ span.hl-site {
 	font-weight: bold;
 }
 
+/* OrcDocs unique rule sets */
+
 .navheader {
 	position: fixed;
 	background: #0094D6;
@@ -111,8 +113,6 @@ span.hl-site {
 	color: #FFF;
 	text-decoration: underline;
 }
-
-/* OrcDocs unique rule sets */
 
 html, body {
 	padding-bottom: 10em;
@@ -167,6 +167,10 @@ div.variablelist > table > tbody > tr > td {
 	padding-top: 1em;
 }
 
-.productionset .productionset {
+.productionset {
 	border: 3px solid #0094D6;
+}
+
+.productionset .productionset {
+	border: none;
 }
