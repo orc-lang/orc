@@ -78,7 +78,12 @@ object SiteClassLoading {
   private def path2URL(path: String): URL = {
     // The same logic as the AppClassLoader uses to parse system.class.path
     var canFile = new File(if (path.length == 0) "." else path)
-    try { canFile = canFile.getCanonicalFile } catch { case _ => { } }
+    try {
+      canFile = canFile.getCanonicalFile
+    } catch {
+      case e: InterruptedException => throw e
+      case e: Exception => { }
+    }
     canFile.toURI.toURL
   }
 

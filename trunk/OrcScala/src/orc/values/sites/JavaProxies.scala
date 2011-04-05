@@ -93,33 +93,33 @@ abstract class JavaProxy extends Site {
   /** Invoke a method on the given Java object of the given name with the given arguments */
   def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
-    val method = try { 
-      try {
-        chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map { _.getClass() })
-      } catch { // Fill in "blank" exceptions with more details
-        case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
+    try {
+      val method = try {
+          chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map { _.getClass() })
+        } catch { // Fill in "blank" exceptions with more details
+          case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
+        }
+      val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
+      if (theObject == null && !method.isStatic) {
+        throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
       }
+      Logger.finer("Invoking Java method "+classNameAndSignature(methodName, method.getParameterTypes.toList))
+      java2orc(method.invoke(theObject, convertedArgs))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
-      case e => throw new JavaException(e)
+      case e: InterruptedException => throw e
+      case e: Exception => throw new JavaException(e)
     }
-    val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
-    if (theObject == null && !method.isStatic) {
-      throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
-    }
-    Logger.finer("Invoking Java method "+classNameAndSignature(methodName, method.getParameterTypes.toList))
-    java2orc(method.invoke(theObject, convertedArgs))
   }
-  
 
   private def classNameAndSignature(methodName: String, argTypes: List[Class[_]]): String = {
     javaClass.getCanonicalName()+"."+methodName+"("+argTypes.map(_.getCanonicalName()).mkString(", ")+")"
   }
+
   private def classNameAndSignatureA(methodName: String, args: List[Object]): String = {
     classNameAndSignature(methodName, args.map(_.getClass()))
   }
 
-  
 }
 
 
