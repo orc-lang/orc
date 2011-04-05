@@ -68,12 +68,11 @@ object OrcJavaCompatibility {
       case JavaObjectProxy(j) => j
       case _ => orcValue.asInstanceOf[Object]
     }
-  
-  
-  
+
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
   abstract class Invocable {def getParameterTypes(): Array[java.lang.Class[_]]; def isStatic: Boolean; def invoke(obj: Object, args: Array[Object]): Object}
+
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
       wrapped match {
@@ -83,11 +82,13 @@ object OrcJavaCompatibility {
       }
     }
   }
+
   case class InvocableMethod(method: JavaMethod) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
     def isStatic = Modifier.isStatic(method.getModifiers())
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
   }
+
   case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
     def isStatic = true
