@@ -18,15 +18,15 @@
 		</para>
 		
 		<para xml:id="ebnf.meta.questionmark">
-		G? denotes zero or one occurrences of G.
+		G<emphasis role="bold">?</emphasis> denotes zero or one occurrences of G. <!--  alternative: &#xFF1F; -->
 		</para>
 		
 		<para xml:id="ebnf.meta.plus">
-		G+ denotes one or more occurrences of G.
+		G<emphasis role="bold">+</emphasis> denotes one or more occurrences of G. <!--  alternative: &#xFF0B; -->
 		</para>
 		
 		<para xml:id="ebnf.meta.ellipsis">
-		G <emphasis>sep</emphasis> &#x2026; <emphasis>sep</emphasis> G denotes zero or more occurrences of G, separated by <emphasis>sep</emphasis>.
+		G <emphasis>sep</emphasis> <emphasis role="bold"><emphasis role="bold">&#x2026;</emphasis></emphasis> <emphasis>sep</emphasis> G denotes zero or more occurrences of G, separated by <emphasis>sep</emphasis>.
 		</para>
 		
 		<para>
@@ -75,7 +75,7 @@
 		<production xml:id="ebnf.expression.tuple">
 		  <lhs>Tuple</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> <emphasis role="bold"><emphasis role="bold">&#x2026;</emphasis></emphasis> <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
 		  </rhs>
 		  <constraint linkend="tuplesize"/>
 		</production>
@@ -83,21 +83,21 @@
 		<production xml:id="ebnf.expression.list">
 		  <lhs>List</lhs>
 		  <rhs>
-		    <code>[</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>]</code>
+		    <code>[</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>]</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.record">
 		  <lhs>Record</lhs>
 		  <rhs>
-		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>.}</code>
+		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>.}</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.call">
 		  <lhs>Call</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <nonterminal def="#ebnf.typearguments">TypeArguments</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.arguments">Arguments</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <nonterminal def="#ebnf.typearguments">TypeArguments</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.arguments">Arguments</nonterminal>
 		  </rhs>
 		</production>
 		
@@ -139,14 +139,14 @@
 		<production xml:id="ebnf.expression.sequential">
 		  <lhs>Sequence</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[>]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link><code><![CDATA[>]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>&gt;</code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><emphasis role="bold">?</emphasis><code>&gt;</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.expression.pruning">
 		  <lhs>Prune</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code><![CDATA[<]]></code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link><code><![CDATA[<]]></code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>&lt;</code><nonterminal def="#ebnf.pattern">Pattern</nonterminal><emphasis role="bold">?</emphasis><code>&lt;</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 		
@@ -167,7 +167,7 @@
 		<production xml:id="ebnf.expression.lambda">
 		  <lhs>Lambda</lhs>
 		  <rhs>
-		    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: select: nopage">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
+		    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>
 		  </rhs>
 		</production>
 
@@ -216,14 +216,14 @@
 		<production xml:id="ebnf.declaration.def">
 		  <lhs>DeclareDefinition</lhs>
 		  <rhs>
-		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.guard">Guard</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.declaration.defclass">
 		  <lhs>DeclareDefclass</lhs>
 		  <rhs>
-		    <code>def</code> <code>class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.guard">Guard</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <code>=</code> <nonterminal def="#ebnf.declaration">Declaration</nonterminal><link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		    <code>def</code> <code>class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.declaration">Declaration</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
 		  </rhs>
 		</production>
 		
@@ -237,7 +237,7 @@
 		<production xml:id="ebnf.declaration.signature">
 		  <lhs>DeclareSignature</lhs>
 		  <rhs>
-		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal><link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal> 
+		    <code>def</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal> 
 		  </rhs>
 		</production>
 		
@@ -274,7 +274,7 @@
 		<production xml:id="ebnf.declaration.type.alias">
 		  <lhs>DeclareTypeAlias</lhs>
 		  <rhs>
-		    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal>
+		    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 		  </rhs>
 		</production>
 		
@@ -288,14 +288,14 @@
 		<production xml:id="ebnf.declaration.type.datatype">
 		  <lhs>DeclareDatatype</lhs>
 		  <rhs>
-		    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <code>=</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal> <code>|</code> &#x2026; <code>|</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal>
+		    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal> <code>|</code> <emphasis role="bold">&#x2026;</emphasis> <code>|</code> <nonterminal def="#ebnf.constructor">Constructor</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.constructor">
 		  <lhs>Constructor</lhs>
 		  <rhs>
-		     <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>)</code>
+		     <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.slot">Slot</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
 		
@@ -348,7 +348,7 @@
 		<production xml:id="ebnf.pattern.tuple">
 		  <lhs>TuplePattern</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 		  </rhs>
 		  <constraint linkend="tuplesize"/>
 		</production>
@@ -356,14 +356,14 @@
 		<production xml:id="ebnf.pattern.list">
 		  <lhs>ListPattern</lhs>
 		  <rhs>
-		    <code>[</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>]</code>
+		    <code>[</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>]</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.pattern.record">
 		  <lhs>RecordPattern</lhs>
 		  <rhs>
-		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal>  <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>.}</code>
+		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal>  <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>.}</code>
 		  </rhs>
 		</production>
 		
@@ -377,7 +377,7 @@
 		<production xml:id="ebnf.pattern.call">
 		  <lhs>CallPattern</lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
+		    <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
 		
@@ -413,7 +413,7 @@
 		<production xml:id="ebnf.type.tuple">
 		  <lhs>TupleType</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
 		  </rhs>
 		  <constraint linkend="tuplesize"/>
 		</production>
@@ -421,14 +421,14 @@
 		<production xml:id="ebnf.type.record">
 		  <lhs>RecordType</lhs>
 		  <rhs>
-		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>.}</code>
+		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>.}</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.type.function">
 		  <lhs>FunctionType</lhs>
 		  <rhs>
-		    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal>
+		    <code>lambda</code> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.argumenttypes">ArgumentTypes</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal>
 		  </rhs>
 		</production>
 		
@@ -478,14 +478,14 @@
 		<production xml:id="ebnf.literal.integer">
 		  <lhs>IntegerLiteral</lhs>
 		  <rhs>
-				DecimalDigit<link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link>
+				DecimalDigit<emphasis role="bold">+</emphasis>
 		  </rhs>
 		</production>
 
 		<production xml:id="ebnf.literal.number">
 		  <lhs>NumberLiteral</lhs>
 		  <rhs>
-				<nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal> <nonterminal def="#ebnf.literal.decimalpart">DecimalPart</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link> <nonterminal def="#ebnf.literal.exponentpart">ExponentPart</nonterminal><link linkend="ebnf.meta.questionmark" xrefstyle="select: nopage">?</link>
+				<nonterminal def="#ebnf.literal.integer">IntegerLiteral</nonterminal> <nonterminal def="#ebnf.literal.decimalpart">DecimalPart</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.literal.exponentpart">ExponentPart</nonterminal><emphasis role="bold">?</emphasis>
 		  </rhs>
 		</production>
 		
@@ -511,7 +511,7 @@
 		<production xml:id="ebnf.literal.string">
 		  <lhs>CharacterStringLiteral</lhs>
 		  <rhs>
-				<code>"</code>Character<link linkend="ebnf.meta.plus" xrefstyle="select: nopage">+</link><code>"</code>
+				<code>"</code>Character<emphasis role="bold">+</emphasis><code>"</code> &#x2759; <code>""</code>
 		  </rhs>
 		</production>
 		
@@ -553,21 +553,21 @@
 		<production xml:id="ebnf.parameters">
 		  <lhs>Parameters</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.typeparameters">
 		  <lhs>TypeParameters</lhs>
 		  <rhs>
-		    <code>[</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>]</code>
+		    <code>[</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>]</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.argumenttypes">
 		  <lhs>ArgumentTypes</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
 		
@@ -581,14 +581,14 @@
 		<production xml:id="ebnf.arguments">
 		  <lhs>Arguments</lhs>
 		  <rhs>
-		    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
+		    <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal>  <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.typearguments">
 		  <lhs>TypeArguments</lhs>
 		  <rhs>
-		    <code>[</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> &#x2026; <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>]</code>
+		    <code>[</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>]</code>
 		  </rhs>
 		</production>
 		
