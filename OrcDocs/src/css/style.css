@@ -78,6 +78,7 @@ span.hl-site {
     border-top: 5px solid #C1DEF0;
 	color: #C1DEF0;
 	text-align: center;
+	z-index: 2;
 }
 
 .navheader table {
