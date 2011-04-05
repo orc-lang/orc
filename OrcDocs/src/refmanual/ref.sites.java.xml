@@ -31,7 +31,7 @@ Java classes are named in an Orc program using the <code>class</code> declaratio
 In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
 This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
 The class proxy also presents the class static methods and class static fields in the same manner as
-an Orc record with keys corresponding to the Java class members' names.
+an Orc record, with keys corresponding to the Java class members' names.
 Class <indexterm><primary>method</primary></indexterm>methods appear as record elements that are sites, and are invoked by projecting the record element
 using the <indexterm><primary>dot</primary></indexterm>dot notation and calling the site.
 Fields appear as record elements that are references, and are accessed and assigned
@@ -46,12 +46,12 @@ whether to access the field or method.
 </para>
 
 <para>
-Orc Java class proxies are not true Orc record values, although they appear syntactically as if they were.
+Orc Java class proxies are not true Orc record values, although they appear syntactically as if they are.
 </para>
 
 <para>
-Java classes are loaded from the Orc site classpath, which may be specified as setting to the Orc
-runtime engine, for example via a command-line option or an Eclipse project property.
+Java classes are loaded from the Orc site classpath, which may be specified as a setting of the Orc
+runtime engine; for example via a command-line option or an Eclipse project property.
 If the class is not found on the Orc site
 classpath, the loading attempt continues using the normal Java classpath.
 </para>
@@ -83,11 +83,11 @@ whether to access the field or method.
 
 <para>
 If a field's value is a class with a member named "read", this member will be
-invoked when an Orc program access that field with the <code>?</code> operator.
+invoked when an Orc program accesses that field with the <code>?</code> operator.
 Similarly, if a field's value is a class with a member named "write", this member will be
 invoked when an Orc program assigns a new value to that field with the <code>:=</code> operator.
 This "read"/"write" override also applies to array component accesses.
-Note that this is a potential surprising naming conflict.
+Note that this is a potentially surprising name conflict.
 </para>
 
 </section>
@@ -123,7 +123,7 @@ The conversions applied are the following:
 Note that Orc integers and floating-point numbers represent a larger range of values than the standard Java numeric types.
 If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
 This will change the magnitude of the number and may change its sign.
-If a floating-point conversion is applied to an out-of-range value, the results is positive or negative infinity, as appropriate.
+If a floating-point conversion is applied to an out-of-range value, the result is positive or negative infinity, as appropriate.
 </para>
 
 </section>
@@ -158,7 +158,7 @@ This may be helpful when debugging Java invocations.
 
 <para>
 Java arrays are accessible in Orc.
-To refer to an component of a Java array, follow the array value with an
+To refer to a component of a Java array, follow the array value with a
 nonnegative integer-valued expression in parenthesis.
 Java arrays are zero-origin.
 Array components appear as references in Orc.
