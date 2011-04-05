@@ -36,18 +36,42 @@
 		 <section xml:id="ref.patterns.wildcard.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.patterns.wildcard.assign"><title>Wildcard Assignments</title>
+		  <example xml:id="ref.patterns.wildcard.examples.assignments"><title>Wildcard Assignments</title>
 <programlisting language="orc"><![CDATA[
-{- Showcase various types of assignment -}
-val (x,_,_) = (1,(2,2),[3,3,3]) -- binds x to 1.
+{- Showcase various wildcard assignments -}
 
-val [[_,x],[_,y]] = [[1,3],[2,4]] -- binds x to 3 and y to 4.
+val (_,(_,x),_) = (0,(2,2),[5,5,5])
+val [[_,y],[_,z]] = [[1,3],[2,4]]
+
+[x, y, z]
 
 {-
-NONRUNNABLE
+OUTPUT:
+[2, 3, 4]
 -}
 ]]></programlisting>
 		  </example>
+		  
+		  <example xml:id="ref.patterns.literal.examples.implication">
+			<title>Implication by Fewer Cases</title>
+			
+			<programlisting language="orc-demo"><![CDATA[
+{-
+  Defining logical implication by cases, 
+  using wildcard to abbreviate the 'true' cases. 
+-}
+
+def implies(true, false) = false
+def implies(_, _) = true
+
+implies(true, true)
+
+{-
+OUTPUT:
+true
+-}
+]]></programlisting>
+		</example>
 		</section>
 		
 		<section xml:id="ref.patterns.wildcard.links">

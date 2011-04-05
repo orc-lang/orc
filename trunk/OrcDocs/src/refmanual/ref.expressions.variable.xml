@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ref.expressions.variable.xml - DocBook source for an Orc reference manual section
+
+     $Id: ref.expressions.variable.xml 2666 2011-04-01 19:05:07Z dkitchin $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Variable -->
+	<section xml:id="ref.expressions.variable" xmlns="http://docbook.org/ns/docbook">
+		<title>Variables</title>
+
+    <para>
+    A variable may occur on its own as an expression. 
+    Execution of a variable <link linkend="ref.concepts.publish">publishes</link> the value bound to that variable, and then <link linkend="ref.concepts.states.halt">halts</link>.
+    </para>
+    
+    <para>
+    The variable might be executed before it is bound to a value. 
+    This could occur if the variable was introduced by a <link linkend="ref.combinators.pruning">pruning combinator</link>,
+    or if it is the name of a <link linkend="ref.declarations.def">defined function</link> whose body contains unbound variables.
+    In this case, execution of that variable <link linkend="ref.concepts.states.block">blocks</link> until the variable is bound.  
+    </para>
+    
+    <para>
+    If the variable was introduced by a pruning combinator, 
+    and the right side of that combinator halts before the variable becomes bound, 
+    execution of the variable also halts.
+    </para>
+		
+		<section xml:id="ref.expressions.variable.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.variable"/>
+		    </productionset>
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.variable.type">
+		  <title>Type</title>
+		  <para>
+		    The type of a variable expression is the type given to it by the nearest enclosing <link linkend="ref.types.context">typing context</link>.		     
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.variable.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.expressions.variable.examples.one">
+		  <title>TODO</title>
+<programlisting language="orc-demo"><![CDATA[
+{-  
+-}
+
+{-
+OUTPUT:
+-}
+]]></programlisting>
+		  </example>
+		  
+		  
+	  </section>
+		
+		<section xml:id="ref.expressions.stop.links">
+		  <title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.silent">Silence</link></para></listitem>
+			<listitem><para><link linkend="ref.types.subtyping.Bot"><code>Bot</code></link></para></listitem>
+			<listitem><para><link linkend="ref.combinators.otherwise">Otherwise combinator</link></para></listitem>
+		</itemizedlist>
+		  
+		  <!--
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+          				<listitem>TODO</listitem>
+		</itemizedlist>
+		  -->
+
+	  </section>
+	</section>

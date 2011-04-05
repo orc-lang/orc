@@ -43,6 +43,26 @@
 	<section xml:id="ref.patterns.literal.examples">
 		<title>Examples</title>
 
+		<example xml:id="ref.patterns.literal.examples.implication">
+			<title>Implication by Cases</title>
+			<programlisting language="orc-demo"><![CDATA[
+{- Defining logical implication by cases -}
+
+def implies(true, true) = true
+def implies(true, false) = false
+def implies(false, true) = true
+def implies(false, false) = true
+
+implies(false, false)
+
+{-
+OUTPUT:
+true
+-}
+]]></programlisting>
+		</example>
+		
+		<!-- 
 		<example xml:id="ref.patterns.literal.examples.factorial">
 			<title>Factorial Function</title>
 			<programlisting language="orc-demo"><![CDATA[
@@ -59,23 +79,8 @@ OUTPUT:
 -}
 ]]></programlisting>
 		</example>
-
-		<example xml:id="ref.patterns.literal.examples.implication">
-			<title>Implication by Cases</title>
-			<programlisting language="orc-demo"><![CDATA[
-{- Defining logical implication by cases -}
-
-def implies(true, false) = false
-def implies(_, _) = true
-
-implies(false, false)
-
-{-
-OUTPUT:
-true
--}
-]]></programlisting>
-		</example>
+		
+		 -->
 
 	</section>
 

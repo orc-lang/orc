@@ -25,14 +25,14 @@ An expression that never publishes is said to be <link linkend="ref.concepts.sil
 	</para>
 
 	<para>
-The following is the publication behavior of a few common forms of Orc expressions.  See the relevant manual sections for details.
+The following is the publication behavior of a few common forms of Orc expressions. TODO: add links.
 		<itemizedlist>
 			<listitem><para>Site calls publish only zero or one value.</para></listitem>
-			<listitem><para>Function calls may publish an unbounded number of values.</para></listitem>
+			<listitem><para>Function calls may publish any number of values.</para></listitem>
 			<listitem><para>Literals, including <code>signal</code>, publish one value.</para></listitem>
 			<listitem><para><code>stop</code> never publishes.</para></listitem>
 			<listitem><para>A variable, when executed, publishes its value, if bound.
-				If not, execution of the variable is suspended until it is bound.</para></listitem>
+				If not, execution of the variable is blocked until it is bound.</para></listitem>
 			<listitem><para>Each of the Orc combinators has a unique publication behavior.</para></listitem>
 		</itemizedlist>
 	</para>
@@ -40,20 +40,30 @@ The following is the publication behavior of a few common forms of Orc expressio
 	<section xml:id="ref.concepts.publish.examples">
 		<title>Examples</title>
 
-		<example xml:id="ref.concepts.publish.examples.pub2">
-<title>Publish two values</title>
+		<example xml:id="ref.concepts.publish.examples.pub0">
+<title>Publish no values</title>
 <programlisting language="orc-demo"><![CDATA[
-1 | 2
+(1 | 2) >> stop
 {-
-OUTPUT:PERMUTABLE
+OUTPUT:
+-}
+]]></programlisting>
+</example>
+
+
+		<example xml:id="ref.concepts.publish.examples.pub2">
+<title>Publish one value</title>
+<programlisting language="orc-demo"><![CDATA[
 1
-2
+{-
+OUTPUT:
+1
 -}
 ]]></programlisting>
 </example>
 
 		<example xml:id="ref.concepts.publish.examples.pub2seq">
-<title>Publish two values in a sequential combinator</title>
+<title>Publish two values</title>
 <programlisting language="orc-demo"><![CDATA[
 (1 | 2) >x> x + 30
 {-
@@ -64,13 +74,12 @@ OUTPUT:PERMUTABLE
 ]]></programlisting>
 </example>
 
-		<example xml:id="ref.concepts.publish.examples.pub0">
-<title>Publish no values (silent expression)</title>
+<example xml:id="ref.concepts.publish.examples.metronome">
+<title>Publish an unbounded number of values (metronome)</title>
 <programlisting language="orc-demo"><![CDATA[
-(1 | 2) >> stop
-{-
-OUTPUT:
--}
+def metronome() = signal | Rwait(1000) >> metronome()
+
+metronome()
 ]]></programlisting>
 </example>
 

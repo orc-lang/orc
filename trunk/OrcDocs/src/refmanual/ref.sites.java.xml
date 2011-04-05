@@ -41,7 +41,7 @@ using Orc's <code>?</code> and <code>:=</code> operators.
 
 <para>
 Note that Java allows fields and methods with identical names to be members of the same class.
-In this case, Orc's Java class proxy attempts to resolve from the usage of a record element
+In this case, Orc's Java class proxy resolves from the usage of a record element
 whether to access the field or method.
 </para>
 

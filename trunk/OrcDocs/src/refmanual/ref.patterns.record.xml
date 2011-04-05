@@ -15,7 +15,7 @@
 		<title>Record Pattern</title>
 		
 		<para>
-			In Orc pattern matching, when a record value is compared to a <indexterm significance="preferred"><primary>record pattern</primary></indexterm><firstterm>record pattern</firstterm>, each key mentioned
+			When a record value is compared to a <indexterm significance="preferred"><primary>record pattern</primary></indexterm><firstterm>record pattern</firstterm>, each key mentioned
 			in the record pattern must have a mapping in the record value, and each such mapped
 			value must match its corresponding pattern. The record value may contain additional
 			keys not mentioned by the record pattern.
@@ -53,7 +53,7 @@ val applicants =
 [
   {. name = "Harry Q. Bovik", college = "Carnegie Mellon University", status = "accepted" .},
   {. name = "Fred Hacker", college = "Massachusetts Institute of Technology", status = "rejected" .},
-  {. name = "D. F. Automaton", college = "Initial State College", status = "accepted" .}
+  {. name = "D. F. Automaton", college = "Final State College", status = "accepted" .}
 ]
 each(applicants) >a>
 (

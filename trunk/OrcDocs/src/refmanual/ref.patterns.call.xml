@@ -55,7 +55,7 @@
 	  <title>Type</title>
 	  <para>
 	    When a call pattern is matched against a type <replaceable>S</replaceable>,
-	    the <code>unapply</code> member of the target must have the function type
+	    the <code>unapply</code> member of the type <replaceable>S</replaceable> must have the function type
 	    <code>lambda</code> <code>(</code><replaceable>T</replaceable><code>)</code> <code>::</code> <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>,
 	    where <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>.
 	    Then each argument pattern <replaceable>P<subscript>i</subscript></replaceable>

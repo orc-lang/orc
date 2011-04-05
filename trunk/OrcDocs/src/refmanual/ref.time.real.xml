@@ -10,18 +10,24 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<!-- Rwait -->
+<!-- Real Time -->
    <section xml:id="ref.time.real" xmlns="http://docbook.org/ns/docbook">
       <title>Real Time</title>
-	  <section xml:id="ref.time.real.behavior">
-		  <title>Behavior</title>
+	  <section xml:id="ref.time.real.rwait">
+		  <title>Rwait</title>
 <para>
-The site <code>Rwait</code> is a relative timer. It takes as an argument
+The site <code>Rwait</code> is a relative timer. It takes as a nonnegative integer argument
 a number of milliseconds to wait. It waits for <link linkend="ref.concepts.approximation">approximately</link> that amount of time,
 and then responds with a <code>signal</code>.
 </para>
 
 	  </section>
+	  
+	  <section xml:id="ref.time.real.rclock">
+		  <title>Rclock</title>
+			<para>TODO</para>
+	  </section>
+	  
 	  <section xml:id="ref.time.real.examples">
 		  <title>Examples</title>
 
