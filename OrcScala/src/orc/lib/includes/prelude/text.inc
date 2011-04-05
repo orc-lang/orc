@@ -88,10 +88,10 @@ the argument does not conform to Orc literal syntax,
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  read("true") -- publishes the boolean true
-| read("1") -- publishes the integer 1
-| read("(3.0, [])") -- publishes the tuple (3.0, [])
-| read("\"hi\"") -- publishes the string "hi"]]></programlisting>
+  Read("true") -- publishes the boolean true
+| Read("1") -- publishes the integer 1
+| Read("(3.0, [])") -- publishes the tuple (3.0, [])
+| Read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
 site Read = "orc.lib.str.Read"
 
@@ -111,10 +111,10 @@ representation which is intended to be human-readable.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  write(true) -- publishes "true"
-| write(1) -- publishes "1"
-| write((3.0, [])) -- publishes "(3.0, [])"
-| write("hi") -- publishes "\"hi\""]]></programlisting>
+  Write(true) -- publishes "true"
+| Write(1) -- publishes "1"
+| Write((3.0, [])) -- publishes "(3.0, [])"
+| Write("hi") -- publishes "\"hi\""]]></programlisting>
 --}
 site Write = "orc.lib.str.Write"
 

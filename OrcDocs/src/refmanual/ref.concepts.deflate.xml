@@ -59,7 +59,9 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.concepts.deflate.examples.search"><title>Search Comparison</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
 {- Return the first published value from 3 major search engines
    in the form of a tuple.  Ignore all published values from
    each engine after its first.
@@ -67,10 +69,6 @@
 
 val results = (Google("Jack Burton"), Yahoo("Jack Burton"), Bing("Jack Burton"))
 results
-
-{-
-NONRUNNABLE
--}
 ]]></programlisting>
 		  </example>
 		</section>

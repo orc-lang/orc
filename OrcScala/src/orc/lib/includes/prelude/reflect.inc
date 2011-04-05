@@ -31,7 +31,7 @@ like site calls; in particular, the following four properties hold:
 
 The typical usage of MakeSite looks like:
 
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 def foo(...) = ...
 val Foo = MakeSite(foo)]]></programlisting>
 

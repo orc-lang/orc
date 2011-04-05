@@ -126,7 +126,7 @@ Iterate a function while a predicate is satisfied, publishing
 each value passed to the function. The exact behavior is specified
 by the following implementation:
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 def while(p,f) = 
   def loop(x) = Ift(p(x)) >> ( x | loop(f(x)) )
   loop]]></programlisting>

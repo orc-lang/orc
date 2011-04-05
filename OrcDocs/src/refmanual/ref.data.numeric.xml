@@ -164,7 +164,7 @@ OUTPUT:
 
 <example xml:id="ref.data.numeric.examples.sqrt">
 <title>Square Roots and Squares</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Calculate the square roots and squares of
    a list of numbers
 -}

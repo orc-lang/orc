@@ -91,9 +91,9 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref()
 Rwait(1000) >> r := 5 >> stop
-| println(r?) >>
+| Println(r?) >>
   r := 10 >>
-  println(r?) >>
+  Println(r?) >>
   stop]]></programlisting>
 
 @method Ref[A](A) :: Ref[A]
@@ -154,8 +154,8 @@ An example using a semaphore as a lock for a critical section:
 -- Leaving critical section
 val lock = Semaphore(1)
 lock.acquire() >>
-println("Entering critical section") >>
-println("Leaving critical section") >>
+Println("Entering critical section") >>
+Println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
 @method Semaphore.acquire() :: Signal
@@ -641,8 +641,8 @@ Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()
-  println(d.one.read()) >>
-  println(d.two.read()) >>
+  Println(d.one.read()) >>
+  Println(d.two.read()) >>
   stop
 | d.one.write(1) >>
   d.two.write(2) >>
@@ -653,8 +653,8 @@ clarity:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()
-  println(d.one?) >>
-  println(d.two?) >>
+  Println(d.one?) >>
+  Println(d.two?) >>
   stop
 | d.one := 1 >>
   d.two := 2 >>
@@ -667,7 +667,7 @@ for each field. For example:
 val d = Dictionary()
 d.one := Dictionary() >>
 d.one?.two := 2 >>
-println(d.one?.two?) >>
+Println(d.one?.two?) >>
 stop]]></programlisting>
 
 Note that you cannot write <code>d.one.two</code>: because <code>d.one</code>

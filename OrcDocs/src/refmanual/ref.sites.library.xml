@@ -47,7 +47,7 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Orc's conditional site: Ift(), publishes a signal if the argument is true -}
 
-Ift(1 > 0) >> "correct"
+Ift(1 :> 0) >> "correct"
 
 {-
 OUTPUT:

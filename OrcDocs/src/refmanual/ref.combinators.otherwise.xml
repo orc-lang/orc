@@ -91,16 +91,14 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.combinators.otherwise.examples.fallback"><title>Fall-back Search</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
 {- Attempt to retrieve search results from Google.
    If Google does not respond, then use Yahoo.
 -}  
 
 Google("cupcake") ; Yahoo("cupcake")
-
-{-
-NONRUNNABLE
--}
 ]]></programlisting>
 		  </example>
 		  

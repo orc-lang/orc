@@ -108,7 +108,9 @@ OUTPUT:PERMUTABLE
 		  </example>
 
 		  <example xml:id="ref.combinators.parallel.examples.parasite"><title>Parallel Site Calls</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
 {- Access two search sites, Google and Yahoo, in parallel.
    
    Publish any results they return.
@@ -118,10 +120,6 @@ OUTPUT:PERMUTABLE
 -}  
 
 Google("cupcake") | Yahoo("cupcake")
-
-{-
-NONRUNNABLE
--}
 ]]></programlisting>
 		  </example>
 		  
