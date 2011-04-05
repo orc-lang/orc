@@ -43,7 +43,8 @@ class BitSet = "java.util.BitSet"
 BitSet() >b> b.set(2) >> b.set(4) >> b.toString()
 
 {-
-NONRUNNABLE
+OUTPUT:
+"{2, 4}"
 -}
 ]]></programlisting>
 </example>
