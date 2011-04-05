@@ -2,7 +2,7 @@
 // DocExamplesTest.java -- Scala class/trait/object DocExamplesTest
 // Project OrcScala
 //
-// $Id: TypedExamplesTest.java 2656 2011-03-30 23:41:29Z dkitchin $
+// $Id$
 //
 // Created by dkitchin on Apr 04, 2011.
 //
