@@ -14,8 +14,9 @@
 <title>Library sites</title>
 
 <para>
-The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites (as well as functions and types) for use in Orc programs.
-These sites are declared in the Orc <indexterm significance="preferred"><primary>prelude</primary></indexterm><firstterm>prelude</firstterm>, which is implicitly included in Orc programs.
+The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites, functions, and types for use in Orc programs.
+These sites are declared in the Orc <indexterm significance="preferred"><primary>prelude</primary></indexterm><firstterm>prelude</firstterm>, 
+a sequence of declarations which is implicitly included in all Orc programs.
 </para>
 
 <para>
@@ -43,7 +44,7 @@ OUTPUT:
 </example>
 
 <example xml:id="ref.sites.library.examples.if">
-<title>Ift site</title>
+<title>Another standard library site: Ift</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Orc's conditional site: Ift(), publishes a signal if the argument is true -}
 

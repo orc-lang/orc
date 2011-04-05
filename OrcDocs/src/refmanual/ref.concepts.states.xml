@@ -52,7 +52,7 @@
 		An internally blocked call becomes ready when all its arguments are
 		bound to values. An internally blocked call halts if one of its
 		arguments will never be bound because the expression that computes its
-		value has been halted or killed. A ready call becomes blocked once
+		value has been halted or killed. A ready call becomes externally blocked once
 		the call is made. A blocked call transitions to halted if it receives a
 		response or if the called site can determine that it will never
 		respond; a blocked call may remain blocked forever if the called site
@@ -69,7 +69,9 @@
 		all the copies contribute to this set; if the
 		expression includes function calls, those calls initiate execution of
 		the function bodies which are also expressions that contribute to this
-		set. If some site call in this set is ready, the expression is ready;
+		set; any variable <replaceable>x</replaceable> used as an expression on its own
+		is equivalent to a site call <code><link linkend="ref.stdlib.core.Let">Let</link>(</code><replaceable>x</replaceable><code>)</code>. 
+		If some site call in this set is ready, the expression is ready;
 		if all calls are blocked, the expression is blocked, and if all calls
 		are halted the expression is halted.
 	</para>
@@ -145,16 +147,6 @@
 		</para>
 	</section>
 
-	<section xml:id="ref.concepts.states.definite">
-		<title>Definite/Indefinite Call</title>
-		<para>
-			For an externally blocked call if the called site knows the
-			outcome&#x2014;either the response value or that there will be no
-			response&#x2014;then the call is <indexterm significance="preferred"><primary>definite</primary></indexterm><firstterm>definite</firstterm>;
-			if it does not know the outcome the call is <indexterm significance="preferred"><primary>indefinite</primary></indexterm><firstterm>indefinite</firstterm>.
-		</para>
-	</section>
-
 	<section xml:id="ref.concepts.states.examples">
 		<title>Examples</title>
 	
@@ -165,7 +157,7 @@
 			</para>
 
 			<para>
-				<replaceable>G</replaceable>:: <code>c.get() | Rwait(1000)</code>
+				<code>c.get() | Rwait(1000)</code>
 			</para>
 		
 			<para>
@@ -196,7 +188,7 @@
 			</para>
 		
 			<para>
-				<replaceable>G</replaceable>:: <code>c.get() | Rwait(1000)</code>
+				<code>c.get() | Rwait(1000)</code>
 			</para>
 		
 			<para>
@@ -212,7 +204,7 @@
 			</para>
 		
 			<para>
-				<replaceable>F</replaceable>:: <code>x &gt;&gt; c.get() &gt;&gt; true ; false</code>
+				<code>x &gt;&gt; c.get() &gt;&gt; true ; false</code>
 			</para>
 		
 			<para>

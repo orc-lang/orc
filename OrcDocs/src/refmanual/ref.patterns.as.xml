@@ -44,7 +44,6 @@
 		  <example xml:id="ref.patterns.as.simplefrag"><title>Simplified Fragment</title>
 <programlisting language="orc"><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}
-
 val (a,b) = ((1,2),(3,4))
 val (ax,ay) = a
 val (bx,by) = b
@@ -52,8 +51,12 @@ val (bx,by) = b
 {- Compared to the following fragment -}
 val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 
+[ax, ay, a] | [bx, by, b]
+
 {-
-NONRUNNABLE
+OUTPUT:
+[1, 2, (1, 2)]
+[3, 4, (3, 4)]
 -}
 ]]></programlisting>
 		  </example>

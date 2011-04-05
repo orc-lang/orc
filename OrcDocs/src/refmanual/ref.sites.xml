@@ -20,7 +20,7 @@
 
 <para>
 Orc programs communicate with their environment by calling <indexterm significance="preferred"><primary>site</primary></indexterm><firstterm baseform="site">sites</firstterm>.
-These sites perform services, which the Orc program orchestrates.
+Sites perform services, which the Orc program orchestrates.
 A site call may return a value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
 </para>
 

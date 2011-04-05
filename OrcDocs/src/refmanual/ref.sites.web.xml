@@ -73,8 +73,7 @@ and structured representations which Orc can manipulate.
 <indexterm><primary>JSON</primary></indexterm>
 <para>
 <link xlink:href="http://www.json.org">JSON</link> (JavaScript Object Notation) is a lightweight data format often used 
-by Web services, especially by services with simple interfaces. The structure of JSON values maps quite naturally
-onto Orc values, using nested lists and records.
+by Web services, especially by services with simple interfaces. The structure of JSON values maps onto Orc values, using nested lists and records.
 </para> 
 
 <para>
@@ -111,7 +110,8 @@ then <code>ReadXML(WriteXML(</code><replaceable>x</replaceable><code>))</code> i
 <para>
 Unlike JSON, the structure of XML does not map directly to Orc's structured values.
 Instead, Orc provides a set of library sites and functions which manipulate XML in a manner similar to Orc's
-<link linkend="ref.data.datatype">datatypes</link>. Orc's XML manipulation capabilities are incomplete; in particular, it does not handle namespaces. 
+<link linkend="ref.data.datatype">datatypes</link>. Orc's XML manipulation capabilities are currently incomplete; 
+in particular, it does not handle namespaces. 
 All constructed elements have the default namespace, element and attribute tags have no prefixes,
 and element matching discards namespace and prefix information.
 For more comprehensive XML manipulation, use of underlying platform capabilities 

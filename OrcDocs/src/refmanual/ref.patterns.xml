@@ -19,11 +19,7 @@
 <title>Patterns</title>
 
 <para>
-A <indexterm significance="preferred"><primary>pattern</primary></indexterm><firstterm>pattern</firstterm> describes a set of values and may bind variables to their components. 
-Patterns are used in <code>val</code> declarations, in combinators, and in clausal definitions of functions. 
-</para>
-
-<para>
+<indexterm significance="preferred"><primary>pattern</primary></indexterm><firstterm>Patterns</firstterm> are used in combinators, in <code>val</code> declarations, and in clausal definitions of functions, to select values and bind variables to values. 
 A pattern is given by a shape and a set of variables. A <emphasis>shape</emphasis> is either a tuple, a list, 
 a record, a call, a literal value,
 or wildcard (written as <code>_</code>). If the shape describes a structured value (such as a tuple), its components may
@@ -32,14 +28,14 @@ and the pattern <code>(x,3)</code> binds <code>x</code> to the first element of 
 </para>
 
 <para>
-A pattern such as <code>(x,y)</code> may bind multiple variables. 
-However, patterns are <indexterm significance="preferred"><primary>linear pattern</primary></indexterm><firstterm baseform="linear pattern">linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
-For example, <code>(x,y,x)</code> is not a valid pattern.
+Note that a pattern may fail to match a value, if it does not have the same shape as that value.
+When this occurs, the unmatched value is simply discarded.
 </para>
 
 <para>
-Note that a pattern may fail to match a value, if it does not have the same shape as that value.
-When this occurs, the unmatched value is simply discarded.
+A pattern such as <code>(x,y)</code> may bind multiple variables. 
+However, patterns are <indexterm significance="preferred"><primary>linear pattern</primary></indexterm><firstterm baseform="linear pattern">linear</firstterm>, meaning that a pattern may mention a variable name at most once. 
+For example, <code>(x,y,x)</code> is not a valid pattern.
 </para>
 
 <para>
