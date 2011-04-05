@@ -243,39 +243,6 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-     <example xml:id="ref.declarations.defclass.declaration.defset"><title>Defining a Set</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Define a set of maximum length n.
-   Export methods "add", "remove" and "size".
--}
-
-def class Newset(n) =
- val b = BoundedChannel(n) {- to store the elements of the set -}
- val ne = Ref(0)          {- number of elements currently in the set -}
-
- {- Add an element to the set if it is non-full.
-    If the set is full, wait until the set becomes non-full.
-    Return a signal on completion.
- -}
- def add(x) = b.put(x) >> ne := ne? + 1
-
- {- Remove some element from the set if it is non-empty.
-    If the set is empty, wait until the set becomes non-empty.
-    Return the removed value.
- -}
- def remove() = b.get() >x> ne := ne? - 1 >> x
-
- {- Return the size, i.e., the number of elements currently in the set -}
- def size() = ne?
-
- {- Goal -} stop
-
-{-
-OUTPUT:
--}
-]]></programlisting>
-      </example>
-
 		  <example xml:id="ref.declarations.defclass.semantics.examples.concaccess">
 		  <title>Managing Concurrent Access</title>
 		  <para>

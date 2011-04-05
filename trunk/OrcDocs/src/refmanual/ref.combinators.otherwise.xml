@@ -26,7 +26,7 @@
 				The execution of
 				<replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> proceeds as follows. First, <replaceable>F</replaceable> is executed. 
 				If <replaceable>F</replaceable> <indexterm><primary>halt</primary></indexterm><link linkend="ref.concepts.states.halt">halts</link>, 
-				and has not published any values, then <replaceable>G</replaceable> executes. 
+				and has not published any value, then <replaceable>G</replaceable> executes. 
 				If <replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes one or more values, 
 				then <replaceable>G</replaceable> is ignored. The publications of <replaceable>F</replaceable><code><![CDATA[ ; ]]></code><replaceable>G</replaceable> are those
 				of <replaceable>F</replaceable> if <replaceable>F</replaceable> publishes, or those of <replaceable>G</replaceable>
@@ -115,14 +115,12 @@ def sum(n,[]) = stop
 def sum(n, x:xs) =
   x:sum(n-x, xs) ; sum(n, xs)
   
-sum(-5,[-2,5,1,-3,8,-7])
+sum(-5,[-2,5,1,4,8,-7])
 
 {-
 OUTPUT:
-[-2,4,-7]
+[-2, 4, -7]
 -}
-
-{- sum(-5,[-2,4,1,8]) would be silent -}
 ]]></programlisting>
 		  </example>
 		  

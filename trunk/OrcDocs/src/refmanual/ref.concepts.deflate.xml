@@ -12,20 +12,20 @@
 
 <!-- Deflate Concept -->
 	<section xml:id="ref.concepts.deflate" xmlns="http://docbook.org/ns/docbook">
-		<title>Deflating</title>
+		<title>Deflation</title>
 		<section xml:id="ref.concepts.deflate.definition">
 		<title>Definition</title>
 			<para>
-			Deflating is an evaluation mechanism which extracts a single value from an expression that
-			might publish many values, so that such an expression can be evaluated in a context that expects
+			Deflation is an execution mechanism which extracts a single value from an expression that
+			might publish many values, so that such an expression can be executed in a context that expects
 			at most one value.
 			</para>
 			<para>
-			Orc <indexterm significance="preferred"><primary>deflate</primary></indexterm><firstterm baseform="deflate">deflates</firstterm> a value <replaceable>v</replaceable> from an expression <replaceable>E</replaceable> in a context
+			A expression <replaceable>E</replaceable> is <indexterm significance="preferred"><primary>deflate</primary></indexterm><firstterm baseform="deflate">deflated</firstterm> to a value <replaceable>v</replaceable> in a context
 			<replaceable>C</replaceable> by rewriting</para> 
-			<para><replaceable>C</replaceable>[<replaceable>E</replaceable>]</para>
+			<para><replaceable>C</replaceable>{<replaceable>E</replaceable>}</para>
 			<para>to</para>
-			<para><replaceable>C</replaceable>[<code>x</code>]<code><![CDATA[ <x< ]]></code><replaceable>E</replaceable></para>
+			<para><replaceable>C</replaceable>{<code><replaceable>x</replaceable></code>}<code>&lt;</code><replaceable>x</replaceable><code>&gt;</code><replaceable>E</replaceable></para>
 			<para>When <replaceable>E</replaceable> publishes a value <replaceable>v</replaceable>, 
 			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>.</para> 
 			
@@ -62,13 +62,17 @@
 <programlisting language="orc-demo"><![CDATA[
 include "search.inc"
 
-{- Return the first published value from 3 major search engines
-   in the form of a tuple.  Ignore all published values from
-   each engine after its first.
+{- 
+  Return search results from 3 major search engines in the form of a record.
+  Each search has a timeout; if the search engine does not respond by the timeout,
+  the result is instead "no result".  
 -}
 
-val results = (Google("Jack Burton"), Yahoo("Jack Burton"), Bing("Jack Burton"))
-results
+{. 
+  google = Google("Jack Burton") | Rtimer(5000) >> "no result",
+  yahoo = Yahoo("Jack Burton") | Rtimer(7000) >> "no result",
+  bing = Bing("Jack Burton") | Rtiemr(9000) >> "no result" 
+.}
 ]]></programlisting>
 		  </example>
 		</section>

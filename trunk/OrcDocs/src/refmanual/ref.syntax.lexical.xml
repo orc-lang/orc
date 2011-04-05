@@ -56,7 +56,7 @@
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.tokens.keyword">
-					<title>Keyword</title>
+					<title>Keyword</title><indexterm significance="preferred"><primary>keyword</primary></indexterm>
 					<para>
 						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a keyword instead. 
 					</para>
@@ -82,7 +82,7 @@
 						An Orc delimiter is a character sequence that matches one of the following.
 					</para>
 					<para>
-						<code>( ) {. .} , | ; :: :!: </code>
+						<code>( ) [ ] {. .} , | ; :: :!: </code>
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.tokens.numericliteral">
@@ -174,7 +174,7 @@
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.syntax.EBNF">EBNF Grammar</link></para></listitem>
 			<listitem><para><link linkend="ref.data.numeric">Numeric values</link></para></listitem>
-			<listitem><para><link linkend="ref.data.string">Strings</link></para></listitem>
+			<listitem><para><link linkend="ref.data.string">Character Strings</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
