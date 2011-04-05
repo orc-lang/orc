@@ -45,21 +45,31 @@
 		<section xml:id="ref.expressions.variable.type">
 		  <title>Type</title>
 		  <para>
-		    The type of a variable expression is the type given to it by the nearest enclosing <link linkend="ref.types.context">typing context</link>.		     
+		    The type of a variable expression is the type given to it by the current <link linkend="ref.types.context">typing context</link>.		     
 		  </para>
 		</section>
 		
 		<section xml:id="ref.expressions.variable.examples">
 		  <title>Examples</title>
 
-		  <example xml:id="ref.expressions.variable.examples.one">
-		  <title>TODO</title>
+		  <example xml:id="ref.expressions.variable.examples.blockonvar">
+		  <title>Blocking on Variable</title>
 <programlisting language="orc-demo"><![CDATA[
-{-  
+{-
+  Publish the values bound to two variables.
+  One of the bindings occurs only after some time has passed,
+  so execution of that variable blocks.
 -}
+
+val x = 0
+val y = Rwait(1000) >> 1
+
+x | y
 
 {-
 OUTPUT:
+0
+1
 -}
 ]]></programlisting>
 		  </example>
