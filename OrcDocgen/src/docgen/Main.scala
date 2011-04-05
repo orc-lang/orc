@@ -1,5 +1,5 @@
 //
-// DocGen.scala -- Scala class/trait/object DocGen
+// Main.scala -- Scala class/trait/object Main
 // Project OrcDocgen
 //
 // $Id$
