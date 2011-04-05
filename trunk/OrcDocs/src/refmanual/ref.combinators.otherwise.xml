@@ -135,11 +135,16 @@ OUTPUT:
    process is adding or removing items.
 -}
 
-def xfer(b) =
-  b.getD() >x> x:xfer(b) ; []
+def xfer(ch) =
+  ch.getD() >x> x:xfer(ch) ; []
+
+val ch = Channel()
+
+ch.put(1) >> ch.put(2) >> ch.put(3) >> ch.put(4) >> xfer(ch) 
 
 {-
 OUTPUT:
+[1, 2, 3, 4]
 -}
 ]]></programlisting>
 		  </example>

@@ -46,7 +46,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.record.examples.studentapp"><title>Student Applications</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Use records to test for a given string -}
 
 val applicants = 

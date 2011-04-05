@@ -74,7 +74,7 @@ If no class is found on the site classpath, or the site classpath isn't configur
 
 		<example xml:id="ref.declarations.site.examples.basic">
 			<title>Declaring a user-supplied site</title>
-			<programlisting language="orc-demo"><![CDATA[
+			<programlisting language="orc"><![CDATA[
 {-
  - Assume a JVM class file named com.example.MySite is
  - availalble on the classpath, and that it implements

@@ -119,7 +119,7 @@ OUTPUT:
 	
 		<example xml:id="ref.declarations.class.examples.generic">
 		<title>Declaring and instantiating a Java generic class</title>
-		<programlisting language="orc"><![CDATA[
+		<programlisting language="orc-demo"><![CDATA[
 {- Use a Java class to represent tree data structures -}
 
 class TreeSet = "java.util.TreeSet"

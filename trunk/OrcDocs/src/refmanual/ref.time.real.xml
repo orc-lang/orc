@@ -29,7 +29,7 @@ and then responds with a <code>signal</code>.
 <programlisting language="orc-demo"><![CDATA[
 {- Print "red", wait for 3 seconds (3000 ms), and then print "green" -}
 
-println("red") >> Rwait(3000) >> println("green") >> stop
+Println("red") >> Rwait(3000) >> Println("green") >> stop
 
 {-
 OUTPUT:

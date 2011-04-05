@@ -248,7 +248,7 @@ Frameworks such as JAX-WS map SOAP web service functionality to Java classes; th
 
 <example xml:id="ref.sites.web.examples.randombytes">
 <title>Random Bytes from Fourmilab</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {-
    Make a request to the Fourmilab HotBits service 
    to produce a sequence of 4 random bytes in hex.

@@ -69,7 +69,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.call.examples.trees"><title>Trees</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
    Build up a small binary tree, then use call patterns to deconstruct the tree and extract its contents.   
 -}
@@ -96,7 +96,7 @@ OUTPUT:PERMUTABLE
 		  </example>
 		  
 		  <example xml:id="ref.patterns.call.examples.isqrt"><title>Integer square root</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
    A user-defined call pattern match, using a record with an unapply member.
    
@@ -131,7 +131,7 @@ OUTPUT:PERMUTABLE:
 		  </example>
 		  
 		  <example xml:id="ref.patterns.call.examples.factoring"><title>Factoring Using Multimatch</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- 
    A user-defined call pattern match, using a record with an unapply member.
    

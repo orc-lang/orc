@@ -313,7 +313,7 @@ OUTPUT:
 
 <example xml:id="ref.expressions.operators.examples.redefine">
 <title>Redefine an operator</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Redefine the "?" operator -}
 
 def (?)(x) = "To "+x+", or not to "+x+", that is the question."

@@ -45,7 +45,7 @@
 
 		  <example xml:id="ref.patterns.cons.examples.listdecons">
 		  <title>List Deconstruction</title>
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Publish the head and tail of a list as a tuple -}
 
 val a = [1, 2, 3]

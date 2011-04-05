@@ -67,7 +67,7 @@ NONRUNNABLE
 		  </example>
 		  
 		  <example xml:id="ref.declarations.val.examples.die"><title>Roll Die</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Bind an arbitrary integer between 1 and 6, inclusive,
    to a variable in order to simulate a 6-sided die roll.
 -}
