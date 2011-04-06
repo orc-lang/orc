@@ -76,17 +76,6 @@
 		are halted the expression is halted.
 	</para>
 
-	<figure>
-		<title>Expression States Diagram</title>
-		<mediaobject>
-			<imageobject>
-				<imagedata xml:id="stateTransitions" fileref="images/stateTransition.svg" format="SVG"
-					width="80%" scalefit="1"
-					align="center" />
-			</imageobject>
-		</mediaobject>
-	</figure>
-
 	<section>
 		<title>Ready</title>
 		<para>
