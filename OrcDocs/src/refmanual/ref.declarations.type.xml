@@ -132,7 +132,7 @@ val boolTree =
 intTree | boolTree 
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 Node(Node(Empty(), false, Empty()), true, Empty())
 Node(Node(Empty(), 0, Empty()), 1, Node(Empty(), 2, Empty()))
 -}

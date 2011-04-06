@@ -63,15 +63,14 @@
 include "search.inc"
 
 {- 
-  Return search results from 3 major search engines in the form of a record.
+  Return search results from two major search engines in the form of a record.
   Each search has a timeout; if the search engine does not respond by the timeout,
   the result is instead "no result".  
 -}
 
 {. 
-  google = Google("Jack Burton") | Rtimer(5000) >> "no result",
-  yahoo = Yahoo("Jack Burton") | Rtimer(7000) >> "no result",
-  bing = Bing("Jack Burton") | Rtiemr(9000) >> "no result" 
+  google = Google("Jack Burton") | Rwait(5000) >> "no result",
+  yahoo = Yahoo("Jack Burton") | Rwait(7000) >> "no result",
 .}
 ]]></programlisting>
 		  </example>

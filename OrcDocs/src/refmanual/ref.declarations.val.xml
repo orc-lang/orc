@@ -61,6 +61,8 @@ include "search.inc"
 -}
 
 val result = Google("impatience") | Rwait(5000) >> "Search timed out."
+
+result
 ]]></programlisting>
 		  </example>
 		  

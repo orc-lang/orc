@@ -45,7 +45,7 @@
 <programlisting language="orc-demo"><![CDATA[
 {- Publish a signal for each tuple with a first value of true -}
 
-(false, true) | (true, false) | (false, false) >(true, _)> signal
+((false, true) | (true, false) | (false, false)) >(true, _)> signal
 
 {-
 OUTPUT:

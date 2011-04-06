@@ -41,7 +41,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.list.examples.associative"><title>Insertion Sort</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Insertion Sort -}
 
 def insert(x, []) = [x]

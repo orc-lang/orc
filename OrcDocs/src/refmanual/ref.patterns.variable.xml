@@ -62,7 +62,9 @@ OUTPUT:
 
 {-
 OUTPUT:PERMUTABLE:
-
+[1, 5]
+[2, 6]
+[3, 4]
 -}
 ]]></programlisting>
 		  </example>
