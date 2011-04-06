@@ -215,9 +215,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         Call(target, List(Constant(Field(field))), None)
       }
       case ext.Dereference => {
-        val reader = new BoundVar()
-        val args = List(Constant(Field("read")))
-        Call(target, args, None) > reader > Call(reader, Nil, None)
+        Call(context("?"), List(target), None)
       }
     }
   }
