@@ -25,7 +25,7 @@ This site may also be used in a pattern.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
--- Publishes: (3,4)
+-- Publishes: (3, 4)
 Some((3,4)) >s> (
     s >Some((x,y))> (x,y)
   | s >None()> signal
@@ -469,32 +469,23 @@ primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.
 
-@method array[A].get(Integer) :: A
+@method array[A].read(Integer) :: A
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
 Get the element of the array given by the index, counting from 0.
-<code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
+<code>a.read(i)</code> is equivalent to <code>a(i)?</code>.
 
-@method array[A].set(Integer, A) :: Signal
+@method array[A].write(Integer, A) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
 Set the element of the array given by the index, counting from 0.
-<code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
-
-@method array[A].slice(Integer, Integer) :: Array[A]
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Return a copy of the portion of the array with indices covered by the given
-half-open range. The result array is still indexed counting from 0.
+<code>a.write(i,v)</code> is equivalent to <code>a(i) := v</code>.
 
 @method array[A].length? :: Integer
 
@@ -504,25 +495,6 @@ half-open range. The result array is still indexed counting from 0.
 </od:sitepropset>
 
 Return the size of the array.
-
-@method array[A].fill(A) :: Signal
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Set every element of the array to the given value. The given value is not
-copied, but is shared by every element of the array, so for example
-<code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
-from every element <code>a</code>.
-
-This method is primarily useful to initialize or reset an array to a constant
-value,
-for example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: 0 0 0
-val a = Array(3)
-a.fill(0) >> each(a)]]></programlisting>
 --}
 site Array = "orc.lib.state.JavaArray"
 type Array = "orc.lib.state.types.ArrayType"

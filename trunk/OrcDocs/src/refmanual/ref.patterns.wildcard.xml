@@ -37,7 +37,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.wildcard.examples.assignments"><title>Wildcard Assignments</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Showcase various wildcard assignments -}
 
 val (_,(_,x),_) = (0,(2,2),[5,5,5])

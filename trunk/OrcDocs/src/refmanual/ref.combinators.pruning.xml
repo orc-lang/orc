@@ -149,7 +149,7 @@ OUTPUT:
 		  </example>
 		  
 		  <example xml:id="ref.combinators.pruning.examples.timed"><title>Timed Termination</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Print all publications of the metronome function for 90 msec 
    (after the execution of metronome starts). 
    Then kill metronome.  Note that metronome(20) publishes a

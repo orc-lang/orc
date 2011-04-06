@@ -42,7 +42,7 @@
 		  <title>Examples</title>
 
 		  <example xml:id="ref.patterns.as.simplefrag"><title>Simplified Fragment</title>
-<programlisting language="orc"><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Consider this initial program fragment, without an 'as' pattern -}
 val (a,b) = ((1,2),(3,4))
 val (ax,ay) = a
