@@ -162,11 +162,11 @@ otherwise it halts silently.
 <title>Manipulating XML</title>
 
 <para>
-The library provides two records, xml and xattr, to manipulate XML
+The library provides two records, <code>xml</code> and <code>xattr</code>, to manipulate XML
 nodes more conveniently than by using the primitive XML sites. Each
 record has two members, <code>apply</code> and <code>unapply</code>, 
 that are both functions. The apply function builds XML values, 
-and the unapply component is used in pattern matching.
+and the unapply function is used in pattern matching.
 </para>
 
 <para>
