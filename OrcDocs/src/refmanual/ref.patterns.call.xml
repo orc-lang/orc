@@ -135,11 +135,11 @@ OUTPUT:PERMUTABLE:
 {- 
    A user-defined call pattern match, using a record with an unapply member.
    
-   The factors function publishes all nontrivial factors of its argument n 
+   The factors function publishes all nontrivial positive factors of its argument n 
    (any factor greater than 1 and less than n) 
    
    factors is then used to define a value 'multipleOf' that matches all
-   nontrivial factors of an integer.
+   nontrivial positive factors of an integer.
 -}
 
 def factors(n) if (n <: 0) = factors(-n)
