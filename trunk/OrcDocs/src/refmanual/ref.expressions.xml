@@ -27,6 +27,7 @@
 	chapter shows how various expressions are executed in Orc.
 </para>
 
+<xi:include href="ref.expressions.literal.xml"/>
 <xi:include href="ref.expressions.variable.xml"/>
 <xi:include href="ref.expressions.stop.xml"/>
 <xi:include href="ref.expressions.call.xml"/>
