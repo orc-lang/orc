@@ -70,7 +70,7 @@ include "search.inc"
 
 {. 
   google = Google("Jack Burton") | Rwait(5000) >> "no result",
-  yahoo = Yahoo("Jack Burton") | Rwait(7000) >> "no result",
+  yahoo = Yahoo("Jack Burton") | Rwait(7000) >> "no result"
 .}
 ]]></programlisting>
 		  </example>

@@ -45,7 +45,8 @@ val y = Rwait(200) >> 2 | Rwait(300) >> 3
 {-
 OUTPUT:
 "x is true, y is 2"
-
+-}
+{-
 OUTPUT:
 "x is false, y is 2"
 -}
@@ -78,19 +79,24 @@ val roll = (1 | 2 | 3 | 4 | 5 | 6)
 {-
 OUTPUT:
 "You rolled 1"
-
+-}
+{-
 OUTPUT:
 "You rolled 2"
-
+-}
+{-
 OUTPUT:
 "You rolled 3"
-
+-}
+{-
 OUTPUT:
 "You rolled 4"
-
+-}
+{-
 OUTPUT:
 "You rolled 5"
-
+-}
+{-
 OUTPUT:
 "You rolled 6"
 -}

@@ -93,7 +93,8 @@ val b = Channel()
 {-
 OUTPUT:
 7
-
+-}
+{-
 OUTPUT:
 8
 -}

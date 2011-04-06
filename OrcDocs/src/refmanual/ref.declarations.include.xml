@@ -57,11 +57,6 @@ include "fold.inc"
 def sum(L) = foldl(lambda(a,b) = a+b, L, 0)
 
 sum([1,2,3])
-
-{-
-OUTPUT:
-6
--}
 ]]></programlisting>
 		</example>
 		</section>
