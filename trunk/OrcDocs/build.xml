@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- build.xml - Ant buildfile (tasks for project build)
 	 Project OrcDocs
 
@@ -14,27 +13,26 @@
 
 <project name="orcdocs" default="all" basedir=".">
 	<description>
-		Ant build file for the Orc documentation (User Guide and Reference Manual).
+		Ant build file for the Orc documentation (User Guide and
+		Reference Manual).
 	</description>
 
 	<property file="build.properties"/>
-	<!--
-	  - Configure basic properties that will be used in the file.
-	  -->
+	<!-- - Configure basic properties that will be used in the file. -->
 	<property name="docbook.xsl.dir" value="docbook-xsl"/>
 	<property name="build.dir" value="build"/>
 	<property name="src.dir" value="src"/>
-	<property name="xslthl.config" value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml"/>
+	<property name="xslthl.config"
+		value="file://${basedir}/${src.dir}/highlighting/xslthl-config.xml"/>
 	<property name="xalan.lib.dir" value="lib"/>
 	<property name="database.olink.dir" value="${src.dir}"/>
-	<property name="orc.prelude.dir" value="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
+	<property name="orc.prelude.dir"
+		value="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
 	<property name="orc.orcdoc-out.dir" value="${basedir}/${src.dir}/refmanual/"/>
 
-	<!--
-	  - Sets up the classpath for the Xalan and Xerces implementations
-	  - that are to be used in this script, since the versions that ship
-	  - with Ant may be out of date.
-	  -->
+	<!--Sets up the classpath for the Xalan and Xerces implementations that 
+		are to be used in this script, since the versions that ship with Ant may 
+		be out of date. -->
 	<path id="xalan.classpath">
 		<fileset dir="${xalan.lib.dir}" id="xalan.fileset">
 			<include name="xalan.jar"/>
@@ -43,9 +41,9 @@
 		</fileset>
 	</path>
 
-	<!-- =================================
-		  target: mkdirs
-		 ================================= -->
+	<!-- ================================= 
+          target: mkdirs
+         ================================= -->
 	<target name="mkdirs" depends="" description="Create build directory tree">
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${build.dir}/targetdb"/>
@@ -63,13 +61,14 @@
 		<mkdir dir="${build.dir}/eclipsehelp/refmanual"/>
 		<mkdir dir="${build.dir}/examples"/>
 		<mkdir dir="${build.dir}/examples/userguide"/>
-	  <mkdir dir="${build.dir}/examples/refmanual"/>
+		<mkdir dir="${build.dir}/examples/refmanual"/>
 	</target>
 
-	<!-- =================================
-		  target: prelude-orcdoc-depends
-		 ================================= -->
-	<target name="prelude-orcdoc-depends" depends="" description="Checks if prelude-orcdoc files are up-to-date">
+	<!-- ================================= 
+          target: prelude-orcdoc-depends
+         ================================= -->
+	<target name="prelude-orcdoc-depends" depends=""
+		description="Checks if prelude-orcdoc files are up-to-date">
 		<condition property="prelude-orcdoc-uptodate">
 			<and>
 				<available file="${orc.orcdoc-out.dir}/ref.stdlib.xml"/>
@@ -78,7 +77,8 @@
 					<mapper>
 						<chainedmapper>
 							<flattenmapper/>
-							<globmapper from="*.inc" to="${orc.orcdoc-out.dir}/ref.stdlib.*.xml" handledirsep="yes"/>
+							<globmapper from="*.inc"
+								to="${orc.orcdoc-out.dir}/ref.stdlib.*.xml" handledirsep="yes"/>
 						</chainedmapper>
 					</mapper>
 				</uptodate>
@@ -86,11 +86,13 @@
 		</condition>
 	</target>
 
-	<!-- =================================
-		  target: prelude-orcdoc
-		 ================================= -->
-	<target name="prelude-orcdoc" depends="prelude-orcdoc-depends,mkdirs" unless="prelude-orcdoc-uptodate" description="Generates Reference Manual stdlib appendix from Orc prelude">
-	    <echo message="Generating Standard Library chapter from prelude OrcDoc..." level="info"/>
+	<!-- ================================= 
+          target: prelude-orcdoc
+         ================================= -->
+	<target name="prelude-orcdoc" depends="prelude-orcdoc-depends,mkdirs"
+		unless="prelude-orcdoc-uptodate" description="Generates Reference Manual stdlib appendix from Orc prelude">
+		<echo message="Generating Standard Library chapter from prelude OrcDoc..."
+			level="info"/>
 		<java classname="docgen.Main" failonerror="true">
 			<arg value="${orc.prelude.dir}"/>
 			<arg value="${orc.orcdoc-out.dir}"/>
@@ -100,147 +102,131 @@
 			</classpath>
 		</java>
 	</target>
-	
-	<!-- =================================
-			  target: examples
-			 ================================= -->
-	<target name="examples" depends="examples-refmanual,examples-userguide" description="Extract example programs from all documentation sources"/>
-	
-	<!-- =================================
-			  target: examples-refmanual
-			 ================================= -->
-		<target name="examples-refmanual" depends="prelude-orcdoc,mkdirs" description="Extract example programs from reference manual">
-		    <echo message="Extracting example programs from reference manual..." level="info"/>
-			<java classname="extraction.Main" failonerror="true">
-				<arg value="${src.dir}/refmanual"/>
-				<arg value="${build.dir}/examples/refmanual"/>
-				<classpath>
-					<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-					<pathelement location="${orc.location.OrcDocExamples}/build/"/>
-				</classpath>
-			</java>
-		</target>
-	
-	<!-- =================================
-				  target: examples-userguide
-				 ================================= -->
-			<target name="examples-userguide" depends="prelude-orcdoc,mkdirs" description="Extract example programs from user guide">
-			    <echo message="Extracting example programs from user guide..." level="info"/>
-				<java classname="extraction.Main" failonerror="true">
-					<arg value="${src.dir}/userguide"/>
-					<arg value="${build.dir}/examples/userguide"/>
-					<classpath>
-						<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-						<pathelement location="${orc.location.OrcDocExamples}/build/"/>
-					</classpath>
-				</java>
-			</target>
 
-	<!-- =================================
-		  target: depends
-		 ================================= -->
+	<!-- ================================= 
+          target: depends
+         ================================= -->
 	<target name="depends" depends="prelude-orcdoc" description="Remove out-of-date targets">
 		<!-- User Guide: -->
-		<!-- Remove all targets built from combined userguide source files if any file changes -->
+		<!-- Remove all targets built from combined userguide source files if any 
+			file changes -->
 		<dependset>
 			<srcfileset dir="${src.dir}/userguide" includes="**/*"/>
 			<targetfileset dir="${build.dir}/targetdb" includes="userguide.*"/>
-			<targetfileset dir="${build.dir}/html/userguide" includes="**/*"/>
-			<targetfileset dir="${build.dir}/eclipsehelp/userguide" includes="**/*"/>
-			<targetfileset dir="${build.dir}/fo/userguide" includes="**/*"/>
-			<targetfileset dir="${build.dir}/pdf/userguide" includes="**/*"/>
-			<targetfileset dir="${build.dir}/examples/userguide" includes="**/*"/>
+			<targetfileset dir="${build.dir}/html/userguide"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/eclipsehelp/userguide"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/fo/userguide"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/pdf/userguide"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/examples/userguide"
+				includes="**/*"/>
 		</dependset>
 		<!-- Ref Manual: -->
 		<dependset>
 			<srcfileset dir="${src.dir}/refmanual" includes="**/*"/>
-			<!-- Since the ref manual targetdbs are built separately for each source
-			     XML file, XSLT can get those dependencies right without help. -->
-			<targetfileset dir="${build.dir}/html/refmanual" includes="**/*"/>
-			<targetfileset dir="${build.dir}/eclipsehelp/refmanual" includes="**/*"/>
-			<targetfileset dir="${build.dir}/fo/refmanual" includes="**/*"/>
-			<targetfileset dir="${build.dir}/pdf/refmanual" includes="**/*"/>
-			<targetfileset dir="${build.dir}/examples/refmanual" includes="**/*"/>
+			<!-- Since the ref manual targetdbs are built separately for each source 
+				XML file, XSLT can get those dependencies right without help. -->
+			<targetfileset dir="${build.dir}/html/refmanual"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/eclipsehelp/refmanual"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/fo/refmanual"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/pdf/refmanual"
+				includes="**/*"/>
+			<targetfileset dir="${build.dir}/examples/refmanual"
+				includes="**/*"/>
 		</dependset>
 	</target>
 
-	<!-- =================================
-		  target: targetdb
-		 ================================= -->
-	<target name="targetdb" depends="mkdirs,depends" description="Build olink target databases for mutual linking among documents">
+	<!-- ================================= 
+          target: targetdb
+         ================================= -->
+	<target name="targetdb" depends="mkdirs,depends"
+		description="Build olink target databases for mutual linking among documents">
 		<echo message="Creating olink databases..." level="info"/>
 		<macrodef name="docbooktargetdb">
 			<attribute name="srcdir"/>
 			<attribute name="destdir"/>
-			<element name="docbooktargetdb-elements" optional="true" implicit="true"/>
+			<element name="docbooktargetdb-elements" optional="true"
+				implicit="true"/>
 			<sequential>
-				<xslt style="docbook-xsl/html/docbook.xsl"
-						basedir="@{srcdir}" destdir="@{destdir}"
-						processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison"
-				        filenameparameter="targets.filename">
+				<xslt style="docbook-xsl/html/docbook.xsl" basedir="@{srcdir}"
+					destdir="@{destdir}" processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison"
+					filenameparameter="targets.filename">
 					<docbooktargetdb-elements/>
 					<classpath refid="xalan.classpath"/>
 					<param name="collect.xref.targets" expression="only"/>
 				</xslt>
-				<!-- Annoyingly, when collect.xref.targets=only, this still creates empty HTML files.
-				  -  These annoying files are used by Ant's xslt task to check the freshness of the links DB,
-				  -  so we must keep them to avoid a rebuild of all link DBs every build.  -->
+				<!-- Annoyingly, when collect.xref.targets=only, this still creates empty 
+					HTML files. These annoying files are used by Ant's xslt task to check the 
+					freshness of the links DB, so we must keep them to avoid a rebuild of all 
+					link DBs every build. -->
 			</sequential>
 		</macrodef>
 
 		<!-- Create database of links for user guide -->
-		<docbooktargetdb srcdir="${src.dir}/userguide" destdir="${build.dir}/targetdb">
+		<docbooktargetdb srcdir="${src.dir}/userguide"
+			destdir="${build.dir}/targetdb">
 			<!-- Create a database of the combined files by processing includes -->
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="*.xml"/>
 		</docbooktargetdb>
 
 		<!-- Create database of links for reference manual homepage (TOC) -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb">
+		<docbooktargetdb srcdir="${src.dir}/refmanual"
+			destdir="${build.dir}/targetdb">
 			<include name="*.xml"/>
 		</docbooktargetdb>
 
 		<!-- Create olink databases for modular chapters/sections -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual" destdir="${build.dir}/targetdb">
+		<docbooktargetdb srcdir="${src.dir}/refmanual"
+			destdir="${build.dir}/targetdb">
 			<include name="*.xml"/>
 		</docbooktargetdb>
 	</target>
 
-	<!-- =================================
-		  target: html-titlepage
-		 ================================= -->
-	<target name="html-titlepage" depends="" description="Generate titlepage stylesheet">
-		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl" extension=".xsl"
-			in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
+	<!-- ================================= 
+          target: html-titlepage
+         ================================= -->
+	<target name="html-titlepage" depends=""
+		description="Generate titlepage stylesheet">
+		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl"
+			extension=".xsl" in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
 			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		</xslt>
 	</target>
-	
-	<!-- =================================
-		  target: ug-html-chunk
-		 ================================= -->
-	<target name="ug-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate chunked User Guide HTML doc">
+
+	<!-- ================================= 
+          target: ug-html-chunk
+         ================================= -->
+	<target name="ug-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generate chunked User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
-				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
-				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/html/userguide/index.html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
+			in="${src.dir}/userguide/userguide.xml" out="${build.dir}/html/userguide/index.html"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
 
 			<!-- Allow example programs to run on orchard when published to website -->
-			<param name="orchard.js.path" expression="/orchard/orc.js" />
-			<param name="orchard.css.path" expression="/orchard/orc.css" />
+			<param name="orchard.js.path" expression="/orchard/orc.js"/>
+			<param name="orchard.css.path" expression="/orchard/orc.css"/>
 			<!-- Allow example programs to run on mock execution of orchard locally -->
-			<!--
-			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
-			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			<!-- 
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js"/>
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css"/>
 			-->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="2"/>
 			<param name="chunk.first.sections" expression="1"/>
 			<param name="chapter.autolabel" expression="1"/>
@@ -248,7 +234,7 @@
 				book	  toc
 				chapter	  toc
 			"/>
-			
+
 			<param name="toc.section.depth" expression="1"/>
 			<param name="header.rule" expression="0"/>
 			<param name="use.id.as.filename" expression="1"/>
@@ -264,7 +250,7 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
-			
+
 			<param name="generate.legalnotice.link" expression="1"/>
 			<param name="ebnf.table.bgcolor" expression=""/>
 			<param name="ebnf.table.border" expression="0"/>
@@ -280,27 +266,29 @@
 		</copy>
 	</target>
 
-	<!-- =================================
-		  target: ug-html-single
-		 ================================= -->
-	<target name="ug-html-single" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates single User Guide HTML doc">
+	<!-- ================================= 
+          target: ug-html-single
+         ================================= -->
+	<target name="ug-html-single" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generates single User Guide HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
-				basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/userguide" destdir="${build.dir}/html/userguide"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
 
-			<param name="orchard.js.path" expression="/orchard/orc.js" />
-			<param name="orchard.css.path" expression="/orchard/orc.css" />
-			<!--
-			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
-			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			<param name="orchard.js.path" expression="/orchard/orc.js"/>
+			<param name="orchard.css.path" expression="/orchard/orc.css"/>
+			<!-- 
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js"/>
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css"/>
 			-->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
@@ -319,23 +307,26 @@
 		</copy>
 	</target>
 
-	<!-- =================================
-		  target: ug-eclipsehelp
-		 ================================= -->
-	<target name="ug-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate User Guide in Eclipse Help format">
+	<!-- ================================= 
+          target: ug-eclipsehelp
+         ================================= -->
+	<target name="ug-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generate User Guide in Eclipse Help format">
 		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
-				basedir="${src.dir}/userguide" destdir="${build.dir}/eclipsehelp/userguide"
-				in="${src.dir}/userguide/userguide.xml" out="${build.dir}/eclipsehelp/userguide/index.html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/userguide" destdir="${build.dir}/eclipsehelp/userguide"
+			in="${src.dir}/userguide/userguide.xml" out="${build.dir}/eclipsehelp/userguide/index.html"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="userguide.xml"/>
 			<classpath refid="xalan.classpath"/>
 
-			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path params -->
+			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path 
+				params -->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chunk.quietly" expression="1"/>
 
@@ -362,20 +353,22 @@
 		<delete file="${build.dir}/eclipsehelp/userguide/index.xml"/>
 	</target>
 
-	<!-- =================================
-		  target: ug-pdf
-		 ================================= -->
-	<target name="ug-pdf" depends="mkdirs,depends,targetdb" description="Generate User Guide PDF file">
-		<!-- Iterates through a directory and transforms .xml files into
-			 .fo files which can then be turned into a PDF document -->
+	<!-- ================================= 
+          target: ug-pdf
+         ================================= -->
+	<target name="ug-pdf" depends="mkdirs,depends,targetdb"
+		description="Generate User Guide PDF file">
+		<!-- Iterates through a directory and transforms .xml files into .fo files 
+			which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
-				basedir="${src.dir}/userguide" destdir="${build.dir}/fo/userguide"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/userguide" destdir="${build.dir}/fo/userguide"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<!-- default to indented layout to match HTML dl -->
 			<param name="variablelist.as.blocks" expression="1"/>
@@ -409,35 +402,39 @@
 			outfile="${build.dir}/pdf/userguide/userguide.pdf"/>
 	</target>
 
-	<!-- =================================
-		  target: userguide
-		 ================================= -->
-	<target name="userguide" depends="mkdirs,ug-html-chunk,ug-html-single,ug-eclipsehelp,ug-pdf" description="Generate the User Guide in various formats">
+	<!-- ================================= 
+          target: userguide
+         ================================= -->
+	<target name="userguide"
+		depends="mkdirs,ug-html-chunk,ug-html-single,ug-eclipsehelp,ug-pdf"
+		description="Generate the User Guide in various formats">
 	</target>
-	
-	<!-- =================================
-		  target: rm-html-chunk
-		 ================================= -->
-	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates chunked Reference Manual HTML doc">
+
+	<!-- ================================= 
+          target: rm-html-chunk
+         ================================= -->
+	<target name="rm-html-chunk" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generates chunked Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-chunk.xsl" extension=".html"
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
-				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/html/refmanual/index.html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+			in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/html/refmanual/index.html"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
-			
+
 			<param name="index.links.to.section" expression="0"/>
 
-			<param name="orchard.js.path" expression="/orchard/orc.js" />
-			<param name="orchard.css.path" expression="/orchard/orc.css" />
-			<!--
-			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
-			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			<param name="orchard.js.path" expression="/orchard/orc.js"/>
+			<param name="orchard.css.path" expression="/orchard/orc.css"/>
+			<!-- 
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js"/>
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css"/>
 			-->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="2"/>
 			<param name="chunk.first.sections" expression="1"/>
 			<param name="chapter.autolabel" expression="1"/>
@@ -460,13 +457,13 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
-			
+
 			<param name="ebnf.table.bgcolor" expression=""/>
-			
+
 			<param name="generate.legalnotice.link" expression="1"/>
 			<param name="ebnf.table.bgcolor" expression=""/>
 			<param name="ebnf.table.border" expression="0"/>
-			
+
 		</xslt>
 		<!-- Copy the stylesheet and navigational/content images -->
 		<copy todir="${build.dir}/html/refmanual">
@@ -482,27 +479,29 @@
 		</copy>
 	</target>
 
-	<!-- =================================
-		  target: rm-html-single
-		 ================================= -->
-	<target name="rm-html-single" depends="mkdirs,depends,targetdb,html-titlepage" description="Generates single Reference Manual HTML doc">
+	<!-- ================================= 
+          target: rm-html-single
+         ================================= -->
+	<target name="rm-html-single" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generates single Reference Manual HTML doc">
 		<xslt style="${src.dir}/xsl/html-single.xsl" extension=".html"
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/html/refmanual"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<include name="refmanual.xml"/>
 			<classpath refid="xalan.classpath"/>
 
-			<param name="orchard.js.path" expression="/orchard/orc.js" />
-			<param name="orchard.css.path" expression="/orchard/orc.css" />
-			<!--
-			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js" />
-			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css" />
+			<param name="orchard.js.path" expression="/orchard/orc.js"/>
+			<param name="orchard.css.path" expression="/orchard/orc.css"/>
+			<!-- 
+			<param name="orchard.js.path" expression="../../../../Orchard/web/orc.js"/>
+			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css"/>
 			-->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 
 			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
@@ -522,22 +521,25 @@
 		</copy>
 	</target>
 
-	<!-- =================================
-		  target: rm-eclipsehelp
-		 ================================= -->
-	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage" description="Generate Reference Manual in Eclipse Help format">
+	<!-- ================================= 
+          target: rm-eclipsehelp
+         ================================= -->
+	<target name="rm-eclipsehelp" depends="mkdirs,depends,targetdb,html-titlepage"
+		description="Generate Reference Manual in Eclipse Help format">
 		<xslt style="${src.dir}/xsl/eclipse.xsl" extension=".html"
-				basedir="${src.dir}/refmanual" destdir="${build.dir}/eclipsehelp/refmanual"
-				in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/eclipsehelp/refmanual/index.html"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/eclipsehelp/refmanual"
+			in="${src.dir}/refmanual/refmanual.xml" out="${build.dir}/eclipsehelp/refmanual/index.html"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
 
-			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path params -->
+			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path 
+				params -->
 
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="2"/>
 			<param name="chunk.first.sections" expression="1"/>
 			<param name="chapter.autolabel" expression="1"/>
@@ -559,7 +561,7 @@
 			<param name="highlight.source" expression="1"/>
 			<param name="highlight.default.language" expression="orc"/>
 			<param name="highlight.xslthl.config" expression="${xslthl.config}"/>
-			
+
 			<param name="ebnf.table.bgcolor" expression=""/>
 		</xslt>
 		<!-- Copy the stylesheet and navigational/content images -->
@@ -579,20 +581,22 @@
 		<delete file="${build.dir}/eclipsehelp/refmanual/index.xml"/>
 	</target>
 
-	<!-- =================================
-		  target: rm-pdf
-		 ================================= -->
-	<target name="rm-pdf" depends="mkdirs,depends,targetdb" description="Generate the Reference Manual PDF file">
-		<!-- Iterates through a directory and transforms .xml files into
-			 .fo files which can then be turned into a PDF document -->
+	<!-- ================================= 
+          target: rm-pdf
+         ================================= -->
+	<target name="rm-pdf" depends="mkdirs,depends,targetdb"
+		description="Generate the Reference Manual PDF file">
+		<!-- Iterates through a directory and transforms .xml files into .fo files 
+			which can then be turned into a PDF document -->
 		<xslt style="${src.dir}/xsl/fo.xsl" extension=".fo"
-			 	basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual"
-				processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
-		    <sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
-		                 value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
+			basedir="${src.dir}/refmanual" destdir="${build.dir}/fo/refmanual"
+			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
+			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
+				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
 			<classpath refid="xalan.classpath"/>
 			<param name="section.autolabel" expression="1"/>
-			<param name="section.label.includes.component.label" expression="1"/>
+			<param name="section.label.includes.component.label"
+				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="toc.section.depth" expression="1"/>
 			<!-- default to indented layout to match HTML dl -->
@@ -613,10 +617,12 @@
 
 			<param name="body.font.family" expression="Times New Roman,serif"/>
 			<param name="title.font.family" expression="Arial,sans-serif"/>
-			<!-- symbol.font.family appended to body & title font families as a fall-back for glyphs not contained in those fonts -->
+			<!-- symbol.font.family appended to body & title font families as a fall-back 
+				for glyphs not contained in those fonts -->
 			<param name="symbol.font.family" expression="Arial Unicode,Symbol,ZapfDingbats"/>
 			<param name="monospace.font.family" expression="monospace"/>
-			<!-- dingbat.font.family used for template-generated copyright and trademark symbols, etc. -->
+			<!-- dingbat.font.family used for template-generated copyright and trademark 
+				symbols, etc. -->
 			<param name="dingbat.font.family" expression="serif"/>
 		</xslt>
 
@@ -638,27 +644,71 @@
 			outfile="${build.dir}/pdf/refmanual/refmanual.pdf" userconfig="${basedir}/fop-conf.xml"/>
 	</target>
 
-	<!-- =================================
-		  target: refmanual
-		 ================================= -->
-	<target name="refmanual" depends="mkdirs,rm-html-chunk,rm-html-single,rm-eclipsehelp,rm-pdf" description="Generate the Reference Manual in various formats">
+	<!-- ================================= 
+          target: refmanual
+         ================================= -->
+	<target name="refmanual"
+		depends="mkdirs,rm-html-chunk,rm-html-single,rm-eclipsehelp,rm-pdf"
+		description="Generate the Reference Manual in various formats">
 	</target>
 
-	<!-- =================================
-		  target: eclipsehelp
-		 ================================= -->
-	<target name="eclipsehelp" depends="ug-eclipsehelp,rm-eclipsehelp" description="Generate the manuals in Eclipse Help format">
+	<!-- ================================= 
+          target: eclipsehelp
+         ================================= -->
+	<target name="eclipsehelp" depends="ug-eclipsehelp,rm-eclipsehelp"
+		description="Generate the manuals in Eclipse Help format">
 	</target>
 
-	<!-- =================================
-		  target: all
-		 ================================= -->
-	<target name="all" depends="userguide,refmanual,examples" description="">
+	<!-- ================================= 
+          target: all
+         ================================= -->
+	<target name="all" depends="userguide,refmanual,examples"
+		description="">
 	</target>
 
-	<!-- =================================
-		  target: clean
-		 ================================= -->
+	<!-- ================================= 
+          target: examples-userguide
+         ================================= -->
+	<target name="examples-userguide" depends="prelude-orcdoc,mkdirs"
+		description="Extract example programs from user guide">
+		<echo message="Extracting example programs from user guide..."
+			level="info"/>
+		<java classname="extraction.Main" failonerror="true">
+			<arg value="${src.dir}/userguide"/>
+			<arg value="${build.dir}/examples/userguide"/>
+			<classpath>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
+				<pathelement location="${orc.location.OrcDocExamples}/build/"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!-- ================================= 
+          target: examples-refmanual
+         ================================= -->
+	<target name="examples-refmanual" depends="prelude-orcdoc,mkdirs"
+		description="Extract example programs from reference manual">
+		<echo message="Extracting example programs from reference manual..."
+			level="info"/>
+		<java classname="extraction.Main" failonerror="true">
+			<arg value="${src.dir}/refmanual"/>
+			<arg value="${build.dir}/examples/refmanual"/>
+			<classpath>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
+				<pathelement location="${orc.location.OrcDocExamples}/build/"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!-- ================================= 
+          target: examples
+         ================================= -->
+	<target name="examples" depends="examples-userguide,examples-refmanual"
+		description="Extract example programs from all documentation sources"/>
+
+	<!-- ================================= 
+          target: clean
+         ================================= -->
 	<target name="clean" depends="" description="Delete build directory">
 		<delete dir="${build.dir}"/>
 		<!-- Clean up OrcDocgen-generated files -->
