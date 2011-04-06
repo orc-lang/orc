@@ -122,8 +122,6 @@ def magnitude(v) =
   (v.x * v.x + 
    v.y * v.y + 
    v.z * v.z) ** 0.5
-    >tot>
-      tot ** (1.0/2)
   
 def norm(v) = 
   val m = magnitude(v)
@@ -136,7 +134,7 @@ norm(velocity)
 
 {-
 OUTPUT:
-{. x = 0.6, y = 0.0, z = 0.8 .}
+{. x = 0.6, y = 0, z = 0.8 .}
 -}
 
 ]]></programlisting>
