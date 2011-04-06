@@ -53,8 +53,8 @@ Println("red") >> Rwait(3000) >> Println("green") >> stop
 
 {-
 OUTPUT:
-"red"
-"green"
+red
+green
 -}
 ]]></programlisting>
 		  </example>

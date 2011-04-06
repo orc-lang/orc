@@ -63,9 +63,9 @@ each(applicants) >a>
 
 {-
 OUTPUT:PERMUTABLE
-"Harry Q. Bovik's application was accepted"
-"Fred Hacker's application was not accepted"
-"D. F. Automaton's application was accepted"
+Fred Hacker's application was not accepted
+D. F. Automaton's application was accepted
+Harry Q. Bovik's application was accepted
 -}
 ]]></programlisting>
 		  </example>

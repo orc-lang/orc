@@ -65,7 +65,8 @@ Ift(x) | Ift(y) | Ift(z)
 {-
 OUTPUT:
 signal
-
+-}
+{-
 OUTPUT:
 -}
 ]]></programlisting>
