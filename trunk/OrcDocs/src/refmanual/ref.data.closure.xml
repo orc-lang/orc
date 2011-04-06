@@ -84,7 +84,7 @@ OUTPUT:
 			<listitem><para><link linkend="ref.declarations.def"><code>def</code>: Define Function</link></para></listitem>
 			<listitem><para><link linkend="ref.expressions.lambda"><code>lambda</code> Expression</link></para></listitem>
 			<listitem><para><link linkend="ref.expressions.call.function">Function Calls</link></para></listitem>
-			<listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
+			<listitem><para><link linkend="ref.types.typeinfo.function">Adding Type Information to Functons</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>

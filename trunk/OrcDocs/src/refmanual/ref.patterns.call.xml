@@ -57,7 +57,7 @@
 	    When a call pattern is matched against a type <replaceable>S</replaceable>,
 	    the <code>unapply</code> member of the type <replaceable>S</replaceable> must have the function type
 	    <code>lambda</code> <code>(</code><replaceable>T</replaceable><code>)</code> <code>::</code> <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>,
-	    where <replaceable>S</replaceable> ≤ <replaceable>T</replaceable>.
+	    where <replaceable>S</replaceable> &#x2264; <replaceable>T</replaceable>.
 	    Then each argument pattern <replaceable>P<subscript>i</subscript></replaceable>
 	    is matched against the corresponding type <replaceable>T<subscript>i</subscript></replaceable>,
 	    producing typing contexts Γ<subscript>i</subscript>. The typing context

@@ -272,7 +272,7 @@ z >P> Ift(Gd) >> E
 	    <title>Type</title>
 	    <para>
 	      When a function is defined, the function identifier is bound to a <link linkend="ref.data.closure">closure</link>.
-	      A definition must be given <link linkend="ref.types.annotation.function">additional type information</link> so that the typechecker can deduce the correct <link linkend="ref.data.closure.type">function type</link> for the identifier.
+	      A definition must be given <link linkend="ref.types.typeinfo.function">additional type information</link> so that the typechecker can deduce the correct <link linkend="ref.data.closure.type">function type</link> for the identifier.
 	    </para>
 	  </section>
 	  
@@ -467,7 +467,7 @@ OUTPUT:
 			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
 			<listitem><para><link linkend="ref.expressions.lambda"><code>lambda</code> Expressions</link></para></listitem>
 			<listitem><para><link linkend="ref.data.closure">Closures</link></para></listitem>
-			<listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
+			<listitem><para><link linkend="ref.types.typeinfo.function">Adding Type Information to Functions</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.defclass"><code>def class</code>: Define Site in Orc</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>

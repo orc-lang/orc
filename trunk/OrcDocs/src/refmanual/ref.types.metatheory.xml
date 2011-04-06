@@ -18,11 +18,11 @@
 		<indexterm><primary>polymorphism</primary></indexterm>
 	
 		<para xml:id="ref.types.metatheory.origin">
-		The typechecker uses the local <indexterm significance="preferred"><primary>type inference</primary></indexterm><firstterm>type inference</firstterm> algorithm described by Pierce and Turner in the paper 
+		The typechecker uses the <indexterm significance="preferred"><primary>type inference</primary></indexterm><firstterm>local type inference</firstterm> algorithm described by Pierce and Turner in the paper 
 		<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
 		The typechecker extends this algorithm with polymorphic type operators (e.g. <code>List</code> or
-		<code>Channel</code>), forming a second-order type system. It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link>,
-		and a typing procedure for external services.
+		<code>Channel</code>), forming a second-order type system. 
+		It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link> and a typing procedure for external services.
 		</para>
 	
 		<para xml:id="ref.types.metatheory.polymorphisms">
