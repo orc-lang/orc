@@ -218,12 +218,12 @@ TODO: Put a test/demo here
 		  <example xml:id="ref.declarations.defclass.semantics.examples.extendsite">
 		  <title>Extend Functionality of an Existing Site</title>
 		  <para>
-		  	The <code><indexterm><primary>Channel</primary></indexterm>Channel</code> site implements an unbounded channel. We add a new method,
-			<code>length</code>, that returns the number of items in the channel. We have to
-			assign a name different from "Channel" (e.g. "CustomChannel") to this class.
+		  	The <code><indexterm><primary>Channel</primary></indexterm>Channel</code> site 
+		  	implements an unbounded channel. We add a new method,
+			<code>length</code>, that returns the number of items in the channel. 
 		  </para>
 <programlisting language="orc-demo"><![CDATA[
-{- Extend the pre existing channel site -}
+{- Extend the pre existing channel site with a length field -}
 
 def class CustomChannel() =
   val ch = Channel()
@@ -235,10 +235,15 @@ def class CustomChannel() =
 
   stop
 
-TODO: Put a test/demo here
+val cc = CustomChannel()
+
+  signals(10) >> cc.put("item") >> stop
+| signals(5) >> cc.get() >> stop
+; cc.length()
 
 {-
 OUTPUT:
+5
 -}
 ]]></programlisting>
 		  </example>
@@ -289,62 +294,79 @@ OUTPUT:
 		  <para>
 		  	All the goal expressions shown so far have been merely <code>stop</code>. In the
 			following example, the goal expression of the class initiates an
-			unending computation in which <code>tick</code> is printed every second; all the
+			computation in which a number is printed every second; all the
 			publications of the goal expression are ignored.
 		  </para>
 <programlisting language="orc-demo"><![CDATA[
 {- Perform a print action with the goal expression 
-   of a class.
+   of a class: counting down from n to 0.
 -}
 
-def class metro() =
+def class countdown(n) =
 
- def metronome() = signal | Rwait(1000) >> metronome()
+ def downfrom(i) if (i >= 0) = i | Rwait(1000) >> downfrom(i-1)
 
- {- Goal -} metronome() >> Println("tick")
+ {- Goal -} downfrom(n) >i> Println(i)
 
-val _ = metro()
+val _ = countdown(5)
 {- Goal of the whole program -}  stop
 
 {-
 OUTPUT:
-"tick"
-"tick"
-"tick"
-...
+5
+4
+3
+2
+1
+0
 -}
 ]]></programlisting>
 		  </example>
 
 		  <example xml:id="ref.declarations.defclass.semantics.examples.stopwatch"><title>Stopwatch</title>
 <programlisting language="orc-demo"><![CDATA[
-{- An instance of Stopwatch has the initial stopwatch value 0.
-   
-   The following operations are available:
-     start():  (re)start the stopwatch and publish a signal
-     halt():  stop the stopwatch and publish its current value
+{- 
+  An instance of Stopwatch has the following operations:
+     
+    start():  
+      Start a paused stopwatch and publish a signal.
+      If the stopwatch is already running, halt instead.
+    finish(): 
+      Pause a running stopwatch and publish the time
+      that has passed since it was last started.
+      If the stopwatch is already paused, halt instead.
 -} 
 
-{- Each instance of Stopwatch creates a new clock.
-
-   It also maintains two Ref variables:
-     laststart: clock value when the last start() was executed.
-     timeshown: stopwatch value when the last halt() was executed.
-
-   Initially, both variable values are 0.
--}
-
 def class Stopwatch() =
- val clk = Clock() {- create a new instance of Clock with time value 0 -}
- val (timeshown, laststart) = (Ref(0), Ref(0))
+  val now = Rclock().time 
+  val checkpoint = Ref(now())
+  val (startlock, finishlock) = (Semaphore(0), Semaphore(0))
+  def start() = 
+    startlock.acquireD() >>
+      now() >starttime> 
+      checkpoint := starttime >>
+    finishlock.release()
+  def finish() =
+    finishlock.acquireD() >>
+      checkpoint? >starttime>
+      now() >endtime>
+      checkpoint := endtime >>
+    startlock.release() >>
+    endtime - starttime
+  
+  startlock.release()    
+  
+  
+val watch = Stopwatch()
 
- def start() = laststart := clk()
- def halt() =
-    timeshown := timeshown? + (clk() − laststart?) >> timeshown?
-stop
+watch.start() >> Rwait(400) >> watch.finish() >i>
+Rwait(200) >>
+watch.start() >> Rwait(100) >> watch.finish() >j>
+(i+j >= 500) && (i+j <= 525)
 
 {-
 OUTPUT:
+true
 -}
 ]]></programlisting>
 		  </example>
