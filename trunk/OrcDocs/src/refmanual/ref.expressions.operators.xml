@@ -314,10 +314,13 @@ OUTPUT:
 <example xml:id="ref.expressions.operators.examples.redefine">
 <title>Redefine an operator</title>
 <programlisting language="orc-demo"><![CDATA[
-{- Redefine the "?" operator -}
+{- Redefine the "||", "~", and "?" operators -}
 
-def (?)(x) = "To "+x+", or not to "+x+", that is the question."
-"be"?
+def (||)(x,y) = x + ", or " + y
+def (~)(x) = "not " + x
+def (?)(r) = r + ", that is the question"
+
+signal >> ("To be" || ~ "to be")?
 
 {-
 OUTPUT:
