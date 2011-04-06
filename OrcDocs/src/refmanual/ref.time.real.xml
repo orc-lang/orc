@@ -23,9 +23,23 @@ and then responds with a <code>signal</code>.
 
 	  </section>
 	  
+	  <section xml:id="ref.time.real.rtime">
+		  <title>Rtime</title>
+			<para>
+			The site <code>Rtime</code> is a program clock. 
+			When called, it returns the number of milliseconds that have elapsed since
+			the program began executing.
+			</para>
+	  </section>
+	  
 	  <section xml:id="ref.time.real.rclock">
 		  <title>Rclock</title>
-			<para>TODO</para>
+			<para>
+			The site <code>Rclock</code> creates new clock instances.
+			When called, it returns a new clock, with two methods: <code>wait</code> and <code>time</code>.
+			The <code>wait</code> method behaves exactly like <code>Rwait</code>.
+			The <code>time</code> method returns the number of milliseconds that have passed since the clock was created.
+			</para>
 	  </section>
 	  
 	  <section xml:id="ref.time.real.examples">
