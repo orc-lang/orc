@@ -176,5 +176,6 @@ div.variablelist > table > tbody > tr > td {
 }
 
 .productionset tbody tr td a {
-	margin-left: 0.4em;
+	margin-left: 0.1em;
+	margin-right: 0.1em;
 }
