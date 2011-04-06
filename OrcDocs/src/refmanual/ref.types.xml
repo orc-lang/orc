@@ -20,8 +20,8 @@
 
 <para>
 The Orc language is
-dynamically typed. If an operation occurs at runtime which is not type-correct, the call
-which attempted that operation <link linkend="ref.concepts.states.halt">halts</link>
+dynamically typed. If an operation occurs at runtime which is not type correct, 
+that operation <link linkend="ref.concepts.states.halt">halts</link>
 <link linkend="ref.concepts.silent">silently</link>, and reports an error on the console. 
 </para>
 
@@ -57,7 +57,8 @@ This means that the program has no type errors, and that every value published b
 <xi:include href="ref.types.metatheory.xml"/>
 <xi:include href="ref.types.polymorphism.xml"/>
 <xi:include href="ref.types.subtyping.xml"/>
-<xi:include href="ref.types.annotation.xml"/>
+<xi:include href="ref.types.typeinfo.xml"/>
+<xi:include href="ref.types.override.xml"/>
 <xi:include href="ref.types.context.xml"/>
 
 </chapter>

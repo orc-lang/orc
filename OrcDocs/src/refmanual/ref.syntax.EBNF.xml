@@ -52,8 +52,8 @@
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.conditional">Conditional</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.lambda">Lambda</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.withdeclaration">WithDeclaration</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.annotated">AnnotatedExpression</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.asserted">AssertedExpression</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.withtypeinfo">WithTypeInformation</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.typeoverride">TypeOverride</nonterminal>
 				<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
@@ -171,15 +171,15 @@
 		  </rhs>
 		</production>
 		
-		<production xml:id="ebnf.expression.annotated">
-		  <lhs>AnnotatedExpression</lhs>
+		<production xml:id="ebnf.expression.withtypeinfo">
+		  <lhs>WithTypeInformation</lhs>
 		  <rhs>
 		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 		  </rhs>
 		</production>
 		
-		<production xml:id="ebnf.expression.asserted">
-		  <lhs>AssertedExpression</lhs>
+		<production xml:id="ebnf.expression.typeoverride">
+		  <lhs>TypeOverride</lhs>
 		  <rhs>
 		    <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>:!:</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 		  </rhs>
@@ -312,7 +312,7 @@
 				<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.cons">ConsPattern</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.call">CallPattern</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.as">AsPattern</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.annotated">AnnotatedPattern</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.pattern.withtypeinfo">PatternWithTypeInformation</nonterminal>
 				<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>)</code>
 		  </rhs>
 		</production>
@@ -381,8 +381,8 @@
 		  </rhs>
 		</production>
 		
-		<production xml:id="ebnf.pattern.annotated">
-		  <lhs>AnnotatedPattern</lhs>
+		<production xml:id="ebnf.pattern.withtypeinfo">
+		  <lhs>PatternWithTypeInformation</lhs>
 		  <rhs>
 		    <nonterminal def="#ebnf.pattern">Pattern</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal>
 		  </rhs>

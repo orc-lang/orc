@@ -21,8 +21,8 @@
 	</para>
 	
 	<para>
-	Parametric polymorphism occurs in three contexts: parametric types, definition of a
-	polymorphic function, and a call to a polymorphic function or site.
+	Parametric polymorphism occurs in three contexts: a parametric type, the definition of a
+	polymorphic function, or a call to a polymorphic function or site.
 	</para>
 	 
 	<section xml:id="ref.types.polymorphism.types">
@@ -56,7 +56,7 @@
 		
 		<para>
 			A function may be polymorphic, taking one or more type parameters. Such functions can be
-			operate generically over different types. How do we write these functions? 
+			operate generically over different types.
 			Consider the following definition of the <code>append</code> function, which appends two lists:
 			
 			<programlisting language="orc"><![CDATA[
@@ -65,8 +65,8 @@ def append([], l) = l
 def append(h::t, l) = h::append(t,l)
 ]]></programlisting>
 			
-			The function <code>append</code> has a type parameter,<replaceable>T</replaceable>, in its signature. 
-			The type<replaceable>T</replaceable> is the type of elements in the lists that we are appending. 
+			The function <code>append</code> has a type parameter <replaceable>T</replaceable> in its signature. 
+			The type <replaceable>T</replaceable> is the type of the elements in the lists being appended.
 			Notice that both argument lists must contain the same type of elements. 
 			The resulting list contains elements of that same type.
 		</para>
@@ -119,7 +119,7 @@ append([1,2,3], [4,5])
 			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
 			<listitem><para><link linkend="ref.types.subtyping.variance">Variance</link></para></listitem>
 			<listitem><para><link linkend="ref.expressions.call">Site and Function Calls</link></para></listitem>
-			<listitem><para><link linkend="ref.types.annotation.function">Function Annotation</link></para></listitem>
+			<listitem><para><link linkend="ref.types.typeinfo.function">Adding Type Information to Functions</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
 		</itemizedlist>
 		<!-- 
