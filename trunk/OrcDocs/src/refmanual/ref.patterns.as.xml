@@ -54,7 +54,7 @@ val ((ax,ay) as a, (bx,by) as b) = ((1,2),(3,4))
 [ax, ay, a] | [bx, by, b]
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 [1, 2, (1, 2)]
 [3, 4, (3, 4)]
 -}

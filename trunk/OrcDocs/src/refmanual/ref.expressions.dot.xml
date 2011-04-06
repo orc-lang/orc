@@ -110,7 +110,8 @@ val send = c.put
 val receive = c.get
 
 map(send, [1, 2, 3]) >>
-repeat(receive) >x> 
+signals(3) >>
+receive() >x> 
 Println("Received: " + x) >>
 stop
 
