@@ -174,3 +174,7 @@ div.variablelist > table > tbody > tr > td {
 .productionset .productionset {
 	border: none;
 }
+
+.productionset tbody tr td a {
+	margin-left: 0.4em;
+}
