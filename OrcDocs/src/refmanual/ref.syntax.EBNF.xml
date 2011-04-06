@@ -36,7 +36,7 @@
 		  <lhs>Expression</lhs>
 		  <rhs>
 			  <nonterminal def="#ebnf.literal">Literal</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.variable">Var</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.variable">Variable</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.stop">Stop</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.tuple">Tuple</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.list">List</nonterminal>		    
@@ -55,13 +55,6 @@
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.annotated">AnnotatedExpression</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.asserted">AssertedExpression</nonterminal>
 				<sbr/>&#x2759; <code>(</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> <code>)</code>
-		  </rhs>
-		</production>
-		
-		<production xml:id="ebnf.expression.variable">
-		  <lhs>Var</lhs>
-		  <rhs>
-		    <nonterminal def="#ebnf.variable">Variable</nonterminal>
 		  </rhs>
 		</production>
 		

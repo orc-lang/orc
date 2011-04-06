@@ -162,13 +162,17 @@ otherwise it halts silently.
 <title>Manipulating XML</title>
 
 <para>
-The library provides two tools to manipulate XML in a more convenient way than using the primitive XML sites.
+The library provides two records, xml and xattr, to manipulate XML
+nodes more conveniently than by using the primitive XML sites. Each
+record has two members, <code>apply</code> and <code>unapply</code>, 
+that are both functions. The apply function builds XML values, 
+and the unapply component is used in pattern matching.
 </para>
 
 <para>
-The library value <code>xml</code> is a record with an <code>apply</code> member and an <code>unapply</code> member,
-so it may be called or used in a call pattern. <code>xml</code> is convenient when working only with the tree structure
+<code>xml</code> is convenient when working only with the tree structure
 of XML, and not with the attributes of the element nodes.
+Note that <code>xml</code>'s apply and unapply members are not inverses of each other. 
 </para>
 
 <para>
@@ -187,18 +191,14 @@ The pattern <replaceable>p<subscript>tag</subscript></replaceable> is matched ag
 The pattern <replaceable>p<subscript>child</subscript></replaceable> is matched against each child of the element;
 it is a multimatch, so it may succeed multiple times and produces a result on each success. Additionally, when <replaceable>p<subscript>child</subscript></replaceable>
 matches a text or CDATA node rather than an element node, it is bound to the string contents of the node, rather than the node itself. 
-<!-- 
-Note that this makes <code>xml</code>'s behavior as a pattern asymmetric from its behavior as a function, 
-since the pattern matches each child individually, rather than matching the list of children. 
- -->
+
 </para>
 </listitem>
 </itemizedlist>
 </para>
 
 <para>
-The library value <code>xattr</code> is a record with an <code>apply</code> member and an <code>unapply</code> member,
-so it may be called or used in a call pattern. <code>xattr</code> is convenient when working only with the attributes
+<code>xattr</code> is convenient when working only with the attributes
 of XML element nodes, and not with the overall tree structure.
 </para>
 
