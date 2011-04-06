@@ -44,6 +44,51 @@
 		    Additionally, <replaceable>E<subscript>c</subscript></replaceable> must have type <code>Boolean</code>.
 		  </para>
 		</section>
+		
+		<section xml:id="ref.expressions.ifthenelse.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.expressions.ifthenelse.examples.binarysearch">
+		  <title>Binary Search in a Sorted Array</title>
+<programlisting language="orc-demo"><![CDATA[
+{-
+  Binary search in a sorted array.
+-}
+
+def binary_search(x,a) =
+  def searchIn(lo, hi) =
+    if (lo >= hi) then 
+      false
+    else (
+      val mid = (lo+hi) / 2
+	     val y = a(mid)?
+      if (x = y) then 
+        true
+      else if (x <: y) then
+        searchIn(lo, mid) 
+      else 
+        searchIn(mid+1, hi)
+    )
+  searchIn(0, a.length?)
+      
+val a = Array(15)
+      
+for(0, 15) >i> 
+a(i) := 2*i >> 
+stop ;
+
+binary_search(19, a) | binary_search(22, a)
+
+{-
+OUTPUT:PERMUTABLE
+true
+false
+-}
+]]></programlisting>
+		  </example>
+		  
+		  
+	  </section>
 				
 		<section xml:id="ref.expressions.ifthenelse.links">
 		  <title>Related Links</title>
