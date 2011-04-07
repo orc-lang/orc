@@ -38,7 +38,7 @@ Orc sites.  An Orc program's views of sites, however, remains uniform across the
 
 <para>
 Some sites, called <indexterm significance="preferred"><primary>class</primary></indexterm><firstterm baseform="class">classes</firstterm>, create other sites when called.
-Orc programs may import previously-defined sites and classes for use, through use of the <code><link linkend="ref.declarations.site">site</link></code> and <code><link linkend="ref.declarations.class">class</link></code> declarations.
+Orc programs may import previously-defined sites and classes for use, through use of the <code><link linkend="ref.declarations.site">import site</link></code> and <code><link linkend="ref.declarations.class">import class</link></code> declarations.
 Programs may also define classes directly in Orc code, using the <code><link linkend="ref.declarations.defclass">def class</link></code> declaration.
 </para>
 

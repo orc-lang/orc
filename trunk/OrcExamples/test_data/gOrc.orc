@@ -21,7 +21,7 @@
 val totalTokens = 1000
 
 
-class Map = "java.util.HashMap"
+import class Map = "java.util.HashMap"
 
 val wordlist = Map()
 def popList() =

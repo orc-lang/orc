@@ -70,8 +70,8 @@ the object to a String.
 
 Same as <code>Print</code>, appending a newline.
 --}
-site Print = "orc.lib.str.Print"
-site Println = "orc.lib.str.Println"
+import site Print = "orc.lib.str.Print"
+import site Println = "orc.lib.str.Println"
 
 {--
 @site Read[A](String) :: A
@@ -93,7 +93,7 @@ Example:
 | Read("(3.0, [])") -- publishes the tuple (3.0, [])
 | Read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
-site Read = "orc.lib.str.Read"
+import site Read = "orc.lib.str.Read"
 
 {--
 @site Write(Top) :: String
@@ -116,7 +116,7 @@ Example:
 | Write((3.0, [])) -- publishes "(3.0, [])"
 | Write("hi") -- publishes "\"hi\""]]></programlisting>
 --}
-site Write = "orc.lib.str.Write"
+import site Write = "orc.lib.str.Write"
 
 {--
 @def lines(String) :: List[String]

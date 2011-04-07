@@ -1,2 +1,2 @@
-site Confirm = "orc.lib.ui.Confirm"
-site OAuthProvider = "orc.lib.ui.OAuthProviderSite"
+import site Confirm = "orc.lib.ui.Confirm"
+import site OAuthProvider = "orc.lib.ui.OAuthProviderSite"

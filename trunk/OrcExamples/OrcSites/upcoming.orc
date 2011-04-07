@@ -6,7 +6,7 @@ In order to run this demo, you must have:
 -}
 
 include "date.inc"
-class Upcoming = "orc.lib.net.Upcoming"
+import class Upcoming = "orc.lib.net.Upcoming"
 
 val upcoming = Upcoming("upcoming.properties")
 val search = upcoming.eventSearch()

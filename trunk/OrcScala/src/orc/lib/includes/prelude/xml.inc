@@ -16,7 +16,7 @@ XML manipulation.
 --}
 
 {- We use Scala's Node class as the underlying type of Orc XML trees -}
-type XML = "orc.lib.xml.XMLType"
+import type XML = "orc.lib.xml.XMLType"
 
 {--
 @site ReadXML(String) :: XML  
@@ -24,14 +24,14 @@ type XML = "orc.lib.xml.XMLType"
 Parses a string representation of XML into a structured form
 that Orc can manipulate.
 --}
-site ReadXML = "orc.lib.xml.ReadXML"
+import site ReadXML = "orc.lib.xml.ReadXML"
 
 {--
 @site WriteXML(XML) :: String
 
 Serializes Orc's representation of XML to a string.
 --}
-site WriteXML = "orc.lib.xml.WriteXML"
+import site WriteXML = "orc.lib.xml.WriteXML"
 
 {--
 @site XMLElement(String, {. .}, List[XML]) :: XML  
@@ -40,7 +40,7 @@ Creates an XML element node with the given tag, attributes,
 and children. 
 This site may also be used for matching.
 --}
-site XMLElement = "orc.lib.xml.XMLElementSite"
+import site XMLElement = "orc.lib.xml.XMLElementSite"
 
 {--
 @site XMLText(String) :: XML
@@ -49,7 +49,7 @@ Creates an XML text node with the given contents.
 Encoding may occur.
 This site may also be used for matching.
 --}
-site XMLText = "orc.lib.xml.XMLTextSite"
+import site XMLText = "orc.lib.xml.XMLTextSite"
 
 {--
 @site XMLCData(String) :: XML
@@ -58,7 +58,7 @@ Creates an XML text node with the given contents.
 Contents will not be encoded.
 This site may also be used for matching.
 --}
-site XMLCData = "orc.lib.xml.XMLCDataSite"
+import site XMLCData = "orc.lib.xml.XMLCDataSite"
 
 {--
 @site IsXML(Top) :: XML
@@ -66,7 +66,7 @@ site XMLCData = "orc.lib.xml.XMLCDataSite"
 Acts as the identity function for any XML node,
 and halts silently for any non-XML argument.
 --}
-site IsXML = "orc.lib.xml.IsXMLSite"
+import site IsXML = "orc.lib.xml.IsXMLSite"
 
 
 {--

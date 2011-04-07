@@ -216,7 +216,7 @@
 		<production xml:id="ebnf.declaration.defclass">
 		  <lhs>DeclareDefclass</lhs>
 		  <rhs>
-		    <code>def</code> <code>class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.declaration">Declaration</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		    <code>def class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.declaration">Declaration</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
 		  </rhs>
 		</production>
 		
@@ -237,14 +237,14 @@
 		<production xml:id="ebnf.declaration.site">
 		  <lhs>DeclareSite</lhs>
 		  <rhs>
-		    <code>site</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+		    <code>import site</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
 		  </rhs>
 		</production>
 		
 		<production xml:id="ebnf.declaration.class">
 		  <lhs>DeclareClass</lhs>
 		  <rhs>
-		    <code>class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+		    <code>import class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
 		  </rhs>
 		</production>
 		
@@ -274,7 +274,7 @@
 		<production xml:id="ebnf.declaration.type.import">
 		  <lhs>DeclareTypeImport</lhs>
 		  <rhs>
-		    <code>type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
+		    <code>import type</code> <nonterminal def="#ebnf.typevariable">TypeVariable</nonterminal> <code>=</code> <nonterminal def="#ebnf.classname">ClassName</nonterminal>
 		  </rhs>
 		</production>
 		

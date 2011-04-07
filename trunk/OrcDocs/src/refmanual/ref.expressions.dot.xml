@@ -132,7 +132,7 @@ Received: 3
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.defclass"><code>def class</code>: Define Site in Orc</link></para></listitem>
-			<listitem><para><link linkend="ref.declarations.class"><code>class</code>:  Import Class from Java</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.class"><code>import class</code>:  Import Class from Java</link></para></listitem>
 			<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
 		</itemizedlist>
 		<!-- 

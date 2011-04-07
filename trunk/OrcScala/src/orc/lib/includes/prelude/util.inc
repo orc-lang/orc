@@ -25,20 +25,20 @@ Return a pseudorandom, uniformly distributed Integer value
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Random = "orc.lib.util.Random"
+import site Random = "orc.lib.util.Random"
 
 {--
 @site URandom() :: Number
 Returns a pseudorandom, uniformly distributed Double value
 between 0.0 (inclusive) and 1.0 (exclusive).
 --}
-site URandom = "orc.lib.util.URandom"
+import site URandom = "orc.lib.util.URandom"
 
 {--
 @site UUID() :: String
 Return a random (type 4) UUID represented as a string.
 --}
-site UUID = "orc.lib.util.UUID"
+import site UUID = "orc.lib.util.UUID"
 
 {--
 @site Prompt(String) :: String
@@ -65,7 +65,7 @@ to its appropriate data type, use the library function
 -- Prompts the user to enter an integer, then parses the response.
 Prompt("Enter an integer:") >r> Read(r)]]></programlisting>
 --}
-site Prompt = "orc.lib.util.Prompt"
+import site Prompt = "orc.lib.util.Prompt"
 
 {--
 @def signals(Integer) :: Signal

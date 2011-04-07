@@ -5,7 +5,7 @@
  - Created by jthywiss on Dec 30, 2010 11:10:21 AM
  -}
 
-site JSON = "orc.lib.web.ReadJSON"
+import site JSON = "orc.lib.web.ReadJSON"
 
   "ECMAScript 5 Conformance Suite 15.12.1.1-0-9 " + (if
     JSON("\t\r \n{\t\r \n" +

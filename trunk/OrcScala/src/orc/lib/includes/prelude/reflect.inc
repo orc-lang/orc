@@ -37,4 +37,4 @@ val Foo = MakeSite(foo)]]></programlisting>
 
 The typing of MakeSite enforces the additional condition that the type A is a function type.
 --}
-site MakeSite = "orc.lib.builtin.MakeSite"
+import site MakeSite = "orc.lib.builtin.MakeSite"

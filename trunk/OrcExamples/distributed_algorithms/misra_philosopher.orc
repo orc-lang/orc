@@ -6,7 +6,7 @@ K. M. Chandy and J. Misra.
 
 -- Use a Scala set implementation.
 -- Operations on this set are _not_ synchronized.
-class ScalaSet = "scala.collection.mutable.HashSet"
+import class ScalaSet = "scala.collection.mutable.HashSet"
 
 {-
 Make a set initialized to contain

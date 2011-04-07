@@ -12,8 +12,8 @@ include "net.inc"
 include "ui.inc"
 
 -- imports
-site MySpace = "orc.lib.music_calendar.MySpace"
-site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
+import site MySpace = "orc.lib.music_calendar.MySpace"
+import site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
 
 -- declarations
 val oauth = OAuthProvider("oauth.properties")

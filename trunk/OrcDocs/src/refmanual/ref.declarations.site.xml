@@ -13,7 +13,7 @@
 <!-- Site -->
 <section xml:id="ref.declarations.site" xmlns="http://docbook.org/ns/docbook">
 
-	<title><code>site</code>: Import Site</title>
+	<title><code>import site</code>: Import Site</title>
 
 	<para>
 <indexterm><primary>import site</primary></indexterm>
@@ -81,7 +81,7 @@ If no class is found on the site classpath, or the site classpath isn't configur
  - the orc.values.site.Site trait.
  -}
 
-site MySite = "com.example.MySite"
+import site MySite = "com.example.MySite"
 
 MySite()
 ]]></programlisting>

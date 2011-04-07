@@ -61,7 +61,7 @@
 						Any token that otherwise follows the rules for identifiers, but matches an entry in the following list is not treated as an identifier, but as a keyword instead. 
 					</para>
 					<para>
-						<code>true false signal stop null lambda if then else as _ val def type site class include</code>
+						<code>as def else if import include lambda signal stop then type val true false null _</code>
 					</para>
 					<para>
 						Note that <code>_</code> is a special case: Identifiers cannot start with an underscore, but <code>_</code> scans as a keyword nonetheless. 

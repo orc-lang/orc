@@ -109,7 +109,7 @@ extends StandardTokenParsers
 with EnhancedErrorMessages
 with CustomParserCombinators
 {
-  import lexical.{Keyword, FloatingPointLit}
+  import lexical.{Keyword, Identifier, FloatingPointLit}
 
   override val lexical = new OrcLexical()
 
@@ -194,18 +194,6 @@ with CustomParserCombinators
 
 /* Literals */
   
-  val parseClassname: Parser[String] = (
-        stringLit
-        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
-      | rep1sep(ident, ".") ^^ { _.mkString(".") }
-  )
-
-  val parseStrictClassname: Parser[String] = (
-        stringLit
-        // For backwards compatibility, allow quotes to be omitted, if class name had only Orc-legal identifier characters
-      | ident ~ "." ~ rep1sep(ident, ".") ^^ { case x ~ "." ~ xs => x + "." + xs.mkString(".") }
-  )
-
   val floatLit: Parser[String] =
     elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
 
@@ -218,6 +206,8 @@ with CustomParserCombinators
       | floatLit ^^ { BigDecimal(_) }
       | "null" ^^^ null
   )
+
+  val parseSiteLocation = stringLit
 
   
   
@@ -388,12 +378,12 @@ with CustomParserCombinators
   
   
 /* Declarations */
-  
+
   val parseDefDeclaration: Parser[DefDeclaration] = (
         ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> Def
       
-      | ("class" ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+      | (Identifier("class") ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> DefClass
       
       | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType 
@@ -406,16 +396,13 @@ with CustomParserCombinators
 
       | "def" ~> parseDefDeclaration
 
-      | "site" ~> ident ~ ("=" ~> parseClassname)
-      -> SiteImport
+      | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
 
-      | "class" ~> ident ~ ("=" ~> parseClassname)
-      -> ClassImport
+      | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
 
       | ("include" ~> stringLit).into(performInclude)
 
-      | "type" ~> parseTypeVariable ~ ("=" ~> parseStrictClassname)
-      -> TypeImport
+      | "import" ~> "type" ~> ident ~ ("=" ~> parseSiteLocation) -> TypeImport
 
       | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))

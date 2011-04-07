@@ -1,4 +1,4 @@
-class canvas = "orc.lib.simanim.BarberShop"
+import class canvas = "orc.lib.simanim.BarberShop"
 {----------------------------------------------------------------
 	Non-blocking channel.  Sets up a 'try' functionality that returns
 	a pair.  Second value of the pair indicates success or failure of

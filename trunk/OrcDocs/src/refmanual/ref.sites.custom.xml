@@ -16,7 +16,7 @@
 <para>
 For services beyond those available as library sites, Java sites, and Web service sites,
 Orc programs may call sites developed specifically as Orc sites.
-The calling Orc program names the site with a <code>site</code> declaration.
+The calling Orc program names the site with a <code>import site</code> declaration.
 This declaration causes the Orc engine to load the Java class of the given name from
 the Orc site classpath or JVM classpath.
 Calls to this site are dispatched via Orc's site interface,
@@ -106,7 +106,7 @@ For a detailed description of the Orc-site interface, refer to the <link xlink:h
 <title>Related Links</title>
 		<itemizedlist>
 			<title>Related Reference Topics</title>
-			<listitem><para><link linkend="ref.declarations.site"><code>site</code> declaration</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.site"><code>import site</code> declaration</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>

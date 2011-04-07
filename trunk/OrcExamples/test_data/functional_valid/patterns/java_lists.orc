@@ -13,7 +13,7 @@ OUTPUT:PERMUTABLE
 3
 3
 -}
-class LinkedList = "java.util.LinkedList"
+import class LinkedList = "java.util.LinkedList"
 val l = LinkedList[Integer]()
 
 l.add(1) >>

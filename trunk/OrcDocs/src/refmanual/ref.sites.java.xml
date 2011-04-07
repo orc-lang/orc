@@ -17,7 +17,7 @@
 Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
 which in this implementation is the Java virtual machine (JVM).
 In addition to calling Orc sites <foreignphrase>per se</foreignphrase>, Orc programs can access
-arbitrary <indexterm><primary>Java</primary></indexterm>Java classes using the <code><indexterm><primary>class</primary></indexterm>class</code> declaration.
+arbitrary <indexterm><primary>Java</primary></indexterm>Java classes using the <indexterm><primary>class</primary></indexterm><code>import class</code> declaration.
 Values in Java fields, values returned from Java methods, and values returned from Java constructors
 may be used in Orc programs just as any other Orc value.
 </para>
@@ -27,7 +27,7 @@ may be used in Orc programs just as any other Orc value.
 <title>Java classes</title>
 
 <para>
-Java classes are named in an Orc program using the <code>class</code> declaration.
+Java classes are named in an Orc program using the <code>import class</code> declaration.
 In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
 This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
 The class proxy also presents the class static methods and class static fields in the same manner as
@@ -176,7 +176,7 @@ The Java <code language="java">length</code> pseudo-field of arrays is available
 <title>Construct a Java object, and invoke methods</title>
 <programlisting language="orc-demo"><![CDATA[
 {- Name a Java class and use it to invoke object methods -}
-class URL = "java.net.URL"
+import class URL = "java.net.URL"
 
 {- Create an instance-}
 val googleUrl = URL("http://www.google.com/")
@@ -196,8 +196,8 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Access Java's String and Boolean classes -}
 
-class JavaBoolean = "java.lang.Boolean"
-class JavaString = "java.lang.String"
+import class JavaBoolean = "java.lang.Boolean"
+import class JavaString = "java.lang.String"
 
 -- Static field access
 JavaBoolean.TRUE? |
@@ -226,7 +226,7 @@ true
 <programlisting language="orc-demo"><![CDATA[
 {- Constructor invocation -} 
 
-class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
+import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 
 -- No-arg constructor invocation
 FieldTestClass() >testInstance>
@@ -249,7 +249,7 @@ OUTPUT:
 <programlisting language="orc-demo"><![CDATA[
 {- Demonstrate an Orc-to-Java integer conversion of an out-of-range value -}
 
-class JavaInteger = "java.lang.Integer"
+import class JavaInteger = "java.lang.Integer"
 
 val x = 1230000000000000000456789
 
@@ -269,14 +269,14 @@ OUTPUT:
 <title>Related Links</title>
 		<itemizedlist>
 			<title>Related Reference Topics</title>
-			<listitem><para><link linkend="ref.declarations.class"><code>class</code> declaration</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.class"><code>import class</code> declaration</link></para></listitem>
 			<listitem><para><link linkend="ref.data.external">External data values</link></para></listitem>
 			<listitem><para><link linkend="ref.sites.custom">Custom sites</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.class.type">Interacting with Java Types</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.class"><code>class</code> declaration</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.class"><code>import class</code> declaration</olink></para></listitem>
 			<listitem><para><olink targetdoc="userguide" targetptr="section.services.orcvalues">Orc values in Java</olink></para></listitem>
 			<listitem><para><olink targetdoc="userguide" targetptr="section.services.scalavalues">Java Values in Orc</olink></para></listitem>
 		</itemizedlist>

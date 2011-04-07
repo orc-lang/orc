@@ -54,8 +54,8 @@
 	  <para>
 			A <indexterm significance="preferred"><primary>type import</primary></indexterm><firstterm>type import</firstterm> gives a name to a type described by some external service.
 			This allows new types to be added to Orc, in much the same way that
-			the <code>site</code> declaration allows new sites to be added to Orc.
-			Type imports are often used in conjunction with the <link linkend="ref.declarations.site"><code>site</code> declaration</link>,
+			the <code>import site</code> declaration allows new sites to be added to Orc.
+			Type imports are often used in conjunction with the <link linkend="ref.declarations.site"><code>import site</code> declaration</link>,
 			to give a name to the type of values produced by the site.
 	  </para>
 	  
@@ -101,8 +101,8 @@ NONRUNNABLE
 <programlisting language="orc"><![CDATA[
 {- Import the Cell type of write-once cells, and import Java's URI type -}
 
-type Cell = orc.lib.state.types.CellType
-type URI = java.net.URI
+import type Cell = "orc.lib.state.types.CellType"
+import type URI = "java.net.URI"
 
 {-
 NONRUNNABLE

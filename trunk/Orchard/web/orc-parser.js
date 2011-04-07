@@ -161,10 +161,9 @@ function readWord(source, _, ch1) {
 	case "true": case "false": case "null":
 		return { type:word, content:word, style:"literal" };
 	// keywords
-	case "val": case "def": case "as": case "include": case "type":
-	case "site": case "class": case "stop":
-	case "if": case "then": case "else":
-	case "signal": case "lambda": case "_":
+	case "as": case "def": case "else": case "if": case "import":
+	case "include": case "lambda": case "signal": case "stop":
+	case "then": case "type": case "val": case "_":
 		return { type:word, content:word, style:"keyword" };
 	default:
 		return { type:"variable", content:word, style:"variable" };

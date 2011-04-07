@@ -26,13 +26,13 @@ the <link linkend="ref.expressions.operators">Operators</link> article.
 {-
 Basic types
 -}
-type Top = "orc.types.Top"
-type Bot = "orc.types.Bot"
-type String = "orc.types.StringType"
-type Number = "orc.types.NumberType"
-type Boolean = "orc.types.BooleanType"
-type Integer = "orc.types.IntegerType"
-type Signal = "orc.types.SignalType"
+import type Top = "orc.types.Top"
+import type Bot = "orc.types.Bot"
+import type String = "orc.types.StringType"
+import type Number = "orc.types.NumberType"
+import type Boolean = "orc.types.BooleanType"
+import type Integer = "orc.types.IntegerType"
+import type Signal = "orc.types.SignalType"
 
 {--
 @site Let() :: Signal
@@ -51,7 +51,7 @@ When applied to a single argument, returns that argument (behaving as the identi
 @site Let(A, ...) :: (A, ...)
 When applied to two or more arguments, returns the arguments as a tuple.
 --}
-site Let = "orc.lib.builtin.Let"
+import site Let = "orc.lib.builtin.Let"
 
 {--
 @site Ift(Boolean) :: Signal
@@ -70,7 +70,7 @@ Example:
 | Ift(true) >> "Always publishes"]]></programlisting>
 
 --}
-site Ift = "orc.lib.builtin.Ift"
+import site Ift = "orc.lib.builtin.Ift"
 
 {--
 @site Iff(Boolean) :: Signal
@@ -89,7 +89,7 @@ Example:
 | Iff(true) >> "Never publishes"]]></programlisting>
 
 --}
-site Iff = "orc.lib.builtin.Iff"
+import site Iff = "orc.lib.builtin.Iff"
 
 
 {--
@@ -108,20 +108,20 @@ def assert(b) =
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
-site Error = "orc.lib.util.Error"
+import site Error = "orc.lib.util.Error"
 
 
 {--
 @site (+)(Number, Number) :: Number
 <code>a+b</code> returns the sum of <code>a</code> and <code>b</code>.
 --}
-site (+) = "orc.lib.math.Add"
+import site (+) = "orc.lib.math.Add"
 
 {--
 @site (-)(Number, Number) :: Number
 <code>a-b</code> returns the value of <code>a</code> minus the value of <code>b</code>.
 --}
-site (-) = "orc.lib.math.Sub"
+import site (-) = "orc.lib.math.Sub"
 
 {--
 @site (0-)(Number) :: Number
@@ -129,13 +129,13 @@ Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
 zero, i.e. <code>(-a)</code>
 --}
-site (0-) = "orc.lib.math.UMinus"
+import site (0-) = "orc.lib.math.UMinus"
 
 {--
 @site (*)(Number, Number) :: Number
 <code>a*b</code> returns the product of <code>a</code> and <code>b</code>.
 --}
-site (*) = "orc.lib.math.Mult"
+import site (*) = "orc.lib.math.Mult"
 
 {--
 @site (**)(Number, Number) :: Number
@@ -143,7 +143,7 @@ site (*) = "orc.lib.math.Mult"
 <inlineequation><mathphrase>a<superscript>b</superscript></mathphrase></inlineequation>,
 i.e. <code>a</code> raised to the <code>b</code>th power.
 --}
-site (**) = "orc.lib.math.Exponent"
+import site (**) = "orc.lib.math.Exponent"
 
 {--
 @site (/)(Number, Number) :: Number
@@ -157,7 +157,7 @@ Example:
   7/3   -- publishes 2
 | 7/3.0 -- publishes 2.333...]]></programlisting>
 --}
-site (/) = "orc.lib.math.Div"
+import site (/) = "orc.lib.math.Div"
 
 {--
 @site (%)(Number, Number) :: Number
@@ -166,31 +166,31 @@ and <code>b</code> have integral types, then the remainder is given by
 the expression <code>a - (a/b)*b</code>. For a full description, see the
 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.
 --}
-site (%) = "orc.lib.math.Mod"
+import site (%) = "orc.lib.math.Mod"
 
 {--
 @site (<:)(Top, Top) :: Boolean
 <code>a &lt;: b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
-site (<:) = "orc.lib.comp.Less"
+import site (<:) = "orc.lib.comp.Less"
 
 {--
 @site (<=)(Top, Top) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
-site (<=) = "orc.lib.comp.Leq"
+import site (<=) = "orc.lib.comp.Leq"
 
 {--
 @site (:>)(Top, Top) :: Boolean
 <code>a :> b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
-site (:>) = "orc.lib.comp.Greater"
+import site (:>) = "orc.lib.comp.Greater"
 
 {--
 @site (>=)(Top, Top) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
-site (>=) = "orc.lib.comp.Greq"
+import site (>=) = "orc.lib.comp.Greq"
 
 {--
 @site (=)(Top, Top) :: Boolean
@@ -209,19 +209,19 @@ Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
-site (=) = "orc.lib.builtin.Eq"
+import site (=) = "orc.lib.builtin.Eq"
 
 {--
 @site (/=)(Top, Top) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
-site (/=) = "orc.lib.comp.Inequal"
+import site (/=) = "orc.lib.comp.Inequal"
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
-site (~) = "orc.lib.bool.Not"
+import site (~) = "orc.lib.bool.Not"
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
@@ -229,7 +229,7 @@ Return the logical conjunction of the arguments. This is not a short-circuiting
 operator; both arguments must publish before the result is
 computed.
 --}
-site (&&) = "orc.lib.bool.And"
+import site (&&) = "orc.lib.bool.And"
 
 {--
 @site (||)(Boolean, Boolean) :: Boolean
@@ -237,7 +237,7 @@ Return the logical disjunction of the arguments. This is not a short-circuiting
 operator; both arguments must publish before the result is
 computed.
 --}
-site (||) = "orc.lib.bool.Or"
+import site (||) = "orc.lib.bool.Or"
 
 {--
 @site (:)[A](A, List[A]) :: List[A]
@@ -250,7 +250,7 @@ Example:
 -- Publishes: (3, [4, 5])
 3:4:5:[] >x:xs> (x,xs)]]></programlisting>
 --}
-site (:) = "orc.lib.builtin.structured.ConsConstructor"
+import site (:) = "orc.lib.builtin.structured.ConsConstructor"
 
 {--
 @def abs(Number) :: Number
@@ -300,14 +300,14 @@ def max(x,y) = if x :> y then x else y
 Return the greatest integer less than
 or equal to this number.
 --}
-site Floor = "orc.lib.math.Floor"
+import site Floor = "orc.lib.math.Floor"
 
 {--
 @site Ceil(Number) :: Integer
 Return the least integer greater than
 or equal to this number.
 --}
-site Ceil = "orc.lib.math.Ceil"
+import site Ceil = "orc.lib.math.Ceil"
 
 {--
 @def sqrt(Number) :: Integer

@@ -21,7 +21,7 @@ a sequence of declarations which is implicitly included in all Orc programs.
 
 <para>
 Orc programs are expected to rely on the host language and environment for all but the most essential sites.
-For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code>class</code> declarations.
+For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code>import class</code> declarations.
 Therefore, the Orc standard library aims only to provide convenience for the most common Orc idioms, not the complete set of features needed for general-purpose programming.
 </para>
 

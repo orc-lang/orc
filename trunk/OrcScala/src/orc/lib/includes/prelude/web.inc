@@ -29,7 +29,7 @@ Example:
 Browse("http://www.google.com")
 ]]></programlisting>
 --}
-site Browse = "orc.lib.web.Browse"
+import site Browse = "orc.lib.web.Browse"
 
 {--
 The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
@@ -66,7 +66,7 @@ Takes a string S and a query record Q. Maps Q to a URL query string QS by transl
 if necessary, and then behaves as HTTP(S+QS).
 
 --} 
-site HTTP = "orc.lib.web.HTTP"
+import site HTTP = "orc.lib.web.HTTP"
 
 {--
 @site ReadJSON(String) :: Top 
@@ -82,7 +82,7 @@ ReadJSON and WriteJSON are mutual inverses.
 If <replaceable>S</replaceable> is a string representation of a JSON value, then <code>WriteJSON(ReadJSON(</code><replaceable>S</replaceable><code>))</code> = <replaceable>S</replaceable>, modulo whitespace and object member ordering.
 
 --}
-site ReadJSON = "orc.lib.web.ReadJSON"
+import site ReadJSON = "orc.lib.web.ReadJSON"
 
 {-- 
 @site WriteJSON(Top) :: String 
@@ -98,5 +98,5 @@ WriteJSON and ReadJSON are mutual inverses.
 If <replaceable>V</replaceable> is an Orc representation of a JSON value, then <code>ReadJSON(WriteJSON(</code><replaceable>V</replaceable><code>))</code> = <replaceable>V</replaceable>.
 
 --}
-site WriteJSON = "orc.lib.web.WriteJSON"
+import site WriteJSON = "orc.lib.web.WriteJSON"
 

@@ -1,4 +1,4 @@
-site Webservice = "orc.lib.net.Webservice"
+import site Webservice = "orc.lib.net.Webservice"
 {-
 Find documentation of this service at:
 http://www.xmethods.net/ve2/WSDLRPCView.po?

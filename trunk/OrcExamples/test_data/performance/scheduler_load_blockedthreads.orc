@@ -5,7 +5,7 @@
  - Created by jthywiss on Mar 31, 2011 8:30:17 PM
  -}
 
-class Thread = "java.lang.Thread"
+import class Thread = "java.lang.Thread"
 
 def sleep(x) = Thread.currentThread().sleep(x)
 
