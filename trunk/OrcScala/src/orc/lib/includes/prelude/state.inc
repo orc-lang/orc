@@ -539,7 +539,7 @@ a(3)]]></programlisting>
 
 @implementation
 --}
-def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
+def Table[A](Integer, lambda (Integer) :: A) :: (lambda(Integer) :: A)
 def Table(n, f) =
   val a = Array[A](n) :: Array[A]
   def fill(Integer, lambda (Integer) :: A) :: Signal

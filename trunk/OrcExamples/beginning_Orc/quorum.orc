@@ -17,7 +17,7 @@ def quorum(n, sites) =
   firstN(n, c) | each(sites) >s> c.put(s()) >> stop
   
 {- Demo/Test -}
-def example(n :: Integer)() = Rwait(n) >> n
+def example(n :: Integer) = lambda() = Rwait(n) >> n
 quorum(3, [example(0), example(10), example(20), example(30), example(40)])
 
 {-

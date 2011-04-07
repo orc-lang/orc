@@ -28,7 +28,7 @@ def balance(in, out, ps) =
 val in = Channel[inType]()
 val out = Channel[outType]()
 def compute(Integer) :: siteType
-def compute(n)(x) = Println("Site " + n) >> x*x
+def compute(n) = lambda(x) = Println("Site " + n) >> x*x
 
 
 
