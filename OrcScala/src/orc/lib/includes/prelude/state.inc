@@ -16,7 +16,7 @@ General-purpose supplemental data structures.
 --}
 
 -- Make the List type constructor available
-type List = "orc.lib.builtin.structured.ListType"
+import type List = "orc.lib.builtin.structured.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
@@ -36,9 +36,9 @@ An optional value which is not available.
 This site may also be used in a pattern.
 
 --}
-type Option = "orc.lib.builtin.structured.OptionType"
-site Some = "orc.lib.builtin.structured.SomeSite"
-site None = "orc.lib.builtin.structured.NoneSite"
+import type Option = "orc.lib.builtin.structured.OptionType"
+import site Some = "orc.lib.builtin.structured.SomeSite"
+import site None = "orc.lib.builtin.structured.NoneSite"
 
 
 {--
@@ -79,8 +79,8 @@ Read a value from the cell. If the cell does not yet have a value, <link linkend
 
 Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Cell = "orc.lib.state.Cell"
-type Cell = "orc.lib.state.types.CellType"
+import site Cell = "orc.lib.state.Cell"
+import type Cell = "orc.lib.state.types.CellType"
 
 
 {--
@@ -109,8 +109,8 @@ Read the value of the ref. If the ref does not yet have a value, <link linkend="
 Write a value to the ref.
 
 --}
-site Ref = orc.lib.state.Ref
-type Ref = orc.lib.state.types.RefType
+import site Ref = "orc.lib.state.Ref"
+import type Ref = "orc.lib.state.types.RefType"
 
 {--
 @def (?)[A](Ref[A]) :: A
@@ -205,8 +205,8 @@ Otherwise, <link linkend="ref.concepts.states.block">block</link> until some cal
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
 Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Semaphore = "orc.lib.state.Semaphore"
-type Semaphore = "orc.lib.state.types.SemaphoreType"
+import site Semaphore = "orc.lib.state.Semaphore"
+import type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
 @site Channel[A]() :: Channel[A]
@@ -298,8 +298,8 @@ Get all of the items currently in the channel, emptying the channel and returnin
 a list of the items in the order they were added. If there are no items in the
 channel, return an empty list.
 --}
-site Channel = "orc.lib.state.Channel"
-type Channel = "orc.lib.state.types.ChannelType"
+import site Channel = "orc.lib.state.Channel"
+import type Channel = "orc.lib.state.types.ChannelType"
 
 
 {--
@@ -426,8 +426,8 @@ Get all of the items currently in the channel or waiting to be added, emptying
 the channel and returning a list of the items in the order they were added. If
 there are no items in the channel or waiting to be added, return an empty list.
 --}
-site BoundedChannel = orc.lib.state.BoundedChannel
-type BoundedChannel = orc.lib.state.types.BoundedChannelType
+import site BoundedChannel = "orc.lib.state.BoundedChannel"
+import type BoundedChannel = "orc.lib.state.types.BoundedChannelType"
 
 
 {--
@@ -496,14 +496,14 @@ Set the element of the array given by the index, counting from 0.
 
 Return the size of the array.
 --}
-site Array = "orc.lib.state.JavaArray"
-type Array = "orc.lib.state.types.ArrayType"
+import site Array = "orc.lib.state.JavaArray"
+import type Array = "orc.lib.state.types.ArrayType"
 
 --TODO: define former array methods: get set slice fill length
 
 def slice[A](Array[A], Integer, Integer) :: Top
 def slice(xs, from, until) =
-  class ScalaPredef = "scala.Predef"
+  import class ScalaPredef = "scala.Predef"
   ScalaPredef.refArrayOps[A](xs).slice(from, until)
 
 
@@ -596,8 +596,8 @@ Example:
 val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
-site Counter = "orc.lib.state.Counter"
-type Counter = "orc.lib.state.types.CounterType"
+import site Counter = "orc.lib.state.Counter"
+import type Counter = "orc.lib.state.types.CounterType"
 
 {--
 @site Dictionary() :: Dictionary
@@ -648,7 +648,7 @@ For readers familiar with the C language, this is the same reason you must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
-site Dictionary = orc.lib.state.Dictionary
+import site Dictionary = "orc.lib.state.Dictionary"
 
 {--
 @def fst[A,B]((A,B)) :: A
@@ -695,7 +695,7 @@ Return true if the given interval is contiguous with this one
 Return the union of this interval with another. <link linkend="ref.concepts.states.halt">Halts</link> with an error if
 the two intervals are not contiguous.
 --}
-class Interval = "orc.lib.state.Interval"
+import class Interval = "orc.lib.state.Interval"
 
 {--
 @site Intervals[A]() :: Intervals[A]
@@ -716,4 +716,4 @@ Return the union of this set of intervals with the given interval.
 This method is most efficient when the given interval is before
 most of the intervals in the set.
 --}
-class Intervals = "orc.lib.state.Intervals"
+import class Intervals = "orc.lib.state.Intervals"

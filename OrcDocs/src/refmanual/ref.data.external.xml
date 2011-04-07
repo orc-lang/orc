@@ -22,7 +22,7 @@ For example, Orc programs running on a Java virtual machine (JVM) can <link link
   <title>Type</title>
   <para>
     External values usually have types that cannot be represented using Orc's primitive types or structured types.
-    A <link linkend="ref.declarations.type.import"><code>type</code> declaration</link> may be used to import such a type into the Orc type system.
+    A <link linkend="ref.declarations.type.import"><code>import type</code> declaration</link> may be used to import such a type into the Orc type system.
   </para>
 </section>
 
@@ -38,7 +38,7 @@ For example, Orc programs running on a Java virtual machine (JVM) can <link link
    set bits 2 and 4 in the BitSet instance
 -}
 
-class BitSet = "java.util.BitSet"
+import class BitSet = "java.util.BitSet"
 
 BitSet() >b> b.set(2) >> b.set(4) >> b.toString()
 
@@ -56,7 +56,7 @@ OUTPUT:
    and then put and get some entries
 -}
 
-class HashMap = "java.util.HashMap"
+import class HashMap = "java.util.HashMap"
 
 HashMap[String, String]() >m> m.put("Mickey", "Minnie") >> 
 m.put("Donald", "Daisy") >> m.get("Mickey")

@@ -4,9 +4,9 @@ In order to run this demo, you must have:
 2. in the classpath, /google.properties (see google.sample.properties)
 -}
 
-site Geocoder = "orc.lib.net.GoogleGeocoder"
-class LocalDate = "org.joda.time.LocalDate"
-class NOAAWeather = "orc.lib.net.NOAAWeather"
+import site Geocoder = "orc.lib.net.GoogleGeocoder"
+import class LocalDate = "org.joda.time.LocalDate"
+import class NOAAWeather = "orc.lib.net.NOAAWeather"
 
 val date = LocalDate().plusDays(1)
 

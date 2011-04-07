@@ -1,4 +1,4 @@
-class canvas = "orc.lib.simanim.MonkeyCross"
+import class canvas = "orc.lib.simanim.MonkeyCross"
 val sideLock = Channel()
 val disp = canvas(10)
 

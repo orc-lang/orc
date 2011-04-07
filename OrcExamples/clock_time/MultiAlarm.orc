@@ -44,7 +44,7 @@ def class Multialarm() =
     def cancel() = run := false
   stop
 
- class Map = "java.util.HashMap"
+ import class Map = "java.util.HashMap"
 
  val alarmlist = Map()
 

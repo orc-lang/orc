@@ -1,6 +1,6 @@
-class FileInputStream = "java.io.FileInputStream"
-class InputStreamReader = "java.io.InputStreamReader"
-class StringBuilder = "java.lang.StringBuilder"
+import class FileInputStream = "java.io.FileInputStream"
+import class InputStreamReader = "java.io.InputStreamReader"
+import class StringBuilder = "java.lang.StringBuilder"
 
 def GetContent(InputStreamReader) :: String
 def GetContent(in) =

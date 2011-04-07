@@ -5,9 +5,9 @@
  - Created by jthywiss on Jul 14, 2010 8:48:56 PM
  -}
 
-class JavaBoolean = "java.lang.Boolean"
-class JavaString = "java.lang.String"
-class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
+import class JavaBoolean = "java.lang.Boolean"
+import class JavaString = "java.lang.String"
+import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 
 -- 1. Static field access
 (if JavaBoolean.TRUE? then "1 pass" else "1 FAIL") |

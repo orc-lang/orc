@@ -4,7 +4,7 @@ Originally by Joseph Cooper,
 minor modifications by Adrian Quark.
 -}
 
-class Canvas = "orc.lib.simanim.Philosopher"
+import class Canvas = "orc.lib.simanim.Philosopher"
 
 val numberOfPhilosophers = 10
 

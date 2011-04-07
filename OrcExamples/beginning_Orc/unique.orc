@@ -5,7 +5,7 @@ repeated values (so each value published is unique).
 Hint: use a Set to record the values seen in the
 channel.
 --}
-class Set = "scala.collection.mutable.HashSet"
+import class Set = "scala.collection.mutable.HashSet"
 
 def unique[X](Channel[X]) :: X
 def unique(c) =

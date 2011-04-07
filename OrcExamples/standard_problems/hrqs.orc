@@ -15,7 +15,7 @@ def qs(a) =
  if length(a) :> 1 then (append(le, g) <le< append(qs(less), equal) <g< qs(greater))
  else a
 
-class Random = "java.util.Random"
+import class Random = "java.util.Random"
 val random = Random()
 def makeNRandomInt(Integer) :: List[Integer]
 def makeNRandomInt(0) = []

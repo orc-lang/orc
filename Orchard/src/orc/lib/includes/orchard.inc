@@ -1,1 +1,1 @@
-site OAuthProvider = "orc.lib.orchard.OAuthProviderSite"
+import site OAuthProvider = "orc.lib.orchard.OAuthProviderSite"

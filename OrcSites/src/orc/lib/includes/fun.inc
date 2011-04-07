@@ -1,1 +1,1 @@
-site Eliza = "orc.lib.fun.Eliza"
+import site Eliza = "orc.lib.fun.Eliza"

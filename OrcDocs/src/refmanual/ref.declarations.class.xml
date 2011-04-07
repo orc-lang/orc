@@ -12,10 +12,7 @@
 
 <!-- Class from Java -->
 <section xml:id="ref.declarations.class" xmlns="http://docbook.org/ns/docbook">
-	<title><code>class</code>:  Import Class from Java</title>
-
-	<!-- Index pointers for unwritten terms -->
-	<indexterm><primary>import class</primary></indexterm>
+	<title><code>import class</code>:  Import Class from Java</title>
 
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
@@ -24,7 +21,7 @@ In this implementation of Orc, this platform is the Java Runtime Environment (JR
 	</para>
 
 	<para>
-The declaration <indexterm><primary>class</primary></indexterm><code>class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
+The declaration <indexterm><primary>class</primary></indexterm><code>import class </code><replaceable>S</replaceable><code> = "</code><replaceable>J</replaceable><code>"</code>
 binds the variable <replaceable>S</replaceable> to a site representing the Java class <replaceable>J</replaceable>.
 Calls to <replaceable>S</replaceable> invoke the corresponding <indexterm><primary>constructor</primary></indexterm>constructor of the Java class <replaceable>J</replaceable>.
 The created class instance is published from the site call.
@@ -58,13 +55,13 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 	  </para>
 	  
 	  <para>
-	  In addition to declaring a site, the <code>class</code> declaration also declares a type with the same name.
-	  It is the Orc type for instances of that Java class. For example, the declaration <code language="orc">class File = java.io.File</code>
+	  In addition to declaring a site, the <code>import class</code> declaration also declares a type with the same name.
+	  It is the Orc type for instances of that Java class. For example, the declaration <code language="orc">import class File = java.io.File</code>
 	  declares a type <code>File</code>, which is the type of all instances of <code language="java">java.io.File</code>.
 		</para>	  
 		
 		<para>
-		If a <code>class</code> declaration binds a generic Java class, then the corresponding Orc type is instead a type operator,
+		If a <code>import class</code> declaration binds a generic Java class, then the corresponding Orc type is instead a type operator,
 		and the constructor site takes type parameters.
 		</para>
 
@@ -85,7 +82,7 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 			<programlisting language="orc-demo"><![CDATA[
 {- Use a Java class to count the number of tokens in a string -}
 
-class StringTokenizer = "java.util.StringTokenizer"
+import class StringTokenizer = "java.util.StringTokenizer"
 
 -- Invoke a constructor:
 val st = StringTokenizer("Elegance is not a dispensable luxury, but a quality that decides between success and failure.", " ")
@@ -105,7 +102,7 @@ OUTPUT:
 			<programlisting language="orc-demo"><![CDATA[
 {- Use a Java class to calculate a log value -}
 
-class JavaMath = "java.lang.Math"
+import class JavaMath = "java.lang.Math"
 
 -- Invoke a static method:
 JavaMath.log10(42.0)
@@ -122,7 +119,7 @@ OUTPUT:
 		<programlisting language="orc-demo"><![CDATA[
 {- Use a Java class to represent tree data structures -}
 
-class TreeSet = "java.util.TreeSet"
+import class TreeSet = "java.util.TreeSet"
 
 val s = TreeSet[String]()
 s.add("Orc") >> s.add("Java") >> s.add("Orc") >> s.size()

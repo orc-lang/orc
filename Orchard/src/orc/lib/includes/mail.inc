@@ -1,5 +1,5 @@
-site MailerFactory = "orc.lib.net.MailerFactory"
-site MailListener = "orc.lib.orchard.MailListenerFactory"
+import site MailerFactory = "orc.lib.net.MailerFactory"
+import site MailListener = "orc.lib.orchard.MailListenerFactory"
 
 {-
 Simplified mail sending interface.

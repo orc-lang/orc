@@ -33,7 +33,7 @@ since this clock was created.
 Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
 
 --}
-site Rclock = "orc.lib.time.Rclock"
+import site Rclock = "orc.lib.time.Rclock"
 
 {--
 @site Rwait(Integer) :: Signal

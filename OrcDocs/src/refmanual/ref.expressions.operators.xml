@@ -230,7 +230,7 @@ The <code>=</code> operator can compare values of any type. Values of different 
 <para>
 The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, precedence, and <indexterm><primary>associativity</primary></indexterm>associativity) is fixed by the Orc grammar; however, the site
 called is defined by the library and can be changed by a <code>def</code>
-or <code>site</code> declaration.
+or <code>import site</code> declaration.
 </para>
 <para>
 Orc permits a special identifier form for operators: the operator name

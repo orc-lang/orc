@@ -1,4 +1,4 @@
-class Map = "scala.collection.mutable.HashMap"
+import class Map = "scala.collection.mutable.HashMap"
 
 -- number of bad processes
 val t = 2

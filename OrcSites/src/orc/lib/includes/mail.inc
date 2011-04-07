@@ -1,1 +1,1 @@
-site MailerFactory = "orc.lib.net.MailerFactory"
+import site MailerFactory = "orc.lib.net.MailerFactory"
