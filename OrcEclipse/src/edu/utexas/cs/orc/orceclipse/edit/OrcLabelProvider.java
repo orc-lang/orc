@@ -25,9 +25,7 @@ import orc.ast.ext.Def;
 import orc.ast.ext.DefClass;
 import orc.ast.ext.DefSig;
 import orc.ast.ext.Include;
-import orc.ast.ext.Pattern;
 import orc.ast.ext.SiteDeclaration;
-import orc.ast.ext.Type;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
@@ -242,13 +240,9 @@ public class OrcLabelProvider implements ILabelProvider {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
-		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
-			s.append('(');
-			if (ps != null) {
-				s.append(listMkString(JavaConversions.asIterable(ps), ", ")); //$NON-NLS-1$
-			}
-			s.append(')');
-		}
+		s.append('(');
+		s.append(listMkString(JavaConversions.asIterable(d.formals()), ", ")); //$NON-NLS-1$
+		s.append(')');
 
 		return s.toString();
 	}
@@ -264,13 +258,9 @@ public class OrcLabelProvider implements ILabelProvider {
 			s.append(']');
 		}
 
-		for (final scala.collection.immutable.List<Pattern> ps : JavaConversions.asIterable(d.formals())) {
-			s.append('(');
-			if (ps != null) {
-				s.append(listMkString(JavaConversions.asIterable(ps), ", ")); //$NON-NLS-1$
-			}
-			s.append(')');
-		}
+		s.append('(');
+		s.append(listMkString(JavaConversions.asIterable(d.formals()), ", ")); //$NON-NLS-1$
+		s.append(')');
 
 		return s.toString();
 	}
@@ -286,13 +276,9 @@ public class OrcLabelProvider implements ILabelProvider {
 			s.append(']');
 		}
 
-		for (final scala.collection.immutable.List<Type> argTypes : JavaConversions.asIterable(d.argtypes())) {
-			s.append('(');
-			if (argTypes != null) {
-				s.append(listMkString(JavaConversions.asIterable(argTypes), ", ")); //$NON-NLS-1$
-			}
-			s.append(')');
-		}
+		s.append('(');
+		s.append(listMkString(JavaConversions.asIterable(d.argtypes()), ", ")); //$NON-NLS-1$
+		s.append(')');
 
 		s.append(" :: "); //$NON-NLS-1$
 		s.append(d.returntype().toOrcSyntax());
