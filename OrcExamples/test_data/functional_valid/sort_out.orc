@@ -3,7 +3,7 @@
 
 -- sort output
 
-def sort[A](lambda () :: A, lambda (A,A) :: Integer) :: Signal
+def sort[A](lambda () :: A, lambda (A,A) :: Integer) :: List[A]
 def sort(input, comparator) =
   val b = Channel[A]()
   val l = Ref[List[A]]([])
@@ -11,6 +11,7 @@ def sort(input, comparator) =
   def sort_aux(x, []) = [x]
   def sort_aux(x, y:[]) = if (comparator(x, y) <: 0) then x:[y] else y:[x]
   def sort_aux(x, y:yl) = if (comparator(x, y) <: 0) then x:y:yl else y:sort_aux(x, yl)
+  def sort_Channel() :: Signal
   def sort_Channel() = (b.get() >x> (l := sort_aux(x, l?))  >> sort_Channel() >> stop); signal
  
   signal >> (input() >x> b.put(x)  >> stop; b.close()>>stop) | sort_Channel() >> l?

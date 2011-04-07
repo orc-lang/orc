@@ -67,13 +67,27 @@ object Let extends TotalSite with TypedSite {
       case (vs : List[_]) => OrcTuple(vs)
     }
   
-  def orcType() = new SimpleCallableType with StrictType {
-    def call(argTypes: List[Type]): Type = { 
-      argTypes match {
-        case Nil => SignalType
-        case List(t) => t
-        case ts => TupleType(ts)
-      }
+  def orcType() = LetType
+}
+
+
+object LetType extends SimpleCallableType with StrictType {
+  
+  def call(argTypes: List[Type]): Type = { 
+    argTypes match {
+      case Nil => SignalType
+      case List(t) => t
+      case ts => TupleType(ts)
     }
   }
-}
+    
+  override def <(that : Type): Boolean = {
+    that match {
+      case FunctionType(Nil, Nil, `SignalType`) => true
+      case FunctionType(_, List(t), u) if (t < u) => true
+      case FunctionType(_, ts, TupleType(us)) if (ts < us) => true
+      case _ => super.<(that)
+    }
+  }
+  
+} 

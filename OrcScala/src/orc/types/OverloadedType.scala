@@ -47,7 +47,7 @@ case class OverloadedType(alternatives: List[CallableType]) extends CallableType
       }
     }
     // otherwise
-    false
+    super.<(that)
   }
   
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {

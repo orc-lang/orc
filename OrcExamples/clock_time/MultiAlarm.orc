@@ -37,24 +37,32 @@ the cancel procedure of the associated instance of Alarm().
 
 def class Multialarm() =
 
-  def class Alarm() =
+  type Alarm = 
+  {. 
+       set :: lambda(Integer) :: Signal, 
+    cancel :: lambda() :: Signal 
+  .}
+  def class Alarm() :: Alarm =
     val run = Ref[Boolean](true)
 
-    def set(t) = Rwait(t) >> Ift(run?)
+    def set(t :: Integer) = Rwait(t) >> Ift(run?)
     def cancel() = run := false
   stop
+  
 
- import class Map = "java.util.HashMap"
+  import class Map = "java.util.HashMap"
 
- val alarmlist = Map()
+  val alarmlist = Map[String, Alarm]()
 
- def set(id,t) = 
+  def set(String, Integer) :: Signal
+  def set(id,t) = 
   val a = Alarm()
-  alarmlist.put(id,a) >> a.set(t)
+    alarmlist.put(id,a) >> a.set(t)
 
- def cancel(id) =
-  alarmlist.remove(id) >b> 
-   (if b = null then signal else b.cancel())
+  def cancel(String) :: Signal
+  def cancel(id) =
+    alarmlist.remove(id) >b> 
+    if b = null then signal else b.cancel()
 
 stop
 

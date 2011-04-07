@@ -53,6 +53,13 @@ trait Type extends TypeInterface with TypeListEnrichment {
         else { Bot }
   }
   
+  /* Default substitution:
+   * Assume there are no free type variables or children, 
+   * and return the type unchanged.
+   */
+  def subst(sigma: Map[TypeVariable, Type]): Type = { this }
+  
+  
   /* Default < relation:
    * For all T, 
    *     T < T
@@ -61,13 +68,6 @@ trait Type extends TypeInterface with TypeListEnrichment {
   def <(that: Type): Boolean = {
     (that eq this) || (that eq Top)
   }
-  
-  /* Default substitution:
-   * Assume there are no free type variables or children, 
-   * and return the type unchanged.
-   */
-  def subst(sigma: Map[TypeVariable, Type]): Type = { this }
-  
   
   def coercibleTo(that: Type): Boolean = {
     (this,that) match {

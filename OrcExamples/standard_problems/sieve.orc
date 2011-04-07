@@ -20,16 +20,10 @@ Implement a parallel version of this algorithm using these facts.
 
 Note: you can compute the "floored" square root of a number like this:
 
-import class Math = "java.lang.Math"
-Math.floor(Math.sqrt(5))
+Floor(sqrt(n))
 --}
 
-import class Set = "java.util.HashSet"
-
-def sqrt(Number) :: Integer
-def sqrt(n) =
-  import class Math = "java.lang.Math"
-  (Math.floor(Math.sqrt(n.doubleValue()))).intValue()
+import class Set = "scala.collection.mutable.HashSet"
 
 def primes(Number) :: List[Number]
 def primes(n) =
@@ -37,9 +31,8 @@ def primes(n) =
   def sieve(Number, Set[Number]) :: List[Number]
   def sieve(1, _) = []
   def sieve(n, set) =
-  	def remove(Number) :: Signal
-    def remove(p) = joinMap(set.remove, rangeBy(p*p, n, p))
-    sieve(sqrt(n), set) >ps>
+    def remove(p :: Number) = joinMap(set.remove, rangeBy(p*p, n, p))
+    sieve(Floor(sqrt(n)), set) >ps>
     joinMap(remove, ps) >>
     2:filter(set.contains, candidates(n))
   val set = Set[Number]()

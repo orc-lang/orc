@@ -226,7 +226,7 @@ def join([]) = signal
 def join(p:ps) = (p(), join(ps)) >> signal
  
 {--
-@def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
+@def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
 Apply a function to a list in parallel and publish
 a signal once all applications have completed.
 
@@ -235,7 +235,7 @@ the expression <code>(f(a), f(b), f(c)) >> signal</code>
 
 @implementation
 --}
-def joinMap[A,B](lambda (A) :: B, List[A]) :: Signal
+def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
 def joinMap(f, []) = signal
 def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
 

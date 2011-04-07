@@ -15,11 +15,9 @@ def qs(a) =
  if length(a) :> 1 then (append(le, g) <le< append(qs(less), equal) <g< qs(greater))
  else a
 
-import class Random = "java.util.Random"
-val random = Random()
 def makeNRandomInt(Integer) :: List[Integer]
 def makeNRandomInt(0) = []
-def makeNRandomInt(n) = random.nextInt(100):makeNRandomInt(n-1)
+def makeNRandomInt(n) = Random(100):makeNRandomInt(n-1)
 
 x = y <(x, y)< (qs(l), sort(l)) <l< makeNRandomInt(100)
 

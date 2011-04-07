@@ -1,3 +1,13 @@
+
+import class LinkedList = "java.util.LinkedList"
+val l = LinkedList[Integer]()
+
+l.add(1) >>
+l.add(2) >>
+l.add(3) >>
+-- verify that iterators are fully independent
+each(l) >i> (i | each(l))
+
 {-
 OUTPUT:PERMUTABLE
 1
@@ -13,12 +23,4 @@ OUTPUT:PERMUTABLE
 3
 3
 -}
-import class LinkedList = "java.util.LinkedList"
-val l = LinkedList[Integer]()
-
-l.add(1) >>
-l.add(2) >>
-l.add(3) >>
--- verify that iterators are fully independent
-each(l) >i> (i | each(l))
 

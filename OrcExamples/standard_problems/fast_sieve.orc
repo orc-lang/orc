@@ -6,19 +6,19 @@
  -}
 
 -- a channel to store the primes generated
-val prime_buf = Channel()
+val prime_buf = Channel[Integer]()
 
--- a sieve class with value n represent a prime number n
+-- a sieve with value n represent a prime number n
 -- which immediately print itself.
 -- this algorithm for generating primes is inspired
 -- by the fact that if square(p) > input v then v is a prime.
-def class fast_sieve(n) =
+def fast_sieve(n :: Integer) :: Integer =
   val p = n
   val psq = n * n -- square of n
-  val next = Cell() -- next sieve, initially empty
-  val in_buff = Channel() -- input channel
-  def in(v) = in_buff.put(v)
-  def main() = 
+  val next = Cell[Integer]() -- next sieve, initially empty
+  val in_buff = Channel[Integer]() -- input channel
+  def in(v :: Integer) = in_buff.put(v)
+  def main() :: Bot = 
     in_buff.get() >v> ( 
     -- if v is divisible by this sieve then discard it 
     if v % p = 0 then signal
@@ -39,7 +39,7 @@ val s2 = fast_sieve(2)
 
 val MAX = 100
 
-def gen_primes(n) =
+def gen_primes(n :: Integer) =
   if (n <: MAX) then 
     s2.in(n) >> gen_primes(n+2)
   else stop
