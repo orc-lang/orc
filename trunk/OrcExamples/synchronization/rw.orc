@@ -1,4 +1,13 @@
-def class RW() = 
+type RW =
+  {.
+    read_start   :: lambda() :: Signal,
+    read_finish  :: lambda() :: Signal,
+    write_start  :: lambda() :: Signal,
+    write_finish :: lambda() :: Signal
+  .}
+
+
+def class RW() :: RW = 
   val read_count = Ref[Integer](0)
   val write_count = Ref[Integer](0)
 
@@ -45,14 +54,13 @@ def class RW() =
 val v = Ref[Integer](0)
 
 
--- Typechecker will fail here because we do not have a syntax for record types yet
-def reader(lock) = 
+def reader(lock :: RW) = 
   Rwait((Random(4)+1)*100) >>
   lock.read_start() >>
 --  Println(v?) >>
   lock.read_finish()
 
-def writer(lock) = 
+def writer(lock :: RW) = 
   Rwait((Random(4)+1)*100) >>
   lock.write_start() >>
   v := v? + 1 >>
@@ -61,8 +69,9 @@ def writer(lock) =
 val rw = RW()
 
 signal >>
-(upto(1000) >> reader(rw) >> stop | upto(1000) >> writer(rw) >> stop); 
-Println("Final value: "+(v?)) >> stop
+( upto(1000) >> reader(rw) >> stop 
+| upto(1000) >> writer(rw) >> stop)
+; Println("Final value: "+(v?)) >> stop
 {-
 OUTPUT:
 Final value: 1000

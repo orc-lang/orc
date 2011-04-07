@@ -22,16 +22,19 @@ every sempahore that is deallocated must have value 0.
  
 -}
 
-def class Pool(f) = 
- val buff = Channel()
- 
- def allocate()    = buff.getD() ; f
-   
- def deallocate(x) = buff.put(x) 
+type Pool[A] =
+  {.
+      allocate :: lambda() :: A,
+    deallocate :: lambda(A) :: Signal
+  .}
 
-stop
+def class Pool[A](f :: (lambda() :: A)) :: Pool[A] = 
+  val ch = Channel[A]()
+  def allocate() = ch.getD() ; f()  
+  def deallocate(x :: A) = ch.put(x) 
+  stop
 
-val sempool = Pool(Semaphore(1))
+val sempool = Pool[Semaphore](lambda () = Semaphore(1))
 
 sempool.allocate() >s> (  
                           s.acquire() >> "got it" 

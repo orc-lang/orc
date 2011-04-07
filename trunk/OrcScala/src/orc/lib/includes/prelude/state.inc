@@ -507,7 +507,7 @@ def slice(xs, from, until) =
   ScalaPredef.refArrayOps[A](xs).slice(from, until)
 
 
-def fill[A](Array[Top], A) :: Signal
+def fill[A](Array[A], A) :: Signal
 def fill(a, x) =
   def fillBelow(Integer) :: Signal
   def fillBelow(i) =

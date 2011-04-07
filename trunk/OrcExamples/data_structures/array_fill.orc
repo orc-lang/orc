@@ -21,10 +21,11 @@ signal >>
   pubs.put(a(0)) >> stop
   ; pubs.put(a(1)) >> stop
   ; pubs.put(a(2)) >> stop
-  ; each(b) >x> pubs.put(x) >> stop
-  ; each(c) >x> pubs.put(x) >> stop
+  ; each(arrayToList(b)) >x> pubs.put(x) >> stop
+  ; each(arrayToList(c)) >x> pubs.put(x) >> stop
   ; pubs.close() >> stop
 ) | repeat(pubs.get)
+
 {-
 OUTPUT:PERMUTABLE:
 0
