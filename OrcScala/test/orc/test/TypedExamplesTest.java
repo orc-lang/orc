@@ -33,7 +33,7 @@ public class TypedExamplesTest extends ExamplesTest {
     // Turn on typechecking
     bindings.typecheck_$eq(true);
     
-    return buildSuite(bindings, new File("../OrcExamples"));
+    return buildSuite(TypedExamplesTest.class.getCanonicalName(), bindings, new File("../OrcExamples"));
   }
   
 }
