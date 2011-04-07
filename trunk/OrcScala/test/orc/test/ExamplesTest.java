@@ -43,7 +43,7 @@ public class ExamplesTest {
 	}
 
 	public static TestSuite buildSuite(final OrcBindings bindings, final File examplePath) {
-		final TestSuite suite = new TestSuite("orc.test.ExamplesTest");
+		final TestSuite suite = new TestSuite(getClass().getCanonicalName());
 		final LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(examplePath, files);
 		for (final File file : files) {
