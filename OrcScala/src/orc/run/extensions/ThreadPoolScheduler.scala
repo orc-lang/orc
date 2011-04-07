@@ -32,7 +32,7 @@ import orc.run.Logger
  * @author jthywiss
  */
 trait OrcWithThreadPoolScheduler extends Orc {
-  
+
   private var executor: OrcRunner = null
 
   override def schedule(ts: List[GroupMember with Runnable]) {
@@ -50,7 +50,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
     }
     executor.execute(t, false)
   }
-  
+
   override def schedule(h: Handle) {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
@@ -66,7 +66,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
       throw new IllegalStateException("startScheduler() multiply invoked")
     }
   }
-  
+
   /* (non-Javadoc)
    * @see orc.run.Orc#stop()
    */
@@ -74,16 +74,14 @@ trait OrcWithThreadPoolScheduler extends Orc {
     if (executor != null) {
       // First, gently shut down
       executor.shutdown()
-      // Wait "a little while" 
+      // Wait "a little while"
       if (!executor.awaitTermination(20L)) {
         // Now, we insist
         executor.shutdownNow()
-        // Wait long enough for all running workers to receive shutdown 
+        // Wait long enough for all running workers to receive shutdown
         executor.awaitTermination(2L)
       }
       executor = null
-    } else {
-      throw new IllegalStateException("stopScheduler() multiply invoked")
     }
   }
 }
@@ -158,7 +156,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
       new Thread(threadGroup, r, getNewThreadName())
     }
   }
-  
+
   setThreadFactory(OrcWorkerThreadFactory)
 
   @scala.volatile private var supervisorThread: Thread = null
@@ -179,7 +177,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     //FIXME: Don't allow blocking tasks to consume all worker threads
     super.execute(task)
   }
-  
+
   def awaitTermination(timeoutMillis: Long) = {
     super.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)
   }
