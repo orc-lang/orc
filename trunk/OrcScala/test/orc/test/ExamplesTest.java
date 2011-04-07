@@ -39,11 +39,11 @@ import orc.script.OrcBindings;
 public class ExamplesTest {
   
 	public static Test suite() {
-		return buildSuite(new OrcBindings(), new File("../OrcExamples"));
+		return buildSuite(ExamplesTest.class.getCanonicalName(), new OrcBindings(), new File("../OrcExamples"));
 	}
 
-	public static TestSuite buildSuite(final OrcBindings bindings, final File examplePath) {
-		final TestSuite suite = new TestSuite(getClass().getCanonicalName());
+	public static TestSuite buildSuite(final String name, final OrcBindings bindings, final File examplePath) {
+		final TestSuite suite = new TestSuite(name);
 		final LinkedList<File> files = new LinkedList<File>();
 		TestUtils.findOrcFiles(examplePath, files);
 		for (final File file : files) {

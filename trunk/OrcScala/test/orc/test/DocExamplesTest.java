@@ -33,7 +33,7 @@ public class DocExamplesTest extends ExamplesTest {
 
   public static Test suite() {
     OrcBindings bindings = new OrcBindings();
-    return buildSuite(bindings, new File("../OrcDocs/build/examples"));
+    return buildSuite(DocExamplesTest.class.getCanonicalName(), bindings, new File("../OrcDocs/build/examples"));
   }
   
 }
