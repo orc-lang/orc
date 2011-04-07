@@ -21,9 +21,9 @@ integer ::= digit | digit integer
 
 def stringtolist(s) = -- convert a string to a list omitting white space
   def rest(i) =
-    If (i >= s.length()) >> []
-  | If (i <: s.length())  >> If(s.substring(i,i+1) /= " ") >> s.substring(i,i+1):rest(i+1)
-  | If (i <: s.length())  >> If(s.substring(i,i+1)  = " ") >> rest(i+1)
+    Ift(i >= s.length()) >> []
+  | Ift(i <: s.length())  >> Ift(s.substring(i,i+1) /= " ") >> s.substring(i,i+1):rest(i+1)
+  | Ift(i <: s.length())  >> Ift(s.substring(i,i+1)  = " ") >> rest(i+1)
                 
   rest(0)
 

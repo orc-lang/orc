@@ -47,9 +47,9 @@ def partition(p, l, r) =
    signal >>
    (lr(l), rl(r)) >(l', r')>
 
-   ( If (l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
-   | If (l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
-   | If (l' + 1 :> r') >> r'
+   ( Ift(l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
+   | Ift(l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
+   | Ift(l' + 1 :> r') >> r'
    )
 --------------  End of Partition Procedure --------------
 

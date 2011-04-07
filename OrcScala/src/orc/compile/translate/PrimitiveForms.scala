@@ -30,8 +30,8 @@ object PrimitiveForms {
   def unaryBuiltinCall(s: Site)(a: Argument) = Call(Constant(s), List(a), None)
   def binaryBuiltinCall(s: Site)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
 
-  val callIf = unaryBuiltinCall(If) _
-  val callUnless = unaryBuiltinCall(Unless) _
+  val callIft = unaryBuiltinCall(Ift) _
+  val callIff = unaryBuiltinCall(Iff) _
   val callEq = binaryBuiltinCall(Eq) _
 
   val callCons = binaryBuiltinCall(ConsConstructor) _
@@ -103,7 +103,7 @@ object PrimitiveForms {
   def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ( (callIf(b) >> trueBranch)  ||  (callUnless(b) >> falseBranch) )  < b <  test
+    ( (callIft(b) >> trueBranch)  ||  (callIff(b) >> falseBranch) )  < b <  test
   }
   
   /*

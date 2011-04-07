@@ -145,8 +145,6 @@ case class TypedPattern(p: Pattern, t: Type) extends Pattern {
 
 sealed abstract class Type extends AST with OrcSyntaxConvertible
 
-case class Top() extends Type { override def toOrcSyntax = "Top" }
-case class Bot() extends Type { override def toOrcSyntax = "Bot" }
 case class TypeVariable(name: String) extends Type { override def toOrcSyntax = name }
 case class TupleType(elements: List[Type]) extends Type { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class RecordType(elements: List[(String, Type)]) extends Type { override def toOrcSyntax = elements.map({case (f,t) => f + " :: " + t.toOrcSyntax}).mkString("{. ", ", ", " .}") }

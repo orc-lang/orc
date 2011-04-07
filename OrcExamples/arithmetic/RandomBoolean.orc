@@ -19,7 +19,7 @@
 def class RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(f,t) =  
-   If(URandom() <: f) >>  s.acquire() >>
+   Ift(URandom() <: f) >>  s.acquire() >>
    Random(t) >w> Rwait(w) >>
    (Random(2) = 1) >v>
    s.release() >> 
@@ -30,5 +30,5 @@ stop
 val rb = RandomBool().main
 val (_,x) = rb(0.5,3000) 
 val (_,y) = rb(1,3000)
-val z = If(x) >> true | If(y) >> true | x||y
+val z = Ift(x) >> true | Ift(y) >> true | x||y
  z

@@ -366,9 +366,7 @@ with CustomParserCombinators
   )
   
   val parseType: Parser[Type] = (
-        "Top" -> Top
-      | "Bot" -> Bot
-      | parseTypeVariable ~ (ListOf(parseType)?) ->
+        parseTypeVariable ~ (ListOf(parseType)?) ->
         { (_,_) match
           {
             case (id, None) => TypeVariable(id)

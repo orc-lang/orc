@@ -40,7 +40,7 @@ def class Multialarm() =
   def class Alarm() =
     val run = Ref[Boolean](true)
 
-    def set(t) = Rwait(t) >> If(run?)
+    def set(t) = Rwait(t) >> Ift(run?)
     def cancel() = run := false
   stop
 

@@ -533,15 +533,15 @@ the name of the site is the operator enclosed by parentheses, e.g. <code>(**)</c
 
 <para>
 The conditional expression <code>if</code> E <code>then</code> F <code>else</code> G
-is actually a derived form based on two different sites named <code>If</code> and <code>Unless</code>. 
+is actually a derived form based on two different sites named <code>If</code> and <code>Iff</code>. 
 The sites take a boolean argument.  <code>If</code> returns a signal if that argument is <code>true</code>,
-or remains silent if the argument is <code>false</code>.  <code>Unless</code> returns a signal if that argument
+or remains silent if the argument is <code>false</code>.  <code>Iff</code> returns a signal if that argument
 is <code>false</code> or remains silent if the argument is <code>true</code>.
 </para>
 
 <para>
 <code>if</code> E <code>then</code> F <code>else</code> G is equivalent 
-to <code>(<![CDATA[ Ift(b) >> ]]></code>F<code><![CDATA[ | Unless(b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
+to <code>(<![CDATA[ Ift(b) >> ]]></code>F<code><![CDATA[ | Iff(b) >> ]]></code>G<code>)<![CDATA[ <b< ]]></code>E.
 </para>
 
 	

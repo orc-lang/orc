@@ -26,6 +26,8 @@ the <link linkend="ref.expressions.operators">Operators</link> article.
 {-
 Basic types
 -}
+type Top = "orc.types.Top"
+type Bot = "orc.types.Bot"
 type String = "orc.types.StringType"
 type Number = "orc.types.NumberType"
 type Boolean = "orc.types.BooleanType"
@@ -68,7 +70,7 @@ Example:
 | Ift(true) >> "Always publishes"]]></programlisting>
 
 --}
-site Ift = "orc.lib.builtin.If"
+site Ift = "orc.lib.builtin.Ift"
 
 {--
 @site Iff(Boolean) :: Signal
@@ -87,7 +89,7 @@ Example:
 | Iff(true) >> "Never publishes"]]></programlisting>
 
 --}
-site Iff = "orc.lib.builtin.Unless"
+site Iff = "orc.lib.builtin.Iff"
 
 
 {--

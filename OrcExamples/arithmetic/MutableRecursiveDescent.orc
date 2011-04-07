@@ -29,20 +29,20 @@ def stringtoarray(s) =
     It writes the next non-white space in array position j.
  -}
  def rest(i,j) = 
-   If (i >= s.length()) >> j
- | If (i <: s.length())  >> If(s.substring(i,i+1) /= " ") >> 
+   Ift(i >= s.length()) >> j
+ | Ift(i <: s.length())  >> Ift(s.substring(i,i+1) /= " ") >> 
       A(j) := s.substring(i,i+1) >> rest(i+1,j+1)
- | If (i <: s.length())  >> If(s.substring(i,i+1)  = " ") >> rest(i+1,j)
+ | Ift(i <: s.length())  >> Ift(s.substring(i,i+1)  = " ") >> rest(i+1,j)
 
  rest(0,0)
 
 def parse(n) = -- Parse the string of length n from array A
 
  -- test if the first symbol of suffix of length k is c
-def test(k,c) = If(k :> 0) >> If(A(n-k)? = c) 
+def test(k,c) = Ift(k :> 0) >> Ift(A(n-k)? = c) 
  
-def expr(i) =  If (i :> 0) >> term(i) >j> (j | test(j,"+") >> expr(j-1))
-def term(i) =  If (i :> 0) >> factor(i) >j> (j | test(j,"*") >> term(j-1))
+def expr(i) =  Ift(i :> 0) >> term(i) >j> (j | test(j,"+") >> expr(j-1))
+def term(i) =  Ift(i :> 0) >> factor(i) >j> (j | test(j,"*") >> term(j-1))
 def factor(i) = test(i,"3") >> i-1 |  test(i,"5") >> i-1 |  
     test(i,"(") >> expr(i-1) >j> test(j,")") >> j-1
 expr(n)
