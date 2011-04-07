@@ -348,6 +348,8 @@
 		<copy todir="${build.dir}/eclipsehelp/userguide/images">
 			<fileset dir="src/xsl/images"/>
 		</copy>
+		<!-- Fix XML character escaping in attributes for operators starting with < -->
+		<replaceregexp file="${build.dir}/eclipsehelp/userguide/toc.xml" match='label="\(&lt;' replace='label="(&amp;lt;' flags="g"/>
 		<!-- Remove useless generated files -->
 		<delete file="${build.dir}/eclipsehelp/userguide/plugin.xml"/>
 		<delete file="${build.dir}/eclipsehelp/userguide/index.xml"/>
@@ -576,6 +578,8 @@
 		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
 			<fileset dir="src/refmanual/images"/>
 		</copy>
+		<!-- Fix XML character escaping in attributes for operators starting with < -->
+		<replaceregexp file="${build.dir}/eclipsehelp/refmanual/toc.xml" match='label="\(&lt;' replace='label="(&amp;lt;' flags="g"/>
 		<!-- Remove useless generated files -->
 		<delete file="${build.dir}/eclipsehelp/refmanual/plugin.xml"/>
 		<delete file="${build.dir}/eclipsehelp/refmanual/index.xml"/>
