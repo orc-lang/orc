@@ -27,8 +27,8 @@ def auction(bidders, max) =
   if done then max else auction(bidders, bid)
   
 
-def bidder(Bid)(Bid) :: Bid
-def bidder(max)(n) = Ift(n <: max) >> n + 1
+def bidder(Bid) :: lambda(Bid) :: Bid
+def bidder(max) = lambda(n) = Ift(n <: max) >> n + 1
 
 auction(map(lambda (x :: Bid) = bidder(x), range(0,10)), 1)
 

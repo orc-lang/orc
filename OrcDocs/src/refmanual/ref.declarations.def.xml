@@ -438,21 +438,6 @@ OUTPUT:
 ]]></programlisting>
 		  </example>
 
-		<example xml:id="ref.declarations.def.clausal.examples.curried">
-		  <title>Curried Addition</title>
-<programlisting language="orc-demo"><![CDATA[
-{- Curried addition -}
-def add(x)(y) = x + y
-
-val f = add(3)
-f(4)
-
-{-
-OUTPUT:
-7
--}
-]]></programlisting>
-		  </example>
 
 	  </section>
 

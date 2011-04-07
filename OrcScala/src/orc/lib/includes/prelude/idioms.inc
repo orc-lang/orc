@@ -18,109 +18,108 @@ combinators borrowed from Haskell or Scheme.
 --}
 
 {--
-@def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C
+@def curry[A,B,C](lambda (A,B) :: C) :: lambda(A) :: lambda(B) :: C
 Curry a function of two arguments.
 
 @implementation
 --}
-def curry[A,B,C](lambda (A,B) :: C)(A)(B) :: C
-def curry(f)(x)(y) = f(x,y)
+def curry[A,B,C](lambda (A,B) :: C) :: lambda(A) :: lambda(B) :: C
+def curry(f) = lambda(x) = lambda(y) = f(x,y)
 
 {--
-@def curry3[A,B,C,D](lambda (A,B,C) :: D)(A)(B)(C) :: D
+@def curry3[A,B,C,D](lambda (A,B,C) :: D) :: lambda(A) :: lambda(B) :: lambda(C) :: D
 Curry a function of three arguments.
 
 @implementation
 --}
-def curry3[A,B,C,D](lambda (A,B,C) :: D)(A)(B)(C) :: D
-def curry3(f)(x)(y)(z) = f(x,y,z)
+def curry3[A,B,C,D](lambda (A,B,C) :: D) :: lambda(A) :: lambda(B) :: lambda(C) :: D
+def curry3(f) = lambda(x) = lambda(y) = lambda(z) = f(x,y,z)
 
 {--
-@def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
+@def uncurry[A,B,C](lambda (A) :: lambda(B) :: C) :: lambda(A, B) :: C
 Uncurry a function of two arguments.
 
 @implementation
 --}
-def uncurry[A,B,C](lambda (A)(B) :: C)(A, B) :: C
-def uncurry(f)(x,y) = f(x)(y)
+def uncurry[A,B,C](lambda (A) :: lambda(B) :: C) :: lambda(A, B) :: C
+def uncurry(f) = lambda(x,y) = f(x)(y)
 
 {--
-@def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
+@def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D) :: lambda(A,B,C) :: D
 Uncurry a function of three arguments.
 
 @implementation
 --}
-def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D)(A,B,C) :: D
-def uncurry3(f)(x,y,z) = f(x)(y)(z)
+def uncurry3[A,B,C,D](lambda (A) :: lambda(B) :: lambda(C) :: D) :: lambda(A,B,C) :: D
+def uncurry3(f) = lambda(x,y,z) = f(x)(y)(z)
 
 {--
-@def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C
+@def flip[A,B,C](lambda (A, B) :: C) :: lambda(B, A) :: C
 Flip the order of parameters of a two-argument function.
 
 @implementation
 --}
-def flip[A,B,C](lambda (A, B) :: C)(B, A) :: C
-def flip(f)(x,y) = f(y,x)
+def flip[A,B,C](lambda (A, B) :: C) :: lambda(B, A) :: C
+def flip(f) = lambda(x,y) = f(y,x)
 
 {--
-@def constant[A](A)() :: A
+@def constant[A](A) :: lambda() :: A
 Create a function which returns a constant value.
 
 @implementation
 --}
-def constant[A](A)() :: A
-def constant(x)() = x
+def constant[A](A) :: lambda() :: A
+def constant(x) = lambda() = x
 
 {--
-@def defer[A,B](lambda (A) :: B, A)() :: B
+@def defer[A,B](lambda (A) :: B, A) :: lambda() :: B
 Given a function and its argument, return a thunk which applies the function.
 
 @implementation
 --}
-def defer[A,B](lambda (A) :: B, A)() :: B
-def defer(f, x)() = f(x)
+def defer[A,B](lambda (A) :: B, A) :: lambda() :: B
+def defer(f, x) = lambda() = f(x)
 
 {--
-@def defer2[A,B,C](lambda (A,B) :: C, A, B)() :: C
+@def defer2[A,B,C](lambda (A,B) :: C, A, B) :: lambda() :: C
 Given a function and its arguments, return a thunk which applies the function.
 
 @implementation
 --}
-def defer2[A,B,C](lambda (A,B) :: C, A, B)() :: C
-def defer2(f, x, y)() = f(x, y)
+def defer2[A,B,C](lambda (A,B) :: C, A, B) :: lambda() :: C
+def defer2(f, x, y) = lambda() = f(x, y)
 
 {--
-@def ignore[A,B](lambda () :: B)(A) :: B
+@def ignore[A](lambda () :: A) :: lambda(Top) :: B
 From a function of no arguments, create a function
 of one argument, which is ignored.
 
 @implementation
 --}
-def ignore[A,B](lambda () :: B)(A) :: B
-def ignore(f)(_) = f()
+def ignore[A](lambda () :: A) :: lambda(Top) :: A
+def ignore(f) = lambda(_) = f()
 
 {--
-@def ignore2[A,B,C](lambda () :: C)(A, B) :: C
+@def ignore2[A,B,C](lambda () :: C) :: lambda(A, B) :: C
 From a function of no arguments, create a function
 of two arguments, which are ignored.
 
 @implementation
 --}
-def ignore2[A,B,C](lambda () :: C)(A, B) :: C
-def ignore2(f)(_, _) = f()
+def ignore2[A,B,C](lambda () :: C) :: lambda(A, B) :: C
+def ignore2(f) = lambda(_, _) = f()
 
 {--
-@def compose[A,B,C](lambda (B) :: C, lambda (A) :: B)(A) :: C
+@def compose[A,B,C](lambda (B) :: C, lambda (A) :: B) :: lambda(A) :: C
 Compose two single-argument functions.
 
 @implementation
 --}
-def compose[A,B,C](lambda (B) :: C,
-                   lambda (A) :: B)(A) :: C
-def compose(f,g)(x) = f(g(x))
+def compose[A,B,C](lambda (B) :: C, lambda (A) :: B) :: lambda (A) :: C
+def compose(f,g) = lambda(x) = f(g(x))
 
 {--
-@def while[A](lambda (A) :: Boolean, lambda (A) :: A)(A) :: A
+@def while[A](lambda (A) :: Boolean, lambda (A) :: A) :: lambda(A) :: A
 
 Iterate a function while a predicate is satisfied, publishing
 each value passed to the function.
@@ -135,9 +134,7 @@ while(
 
 @implementation
 --}
-def while[A](lambda (A) :: Boolean,
-             lambda (A) :: A)(A) 
-  :: A
+def while[A](lambda (A) :: Boolean, lambda (A) :: A) :: lambda(A) :: A
 def while(p,f) = 
   def loop(A) :: A
   def loop(x) = Ift(p(x)) >> ( x | loop(f(x)) )

@@ -288,7 +288,7 @@ with CustomParserCombinators
 
   val parseExpression: Parser[Expression] = (
         "lambda" ~> (ListOf(parseTypeVariable)?)
-        ~ (TupleOf(parsePattern)+)
+        ~ (TupleOf(parsePattern))
         ~ (parseReturnType?)
         ~ (parseGuard?)
         ~ ("=" ~> parseExpression)
@@ -367,7 +367,7 @@ with CustomParserCombinators
           { (t: Type, ts: List[Type]) => TupleType(t::ts) }
       | TupleOf(parseType) -> TupleType
       | RecordOf("::", parseType) -> RecordType
-      | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)+) ~ parseReturnType -> LambdaType
+      | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)) ~ parseReturnType -> LambdaType
   )
   
   val parseConstructor: Parser[Constructor] = (
@@ -380,13 +380,13 @@ with CustomParserCombinators
 /* Declarations */
 
   val parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+        ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> Def
       
-      | (Identifier("class") ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)+) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+      | (Identifier("class") ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
       -> DefClass
       
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)+) ~ parseReturnType 
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType 
       -> DefSig
   )
 

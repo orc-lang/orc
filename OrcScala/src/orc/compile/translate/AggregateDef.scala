@@ -47,7 +47,7 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: DefDeclaration): AggregateDef =
     defn -> {
-      case Def(_, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, body) => {
+      case Def(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
         val newclause = defn ->> Clause(newformals, maybeGuard, body)
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn)) 
@@ -55,20 +55,19 @@ case class AggregateDef(clauses: List[Clause],
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
       }
-      case DefClass(name, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, body) => {
-        this + Def(name, maybeTypeFormals, List(formals), maybeReturnType, maybeGuard, new DefClassBody(body))
+      case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
+        this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
       }
       case DefSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
-        val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
-        val newArgTypes = unifyList(argtypes, Some(argtypes3), reportProblem(RedundantArgumentType() at defn))
+        val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
       }
     }
 
   def +(lambda: Lambda): AggregateDef = {
-    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals.head)
+    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals)
     val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
     val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))

@@ -42,7 +42,7 @@ case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expressio
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Lambda(
     typeformals: Option[List[String]] = None, 
-    formals: List[List[Pattern]],
+    formals: List[Pattern],
     returntype: Option[Type] = None,
     guard: Option[Expression] = None,
     body: Expression
@@ -67,9 +67,9 @@ sealed abstract class NamedDeclaration extends Declaration {
 }
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
-case class Def(name: String, typeformals: Option[List[String]], formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-case class DefClass(name: String, typeformals: Option[List[String]], formals: List[List[Pattern]], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
+case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends DefDeclaration
 
 // Convenience extractor for sequences of definitions enclosing some scope
 object DefGroup {
@@ -148,21 +148,8 @@ sealed abstract class Type extends AST with OrcSyntaxConvertible
 case class TypeVariable(name: String) extends Type { override def toOrcSyntax = name }
 case class TupleType(elements: List[Type]) extends Type { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class RecordType(elements: List[(String, Type)]) extends Type { override def toOrcSyntax = elements.map({case (f,t) => f + " :: " + t.toOrcSyntax}).mkString("{. ", ", ", " .}") }
-case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends Type {
-  override def toOrcSyntax = "lambda" + (if (typeformals.size > 0) typeformals.mkString("[", ", ", "]") else "") + argtypes.map(_.map(_.toOrcSyntax).mkString("(", ", ", ")")).mkString("(", ", ", ")") + " :: " + returntype.toOrcSyntax
-  /* 
-   * Converts the type 'lambda (A)(B)(C) :: D'
-   * to 'lambda (A) :: (lambda (B) :: (lambda (C) :: D))'.
-   */
-  def cut = {
-      this match {
-        case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
-        case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
-          val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
-          val newRetType = argGroupsTail.foldRight(retType)(f)
-          LambdaType(typeFormals,List(argGroup),newRetType)
-        }
-      }
-  }
+case class LambdaType(typeformals: List[String], argtypes: List[Type], returntype: Type) extends Type {
+  override def toOrcSyntax = "lambda" + (if (typeformals.size > 0) typeformals.mkString("[", ", ", "]") else "") + argtypes.map(_.toOrcSyntax).mkString("(", ", ", ")") + " :: " + returntype.toOrcSyntax
+  
 }
 case class TypeApplication(name: String, typeactuals: List[Type]) extends Type { override def toOrcSyntax = name + typeactuals.map(_.toOrcSyntax).mkString("[", ", ", "]") }

@@ -20,7 +20,6 @@ import orc.ast.oil._
 import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
 import orc.compile.translate.ClassForms._
-import orc.compile.translate.CurriedForms._
 import orc.compile.translate.PrimitiveForms._
 import orc.error.OrcException
 import orc.error.OrcExceptionExtension._
@@ -103,13 +102,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
 
       case lambda: ext.Lambda => {
-        val flatLambda = reduceParamLists(lambda)
         val lambdaName = new BoundVar()
-        val newdef = AggregateDef(flatLambda)(this).convert(lambdaName, context, typecontext)
+        val newdef = AggregateDef(lambda)(this).convert(lambdaName, context, typecontext)
         DeclareDefs(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {
-        var capThunk = ext.Lambda(None, List(Nil), None, None, makeClassBody(b, reportProblem))
+        var capThunk = ext.Lambda(None, Nil, None, None, makeClassBody(b, reportProblem))
         convert(ext.Call(
           ext.Call(ext.Constant(builtin.MakeSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
       }
@@ -229,14 +227,11 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
    *
    */
   def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
-    val reducedDefs = defs map reduceParamLists
-
+    
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
-
-    for (d <- reducedDefs; n = d.name) {
+    for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
     }
-
     defsMap.values foreach { _.ClassCheck }
 
     // we generate these names beforehand since defs can be bound recursively in their own bodies
@@ -264,16 +259,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.TypeApplication(name, typeactuals) => {
         TypeApplication(typecontext(name), typeactuals map convertType)
       }
-      case ext.LambdaType(typeformals, List(argtypes), returntype) => {
+      case ext.LambdaType(typeformals, argtypes, returntype) => {
         val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals, t)
         val newtypecontext = typecontext ++ dtypecontext
         val newArgTypes = argtypes map { convertType(_)(newtypecontext) }
         val newReturnType = convertType(returntype)(newtypecontext)
         FunctionType(newTypeFormals, newArgTypes, newReturnType)
-      }
-      case ltype@ext.LambdaType(typeformals, args :: tail, returntype) => {
-        /* Multiple type argument groups, first uncurry it.*/
-        convertType(ltype.cut)
       }
     }
   }
