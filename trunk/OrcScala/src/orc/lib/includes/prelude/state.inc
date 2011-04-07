@@ -416,7 +416,7 @@ or statistical measurements.
 
 Return the total number of slots (open or filled) in the channel.
 
-@method boundedChannel[A].getAll() :: [A]
+@method boundedChannel[A].getAll() :: List[A]
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
