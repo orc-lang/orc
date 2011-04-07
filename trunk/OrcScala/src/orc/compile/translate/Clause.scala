@@ -139,7 +139,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
               val g = new named.BoundVar()
               val b = new named.BoundVar()
               val newGuard = convertInContext(guard).subst(g,x)
-              newSource  > g >  ( callIf(b)  < b <  newGuard )  >>  g
+              newSource  > g >  ( callIft(b)  < b <  newGuard )  >>  g
             }
             case None => newSource
           }

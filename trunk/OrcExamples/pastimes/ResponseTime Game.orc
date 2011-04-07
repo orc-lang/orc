@@ -24,7 +24,7 @@ def game() =
    val (b,w) = 
  
        sw.reset() >> Rwait(id) >> rand_seq() >x> Println(x) >>
-       If(x = v) >> sw.start() >> stop
+       Ift(x = v) >> sw.start() >> stop
 
      | Prompt("Press ENTER/OK for "+v) >> 
        sw.isrunning() >b> sw.halt() >w> (b,w)

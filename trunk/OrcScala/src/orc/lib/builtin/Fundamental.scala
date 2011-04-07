@@ -1,5 +1,5 @@
 //
-// Fundamental.scala -- Scala objects If, Unless, Eq, and Let
+// Fundamental.scala -- Scala objects Ift, Iff, Eq, and Let
 // Project OrcScala
 //
 // $Id$
@@ -20,8 +20,8 @@ import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
-object If extends PartialSite with TypedSite {
-  override def name = "If"
+object Ift extends PartialSite with TypedSite {
+  override def name = "Ift"
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(b : java.lang.Boolean) => 
@@ -33,8 +33,8 @@ object If extends PartialSite with TypedSite {
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-object Unless extends PartialSite with TypedSite {
-  override def name = "Unless"
+object Iff extends PartialSite with TypedSite {
+  override def name = "Iff"
   def evaluate(args: List[AnyRef]) =
     args match {
       case List(b : java.lang.Boolean) => 

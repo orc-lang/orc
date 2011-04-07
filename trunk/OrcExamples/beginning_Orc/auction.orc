@@ -21,14 +21,14 @@ def auction(bidders, max) =
     Rwait(5000) >> (true, max)
     | each(bidders) >bidder>
       bidder(max) >bid>
-      If(bid :> max) >>
+      Ift(bid :> max) >>
       (false, bid)
   Println("Current bid: " +  max) >>
   if done then max else auction(bidders, bid)
   
 
 def bidder(Bid)(Bid) :: Bid
-def bidder(max)(n) = If(n <: max) >> n + 1
+def bidder(max)(n) = Ift(n <: max) >> n + 1
 
 auction(map(lambda (x :: Bid) = bidder(x), range(0,10)), 1)
 

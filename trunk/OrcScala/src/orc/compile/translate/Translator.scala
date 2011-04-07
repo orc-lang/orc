@@ -275,8 +275,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         /* Multiple type argument groups, first uncurry it.*/
         convertType(ltype.cut)
       }
-      case ext.Top() => Top()
-      case ext.Bot() => Bot()
     }
   }
 
@@ -333,7 +331,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         }
         case ext.ConstantPattern(c) => {
           val b = new BoundVar();
-          { callEq(focus, Constant(c)) > b > callIf(b) >> _ }
+          { callEq(focus, Constant(c)) > b > callIft(b) >> _ }
         }
         case ext.VariablePattern(name) => {
           bind(name, focus)

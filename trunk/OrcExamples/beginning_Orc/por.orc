@@ -13,8 +13,8 @@ def f(g:rest) =
   val x = g()
   val y = f(rest)
   Let(
-      If(x <: 100) >> x
-    | If(y <: 100) >> y
+      Ift(x <: 100) >> x
+    | Ift(y <: 100) >> y
     | min(x, y)
   )
 

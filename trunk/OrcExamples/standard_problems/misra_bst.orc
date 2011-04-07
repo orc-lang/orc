@@ -66,9 +66,9 @@ def searchstart(key) = -- return (p,d,q) where p.d = q and q.val = key
        Start search from q. Return (s,d,t) where s.d = t and t.val = key
     -}
         val (v,l,r) = q.read()
-        If(key <: v) >> searchloop(q,false,l,key)
-      | If(key = v) >> (p,d,q)
-      | If(key :> v) >> searchloop(q,true,r,key)
+        Ift(key <: v) >> searchloop(q,false,l,key)
+      | Ift(key = v) >> (p,d,q)
+      | Ift(key :> v) >> searchloop(q,true,r,key)
 
   {- Goal for searchstart -}
   val (_,root,_) = tsent.read()

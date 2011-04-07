@@ -1,5 +1,5 @@
 def Countdown(Integer) :: Integer
-def Countdown(i) = If(i :> 0) >>
+def Countdown(i) = Ift(i :> 0) >>
 				   ( i
 				   | Rwait(10) >> Countdown(i-1)
 				   )
