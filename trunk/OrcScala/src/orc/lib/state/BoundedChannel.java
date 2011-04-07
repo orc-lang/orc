@@ -26,6 +26,8 @@ import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
+import scala.collection.JavaConversions;
+
 /**
  * A bounded cchannel.
  * With a bound of zero, behaves as a synchronous channel.
@@ -164,7 +166,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 						// restore open slots
 						open += Channel.size() - writers.size();
 						// collect all values in a list
-						final Object out = Channel.clone();
+						final Object out = JavaConversions.asIterable(Channel).toList();
 						Channel.clear();
 						// resume all writers
 						for (final Handle writer : writers) {
