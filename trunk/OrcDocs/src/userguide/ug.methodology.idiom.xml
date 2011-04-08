@@ -358,6 +358,54 @@ upto(n) >i> A(i)? >address> Email(address, m)
 
 </section>
 
+<section><title>Tables</title>
+
+<para>
+Orc programs occasionally require a data structure that supports constant-time indexing but need not also
+provide mutable storage. For this purpose, an <code>Array</code> is too powerful. The standard library provides
+another structure called a <code>Table</code> to fill this role.
+</para>
+
+<para>
+The call <code>Table(n,f)</code>, where <code>n</code> is a
+natural number and <code>f</code> a total function over natural numbers,
+creates and returns an immutable array of size <code>n</code> (indexed from 0), 
+whose <code>i</code>th element is initialized to <code>f(i)</code>.
+A table can also be thought of as a partially memoized version of <code>f</code>
+restricted to the range [0, <code>n</code>). 
+<code>Table</code> does not return a value until all calls to <code>f</code> have completed,
+and will halt if any call halts. Given a table <code>T</code>, the call <code>T(i)</code>
+returns the <code>i</code>th element of <code>T</code>. Notice that unlike
+array access, the <code>?</code> is not needed to subsequently dereference the return value,
+since it is not a mutable reference. 
+</para>
+
+<para>
+Tables are useful when writing algorithms which used a fixed mapping of indexes to some resources,
+such as a shared table of communication channels. Such a table could be constructed using the
+following code:  
+</para>
+
+<para>
+<programlisting><![CDATA[
+val size = 10
+val channels = Table(size, lambda (_) = Channel())
+]]></programlisting>
+</para>
+
+<para>
+Notice that the <code>lambda</code> ignores its argument, since each channel is
+identical. Here is another example, which memoizes the cubes of the first 30 natural numbers:
+</para>
+
+<para>
+<programlisting><![CDATA[
+val cubes = Table(30, lambda(i) = i*i*i)
+]]></programlisting>
+</para>
+
+</section>
+
 <section><title>Loops</title>
 
 <para>
