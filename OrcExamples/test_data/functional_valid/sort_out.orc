@@ -18,7 +18,7 @@ def sort(input, comparator) =
 
 
 sort(lambda()=( (1,(2,3)) | (4,true) | (5,[6,7]) | (8,signal) ) >(x,_)> x, 
-  lambda(x, y) = x - y)
+  lambda(x :: Integer, y :: Integer) = x - y)
 
 
 {-
