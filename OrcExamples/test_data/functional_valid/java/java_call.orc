@@ -19,7 +19,7 @@ import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 (if JavaBoolean.parseBoolean("true") then "3 pass" else "3 FAIL") |
 
 -- 4. No-arg constructor, field assign, and field deref test
-(FieldTestClass() >t> t.servant := "test 4" >> if t.servant?.equals("test 4") then "4 pass" else "4 FAIL" ) |
+(FieldTestClass() >t> t.servant := "test 4" >> ( if t.servant?.equals("test 4") then "4 pass" else "4 FAIL" ) ) |
 
 -- 5. Misuse instance field as method test
 (FieldTestClass() >t> t.servant() >> "5 FAIL" ) |

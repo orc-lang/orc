@@ -125,49 +125,54 @@ with CustomParserCombinators
   ----------------------------------------------------
                  [highest precedence]
   ----------------------------------------------------
-   ?       postfix     dereference
-   .       postfix     field projection
-   ()      postfix     application
+   ?               postfix     dereference
+   .               postfix     field projection
+   ()              postfix     application
   ----------------------------------------------------
-   ~       prefix      boolean not
-   -       prefix      unary minus 
+   ~               prefix      boolean not
+   -               prefix      unary minus 
   ----------------------------------------------------
-   **      left        exponent 
+   **              left        exponent 
   ----------------------------------------------------
-   *       left        multiplication
-   /       left        division
-   %       left        modulus 
+   *               left        multiplication
+   /               left        division
+   %               left        modulus 
   ----------------------------------------------------
-   +       left        addition
-   -       left        subtraction 
+   +               left        addition
+   -               left        subtraction 
   ----------------------------------------------------
-   :       right       cons 
+   :               right       cons 
   ----------------------------------------------------
-   =       none        equal
-   /=      none        not equal
-   :>      none        greater
-   >       none        greater
-   >=      none        greater or equal
-   <:      none        less
-   <       none        less
-   <=      none        less or equal
+   =               none        equal
+   /=              none        not equal
+   :>              none        greater
+   >               none        greater
+   >=              none        greater or equal
+   <:              none        less
+   <               none        less
+   <=              none        less or equal
   ----------------------------------------------------
-   ||      both        boolean or
-   &&      both        boolean and
+   ||              both        boolean or
+   &&              both        boolean and
   ----------------------------------------------------
-   :=      none        ref assignment 
+   :=              none        ref assignment 
   ----------------------------------------------------
-   >>      right       sequence 
+   >>              right       sequence 
   ----------------------------------------------------
-   |       both        parallel  
+   |               both        parallel  
   ----------------------------------------------------
-   <<      left        where 
+   <<              left        where 
   ----------------------------------------------------
-   ;       both        semicolon 
+   ;               both        semicolon 
   ----------------------------------------------------
-   ::      left        type ascription
-   :!:     left        type assertion
-   lambda  prefix      anonymous function
+   ::              left        type information
+   :!:             left        type override
+   lambda          right       anonymous function
+   if then else    prefix      conditional
+   def
+   import
+   type
+   include         prefix      declaration  
   ----------------------------------------------------
                  [lowest precedence]
   ----------------------------------------------------*/
@@ -241,30 +246,21 @@ with CustomParserCombinators
         parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call
   )
 
-  val parseConditionalExpression: Parser[Expression] = (
-        ("if" ~> parseOtherwiseExpression)
-        ~ ("then" ~> parseOtherwiseExpression)
-        ~ ("else" ~> parseOtherwiseExpression)
-        -> Conditional
-    |
-      parseCallExpression
-  )
-
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
       "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
-    | ("-" | "~") ~ parseConditionalExpression -> PrefixOperator
-    | parseConditionalExpression
+    | ("-" | "~") ~ parseCallExpression -> PrefixOperator
+    | parseCallExpression
     )
 
-  def parseExpnExpr          = parseUnaryExpr      rightAssociativeInfix  List("**")
-  def parseMultExpr          = parseExpnExpr       leftAssociativeInfix  List("*", "/", "%")
-  def parseAdditionalExpr    = parseMultExpr       leftAssociativeInfix  List("-", "+")
-  def parseConsExpr          = parseAdditionalExpr rightAssociativeInfix List(":")
-  def parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
-  def parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
-  def parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
+  val parseExpnExpr          = parseUnaryExpr      rightAssociativeInfix  List("**")
+  val parseMultExpr          = parseExpnExpr       leftAssociativeInfix  List("*", "/", "%")
+  val parseAdditionalExpr    = parseMultExpr       leftAssociativeInfix  List("-", "+")
+  val parseConsExpr          = parseAdditionalExpr rightAssociativeInfix List(":")
+  val parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
+  val parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
+  val parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
   val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
@@ -286,13 +282,17 @@ with CustomParserCombinators
       | (":!:" ~ parseType)
   )
 
-  val parseExpression: Parser[Expression] = (
+  def parseExpression: Parser[Expression] = (
         "lambda" ~> (ListOf(parseTypeVariable)?)
         ~ (TupleOf(parsePattern))
         ~ (parseReturnType?)
         ~ (parseGuard?)
         ~ ("=" ~> parseExpression)
         -> Lambda
+      | ("if" ~> parseExpression)
+        ~ ("then" ~> parseExpression)
+        ~ ("else" ~> parseExpression)
+        -> Conditional
       | parseDeclaration ~ parseExpression -> Declare
       | parseOtherwiseExpression ~ (parseAscription?) -?->
         { (_,_) match
@@ -379,20 +379,21 @@ with CustomParserCombinators
   
 /* Declarations */
 
+  
+  val parseDefCore = (
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
+  )
+  
   val parseDefDeclaration: Parser[DefDeclaration] = (
-        ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
-      -> Def
+      parseDefCore -> Def
+        
+      | (Identifier("class") ~> parseDefCore) -> DefClass
       
-      | (Identifier("class") ~> ident) ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
-      -> DefClass
-      
-      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType 
-      -> DefSig
+      | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig
   )
 
   val parseDeclaration: Parser[Declaration] = (
-      ("val" ~> parsePattern) ~ ("=" ~> parseExpression)
-      -> Val
+      ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
 
       | "def" ~> parseDefDeclaration
 

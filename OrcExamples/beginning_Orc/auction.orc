@@ -24,7 +24,7 @@ def auction(bidders, max) =
       Ift(bid :> max) >>
       (false, bid)
   Println("Current bid: " +  max) >>
-  if done then max else auction(bidders, bid)
+  ( if done then max else auction(bidders, bid) )
   
 
 def bidder(Bid) :: lambda(Bid) :: Bid

@@ -61,7 +61,7 @@ def class Multialarm() =
 
   def cancel(String) :: Signal
   def cancel(id) =
-    alarmlist.remove(id) >b> 
+    val b = alarmlist.remove(id) 
     if b = null then signal else b.cancel()
 
 stop
