@@ -11,24 +11,22 @@ def seq(Integer, Integer) :: Integer
 def seq(m, n) = if (m <: n) then (m | seq(m+1, n)) else stop
 
 {-
-replacing >= with > would cause the algorithm to eliminate repeated numbers in a list
+replacing >= with :> would cause the algorithm to eliminate repeated numbers in a list
 ignoring the m would cause the algorithm to generate all permutations
 -}
 
 def partition(Integer, Integer) :: List[Integer]
 def partition(n, d) =
-	def p(Integer, Integer, List[Integer], Integer) :: List[Integer]
-  def p(n, d, l, m) = upto(n) >x> if (x+1>=m) then aux(n-x, d, (x+1):l, x+1) else stop
-	def aux(Integer, Integer, List[Integer], Integer) :: List[Integer]
+	 def p(Integer, Integer, List[Integer], Integer) :: List[Integer]
+  def p(n, d, l, m) = upto(n) >x> Ift(x+1 >= m) >> aux(n-x, d, (x+1):l, x+1)
+	 def aux(Integer, Integer, List[Integer], Integer) :: List[Integer]
   def aux(s, d, l, m) =
-    if (d = 1) then (
+    if (d = 1) then
       if (s >= m) then s:l
       else stop
-    )
-    else (
+    else
       if (d :> s) then stop
       else p(s-1, d-1, l, m)
-    )
   aux(n, d, [], 0)
 
 

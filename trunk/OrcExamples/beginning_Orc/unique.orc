@@ -12,10 +12,12 @@ def unique(c) =
   val seen = Set[X]()
   def loop() :: X
   def loop() =
-    c.get() >x>
-    if seen.contains(x)  
-    then loop()
-    else x | seen.add(x) >> loop()
+    val x = c.get()
+    if seen.contains(x) then 
+      loop()
+    else 
+      x | seen.add(x) >> loop()
+      
   loop()
 
 val c = Channel[Number]()

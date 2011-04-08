@@ -81,9 +81,15 @@ def search(key) = -- return true or false
 
 def insert(key) = -- return true if value was inserted, false if it was there
     searchstart(key) >(p,d,q)>
-    if q = bsent
-       then Ref() >r> r.write((key,bsent,bsent)) >> update(p,d,r) >> true
-       else false
+    ( 
+      if q = bsent then 
+        Ref() >r> 
+        r.write((key,bsent,bsent)) >> 
+        update(p,d,r) >> 
+        true
+      else 
+        false
+    )
 
 def delete(key) =
    def isucc(p) =

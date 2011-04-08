@@ -12,7 +12,7 @@ val prime_buf = Channel[Integer]()
 -- which immediately print itself.
 -- this algorithm for generating primes is inspired
 -- by the fact that if square(p) > input v then v is a prime.
-def fast_sieve(n :: Integer) :: Integer =
+def class fast_sieve(n :: Integer) :: Integer =
   val p = n
   val psq = n * n -- square of n
   val next = Cell[Integer]() -- next sieve, initially empty
