@@ -55,7 +55,10 @@ object Typechecker {
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
   
-  def apply(expr: Expression): (Expression, Type) = typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
+  def apply(expr: Expression): (Expression, Type) = {
+    println(expr)
+    typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
+  }
   
   
   
@@ -70,10 +73,7 @@ object Typechecker {
           case x: syntactic.BoundVar => (x, context(x))
           case UnboundVar(name) => throw new UnboundVariableException(name)
           case FoldedCall(target, args, typeArgs) => {
-            val (newTarget, typeTarget) = typeSynthExpr(target)
-            val (newArgs, argTypes) = (args map typeSynthExpr).unzip
-            val (newTypeArgs, returnType) = typeCall(typeArgs, typeTarget, argTypes, None)
-            (FoldedCall(newTarget, newArgs, newTypeArgs), returnType)
+            typeFoldedCall(target, args, typeArgs, None)
           }
           case left || right  => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
@@ -134,6 +134,13 @@ object Typechecker {
   def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
     try {
       expr -> {
+        /* FoldedCall must be checked before prune, since it
+         * may contain some number of enclosing prunings.
+         */
+        case FoldedCall(target, args, typeArgs) => {
+          val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T))
+          e
+        }
         case left || right => {
           val newLeft = typeCheckExpr(left, T)
           val newRight = typeCheckExpr(right, T)
@@ -148,15 +155,6 @@ object Typechecker {
           val (newLeft, typeLeft) = typeSynthExpr(left)
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
-        }
-        /* FoldedCall must be checked before prune, since it
-         * may contain some number of enclosing prunings.
-         */
-        case FoldedCall(target, args, typeArgs) => {
-          val (newTarget, typeTarget) = typeSynthExpr(target)
-          val (newArgs, argTypes) = (args map typeSynthExpr).unzip
-          val (newTypeArgs, _) = typeCall(typeArgs, typeTarget, argTypes, Some(T))
-          FoldedCall(newTarget, newArgs, newTypeArgs)
         }
         case left < x < right => {
           val (newRight, typeRight) = typeSynthExpr(right)
@@ -280,6 +278,35 @@ object Typechecker {
   }
   
   
+  def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
+    val (newTarget, targetType) = typeSynthExpr(target)
+    val (newArgs, argTypes) = {
+      targetType match {
+        /* Note that this argument type annotation inference is very limited;
+         * the typechecker only switches to checking mode if the function has
+         * no type parameters. Thus, type argument inference will fail on many
+         * common cases, such as list mapping, where one might hope that type
+         * argument annotations would not be required.
+         * 
+         * Mea culpa; I could not find a way to make this work for polymorphic
+         * calls and still be sure that it was correct.   
+         * 
+         * - dkitchin
+         */
+        case FunctionType(Nil, funArgTypes, _) => {
+          def check(pair: (Expression, Type)): (Expression, Type) = {
+            val (arg, t) = pair
+            val newArg = typeCheckExpr(arg, t)
+            (newArg, t)
+          } 
+          ((args zip funArgTypes) map check).unzip 
+        }
+        case _ => (args map typeSynthExpr).unzip
+      }
+    }
+    val (newTypeArgs, returnType) = typeCall(syntacticTypeArgs, targetType, argTypes, checkReturnType)
+    (FoldedCall(newTarget, newArgs, newTypeArgs), returnType)
+  }
   
   
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
