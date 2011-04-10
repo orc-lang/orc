@@ -26,16 +26,16 @@ We could have a single semaphore bs instead of fs and rs.
 -}
 
 {- Orc standard library provides Bounded Channel -}
-def class BChannel(n) =
- val B = Array(n)
- val f = Ref(0)
+def class BChannel[A](n :: Integer) =
+ val B = Array[A](n)
+ val f = Ref[Integer](0)
  val fs = Semaphore(1)   -- to guard f
- val r = Ref(0)
+ val r = Ref[Integer](0)
  val rs = Semaphore(1)   -- to guard r
  val puts = Semaphore(n) -- # of empty positions
  val gets = Semaphore(0) -- # of full positions
  
- def put(x) = 
+ def put(x :: A) = 
      puts.acquire() >> rs.acquire() >> B(r?) := x >> 
      (r := (r? +1) % n) >> rs.release() >> gets.release()
  
@@ -52,12 +52,12 @@ stop
    instance of put or get can execute at any moment. Therfore, we may
    dispense with fs and rs. 
 -}
-def class Word() =
- val w = Ref()
+def class Word[A]() =
+ val w = Ref[A]()
  val puts = Semaphore(1) -- # of empty positions
  val gets = Semaphore(0) -- # of full positions
  
- def put(x) = 
+ def put(x :: A) = 
      puts.acquire() >> w := x >> gets.release()
  
  def get() = 

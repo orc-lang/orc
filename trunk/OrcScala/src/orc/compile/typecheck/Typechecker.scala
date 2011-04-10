@@ -56,7 +56,6 @@ object Typechecker {
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
   
   def apply(expr: Expression): (Expression, Type) = {
-    println(expr)
     typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
   }
   
@@ -167,7 +166,7 @@ object Typechecker {
               val argBindings = formals zip liftedArgTypes
               val typeBindings = typeFormals zip liftedTypeFormals
               val newBody = typeCheckExpr(body, liftedReturnType)(context ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
-              val argTypes = liftedArgTypes optionMap reify
+              val argTypes = liftedArgTypes optionMap { reify(_)(typeContext ++ typeBindings, typeOperatorContext) }
               val returnType = reify(liftedReturnType)
               FoldedLambda(formals, newBody, typeFormals, argTypes, returnType)
             }
@@ -224,15 +223,17 @@ object Typechecker {
         }
         else {
           val liftedTypeFormals = typeFormals map { u => new TypeVariable(u) }  
-          val liftedArgTypes = argTypes map lift
+          val typeBindings = typeFormals zip liftedTypeFormals
+          
+          val liftedArgTypes = argTypes map { lift(_)(typeContext ++ typeBindings, typeOperatorContext) }
           
           val argBindings = formals zip liftedArgTypes
-          val typeBindings = typeFormals zip liftedTypeFormals
+          
           
           // Note that the function itself is not bound in the context, since we know it is not recursive.
           val (newBody, liftedReturnType) = typeSynthExpr(body)(context ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
           
-          val newDef = d.copy(body = newBody, returntype = reify(liftedReturnType))
+          val newDef = d.copy(body = newBody, returntype = reify(liftedReturnType)(typeContext ++ typeBindings, typeOperatorContext))
           val liftedDefType = FunctionType(liftedTypeFormals, liftedArgTypes, liftedReturnType)
           
           (List(newDef), List( (name, liftedDefType) ))
