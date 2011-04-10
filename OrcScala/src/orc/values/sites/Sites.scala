@@ -43,7 +43,7 @@ trait TypedSite extends Site {
 }
 
 /* A site which explicitly lacks type information. */
-/* Use sparingly; this is equivalent to setting a type assertion */
+/* Use sparingly; this is equivalent to using a type override */
 trait UntypedSite extends TypedSite {
   def orcType() = Bot
 }

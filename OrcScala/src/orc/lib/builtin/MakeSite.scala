@@ -14,19 +14,32 @@ package orc.lib.builtin
 
 import orc.Handle
 import orc.error.runtime.ArityMismatchException
-import orc.values._
-import orc.values.sites._
+import orc.error.compiletime.typing.ArgumentTypecheckingException
+import orc.error.compiletime.typing.ExpectedType
+import orc.values.sites.TotalSite1
+import orc.values.sites.TypedSite
+import orc.values.sites.UntypedSite
+import orc.values.Format
+import orc.types.UnaryCallableType
+import orc.types.FunctionType
+import orc.types.Type
 import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
-object MakeSite extends TotalSite with UntypedSite {
+object MakeSite extends TotalSite1 with TypedSite {
   override def name = "MakeSite"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(closure) => new RunLikeSite(closure)
-      case _ => throw new ArityMismatchException(1, args.size)
+  def eval(arg: AnyRef) = new RunLikeSite(arg)
+  
+  def orcType() = new UnaryCallableType {
+     def call(argType: Type): Type = {
+       argType match {
+         case f : FunctionType => f
+         case g => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
+       }
+     }
   }
+  
 }
 
 // Standalone class execution
