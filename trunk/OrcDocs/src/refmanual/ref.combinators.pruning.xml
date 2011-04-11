@@ -83,10 +83,11 @@
 				  <row>
 				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
 				    <entry> = </entry>
-				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code><![CDATA[< (]]></code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable><code><![CDATA[)]]></code></entry>
-				    <entry>  (Right Associative)</entry>
+				    <entry><code>(</code><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code>)</code><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
+				    <entry>  (Left Associative)</entry>
 				  </row>
 				</tbody>
+				
 				</tgroup></informaltable>
 			  </para>
       </section>

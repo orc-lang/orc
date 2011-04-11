@@ -53,18 +53,18 @@ be used in the resulting record value.</para>
 <para>Notable record operations include:
 <itemizedlist>
 <listitem><para>
-Publish the value bound to key <replaceable>k</replaceable> in record <replaceable>R</replaceable> (a <indexterm><primary>dot</primary></indexterm><link linkend="ref.expressions.dot">dot access</link>): <replaceable>R</replaceable><code>.</code><replaceable>k</replaceable>
+Publish the value bound to key <replaceable>k</replaceable> in record <replaceable>r</replaceable> (a <indexterm><primary>dot</primary></indexterm><link linkend="ref.expressions.dot">dot access</link>): <replaceable>r</replaceable><code>.</code><replaceable>k</replaceable>
 </para></listitem>
 <listitem><para>
-<indexterm significance="preferred"><primary>record extension</primary></indexterm>Extend a record <replaceable>R</replaceable> with new entries : <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable> 
+<indexterm significance="preferred"><primary>record extension</primary></indexterm>Extend a record <replaceable>r</replaceable> with new entries : <replaceable>r</replaceable><code> + </code><replaceable>s</replaceable> 
 </para></listitem>
 </itemizedlist>
 </para>
 
 <para>
-A record extension <replaceable>R</replaceable><code> + </code><replaceable>S</replaceable> publishes a new record with all of the bindings of <replaceable>S</replaceable>, 
-plus all of the bindings in <replaceable>R</replaceable> which do not bind keys mentioned in <replaceable>S</replaceable>. 
-In other words, <replaceable>S</replaceable> overrides <replaceable>R</replaceable>. 
+A record extension <replaceable>r</replaceable><code> + </code><replaceable>s</replaceable> publishes a new record with all of the bindings of <replaceable>s</replaceable>, 
+plus all of the bindings in <replaceable>r</replaceable> which do not bind keys mentioned in <replaceable>s</replaceable>. 
+In other words, <replaceable>s</replaceable> overrides <replaceable>r</replaceable>. 
 Record extension is associative, but not commutative.
 The expression 
 <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 

@@ -84,8 +84,8 @@
 				  <row>
 				    <entry><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
 				    <entry> = </entry>
-				    <entry><code><![CDATA[(]]></code><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable><code><![CDATA[) >]]></code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable></entry>
-				    <entry>  (Left Associative)</entry>
+				    <entry><replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><code>(</code><replaceable>G</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>H</replaceable><code>)</code></entry>
+				    <entry>  (Right Associative)</entry>
 				  </row>
 				</tbody>
 				</tgroup></informaltable>
