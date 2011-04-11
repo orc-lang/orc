@@ -33,7 +33,7 @@ trait TypeConstructor extends TypeOperator {
     assert(variances.size == ts.size)
     TypeInstance(this, ts)
   }
-  
+    
   /* 
    * When an instance of this type is called, instantiate it at particular type parameters.
    * By default, a constructed type is uncallable.
@@ -51,10 +51,6 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
   override def toString = name
   
   val variances = givenVariances.toList
-
-  def apply(ts: Type*): Type = {
-    operate(ts.toList)
-  }
   
   def unapplySeq(t: Type): Option[Seq[Type]] = {
     t match {
@@ -68,12 +64,12 @@ class SimpleTypeConstructor(val name: String, val givenVariances: Variance*) ext
 
 case class JavaTypeConstructor(cl: Class[_]) 
 extends SimpleTypeConstructor(cl.getName(), (for (_ <- cl.getTypeParameters()) yield Invariant) : _*) {
-  val formals = cl.getTypeParameters().toList
-
+  val formals = cl.getTypeParameters().toList  
+  
   if (formals.isEmpty) {
     throw new SecondOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
   }
-  
+    
   override def instance(actuals: List[Type]): Type = {
     Typeloader.liftJavaType(cl, (formals zip actuals).toMap)  
   }

@@ -22,19 +22,19 @@ import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 (FieldTestClass() >t> t.servant := "test 4" >> ( if t.servant?.equals("test 4") then "4 pass" else "4 FAIL" ) ) |
 
 -- 5. Misuse instance field as method test
-(FieldTestClass() >t> t.servant() >> "5 FAIL" ) |
+((FieldTestClass() >t> t.servant() >> "5 FAIL" ) :!: Bot ) |
 
 -- 6. Misuse instance method as field test
-(JavaBoolean.TRUE.toString? >> "6 FAIL" ) |
+((JavaBoolean.TRUE.toString? >> "6 FAIL" ) :!: Bot ) |
 
 -- 7. Misuse static field as method test
-(JavaBoolean.TRUE() >> "7 FAIL" ) |
+((JavaBoolean.TRUE() >> "7 FAIL" ) :!: Bot ) |
 
 -- 8. Misuse static method as field test
-(JavaBoolean.parseBoolean? >> "8 FAIL" ) |
+((JavaBoolean.parseBoolean? >> "8 FAIL" ) :!: Bot ) |
 
 -- 9. Attempt to access protected method
-(JavaBoolean.TRUE.clone() >> "9 FAIL" ) |
+((JavaBoolean.TRUE.clone() >> "9 FAIL" ) :!: Bot ) |
 
 -- 10. An overloading & Orc conversion test -- make sure String.valueOf(double) is chosen
 (if (JavaString.valueOf(2e108).equalsIgnoreCase("2E+108") || JavaString.valueOf(2e108).equalsIgnoreCase("2.0E108")) then "10 pass" else "10 FAIL") |

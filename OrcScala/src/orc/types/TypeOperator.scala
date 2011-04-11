@@ -20,5 +20,10 @@ package orc.types
  * @author dkitchin
  */
 trait TypeOperator {
+  
+  def apply(ts: Type*): Type = {
+    operate(ts.toList)
+  }
+    
   def operate(ts: List[Type]): Type
 }
