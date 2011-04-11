@@ -51,7 +51,6 @@
 		  <listitem><para>Patterns may be used as function parameters.</para></listitem>
 		  <listitem><para>A function may have a guard, which allows the function body to be executed only if a given condition holds.</para></listitem>
 		  <listitem><para>A function may be defined by multiple clauses.</para></listitem>
-		  <listitem><para>A function may be defined in a <indexterm significance="preferred"><primary>currying</primary></indexterm><firstterm baseform="currying">curried</firstterm> form, with multiple argument groups.</para></listitem>
 		</itemizedlist>
 		</para>
 	

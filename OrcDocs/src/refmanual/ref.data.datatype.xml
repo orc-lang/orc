@@ -27,7 +27,7 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
 
 <para>
   In an untyped program, slots are written as <code>_</code>. In a typed program, slots contain types.
-]</para>
+</para>
 
 <section xml:id="ref.data.datatype.syntax">
   <title>Syntax</title>
