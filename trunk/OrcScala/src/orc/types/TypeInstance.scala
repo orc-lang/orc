@@ -78,6 +78,10 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
           }
         perArgSubtype forall { b => b }
       }
+      // We allow only pointwise comparison of different type operators.
+      case TypeInstance(otherTycon, otherArgs) if (tycon < otherTycon) => {
+        (args zip otherArgs) forall { case (a,b) => a eq b }
+      }
       case _ => super.<(that)
     }
   }
