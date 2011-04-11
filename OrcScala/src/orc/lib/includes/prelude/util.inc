@@ -183,6 +183,25 @@ def fillArray(a, f) =
   fill(0, f) ; a
 
 {--
+@def sliceArray[A](Array[A], Integer, Integer) :: Array[A]
+
+Given an array and a half-open index range, create a new array
+which contains the elements of the original array in that index
+range.
+
+@implementation
+--}
+def sliceArray[A](Array[A], Integer, Integer) :: Array[A]
+def sliceArray(orig, from, until) =
+  val size = until - from
+  val a = Array[A](size)
+  def copy(i :: Integer) :: Bot =
+    Ift(i <: size) >> 
+    a(i) := orig(from + i)? >> 
+    copy(i+1)
+  copy(0) ; a
+
+{--
 @def takePubs[A](Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
 publishes the first <code>n</code> values published

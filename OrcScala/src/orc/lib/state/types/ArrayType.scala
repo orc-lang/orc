@@ -40,11 +40,7 @@ object ArrayType extends SimpleTypeConstructor("Array", Invariant) {
     val List(t) = ts
     new RecordType(
       "apply" -> SimpleFunctionType(IntegerType, RefType(t)),
-      "get" -> SimpleFunctionType(IntegerType, t),
-      "set" -> SimpleFunctionType(IntegerType, t, SignalType),
-      "slice" -> SimpleFunctionType(IntegerType, IntegerType, this(t)),
-      "length" -> RefType(IntegerType),
-      "fill" -> SimpleFunctionType(t, SignalType)
+      "length" -> RefType(IntegerType)
     ) 
   }
   

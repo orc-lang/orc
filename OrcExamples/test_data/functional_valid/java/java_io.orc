@@ -2,9 +2,11 @@ import class FileInputStream = "java.io.FileInputStream"
 import class InputStreamReader = "java.io.InputStreamReader"
 import class StringBuilder = "java.lang.StringBuilder"
 
+import class Char = "java.lang.Character"
+
 def GetContent(InputStreamReader) :: String
 def GetContent(in) =
-  val buf = Array[Integer](1024, "char")
+  val buf = Array[Char](1024, "char")
   val out = StringBuilder()
   def loop(Integer) :: String
   def loop(len) =

@@ -333,7 +333,6 @@ object Typechecker {
           }
         }
       }
-        
       case OverloadedType(alternatives) => {
         var failure = new OverloadedTypeException()
         for (t <- alternatives) {
@@ -348,6 +347,12 @@ object Typechecker {
         }
         // otherwise
         throw failure
+      }
+      case `IntegerType` | IntegerConstantType(_) => {
+        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigInteger]), argTypes, checkReturnType)
+      }
+      case `NumberType` => {
+        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigDecimal]), argTypes, checkReturnType)
       }
       case _ => {}
     }
@@ -416,9 +421,6 @@ object Typechecker {
             (newSyntacticTypeArgs, newReturnType) 
           }
           case ct: CallableType => { 
-            // FIXME: type variables are allowed to escape to sites here
-            // Fix this by special-casing tuple and record creation sites,
-            // and using _.clean for argTypes on all other calls.
             val returnType = ct.call(Nil, argTypes)
             (Some(Nil), returnType)
           }
@@ -439,8 +441,7 @@ object Typechecker {
   
   def typeValue(value: AnyRef): Type = {
     
-    // FIXME: This is slightly too liberal. null is only at the bottom of the Java type lattice, not the Orc type lattice. This is similar to the equation of Object to Top.
-    if (value eq null) { return Bot } 
+    if (value eq null) { return NullType } 
     
     value match {
       case Signal => SignalType
@@ -451,8 +452,6 @@ object Typechecker {
       case Field(f) => FieldType(f)
       case s : TypedSite => s.orcType
       case v => liftJavaType(v.getClass())
-      // XML invocation must be handled separately, since it
-      // implicitly extends the Scala type scala.xml.Node
     }
   }
   
