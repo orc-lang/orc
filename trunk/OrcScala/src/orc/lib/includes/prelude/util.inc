@@ -113,9 +113,39 @@ def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
 
+
+import class Iterable = "java.lang.Iterable"
+
+{--
+@site IterableToStream[A](Iterable[A]) :: lambda () :: A 
+
+Converts a Java object implementing the Iterable interface
+into an Orc stream backed by the object's iterator. 
+When the site is called, if the iterator has items remaining,
+the next item is returned. If the iterator has no items
+remaining, the call halts.
+--}
+import site IterableToStream = "orc.lib.util.IterableToStream"
+
+{--
+@def iterableToList[A](Iterable[A]) :: List[A]
+Given a Java object implementing the Iterable interface, 
+create an Orc list whose elements are the values produced by
+the object's iterator, in the same order. 
+
+@implementation
+--}
+def iterableToList[A](Iterable[A]) :: List[A]
+def iterableToList(iterable) = 
+  val s = IterableToStream[A](iterable)
+  def walk(List[A]) :: List[A]
+  def walk(l) = s():l >m> walk(m) ; reverse(l) 
+  walk([]) 
+
+
 {--
 @def arrayToList[A](Array[A]) :: List[A]
-Given an array, create a list whose elements are exactly
+Given an array, create an Orc list whose elements are exactly
 the contents of the array, in the same order. 
 
 @implementation

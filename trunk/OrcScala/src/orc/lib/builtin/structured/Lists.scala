@@ -34,13 +34,6 @@ object NilExtractor extends PartialSite1 with TypedSite {
   def eval(arg: AnyRef) = {
     arg match {
       case Nil => Some(Signal)
-      case _::_ => None
-      case arr: Array[AnyRef] => {
-        if (arr.size == 0) { Some(Signal) } else { None }
-      }
-      case c: java.util.List[_] => {
-        if (c.size == 0) { Some(Signal) } else { None }
-      }
       case _ => None
     }
   }
@@ -67,19 +60,6 @@ object ConsExtractor extends PartialSite1 with TypedSite {
   def eval(arg: AnyRef) =
     arg match {
       case (v : AnyRef) :: vs => Some(OrcTuple(List(v, vs)))
-      case Nil => None
-      case c:java.util.List[_] => { // Allow pattern matching on Java lists too.
-        if (c.size != 0) {
-          Some(OrcTuple(List(c.get(0).asInstanceOf[AnyRef], c.subList(1, c.size))))
-        }
-        else None
-      }
-      case arr: Array[AnyRef] => { // Allow List-like pattern matching on arrays.
-        if (arr.size != 0) { 
-          Some(OrcTuple(List(arr(0), arr.slice(1, arr.size))))
-        }
-        else None
-      }
       case _ => None
   }
   
