@@ -33,7 +33,7 @@ trait TypeConstructor extends TypeOperator {
     assert(variances.size == ts.size)
     TypeInstance(this, ts)
   }
-    
+  
   /* 
    * When an instance of this type is called, instantiate it at particular type parameters.
    * By default, a constructed type is uncallable.
@@ -42,6 +42,7 @@ trait TypeConstructor extends TypeOperator {
   def instance(ts: List[Type]): Type = {
     throw new UncallableTypeException(TypeInstance(this, ts))
   }
+  
 }
 
 
@@ -72,6 +73,13 @@ extends SimpleTypeConstructor(cl.getName(), (for (_ <- cl.getTypeParameters()) y
     
   override def instance(actuals: List[Type]): Type = {
     Typeloader.liftJavaType(cl, (formals zip actuals).toMap)  
+  }
+  
+  override def <(that: TypeOperator) = {
+    that match {
+      case JavaTypeConstructor(otherCl) => otherCl isAssignableFrom cl
+      case _ => super.<(that)
+    }
   }
   
 }

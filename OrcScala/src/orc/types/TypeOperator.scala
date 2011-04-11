@@ -26,4 +26,6 @@ trait TypeOperator {
   }
     
   def operate(ts: List[Type]): Type
+  
+  def <(that: TypeOperator) = (this eq that)
 }
