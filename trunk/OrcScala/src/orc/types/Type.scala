@@ -69,39 +69,6 @@ trait Type extends TypeInterface with TypeListEnrichment {
     (that eq this) || (that eq Top)
   }
   
-  def coercibleTo(that: Type): Boolean = {
-    (this,that) match {
-      case (jt: JavaObjectType, IntegerType | IntegerConstantType(_)) => {
-        jt coercibleTo JavaObjectType(orcIntegralClass)
-      }
-      case (IntegerType | IntegerConstantType(_), JavaObjectType(cl,_)) => {
-        isOrcJavaNumConvertable(orcIntegralClass, cl)
-      }
-      case (jt: JavaObjectType, NumberType) => {
-        jt coercibleTo JavaObjectType(orcFloatingPointClass)
-      }
-      case (NumberType, JavaObjectType(cl,_)) => {
-        isOrcJavaNumConvertable(orcFloatingPointClass, cl)
-      }
-      case (JavaObjectType(a,_), JavaObjectType(b,_)) => {
-        if (a.isPrimitive() && b.isPrimitive()) {
-          isPrimWidenable(a,b)
-        }
-        else if (b.isPrimitive() /* && !a.isPrimitive() */) {
-          isPrimWidenable(unbox(a),b) || 
-          isOrcJavaNumConvertable(a,b)
-        }
-        else if (a.isPrimitive() /* && !b.isPrimitive() */) {
-          b isAssignableFrom (box(a))
-        }
-        else {
-          false
-        }
-      }
-      case _ => false
-    }
-  }
-  
   /* Eliminate all variables X in this type for which V(X) is true.
    * Produce the least supertype of this type with such variables eliminated.
    * It is possible for elimination to fail if a variable occurs in
@@ -206,7 +173,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
   
   /* Convenience methods */
   def assertSubtype(that: Type) {
-    if (!(this < that) && !(this coercibleTo that)) {
+    if (!(this < that)) {
       throw new SubtypeFailureException(that, this) 
     }
   }

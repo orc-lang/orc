@@ -252,12 +252,27 @@ object Typeloader extends SiteClassLoading with TypeListEnrichment {
         else if (java.lang.Boolean.TYPE isAssignableFrom cl) {
           BooleanType
         }
+        else if (java.lang.Character.TYPE isAssignableFrom cl) {
+          JavaObjectType(classOf[java.lang.Character])
+        }
+        // The Orc type system does not track distinctions between Java primitive types.
+        else if (
+           (java.lang.Byte.TYPE isAssignableFrom cl)
+        || (java.lang.Short.TYPE isAssignableFrom cl)
+        || (java.lang.Integer.TYPE isAssignableFrom cl)
+        || (java.lang.Long.TYPE isAssignableFrom cl)
+        ) {
+          IntegerType
+        }
+        else if (
+           (java.lang.Float.TYPE isAssignableFrom cl)
+        || (java.lang.Double.TYPE isAssignableFrom cl)
+        ) {
+          NumberType
+        }
         else {
           JavaObjectType(cl, jctx)
         }
-        /*TODO: Add explicit conversions from Java primitive types to Orc primitive types,
-         *      or add appropriate subtyping in JavaObjectType and in the primitive types.
-         */
       }
       // X
       case x: jvm.TypeVariable[_] => {

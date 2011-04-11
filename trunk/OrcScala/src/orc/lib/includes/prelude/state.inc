@@ -469,24 +469,6 @@ primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.
 
-@method array[A].read(Integer) :: A
-
-<od:sitepropset>
-   <od:siteprop propname="indefinite"/>
-</od:sitepropset>
-
-Get the element of the array given by the index, counting from 0.
-<code>a.read(i)</code> is equivalent to <code>a(i)?</code>.
-
-@method array[A].write(Integer, A) :: Signal
-
-<od:sitepropset>
-   <od:siteprop propname="definite"/>
-</od:sitepropset>
-
-Set the element of the array given by the index, counting from 0.
-<code>a.write(i,v)</code> is equivalent to <code>a(i) := v</code>.
-
 @method array[A].length? :: Integer
 
 <od:sitepropset>
@@ -499,21 +481,6 @@ Return the size of the array.
 import site Array = "orc.lib.state.JavaArray"
 import type Array = "orc.lib.state.types.ArrayType"
 
---TODO: define former array methods: get set slice fill length
-
-def slice[A](Array[A], Integer, Integer) :: Top
-def slice(xs, from, until) =
-  import class ScalaPredef = "scala.Predef"
-  ScalaPredef.refArrayOps[A](xs).slice(from, until)
-
-
-def fill[A](Array[A], A) :: Signal
-def fill(a, x) =
-  def fillBelow(Integer) :: Signal
-  def fillBelow(i) =
-    if i <: 0 then signal
-    else ((a(i) := x), fillBelow(i-1)) >> signal
-  fillBelow(a.length?-1)
 
 {--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A

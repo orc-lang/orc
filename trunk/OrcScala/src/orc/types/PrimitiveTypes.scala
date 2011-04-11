@@ -78,3 +78,13 @@ case class FieldType(f: String) extends Type {
 
 object StringType extends JavaObjectType(classOf[java.lang.String])
 object BooleanType extends JavaObjectType(classOf[java.lang.Boolean])
+
+object NullType extends Type {
+  
+  override def toString = "Null"
+    
+  override def <(that: Type): Boolean = {
+    that.isInstanceOf[JavaObjectType] || super.<(that)
+  }
+  
+}
