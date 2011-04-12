@@ -1,4 +1,4 @@
-import include "date.inc"
+include "date.inc"
 
 import site SendForm = "orc.lib.orchard.forms.FormSenderSite"
 import class Form = "orc.lib.orchard.forms.Form"
