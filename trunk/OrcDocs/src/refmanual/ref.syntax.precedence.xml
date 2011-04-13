@@ -19,7 +19,7 @@
 <para>
 <indexterm significance="preferred"><primary>precedence</primary></indexterm><firstterm baseform="precedence">Precedence</firstterm> rules specify the order in which parts of an expression are parsed, in absence of parenthesis.
 For example, in <code>1 + 2 * 3</code>, Orc's precedence rules prescribe that the multiplication be parsed as a sub-expression of the addition.
-Operations or combinators listed in the table below with higher precedence will be parsed in preference to lower precedence operations or combinators.
+<link linkend="ref.expressions.operators">Operators</link> or <link linkend="ref.combinators">combinators</link> listed in the table below with higher precedence will be parsed in preference to lower precedence operations or combinators.
 </para>
 
 <para>

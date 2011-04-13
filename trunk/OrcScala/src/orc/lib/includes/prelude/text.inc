@@ -18,7 +18,7 @@ Operations on strings.
 {--
 @site String
 
-Strings themselves have a set of methods associated with them. These methods can
+<link linkend="ref.data.string">Strings</link> themselves have a set of methods associated with them. These methods can
 be invoked on any string literal or any variable bound to a string.
 
 The methods documented here are only a subset of those available in the Java

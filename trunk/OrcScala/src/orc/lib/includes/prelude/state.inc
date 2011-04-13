@@ -106,7 +106,7 @@ Read the value of the ref. If the ref does not yet have a value, <link linkend="
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method ref[A].write(A) :: Signal
-Write a value to the ref.
+Write a value to the ref, then publish a <link linkend="ref.data.signal"><code>signal</code></link>.
 
 --}
 import site Ref = "orc.lib.state.Ref"
@@ -134,7 +134,7 @@ def (:=)(r,v) = r.write(v)
 
 {--
 @def swap[A](Ref[A], Ref[A]) :: Signal
-Swap the values in two references.
+Swap the values in two references, then return a signal.
 
 @implementation
 --}

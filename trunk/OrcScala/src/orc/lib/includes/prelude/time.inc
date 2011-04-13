@@ -23,7 +23,7 @@ Create a new realtime clock instance.
 
 @method rclock.wait(Integer) :: Signal
 
-Publish a signal after the given number of milliseconds.
+Return a <link linkend="ref.data.signal">signal</link> after the given number of milliseconds.
 
 
 @method rclock.time() :: Integer
@@ -38,7 +38,7 @@ import site Rclock = "orc.lib.time.Rclock"
 {--
 @site Rwait(Integer) :: Signal
 
-Publish a signal after the given number of milliseconds.
+Return a signal after the given number of milliseconds.
 
 @site Rtime() :: Integer
 

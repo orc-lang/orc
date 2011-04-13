@@ -17,20 +17,22 @@
   <para>
   Whenever one or more variables is bound, the type checker records information from that
   binding to typecheck the uses of that variable in its scope. This information is stored
-  in a <indexterm significance="preferred"><primary>typing context</primary></indexterm><firstterm>typing context</firstterm>, which is just a sequence of variable names and
-  their types. When an expression in the scope of many declarations is typechecked, the
+  in a <indexterm significance="preferred"><primary>typing context</primary></indexterm><firstterm>typing context</firstterm>, 
+  which is just a sequence of variable names and their types. 
+  When an expression is in the scope of many bindings, the
   typechecker will carry a composite context of all of the typing contexts created by all
-  of the declarations. 
+  of those bindings. 
   </para>
   
   <para>
-  Most declarations bind only a single variable and simply add one binding to the typing
-  context. However, pattern matching may generate a whole sequence of variable bindings.
+  <link linkend="ref.declarations">Declarations</link>, <link linkend="ref.combinators">combinators</link>, and <link linkend="ref.expressions.call.function">function calls</link> all bind variables. 
+  Often, only a single variable is bound, so only one binding is generated. 
+  However, <link linkend="ref.patterns">pattern matching</link> may generate an entire set of variable bindings.
   </para>
   
   <para>
   When a variable is typechecked, its type is found by first looking in the most recent 
-  context (i.e. from the nearest declaration), and if its type is not found there, proceeding
+  context (i.e. from the nearest binding), and if its type is not found there, proceeding
   further and further out in scope. If the variable is not in the typing context, then it
   is a free variable, which is a syntactic error.
   </para>

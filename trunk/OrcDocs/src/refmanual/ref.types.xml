@@ -28,10 +28,10 @@ that operation <link linkend="ref.concepts.states.halt">halts</link>
 <para>
 Orc also has an optional static typechecker, which will guarantee that a program is
 free of type errors before the program is run. For every expression in the program,
-the typechecker tries to find the types of values that the expression could publish, 
+the typechecker tries to find the types of values that the expression could <link linkend="ref.concepts.publish">publish</link>, 
 and then checks that all such types are consistent. The typechecker performs a limited form of
-type inference, so it can discover many of these types automatically.
-However, the programmer must provide additional type information for function definitions
+<link linkend="ref.types.metatheory">type inference</link>, so it can discover many of these types automatically.
+However, the programmer must provide <link linkend="ref.types.typeinfo">additional type information</link> for function definitions
 and for a few other specific cases.
 </para>
 

@@ -37,7 +37,7 @@
 		Type information may be added to a <link linkend="ref.types.polymorphism.calls">polymorphic</link> <link linkend="ref.expressions.call">site or function call</link>
 		by providing explicit type arguments. The typechecker can usually infer type arguments, 
 		but there are certain cases where it does not have enough information, such as when 
-		calling polymorphic factory sites like <code>Channel</code> or <code>Ref</code>.
+		calling polymorphic factory sites like <link linkend="ref.stdlib.state.Channel"><code>Channel</code></link> or <link linkend="ref.stdlib.state.Ref"><code>Ref</code></link>.
 	</para>
 	
 	</section>
@@ -45,7 +45,7 @@
 	<section xml:id="ref.types.typeinfo.function">
 	<title>Function Type Information</title>
 	<para>
-		Whenever a function is defined (using the <code>def</code> keyword),
+		Whenever a <link linkend="ref.declarations.def">function is defined</link>,
 		in order for the typechecker to determine its type, 
 		the definition must be accompanied by information about the argument types and return type
 		of the function. If the function is polymorphic, the names of its type parameters must also be given.
@@ -67,7 +67,7 @@
 	</para>
 		
 	<para>
-	  Type information may also be written directly into a clause of a function definition. 
+	  Type information may also be written directly into a <link linkend="ref.declarations.def.clauses">clause</link> of a function definition. 
 	  For example, the following definitions are equivalent:
 
 <programlisting language="orc"><![CDATA[
@@ -106,7 +106,7 @@ def min(x :: Number, y :: Number) :: Number = if (x <: y) then x else y
 	</para>
 	
 	<para>
-	A pattern may specify the type of values against which it may be matched. The typechecker can
+	A <link linkend="ref.patterns">pattern</link> may specify the type of values against which it may be matched. The typechecker can
 	then verify this stated type, rather than attempting to infer it, which may provide enough type information to
 	make other inferences possible or resolve ambiguities. Furthermore, adding extra type information makes it easier 
 	to pinpoint the source of a typechecking failure. Note that this type information has no effect on
@@ -125,11 +125,12 @@ def min(x :: Number, y :: Number) :: Number = if (x <: y) then x else y
    </para>
    
    <para>
-		 An expression may specify the type of values that it will publish. The typechecker can
+		 An expression may specify the type of values that it will <link linkend="ref.concepts.publish">publish</link>. The typechecker can
 		 then verify this stated type, rather than attempting to infer it, which may provide enough type information to
-		 make other inferences possible or resolve ambiguities. For example, the typechecker may not be able to infer the correct join type for a parallel combinator,
-		 but it is always able to check that both branches are subtypes of an already provided type. Furthermore, adding extra
-		 type information makes it easier to pinpoint the source of a typechecking failure.
+		 make other inferences possible or resolve ambiguities. For example, the typechecker may not be able to infer the 
+		 correct <link linkend="ref.types.subtyping.join">join</link> type for a <link linkend="ref.combinators.parallel">parallel combinator</link>,
+		 but it is always able to check that both branches are <link linkend="ref.types.subtyping">subtypes</link> of an already provided type. 
+		 Furthermore, adding extra type information makes it easier to pinpoint the source of a typechecking failure.
 	 </para>   
 
 	</section>

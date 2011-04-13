@@ -20,22 +20,23 @@
 		<para xml:id="ref.types.metatheory.origin">
 		The typechecker uses the <indexterm significance="preferred"><primary>type inference</primary></indexterm><firstterm>local type inference</firstterm> algorithm described by Pierce and Turner in the paper 
 		<link xlink:href="http://www.cis.upenn.edu/~bcpierce/papers/lti-toplas.pdf">Local Type Inference</link>.
-		The typechecker extends this algorithm with polymorphic type operators (e.g. <code>List</code> or
+		The typechecker extends this algorithm with <link linkend="ref.types.polymorphism">polymorphic</link> type operators (e.g. <code>List</code> or
 		<code>Channel</code>), forming a second-order type system. 
-		It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link> and a typing procedure for external services.
+		It also includes polymorphic user-defined <link linkend="ref.declarations.type.datatype">datatypes</link> and a typing procedure for <link linkend="ref.expressions.call.type">site calls</link>.
 		</para>
 	
 		<para xml:id="ref.types.metatheory.polymorphisms">
-		The typechecker supports both generics and subtyping, though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
+		The typechecker supports both generics and <link linkend="ref.types.subtyping">subtyping</link>, though it does not currently implement <emphasis>bounded polymorphism</emphasis>, which combines the two.
 		Sites may also be overloaded (<indexterm significance="preferred"><primary>ad-hoc polymorphism</primary></indexterm><firstterm>ad-hoc polymorphism</firstterm>), but the programmer cannot
 		write overloaded functions within Orc itself.  
 		</para>
 	
 		<para xml:id="ref.types.metatheory.erasure">
-		The Orc type system currently uses an <indexterm significance="preferred"><primary>erasure</primary></indexterm><firstterm>erasure</firstterm> semantics, meaning that type information
+		The Orc type system currently uses an <indexterm significance="preferred"><primary>erasure</primary></indexterm><firstterm>erasure</firstterm> semantics, 
+		meaning that <link linkend="ref.types.typeinfo">type information</link>
 		does not affect runtime behavior, and may be removed from a program after typechecking is finished. In the
 		case of <link linkend="ref.declarations.type.datatype">datatype declarations</link>, the type information and 
-		constructor site bindings are separated by the compiler, so that datatypes may be used in an untyped setting.
+		constructor bindings are separated by the compiler, so that datatypes may be used in an untyped setting.
 		</para>	
 		 
 	<section xml:id="ref.types.metatheory.links">

@@ -49,7 +49,7 @@ When applied to no arguments, returns a signal.
 When applied to a single argument, returns that argument (behaving as the identity function).
 
 @site Let(A, ...) :: (A, ...)
-When applied to two or more arguments, returns the arguments as a tuple.
+When applied to two or more arguments, returns the arguments as a <link linkend="ref.data.tuple">tuple</link>.
 --}
 import site Let = "orc.lib.builtin.Let"
 
@@ -201,7 +201,7 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-Orc data structures, such as records, are equal if their contents are equal.
+Orc data structures, such as tuples, are equal if their contents are equal.
 Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
@@ -312,7 +312,7 @@ import site Ceil = "orc.lib.math.Ceil"
 {--
 @def sqrt(Number) :: Integer
 Return the square root of this number.
-If the number is negative, halt silently.
+If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @implementation
 --}
