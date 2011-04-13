@@ -17,7 +17,7 @@
 		<title>Definition</title>
 			<para>
 			Deflation is an execution mechanism which extracts a single value from an expression that
-			might publish many values, so that such an expression can be executed in a context that expects
+			might <link linkend="ref.concepts.publish">publish</link> many values, so that such an expression can be executed in a context that expects
 			at most one value.
 			</para>
 			<para>
@@ -25,9 +25,9 @@
 			<replaceable>C</replaceable> by rewriting</para> 
 			<para><replaceable>C</replaceable>{<replaceable>E</replaceable>}</para>
 			<para>to</para>
-			<para><replaceable>C</replaceable>{<code><replaceable>x</replaceable></code>}<code>&lt;</code><replaceable>x</replaceable><code>&gt;</code><replaceable>E</replaceable></para>
+			<para><link linkend="ref.combinators.pruning"><replaceable>C</replaceable>{<code><replaceable>x</replaceable></code>}<code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>E</replaceable></link></para>
 			<para>When <replaceable>E</replaceable> publishes a value <replaceable>v</replaceable>, 
-			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>.</para> 
+			that value is bound to <code>x</code> and used in the context <replaceable>C</replaceable>, and <replaceable>E</replaceable> is <link linkend="ref.concepts.states.kill">killed</link>.</para> 
 			
 			<para>The context <replaceable>C</replaceable> may contain multiple expressions to be deflated,
 			so this transformation may be applied multiple times. For example, the expression</para>
@@ -35,18 +35,18 @@
 			<para>rewrites to</para>
 			<para>
 			  <code>(x, y, z)</code>
-			  <code><![CDATA[ <x< ]]></code><replaceable>E</replaceable>
-			  <code><![CDATA[ <y< ]]></code><replaceable>F</replaceable>
-			  <code><![CDATA[ <z< ]]></code><replaceable>G</replaceable>
+			  <code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>E</replaceable>
+			  <code> &lt;</code><replaceable>y</replaceable><code>&lt; </code><replaceable>F</replaceable>
+			  <code> &lt;</code><replaceable>z</replaceable><code>&lt; </code><replaceable>G</replaceable>
 			</para>
 			<para>
-			  If any deflated expression <link linkend="ref.concepts.states.halt"><indexterm><primary>halt</primary></indexterm>halts</link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
+			  If any deflated expression <indexterm><primary>halt</primary></indexterm><link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>, then the enclosing expression also halts silently. 
 			  In the example above, if <replaceable>F</replaceable> halted silently, then the expression
 			  <code>(</code><replaceable>E</replaceable><code>, </code><replaceable>F</replaceable><code>, </code><replaceable>G</replaceable><code>)</code>
 			  would also halt silently. 
 			</para>
 			<para>
-			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a function call
+			  However, there is one exception to this rule: if <replaceable>C</replaceable> is a <link linkend="ref.expressions.call.function">function call</link>
 			  it does not halt, since function evaluation is lenient.
 			</para>
 			<para>

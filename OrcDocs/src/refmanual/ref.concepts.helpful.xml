@@ -19,7 +19,7 @@
 	<indexterm><primary>otherwise combinator</primary></indexterm>
 
 	<para>
-		A <indexterm significance="preferred"><primary>helpful site</primary></indexterm><firstterm>helpful site</firstterm> responds with an indication that it will never <link linkend="ref.concepts.publish"><indexterm><primary>publish</primary></indexterm>publish</link>,
+		A <indexterm significance="preferred"><primary>helpful site</primary></indexterm><firstterm>helpful site</firstterm> responds with an indication that it will never <indexterm><primary>publish</primary></indexterm><link linkend="ref.concepts.publish">publish</link>,
 		when it knows this outcome for a call. 
 	</para>
 
@@ -33,12 +33,12 @@
 	</para>
 
 	<para>
-		We do not expect arbitrary Web services to be helpful. 
+		The indication from a helpful site that it will never publish causes the call to <link linkend="ref.concepts.states.halt">halt</link>.
+		This can be exploited by the caller by using the <link linkend="ref.combinators.otherwise">otherwise combinator</link>.
 	</para>
-
+	
 	<para>
-		The indication from a helpful site that it will never publish can be
-		exploited by the caller using the <link linkend="ref.combinators.otherwise">otherwise combinator</link>.
+		We do not expect arbitrary services to be helpful. 
 	</para>
 
 	<section xml:id="ref.concepts.helpful.links">
