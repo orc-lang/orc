@@ -31,7 +31,7 @@
 	  <title>Type</title>
 	  <para>
 	    When a variable pattern <replaceable>x</replaceable> is matched against a type <replaceable>T</replaceable>, 
-	    it produces the typing context {<replaceable>x</replaceable> has type <replaceable>T</replaceable>}.
+	    it produces the <link linkend="ref.types.context">typing context</link> { <replaceable>x</replaceable> has type <replaceable>T</replaceable> }.
 	  </para>
 	  </section>
 		

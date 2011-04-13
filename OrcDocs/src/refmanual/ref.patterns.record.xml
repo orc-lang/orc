@@ -15,10 +15,10 @@
 		<title>Record Pattern</title>
 		
 		<para>
-			When a record value is compared to a <indexterm significance="preferred"><primary>record pattern</primary></indexterm><firstterm>record pattern</firstterm>, each key mentioned
-			in the record pattern must have a mapping in the record value, and each such mapped
-			value must match its corresponding pattern. The record value may contain additional
-			keys not mentioned by the record pattern.
+			When a <indexterm significance="preferred"><primary>record pattern</primary></indexterm><firstterm>record pattern</firstterm> is matched against a <link linkend="ref.data.record">record value</link>, 
+			each key mentioned in the record pattern must have a mapping in the record value, 
+			and each such mapped value must match its corresponding pattern. 
+			The record value may contain additional keys not mentioned by the record pattern.
 		</para>
 		
 		<section xml:id="ref.patterns.record.syntax">
@@ -37,7 +37,7 @@
 	    is matched against a record type <replaceable>R</replaceable>, each <replaceable>K<subscript>i</subscript></replaceable>
 	    must have a binding in <replaceable>R</replaceable>. Then each <replaceable>P<subscript>i</subscript></replaceable> is
 	    matched against the type bound to <replaceable>K<subscript>i</subscript></replaceable> in <replaceable>R</replaceable>,
-	    producing a typing context Γ<subscript>i</subscript>. 
+	    producing a <link linkend="ref.types.context">typing context</link> Γ<subscript>i</subscript>. 
 	    The typing context produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
 	  </para>
 	  </section>

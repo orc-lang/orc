@@ -15,30 +15,30 @@
 		<title>Call Pattern</title>
 		<para>
 			A <indexterm significance="preferred"><primary>call pattern</primary></indexterm><firstterm>call pattern</firstterm>
-			allows a call to be made within a pattern match.
+			allows a <link linkend="ref.expressions.call">call</link> to be made within a pattern match.
 	  </para>
 	  
 	  <para> 
 			A pattern <replaceable>x</replaceable><code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code>,
 			is matched against a value <replaceable>v</replaceable> by calling 
 			<replaceable>x</replaceable><code>.unapply(</code><replaceable>v</replaceable><code>)</code>,
-			and matching each value published by that call against the tuple pattern
+			and matching each value <link linkend="ref.concepts.publish">published</link> by that call against the <link linkend="ref.patterns.tuple">tuple pattern</link>
 			<code>(</code> <replaceable>P<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>P<subscript>n</subscript></replaceable> <code>)</code>.
 			If there is only one pattern <replaceable>P</replaceable>, then <replaceable>P</replaceable> is matched on its own, instead of using a tuple pattern.
-			If there are no patterns, <code>_</code> is used.
+			If there are no patterns, a <link linkend="ref.patterns.wildcard">wildcard pattern</link> is used.
 	  </para>
 	  
 	  <para>
-	    If <replaceable>x</replaceable><code>.unapply(</code><replaceable>v</replaceable><code>)</code> halts silently,
+	    If <replaceable>x</replaceable><code>.unapply(</code><replaceable>v</replaceable><code>)</code> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>,
 	    or halts without producing any matching values, then the match fails.
 	  </para>
 	  
 	  <para>
 	    If multiple values are published and successfully match, then a <indexterm significance="preferred"><primary>multimatch</primary></indexterm><firstterm>multimatch</firstterm> occurs:
 	    the entire pattern succeeds multiple times. 
-	    In a function call, the matching clause is executed multiple times, once for each match.
-	    In a sequential combinator, the right hand side is executed multiple times, once for each match.
-	    In a pruning combinator, one of the matches is chosen arbitrarily.
+	    In a <link linkend="ref.expressions.call.function">function call</link>, the matching clause is executed multiple times, once for each match.
+	    In a <link linkend="ref.combinators.sequential">sequential combinator</link>, the right hand side is executed multiple times, once for each match.
+	    In a <link linkend="ref.combinators.pruning">pruning combinator</link>, one of the matches is chosen arbitrarily.
 	  </para>
 			 
 		
@@ -55,12 +55,12 @@
 	  <title>Type</title>
 	  <para>
 	    When a call pattern is matched against a type <replaceable>S</replaceable>,
-	    the <code>unapply</code> member of the type <replaceable>S</replaceable> must have the function type
+	    the <code>unapply</code> member of the type <replaceable>S</replaceable> must have the <link linkend="ref.data.closure.type">function type</link>
 	    <code>lambda</code> <code>(</code><replaceable>T</replaceable><code>)</code> <code>::</code> <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>,
-	    where <replaceable>S</replaceable> &#x2264; <replaceable>T</replaceable>.
+	    where <replaceable>S</replaceable> is a <link linkend="ref.types.subtyping">subtype</link> of <replaceable>T</replaceable>.
 	    Then each argument pattern <replaceable>P<subscript>i</subscript></replaceable>
 	    is matched against the corresponding type <replaceable>T<subscript>i</subscript></replaceable>,
-	    producing typing contexts Γ<subscript>i</subscript>. The typing context
+	    producing <link linkend="ref.types.context">typing contexts</link> Γ<subscript>i</subscript>. The typing context
 	    produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
 	  </para>
 	  </section>

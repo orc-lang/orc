@@ -16,7 +16,7 @@
 <para>
 For services beyond those available as library sites, Java sites, and Web service sites,
 Orc programs may call sites developed specifically as Orc sites.
-The calling Orc program names the site with a <code>import site</code> declaration.
+The calling Orc program names the site with an <link linkend="ref.declarations.site"><code>import site</code></link> declaration.
 This declaration causes the Orc engine to load the Java class of the given name from
 the Orc site classpath or JVM classpath.
 Calls to this site are dispatched via Orc's site interface,
@@ -36,10 +36,10 @@ For information on Scala, see <link xlink:href="http://www.scala-lang.org/">http
 <para>
 The Orc runtime engine provides a basic <code language="java">Site</code> interface which a site must implement.
 This interface specifies an abstract <code language="java">call</code> method that receives a call handle
-for the site to respond to the site call.  The <code language="java">Handle</code> interface provides methods
+for the site to respond to the <link linkend="ref.expressions.call.site">site call</link>.  The <code language="java">Handle</code> interface provides methods
 to respond by either:
 <itemizedlist>
-<listitem><para>Publishing a value</para></listitem>
+<listitem><para><link linkend="ref.concepts.publish">Publishing</link> a value</para></listitem>
 <listitem><para><link linkend="ref.concepts.states.halt">Halting</link> <link linkend="ref.concepts.silent">silently</link></para></listitem>
 <listitem><para>Throwing an exception</para></listitem>
 </itemizedlist>

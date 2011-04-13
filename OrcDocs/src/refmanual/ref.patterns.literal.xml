@@ -15,7 +15,7 @@
 	<title>Literal Pattern</title>
 	<para>
 		A <indexterm significance="preferred"><primary>literal pattern</primary></indexterm><firstterm>literal pattern</firstterm> matches only the same literal value.
-		It is often used in clausal definition of functions.
+		It is often used in <link linkend="ref.declarations.def.clauses">clausal definitions</link> of functions.
 	</para>
 
 	<section xml:id="ref.patterns.literal.syntax">
@@ -33,10 +33,10 @@
 			When a literal pattern is matched against a type
 			<replaceable>T</replaceable>
 			,
-			the type of the literal value must be a subtype of the type
+			the type of the literal value must be a <link linkend="ref.types.subtyping">subtype</link> of the type
 			<replaceable>T</replaceable>
 			.
-			The match produces an empty typing context, since it binds no variables.
+			The match produces an empty <link linkend="ref.types.context">typing context</link>, since it binds no variables.
 		</para>
 	</section>
 

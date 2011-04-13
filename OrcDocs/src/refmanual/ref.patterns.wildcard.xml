@@ -29,7 +29,7 @@
 		<section xml:id="ref.patterns.wildcard.type">
 	  <title>Type</title>
 	  <para>
-	    A wildcard pattern matches any type. The matching produces an empty typing context.
+	    A wildcard pattern matches any type. The matching produces an empty <link linkend="ref.types.context">typing context</link>.
 	  </para>
 	  </section>
 		

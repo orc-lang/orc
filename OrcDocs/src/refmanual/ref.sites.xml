@@ -21,13 +21,13 @@
 <para>
 Orc programs communicate with their environment by calling <indexterm significance="preferred"><primary>site</primary></indexterm><firstterm baseform="site">sites</firstterm>.
 Sites perform services, which the Orc program orchestrates.
-A site call may return a single value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
+A <link linkend="ref.expressions.call.site">site call</link> may return a single value, or may be <link linkend="ref.concepts.silent">silent</link>, returning no value.
 Beyond this, there are no restrictions on sites' behavior.
 In prticular, site calls may interact with other site calls, have side effects, or continue to run after returning a value.
 </para>
 
 <para>
-Orc has no built-in services, so even operations as simple as addition are performed by sites.
+Orc has no built-in services, so even <link linkend="ref.expressions.operators">operations</link> as simple as addition are performed by sites.
 Sites may also provide complex services, such as a database management system.
 </para>
 
