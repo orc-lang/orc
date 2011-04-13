@@ -21,8 +21,8 @@
 <para>
 Orc has four <indexterm significance="preferred"><primary>combinator</primary></indexterm><firstterm baseform="combinator">combinators</firstterm>: parallel, sequential, pruning, and otherwise. A combinator forms an
 expression from two component expressions. Each combinator captures a different aspect of concurrency.
-Syntactically, the combinators are written infix, and have lower <link linkend="ref.syntax.precedence">precedence</link> than operators, but higher
-precedence than conditionals or declarations.
+Syntactically, the combinators are written infix, and have lower <link linkend="ref.syntax.precedence">precedence</link> than <link linkend="ref.expressions.operators">operators</link> or <link linkend="ref.expressions.call">calls</link>, 
+but higher precedence than other expression forms.
 </para>
 
 <xi:include href="ref.combinators.parallel.xml"/>	

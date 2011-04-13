@@ -44,8 +44,8 @@ This value can be <indexterm><primary>call pattern</primary></indexterm><link li
 <title>Constructors</title>
 
 <para>
-  Each constructor is a site, which takes one argument for each slot
-  of the constructor, and publishes a datatype value consisting of the sequence of argument
+  Each constructor is a <link linkend="ref.expressions.call.site">site</link>, which takes one argument for each slot
+  of the constructor, and <link linkend="ref.concepts.publish">publishes</link> a datatype value consisting of the sequence of argument
   values, tagged with that constructor's unique tag.
 </para>
 
@@ -68,7 +68,7 @@ A datatype declaration defines a new <indexterm significance="preferred"><primar
 <para>
 Each constructor defined by the datatype has the <link linkend="ref.data.closure.type">function type</link> 
 <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code> <replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>n</subscript></replaceable> <code>]</code><code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code> <code>::</code> <replaceable>S</replaceable>,
-where <replaceable>X<subscript>i</subscript></replaceable> are the type parameters of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
+where <replaceable>X<subscript>i</subscript></replaceable> are the <link linkend="ref.types.polymorphism">type parameters</link> of the datatype, <replaceable>T<subscript>i</subscript></replaceable> are the types in the slots of the constructor,
 and <replaceable>S</replaceable> is the sum type.
 </para>
 <para>

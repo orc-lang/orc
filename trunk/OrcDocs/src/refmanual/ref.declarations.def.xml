@@ -31,7 +31,7 @@
 		<para>
 		<itemizedlist>
 		<listitem><para>
-		Orc functions are <indexterm><primary>lenient</primary></indexterm>lenient: when a function is called, the argument expressions and the 
+		Orc functions are <indexterm><primary>lenient</primary></indexterm><link linkend="ref.expressions.call.function">lenient</link>: when a function is called, the argument expressions and the 
 		function body are evaluated in parallel. 
 		</para></listitem>
 		<listitem><para>
@@ -48,7 +48,7 @@
 		<para>
 		<itemizedlist>
 		  <listitem><para>Orc functions may be recursive. A group of functions may be mutually recursive.</para></listitem>
-		  <listitem><para>Patterns may be used as function parameters.</para></listitem>
+		  <listitem><para><link linkend="ref.patterns">Patterns</link> may be used as function parameters.</para></listitem>
 		  <listitem><para>A function may have a guard, which allows the function body to be executed only if a given condition holds.</para></listitem>
 		  <listitem><para>A function may be defined by multiple clauses.</para></listitem>
 		</itemizedlist>
@@ -72,16 +72,16 @@
 		<title>Function Execution</title>
 		
 		  <para>
-		  The simplest case of argument binding uses only variables and wildcards as parameters.
+		  The simplest case of argument binding uses only <link linkend="ref.patterns.variable">variables</link> and <link linkend="ref.patterns.wildcard">wildcards</link> as parameters.
 		  </para>
 		
 			<para>
 		   When a function is <link linkend="ref.expressions.call.function">called</link>, the function body executes,
-		   and in parallel the argument expressions of the call are <link linkend="ref.concepts.deflate"><indexterm><primary>deflate</primary></indexterm>deflated</link>.
+		   and in parallel the argument expressions of the call are <indexterm><primary>deflate</primary></indexterm><link linkend="ref.concepts.deflate">deflated</link>.
 		   </para>
 		   
 		   <para>
-		   If the execution of the body encounters a use of a parameter whose corresponding argument expression 
+		   If the execution of the body encounters a <link linkend="ref.expressions.variable">use of a parameter</link> whose corresponding argument expression 
 		  has not yet published a value, that use <link linkend="ref.concepts.states.block">blocks</link> 
 		  until the argument value is available,
 			but the rest of the body continues to execute. 
@@ -95,7 +95,7 @@
 		  
 		  <para>
 		  If the function call is <link linkend="ref.concepts.states.kill">killed</link>,
-		  execution of the body expression is also immediately <link linkend="ref.concepts.states.kill">killed</link>.
+		  execution of the body expression is also immediately killed.
 		  </para>
 		  
 		  <para>
@@ -114,26 +114,6 @@ E
 
 		</para>
 		   
-		   <!-- 
-		     This is tutorial material, and so it is commented out here. 
-		     In the tutorial, at Jay's suggestion, we'll add an example which
-		     has three different behaviors in each of the three evaluation modes.
-		     - dkitchin
-		   -->
-		   <!-- 
-		  <para>
-		 			 We contrast lenient execution with strict and lazy evaluations of
-functions, which are common paradigms for function execution. In a
-strict execution, the arguments of a function are first evaluated, and
-then the function body. In lazy evaluation, the function body starts
-executing until the value of an argument is needed; only then is the
-argument evaluated. Lenient execution differs from both in that the
-body and the arguments are evaluated in parallel.
-...
-			</para>
-			 -->
-
-
 		</section> 
 		  
 		
@@ -200,7 +180,7 @@ def metronome() = signal | Rwait(1000) >> metronome()
         <para>
         A set of functions may be mutually recursive by naming each other in their bodies.
         There is no special keyword for <indexterm><primary>mutual recursion</primary></indexterm>mutual recursion; 
-        whenever two or more function definitions mutually recurse, their definitions are adjacent.
+        whenever two or more function definitions are adjacent, they are allowed to mutually recurse.
         </para>
 
     </section>
@@ -251,7 +231,7 @@ z >P> Ift(Gd) >> E
 			  The clause will <indexterm significance="preferred"><primary>clause failure</primary></indexterm><firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
 			  <orderedlist>
 			  <listitem><para>One of the parameters is a strict pattern, and that pattern fails to match.</para></listitem>
-			  <listitem><para>One of the parameters is a strict pattern, and the corresponding argument expression has halted silently.</para></listitem>
+			  <listitem><para>One of the parameters is a strict pattern, and the corresponding argument expression has halted <link linkend="ref.concepts.silence">silently</link>.</para></listitem>
 			  <listitem><para>There is a guard expression, and it did not deflate to <code>true</code>.</para></listitem>
 			  </orderedlist>
 			  

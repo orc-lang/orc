@@ -58,11 +58,11 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <para>Notable string operations include:
 <itemizedlist>
 <listitem><para>All <code language="java">java.lang.String</code> operations</para></listitem>
-<listitem><para>Convert an Orc value to a string: <code>write</code></para></listitem>
-<listitem><para>Split a string into a list of strings corresponding to its lines: <code>lines</code></para></listitem>
-<listitem><para>Combine a list of strings into one multi-line string: <code>unlines</code></para></listitem>
-<listitem><para>Split a string into a list of strings corresponding to its words: <code>words</code></para></listitem>
-<listitem><para>Combine a list of strings into one multi-word strings: <code>unwords</code></para></listitem>
+<listitem><para>Convert an Orc value to a string: <link linkend="ref.stdlib.text.write"><code>write</code></link></para></listitem>
+<listitem><para>Split a string into a list of strings corresponding to its lines: <link linkend="ref.stdlib.text.lines"><code>lines</code></link></para></listitem>
+<listitem><para>Combine a list of strings into one multi-line string: <link linkend="ref.stdlib.text.unlines"><code>unlines</code></link></para></listitem>
+<listitem><para>Split a string into a list of strings corresponding to its words: <link linkend="ref.stdlib.text.words"><code>words</code></link></para></listitem>
+<listitem><para>Combine a list of strings into one multi-word strings: <link linkend="ref.stdlib.text.unwords"><code>unwords</code></link></para></listitem>
 </itemizedlist> 
 </para>
 

@@ -13,16 +13,14 @@
 <section xml:id="ref.data.external" xmlns="http://docbook.org/ns/docbook">
 <title>External Values</title>
 
-<para>Orc's value set is "open" &#x2014; any value returned from a site call can be used in Orc expressions.
-Combined with Orc's ability to invoke arbitrary functions of the environment in with the Orc runtime engine is running,
-this permits Orc programs to use any expressible value in its environment.
+<para>Orc's value set is "open" &#x2014; any value returned from a <link linkend="ref.expressions.call.site">site call</link> can be used in an Orc execution.
 For example, Orc programs running on a Java virtual machine (JVM) can <link linkend="ref.sites.java">interact with any Java object</link>.</para>
 
 <section xml:id="ref.data.external.types">
   <title>Type</title>
   <para>
     External values usually have types that cannot be represented using Orc's primitive types or structured types.
-    A <link linkend="ref.declarations.type.import"><code>import type</code> declaration</link> may be used to import such a type into the Orc type system.
+    An <link linkend="ref.declarations.type.import"><code>import type</code> declaration</link> may be used to import such a type into the Orc type system.
   </para>
 </section>
 

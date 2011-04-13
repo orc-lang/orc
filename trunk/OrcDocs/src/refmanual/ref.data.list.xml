@@ -31,7 +31,7 @@ The empty list is written as <code>[]</code>.
 <title>Constructors</title>
 
 <para>
-The list expression <code>[</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>]</code> publishes the list <code>[</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>]</code>
+The list expression <code>[</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>]</code> <link linkend="ref.concepts.publish">publishes</link> the list <code>[</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>]</code>
 only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
 Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
@@ -70,7 +70,7 @@ Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linken
 <section xml:id="ref.data.list.type">
 <title>Type</title>
 <para>
-The type of a list is <code>List[</code><replaceable>U</replaceable><code>]</code>, where <replaceable>U</replaceable> is the join 
+The type of a list is <code>List[</code><replaceable>U</replaceable><code>]</code>, where <replaceable>U</replaceable> is the <link linkend="ref.types.subtyping.join">join</link> 
 of the types of each of its elements. In particular, if all of the elements 
 have the same type <replaceable>T</replaceable>, then the list will have type <code>List[</code><replaceable>T</replaceable><code>]</code>.
 </para>

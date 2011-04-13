@@ -19,20 +19,20 @@
 			It consists of a <indexterm significance="preferred"><primary>target</primary></indexterm><firstterm>target</firstterm> expression <replaceable>E</replaceable> and a <indexterm significance="preferred"><primary>key</primary></indexterm><firstterm>key</firstterm> <replaceable>K</replaceable>.
 			First, <replaceable>E</replaceable> is <link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>v</replaceable>.
 			If the value <replaceable>v</replaceable> has a member named <replaceable>K</replaceable>, that member
-			is published. Otherwise, the expression halts.
+			is <link linkend="ref.concepts.publish">published</link>. Otherwise, the expression <link linkend="ref.concepts.states.halt">halts</link>.
 		</para>
 			
 		<para>
 			Not all values have members. 
-			<link linkend="ref.data.record">Records</link> have members, as do many sites.
+			<link linkend="ref.data.record">Records</link> have members, as do many <link linkend="ref.sites">sites</link>.
 			A value created by an <link linkend="ref.declarations.class">imported class</link> has
 			a member for each method and field of the corresponding class.
 			A value created by a <link linkend="ref.declarations.class">defined class</link> has
-			a member for each <code>def</code> and <code>val</code> declaration in the class.
+			a member for each <code>def</code> and <code>def class</code> declaration in the class.
 		</para>
 			
 		<para>
-			Like many expressions in Orc, a dot access is simply another form of <indexterm><primary>site call</primary></indexterm>site call. The key
+			Like many expressions in Orc, a dot access is simply another form of <indexterm><primary>site call</primary></indexterm><link linkend="ref.expressions.call.site">site call</link>. The key
 			is converted to a special value and passed to the site call as the only argument. The
 			site call publishes the member named by the key if it exists, and halts otherwise.
 		</para>
@@ -49,7 +49,7 @@
 	  <section xml:id="ref.expressions.dot.type">
 	    <title>Type</title>
 	    <para>
-	    	If the target expression <replaceable>E</replaceable> has the record type <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
+	    	If the target expression <replaceable>E</replaceable> has the <link linkend="ref.data.record.type">record type</link> <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>::</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>::</code> <replaceable>T<subscript>n</subscript></replaceable> <code>.}</code>,
 	    	then the dot access <replaceable>E</replaceable><code>.</code><replaceable>K<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>.
 	    </para>
 	    <para>

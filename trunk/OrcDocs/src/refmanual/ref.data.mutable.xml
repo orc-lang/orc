@@ -13,12 +13,12 @@
 <section xml:id="ref.data.mutable" xmlns="http://docbook.org/ns/docbook">
 <title>Mutable State</title>
 
-<para>A mutable object is value on which operations may
+<para>A mutable object is a value on which operations may
 yield different results when called at different times.
 Mutable objects are common in imperative programming languages.
 They reflect the concept of a storage location in a von Neumann style architecture.</para>
 
-<para>Most of Orc's value types are immutable. Orc provides the following standard mutable value types:
+<para>Most of Orc's value types are immutable. The <link linkend="ref.stdlib.state">standard library</link> provides the following kinds of mutable objects:
 <itemizedlist>
 <listitem><para><code><indexterm><primary>Ref</primary></indexterm>Ref</code>: Reference to a value that can be changed</para></listitem>
 <listitem><para><code><indexterm><primary>Cell</primary></indexterm>Cell</code>: A write-once <code>Ref</code></para></listitem>
@@ -29,7 +29,6 @@ They reflect the concept of a storage location in a von Neumann style architectu
 <listitem><para><code>Counter</code>: A value that can be incremented and decremented atomically</para></listitem>
 <listitem><para><code>Dictionary</code>: A mutable Record</para></listitem>
 </itemizedlist>
-See the <olink targetdoc="ref.stdlib.state">state library</olink> section for more details on the value types.
 </para>
 
 

@@ -14,7 +14,7 @@
 <title><code>signal</code></title>
 
 <para>A <indexterm significance="preferred"><primary>signal</primary></indexterm><firstterm>signal</firstterm> is a value that carries no information. 
-It typically indicates completion of a site call, when there is no other meaningful value to return. 
+It typically indicates completion of a <link linkend="ref.expressions.call">call</link>, when there is no other meaningful value to return. 
 It is analogous to <code language="java">void</code> in Java or <code>()</code> in ML.
 </para>
 
@@ -32,9 +32,9 @@ It is analogous to <code language="java">void</code> in Java or <code>()</code> 
 
 <para>Notable signal operations include:
 <itemizedlist>
-<listitem><para>Publish a signal if an expression is true: <code>Ift</code></para></listitem>
-<listitem><para>Publish a signal if an expression is false: <code>Iff</code></para></listitem>
-<listitem><para>Publish some number of signals simultaneously: <code>signals</code></para></listitem>
+<listitem><para>Publish a signal if an expression is true: <link linkend="ref.stdlib.core.Ift"><code>Ift</code></link></para></listitem>
+<listitem><para>Publish a signal if an expression is false: <link linkend="ref.stdlib.core.Iff"><code>Iff</code></link></para></listitem>
+<listitem><para>Publish some number of signals simultaneously: <link linkend="ref.stdlib.util.signals"><code>signals</code></link></para></listitem>
 </itemizedlist>
 </para>
 
@@ -52,7 +52,7 @@ It is analogous to <code language="java">void</code> in Java or <code>()</code> 
 
 <para>Orc signals don't correspond to any Java value, so if a signal
 is passed to Java code, it will be as an <code language="java">java.lang.Object</code> of a type not specified here.
-Returns of type <code language="java">void</code> from Java code are converted into a publication of a signal.</para>
+A return of type <code language="java">void</code> from Java code is converted into a signal return value.</para>
 
 </section>
 

@@ -15,9 +15,9 @@
 		<title>Site and Function Calls</title>
 			<para>
 			A <indexterm significance="preferred"><primary>call</primary></indexterm><firstterm>call</firstterm> is an invocation of a <indexterm significance="preferred"><primary>target</primary></indexterm><firstterm>target</firstterm> expression on a sequence of <indexterm significance="preferred"><primary>argument</primary></indexterm><firstterm>argument</firstterm> expressions. 
-			First, the target expression is <link linkend="ref.concepts.deflate"><indexterm><primary>deflate</primary></indexterm>deflated</link> to a value <replaceable>g</replaceable>.
-			If <replaceable>g</replaceable> is a site, then the call is a <indexterm significance="preferred"><primary>site call</primary></indexterm><firstterm>site call</firstterm>. 
-			If <replaceable>g</replaceable> is a closure, then the call is a <indexterm significance="preferred"><primary>function call</primary></indexterm><firstterm>function call</firstterm>.
+			First, the target expression is <indexterm><primary>deflate</primary></indexterm><link linkend="ref.concepts.deflate">deflated</link> to a value <replaceable>g</replaceable>.
+			If <replaceable>g</replaceable> is a <link linkend="ref.sites">site</link>, then the call is a <indexterm significance="preferred"><primary>site call</primary></indexterm><firstterm>site call</firstterm>. 
+			If <replaceable>g</replaceable> is a <link linkend="ref.data.closure">closure</link>, then the call is a <indexterm significance="preferred"><primary>function call</primary></indexterm><firstterm>function call</firstterm>.
 			If <replaceable>g</replaceable> is a <link linkend="ref.data.record">record</link>, then the call is a <indexterm significance="preferred"><primary>record application</primary></indexterm><firstterm>record application</firstterm>.
 			Each of these cases is described below.		
 			</para>
@@ -42,7 +42,7 @@
 	    The site <replaceable>g</replaceable> is then invoked with arguments <replaceable>v<subscript>i</subscript></replaceable>.
 	  </para>
 	  <para>
-	    A site call publishes at most one value. Once it publishes a value, it immediately halts.
+	    A site call <link linkend="ref.concepts.publish">publishes</link> at most one value. Once it publishes a value, it immediately <link linkend="ref.concepts.states.halt">halts</link>.
 	    If the site is <link linkend="ref.concepts.helpful">helpful</link>, the call may halt without publishing a value.
 	  </para>
 	  </section>
@@ -71,7 +71,7 @@
 	  </para>
 	  
 	  <para>
-	    If a record without an <code>apply</code> member is called, the call halts silently.
+	    If a record without an <code>apply</code> member is called, the call halts <link linkend="ref.concepts.silence">silently</link>.
 	  </para>
 
 	  </section>
@@ -87,8 +87,8 @@
 	      and each argument expression <replaceable>E<subscript>i</subscript></replaceable> has type <replaceable>S<subscript>i</subscript></replaceable>.
 	    </para>
 	    <para>
-	    	If <replaceable>S</replaceable> is a function type <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
-	    	then there must be exactly as many arguments as <indexterm significance="preferred"><primary>argument type</primary></indexterm><firstterm baseform="argument type">argument types</firstterm>, 
+	    	If <replaceable>S</replaceable> is a <link linkend="ref.data.closure.type">function type</link> <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
+	    	then there must be exactly as many arguments as <indexterm significance="preferred"><primary>argument type</primary></indexterm>argument types, 
 	    	and each argument type <replaceable>S<subscript>i</subscript></replaceable> must be a <link linkend="ref.types.subtyping">subtype</link> of the corresponding type <replaceable>T<subscript>i</subscript></replaceable> (with all <replaceable>X<subscript>j</subscript></replaceable> replaced by <replaceable>A<subscript>j</subscript></replaceable>).
 	    	Then the type of the whole call is <replaceable>R</replaceable>, the return type.	    	  
 	    </para>
@@ -96,7 +96,7 @@
 	      If <replaceable>S</replaceable> is the type of a site, <replaceable>S</replaceable> itself behaves like a site during typehcecking.
 	      The typechecker passes the argument types <replaceable>S<subscript>i</subscript></replaceable> and type arguments <replaceable>A<subscript>j</subscript></replaceable> to <replaceable>S</replaceable>,
 	      which then responds with the return type <replaceable>R</replaceable>, or indicates that the argument types are not appropriate.
-	      If <replaceable>S</replaceable> does respond, then the type of the call expression is <replaceable>R</replaceable>.
+	      If <replaceable>S</replaceable> does respond, then the type of the call expression is the return type <replaceable>R</replaceable>.
 	    </para>
 	  </section>
 		

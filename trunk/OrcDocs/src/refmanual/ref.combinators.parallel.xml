@@ -24,8 +24,8 @@
 			<para>
 			  Execution of expression <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable>
 			   occurs by executing <replaceable>F</replaceable> 
-			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a service or 
-			  <indexterm><primary>publish</primary></indexterm>publishes a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
+			  and <replaceable>G</replaceable> concurrently. Whenever <replaceable>F</replaceable> or <replaceable>G</replaceable> communicates with a <link linkend="ref.sites">service</link> or 
+			  <indexterm><primary>publish</primary></indexterm><link linkend="ref.concepts.publish">publishes</link> a value, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> does so as well.
 			  Therefore, <replaceable>F</replaceable><code><![CDATA[ | ]]></code><replaceable>G</replaceable> interleaves 
 			  the publications of <replaceable>F</replaceable>
 			  and <replaceable>G</replaceable> arbitrarily.

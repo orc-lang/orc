@@ -19,7 +19,7 @@
 		is a conditional expression.
 		It executes as follows:
 		<itemizedlist>
-		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</para></listitem>
+		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</para></listitem>
 		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</para></listitem>
 		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.states.halt">halt</link>.</para></listitem>
 		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent">silently</link>, halt.</para></listitem>

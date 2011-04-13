@@ -21,7 +21,7 @@ Namely, "infinite, NaN, or subnormal results are always treated as errors, and â
 </para>
 
 <para>
-Note that the <indexterm><primary>divide</primary></indexterm>divide operation on Orc numbers can encounter a
+Note that the <indexterm><primary>divide</primary></indexterm><link linkend="ref.stdlib.core.Div">divide operation</link> on Orc numbers can encounter a
 non-terminating decimal expansion, where there is no exact representable
 decimal result.  In this case, the divide operation falls back to division
 using IEEE 754 binary64 (formerly called double precision)
@@ -30,7 +30,7 @@ This fall back may result in a loss of precision for this operation.
 </para>
 
 <para>
-Similarly, the exponent operation may fall back to IEEE 754 binary64
+Similarly, the <indexterm><primary>exponent</primary></indexterm><link linkend="ref.stdlib.core.Exponent">exponent operation</link> may fall back to IEEE 754 binary64
 binary floating-point operands in the case of a fractional exponent.
 This fall back may result in a loss of precision for this operation.
 </para>

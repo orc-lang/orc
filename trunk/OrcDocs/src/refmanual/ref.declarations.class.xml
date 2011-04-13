@@ -17,7 +17,8 @@
 	<para>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
 In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
-<indexterm><primary>Java</primary></indexterm>Java classes may be imported into Orc programs and invoked as Orc sites.
+<indexterm><primary>Java</primary></indexterm>Java classes may be imported into Orc 
+programs and <link linkend="ref.expressions.call.site">called</link> as Orc sites.
 	</para>
 
 	<para>
@@ -27,7 +28,7 @@ Calls to <replaceable>S</replaceable> invoke the corresponding <indexterm><prima
 The created class instance is published from the site call.
 Instance methods may be invoked on this published value.
 Calls to <replaceable>S</replaceable><code>.</code><replaceable>m</replaceable> invoke the corresponding class static method of the Java class <replaceable>J</replaceable>.
-The return value of the method is published from the site call.
+The return value of the method is <link linkend="ref.concepts.publish">published</link> from the site call.
 Further details of the Orc-Java interface are in the <link linkend="ref.sites.java">Java sites</link> section.
 	</para>
 
@@ -61,14 +62,14 @@ Further details of the Orc-Java interface are in the <link linkend="ref.sites.ja
 		</para>	  
 		
 		<para>
-		If a <code>import class</code> declaration binds a generic Java class, then the corresponding Orc type is instead a type operator,
+		If a <code>import class</code> declaration binds a generic Java class, then the corresponding Orc type is instead a <link linkend="ref.types.polymorphism">type operator</link>,
 		and the constructor site takes type parameters.
 		</para>
 
 		<para>
-		Subtyping between Java object types is determined by Java's subtyping relation: if
+		<link linkend="ref.types.subtyping">Subtyping</link> between Java object types is determined by Java's subtyping relation: if
 		one class is a subclass of another, then that type will be a subtype of the other.
-		The typechecker does not implement a true join operation for Java types; it will
+		The typechecker does not implement a true <link linkend="ref.types.subtyping.join">join</link> operation for Java types; it will
 		find a common ancestor, but not the least common ancestor. 
 		</para>
 		

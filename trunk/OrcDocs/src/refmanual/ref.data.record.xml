@@ -37,7 +37,7 @@ associates a key with an expression.
  
 <para>
 The record expression <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>E<subscript>n</subscript></replaceable> <code>.}</code> 
-publishes the record <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
+<link linkend="ref.concepts.publish">publishes</link> the record <code>{.</code> <replaceable>K<subscript>0</subscript></replaceable> <code>=</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>K<subscript>n</subscript></replaceable> <code>=</code> <replaceable>v<subscript>n</subscript></replaceable> <code>.}</code>
 only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>. 
 Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 </para>
