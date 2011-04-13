@@ -15,8 +15,8 @@
 	<title>Expression States</title>
 
 	<para>
-		A site call, from the site's perspective, has three possible outcomes:
-		the site will definitely publish a value, the site knows that it will
+		A <link linkend="ref.expressions.call.site">site call</link>, from the site's perspective, has three possible outcomes:
+		the site will definitely <link linkend="ref.concepts.publish">publish</link> a value, the site knows that it will
 		never publish a value, and the site does not know if it will ever
 		publish a value. For example, a call to
 		<code>Ift(true)</code>
@@ -35,16 +35,16 @@
 
 	<para>
 		A site call, from the caller's perspective, is ready, blocked or
-		halted. A call is ready if all its argument variables are bound to
+		halted. A call is ready if all its arguments have <link linkend="ref.concepts.deflate">deflated</link> to
 		values, so that a call can be made. A call is blocked if either (1)
 		the caller can not make the call because not all argument values are
-		bound (since site calls are strict); this is an internally blocked
+		bound (since site calls are strict); this is an <indexterm><primary>blocked internally</primary></indexterm><firstterm>internally blocked</firstterm>
 		call, or (2) the caller is waiting for the response after having
-		called the site; this is an externally blocked call. A site call is
+		called the site; this is an <indexterm><primary>blocked externally</primary></indexterm><firstterm>externally blocked</firstterm> call. A site call is
 		halted if the caller has already received a response or the site has
 		indicated that it will never send a response. A site call is killed if
 		it is part of <replaceable>G</replaceable> in
-		<replaceable>F</replaceable><code> &lt;</code>x<code>&lt; </code><replaceable>G</replaceable>
+		<link linkend="ref.combinators.pruning"><replaceable>F</replaceable><code> &lt;</code>x<code>&lt; </code><replaceable>G</replaceable></link>
 		and <replaceable>G</replaceable> publishes.
 	</para>
 
@@ -52,10 +52,10 @@
 		An internally blocked call becomes ready when all its arguments are
 		bound to values. An internally blocked call halts if one of its
 		arguments will never be bound because the expression that computes its
-		value has been halted or killed. A ready call becomes externally blocked once
+		value has halted or has been killed. A ready call becomes externally blocked once
 		the call is made. A blocked call transitions to halted if it receives a
-		response or if the called site can determine that it will never
-		respond; a blocked call may remain blocked forever if the called site
+		response or if the called site can <link linkend="ref.concepnts.helpful">determine that it will never
+		respond</link>; a blocked call may remain blocked forever if the called site
 		can not determine if if it will ever respond. Note that a halted call
 		stays halted unless it is killed.
 	</para>
@@ -63,13 +63,13 @@
 	<para>
 		We extend these concepts to execution of an expression. At any moment,
 		an expression has an associated set of site calls under consideration
-		for execution; if the expression has spawned copies of its components
+		for execution; if the expression has begun additional executions,
 		as in
-		<replaceable>F</replaceable><code> &gt;</code>x<code>&gt; </code><replaceable>G</replaceable>,
-		all the copies contribute to this set; if the
+		<link linkend="ref.combinators.sequential"><replaceable>F</replaceable><code> &gt;</code>x<code>&gt; </code><replaceable>G</replaceable></link>,
+		all the versions of <replaceable>G</replaceable> being executed contribute to this set; if the
 		expression includes function calls, those calls initiate execution of
 		the function bodies which are also expressions that contribute to this
-		set; any variable <replaceable>x</replaceable> used as an expression on its own
+		set; any variable <replaceable>x</replaceable> used as an <link linkend="ref.expressions.variable">expression on its own</link>
 		is equivalent to a site call <code><link linkend="ref.stdlib.core.Let">Let</link>(</code><replaceable>x</replaceable><code>)</code>. 
 		If some site call in this set is ready, the expression is ready;
 		if all calls are blocked, the expression is blocked, and if all calls
@@ -132,7 +132,7 @@
 		<title>Helpful Sites</title>
 		<para>
 			Sites that may indicate absence of response are called <firstterm>helpful</firstterm> (see
-			<link linkend="ref.concepts.helpful">Helpful Sites</link>); not all sites are helpful.
+			<link linkend="ref.concepts.helpful">Helpful Sites</link>). Not all sites are helpful.
 		</para>
 	</section>
 
@@ -181,7 +181,7 @@
 			</para>
 		
 			<para>
-				As we have shown, <replaceable>G</replaceable> will definitely publish. Then <replaceable>G</replaceable> is killed, and so
+				As we have shown, <replaceable>G</replaceable> will definitely <link linkend="ref.concepts.publish">publish</link>. Then <replaceable>G</replaceable> is killed, and so
 				are its sub-expressions.
 			</para>
 		</example>

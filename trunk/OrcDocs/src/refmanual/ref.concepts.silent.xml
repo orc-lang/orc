@@ -18,11 +18,10 @@
 		<title>Definition</title>
 
 		<para>
-			An expression is <indexterm significance="preferred"><primary>silent</primary></indexterm><firstterm>silent</firstterm> in an execution if it never publishes in that execution. 
+			An expression is <indexterm significance="preferred"><primary>silent</primary></indexterm><firstterm>silent</firstterm> in an execution if it never <link linkend="ref.concepts.publish">publishes</link> in that execution. 
 			An expression is always silent if it does not publish in any execution.
-			A silent expression may call sites. 
-			The type of a silent expression is <code>Bot</code>. 
-			<!-- Formally, expression <replaceable>F</replaceable> is silent if it behaves exactly as <replaceable>F</replaceable><code><![CDATA[ >> stop]]></code>.  -->
+			A silent expression may call <link linkend="ref.sites">sites</link>. 
+			The type of a silent expression is <link linkend="ref.types.subtyping.Bot"><code>Bot</code></link>. 
 		</para>
 		
 	</section>

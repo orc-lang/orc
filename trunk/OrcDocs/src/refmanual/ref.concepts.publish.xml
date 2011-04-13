@@ -19,21 +19,21 @@ An Orc expression <indexterm significance="preferred"><primary>publish</primary>
 An extremely simple example of publication is a literal, for example the expression <code>1</code>, which publishes a single integer <indexterm><primary>value</primary></indexterm>value.
 Orc expressions may publish zero or more values during their execution.
 The effect of publication depends on the context.
-For example, each publication of <replaceable>F</replaceable> in the sequential combinator expression <replaceable>F</replaceable><code> &gt;</code>x<code>&gt; </code><replaceable>G</replaceable>
+For example, each publication of <replaceable>F</replaceable> in the <link linkend="ref.combinators.sequential">sequential combinator</link> expression <replaceable>F</replaceable><code> &gt;</code>x<code>&gt; </code><replaceable>G</replaceable>
 causes <replaceable>G</replaceable> to be run with <code>x</code> bound to the published value.
 An expression that never publishes is said to be <link linkend="ref.concepts.silent">silent</link>.
 	</para>
 
 	<para>
-The following is the publication behavior of a few common forms of Orc expressions. TODO: add links.
+The following is the publication behavior of a few common forms of Orc expressions.
 		<itemizedlist>
-			<listitem><para>Site calls publish only zero or one value.</para></listitem>
-			<listitem><para>Function calls may publish any number of values.</para></listitem>
-			<listitem><para>Literals, including <code>signal</code>, publish one value.</para></listitem>
-			<listitem><para><code>stop</code> never publishes.</para></listitem>
-			<listitem><para>A variable, when executed, publishes its value, if bound.
-				If not, execution of the variable is blocked until it is bound.</para></listitem>
-			<listitem><para>Each of the Orc combinators has a unique publication behavior.</para></listitem>
+			<listitem><para><link linkend="ref.expressions.call.site">Site calls</link> publish only zero or one value.</para></listitem>
+			<listitem><para><link linkend="ref.expressions.call.function">Function calls</link> may publish any number of values.</para></listitem>
+			<listitem><para>A <link linkend="ref.expressions.literal">literal expression</link> publishes exactly one value.</para></listitem>
+			<listitem><para><link linkend="ref.expressions.stop"><code>stop</code></link> never publishes.</para></listitem>
+			<listitem><para>A <link linkend="ref.expressions.variable">variable expression</link>, when executed, publishes its value, if bound.
+				If not, execution of the variable is <link linkend="ref.concepts.states.block">blocked</link> until it is bound.</para></listitem>
+			<listitem><para>Each of the Orc <link linkend="ref.combinators">combinators</link> has a unique publication behavior.</para></listitem>
 		</itemizedlist>
 	</para>
 

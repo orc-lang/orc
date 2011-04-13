@@ -16,10 +16,10 @@
 
 		<para>
 			This reference manual describes the ideal behavior of Orc programs. In
-			particular, it assumes unbounded memory, arbitrary amount of
+			particular, it assumes unbounded memory, an arbitrary amount of
 			concurrent processing power, and any level of speed of computation
 			demanded by the program. Therefore, we have not treated aspects such
-			as floating point overflow, overhead for concurrent thread creation,
+			as floating point overflow, overhead for platform-level thread creation,
 			nor the exact speeds of computation. 
 		</para>
 		
@@ -35,7 +35,7 @@
 		
 		<para>
 			is ideally expected to bind value <code>true</code> to <code>z</code>. In practice, we can only
-			make a best effort to implement the ideal behavior. Given that
+			make a best effort to implement the ideal behavior of <link linkend="ref.time.real.rwait"><code>Rwait</code></link>. Given that
 			<code>Rwait(2)</code> and <code>Rwait(3)</code> are very close in real time, an actual
 			implementation may indeed assign false to <code>z</code>. The programmer should be
 			aware of such limitations, and program around them.

@@ -29,7 +29,8 @@ which permit the site to interact with the calling program natively.
 
 <para>
 Orc sites may be implemented in any language that can produce Java class files.
-However, the Orc team recommends the Scala programming language from Martin Odersky and his team at EPFL (École Polytechnique Fédérale de Lausanne).
+However, the Orc team rec
+ommends the Scala programming language from Martin Odersky and his team at EPFL (École Polytechnique Fédérale de Lausanne).
 For information on Scala, see <link xlink:href="http://www.scala-lang.org/">http://www.scala-lang.org/</link>.
 </para>
 
