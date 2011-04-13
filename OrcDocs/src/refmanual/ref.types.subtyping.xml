@@ -33,7 +33,7 @@
 	</para>
 	
 	<para>
-	If an expression has type <replaceable>S</replaceable> and <replaceable>S</replaceable> &#x2264; <replaceable>T</replaceable>,
+	If an expression has type <replaceable>S</replaceable>, and <replaceable>S</replaceable> &#x2264; <replaceable>T</replaceable>,
 	then that expression also has type <replaceable>T</replaceable>. This is called <firstterm>subsumption</firstterm>.
 	</para>
 	
@@ -60,7 +60,7 @@
 		<code>Bot</code> is the empty type. 
 		No value has type <code>Bot</code>. 
 		<code>Bot</code> is a subtype of every type.
-		An expression has type <code>Bot</code> only if it never publishes any values. 
+		An expression has type <code>Bot</code> only if it is <link linkend="ref.concepts.silence">silent</link>. 
 		</para>
 		
 		<para>
@@ -73,7 +73,7 @@
 		
 		<para> 
 		In Orc, however, <code>Bot</code> is very useful, since it is frequently the case that Orc expressions 
-		are written to carry out ongoing concurrent activities but never publish any values, and the type system 
+		are written to carry out ongoing concurrent activities but never <link linkend="ref.concepts.publish">publish</link> any values, and the type system 
 		can use the type <code>Bot</code> to indicate that no publications will ever be seen from such
 		expressions.
 		</para>
@@ -146,7 +146,7 @@
 		their components. Suppose we have a composite type of the form <replaceable>C</replaceable>{<replaceable>T</replaceable>},
 		where <replaceable>T</replaceable> is a type and <replaceable>C</replaceable> is the context in
 		which it appears. The <indexterm significance="preferred"><primary>variance</primary></indexterm><firstterm>variance</firstterm>
-	  of the context <replaceable>C</replaceable> is defined as follows:
+	  of the context <replaceable>C</replaceable> is defined in the standard way:
 		
 		<itemizedlist>
 		<listitem><para>
@@ -163,13 +163,13 @@
 		</para>
 
 		<para>
-		Tuple types, record types, and list types are all covariant contexts. 
-		In a function type, the return type is a covariant context, but the argument types are contravariant contexts.
-		The type parameters of mutable value types are invariant contexts.
+		<link linkend="ref.data.tuple.type">Tuple types</link>, <link linkend="ref.data.record.type">record types</link>, and <link linkend="ref.data.list.type">list types</link> are all covariant contexts. 
+		In a <link linkend="ref.data.closure.type">function type</link>, the return type is a covariant context, but the argument types are contravariant contexts.
+		The type parameters of <link linkend="ref.data.mutable">mutable object</link> types are invariant contexts.
 		</para>
 
 		<para>
-		The variance of the type parameters in an aliased type or datatype is determined from the definition itself, by observing the contexts in which the parameters appear. 
+		The variance of the type parameters in an <link linkend="ref.declarations.type.alias">aliased type</link> or <link linkend="ref.data.datatype.type">datatype</link> is determined from the declaration itself, by observing the contexts in which the parameters appear. 
 		If a parameter appears only in covariant contexts, it is covariant. 
 		If it appears only in contravariant contexts, it is contravariant. 
 		If it appears in both contexts, it is invariant.

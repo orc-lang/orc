@@ -70,7 +70,8 @@
 				<section xml:id="ref.syntax.lexical.tokens.operator">
 					<title>Operator</title>
 					<para>
-						An Orc operator is a character sequence that matches one of the following. (This match is greedy -- for example, ** is matched in preference to two * operators, if possible.) 
+						An Orc <link linkend="ref.expressions.operators">operator</link> is a character sequence that matches one of the following. 
+						This match is greedy &#x2014; for example, ** is matched in preference to two * operators, if possible.) 
 					</para>
 					<para>
 						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
@@ -88,7 +89,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.literals">
 					<title>Literals</title>
 					<para>
-						<link linkend="ref.data.numeric.syntax">Numeric literals</link> and ><link linkend="ref.data.string">character string literals</link> are
+						<link linkend="ref.data.numeric.syntax">Numeric literals</link> and <link linkend="ref.data.string">character string literals</link> are
 						recognized per the syntax given in those sections.
 					</para>
 				</section>
