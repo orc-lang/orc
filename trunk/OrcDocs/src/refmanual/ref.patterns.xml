@@ -19,7 +19,7 @@
 <title>Patterns</title>
 
 <para>
-<indexterm significance="preferred"><primary>pattern</primary></indexterm><firstterm>Patterns</firstterm> are used in combinators, in <code>val</code> declarations, and in clausal definitions of functions, to select values and bind variables to values. 
+<indexterm significance="preferred"><primary>pattern</primary></indexterm><firstterm>Patterns</firstterm> are used in <link linkend="ref.combinators">combinators</link>, in <link linkend="ref.declarations.val"><code>val</code></link> declarations, and in <link linkend="ref.declarations.def.clauses">clausal definitions</link> of functions, to select values and bind variables to values. 
 A pattern is given by a shape and a set of variables. A <emphasis>shape</emphasis> is either a tuple, a list, 
 a record, a call, a literal value,
 or wildcard (written as <code>_</code>). If the shape describes a structured value (such as a tuple), its components may

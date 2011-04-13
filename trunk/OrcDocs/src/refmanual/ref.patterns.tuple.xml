@@ -14,7 +14,7 @@
 	<section xml:id="ref.patterns.tuple" xmlns="http://docbook.org/ns/docbook">
 		<title>Tuple Pattern</title>
 			<para>
-				Each element of a <indexterm significance="preferred"><primary>tuple pattern</primary></indexterm><firstterm>tuple pattern</firstterm> matches the corresponding element of a tuple value.
+				Each element of a <indexterm significance="preferred"><primary>tuple pattern</primary></indexterm><firstterm>tuple pattern</firstterm> matches the corresponding element of a <link linkend="ref.data.tuple">tuple value</link>.
 			</para>
 		
 		<section xml:id="ref.patterns.tuple.syntax">
@@ -33,7 +33,7 @@
 	    is matched against a tuple type <code>(</code> <replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable> <code>)</code>,
 	    each <replaceable>P<subscript>i</subscript></replaceable> is matched against the corresponding
 	    <replaceable>T<subscript>i</subscript></replaceable>,
-	    producing typing contexts Γ<subscript>i</subscript>. The typing context
+	    producing <link linkend="ref.types.context">typing contexts</link> Γ<subscript>i</subscript>. The typing context
 	    produced by the whole match is the union of the contexts Γ<subscript>i</subscript>.
 	  </para>
 	  </section>

@@ -29,12 +29,12 @@ may be used in Orc programs just as any other Orc value.
 <para>
 Java classes are named in an Orc program using the <code>import class</code> declaration.
 In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
-This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the site call.
+This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the <link linkend="ref.expressions.call.site">site call</link>.
 The class proxy also presents the class static methods and class static fields in the same manner as
-an Orc record, with keys corresponding to the Java class members' names.
+an Orc <link linkend="ref.data.record">record</link>, with keys corresponding to the Java class members' names.
 Class <indexterm><primary>method</primary></indexterm>methods appear as record elements that are sites, and are invoked by projecting the record element
 using the <indexterm><primary>dot</primary></indexterm>dot notation and calling the site.
-Fields appear as record elements that are references, and are accessed and assigned
+Fields appear as record elements that are <link linkend="ref.stdlib.state.Ref">references</link>, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
 </para>
@@ -72,7 +72,7 @@ using the dot notation and calling the site.
 <indexterm><primary>field</primary></indexterm>Fields appear as record elements that are references, and are accessed and assigned
 by projecting the record element using the dot notation and
 using Orc's <code>?</code> and <code>:=</code> operators.
-If a Java object is called as a site without projecting a member, the method name "apply" is implicitly used.
+If a Java object is called as a site without projecting a member, the method name <link linkend="ref.data.record.specialkeys"><code>apply</code></link> is implicitly used.
 </para>
 
 <para>
@@ -82,11 +82,10 @@ whether to access the field or method.
 </para>
 
 <para>
-If a field's value is a class with a member named "read", this member will be
+If a field's value is a class with a member named <code>read</code> this member will be
 invoked when an Orc program accesses that field with the <code>?</code> operator.
-Similarly, if a field's value is a class with a member named "write", this member will be
+Similarly, if a field's value is a class with a member named <code>write</code>, this member will be
 invoked when an Orc program assigns a new value to that field with the <code>:=</code> operator.
-This "read"/"write" override also applies to array component accesses.
 Note that this is a potentially surprising name conflict.
 </para>
 
@@ -113,14 +112,14 @@ Specifically, Orc applies conversions to the following:
 The conversions applied are the following:
 <itemizedlist>
 <listitem><para><code language="java">void</code> Java methods return <code>signal</code> in Orc.</para></listitem>
-<listitem><para>Orc integer values are converted to Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, <code language="java">Long</code>, <code language="java">Float</code>, or <code language="java">Double</code>, as needed.</para></listitem>
-<listitem><para>Orc floating-point values are converted to Java <code language="java">Float</code> or <code language="java">Double</code>, as needed.</para></listitem>
+<listitem><para>Orc <link linkend="ref.data.numeric">integers</link> are converted to Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, <code language="java">Long</code>, <code language="java">Float</code>, or <code language="java">Double</code>, as needed.</para></listitem>
+<listitem><para>Orc <link linkend="ref.data.numeric">numbers</link> are converted to Java <code language="java">Float</code> or <code language="java">Double</code>, as needed.</para></listitem>
 <listitem><para>Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, and <code language="java">Long</code> are converted to Orc integers.</para></listitem>
-<listitem><para>Java <code language="java">Float</code> and <code language="java">Double</code> are converted to Orc floating-point numbers.</para></listitem>
+<listitem><para>Java <code language="java">Float</code> and <code language="java">Double</code> are converted to Orc numbers.</para></listitem>
 <listitem><para>Java primitive values are boxed and unboxed as needed, per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle> §5.1.7 and §5.1.8.</para></listitem>
 <listitem><para>Java widening primitive conversions are applied as needed, per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.2">The Java Language Specification</citetitle> §5.1.2.</para></listitem>
 </itemizedlist>
-Note that Orc integers and floating-point numbers represent a larger range of values than the standard Java numeric types.
+Note that Orc integers and numbers represent a larger range of values than the standard Java numeric types.
 If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
 This will change the magnitude of the number and may change its sign.
 If a floating-point conversion is applied to an out-of-range value, the result is positive or negative infinity, as appropriate.
@@ -140,8 +139,7 @@ run time using Java's reflection facilities, and therefore has a different
 view of the types of values than the Java compiler.
 However, in most cases, this difference has no effect.
 At present, Orc does not recognize Java variable arity methods.
-(In practice, this is a very rarely used feature of Java.
-Please let the <link xlink:href="http://orc.csres.utexas.edu">Orc team</link> know if this should be a feature of Orc.)
+(In practice, this is a very rarely used feature of Java.)
 </para>
 
 <para>

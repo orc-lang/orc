@@ -16,7 +16,7 @@
 
 		<para>
 			The <indexterm significance="preferred"><primary>as</primary></indexterm><code>as</code> keyword binds a variable to the value matched by a pattern.
-			It is a more general way of binding variables than using variable patterns alone.
+			It is a more general way of binding variables than using <link linkend="ref.patterns.variable">variable patterns</link> alone.
 		</para>
 		
 		<section xml:id="ref.patterns.as.syntax">
@@ -33,7 +33,7 @@
 	  <para>
 	    When <replaceable>P</replaceable> <code>as</code> <replaceable>x</replaceable> is matched
 	    against a type <replaceable>T</replaceable>, the pattern <replaceable>P</replaceable> 
-	    is matched against <replaceable>T</replaceable>, producing typing context Γ.
+	    is matched against <replaceable>T</replaceable>, producing <link linkend="ref.types.context">typing context</link> Γ.
 	    The typing context produced by the whole match is Γ ∪ {<replaceable>x</replaceable> has type <replaceable>T</replaceable>}.
 	  </para>
 	  </section>

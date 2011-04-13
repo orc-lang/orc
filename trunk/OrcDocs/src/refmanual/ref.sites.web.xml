@@ -30,7 +30,7 @@ The <link linkend="ref.stdlib.web.HTTP"><code>HTTP</code></link> site provides a
 <code>HTTP(</code><replaceable>U</replaceable><code>)</code>, where <replaceable>U</replaceable> is a <code>java.net.URL</code>, publishes a site which accepts HTTP requests on the URL <replaceable>U</replaceable>.
 </para></listitem>
 <listitem><para>
-<code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the string <replaceable>S</replaceable> as an absolute URL <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.
+<code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the <link linkend="ref.data.string">string</link> <replaceable>S</replaceable> as an absolute URL <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.
 </para></listitem>
 <listitem><para>
 <code>HTTP(</code><replaceable>S</replaceable><code>,</code><replaceable>Q</replaceable><code>)</code> maps the record <replaceable>Q</replaceable> to a URL query string <replaceable>QS</replaceable> by translating each record binding to a query pair, escaping characters
@@ -77,7 +77,7 @@ by Web services, especially by services with simple interfaces. The structure of
 </para> 
 
 <para>
-The library sites <code>ReadJSON</code> and <code>WriteJSON</code> convert between string representations of JSON
+The library sites <link linkend="ref.stdlib.web.ReadJSON"><code>ReadJSON</code></link> and <link linkend="ref.stdlib.web.WriteJSON"><code>WriteJSON</code></link> convert between string representations of JSON
 values and Orc representations of those values. <code>ReadJSON</code> parses a string representation of JSON
 and creates an Orc value, where each JSON array becomes an Orc <link linkend="ref.data.list">list</link>,
 each JSON object becomes an Orc <link linkend="ref.data.record">record</link>, and literal values map to their
@@ -99,7 +99,7 @@ including Web services.
 </para>
 
 <para>
-The library sites <code>ReadXML</code> and <code>WriteXML</code> convert between string representations of XML
+The library sites <link linkend="ref.stdlib.xml.ReadXML"><code>ReadXML</code></link> and <link linkend="ref.stdlib.xmlWriteXML"><code>WriteXML</code></link> convert between string representations of XML
 values and Orc representations of those values. <code>ReadXML</code> parses a string representation of XML
 and creates an Orc representation, which can be manipulated by Orc's XML library sites. <code>WriteXML</code> 
 performs the inverse operation, taking an Orc representation of XML and serializing it to a string.
@@ -128,7 +128,7 @@ There are three library sites that construct XML nodes directly. Each of these s
 <para>
 <itemizedlist>
   <listitem><para>
-    <code>XMLElement(</code><replaceable>tag</replaceable><code>,</code> <replaceable>attr</replaceable><code>,</code> <replaceable>children</replaceable><code>)</code> 
+    <code><link linkend="ref.stdlib.xml.XMLElement">XMLElement</link>(</code><replaceable>tag</replaceable><code>,</code> <replaceable>attr</replaceable><code>,</code> <replaceable>children</replaceable><code>)</code> 
     creates a new XML element with the tag given by string <replaceable>tag</replaceable>, 
     the set of attributes specified by the record <replaceable>attr</replaceable>,
     and the sequence of child elements given by the list <replaceable>children</replaceable>. 
@@ -138,12 +138,12 @@ There are three library sites that construct XML nodes directly. Each of these s
     <replaceable>children</replaceable> may be an empty list.
   </para></listitem>
   <listitem><para>
-    <code>XMLText(</code><replaceable>txt</replaceable><code>)</code> creates a new XML text node
+    <code><link linkend="ref.stdlib.xml.XMLText">XMLText</link>(</code><replaceable>txt</replaceable><code>)</code> creates a new XML text node
     whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
     which are not permitted in XML text will be encoded.
   </para></listitem>
   <listitem><para>
-    <code>XMLCData(</code><replaceable>txt</replaceable><code>)</code> creates a new XML CDATA node
+    <code><link linkend="ref.stdlib.xml.XMLCData">XMLCData</link>(</code><replaceable>txt</replaceable><code>)</code> creates a new XML CDATA node
     whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
     are <emphasis>not</emphasis> encoded.
   </para></listitem>
@@ -151,7 +151,7 @@ There are three library sites that construct XML nodes directly. Each of these s
 </para>
 
 <para>
-The library site <code>IsXML</code> verifies that its argument is an XML node of some type. 
+The library site <link linkend="ref.stdlib.xml.IsXML"><code>IsXML</code></link> verifies that its argument is an XML node of some type. 
 <code>IsXML(</code><replaceable>x</replaceable><code>)</code> publishes <replaceable>x</replaceable> if <replaceable>x</replaceable> is an XML node;
 otherwise it halts silently.
 </para>
@@ -162,7 +162,7 @@ otherwise it halts silently.
 <title>Manipulating XML</title>
 
 <para>
-The library provides two records, <code>xml</code> and <code>xattr</code>, to manipulate XML
+The library provides two records, <link linkend="ref.stdlib.xml.xml"><code>xml</code></link> and <link linkend="ref.stdlib.xml.xattr"><code>xattr</code></link>, to manipulate XML
 nodes more conveniently than by using the primitive XML sites. Each
 record has two members, <code>apply</code> and <code>unapply</code>, 
 that are both functions. The apply function builds XML values, 

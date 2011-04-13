@@ -15,7 +15,7 @@
 		<title>Cons Pattern</title>
 		
 		<para>
-			The <indexterm significance="preferred"><primary>cons pattern</primary></indexterm><firstterm>cons pattern</firstterm> matches the head and the tail of a nonempty list.
+			The <indexterm significance="preferred"><primary>cons pattern</primary></indexterm><firstterm>cons pattern</firstterm> matches the head and the tail of a nonempty <link linkend="ref.data.list">list</link>.
 		</para>
 		
 		<section xml:id="ref.patterns.cons.syntax">
@@ -33,7 +33,7 @@
 	    When a cons pattern <replaceable>P<subscript>h</subscript></replaceable><code>:</code><replaceable>P<subscript>t</subscript></replaceable> 
 	    is matched against a list type <code>List[</code><replaceable>T</replaceable><code>]</code>,
 	    pattern <replaceable>P<subscript>h</subscript></replaceable> is matched against type <replaceable>T</replaceable>,
-	    producing typing context Γ<subscript>h</subscript>, and
+	    producing <link linkend="ref.types.context">typing context</link> Γ<subscript>h</subscript>, and
 	    pattern <replaceable>P<subscript>t</subscript></replaceable> is matched against type <code>List[</code><replaceable>T</replaceable><code>]</code>,
 	    producing typing context Γ<subscript>t</subscript>.
 	    The typing context produced by the whole match is Γ<subscript>h</subscript> ∪ Γ<subscript>t</subscript>.
