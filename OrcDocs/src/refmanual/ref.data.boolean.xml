@@ -48,7 +48,7 @@ as well as the comparison operators, which yield Boolean results:
 	Note:  Unlike the typical symbols <code>&lt;</code> and <code>&gt;</code>
 	for arithmetic relations, Orc uses <code>&lt;:</code> and <code>:&gt;</code>
 	respectively.  This usage avoids ambiguity with the 
-	<link linkend="ref.combinators.sequential">sequential combinator</link>,
+	<link linkend="ref.combinators.sequential">sequential combinator</link>
 	and the <link linkend="ref.combinators.pruning">pruning combinator</link>.
 </para>
 

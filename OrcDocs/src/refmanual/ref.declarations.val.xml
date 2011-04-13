@@ -15,7 +15,7 @@
 		<title><code>val</code>:  Bind Value</title>
 		<para>
 			The <code><indexterm><primary>val</primary></indexterm>val</code> declaration binds variables to values. The declaration <code><indexterm><primary>val</primary></indexterm>val</code> <replaceable>P</replaceable> <code>=</code> <replaceable>G</replaceable>, followed by expression <replaceable>F</replaceable>, is a different way of writing the expression <replaceable>F</replaceable> <code>&lt;</code><replaceable>P</replaceable><code>&lt;</code> <replaceable>G</replaceable>.
-			Thus, <code>val</code> shares all of the behavior of the <link linkend="ref.combinators.pruning"><indexterm><primary>pruning</primary></indexterm>pruning combinator</link>.
+			Thus, <code>val</code> shares all of the behavior of the <indexterm><primary>pruning</primary></indexterm><link linkend="ref.combinators.pruning">pruning combinator</link>.
 		</para>
 		
 		<section xml:id="ref.declarations.val.syntax">

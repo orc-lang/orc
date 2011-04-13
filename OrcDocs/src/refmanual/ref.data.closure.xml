@@ -16,15 +16,15 @@
 <para>
 Functions are first-class values in Orc. <link linkend="ref.declarations.def">Defining a function</link> creates a special value called a 
 <indexterm significance="preferred"><primary>closure</primary></indexterm><firstterm>closure</firstterm>; the defined name of the function is a variable and the value bound to it
- is the closure. A closure can be published, passed to a site, or put into a data structure, just 
- like any other value.
+ is the closure. A closure can be <link linkend="ref.concepts.publish">published</link>, passed as an argument to a <link linkend="ref.expressions.call">call</link>, 
+ or put into a data structure, just like any other value.
 </para>
 <para>
 Since all declarations &#x2014; including function declarations &#x2014; are lexically scoped, these closures are
 <link xlink:href="http://en.wikipedia.org/wiki/Lexical_closure">lexical closures</link>. 
 When a closure is created, if the body of the function contains any variables other than the formal parameters,
-closure creation blocks until those variables are bound, and then the values bound to those variables are stored 
-as part of the closure. Then, when the closure is called, the evaluation of the function body uses those stored bindings. 
+closure creation <link linkend="ref.concepts.states.block">blocks</link> until those variables are bound, and then the values bound to those variables are stored 
+as part of the closure. Then, when the closure is <link linkend="ref.expressions.call.function">called</link>, the evaluation of the function body uses those stored bindings. 
 </para>
 
 
@@ -34,7 +34,7 @@ as part of the closure. Then, when the closure is called, the evaluation of the 
 		The type of a closure is a <indexterm significance="preferred"><primary>function type</primary></indexterm><firstterm>function type</firstterm> <code><indexterm><primary>lambda</primary></indexterm>lambda</code> <code>[</code><replaceable>X<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>X<subscript>m</subscript></replaceable><code>]</code><code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code> <code>::</code> <replaceable>R</replaceable>,
 		where <replaceable>T<subscript>i</subscript></replaceable> are the argument types of the closure, <replaceable>R</replaceable> is its return type,
 		and <replaceable>X<subscript>j</subscript></replaceable> are the type parameters if the function is <link linkend="ref.types.polymorphism">polymorphic</link>.
-		This type is derived from the original <link linkend="ref.declarations.def.type">definition of the function</link>.
+		This type is <link linkend="ref.types.typeinfo.function">derived</link> from the original definition of the function.
 	</para>
 </section>
 

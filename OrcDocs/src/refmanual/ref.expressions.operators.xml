@@ -16,14 +16,14 @@
 
 <para>
 Orc has a standard set of infix, prefix, and postfix <indexterm significance="preferred"><primary>operator</primary></indexterm><firstterm baseform="operator">operators</firstterm>. 
-Operators in Orc are syntactic sugar for <link linkend="ref.expressions.call"><indexterm><primary>site call</primary></indexterm>site calls</link>;
-they publish at most once, and their operands are <link linkend="ref.concepts.deflate">deflated</link>..
+Operators in Orc are syntactic sugar for <indexterm><primary>site call</primary></indexterm><link linkend="ref.expressions.call.site">site calls</link>;
+they <link linkend="ref.concepts.publish">publish</link> at most once, and their operands are <link linkend="ref.concepts.deflate">deflated</link>.
 For example, <code>1 + 2</code> is equivalent to <code>(+)(1, 2)</code> and <code>1 + 2 * 3</code> is equivalent to <code>(+)(1, (*)(2, 3))</code>.
 </para>
 
 <para>
 Operators are parsed using the <indexterm><primary>associativity</primary></indexterm><link linkend="ref.syntax.precedence">precedence and associativity</link> rules of Orc. 
-In particular, these rules describe the relationship between operators and combinators.
+In particular, these rules describe the relationship between operators and <link linkend="ref.combinators">combinators</link>.
 </para>
 
 <section xml:id="ref.expressions.operators.syntax">
@@ -229,8 +229,8 @@ The <code>=</code> operator can compare values of any type. Values of different 
 
 <para>
 The <link linkend="ref.syntax.precedence">operators' syntax</link> (fixity, precedence, and <indexterm><primary>associativity</primary></indexterm>associativity) is fixed by the Orc grammar; however, the site
-called is defined by the library and can be changed by a <code>def</code>
-or <code>import site</code> declaration.
+called is defined by the <link linkend="ref.stdlib">library</link> and can be changed by a <link linkend="ref.declarations.def"><code>def</code></link>
+or <link linkend="ref.declarations.site"><code>import site</code></link> declaration.
 </para>
 <para>
 Orc permits a special identifier form for operators: the operator name
@@ -264,9 +264,9 @@ that binding.
     String concatenation publishes a <code>String</code>.
   </para></listitem>
   <listitem><para>
-    List construction is polymorphic.
+    <link linkend="ref.data.list">List</link> construction is <link linkend="ref.types.polymorphism">polymorphic</link>.
     It takes an operand of type <replaceable>T</replaceable> and an operand of type <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
-    It publishes a <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
+    It returns a value of type <code>List</code><code>[</code><replaceable>T</replaceable><code>]</code>.
   </para></listitem>
   <listitem><para>
     Record extension takes two <link linkend="ref.data.record.type">records</link> and publishes a record.

@@ -20,7 +20,7 @@
 
 <para>
 	Orc <indexterm><primary>expression</primary></indexterm>expressions are executed, rather than evaluated.
-	An execution may call external services and publish some number of values (possibly zero).
+	An execution may call external services and <link linkend="ref.concepts.publish">publish</link> some number of values (possibly zero).
 	Different executions of the same expression may have completely different
 	behaviors; they may call different services, may receive different
 	responses from the same site, and may publish different values.  This

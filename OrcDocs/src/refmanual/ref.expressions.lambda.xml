@@ -15,10 +15,10 @@
 		<title><code>lambda</code></title>
 
 		<para>
-		Sometimes one would like to create a closure directly, without bothering to give it a name. 
-		There is a special keyword <code><indexterm><primary>lambda</primary></indexterm>lambda</code> for this purpose. By writing a function
-		definition without the keyword <code><indexterm><primary>def</primary></indexterm>def</code> and replacing the function name with
-		the keyword <code>lambda</code>, that definition becomes an expression which publishes a closure. 
+		Sometimes one would like to create a <link linkend="ref.data.closure">closure</link> directly, without bothering to give it a name. 
+		There is a special keyword <code><indexterm><primary>lambda</primary></indexterm>lambda</code> for this purpose. By writing a 
+		<link linkend="ref.declarations.def">function definition</link> without the keyword <code><indexterm><primary>def</primary></indexterm>def</code> and replacing the function name with
+		the keyword <code>lambda</code>, that definition becomes an expression which <link linkend="ref.concepts.publish">publishes</link> a closure. 
 		</para>
 		<para>
 		Note that a <code>lambda</code> cannot create a recursive function, since the function is

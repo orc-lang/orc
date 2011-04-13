@@ -24,7 +24,7 @@
 			<para>
 			  The execution of <replaceable>F</replaceable><code> &gt;</code><replaceable>x</replaceable><code>&gt; </code><replaceable>G</replaceable>
 			   starts by executing <replaceable>F</replaceable>. Whenever <replaceable>F</replaceable> 
-			  <indexterm><primary>publish</primary></indexterm>publishes a value, a new execution of <replaceable>G</replaceable> begins in parallel with <replaceable>F</replaceable> (and with any previous 
+			  <indexterm><primary>publish</primary></indexterm><link linkend="ref.concepts.publish">publishes</link> a value, a new execution of <replaceable>G</replaceable> begins in parallel with <replaceable>F</replaceable> (and with any previous 
 			  executions of <replaceable>G</replaceable>); in that execution of <replaceable>G</replaceable>, variable <replaceable>x</replaceable> is bound to the value
 			  published by <replaceable>F</replaceable>. Any value 
 			  published by any executions of <replaceable>G</replaceable> is published by the whole expression, but the values published 
@@ -36,8 +36,8 @@
 			<listitem>
 			<para>
 			  The sequential combinator may be written as <replaceable>F</replaceable><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code><replaceable>G</replaceable>, 
-			  where <replaceable>P</replaceable> is a pattern instead of 
-			  just a variable name. Any value published by <replaceable>F</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. 
+			  where <replaceable>P</replaceable> is a <link linkend="ref.patterns">pattern</link> instead of 
+			  just a variable name. Any value published by <replaceable>F</replaceable> is matched against the pattern <replaceable>P</replaceable>. 
 			  If this match is successful, a new execution of <replaceable>G</replaceable> begins, with all of the bindings 
 			  from the match. Otherwise, the published value is simply ignored, and no new execution
 			  of <replaceable>G</replaceable> is begun.
@@ -47,7 +47,7 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ >> ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			<para>
-			  This is equivalent to using a wildcard pattern: <replaceable>F</replaceable><code><![CDATA[ >_> ]]></code><replaceable>G</replaceable>.  Every publication
+			  This is equivalent to using a <link linkend="ref.patterns.wildcard">wildcard pattern</link>: <replaceable>F</replaceable><code><![CDATA[ >_> ]]></code><replaceable>G</replaceable>.  Every publication
 			  of <replaceable>F</replaceable> will match the combinator pattern, causing an execution of <replaceable>G</replaceable> for every individual
 			  publication of <replaceable>F</replaceable>.  No bindings will be made in <replaceable>G</replaceable> from these publications.
 			</para>

@@ -24,20 +24,20 @@
 			 <para>
 			  	The execution of <replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable> 
 			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
-				<replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm>publishes a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
-				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <link linkend="ref.concepts.states.kill"><indexterm><primary>kill</primary></indexterm>killed</link>. 
-				A killed expression cannot call any sites or publish any values. During the execution of <replaceable>F</replaceable>, 
+				<replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm><link linkend="ref.concepts.publish">publishes</link> a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
+				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <indexterm><primary>kill</primary></indexterm><link linkend="ref.concepts.states.kill">killed</link>. 
+				A killed expression cannot call any <link linkend="ref.sites">sites</link> or publish any values. During the execution of <replaceable>F</replaceable>, 
 				any part of the execution that depends on <replaceable>x</replaceable> 
-				will be suspended until <replaceable>x</replaceable> is bound (to
-				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value, that part of the execution is suspended forever.
+				will be <link linkend="ref.concepts.states.block">blocked</link> until <replaceable>x</replaceable> is bound (to
+				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value, those parts remain blocked forever.
 			  </para>
 			</listitem>
 			</varlistentry>
 			<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
 			<listitem>
 			  <para>
-				The pruning combinator may include a full pattern <replaceable>P</replaceable> instead of just a variable name. Any value published
-				by <replaceable>G</replaceable> is <link linkend="ref.patterns">matched</link> against the pattern <replaceable>P</replaceable>. If this match is successful, then <replaceable>G</replaceable> is killed and all of the bindings
+				The pruning combinator may include a full <link linkend="ref.patterns">pattern</link> <replaceable>P</replaceable> instead of just a variable name. Any value published
+				by <replaceable>G</replaceable> is matched against the pattern <replaceable>P</replaceable>. If this match is successful, then <replaceable>G</replaceable> is killed and all of the bindings
 				of pattern <replaceable>P</replaceable> are made in <replaceable>F</replaceable>. Otherwise, the published value is simply ignored and <replaceable>G</replaceable> continues to execute.
 			  </para>
 			</listitem>
@@ -45,7 +45,7 @@
 			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ << ]]></code><replaceable>G</replaceable></term>
 			<listitem>
 			 <para>
-				This is equivalent to using a wildcard pattern, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
+				This is equivalent to using a <link linkend="ref.patterns.wildcard">wildcard pattern</link>, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
 				until it publishes a value.  Any value published by <replaceable>G</replaceable> will match the pattern. After the successful match, 
 				<replaceable>G</replaceable> is killed, but no bindings are made in <replaceable>F</replaceable>.
 				No part of execution of <replaceable>F</replaceable> is suspended by the pruning combinator since there is no variable to be bound.

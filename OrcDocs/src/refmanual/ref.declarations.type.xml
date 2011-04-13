@@ -43,7 +43,7 @@
 	  </para>
 	  
 	  <para>
-	    A type alias may have type parameters, in which case it defines a type operator
+	    A type alias may have type parameters, in which case it defines a <link linkend="ref.types.polymorphism">type operator</link>
 	    which can be applied to other types.
 	  </para>
   </section>
@@ -54,8 +54,8 @@
 	  <para>
 			A <indexterm significance="preferred"><primary>type import</primary></indexterm><firstterm>type import</firstterm> gives a name to a type described by some external service.
 			This allows new types to be added to Orc, in much the same way that
-			the <code>import site</code> declaration allows new sites to be added to Orc.
-			Type imports are often used in conjunction with the <link linkend="ref.declarations.site"><code>import site</code> declaration</link>,
+			the <link linkend="ref.declarations.site"><code>import site</code> declaration</link> declaration allows new sites to be added to Orc.
+			Type imports are often used in conjunction with the <code>import site</code>,
 			to give a name to the type of values produced by the site.
 	  </para>
 	  
@@ -69,7 +69,7 @@
 	  
 	  <para>
 	    A <emphasis><indexterm><primary>algebraic data type</primary></indexterm>datatype declaration</emphasis> defines a new type, called a <indexterm significance="preferred"><primary>sum type</primary></indexterm><firstterm>sum type</firstterm>, which is the
-	    type of all values produced by any of the declared constructors. 
+	    type of all values produced by any of the declared <link linkend="ref.data.datatype.type">constructors</link>. 
 	  </para>
 	  <para>
 	    A datatype declaration may be polymorphic, introducing new type variables which may be used within
@@ -77,7 +77,7 @@
 	    slots of the constructors. A datatype declaration is the only way to define type recursively in Orc.
 	  </para>
 	  <para>
-	    The datatype declaration also assigns types to each of the <link linkend="ref.data.datatype.type">constructor sites</link> that it defines.
+	    The datatype declaration also assigns types to each of the constructors that it defines.
 	  </para>   
 	</section>
 			

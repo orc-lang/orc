@@ -17,7 +17,7 @@
 
 	<para>
 <indexterm><primary>import site</primary></indexterm>
-A site declaration makes an Orc site that is present in the environment available for use by the program.
+A <firstterm>site declaration</firstterm> makes an Orc <link linkend="ref.sites">site</link> that is present in the environment available for use by the program.
 	</para>
 
 	<para>
@@ -53,8 +53,8 @@ If it is not found, or is not the expected type, site resolution fails.
 The site class loader referred to above is the usual JVM stack of delegating class loaders.
 In the Orc implementation, the stack is initially the first non-<code language="java">null</code> of: 1) the current thread's context class loader, 2) the class loader of the site resolver class, or 3) the JVM system class loader.
 This loader has a URL class loader stacked on it if a site classpath is configured.
-The result of this is that if a site classpath is configured, is is searched first.
-If no class is found on the site classpath, or the site classpath isn't configured, then the "normal" classpath is searched.
+Thus, if a site classpath is configured, is is searched first.
+If no class is found on the site classpath, or the site classpath is not configured, then the normal classpath is searched.
 		</para>
 	</section>
 
@@ -66,6 +66,10 @@ If no class is found on the site classpath, or the site classpath isn't configur
 			or it may be an entirely opaque type. The type of a site behaves very
 			much like a site itself during typechecking; it is invoked with
 			argument types and responds with a return type.
+		</para>
+		<para>
+		  The Orc typechecker cannot independently verify that a site's stated type is correct.
+		  If the site misrepresents its type, this may result in a runtime type error.
 		</para>
 	</section>
 
