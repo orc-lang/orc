@@ -20,7 +20,7 @@ val format = DateTimeFormat.forStyle("SS")
 val quorum = 2
 -- Names of invitees
 val invitees = [
-  "Adrian Quark",
+  "John Thywissen",
   "David Kitchin",
   "Jayadev Misra" ]
 
@@ -35,7 +35,7 @@ def invite(span, name) =
   send(span, name)
 
 def getN(channel, n) =
-  if n > 0 then
+  if n :> 0 then
     channel.get():getN(channel, n-1)
   else []
 
@@ -48,7 +48,7 @@ def pickMeetingTime(first:_) = first.getStart()
 def pickMeetingTime(_) = stop
 
 def inviteQuorum(invitees, quorum) =
-  let(
+  Let(
     val c = Buffer()
     getN(c, quorum)
     | each(invitees) >invitee>
@@ -59,10 +59,10 @@ def inviteQuorum(invitees, quorum) =
 def notify(time, invitees, responders) =
   each(invitees) >invitee> (
     if member(invitee, responders) then
-      println(invitee + ": meeting is at " + time) >>
+      Println(invitee + ": meeting is at " + time) >>
       stop
     else
-      println(invitee + ": if possible, come to meeting at " + time) >>
+      Println(invitee + ": if possible, come to meeting at " + time) >>
       stop
   ) ; "DONE"
 
@@ -71,7 +71,7 @@ def notify(time, invitees, responders) =
 inviteQuorum(invitees, quorum) >responses>
 unzip(responses) >(responders,ranges)>
 afold(lambda (a,b) = a.intersect(b), ranges) >times>
-let(
+Let(
   pickMeetingTime(times) >time>
   format.print(time) >time>
   notify(time, invitees, responders)

@@ -11,13 +11,13 @@ sites to which the data can be passed at each phase.
 The first half of the program is the map/reduce framework,
 which is assumed fixed.
 -}
-val table = Buffer()
+val table = Channel()
 -- Given a key, return a function which stores
 -- that key.  Here we store all keys in a single
 -- buffer, but a real implementation would hash
 -- keys to a buffer on the machine where they would
 -- be reduced
-def partition(_)(k,v) = table.put((k,v))
+def partition(_) = lambda (k,v) = table.put((k,v))
 
 -- To simulate reading data we publish each element
 def read(data) = each(data)
@@ -26,9 +26,11 @@ def write(datum) = datum
 
 -- Implement a retry policy; if the site f
 -- doesn't respond in 1 second, call it again
-def retry(f)(a,b) =
-  val (ok, value) = (true, f(a,b)) | (false, Rtimer(1000))
-  if ok then value else retry(f)(a,b)
+def retry(f) =
+  lambda (a,b) = (
+    val (ok, value) = (true, f(a,b)) | (false, Rwait(1000))
+    if ok then value else retry(f)(a,b)
+  )
 
 -- The map phase reads data, maps it,
 -- partitions it, and stores it
@@ -44,7 +46,7 @@ def MAP(mapper, data) =
 -- groups it, reduces it, and writes it
 def REDUCE(reducer, table) =
   -- Sort tuples by their first element
-  def lt((k1,_), (k2,_)) = (k1 < k2)
+  def lt((k1,_), (k2,_)) = (k1 <: k2)
   sortBy(lt, table.getAll()) >data>
   each(groupBy((=), data)) >(k,vs)>
   retry(reducer)(k, vs) >v>

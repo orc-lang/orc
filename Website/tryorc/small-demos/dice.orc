@@ -5,7 +5,7 @@ total shown by the two dice is c. exp(n,c) returns this value. --}
 def exp(0,_) = 0
 
 def exp(n,c) =
-   def throw() = random(6) + 1 -- roll of a single dice
+   def throw() = Random(6) + 1 -- roll of a single die
 
    -- Goal expression for exp(n,c)
    (if throw() + throw() = c then 1 else 0) + exp(n-1,c)

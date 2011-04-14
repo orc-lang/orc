@@ -26,9 +26,9 @@ WebPrompt("Personal Information", [
   IntegerField("age", "Age"),
   Checkbox("brown", "Brown Hair?"),
   Button("submit", "Submit") ]) >data>
-println("First Name: " + data.get("first")) >>
-println("Last Name: " + data.get("last")) >>
-println("Age: " + data.get("age")) >>
-println("Brown Hair? " + data.get("brown")) >>
-println("Submitted: " + data.get("submit")) >>
+Println("First Name: " + data.get("first")) >>
+Println("Last Name: " + data.get("last")) >>
+Println("Age: " + data.get("age")) >>
+Println("Brown Hair? " + data.get("brown")) >>
+Println("Submitted: " + data.get("submit")) >>
 stop

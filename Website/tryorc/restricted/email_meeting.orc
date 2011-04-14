@@ -11,13 +11,13 @@ val timeFormat = DateTimeFormat.forStyle("-S")
 
 -- returns [(name, address)]
 def parseInvitees(text) =
-  def nonemptyLine(line) = (line.trim().length() > 0)
+  def nonemptyLine(line) = (line.trim().length() :> 0)
   def parseInvitee(line) =
     val line = line.trim()
     val space = line.lastIndexOf(" ")
     val tab = line.lastIndexOf("\t")
-    val splitAt = if space < tab then tab else space
-    if splitAt > 0 then
+    val splitAt = if space <: tab then tab else space
+    if splitAt :> 0 then
     (line.substring(0, splitAt).trim(),
      line.substring(splitAt+1))
     else ("", line)
@@ -68,11 +68,11 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
            + "\n" + data.get("inviteesText")
     val invitees =
       parseInvitees(inviteesText) >(_:_) as x> x
-      ; error("No invitees found. Please try again.")
+      ; Error("No invitees found. Please try again.")
     val span =
       Interval(data.get("start"), data.get("end").plusDays(1)) >span>
       if span.isEmpty()
-      then error("Empty date range. Please try again.")
+      then Error("Empty date range. Please try again.")
       else span
     (data.get("fromName")+" <"+data.get("fromEmail")+">",
      data.get("meetingTopic"), data.get("duration"),
@@ -108,15 +108,15 @@ def getN(channel, n) =
   ; []
 
 def inviteQuorum(invitees) =
-  let(
-    val c = Buffer()
+  Let(
+    val c = Channel()
     getN(c, quorum)
     -- invite invitees
     | each(invitees) >(name,_) as invitee>
       invite(invitee) >response>
       c.put((name, response)) >> stop
     -- close the buffer once the time limit is up
-    | Rtimer(timeLimit*3600000) >> c.closenb() >> stop
+    | Rwait(timeLimit*3600000) >> c.closeD() >> stop
   )
 
 def pickMeetingTime(first:_) = first.getStart()
@@ -132,12 +132,12 @@ def buildForm() =
   form
 
 def invite((name, email)) =
-  println("Inviting " + name + " at " + email) >>
+  Println("Inviting " + name + " at " + email) >>
   buildForm() >form>
   SendForm(form) >receiver>
   SendMailFrom(from, email, "Meeting Request: "+meetingTopic, requestBody(name, receiver.getURL())) >>
   receiver.get() >>
-  println("Received response from " + name + " at " + email) >>
+  Println("Received response from " + name + " at " + email) >>
   form.getValue().get("data").get("times")
 
 def notify(time, invitees, responders) =
@@ -163,11 +163,11 @@ def handleResponses((_:_) as responses) =
   formatResponses(responses) >msg>
   unzip(responses) >(responders,ranges)>
   afold(lambda (a,b) = a.intersect(b), ranges) >times>
-  let(
+  Let(
     pickMeetingTime(times) >time>
-    println("Chosen time: " + dateFormat.print(time)) >>
+    Println("Chosen time: " + dateFormat.print(time)) >>
     notify(time, invitees, responders)
-    ; println("Request failed") >>
+    ; Println("Request failed") >>
       fail(msg) )
   >> "DONE"
 def handleResponses([]) =

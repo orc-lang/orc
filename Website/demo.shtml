@@ -28,13 +28,13 @@
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/metronome.orc">metronome</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Small Demos</span><ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/treeswitch.orc">Load Balancing</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/roundrobin.orc">Load Balancing</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/mapreduce.orc">Map/Reduce</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/philosopher.orc">Dining Philosophers</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/tally.orc">Tally</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/dice.orc">Dice</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/walk.orc">Random Walk</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/path.orc">Shortest Path</a></span></li>
+	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/path.orc">Shortest Path</a></span></li> -->
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/search.orc">Web Search</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/chat.orc">Google Talk</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
