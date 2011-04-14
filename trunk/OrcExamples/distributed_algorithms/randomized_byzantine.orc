@@ -22,10 +22,12 @@ def tallyVotes(votes) =
     val t = default(table.get(v), 0)
     val newt = t+1
     table.put(v, newt) >>
+    ( 
     if newt :> mt then 
       (v, newt)
     else 
-      (mv, mt)
+      (mv, mt) 
+    )
   foldl(tallyVote, (0, 0), votes)
   
 -- decision algorithm for a good process
@@ -39,7 +41,8 @@ def bad(_, _) = Random(2)
 val nRounds = Ref(0)
 
 -- generic process; pick is the decision algorithm
-def process(pick)(out) =
+def process(pick) = 
+ lambda (out) = (
   -- vote for a value
   def vote(value) = map(lambda (_) = out.put(value), channels)
   -- receive votes
@@ -52,10 +55,11 @@ def process(pick)(out) =
     tallyVotes(receive()) >(maj, tally)>
     pick(maj, tally) >newValue>
     vote(newValue) >>
-    if tally :> 7*t then newValue else round(newValue, n+1)
+    ( if tally :> 7*t then newValue else round(newValue, n+1) )
   Random(2) >value>
   vote(value) >>
   round(value, 1)
+ )
 
   Println("Bad: " + map(process(bad), take(t, channels))) >> stop
 | Println("Good: " + map(process(good), drop(t, channels))) >> stop

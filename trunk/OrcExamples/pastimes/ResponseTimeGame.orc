@@ -39,9 +39,12 @@ def games() =
    terminating the run from Eclipse.
 -}
   game() >(b,w)> 
-  if b then
-   (Println("Response time = " +w) >> games())
-   else (Println("Game Over") >> stop)
+  ( 
+    if b then
+      Println("Response time = " +w) >> games()
+    else 
+      Println("Game Over") >> stop
+  )
 
 games()
 
