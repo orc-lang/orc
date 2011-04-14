@@ -59,9 +59,6 @@
 		<mkdir dir="${build.dir}/eclipsehelp"/>
 		<mkdir dir="${build.dir}/eclipsehelp/userguide"/>
 		<mkdir dir="${build.dir}/eclipsehelp/refmanual"/>
-		<mkdir dir="${build.dir}/examples"/>
-		<mkdir dir="${build.dir}/examples/userguide"/>
-		<mkdir dir="${build.dir}/examples/refmanual"/>
 	</target>
 
 	<!-- ================================= 
@@ -666,49 +663,9 @@
 	<!-- ================================= 
           target: all
          ================================= -->
-	<target name="all" depends="userguide,refmanual,examples"
+	<target name="all" depends="userguide,refmanual"
 		description="">
 	</target>
-
-	<!-- ================================= 
-          target: examples-userguide
-         ================================= -->
-	<target name="examples-userguide" depends="prelude-orcdoc,mkdirs"
-		description="Extract example programs from user guide">
-		<echo message="Extracting example programs from user guide..."
-			level="info"/>
-		<java classname="extraction.Main" failonerror="true">
-			<arg value="${src.dir}/userguide"/>
-			<arg value="${build.dir}/examples/userguide"/>
-			<classpath>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-				<pathelement location="${orc.location.OrcDocExamples}/build/"/>
-			</classpath>
-		</java>
-	</target>
-
-	<!-- ================================= 
-          target: examples-refmanual
-         ================================= -->
-	<target name="examples-refmanual" depends="prelude-orcdoc,mkdirs"
-		description="Extract example programs from reference manual">
-		<echo message="Extracting example programs from reference manual..."
-			level="info"/>
-		<java classname="extraction.Main" failonerror="true">
-			<arg value="${src.dir}/refmanual"/>
-			<arg value="${build.dir}/examples/refmanual"/>
-			<classpath>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-				<pathelement location="${orc.location.OrcDocExamples}/build/"/>
-			</classpath>
-		</java>
-	</target>
-
-	<!-- ================================= 
-          target: examples
-         ================================= -->
-	<target name="examples" depends="examples-userguide,examples-refmanual"
-		description="Extract example programs from all documentation sources"/>
 
 	<!-- ================================= 
           target: clean
