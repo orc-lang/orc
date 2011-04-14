@@ -2,7 +2,7 @@
 // XMLExamplesTest.java -- Java class XMLExamplesTest
 // Project OrcScala
 //
-// $Id: XMLExamplesTest.java 2651 2011-03-30 19:32:01Z dkitchin $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -53,7 +53,8 @@ public class XMLExamplesTest {
 	public static TestSuite buildSuite() {
 		final TestSuite suite = new TestSuite("orc.test.XMLExamplesTest");
 		final LinkedList<File> files = new LinkedList<File>();
-		TestUtils.findOrcFiles(new File("../OrcExamples"), files);
+        TestUtils.findOrcFiles(new File("test_data"), files);
+        TestUtils.findOrcFiles(new File("../OrcExamples"), files);
 		for (final File file : files) {
 			final ExpectedOutput expecteds;
 			try {

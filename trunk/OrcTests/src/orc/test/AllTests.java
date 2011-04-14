@@ -2,7 +2,7 @@
 // AllTests.java -- Java class AllTests
 // Project OrcScala
 //
-// $Id: AllTests.java 2687 2011-04-05 06:23:31Z dkitchin $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
