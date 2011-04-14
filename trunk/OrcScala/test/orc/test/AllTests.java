@@ -1,6 +1,6 @@
 //
 // AllTests.java -- Java class AllTests
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //

@@ -1,6 +1,6 @@
 //
 // TypedExamplesTest.java -- Scala class/trait/object TypedExamplesTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
@@ -33,7 +33,7 @@ public class TypedExamplesTest extends ExamplesTest {
     // Turn on typechecking
     bindings.typecheck_$eq(true);
     
-    return buildSuite(TypedExamplesTest.class.getCanonicalName(), bindings, new File("../OrcExamples"));
+    return buildSuite(TypedExamplesTest.class.getCanonicalName(), bindings, new File("../OrcExamples"), new File("test_data"));
   }
   
 }

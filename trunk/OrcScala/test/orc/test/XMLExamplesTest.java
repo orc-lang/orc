@@ -1,6 +1,6 @@
 //
 // XMLExamplesTest.java -- Java class XMLExamplesTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
@@ -53,6 +53,7 @@ public class XMLExamplesTest {
 	public static TestSuite buildSuite() {
 		final TestSuite suite = new TestSuite("orc.test.XMLExamplesTest");
 		final LinkedList<File> files = new LinkedList<File>();
+		TestUtils.findOrcFiles(new File("test_data"), files);
 		TestUtils.findOrcFiles(new File("../OrcExamples"), files);
 		for (final File file : files) {
 			final ExpectedOutput expecteds;

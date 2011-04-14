@@ -1,6 +1,6 @@
 //
 // OrcParserTest.java -- Java class OrcParserTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
@@ -48,6 +48,7 @@ public class OrcParserTest {
   public static Test suite() {
     final TestSuite suite = new TestSuite("orc.test.parser.OrcParserTest");
     final LinkedList<File> files = new LinkedList<File>();
+    TestUtils.findOrcFiles(new File("test_data"), files);
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
     final OrcBindings options = new OrcBindings();
     final StandardOrcCompiler envServices = new StandardOrcCompiler();

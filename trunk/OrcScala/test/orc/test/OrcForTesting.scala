@@ -1,6 +1,6 @@
 //
 // OrcForTesting.scala -- Scala class/trait/object OrcForTesting
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
