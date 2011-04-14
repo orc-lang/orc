@@ -228,7 +228,7 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 					<entry>Left</entry>
 				</row>
 				<row>
-					<entry morerows="9">0</entry>
+					<entry morerows="4">0</entry>
 					<entry><link linkend="ref.types.typeinfo">Type Information</link></entry>
 					<entry><code><![CDATA[ :: ]]></code></entry>
 					<entry>Infix</entry>
@@ -257,22 +257,10 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 				</row>
 				<row>
 					<!-- Level 0 -->
-					<entry morerows="4"><link linkend="ref.declarations">Declaration</link></entry>
-					<entry><code>val</code></entry>
-					<entry morerows="4">Prefix</entry>
-					<entry morerows="4">--</entry>
-				</row>
-				<row>
-				  <entry><code>def</code></entry>
-				</row>
-				<row>
-				  <entry><code>import</code></entry>
-				</row>
-				<row>
-				  <entry><code>include</code></entry>
-				</row>
-				<row>
-				  <entry><code>type</code></entry>
+					<entry><link linkend="ref.declarations">Declaration</link></entry>
+					<entry><code>val, def, import, include, type</code></entry>
+					<entry>Prefix</entry>
+					<entry>--</entry>
 				</row>
 				
 			</tbody>
