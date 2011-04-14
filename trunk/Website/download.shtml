@@ -30,9 +30,9 @@ us</a> if you are interested in obtaining an account.</p>
 	We provide instructions for the following operating systems: </p>
 
 <ul type="disc">
-	<li><a href="installation_instructions/Orc_install_mac.pdf">Mac OS X</a></li>
-	<li><a href="installation_instructions/Orc_install_linux.pdf">Linux</a></li>
-	<li><a href="installation_instructions/Orc_install_windows.pdf">Windows</a></li>
+	<li><a href="documentation/installation_instructions/Orc_install_mac.pdf">Mac OS X</a></li>
+	<li><a href="documentation/installation_instructions/Orc_install_linux.pdf">Linux</a></li>
+	<li><a href="documentation/installation_instructions/Orc_install_windows.pdf">Windows</a></li>
 </ul>
 
 <a id="cmdline"></a>

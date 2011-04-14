@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- orc.xsd - Orc Intermediate Language XML representation schema
+<!-- oil.xsd - Orc Intermediate Language XML representation schema
      Project OrcScala
 
-     $Id: orc.xsd 2243 2010-12-12 06:53:49Z dkitchin $
+     $Id: oil.xsd 2257 2010-12-15 19:55:16Z dkitchin $
 
      Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 
@@ -11,8 +11,8 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	xmlns="http://orc.csres.utexas.edu/oil"
-	targetNamespace="http://orc.csres.utexas.edu/oil"
+	xmlns="http://orc.csres.utexas.edu/oil.xsd"
+	targetNamespace="http://orc.csres.utexas.edu/oil.xsd"
 	elementFormDefault="qualified">
 
 

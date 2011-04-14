@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.2.&nbsp;Java sites</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.sites.html" title="Chapter&nbsp;6.&nbsp;Sites and Services"><link rel="prev" href="ref.sites.library.html" title="6.1.&nbsp;Library sites"><link rel="next" href="ref.sites.web.html" title="6.3.&nbsp;Web Services"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.sites.library.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.sites.html">Chapter&nbsp;6.&nbsp;Sites and Services</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.sites.web.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.sites.library.html">6.1.&nbsp;Library sites</a>&nbsp;</td><th align="center" width="60%">6.2.&nbsp;Java sites</th><td align="right" width="20%"><a href="ref.sites.web.html">6.3.&nbsp;Web Services</a>&nbsp;</td></tr></table></div><div class="section" title="6.2.&nbsp;Java sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.java"></a>6.2.&nbsp;Java sites</h2></div></div></div><p>
+Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
+which in this implementation is the Java virtual machine (JVM).
+In addition to calling Orc sites <span class="foreignphrase"><em class="foreignphrase">per se</em></span>, Orc programs can access
+arbitrary <a name="N42620" class="indexterm"></a>Java classes using the <a name="N42624" class="indexterm"></a><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration.
+Values in Java fields, values returned from Java methods, and values returned from Java constructors
+may be used in Orc programs just as any other Orc value.
+</p><div class="section" title="6.2.1.&nbsp;Java classes"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.classes"></a>6.2.1.&nbsp;Java classes</h3></div></div></div><p>
+Java classes are named in an Orc program using the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration.
+In the scope of such a declaration, the declared name is bound to a value that acts as a proxy for the Java class.
+This class proxy may be called as an Orc site, which invokes the Java class constructor corresponding to the arguments of the <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site call</a>.
+The class proxy also presents the class static methods and class static fields in the same manner as
+an Orc <a class="link" href="ref.data.record.html" title="1.7.&nbsp;Records">record</a>, with keys corresponding to the Java class members' names.
+Class <a name="N4263B" class="indexterm"></a>methods appear as record elements that are sites, and are invoked by projecting the record element
+using the <a name="N4263F" class="indexterm"></a>dot notation and calling the site.
+Fields appear as record elements that are <a class="link" href="ref.stdlib.state.html#ref.stdlib.state.Ref">references</a>, and are accessed and assigned
+by projecting the record element using the dot notation and
+using Orc's <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">?</span></code> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:=</span></code> operators.
+</p><p>
+Note that Java allows fields and methods with identical names to be members of the same class.
+In this case, Orc's Java class proxy resolves from the usage of a record element
+whether to access the field or method.
+</p><p>
+Orc Java class proxies are not true Orc record values, although they appear syntactically as if they are.
+</p><p>
+Java classes are loaded from the Orc site classpath, which may be specified as a setting of the Orc
+runtime engine; for example via a command-line option or an Eclipse project property.
+If the class is not found on the Orc site
+classpath, the loading attempt continues using the normal Java classpath.
+</p></div><div class="section" title="6.2.2.&nbsp;Java objects"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.objects"></a>6.2.2.&nbsp;Java objects</h3></div></div></div><p>
+Java objects may be returned by any Orc site call, including constructor or class static method
+invocations of an Orc Java class proxy.
+Java objects' methods and fields appear in the same manner as
+an Orc record with keys corresponding to the members' names.
+Methods appear as record elements that are sites, and are invoked by projecting the record element
+using the dot notation and calling the site.
+<a name="N42659" class="indexterm"></a>Fields appear as record elements that are references, and are accessed and assigned
+by projecting the record element using the dot notation and
+using Orc's <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">?</span></code> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:=</span></code> operators.
+If a Java object is called as a site without projecting a member, the method name <a class="link" href="ref.data.record.html#ref.data.record.specialkeys" title="1.7.4.&nbsp;Special Keys"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">apply</span></code></a> is implicitly used.
+</p><p>
+Note that Java allows fields and methods with identical names to be members of the same class.
+In this case, Orc's Java object proxy attempts to resolve from the usage of a record element
+whether to access the field or method.
+</p><p>
+If a field's value is a class with a member named <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">read</span></code> this member will be
+invoked when an Orc program accesses that field with the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">?</span></code> operator.
+Similarly, if a field's value is a class with a member named <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">write</span></code>, this member will be
+invoked when an Orc program assigns a new value to that field with the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:=</span></code> operator.
+Note that this is a potentially surprising name conflict.
+</p></div><div class="section" title="6.2.3.&nbsp;Java value conversions"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.conversion"></a>6.2.3.&nbsp;Java value conversions</h3></div></div></div><p>
+When interacting with Java classes and objects, Orc performs some conversions of values passed to and from the Java code.
+Specifically, Orc applies conversions to the following:
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>Arguments of invoked constructors and methods</p></li><li class="listitem"><p>Return values of invoked constructors and methods</p></li><li class="listitem"><p>Accessed values from fields</p></li><li class="listitem"><p>Assigned values to fields</p></li><li class="listitem"><p>Accessed values from array components</p></li><li class="listitem"><p>Assigned values to array components</p></li></ul></div><p>
+</p><p>
+The conversions applied are the following:
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">void</span></code> Java methods return <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">signal</span></code> in Orc.</p></li><li class="listitem"><p>Orc <a class="link" href="ref.data.numeric.html" title="1.2.&nbsp;Numerics">integers</a> are converted to Java <code class="code">Byte</code>, <code class="code">Short</code>, <code class="code">Integer</code>, <code class="code">Long</code>, <code class="code">Float</code>, or <code class="code">Double</code>, as needed.</p></li><li class="listitem"><p>Orc <a class="link" href="ref.data.numeric.html" title="1.2.&nbsp;Numerics">numbers</a> are converted to Java <code class="code">Float</code> or <code class="code">Double</code>, as needed.</p></li><li class="listitem"><p>Java <code class="code">Byte</code>, <code class="code">Short</code>, <code class="code">Integer</code>, and <code class="code">Long</code> are converted to Orc integers.</p></li><li class="listitem"><p>Java <code class="code">Float</code> and <code class="code">Double</code> are converted to Orc numbers.</p></li><li class="listitem"><p>Java primitive values are boxed and unboxed as needed, per <em class="citetitle"><a class="citetitle" href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7" target="_top">The Java Language Specification</a></em> &sect;5.1.7 and &sect;5.1.8.</p></li><li class="listitem"><p>Java widening primitive conversions are applied as needed, per <em class="citetitle"><a class="citetitle" href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.2" target="_top">The Java Language Specification</a></em> &sect;5.1.2.</p></li></ul></div><p>
+Note that Orc integers and numbers represent a larger range of values than the standard Java numeric types.
+If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
+This will change the magnitude of the number and may change its sign.
+If a floating-point conversion is applied to an out-of-range value, the result is positive or negative infinity, as appropriate.
+</p></div><div class="section" title="6.2.4.&nbsp;Java method and constructor invocation"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.overloading"></a>6.2.4.&nbsp;Java method and constructor invocation</h3></div></div></div><p>
+Orc invokes a Java method or constructor by closely approximating the Java method
+invocation rules specified in <em class="citetitle"><a class="citetitle" href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.12" target="_top">The Java Language Specification</a></em> &sect;15.12.
+This is only an approximation, because Orc performs Java compile-time steps at
+run time using Java's reflection facilities, and therefore has a different
+view of the types of values than the Java compiler.
+However, in most cases, this difference has no effect.
+At present, Orc does not recognize Java variable arity methods.
+(In practice, this is a very rarely used feature of Java.)
+</p><p>
+Orc has a Java stack trace option, which may be specified as a setting to the Orc
+runtime engine (for example, via a command-line option or an Eclipse run configuration setting).
+This may be helpful when debugging Java invocations.
+</p></div><div class="section" title="6.2.5.&nbsp;Java arrays"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.array"></a>6.2.5.&nbsp;Java arrays</h3></div></div></div><p>
+Java arrays are accessible in Orc.
+To refer to a component of a Java array, follow the array value with a
+nonnegative integer-valued expression in parenthesis.
+Java arrays are zero-origin.
+Array components appear as references in Orc.
+Their values may be accessed and assigned using Orc's <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">?</span></code> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:=</span></code> operators.
+The Java <code class="code">length</code> pseudo-field of arrays is available in Orc as <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">length</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">?</span></code>.
+</p></div><div class="section" title="6.2.6.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.examples"></a>6.2.6.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.constructinvoke_link" onclick="toggle(this, 'ref.sites.java.examples.constructinvoke_content')">
+					&minus;
+				</a><span class="exampleCaption">Construct a Java object, and invoke methods</span></div><div class="exampleBody" id="ref.sites.java.examples.constructinvoke_content"><pre class="orc">
+<span class="hl-comment">{- Name a Java class and use it to invoke object methods -}</span>
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">URL</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.net.URL"</span>
+
+<span class="hl-comment">{- Create an instance-}</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">googleUrl</span> <span class="hl-operator">=</span> <span class="hl-site">URL</span>(<span class="hl-literal">"http://www.google.com/"</span>)
+
+<span class="hl-comment">{- Invoke some methods -}</span>
+<span class="hl-variable">googleUrl</span>.<span class="hl-site">openConnection</span>().<span class="hl-site">getResponseMessage</span>()
+
+<span class="hl-comment">{-
+OUTPUT:
+"OK"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.constructinvoke_link'), 'ref.sites.java.examples.constructinvoke_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.static_link" onclick="toggle(this, 'ref.sites.java.examples.static_content')">
+					&minus;
+				</a><span class="exampleCaption">Accessing class members</span></div><div class="exampleBody" id="ref.sites.java.examples.static_content"><pre class="orc">
+<span class="hl-comment">{- Access Java's String and Boolean classes -}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">JavaBoolean</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.lang.Boolean"</span>
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">JavaString</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.lang.String"</span>
+
+<span class="hl-comment">-- Static field access</span>
+<span class="hl-variable">JavaBoolean</span>.<span class="hl-variable">TRUE</span><span class="hl-operator">?</span> <span class="hl-combinator">|</span>
+
+<span class="hl-comment">-- Constructor invocation</span>
+<span class="hl-site">JavaBoolean</span>(<span class="hl-literal">"true"</span>) <span class="hl-combinator">|</span>
+
+<span class="hl-comment">-- Static method access</span>
+<span class="hl-variable">JavaBoolean</span>.<span class="hl-site">parseBoolean</span>(<span class="hl-literal">"true"</span>) <span class="hl-combinator">|</span>
+
+<span class="hl-comment">-- Overloading and Orc-Java conversion -- String.valueOf(double) is invoked</span>
+<span class="hl-variable">JavaString</span>.<span class="hl-site">valueOf</span>(<span class="hl-literal">2e108</span>)
+
+<span class="hl-comment">{-
+OUTPUT:PERMUTABLE
+true
+true
+true
+"2E+108"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.static_link'), 'ref.sites.java.examples.static_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.noarg_link" onclick="toggle(this, 'ref.sites.java.examples.noarg_content')">
+					&minus;
+				</a><span class="exampleCaption">No-arg constructor invocation, field assignment, and field dereference</span></div><div class="exampleBody" id="ref.sites.java.examples.noarg_content"><pre class="orc">
+<span class="hl-comment">{- Constructor invocation -}</span> 
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">FieldTestClass</span> <span class="hl-operator">=</span> <span class="hl-literal">"org.omg.CORBA.portable.ServantObject"</span>
+
+<span class="hl-comment">-- No-arg constructor invocation</span>
+<span class="hl-site">FieldTestClass</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">testInstance</span><span class="hl-combinator">&gt;</span>
+
+<span class="hl-comment">-- Field assignment</span>
+<span class="hl-variable">testInstance</span>.<span class="hl-variable">servant</span> <span class="hl-operator">:=</span> <span class="hl-literal">"test 4"</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+
+<span class="hl-comment">-- Field derefence</span>
+<span class="hl-variable">testInstance</span>.<span class="hl-variable">servant</span><span class="hl-operator">?</span>
+
+<span class="hl-comment">{-
+OUTPUT:
+"test 4"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.noarg_link'), 'ref.sites.java.examples.noarg_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.intoverflow_link" onclick="toggle(this, 'ref.sites.java.examples.intoverflow_content')">
+					&minus;
+				</a><span class="exampleCaption">Integer conversion overflow</span></div><div class="exampleBody" id="ref.sites.java.examples.intoverflow_content"><pre class="orc">
+<span class="hl-comment">{- Demonstrate an Orc-to-Java integer conversion of an out-of-range value -}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">JavaInteger</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.lang.Integer"</span>
+
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="hl-literal">1230000000000000000456789</span>
+
+<span class="hl-variable">JavaInteger</span>.<span class="hl-site">valueOf</span>(<span class="hl-variable">x</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+-1530464171
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.intoverflow_link'), 'ref.sites.java.examples.intoverflow_content'); }, 125);
+</script></div><div class="section" title="6.2.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.links"></a>6.2.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.declarations.class.html" title="4.5.&nbsp;import class: Import Class from Java"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration</a></p></li><li class="listitem"><p><a class="link" href="ref.data.external.html" title="1.11.&nbsp;External Values">External data values</a></p></li><li class="listitem"><p><a class="link" href="ref.sites.custom.html" title="6.4.&nbsp;Custom sites">Custom sites</a></p></li><li class="listitem"><p><a class="link" href="ref.declarations.class.html#ref.declarations.class.type" title="4.5.2.&nbsp;Type">Interacting with Java Types</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="olink"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration</span></p></li><li class="listitem"><p><span class="olink">Orc values in Java</span></p></li><li class="listitem"><p><span class="olink">Java Values in Orc</span></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

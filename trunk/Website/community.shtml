@@ -15,15 +15,15 @@
 
 <h2>UT Project Members</h2>
 <h3>Current</h3>
-<!-- FIXME: point these to orc wiki pages? -->
 <ul>
         <li><a href="http://www.cs.utexas.edu/~misra/">Prof. Jayadev Misra</a></li>
         <li><a href="http://www.cs.utexas.edu/~wcook/">Prof. William Cook</a></li>
-        <li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=DavidKitchin">David Kitchin</a></li>
-        <li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>
-        <li>Amin Shali</li>
+        <li><a href="http://www.cs.utexas.edu/~dkitchin/">David Kitchin</a></li>
+        <li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>        
         <li>Brian McCord</li>
         <li>Blake Davis</li>
+        <li>Amin Shali</li>
+        <li>Gregorio Diaz</li>
 </ul>
 <h3>Past</h3>
 <ul>

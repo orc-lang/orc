@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>9.5.&nbsp;Type Override</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.types.html" title="Chapter&nbsp;9.&nbsp;Type System"><link rel="prev" href="ref.types.typeinfo.html" title="9.4.&nbsp;Adding Type Information"><link rel="next" href="ref.types.context.html" title="9.6.&nbsp;Typing Contexts"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.types.typeinfo.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.types.html">Chapter&nbsp;9.&nbsp;Type System</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.types.context.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.types.typeinfo.html">9.4.&nbsp;Adding Type Information</a>&nbsp;</td><th align="center" width="60%">9.5.&nbsp;Type Override</th><td align="right" width="20%"><a href="ref.types.context.html">9.6.&nbsp;Typing Contexts</a>&nbsp;</td></tr></table></div><div class="section" title="9.5.&nbsp;Type Override"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.types.override"></a>9.5.&nbsp;Type Override</h2></div></div></div><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[19]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.expression.typeoverride"><a class="link" href="ref.types.override.html" title="9.5.&nbsp;Type Override">TypeOverride</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <a href="ref.syntax.EBNF.html#ebnf.expression">Expression</a> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span>!<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span></code> <a href="ref.syntax.EBNF.html#ebnf.type">Type</a>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+While the typechecker can be helpful, it will not accept programs that are not typesafe according to
+its <a class="link" href="ref.types.metatheory.html" title="9.1.&nbsp;Metatheory">algorithm</a>. This can be burdensome when the programmer knows that an expression will have a
+certain type but the typechecker cannot verify it.
+</p><p>
+Since the typechecker is optional, it can always be turned off in these cases. But this is often
+too drastic a solution: typechecking difficulties often arise from small segments of a much larger
+program, and the rest of the program still benefits from typechecking. 
+</p><p>
+The typechecker may be selectively disabled for parts of a program. For this purpose,
+the typechecker allows an <a name="N4338B" class="indexterm"></a><em class="firstterm">override</em>
+of the type of an expression. Overriding is like <a class="link" href="ref.types.typeinfo.html" title="9.4.&nbsp;Adding Type Information">adding type information</a> to an expression, 
+but rather than verifying that an expression has the stated type, the typechecker instead 
+assumes that the stated type is correct, without examining the expression at all. Thus, 
+the programmer can supply any type without being restricted by the typechecking algorithm.
+</p><p>
+This feature should be used sparingly, with the knowledge that it does compromise the integrity
+of the typechecking algorithm. If the supplied type is wrong, runtime type errors could propagate to any
+part of the program that depends on that type. Overrides are useful for rapid prototyping, but
+they are not recommended for production code.
+</p><div class="section" title="9.5.1.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.override.links"></a>9.5.1.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.types.typeinfo.html" title="9.4.&nbsp;Adding Type Information">Adding Type Information</a></p></li><li class="listitem"><p><a class="link" href="ref.types.metatheory.html" title="9.1.&nbsp;Metatheory">Metatheory</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

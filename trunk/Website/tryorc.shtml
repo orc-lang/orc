@@ -22,39 +22,39 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/seq.orc">Sequential</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/pull.orc">Pruning</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parpull.orc">Parallel/Pruning</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/if.orc">If Site</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/null.orc">Stop</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rtimer.orc">Rtimer Site</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/prune.orc">Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parprune.orc">Parallel/Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/ift.orc">Ift</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/stop.orc">Stop</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rwait.orc">Rwait</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/metronome.orc">Metronome</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Small Demos</span><ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/treeswitch.orc">Load Balancing</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/concurrency/mapreduce.orc">Map/Reduce</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/philosopher.orc">Dining Philosophers</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/tally.orc">Tally</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/dice.orc">Dice</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/demo/walk.orc">Random Walk</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/path.orc">Shortest Path</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/search.orc">Web Search</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/chat.orc">Google Talk</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/forms.orc">Web Forms</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/airline1.orc">Airline Agent</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/treeswitch.orc">Load Balancing</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/mapreduce.orc">Map/Reduce</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/philosopher.orc">Dining Philosophers</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/tally.orc">Tally</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/dice.orc">Dice</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/walk.orc">Random Walk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/path.orc">Shortest Path</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/search.orc">Web Search</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/chat.orc">Google Talk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Big Demos</span><ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell.orc">Spell-Check File</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/music_calendar.orc">Music Calendar</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/meeting.orc">Meeting Request</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/travel_helper.orc">Travel Assistant</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li>
 	</ul></li>
 <li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/spell_io.orc">Spell-Check Gutenberg</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/email_meeting.orc">Meeting Request Email</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/email.orc">Send Email</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/emailq.orc">Receive Email</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/misc/spam.orc">Spam</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spell_io.orc">Spell-Check Gutenberg</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email_meeting.orc">Meeting Request Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email.orc">Send Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spam.orc">Spam</a></span></li>
 	</ul></li>
 <li id="login"><span class="file"><a href="https://orc.csres.utexas.edu/orchard/LoginServlet">Restricted Login</a></span></li>
 </ul>

@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.3.&nbsp;Expression States</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence"><link rel="next" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.concepts.silent.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.concepts.html">Chapter&nbsp;8.&nbsp;Concepts</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.concepts.deflate.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.concepts.silent.html">8.2.&nbsp;Silence</a>&nbsp;</td><th align="center" width="60%">8.3.&nbsp;Expression States</th><td align="right" width="20%"><a href="ref.concepts.deflate.html">8.4.&nbsp;Deflation</a>&nbsp;</td></tr></table></div><div class="section" title="8.3.&nbsp;Expression States"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.states"></a>8.3.&nbsp;Expression States</h2></div></div></div><p>
+		A <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site call</a>, from the site's perspective, has three possible outcomes:
+		the site will definitely <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a> a value, the site knows that it will
+		never publish a value, and the site does not know if it will ever
+		publish a value. For example, a call to
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Ift</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">true</span>)</code>
+		publishes a signal,
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Ift</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">false</span>)</code>
+		never publishes, and
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">c</span>.<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">get</span>()</code>
+		on channel
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">c</span></code>
+		that is currently
+		empty may eventually publish or remain non-responsive, depending on
+		whether a value is put in
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">c</span></code>
+		in the future.
+	</p><p>
+		A site call, from the caller's perspective, is ready, blocked or
+		halted. A call is ready if all its arguments have <a class="link" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation">deflated</a> to
+		values, so that a call can be made. A call is blocked if either (1)
+		the caller can not make the call because not all argument values are
+		bound (since site calls are strict); this is an <a name="N42C42" class="indexterm"></a><em class="firstterm">internally blocked</em>
+		call, or (2) the caller is waiting for the response after having
+		called the site; this is an <a name="N42C48" class="indexterm"></a><em class="firstterm">externally blocked</em> call. A site call is
+		halted if the caller has already received a response or the site has
+		indicated that it will never send a response. A site call is killed if
+		it is part of <em class="replaceable"><code>G</code></em> in
+		<a class="link" href="ref.combinators.pruning.html" title="3.3.&nbsp;Pruning Combinator"><em class="replaceable"><code>F</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span></code>x<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em></a>
+		and <em class="replaceable"><code>G</code></em> publishes.
+	</p><p>
+		An internally blocked call becomes ready when all its arguments are
+		bound to values. An internally blocked call halts if one of its
+		arguments will never be bound because the expression that computes its
+		value has halted or has been killed. A ready call becomes externally blocked once
+		the call is made. A blocked call transitions to halted if it receives a
+		response or if the called site can <a class="link" href="ref.concepts.helpful.html" title="8.5.&nbsp;Helpful Sites">determine that it will never
+		respond</a>; a blocked call may remain blocked forever if the called site
+		can not determine if if it will ever respond. Note that a halted call
+		stays halted unless it is killed.
+	</p><p>
+		We extend these concepts to execution of an expression. At any moment,
+		an expression has an associated set of site calls under consideration
+		for execution; if the expression has begun additional executions,
+		as in
+		<a class="link" href="ref.combinators.sequential.html" title="3.2.&nbsp;Sequential Combinator"><em class="replaceable"><code>F</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span></code>x<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code><em class="replaceable"><code>G</code></em></a>,
+		all the versions of <em class="replaceable"><code>G</code></em> being executed contribute to this set; if the
+		expression includes function calls, those calls initiate execution of
+		the function bodies which are also expressions that contribute to this
+		set; any variable <em class="replaceable"><code>x</code></em> used as an <a class="link" href="ref.expressions.variable.html" title="2.2.&nbsp;Variable">expression on its own</a>
+		is equivalent to a site call <code class="code"><a class="link" href="ref.stdlib.core.html#ref.stdlib.core.Let">Let</a>(</code><em class="replaceable"><code>x</code></em><code class="code">)</code>. 
+		If some site call in this set is ready, the expression is ready;
+		if all calls are blocked, the expression is blocked, and if all calls
+		are halted the expression is halted.
+	</p><div class="section" title="8.3.1.&nbsp;Ready"><div class="titlepage"><div><div><h3 class="title"><a name="N42C88"></a>8.3.1.&nbsp;Ready</h3></div></div></div><p>
+			A site call is <a name="N42C8D" class="indexterm"></a><em class="firstterm">ready</em> if all its argument
+			variables are bound to values, so that a call can be made. An
+			expression is ready if some site call in its set of associated
+			site calls is ready.
+		</p></div><div class="section" title="8.3.2.&nbsp;Blocked"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.block"></a>8.3.2.&nbsp;Blocked</h3></div></div></div><p>
+			A site call is <a name="N42C9A" class="indexterm"></a><em class="firstterm">blocked</em> if (1) the call can not be made because some
+			argument of the call is unbound, the call is then internally blocked,
+			or (2) the caller is waiting for a response, the call is then
+			externally blocked. An expression is blocked if its set of associated
+			site calls are all blocked. All component expressions of a blocked
+			expression are blocked. A blocked expression stays blocked unless (1)
+			an internally blocked site call is made ready by the bindings of its
+			arguments, or (2) it is halted, or (3) killed. A halted
+			expression never makes site calls nor publishes any value.
+		</p></div><div class="section" title="8.3.3.&nbsp;Halted"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.halt"></a>8.3.3.&nbsp;Halted</h3></div></div></div><p>
+			A site call is <a name="N42CA8" class="indexterm"></a><em class="firstterm">halted</em> if (1) it was internally blocked and one of its
+			arguments will never be bound because the expression that computes its
+			value has been halted or killed, or (2) it was externally blocked and
+			either a response has been received or an indication that there never
+			will be a response. An expression is halted if the set of associated
+			site calls have all halted. All component expressions of a halted
+			expression are halted. A halted expression stays halted unless it is
+			killed. A halted expression never makes site calls nor publishes any
+			value.
+		</p></div><div class="section" title="8.3.4.&nbsp;Killed"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.kill"></a>8.3.4.&nbsp;Killed</h3></div></div></div><p>
+			Expression <em class="replaceable"><code>G</code></em> is <a name="N42CB9" class="indexterm"></a><em class="firstterm">killed</em> in
+			<em class="replaceable"><code>F</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em>
+			if <em class="replaceable"><code>G</code></em> has published. All component
+			expressions of a killed expression are killed. A killed expression
+			stays killed. A killed expression never makes site calls nor publishes
+			any value.
+		</p></div><div class="section" title="8.3.5.&nbsp;Helpful Sites"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.helpful"></a>8.3.5.&nbsp;Helpful Sites</h3></div></div></div><p>
+			Sites that may indicate absence of response are called <em class="firstterm">helpful</em> (see
+			<a class="link" href="ref.concepts.helpful.html" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a>). Not all sites are helpful.
+		</p></div><div class="section" title="8.3.6.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.examples"></a>8.3.6.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.states.examples.parallel_link" onclick="toggle(this, 'ref.concepts.states.examples.parallel_content')">
+					&minus;
+				</a><span class="exampleCaption">Parallel site calls; ready and blocked states</span></div><div class="exampleBody" id="ref.concepts.states.examples.parallel_content"><p>
+				Let <code class="code"><span class="hl-variable">c</span></code> be a channel. Consider expression <em class="replaceable"><code>G</code></em> given by
+			</p><p>
+				<code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>)</code>
+			</p><p>
+				The expression is ready because it can make both calls. After both
+				calls have been made, the expression is blocked waiting for their
+				responses. Suppose <code class="code"><span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>)</code> responds first. Then
+				the expression stays blocked waiting for the response to
+				<code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>()</code>. If a response is received, the expression
+				halts; if <code class="code"><span class="hl-variable">c</span></code> is empty and another caller closes
+				<code class="code"><span class="hl-variable">c</span></code>, then <code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>()</code>	indicates that there will
+				be no response, causing <em class="replaceable"><code>G</code></em> to halt; otherwise,
+				<em class="replaceable"><code>G</code></em> stays blocked forever.
+			</p></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.parallel_link'), 'ref.concepts.states.examples.parallel_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.states.examples.prune_link" onclick="toggle(this, 'ref.concepts.states.examples.prune_content')">
+					&minus;
+				</a><span class="exampleCaption">Pruning combinator; killed state</span></div><div class="exampleBody" id="ref.concepts.states.examples.prune_content"><p>
+				Consider the expression
+			</p><p>
+				<em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em>
+			</p><p>
+				where <em class="replaceable"><code>G</code></em> from the previous example is
+			</p><p>
+				<code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>)</code>
+			</p><p>
+				As we have shown, <em class="replaceable"><code>G</code></em> will definitely <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a>. Then <em class="replaceable"><code>G</code></em> is killed, and so
+				are its sub-expressions.
+			</p></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.prune_link'), 'ref.concepts.states.examples.prune_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.states.examples.otherwise_link" onclick="toggle(this, 'ref.concepts.states.examples.otherwise_content')">
+					&minus;
+				</a><span class="exampleCaption">Sequential and otherwise combinators</span></div><div class="exampleBody" id="ref.concepts.states.examples.otherwise_content"><p>
+				In the previous example let <em class="replaceable"><code>F</code></em> be
+			</p><p>
+				<code class="code"><span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span> <span class="hl-combinator">;</span> <span class="hl-literal">false</span></code>
+			</p><p>
+				In
+				<em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em>,
+				expression <em class="replaceable"><code>F</code></em> is blocked until <code class="code"><span class="hl-variable">x</span></code> is bound to a value. Since
+				<em class="replaceable"><code>G</code></em> eventually publishes, <code class="code"><span class="hl-variable">x</span></code> will be bound eventually. Then the call
+				<code class="code"><span class="hl-variable">c</span>.<span class="hl-site">get</span>()</code> is made in <em class="replaceable"><code>F</code></em>. As we have discussed, this call (1) may receive
+				a response, in which case true will be published, and the entire
+				expression halts, (2) the call receives an indication that there will
+				be no response (in case <code class="code"><span class="hl-variable">c</span></code> is empty and it is closed) in which case
+				<code class="code"><span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span></code>
+				halts silently, causing false to be published, or (3) the
+				call remains blocked forever, causing <em class="replaceable"><code>F</code></em> to remain blocked.
+			</p></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.otherwise_link'), 'ref.concepts.states.examples.otherwise_content'); }, 125);
+</script></div><div class="section" title="8.3.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.links"></a>8.3.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.expressions.html" title="Chapter&nbsp;2.&nbsp;Expressions">Expressions</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.call.html" title="2.4.&nbsp;Site and Function Calls">Site and Function Calls</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.stop.html" title="2.3.&nbsp;stop"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="ref.combinators.html" title="Chapter&nbsp;3.&nbsp;Combinators">Combinators</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.helpful.html" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

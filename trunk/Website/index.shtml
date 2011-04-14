@@ -9,8 +9,8 @@ concurrency primitives, the programmer <span class="highlight">orchestrates</spa
 invocation of sites to achieve a goal, while managing timeouts, priorities, and
 failures.</p>
 
-<p><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News_blogentry_050310_2">Orc 1.1.0</a> is available for <a href="download.shtml">download</a>,
-and Orc version 2.0 is in development.
+<!-- TODO: Point 'Orc 2.0.0' to 2.0 release notes -->
+<p>Orc 2.0.0 is available for <a href="download.shtml">download</a></p>
 
 <h2>What can I use Orc for?</h2>
 
@@ -33,11 +33,11 @@ Lehmann, D. J., Rabin M. O.  On the Advantages of Free Choice: A Symmetric and F
 -}
 
 -- Randomly swap two elements
-def shuffle(a,b) = if (random(2) = 1) then (a,b) else (b,a)
+def shuffle(a,b) = if (Random(2) = 1) then (a,b) else (b,a)
 
 -- Acquire two forks in the order given
 def take((a,b)) =  
-  a.acquire() &gt;&gt; b.acquirenb() ;
+  a.acquire() &gt;&gt; b.acquireD() ;
   a.release() &gt;&gt; take(shuffle(a,b))
     
 -- Release two forks
@@ -45,18 +45,18 @@ def drop(a,b) = (a.release(), b.release()) &gt;&gt; signal
 
 -- Start a philosopher process with forks a and b
 def phil(a,b,name) =
-  def thinking() = Rtimer(random(1000))
+  def thinking() = Rwait(Random(1000))
   def hungry() = take((a,b))
   def eating() = 
-    println(name + " is eating.") &gt;&gt; 
-    Rtimer(random(1000)) &gt;&gt; 
-    println(name + " has finished eating.") &gt;&gt;
+    Println(name + " is eating.") &gt;&gt; 
+    Rwait(Random(1000)) &gt;&gt; 
+    Println(name + " has finished eating.") &gt;&gt;
     drop(a,b)
   thinking() &gt;&gt; hungry() &gt;&gt; eating() &gt;&gt; phil(a,b,name)
 
 -- Start n philosophers dining in a ring
 def dining(n) =
-  val forks = IArray(n, lambda(_) = Semaphore(1))
+  val forks = Table(n, lambda(_) = Semaphore(1))
   def phils(0) = stop
   def phils(i) =
       phil(forks(i%n), forks(i-1), "Philosopher " + i)
@@ -64,10 +64,9 @@ def dining(n) =
   phils(n) 
   
 -- Simulate 5 philosophers for 10 seconds before halting
-let(
-    dining(5)
-  | Rtimer(10000)
-) &gt;&gt; "HALTED"
+Let( dining(5) | Rwait(10000) ) &gt;&gt;
+Println("Simulation stopped.") &gt;&gt;
+stop
 </pre>
 </div>
 </li>
@@ -95,8 +94,8 @@ each(results)
 <li>
 As an <span class="highlight">executable specification language</span> for workflow applications
 and process coordination problems. Read about how Orc can <a href="/papers/OrcWorkflow.pdf">represent
-many common workflow patterns</a><!-- , or see a <a href="">representation of a process 
-network</a> in Orc-->.</li>
+many common workflow patterns</a>
+</li>
 </ul>
 
 <p>Read more about the <a href="introduction.shtml">ideas behind Orc</a> or
