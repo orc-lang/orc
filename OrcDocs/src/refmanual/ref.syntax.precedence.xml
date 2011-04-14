@@ -54,14 +54,14 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 			<tbody>
 				<row>
 					<entry morerows="2">13</entry>
-					<entry>Call</entry>
+					<entry><link linkend="ref.expressions.call">Call</link></entry>
 					<entry><code><![CDATA[ () ]]></code></entry>
 					<entry>Postfix</entry>
 					<entry>--</entry>
 				</row>
 				<row>
 					<!-- Level 13 -->
-					<entry>Dot Access</entry>
+					<entry><link linkend="ref.expressions.dot">Dot Access</link></entry>
 					<entry><code><![CDATA[ . ]]></code></entry>
 					<entry>Postfix</entry>
 					<entry>--</entry>
@@ -201,63 +201,63 @@ Similarly, the sequential combinator is right associative, so <code>e >x> f >y> 
 				</row>
 				<row>
 					<entry>4</entry>
-					<entry>Sequential</entry>
+					<entry><link linkend="ref.combinators.sequential">Sequential</link></entry>
 					<entry><code> &gt;</code><replaceable>P</replaceable><code>&gt; </code></entry>
 					<entry>Infix</entry>
 					<entry>Right</entry>
 				</row>
 				<row>
 					<entry>3</entry>
-					<entry>Parallel</entry>
+					<entry><link linkend="ref.combinators.parallel">Parallel</link></entry>
 					<entry><code><![CDATA[ | ]]></code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>
 				<row>
 					<entry>2</entry>
-					<entry>Pruning</entry>
+					<entry><link linkend="ref.combinators.pruning">Pruning</link></entry>
 					<entry><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>
 				<row>
 					<entry>1</entry>
-					<entry>Otherwise</entry>
+					<entry><link linkend="ref.combinators.otherwise">Otherwise</link></entry>
 					<entry><code><![CDATA[ ; ]]></code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>
 				<row>
 					<entry morerows="9">0</entry>
-					<entry>Type Information</entry>
+					<entry><link linkend="ref.types.typeinfo">Type Information</link></entry>
 					<entry><code><![CDATA[ :: ]]></code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>
 				<row>
 					<!-- Level 0 -->
-					<entry>Type Override</entry>
+					<entry><link linkend="ref.types.override">Type Override</link></entry>
 					<entry><code><![CDATA[ :!: ]]></code></entry>
 					<entry>Infix</entry>
 					<entry>Left</entry>
 				</row>
 				<row>
 					<!-- Level 0 -->
-					<entry>Closure</entry>
+					<entry><link linkend="ref.expressions.lambda">Closure</link></entry>
 					<entry><code>lambda</code></entry>
 					<entry>Prefix</entry>
 					<entry>--</entry>
 				</row>
 				<row>
 					<!-- Level 0 -->
-					<entry>Conditional</entry>
+					<entry><link linkend="ref.expressions.ifthenelse">Conditional</link></entry>
 					<entry><code>if then else</code></entry>
 					<entry>Prefix</entry>
 					<entry>--</entry>
 				</row>
 				<row>
 					<!-- Level 0 -->
-					<entry morerows="4">Declaration</entry>
+					<entry morerows="4"><link linkend="ref.declarations">Declaration</link></entry>
 					<entry><code>val</code></entry>
 					<entry morerows="4">Prefix</entry>
 					<entry morerows="4">--</entry>
