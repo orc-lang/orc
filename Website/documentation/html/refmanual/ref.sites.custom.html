@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.4.&nbsp;Custom sites</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.sites.html" title="Chapter&nbsp;6.&nbsp;Sites and Services"><link rel="prev" href="ref.sites.web.html" title="6.3.&nbsp;Web Services"><link rel="next" href="ref.time.html" title="Chapter&nbsp;7.&nbsp;Time"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.sites.web.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.sites.html">Chapter&nbsp;6.&nbsp;Sites and Services</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.time.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.sites.web.html">6.3.&nbsp;Web Services</a>&nbsp;</td><th align="center" width="60%">6.4.&nbsp;Custom sites</th><td align="right" width="20%"><a href="ref.time.html">Chapter&nbsp;7.&nbsp;Time</a>&nbsp;</td></tr></table></div><div class="section" title="6.4.&nbsp;Custom sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.custom"></a>6.4.&nbsp;Custom sites</h2></div></div></div><p>
+For services beyond those available as library sites, Java sites, and Web service sites,
+Orc programs may call sites developed specifically as Orc sites.
+The calling Orc program names the site with an <a class="link" href="ref.declarations.site.html" title="4.4.&nbsp;import site: Import Site"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">site</span></code></a> declaration.
+This declaration causes the Orc engine to load the Java class of the given name from
+the Orc site classpath or JVM classpath.
+Calls to this site are dispatched via Orc's site interface,
+which permit the site to interact with the calling program natively.
+</p><div class="section" title="6.4.1.&nbsp;Implementing new custom sites"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.custom.implement"></a>6.4.1.&nbsp;Implementing new custom sites</h3></div></div></div><p>
+Orc sites may be implemented in any language that can produce Java class files.
+However, the Orc team rec
+ommends the Scala programming language from Martin Odersky and his team at EPFL (&Eacute;cole Polytechnique F&eacute;d&eacute;rale de Lausanne).
+For information on Scala, see <a class="link" href="http://www.scala-lang.org/" target="_top">http://www.scala-lang.org/</a>.
+</p><p>
+The Orc runtime engine provides a basic <code class="code">Site</code> interface which a site must implement.
+This interface specifies an abstract <code class="code">call</code> method that receives a call handle
+for the site to respond to the <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site call</a>.  The <code class="code">Handle</code> interface provides methods
+to respond by either:
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">Publishing</a> a value</p></li><li class="listitem"><p><a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a> <a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">silently</a></p></li><li class="listitem"><p>Throwing an exception</p></li></ul></div><p>
+Additionally, sites may notify the Orc runtime engine of events via the <code class="code">Handle</code>,
+such as the need to write a string to the standard output stream.
+</p><p>
+Site call arguments and return values are not subject to Orc-Java conversions, so the
+site must work with native Orc values.  Sites are also responsible for enforcing
+arity and type requirements on the argument lists of calls.
+</p><p>
+Orc provides a number of convenience mix-in traits for site implementors:
+</p><div class="variablelist" title="Site interface mix-in traits"><p class="title"><b>Site interface mix-in traits</b></p><dl><dt><span class="term"><code class="code">orc.values.sites.Site</code></span></dt><dd><p>The basic site trait -- a site that can be called.  Implement the <code class="code">call</code> method.</p></dd><dt><span class="term"><code class="code">orc.values.sites.TotalSite</code></span></dt><dd><p>A site that always publishes.  Implement the <code class="code">evaluate</code> method instead of the <code class="code">call</code> method.</p></dd><dt><span class="term"><code class="code">orc.values.sites.PartialSite</code></span></dt><dd><p>A site that sometimes publishes and sometimes halts silently.  Implement the <code class="code">evaluate</code> method instead of the <code class="code">call</code> method.  <code class="code">evaluate</code> should return an <code class="code">Option</code>, <code class="code">Some(x)</code> to publish <code class="code">x</code>, or <code class="code">None</code> to halt.</p></dd><dt><span class="term"><code class="code">orc.values.sites.UnimplementedSite</code></span></dt><dd><p>A site that throws <code class="code">orc.error.NotYetImplementedException</code> when called or type checked.</p></dd><dt><span class="term"><code class="code">orc.values.sites.TypedSite</code></span></dt><dd><p>A site that declares its type to the Orc type checker.</p></dd><dt><span class="term"><code class="code">orc.values.sites.UntypedSite</code></span></dt><dd><p>A site that does not participate in type checking. Use sparingly.</p></dd></dl></div><p>
+</p><p>
+For a detailed description of the Orc-site interface, refer to the <a class="link" href="http://orc.csres.utexas.edu/javadoc/STABLE/index.html" target="_top">Orc implementation Javadoc</a>.
+</p></div><div class="section" title="6.4.2.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.custom.links"></a>6.4.2.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.declarations.site.html" title="4.4.&nbsp;import site: Import Site"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">site</span></code> declaration</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><span class="olink"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">site</span></code> Sites</span></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

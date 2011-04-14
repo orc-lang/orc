@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6.1.&nbsp;Library sites</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.sites.html" title="Chapter&nbsp;6.&nbsp;Sites and Services"><link rel="prev" href="ref.sites.html" title="Chapter&nbsp;6.&nbsp;Sites and Services"><link rel="next" href="ref.sites.java.html" title="6.2.&nbsp;Java sites"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.sites.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.sites.html">Chapter&nbsp;6.&nbsp;Sites and Services</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.sites.java.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.sites.html">Chapter&nbsp;6.&nbsp;Sites and Services</a>&nbsp;</td><th align="center" width="60%">6.1.&nbsp;Library sites</th><td align="right" width="20%"><a href="ref.sites.java.html">6.2.&nbsp;Java sites</a>&nbsp;</td></tr></table></div><div class="section" title="6.1.&nbsp;Library sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.library"></a>6.1.&nbsp;Library sites</h2></div></div></div><p>
+The Orc <a class="link" href="ref.stdlib.html" title="Chapter&nbsp;11.&nbsp;Standard Library">Standard Library</a> provides a variety of sites, functions, and types for use in Orc programs.
+These sites are declared in the Orc <a name="N425E5" class="indexterm"></a><em class="firstterm">prelude</em>, 
+a sequence of declarations which is implicitly included in all Orc programs.
+</p><p>
+Orc programs are expected to rely on the host language and environment for all but the most essential sites.
+For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declarations.
+Therefore, the Orc standard library aims only to provide convenience for the most common Orc idioms, not the complete set of features needed for general-purpose programming.
+</p><div class="section" title="6.1.1.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.library.examples"></a>6.1.1.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.library.examples.floor_link" onclick="toggle(this, 'ref.sites.library.examples.floor_content')">
+					&minus;
+				</a><span class="exampleCaption">Using a standard library site</span></div><div class="exampleBody" id="ref.sites.library.examples.floor_content"><pre class="orc">
+<span class="hl-comment">{- The Floor site, also called the greatest integer function or integer value -}</span>
+
+<span class="hl-site">Floor</span>(<span class="hl-literal">2.5</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+2
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.library.examples.floor_link'), 'ref.sites.library.examples.floor_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.library.examples.if_link" onclick="toggle(this, 'ref.sites.library.examples.if_content')">
+					&minus;
+				</a><span class="exampleCaption">Another standard library site: Ift</span></div><div class="exampleBody" id="ref.sites.library.examples.if_content"><pre class="orc">
+<span class="hl-comment">{- Orc's conditional site: Ift(), publishes a signal if the argument is true -}</span>
+
+<span class="hl-site">Ift</span>(<span class="hl-literal">1</span> <span class="hl-operator">:&gt;</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"correct"</span>
+
+<span class="hl-comment">{-
+OUTPUT:
+"correct"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.sites.library.examples.if_link'), 'ref.sites.library.examples.if_content'); }, 125);
+</script></div><div class="section" title="6.1.2.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.library.links"></a>6.1.2.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.stdlib.html" title="Chapter&nbsp;11.&nbsp;Standard Library">Standard Library</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.helpful.html" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

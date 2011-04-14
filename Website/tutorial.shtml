@@ -47,9 +47,9 @@ operators, these are still considered sites like any other.</p>
 <a id="Combinators"></a><h2>Combinators <small>(<a href="#top">top</a>)</small></h2>
 <p>Orc has four basic combinators, each to combine two expressions:</p>
 <ul>
-<li>Parallel, or bar, written <tt>|</tt></li>
-<li>Sequential, or push, written <tt>>></tt></li>
-<li>Pruning, or pull, written <tt>&lt;&lt;</tt></li>
+<li>Parallel, written <tt>|</tt></li>
+<li>Sequential, written <tt>>></tt></li>
+<li>Pruning, written <tt>&lt;&lt;</tt></li>
 <li>Otherwise, written <tt>;</tt></li>
 </ul>
 <p>This tutorial covers the first three combinators.</p>
@@ -157,7 +157,7 @@ or constant), then it is treated as syntactic sugar for a pruning composition.
 For example, these two expressions are equivalent:</p>
 
 <pre class="orc">
-  ( 1 + x &lt;x&lt; (2 + 3) )
+  ( 1 +    x      &lt;x&lt; (2 + 3) )
 | ( 1 + (2 + 3) )
 </pre>
 
@@ -170,24 +170,24 @@ seen, Orc provides several other fundamental sites which are necessary for
 writing useful expressions. The following examples illustrate the most
 important ones.</p>
 
-<p><tt>if(condition)</tt> publishes a signal (a special value of unit type,
-conveying no information) if and only if <tt>condition</tt> is true:</p>
+<p><tt>Ift(condition)</tt> publishes a signal (a special value which carries 
+no information) if and only if <tt>condition</tt> is true:</p>
 <pre class="orc">
-  if(3 /= 4) &gt;&gt; "three does not equal four"
-| if(false) &gt;&gt; "impossible!"
+  Ift(3 /= 4) &gt;&gt; "three does not equal four"
+| Ift(false) &gt;&gt; "impossible!"
 </pre>
 
-<p><tt>Rtimer(t)</tt> publishes a signal after <tt>t</tt> milliseconds:</p>
+<p><tt>Rwait(t)</tt> publishes a signal after <tt>t</tt> milliseconds:</p>
 <pre class="orc">
   "immediately"
-| Rtimer(3000) &gt;&gt; "...three seconds later..."
-| Rtimer(5000) &gt;&gt; "...five seconds later..."
+| Rwait(3000) &gt;&gt; "...three seconds later..."
+| Rwait(5000) &gt;&gt; "...five seconds later..."
 </pre>
 
-<p><tt>stop</tt> is a special value which never publishes (similar to the
+<p><tt>stop</tt> is a special expression which never publishes (similar to the
 concept of "bottom" or &perp; in functional languages).  It is commonly
 used with sequential composition to suppress published values, as in this
-example which waits for your response but does not publish it:</p>
+example which waits for a response but does not publish it:</p>
 <pre class="orc">
 Prompt("I'm not listening...") &gt;&gt; stop
 </pre>
@@ -206,7 +206,7 @@ differences:</p>
 <pre class="orc">
 def metronomeN(i) =
     i
-  | Rtimer(1000) &gt;&gt; metronomeN(i+1)
+  | Rwait(1000) &gt;&gt; metronomeN(i+1)
 
 metronomeN(0)
 </pre>
@@ -217,18 +217,18 @@ different rates and starting at different initial values:</p>
 <pre class="orc">
 def metronomeTN(t, i) =
     i
-  | Rtimer(t) &gt;&gt; metronomeTN(t, i+1)
+  | Rwait(t) &gt;&gt; metronomeTN(t, i+1)
 
 metronomeTN(1100, 0) | metronomeTN(700, 100)
 </pre>
 
 <p>A common idiom in Orc is to treat an expression as a stream of values which
-may be filtered. The next example publishes every alternate number starting at 0:</p>
+may be filtered. The next example publishes every even number starting at 0:</p>
 
 <pre class="orc">
 def metronomeN(i) =
     i
-  | Rtimer(1000) &gt;&gt; metronomeN(i+1)
+  | Rwait(1000) &gt;&gt; metronomeN(i+1)
 
 metronomeN(0) &gt;n&gt; if(n%2 = 0) &gt;&gt; n
 </pre>
@@ -276,8 +276,8 @@ def Airline(name) =
 
 {- EXAMPLE -}
 def minQuote((_,dollar1) as quote1, (_,dollar2) as quote2) =
-    if(dollar1 &lt;= dollar2) &gt;&gt; quote1
-  | if(dollar2 &lt;  dollar1) &gt;&gt; quote2
+    Ift(dollar1 &lt;= dollar2) &gt;&gt; quote1
+  | Ift(dollar2 &lt;: dollar1) &gt;&gt; quote2
 
 -- Example usage
 val delta = Airline("Delta")
@@ -298,8 +298,8 @@ def Airline(name) =
     -- return the site
     MakeQuote
 def minQuote((n1,q1), (n2,q2)) =
-    if(q1 &lt;= q2) &gt;&gt; (n1, q1)
-  | if(q2 &lt;  q1) &gt;&gt; (n2, q2)
+    Ift(q1 &lt;= q2) &gt;&gt; (n1, q1)
+  | Ift(q2 &lt;: q1) &gt;&gt; (n2, q2)
 
 {- EXAMPLE -}
 -- Return the best quote at or under $200
@@ -307,7 +307,7 @@ def minQuote((n1,q1), (n2,q2)) =
 def bestQuote([]) = ("None of the above", 200)
 def bestQuote(airline:rest) =
     val best = bestQuote(rest)
-    val current = airline() | (Rtimer(15000) &gt;&gt; best)
+    val current = airline() | (Rwait(15000) &gt;&gt; best)
     minQuote(current, best)
 
 bestQuote([Airline("Delta"), Airline("United")])
