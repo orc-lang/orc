@@ -2,7 +2,7 @@
 // TestUtils.java -- Java class TestUtils
 // Project OrcScala
 //
-// $Id: TestUtils.java 1660 2010-05-28 00:00:17Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -18,6 +18,7 @@ import java.util.LinkedList;
 
 public final class TestUtils {
 	private TestUtils() {
+		/* Only static members*/
 	}
 
 	public static void findOrcFiles(final File base, final LinkedList<File> files) {

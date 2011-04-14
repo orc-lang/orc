@@ -2,7 +2,7 @@
 // ExpectedOutput.java -- Java class ExpectedOutput
 // Project OrcScala
 //
-// $Id: ExpectedOutput.java 1948 2010-07-25 14:54:07Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //

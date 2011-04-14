@@ -2,7 +2,7 @@
 // OrcForTesting.scala -- Scala class/trait/object OrcForTesting
 // Project OrcScala
 //
-// $Id: OrcForTesting.scala 2651 2011-03-30 19:32:01Z dkitchin $
+// $Id$
 //
 // Created by jthywiss on Jul 22, 2010.
 //

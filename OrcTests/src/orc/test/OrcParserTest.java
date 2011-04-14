@@ -2,7 +2,7 @@
 // OrcParserTest.java -- Java class OrcParserTest
 // Project OrcScala
 //
-// $Id: OrcParserTest.java 2271 2010-12-17 05:50:04Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
@@ -31,7 +31,7 @@ import scala.util.parsing.combinator.Parsers;
 
 /**
  * This validates the parser simply by trying to parse everything in the
- * "../OrcExamples" directory.
+ * "test_data" and "../OrcExamples" directory.
  *
  * @author quark
  */
@@ -48,6 +48,7 @@ public class OrcParserTest {
   public static Test suite() {
     final TestSuite suite = new TestSuite("orc.test.parser.OrcParserTest");
     final LinkedList<File> files = new LinkedList<File>();
+    TestUtils.findOrcFiles(new File("test_data"), files);
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
     final OrcBindings options = new OrcBindings();
     final StandardOrcCompiler envServices = new StandardOrcCompiler();
