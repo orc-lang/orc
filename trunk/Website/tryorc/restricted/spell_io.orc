@@ -9,10 +9,10 @@ suggested spellings.
 -}
 include "net.inc"
 
-class InputStreamReader = java.io.InputStreamReader
-class BufferedReader = java.io.BufferedReader
-class ZipInputStream = java.util.zip.ZipInputStream
-class URL = java.net.URL
+import class InputStreamReader = "java.io.InputStreamReader"
+import class BufferedReader = "java.io.BufferedReader"
+import class ZipInputStream = "java.util.zip.ZipInputStream"
+import class URL = "java.net.URL"
 
 def openURL(url) =
   URL(url) >url>

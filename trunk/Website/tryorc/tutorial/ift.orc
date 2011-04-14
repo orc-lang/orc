@@ -1,3 +1,3 @@
 -- Prints "three does not equal four" only
-  if(3 /= 4) >> "three does not equal four"
-| if(false) >> "impossible!"
+  Ift(3 /= 4) >> "three does not equal four"
+| Ift(false) >> "impossible!"

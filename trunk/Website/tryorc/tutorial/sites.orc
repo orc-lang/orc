@@ -2,7 +2,7 @@
 
 Prompt("What is your name?")
 
--- println("Hello World")
+-- Println("Hello World")
 
 -- 2 + 3
 

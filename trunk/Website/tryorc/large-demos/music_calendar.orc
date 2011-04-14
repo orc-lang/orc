@@ -35,8 +35,8 @@ with a sense of adventure.
 include "net.inc"
 
 -- imports
-site MySpace = orc.lib.music_calendar.MySpace
-site GoogleCalendarFactory = orc.lib.music_calendar.GoogleCalendar
+import site MySpace = "orc.lib.music_calendar.MySpace"
+import site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
 
 -- declarations
 val oauth = OAuthProvider("orc/orchard/orchard.properties")
@@ -49,16 +49,16 @@ def phrases() =
 -- execution
 (
     GoogleCalendar.authenticate() 
-  | println("Authenticating...") >> stop
+  | Println("Authenticating...") >> stop
 ) >>
 phrases() >phrase>
 Google(phrase) >pages>
 each(pages) >page>
 each(page()) >result>
-println("Scraping " + result.url) >>
+Println("Scraping " + result.url) >>
 MySpace.scrapeMusicShows(result.url) >musicShows>
 each(musicShows) >musicShow>
-if(musicShow.getCity().toLowerCase().contains("austin")) >>
+Ift(musicShow.getCity().toLowerCase().contains("austin")) >>
 GoogleCalendar.addMusicShow(musicShow) >>
 stop
 ; "DONE"

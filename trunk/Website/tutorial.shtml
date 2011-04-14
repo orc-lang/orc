@@ -252,7 +252,7 @@ def Airline(name) =
     -- define a local function
     def MakeQuote() =
         Prompt(name + " quote ($)") &gt;n&gt;
-        (name, read(n))
+        (name, Read(n))
     -- return it
     MakeQuote
 {- EXAMPLE -}
@@ -270,7 +270,7 @@ def Airline(name) =
     -- like a site
     def MakeQuote() =
         Prompt(name + " quote ($)") &gt;n&gt;
-        (name, read(n))
+        (name, Read(n))
     -- return the site
     MakeQuote
 
@@ -294,7 +294,7 @@ def Airline(name) =
     -- like a site
     def MakeQuote() =
         Prompt(name + " quote ($)") &gt;n&gt;
-        (name, read(n))
+        (name, Read(n))
     -- return the site
     MakeQuote
 def minQuote((n1,q1), (n2,q2)) =

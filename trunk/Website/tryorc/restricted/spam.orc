@@ -29,8 +29,8 @@ def parseRecipients(text) =
     val line = line.trim()
     val space = line.lastIndexOf(" ")
     val tab = line.lastIndexOf("\t")
-    val splitAt = if space < tab then tab else space
-    if splitAt > 0 then
+    val splitAt = if space <: tab then tab else space
+    if splitAt :> 0 then
     (line.substring(0, splitAt).trim(),
      line.substring(splitAt+1))
     else ("", line)
