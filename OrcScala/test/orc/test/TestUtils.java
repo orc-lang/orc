@@ -1,6 +1,6 @@
 //
 // TestUtils.java -- Java class TestUtils
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
@@ -17,8 +17,7 @@ import java.io.File;
 import java.util.LinkedList;
 
 public final class TestUtils {
-	private TestUtils() {
-	}
+	private TestUtils() { /* static members only */	}
 
 	public static void findOrcFiles(final File base, final LinkedList<File> files) {
 		final File[] list = base.listFiles();

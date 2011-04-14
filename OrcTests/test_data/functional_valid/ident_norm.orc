@@ -1,6 +1,6 @@
 {- ident_norm.orc -- Orc compiler test case program
  - 
- - $Id: ident_norm.orc 2278 2010-12-18 08:05:25Z jthywissen $
+ - $Id$
  - 
  - Created by jthywiss on Dec 17, 2010 6:18:57 PM
  -}

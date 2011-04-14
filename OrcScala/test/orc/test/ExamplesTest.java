@@ -1,6 +1,6 @@
 //
 // ExamplesTest.java -- Java class ExamplesTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //
@@ -39,13 +39,15 @@ import orc.script.OrcBindings;
 public class ExamplesTest {
   
 	public static Test suite() {
-		return buildSuite(ExamplesTest.class.getCanonicalName(), new OrcBindings(), new File("../OrcExamples"));
+		return buildSuite(ExamplesTest.class.getCanonicalName(), new OrcBindings(), new File("../OrcExamples"), new File("test_data"));
 	}
 
-	public static TestSuite buildSuite(final String name, final OrcBindings bindings, final File examplePath) {
+	public static TestSuite buildSuite(final String name, final OrcBindings bindings, final File... examplePaths) {
 		final TestSuite suite = new TestSuite(name);
 		final LinkedList<File> files = new LinkedList<File>();
-		TestUtils.findOrcFiles(examplePath, files);
+		for (final File examplePath : examplePaths) {
+			TestUtils.findOrcFiles(examplePath, files);
+		}
 		for (final File file : files) {
 			final ExpectedOutput expecteds;
 			try {
