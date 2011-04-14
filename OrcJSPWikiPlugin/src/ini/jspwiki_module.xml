@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<modules>
-   <plugin class="orc.jspwiki.Orc">
-      <author>Adrian Quark</author>
-      <alias>orc</alias>
-      <minVersion>2.4</minVersion>
-      <maxVersion>2.6</maxVersion>
-   </plugin>
-</modules>

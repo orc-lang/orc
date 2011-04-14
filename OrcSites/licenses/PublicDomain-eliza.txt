@@ -1,8 +1,0 @@
-Quoting from http://chayden.net/eliza/Eliza.html as of 2009-04-06:
-
-I wrote this to help learn Java. You are welcome to make use of it however you
-want. This version is a reworking of a program I wrote back in 1983 to teach
-myself how to use the Macintosh. I had written some really good documentation
-at that time, explaining how to write your own scripts. For now, you can look
-at Weizenbaum's article and the script I have provided to see how to write
-scripts. 
