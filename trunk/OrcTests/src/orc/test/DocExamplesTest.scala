@@ -28,19 +28,17 @@ import scala.xml.Text
 object DocExamplesTest extends ExamplesTest {
 
   def suite(): Test = {
+    val userguideOutDir = new File("build/docexamples/userguide")
+    val refmanualOutDir = new File("build/docexamples/refmanual")
+    userguideOutDir.mkdirs()
+    refmanualOutDir.mkdirs()
+    extractAllExamples(new File("../OrcDocs/src/userguide"), userguideOutDir)
+    extractAllExamples(new File("../OrcDocs/src/refmanual"), refmanualOutDir)
     val bindings = new OrcBindings();
-    ExamplesTest.buildSuite(getClass.getCanonicalName, bindings, new File("../OrcDocs/build/examples"));
+    ExamplesTest.buildSuite(getClass.getCanonicalName, bindings, new File("build/docexamples"));
   }
 
-  def isXmlFile(f: File): Boolean = {
-    f.isFile() && """\.xml$""".r.findFirstIn(f.getName()).isDefined
-  }
-
-  def main(args: Array[String]): Unit = {
-
-    val sourcedir = new File(args(0))
-    val targetdir = new File(args(1))
-
+  def extractAllExamples(sourcedir: File, targetdir: File): Unit = {
     val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
 
     for (f <- files) {
@@ -62,7 +60,9 @@ object DocExamplesTest extends ExamplesTest {
 
   }
 
-  def useless = true
+  def isXmlFile(f: File): Boolean = {
+    f.isFile() && """\.xml$""".r.findFirstIn(f.getName()).isDefined
+  }
 
   def extractExamples(f: File): List[(String, String)] = {
     val root = XML.loadFile(f)
