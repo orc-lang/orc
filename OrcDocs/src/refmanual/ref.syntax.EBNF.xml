@@ -436,6 +436,7 @@
 				<sbr/>&#x2759; <nonterminal def="#ebnf.literal.boolean">BooleanLiteral</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.literal.number">NumberLiteral</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.literal.string">CharacterStringLiteral</nonterminal>
+				<sbr/>&#x2759; <code>null</code>
 		  </rhs>
 		</production>
 		
