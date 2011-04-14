@@ -1,0 +1,485 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.3.&nbsp;Orc: Orchestrating services</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language"><link rel="prev" href="ch01s02.html" title="1.2.&nbsp;Cor: A Functional Subset"><link rel="next" href="ch01s04.html" title="1.4.&nbsp;Advanced Features of Orc"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">1.3.&nbsp;Orc: Orchestrating services</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;1.&nbsp;The Orc Programming Language</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch01s04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1063B"></a>1.3.&nbsp;Orc: Orchestrating services</h2></div></div></div><p>
+Cor is a pure declarative language. It has no state, since variables are bound at most once 
+and cannot be reassigned. Evaluation of an expression results in at most one value.
+It cannot communicate with the outside world except by producing a value. The full 
+Orc language transcends these limitations by incorporating the orchestration of external services.
+We introduce the term <em class="firstterm">site</em> to denote an external service which can be
+called from an Orc program.
+</p><p>
+As in Cor, an Orc program is an  <em class="firstterm">expression</em>; Orc expressions are built 
+up recursively from smaller expressions. Orc is a superset of Cor, i.e., all Cor expressions are 
+also Orc expressions. Orc expressions are <em class="firstterm">executed</em>, rather than evaluated; 
+an execution may call external services and <em class="firstterm">publish</em> some number of 
+values (possibly zero). Different executions of the same expression may have completely different
+behaviors; they may call different services, may receive different responses from the same site,
+and may publish different values. Expressions in the functional subset, though, will display
+the same behavior in all executions.
+</p><p>
+In the following sections we discuss the features of Orc. First, we discuss how Orc
+communicates with external services. Then we introduce Orc's concurrency <em class="firstterm">combinators</em>,
+which combine expressions into larger orchestrations and manage concurrent executions. 
+We have already discussed the functional subset of Orc in our coverage of Cor, but we
+reprise some of those topics; some Cor constructs exhibit new behaviors in the 
+concurrent, stateful context of Orc.
+</p><p>
+The following figure summarizes the syntax of Orc as an extension of the syntax of Cor. 
+The original Cor grammar rules are abbreviated by ellipses (...). 
+</p><p>
+<div class="table"><a name="orc-ebnf-table"></a><p class="title"><b>Table&nbsp;1.3.&nbsp;Basic Syntax of Orc</b></p><div class="table-contents"><table summary="Basic Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">D</td><td align="center">::=</td><td align="left"> ... </td><td align="left">
+                                    <span class="emphasis"><em>Declaration</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                    <code class="code"><span class="hl-keyword">site</span></code> X <code class="code">=</code> <span class="emphasis"><em>address</em></span>
+                                </td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>site declaration</em></span>
+                                </td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left"> ... </td><td align="left">
+                                    <span class="emphasis"><em>Constant</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                    <code class="code"><span class="hl-keyword">signal</span></code>
+                                </td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>signal value</em></span>
+                                </td></tr><tr><td align="right">E</td><td align="center">::=</td><td align="left">...</td><td align="left">
+                                    <span class="emphasis"><em>Expression</em></span>
+                                </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                    <code class="code"><span class="hl-keyword">stop</span></code>
+                                </td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>silent expression</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>sequential combinator</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">|</span></code> E</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>parallel combinator</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&lt;</span></code>P<code class="code"><span class="hl-combinator">&lt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>pruning combinator</em></span>
+                                </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">;</span></code> E</td><td align="left">&nbsp;</td><td align="left">
+                                    <span class="emphasis"><em>otherwise combinator</em></span>
+                                </td></tr></tbody></table></div></div><br class="table-break">
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1071A"></a>1.3.1.&nbsp;Communicating with external services</h3></div></div></div><p>
+An Orc expression may be a site call. Sites are called using the same syntax as a 
+function call, but with a slightly different meaning. Sites are introduced and bound 
+to variables by a special declaration.  
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1071F"></a>1.3.1.1.&nbsp;Calling a site</h4></div></div></div><p>
+Suppose that the variable <code class="code"><span class="hl-variable">Google</span></code> is bound to a site which invokes the
+Google search engine service in "I'm Feeling Lucky" mode. A call to <code class="code"><span class="hl-variable">Google</span></code> 
+looks just like a function call. Calling <code class="code"><span class="hl-variable">Google</span></code> requests the URL of the top 
+result for the given search term.
+
+<pre class="programlisting">
+<span class="hl-comment">{- Get the top search result for "computation orchestration" -}</span>
+<span class="hl-site">Google</span>(<span class="hl-literal">"computation orchestration"</span>)
+</pre>
+
+Once the Google search service determines the top result, it sends a response. The site 
+call then publishes that response. Note that the service might not respond: Google's 
+servers might be down, the network might be down, or the search might yield no result URL.  
+</p><p>
+A site call sends only a single request to an external service and receives at most one
+response. These restrictions have two important consequences. First, all of the information needed 
+for the call must be present before contacting the service. Thus, site calls are strict; all 
+arguments must be bound before the call can proceed. If any argument is silent, the call never occurs.
+Second, a site call publishes at most one value, since at most one response is received.
+</p><p>
+A call to a site has exactly one of the following effects: 
+
+<div class="orderedlist"><ol type="1"><li>The site returns a value, called its <em class="firstterm">response</em>.</li><li>The site communicates that it will never respond to the call; we say that the call has <em class="firstterm">halted</em></li><li>The site neither returns a value nor indicates that the call has halted; we say that the call is <em class="firstterm">pending</em>.</li></ol></div>
+</p><p>
+In the last two cases, the site call is said to be silent. However, unlike a silent expression in Cor, 
+a silent site call in Orc might perform some meaningful computation or communication; silence does 
+not necessarily indicate an error. Since halted site calls and pending site calls are both silent,
+they cannot usually be distinguished from each other; only the <a class="link" href="ch01s03.html#combinator.otherwise" title="1.3.2.4.&nbsp;The otherwise combinator">
+otherwise combinator</a> can tell the difference. 
+</p><p>
+A site is a value, just like an integer or a list. It may be bound to a variable, passed 
+as an argument, or published by an execution, just like any other value.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{-
+  Create a search site from a search engine URL,
+  bind the variable Search to that site,
+  then use that site to search for a term.
+-}</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">Search</span> = <span class="hl-site">SearchEngine</span>(<span class="hl-literal">"http://www.google.com/"</span>)
+<span class="hl-site">Search</span>(<span class="hl-literal">"first class value"</span>)
+</pre>
+</p><p>
+A site is sometimes called only for its effect on the external world; its return
+value is irrelevant. Many sites which do not need to return a meaningful value will
+instead return a <em class="firstterm">signal</em>: a special value which carries no 
+information (analogous to the unit value <code class="code">()</code> in ML). The signal value
+can be written as <code class="code"><span class="hl-keyword">signal</span></code> within Orc programs.
+
+
+<pre class="orc">
+<span class="hl-comment">{- 
+  Use the 'println' site to print a string, followed by
+  a newline, to an output console.
+  The return value of this site call is a signal.
+-}</span>
+<span class="hl-site">println</span>(<span class="hl-literal">"Hello, World!"</span>)
+</pre>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="orc-declaring-a-site"></a>1.3.1.2.&nbsp;Declaring a site</h4></div></div></div><p>
+A <code class="code"><span class="hl-keyword">site</span></code> declaration makes some service available as a site and
+binds it to a variable. The service might be an object in the host language 
+(e.g. a class instance in Java), or an external service on the web which is accessed 
+through some protocol like SOAP or REST, or even a primitive operation like addition. 
+
+
+
+Many useful sites are already defined in the Orc standard library, documented
+in <a class="link" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library">Appendix B</a>. For now, we present a simple 
+type of site declaration: using an object in the host language as a site.  
+</p><p>
+The following example instantiates a Java object to be used as a site in an Orc program, specifically
+a Java object which provides an asynchronous buffer service. The declaration uses a
+fully qualified Java class name to find and load a class, and creates an instance of that
+class to provide the service. 
+
+<pre class="programlisting">
+<span class="hl-comment">{-  Define the Buffer site  -}</span>
+<span class="hl-keyword">site</span> <span class="hl-variable">Buffer</span> = <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">state</span>.<span class="hl-variable">Buffer</span>
+</pre>  
+</p><p>
+
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10774"></a>1.3.2.&nbsp;The concurrency combinators of Orc</h3></div></div></div><p>
+Orc has four <em class="firstterm">combinators</em>: parallel, sequential, pruning, and otherwise. 
+A combinator forms an expression from two component expressions. Each combinator captures a 
+different aspect of concurrency. Syntactically, the combinators are written infix, and have
+lower precedence than operators, but higher precedence than conditionals or declarations.
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1077C"></a>1.3.2.1.&nbsp;The parallel combinator</h4></div></div></div><p>
+Orc's simplest combinator is <code class="code"><span class="hl-combinator">|</span></code>, the parallel combinator. Orc executes
+the expression F <code class="code"><span class="hl-combinator">|</span></code> G, where F and G are Orc expressions, by executing 
+F and G concurrently. Whenever F or G communicates with a service or publishes a value, 
+F <code class="code"><span class="hl-combinator">|</span></code> G does so as well. 
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 1 and 2 in parallel  </span>
+<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">1</span>+<span class="hl-literal">1</span>
+</pre>
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{- 
+  Access two search sites, Google and Yahoo, in parallel.
+
+  Publish any results they return.
+  
+  Since each call may publish a value, the expression
+  may publish up to two values.
+-}</span>  
+<span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>)
+</pre>
+</p><p>
+The parallel combinator is fully associative: (F <code class="code"><span class="hl-combinator">|</span></code> G) <code class="code"><span class="hl-combinator">|</span></code> H and
+F <code class="code"><span class="hl-combinator">|</span></code> (G <code class="code"><span class="hl-combinator">|</span></code> H) and F <code class="code"><span class="hl-combinator">|</span></code> G <code class="code"><span class="hl-combinator">|</span></code> H are all
+equivalent.
+</p><p>
+It is also commutative: F <code class="code"><span class="hl-combinator">|</span></code> G is equivalent to G <code class="code"><span class="hl-combinator">|</span></code> F.  
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 1, 2, and 3 in parallel  </span>
+<span class="hl-literal">1</span>+<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-literal">1</span>+<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">1</span>+<span class="hl-literal">2</span>
+</pre>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N107B7"></a>1.3.2.2.&nbsp;The sequential combinator</h4></div></div></div><p>
+Now that we have expressions which publish multiple values, what can we do with those
+publications? The sequential combinator, written F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G, 
+combines the expression F, which may publish some values, with another expression G, 
+which will use the values as they are published; <code class="code"><span class="hl-variable">x</span></code> transmits the values
+from F to G.
+</p><p>
+The execution of F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G starts by executing F. Whenever F publishes a value, 
+a new copy of G is executed in parallel with F (and with any previous copies of G); in that
+copy of G, variable <code class="code"><span class="hl-variable">x</span></code> is bound to the value published by F. Values published by copies
+of G are published by the whole expression, but the values published by F are not published
+by the whole expression; they are consumed by the variable binding.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 1 and 2 in parallel  </span>
+(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-literal">1</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">n</span>+<span class="hl-literal">1</span>
+</pre>
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 3 and 4 in parallel  </span>
+<span class="hl-literal">2</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">n</span>+<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-variable">n</span>+<span class="hl-literal">2</span>)
+</pre>
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 0, 1, 2 and 3 in parallel  </span>
+(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">n</span> <span class="hl-combinator">|</span> <span class="hl-variable">n</span>+<span class="hl-literal">1</span>)
+</pre>
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">-- Prepend the site name to each published search result</span>
+<span class="hl-comment">-- The cat site concatenates any number of arguments into one string  </span>
+  <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">cat</span>(<span class="hl-literal">"Google: "</span>, <span class="hl-variable">s</span>)
+<span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">cat</span>(<span class="hl-literal">"Yahoo: "</span>, <span class="hl-variable">s</span>)
+</pre>
+</p><p>
+The sequential combinator may be written as F<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>G, 
+where P is a pattern instead of just a variable name. Any value published by F is matched against the 
+pattern P. If this match is successful, a new copy of G is started with all of the bindings from the match. 
+Otherwise, the published value is simply ignored, and no new copy of G is executed.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish 3, 6, and 9 in arbitrary order.</span>
+(<span class="hl-literal">3</span>,<span class="hl-literal">6</span>,<span class="hl-literal">9</span>)  <span class="hl-combinator">&gt;</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>,<span class="hl-variable">z</span>)<span class="hl-combinator">&gt;</span>  ( <span class="hl-variable">x</span> <span class="hl-combinator">|</span> <span class="hl-variable">y</span> <span class="hl-combinator">|</span> <span class="hl-variable">z</span> )
+</pre>
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Filter out values of the form (_,false)</span>
+( (<span class="hl-literal">4</span>,<span class="hl-literal">true</span>) <span class="hl-combinator">|</span> (<span class="hl-literal">5</span>,<span class="hl-literal">false</span>) <span class="hl-combinator">|</span> (<span class="hl-literal">6</span>,<span class="hl-literal">true</span>) )  <span class="hl-combinator">&gt;</span>(<span class="hl-variable">x</span>,<span class="hl-literal">true</span>)<span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span>
+<span class="hl-comment">-- Publishes 4 and 6 </span>
+</pre>
+</p><p>
+We may also omit the variable entirely, writing <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>. This
+is equivalent to using a wildcard pattern: <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">_</span><span class="hl-combinator">&gt;</span> </code>
+</p><p>
+We may want to execute an expression just for its effects, and hide all of its publications.
+We can do this using <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code> together with the special expression 
+<code class="code"><span class="hl-keyword">stop</span></code>, which is always silent.  
+</p><p>
+<pre class="orc">
+<span class="hl-comment">{- 
+  Print two strings to the console,
+  but don't publish the return values of the calls.
+-}</span>
+( <span class="hl-site">println</span>(<span class="hl-literal">"goodbye"</span>) <span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-literal">"world"</span>) ) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+</pre>
+</p><p>
+The sequential combinator is right associative: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> </code>H
+is equivalent to F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (</code>G<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> </code>H<code class="code">)</code>. It has higher
+precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
+<code class="code">(</code>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G <code class="code">) <span class="hl-combinator">|</span></code> H.
+</p><p>
+The right associativity of the sequential combinator makes it easy to bind variables in sequence and use
+them together.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">{- 
+  Publish the cross product of {1,2} and {3,4}:
+  (1,3), (1,4), (2,3), and (2,4).
+-}</span>
+(<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
+</pre>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10833"></a>1.3.2.3.&nbsp;The pruning combinator</h4></div></div></div><p>
+The pruning combinator, written F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G, allows us to block 
+a computation waiting for a result, or terminate a computation. The execution of 
+F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G starts by executing F and G in parallel. Whenever
+F publishes a value, that value is published by the entire execution. When G publishes
+its first value, that value is bound to x in F, and then the execution of G is immediately 
+<em class="firstterm">terminated</em>. A terminated expression cannot call any sites or 
+publish any values.
+</p><p>
+During the execution of F, any part of the execution that depends on <code class="code"><span class="hl-variable">x</span></code> 
+will be suspended until <code class="code"><span class="hl-variable">x</span></code> is bound (to the first value published by G). If G
+never publishes a value, that part of the execution is suspended forever. 
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish either 5 or 6, but not both</span>
+<span class="hl-variable">x</span>+<span class="hl-literal">2</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)
+</pre>
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">-- Query Google and Yahoo for a search result</span>
+<span class="hl-comment">-- Print out the result that arrives first; ignore the other result</span>
+<span class="hl-site">println</span>(<span class="hl-variable">result</span>) <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) )
+</pre>
+</p><p>
+Though a terminated execution may not make any new calls, the calls
+that it has already made will continue normally; their responses are simply
+ignored. This may have surprising consequences when a call has side effects,
+as in the following example.
+
+<pre class="orc">
+<span class="hl-comment">{- 
+  This example actually prints both "true" and "false" to the
+  console, regardless of which call responds first.
+-}</span>
+<span class="hl-keyword">stop</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"true"</span>) <span class="hl-combinator">|</span> <span class="hl-site">println</span>(<span class="hl-literal">"false"</span>)
+</pre>
+
+Both of the <code class="code"><span class="hl-variable">println</span></code> calls are initiated before either one of
+them publishes a value and terminates the expression. Once the expression
+is terminated, no new calls occur, but the other <code class="code"><span class="hl-variable">println</span></code> call
+still proceeds and still has the effect of printing its message to the
+console.
+</p><p>
+The pruning combinator may include a full pattern P instead of just a variable name. Any
+value published by G is matched against the pattern P. If this match is successful, then G
+terminates and all of the bindings of the pattern P are made in F. Otherwise, the published 
+value is simply ignored and G continues to execute.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish either 9 or 25, but not 16.</span>
+<span class="hl-variable">x</span>*<span class="hl-variable">x</span> <span class="hl-combinator">&lt;</span>(<span class="hl-variable">x</span>,<span class="hl-literal">true</span>)<span class="hl-combinator">&lt;</span> ( (<span class="hl-literal">3</span>,<span class="hl-literal">true</span>) <span class="hl-combinator">|</span> (<span class="hl-literal">4</span>,<span class="hl-literal">false</span>) <span class="hl-combinator">|</span> (<span class="hl-literal">5</span>,<span class="hl-literal">true</span>) )
+</pre>
+</p><p>
+Note that even if <code class="code">(<span class="hl-literal">4</span>,<span class="hl-literal">false</span>)</code> is published before <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">true</span>)</code> or <code class="code">(<span class="hl-literal">5</span>,<span class="hl-literal">true</span>)</code>, 
+it is ignored. The right side continues to execute and will publish one of <code class="code">(<span class="hl-literal">3</span>,<span class="hl-literal">true</span>)</code> or 
+<code class="code">(<span class="hl-literal">5</span>,<span class="hl-literal">true</span>)</code>.
+</p><p>
+The pruning combinator is left associative: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H
+is equivalent to <code class="code">(</code>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> </code>H. It has lower
+precedence than the parallel combinator: F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G <code class="code"><span class="hl-combinator">|</span></code> H is equivalent to
+F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> (</code>G <code class="code"><span class="hl-combinator">|</span></code> H<code class="code">)</code>.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="combinator.otherwise"></a>1.3.2.4.&nbsp;The otherwise combinator</h4></div></div></div><p>
+Orc has a fourth concurrency combinator: the <em class="firstterm">otherwise</em> combinator,
+written F<code class="code"> <span class="hl-combinator">;</span> </code>G. The execution of F<code class="code"> <span class="hl-combinator">;</span> </code> G proceeds as follows.
+First, F is executed. If F <em class="firstterm">completes</em>, and has not published any values, 
+then G executes. If F did publish one or more values, then G is ignored. The publications of 
+F <code class="code"><span class="hl-combinator">;</span></code> G are those of F if F publishes, or those of G otherwise.
+</p><p>
+We determine when an expression completes using the following rules.
+
+<div class="itemizedlist"><ul type="disc"><li>A Cor expression completes when it is fully evaluated; if it is silent, it completes immediately.</li><li>A site call completes when it has published a value or halted.</li><li>F <code class="code"><span class="hl-combinator">|</span></code> G completes when its subexpressions F and G have both completed.</li><li>F<code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code>G completes when F has completed and all instantiated copies of G have completed.</li><li>F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G completes when F has completed, and G has either completed or
+published a value. Also, if G completes without publishing a value, then all expressions in F which
+use <code class="code"><span class="hl-variable">x</span></code> also complete, since they will never be able to proceed.</li><li>F <code class="code"><span class="hl-combinator">;</span></code> G completes either when F has published a value and subsequently completed,
+or when F and G have both completed.</li><li><code class="code"><span class="hl-keyword">stop</span></code> completes immediately.</li></ul></div>
+
+</p><p>
+The otherwise combinator is fully associative, so F <code class="code"><span class="hl-combinator">;</span></code> G <code class="code"><span class="hl-combinator">;</span></code> H and
+(F <code class="code"><span class="hl-combinator">;</span></code> G) <code class="code"><span class="hl-combinator">;</span></code> H and F <code class="code"><span class="hl-combinator">;</span></code> (G <code class="code"><span class="hl-combinator">;</span></code> H) are
+all equivalent. It has lower precedence than the other three combinators. 
+</p><p>
+The otherwise combinator was not present in the original formulation of the Orc concurrency 
+calculus; it has been added to support computation and iteration over strictly finite data. 
+Sequential programs conflate the concept of producing a value with the concept of completion. 
+Orc separates these two concepts; variable binding combinators like <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> </code> 
+and <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code> handle values, whereas <code class="code"><span class="hl-combinator">;</span></code> detects the completion 
+of an execution.
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N108F0"></a>1.3.3.&nbsp;Revisiting Cor expressions</h3></div></div></div><p>
+Some Cor expressions have new behaviors in the context of Orc, due to the introduction
+of concurrency and of sites.
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N108F5"></a>1.3.3.1.&nbsp;Operators</h4></div></div></div><p>
+The arithmetic, logical, and comparison operators are actually calls to sites, simply
+written in infix style with the expected operator symbols. For example, <code class="code"><span class="hl-literal">2</span>+<span class="hl-literal">3</span></code>
+is actually <code class="code">(+)(<span class="hl-literal">2</span>,<span class="hl-literal">3</span>)</code>, where <code class="code">(+)</code> is a primitive site provided
+by the language itself. All of the operators can be used directly as sites in this way;
+the name of the site is the operator enclosed by parentheses, e.g. <code class="code">(**)</code>,
+<code class="code">(<span class="hl-site">&gt;=</span>)</code>, etc. Negation (unary minus) is named <code class="code">(<span class="hl-literal">0</span>-)</code>.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1090C"></a>1.3.3.2.&nbsp;Conditionals</h4></div></div></div><p>
+The conditional expression <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G
+is actually a derived form based on a site named <code class="code"><span class="hl-keyword">if</span></code>. The <code class="code"><span class="hl-keyword">if</span></code>
+site takes a boolean argument; it returns a signal if that argument is <code class="code"><span class="hl-literal">true</span></code>,
+or remains silent if the argument is <code class="code"><span class="hl-literal">false</span></code>.
+</p><p>
+<code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> F <code class="code"><span class="hl-keyword">else</span></code> G is equivalent 
+to <code class="code">( <span class="hl-keyword">if</span>(<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>F<code class="code"> <span class="hl-combinator">|</span> <span class="hl-keyword">if</span>(~<span class="hl-variable">b</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>G<code class="code">) <span class="hl-combinator">&lt;</span><span class="hl-variable">b</span><span class="hl-combinator">&lt;</span> </code>E.
+</p><p>
+ When the <code class="code"><span class="hl-keyword">else</span></code> branch of a conditional is unneeded, we can write <code class="code"><span class="hl-keyword">if</span></code> F <code class="code"><span class="hl-keyword">then</span></code> G,
+ with no <code class="code"><span class="hl-keyword">else</span></code> branch. This is equivalent to <code class="code"><span class="hl-keyword">if</span>(</code>E<code class="code">) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code>F.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1094E"></a>1.3.3.3.&nbsp;
+                        <code class="code"><span class="hl-keyword">val</span></code>
+                    </h4></div></div></div><p>
+The declaration <code class="code"><span class="hl-keyword">val</span> <span class="hl-variable">x</span> = </code>G, followed by expression F, is 
+actually just a different way of writing the expression F<code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code>G.
+Thus, <code class="code"><span class="hl-keyword">val</span></code> shares all of the behavior of the pruning combinator,
+which we have already described. (This is also true when a pattern is used instead
+of variable name <code class="code"><span class="hl-variable">x</span></code>).
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N10962"></a>1.3.3.4.&nbsp;Nesting Orc expressions</h4></div></div></div><p>
+The execution of an Orc expression may publish many values. What does such an expression 
+mean in a context where only one value is expected? For example, what does <code class="code"><span class="hl-literal">2</span> + (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)</code> 
+publish? 
+</p><p>
+The specific contexts in which we are interested are as follows (where E is any Orc expression):
+
+<div class="informaltable"><a name="value-context-table"></a><table border="0" width="40%"><colgroup><col align="left"><col align="right"></colgroup><tbody><tr><td align="left">E <span class="emphasis"><em>op</em></span> E</td><td align="right">
+                                    <span class="emphasis"><em>operand</em></span>
+                                    </td></tr><tr><td align="left">
+                                    <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> ...</td><td align="right">
+                                    <span class="emphasis"><em>conditional test</em></span>
+                                    </td></tr><tr><td align="left">X<code class="code">(</code> ... <code class="code">,</code> E <code class="code">,</code> ... <code class="code">)</code>
+                                    </td><td align="right">
+                                    <span class="emphasis"><em>call argument</em></span>
+                                    </td></tr><tr><td align="left">
+                                    <code class="code">(</code> ... <code class="code">,</code> E <code class="code">,</code> ... <code class="code">)</code>
+                                    </td><td align="right">
+                                    <span class="emphasis"><em>tuple element</em></span>
+                                    </td></tr><tr><td align="left">
+                                    <code class="code">[</code> ... <code class="code">,</code> E <code class="code">,</code> ... <code class="code">]</code>
+                                    </td><td align="right">
+                                    <span class="emphasis"><em>list element</em></span>
+
+                                    </td></tr></tbody></table></div>
+</p><p>
+Whenever an Orc expression appears in such a context, it executes until it publishes its first value, 
+and then it is terminated. The published value is used in the context as if it were the result of evaluating
+the expression.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish either 5 or 6</span>
+<span class="hl-literal">2</span> + (<span class="hl-literal">3</span> <span class="hl-combinator">|</span> <span class="hl-literal">4</span>)
+</pre>
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish exactly one of 0, 1, 2 or 3</span>
+(<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) + (<span class="hl-literal">0</span> <span class="hl-combinator">|</span> <span class="hl-literal">1</span>)
+</pre>
+</p><p>
+To be precise, whenever an Orc expression appears in such a context, it is treated as if it was 
+on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
+Thus, C[E] (where E is the Orc expression and C is the context) is equivalent to the expression 
+C[<code class="code"><span class="hl-variable">x</span></code>] <code class="code"> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> </code> E. 
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N109EB"></a>1.3.3.5.&nbsp;Functions</h4></div></div></div><p>
+The body of a function in Orc may be any Orc expression; thus, function
+bodies in Orc are executed rather than evaluated, and may engage in communication
+and publish multiple values.
+</p><p>
+A function call in Orc, as in Cor, binds the values of its actual parameters
+to its formal parameters, and then executes the function body with those bindings.
+Whenever the function body publishes a value, the function call publishes that
+value. Thus, unlike a site call, or a pure functional Cor call, an Orc function
+call may publish many values.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Publish all integers in the interval 1..n, in arbitrary order. </span>
+<span class="hl-keyword">def</span> <span class="hl-site">range</span>(<span class="hl-variable">n</span>) = <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> &gt; <span class="hl-literal">0</span>) <span class="hl-keyword">then</span> (<span class="hl-variable">n</span> <span class="hl-combinator">|</span> <span class="hl-site">range</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>)) <span class="hl-keyword">else</span> <span class="hl-keyword">stop</span> 
+
+<span class="hl-comment">-- Publish 1, 2, and 3 in arbitrary order.</span>
+<span class="hl-site">range</span>(<span class="hl-literal">3</span>)
+</pre>
+</p><p>
+In the context of Orc, function calls are not strict. When a function call executes,
+it begins to execute the function body immediately, and also executes the argument
+expressions in parallel. When an argument expression publishes a value, it is terminated,
+and the corresponding formal parameter is bound to that value in the execution of
+the function body. Any part of the function body which uses a formal parameter
+that has not yet been bound suspends until that parameter is bound to a value.
+</p></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N109FA"></a>1.3.4.&nbsp;Time</h3></div></div></div><p>
+Orc is designed to communicate with the external world, and one of the
+most important characteristics of the external world is the passage of
+time. Orc implicitly interacts with the passage of time by calling external
+services which take time to respond. However, Orc can also explicitly
+wait for some amount of time, using the special site <code class="code"><span class="hl-variable">Rtimer</span></code>. 
+</p><p>
+The site <code class="code"><span class="hl-variable">Rtimer</span></code> is a relative timer. It takes as an argument
+a number of milliseconds to wait. It waits for exactly that amount of time,
+and then responds with a signal.
+</p><p>
+<pre class="orc">
+<span class="hl-comment">-- Print "red", wait for 3 seconds (3000 ms), and then print "green" </span>
+<span class="hl-site">println</span>(<span class="hl-literal">"red"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">3000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"green"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+</pre>
+</p><p>
+The following example defines a metronome, which publishes a signal once 
+every <code class="code"><span class="hl-variable">t</span></code> milliseconds, indefinitely.
+</p><p>
+<pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-site">metronome</span>(<span class="hl-variable">t</span>) = <span class="hl-keyword">signal</span> <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">metronome</span>(<span class="hl-variable">t</span>)
+</pre>
+</p><p>
+We can also use <code class="code"><span class="hl-variable">Rtimer</span></code> together with the pruning combinator 
+to enforce a timeout.
+</p><p>
+<pre class="programlisting">
+<span class="hl-comment">{-
+  Publish the result of a Google search.
+  If it takes more than 5 seconds, time out.
+-}</span>
+<span class="hl-variable">result</span> 
+  <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"impatience"</span>) 
+           <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">5000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Search timed out."</span>)
+</pre>
+</p>
+
+
+
+We present many more examples of programming techniques using real time in <a class="link" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology">Chapter 2</a>.
+
+</div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch01.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch01s04.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.2.&nbsp;Cor: A Functional Subset&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;1.4.&nbsp;Advanced Features of Orc</td></tr></table></div></body></html>

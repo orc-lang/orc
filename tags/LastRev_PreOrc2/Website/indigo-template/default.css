@@ -1,0 +1,211 @@
+/*
+Template name: Indigo
+Template URI: http://templates.arcsin.se/indigo-website-template/
+Release date: 2006-07-27
+Description: A lightweight, simple and pleasant design.
+Author: Viktor Persson
+Author URI: http://arcsin.se/
+
+This template is licensed under a Creative Commons Attribution 2.5 License:
+http://templates.arcsin.se/license/
+*/
+
+/* standard elements */
+* {
+	margin: 0;
+	padding: 0;
+}
+a {
+	color: #F70;
+}
+a:hover {
+	color: #C60;
+}
+body {
+	background: #0094D6 url(img/bg.gif) repeat-x;
+	color: #466;
+	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
+	margin: 0;
+}
+input {
+	color: #555;
+}
+p,cite,code,ul,ol {
+	margin-bottom: 10pt;
+}
+ol li {
+	margin-left: 18px;
+}
+ul ul {
+	margin-bottom: 0;
+}
+h1,h2,h3 {
+	font-family: "Trebuchet MS",sans-serif;
+	color: #06C;
+	padding-top: 6px;
+}
+h1 {
+	margin-bottom: 4px;
+}
+cite {
+	background: url(img/quote.gif) no-repeat;
+	color: #666;
+	display: block;
+	padding-left: 28px;
+}
+/* misc */
+.clearer {
+	clear: both;
+}
+
+/* structure */
+.header-background {
+	background: #0094D6 url(img/bg.gif) repeat-x;
+}
+
+.header {
+	background: url(img/topleft.gif) no-repeat;
+	height: 92px;
+}
+
+/* title */
+.title {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0 0 0 40px;
+}
+.title h1 {
+	color: #FFF;
+	font-family: "Trebuchet MS",sans-serif;
+	font-size: 25px;
+}
+/* navigation */
+.navigation {
+	float: left;
+	height: 92px;
+	margin-left: 24px;
+	padding: 0 16px;
+	overflow: hidden;
+}
+.navigation a {
+	color: #FFF;
+	float: left;
+	font: bold 1.1em "Trebuchet MS",sans-serif;
+	margin-top: 56px;
+	padding: 8px 18px;
+	text-align: center;
+	text-decoration: none;
+}
+.navigation a:hover {
+	background-color: #4A91C3;
+	color: #FFF;
+}
+#active {
+	background-color: #4A91C3;
+	color: #FFF;
+}
+
+/* main */
+.main {
+	background: url(img/bgmain.gif) no-repeat;
+	padding: 12px 12px 0 52px;
+	clear: both;
+}
+
+/* main left */
+.sidenav {}
+.sidenav h1 {
+	border-bottom: 1px dashed #DDD;
+	color: #E73;
+	height: 20px;
+	font-size: 18px;
+	margin-top: 10px;
+}
+.sidenav ul {
+	margin: 0;
+	padding: 0;
+}
+.sidenav li { 
+	border-bottom: 1px dashed #EEE;
+	list-style: none;
+	margin: 0;
+}
+.sidenav li a {
+	color: #777;
+	display: block;
+	padding: 3px 6px 3px 18px;
+	text-decoration: none;
+}
+.sidenav li a:hover {
+	color: #111;
+	background: url(img/nav_li.gif) no-repeat;
+}
+
+/* content */
+.content .descr {
+	color: #C60;
+	margin-bottom: 6px;
+}
+.content ul li {
+	list-style: url(img/li.gif);
+	margin-left: 18px;
+}
+
+/* search form */
+.styled {
+	border: 3px double #E5E5E5;
+	padding: 2px 3px;
+}
+.button {
+	border: 1px solid #AAA;
+	margin-left: 5px;
+	padding: 2px 3px;
+}
+
+/* footer */
+.footer {
+	background: #0094D6 url(img/bgfooter.gif) repeat-x;
+	color: #C1DEF0;
+	line-height: 40px;
+	text-align: center;
+}
+.footer a {
+	color: #FFF;
+	text-decoration: none;
+}
+.footer a:hover {
+	color: #FFF;
+	text-decoration: underline;
+}
+small, .small {font: normal 10px Verdana,sans-serif;}
+
+.left {
+	float: left;
+	margin-right: 4%;
+	width: 69%;
+}
+
+.right {
+	float: left;
+	width: 24%;
+	padding-top: 150px;
+	background: url(img/logo.gif) no-repeat top left;
+}
+
+.container {
+	background: #fff url(img/bg.gif) repeat-x;
+	padding-bottom: 30px;
+}
+
+/* IE display hacks */
+
+.content {
+	_display: inline-block;
+	min-height: 0;
+}
+
+.container {
+	_display: inline-block;
+	min-height: 0;
+}

@@ -1,0 +1,428 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.3.&nbsp;Larger Examples</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Programming Methodology"><link rel="prev" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link rel="next" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">2.3.&nbsp;Larger Examples</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Programming Methodology</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N112E5"></a>2.3.&nbsp;Larger Examples</h2></div></div></div>
+
+In this section we show a few larger Orc programs to demonstrate programming techniques. 
+There are many more such examples available at the Orc website, on the
+<a class="link" href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab" target="_top">community wiki</a>.
+
+
+<div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N112ED"></a>2.3.1.&nbsp;Dining Philosophers</h3></div></div></div><p>
+The dining philosophers problem is a well known and intensely studied problem
+in concurrent programming. Five philosophers sit around a circular table. Each
+philosopher has two forks that she shares with her neighbors (giving five forks
+in total).  Philosophers think until they become hungry.  A hungry philosopher
+picks up both forks, one at a time, eats, puts down both forks, and then
+resumes thinking.  Without further refinement, this scenario allows deadlock;
+if all philosophers become hungry and pick up their left-hand forks
+simultaneously, no philosopher will be able to pick up her right-hand fork to
+eat.  Lehmann and Rabin's solution<sup>[<a href="#ftn.N112F2" name="N112F2" class="footnote">3</a>]</sup>, which we implement,
+requires that each philosopher pick up her forks in a random order.  If the
+second fork is not immediately available, the philosopher must set down both
+forks and try again.  While livelock is still possible if all philosophers
+take forks in the same order, randomization makes this possibility vanishingly
+unlikely.
+</p><pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">shuffle</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-keyword">if</span> (<span class="hl-site">random</span>(<span class="hl-literal">2</span>) = <span class="hl-literal">1</span>) <span class="hl-keyword">then</span> (<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) <span class="hl-keyword">else</span> (<span class="hl-variable">b</span>,<span class="hl-variable">a</span>)
+
+<span class="hl-keyword">def</span> <span class="hl-site">take</span>((<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)) =    
+  <span class="hl-variable">a</span>.<span class="hl-site">acquire</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">acquirenb</span>() <span class="hl-combinator">;</span>
+  <span class="hl-variable">a</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">take</span>(<span class="hl-site">shuffle</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>))
+    
+<span class="hl-keyword">def</span> <span class="hl-site">drop</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = (<span class="hl-variable">a</span>.<span class="hl-site">release</span>(), <span class="hl-variable">b</span>.<span class="hl-site">release</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">signal</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">phil</span>(<span class="hl-variable">n</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) =
+  <span class="hl-keyword">def</span> <span class="hl-site">thinking</span>() = 
+    <span class="hl-site">println</span>(<span class="hl-variable">n</span> + <span class="hl-literal">" thinking"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+    <span class="hl-keyword">if</span> (<span class="hl-site">random</span>(<span class="hl-literal">10</span>) &lt; <span class="hl-literal">9</span>)
+      <span class="hl-keyword">then</span> <span class="hl-site">Rtimer</span>(<span class="hl-site">random</span>(<span class="hl-literal">1000</span>))
+      <span class="hl-keyword">else</span> <span class="hl-keyword">stop</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">hungry</span>() = <span class="hl-site">take</span>((<span class="hl-variable">a</span>,<span class="hl-variable">b</span>))
+  <span class="hl-keyword">def</span> <span class="hl-site">eating</span>() = 
+    <span class="hl-site">println</span>(<span class="hl-variable">n</span> + <span class="hl-literal">" eating"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+    <span class="hl-site">Rtimer</span>(<span class="hl-site">random</span>(<span class="hl-literal">1000</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+    <span class="hl-site">println</span>(<span class="hl-variable">n</span> + <span class="hl-literal">" done eating"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+    <span class="hl-site">drop</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)
+  <span class="hl-site">thinking</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">hungry</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">eating</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">phil</span>(<span class="hl-variable">n</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)
+
+<span class="hl-keyword">def</span> <span class="hl-site">philosophers</span>(<span class="hl-literal">1</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-site">phil</span>(<span class="hl-literal">1</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">philosophers</span>(<span class="hl-variable">n</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) =
+  <span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">1</span>)
+  <span class="hl-site">philosophers</span>(<span class="hl-variable">n</span>-<span class="hl-literal">1</span>,<span class="hl-variable">a</span>,<span class="hl-variable">c</span>) <span class="hl-combinator">|</span> <span class="hl-site">phil</span>(<span class="hl-variable">n</span>,<span class="hl-variable">c</span>,<span class="hl-variable">b</span>)
+
+<span class="hl-keyword">val</span> <span class="hl-variable">fork</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">1</span>)
+<span class="hl-site">philosophers</span>(<span class="hl-literal">5</span>,<span class="hl-variable">fork</span>,<span class="hl-variable">fork</span>)</pre><p>
+The <code class="code"><span class="hl-variable">phil</span></code> function simulates a single philosopher.  It takes as arguments
+two binary semaphores representing the philosopher's forks, and calls
+the <code class="code"><span class="hl-variable">thinking</span></code>, <code class="code"><span class="hl-variable">hungry</span></code>, and <code class="code"><span class="hl-variable">eating</span></code> functions in a continuous
+loop. A <code class="code"><span class="hl-variable">thinking</span></code> philosopher waits for a random amount of time, with a
+10% chance of thinking forever. A <code class="code"><span class="hl-variable">hungry</span></code> philosopher uses the <code class="code"><span class="hl-variable">take</span></code>
+function to acquire two forks. An <code class="code"><span class="hl-variable">eating</span></code> philosopher waits for a random
+time interval and then uses the <code class="code"><span class="hl-variable">drop</span></code> function to relinquish ownership of
+her forks.
+</p><p>
+Calling <code class="code"><span class="hl-site">take</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)</code> attempts to acquire a pair of forks <code class="code">(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)</code> in two steps:
+wait for fork <code class="code"><span class="hl-variable">a</span></code> to become available, then immediately attempt to acquire fork <code class="code"><span class="hl-variable">b</span></code>.
+The call <code class="code"><span class="hl-variable">b</span>.<span class="hl-site">acquirenb</span>()</code> either acquires <code class="code"><span class="hl-variable">b</span></code> and responds immediately, or halts if <code class="code"><span class="hl-variable">b</span></code> is not available.
+If <code class="code"><span class="hl-variable">b</span></code> is acquired, signal success; otherwise, release <code class="code"><span class="hl-variable">a</span></code>, and
+then try again, randomly changing the order in which the forks are acquired
+using the auxiliary function <code class="code"><span class="hl-variable">shuffle</span></code>.
+</p><p>
+The function call <code class="code"><span class="hl-site">philosophers</span>(<span class="hl-variable">n</span>,<span class="hl-variable">a</span>,<span class="hl-variable">b</span>)</code> recursively creates a chain of <code class="code"><span class="hl-variable">n</span></code>
+philosophers, bounded by fork <code class="code"><span class="hl-variable">a</span></code> on the left and <code class="code"><span class="hl-variable">b</span></code> on the right. The
+goal expression of the program calls <code class="code"><span class="hl-variable">philosophers</span></code> to create a chain of
+five philosophers bounded on the left and right by the same fork; hence, a
+ring.
+</p><p>
+This Orc solution has several nice properties.  The overall structure of the
+program is functional, with each behavior encapsulated in its own function,
+making the program easy to understand and modify.  Mutable state is isolated to
+the "fork" semaphores and associated <code class="code"><span class="hl-variable">take</span></code> and <code class="code"><span class="hl-variable">get</span></code> functions,
+simplifying the implementation of the philosophers.  The program never
+manipulates threads explicitly, but instead expresses relationships between
+activities using Orc's combinators.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="methodology.examples.hygenic"></a>2.3.2.&nbsp;Hygienic Dining Philosophers</h3></div></div></div><p>
+Here we implement a different solution to the Dining Philosophers problem,
+described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra.
+Briefly, this algorithm efficiently and fairly solves the dining philosophers
+problem for philosophers connected in an arbitrary graph (as opposed to a
+simple ring).  The algorithm works by augmenting each fork with a clean/dirty
+state.  Initially, all forks are dirty.  A philosopher is only obliged to
+relinquish a fork to its neighbor if the fork is dirty. On receiving a fork,
+the philosopher cleans it. On eating, the philosopher dirties all forks.  For
+full details of the algorithm, consult the original paper.
+</p><pre class="orc">
+<span class="hl-comment">{-
+Start a philosopher actor; never publishes.
+Messages sent between philosophers include:
+- ("fork", p): philosopher p relinquishes the fork
+- ("request", p): philosopher p requests the fork
+- ("rumble", p): sent by a philosopher to itself when it should
+  become hungry
+
+name: identify this process in status messages
+mbox: our mailbox; the "address" of this philosopher is mbox.put
+missing: set of neighboring philosophers holding our forks
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">philosopher</span>(<span class="hl-variable">name</span>, <span class="hl-variable">mbox</span>, <span class="hl-variable">missing</span>) =
+  <span class="hl-comment">{- deferred requests for forks -}</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">deferred</span> = <span class="hl-site">Buffer</span>()
+  <span class="hl-comment">{- forks we hold which are clean -}</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">clean</span> = <span class="hl-site">Set</span>()
+
+  <span class="hl-keyword">def</span> <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) =
+    <span class="hl-comment">{- remember that we no longer hold the fork -}</span>
+    <span class="hl-variable">missing</span>.<span class="hl-site">add</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">p</span>((<span class="hl-literal">"fork"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>))
+ 
+  <span class="hl-keyword">def</span> <span class="hl-site">requestFork</span>(<span class="hl-variable">p</span>) =
+    <span class="hl-site">p</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>))
+  
+  <span class="hl-comment">{- Start a timer which will tell us when we're hungry. -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">digesting</span>() =
+      <span class="hl-site">println</span>(<span class="hl-variable">name</span> + <span class="hl-literal">" thinking"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">thinking</span>()
+    <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-site">random</span>(<span class="hl-literal">1000</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-variable">mbox</span>.<span class="hl-site">put</span>((<span class="hl-literal">"rumble"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-keyword">stop</span>
+
+  <span class="hl-comment">{- Wait to become hungry -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">thinking</span>() =
+    <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"rumble"</span>, <span class="hl-variable">_</span>)) =
+      <span class="hl-site">println</span>(<span class="hl-variable">name</span> + <span class="hl-literal">" hungry"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">map</span>(<span class="hl-variable">requestFork</span>, <span class="hl-variable">missing</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">hungry</span>()
+    <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">p</span>)) =
+      <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">thinking</span>()
+    <span class="hl-site">on</span>(<span class="hl-variable">mbox</span>.<span class="hl-site">get</span>())
+
+  <span class="hl-comment">{- Eat once we receive all forks -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">hungry</span>() =
+    <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"fork"</span>, <span class="hl-variable">p</span>)) =
+      <span class="hl-variable">missing</span>.<span class="hl-site">remove</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-variable">clean</span>.<span class="hl-site">add</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-keyword">if</span> <span class="hl-variable">missing</span>.<span class="hl-site">isEmpty</span>()
+      <span class="hl-keyword">then</span> <span class="hl-site">println</span>(<span class="hl-variable">name</span> + <span class="hl-literal">" eating"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">eating</span>()
+      <span class="hl-keyword">else</span> <span class="hl-site">hungry</span>()
+    <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">p</span>)) =
+      <span class="hl-keyword">if</span> <span class="hl-variable">clean</span>.<span class="hl-site">contains</span>(<span class="hl-variable">p</span>)
+      <span class="hl-keyword">then</span> <span class="hl-variable">deferred</span>.<span class="hl-site">put</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">hungry</span>()
+      <span class="hl-keyword">else</span> <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">requestFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">hungry</span>()
+    <span class="hl-site">on</span>(<span class="hl-variable">mbox</span>.<span class="hl-site">get</span>())
+
+  <span class="hl-comment">{- Dirty forks, process deferred requests, then digest -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">eating</span>() =
+    <span class="hl-variable">clean</span>.<span class="hl-site">clear</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">Rtimer</span>(<span class="hl-site">random</span>(<span class="hl-literal">1000</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">map</span>(<span class="hl-variable">sendFork</span>, <span class="hl-variable">deferred</span>.<span class="hl-site">getAll</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">digesting</span>()
+
+  <span class="hl-comment">{- All philosophers start out digesting -}</span>
+  <span class="hl-site">digesting</span>()
+
+<span class="hl-comment">{-
+Create an NxN 4-connected grid of philosophers.  Each philosopher
+holds the fork for the connections below and to the right (so the
+top left philosopher holds both its forks).
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">philosophers</span>(<span class="hl-variable">n</span>) =
+  <span class="hl-comment">{- A set with 1 item -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">Set1</span>(<span class="hl-variable">item</span>) = <span class="hl-site">Set</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">item</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>
+  <span class="hl-comment">{- A set with 2 items -}</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">Set2</span>(<span class="hl-variable">i1</span>, <span class="hl-variable">i2</span>) = <span class="hl-site">Set</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">i1</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">i2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>
+
+  <span class="hl-comment">{- create an NxN matrix of mailboxes -}</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">cs</span> = <span class="hl-site">uncurry</span>(<span class="hl-site">IArray</span>(<span class="hl-variable">n</span>, <span class="hl-keyword">lambda</span> (<span class="hl-variable">_</span>) = <span class="hl-site">IArray</span>(<span class="hl-variable">n</span>, <span class="hl-site">ignore</span>(<span class="hl-variable">Buffer</span>))))
+
+  <span class="hl-comment">{- create the first row of philosophers -}</span>
+  <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set</span>())
+  <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">j</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set1</span>(<span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span>-<span class="hl-literal">1</span>).<span class="hl-variable">put</span>))
+
+  <span class="hl-comment">{- create remaining rows -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">i</span><span class="hl-combinator">&gt;</span> (
+      <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set1</span>(<span class="hl-site">cs</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>,<span class="hl-literal">0</span>).<span class="hl-variable">put</span>))
+      <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">j</span><span class="hl-combinator">&gt;</span>
+        <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set2</span>(<span class="hl-site">cs</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>,<span class="hl-variable">j</span>).<span class="hl-variable">put</span>, <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span>-<span class="hl-literal">1</span>).<span class="hl-variable">put</span>))
+    )
+
+<span class="hl-comment">{- Simulate a 3x3 grid of philosophers for 10 seconds -}</span>
+<span class="hl-site">let</span>(
+  <span class="hl-site">philosophers</span>(<span class="hl-literal">3</span>)
+  <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">10000</span>)
+) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"HALTED"</span></pre><p>
+Our implementation is based on the <a class="link" href="http://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
+concurrency.  An actor is a state machine which reacts to messages.  On
+receiving a message, an actor can send asynchronous messages to other actors,
+change its state, or create new actors.  Each actor is single-threaded and
+processes messages sequentially, which makes some concurrent programs easier to
+reason about and avoids explicit locking. <a class="link" href="http://www.erlang.org/" target="_top">Erlang</a> is one popular
+language based on the actor model.
+</p><p>
+Orc emulates the actor model very naturally.  In Orc, an actor is an Orc thread
+of execution, together with a <code class="code"><span class="hl-variable">Buffer</span></code> which serves as a mailbox.  To send a
+message to an actor, you place it in the actor's mailbox, and to receive a
+message, the actor gets the next item from the mailbox.  The internal states of
+the actor are represented by functions: while an actor's thread of execution is
+evaluating a function, it is considered to be in the corresponding state.
+Because Orc implements <a class="link" href="http://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
+state transitions can be encoded as function calls without running out of stack
+space.
+</p><p>
+In this program, a philosopher is implemented by an actor with three primary
+states: <code class="code"><span class="hl-variable">eating</span></code>, <code class="code"><span class="hl-variable">thinking</span></code>, and <code class="code"><span class="hl-variable">hungry</span></code>.
+An additional transient state, <code class="code"><span class="hl-variable">digesting</span></code>, is used to start a timer
+which will trigger the state change from <code class="code"><span class="hl-variable">thinking</span></code> to
+<code class="code"><span class="hl-variable">hungry</span></code>.  Each state is implemented by a function which reads a
+message from the mailbox, selects the appropriate action using pattern
+matching, performs the action, and finally transitions to the next state
+(possibly the same as the current state) by calling the corresponding function.
+</p><p>
+Forks are never represented explicitly.  Instead each philosopher identifies a
+fork with the "address" (sending end of a mailbox) of the neighbor who shares
+the fork.  Every message sent includes the sender's address.  Therefore when a
+philosopher receives a request for a fork, it knows who requested it and
+therefore which fork to relinquish.  Likewise when a philosopher receives a
+fork, it knows who sent it and therefore which fork was received.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11384"></a>2.3.3.&nbsp;Readers-Writers</h3></div></div></div><p>
+Here we present an Orc solution to the <a class="link" href="http://en.wikipedia.org/wiki/Readers-writers_problem" target="_top">readers-writers
+problem</a>.  Briefly, the readers-writers problem involves concurrent
+access to a mutable resource.  Multiple readers can access the resource
+concurrently, but writers must have exclusive access.  When readers and writers
+conflict, different solutions may resolve the conflict in favor of one or the
+other, or fairly.  In the following solution, when a writer tries to acquire
+the lock, current readers are allowed to finish but new readers are postponed
+until after the writer finishes.  Lock requests are granted in the order
+received, guaranteeing fairness.  Normally, such a service would be provided to
+Orc programs by a site, but it is educational to see how it can be implemented
+directly in Orc.
+</p><pre class="orc">
+<span class="hl-comment">-- Queue of lock requests</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">m</span> = <span class="hl-site">Buffer</span>()
+<span class="hl-comment">-- Count of active readers/writers</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">c</span> = <span class="hl-site">Counter</span>()
+
+<span class="hl-comment">{-- Process requests in sequence --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">process</span>() =
+  <span class="hl-comment">-- Grant read request</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">false</span>,<span class="hl-variable">s</span>)) = <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>()
+  <span class="hl-comment">-- Grant write request</span>
+  <span class="hl-keyword">def</span> <span class="hl-site">grant</span>((<span class="hl-literal">true</span>,<span class="hl-variable">s</span>)) =
+    <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">inc</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">onZero</span>()
+  <span class="hl-comment">-- Goal expression of process()</span>
+  <span class="hl-variable">m</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">r</span><span class="hl-combinator">&gt;</span> <span class="hl-site">grant</span>(<span class="hl-variable">r</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">process</span>()
+
+<span class="hl-comment">{-- Acquire the lock: argument is "true" if writing --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">acquire</span>(<span class="hl-variable">write</span>) =
+  <span class="hl-keyword">val</span> <span class="hl-variable">s</span> = <span class="hl-site">Semaphore</span>(<span class="hl-literal">0</span>)
+  <span class="hl-variable">m</span>.<span class="hl-site">put</span>((<span class="hl-variable">write</span>, <span class="hl-variable">s</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">acquire</span>()
+
+<span class="hl-comment">{-- Release the lock --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">release</span>() = <span class="hl-variable">c</span>.<span class="hl-site">dec</span>()
+
+<span class="hl-comment">-------------------------------------------------</span>
+
+<span class="hl-comment">{-- These definitions are for testing only --}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">reader</span>(<span class="hl-variable">start</span>) = <span class="hl-site">Rtimer</span>(<span class="hl-variable">start</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">acquire</span>(<span class="hl-literal">false</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END READ"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-keyword">def</span> <span class="hl-site">writer</span>(<span class="hl-variable">start</span>) = <span class="hl-site">Rtimer</span>(<span class="hl-variable">start</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">acquire</span>(<span class="hl-literal">true</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"START WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">Rtimer</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">println</span>(<span class="hl-literal">"END WRITE"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">release</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+
+<span class="hl-site">let</span>(
+    <span class="hl-site">process</span>()  <span class="hl-comment">{- Output:     -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">10</span>) <span class="hl-comment">{- START READ  -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">20</span>) <span class="hl-comment">{- START READ  -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">writer</span>(<span class="hl-literal">30</span>) <span class="hl-comment">{- START WRITE -}</span>
+               <span class="hl-comment">{- END WRITE   -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">40</span>) <span class="hl-comment">{- START READ  -}</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">reader</span>(<span class="hl-literal">50</span>) <span class="hl-comment">{- START READ  -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+               <span class="hl-comment">{- END READ    -}</span>
+  <span class="hl-comment">-- halt after the last reader finishes</span>
+  <span class="hl-combinator">|</span> <span class="hl-site">Rtimer</span>(<span class="hl-literal">60</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">acquire</span>(<span class="hl-literal">true</span>)
+)</pre><p>
+The lock receives requests over the channel <code class="code"><span class="hl-variable">m</span></code> and processes them
+sequentially with the function <code class="code"><span class="hl-variable">grant</span></code>. Each request includes a
+boolean flag which is true for write requests and false for read requests, and a
+<code class="code"><span class="hl-variable">Semaphore</span></code> which the requester blocks on.  The lock grants access
+by releasing the semaphore, unblocking the requester.
+</p><p>
+The counter <code class="code"><span class="hl-variable">c</span></code> tracks the number of readers or writers currently
+holding the lock.  Whenever the lock is granted, <code class="code"><span class="hl-variable">grant</span></code> increments
+<code class="code"><span class="hl-variable">c</span></code>, and when the lock is released, <code class="code"><span class="hl-variable">c</span></code> is decremented.
+To ensure that a writer has exclusive access, <code class="code"><span class="hl-variable">grant</span></code> waits for the
+<code class="code"><span class="hl-variable">c</span></code> to become zero before granting the lock to the writer, and then
+waits for <code class="code"><span class="hl-variable">c</span></code> to become zero again before granting any more requests.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N113B2"></a>2.3.4.&nbsp;Quicksort</h3></div></div></div><p>
+The original quicksort algorithm
+<sup>[<a href="#ftn.N113B7" name="N113B7" class="footnote">4</a>]</sup>
+was designed for efficient execution on a uniprocessor.
+Encoding it as a functional program typically ignores its efficient
+rearrangement of the elements of an array.
+Further, no known implementation highlights its concurrent aspects.
+The following program attempts to overcome these two limitations.
+The program is mostly functional in its structure, though it manipulates the
+array elements in place.
+We encode parts of the algorithm as concurrent activities where sequentiality
+is unneeded.
+</p><p>
+The following listing gives the implementation of the <code class="code"><span class="hl-variable">quicksort</span></code>
+function which sorts the array <code class="code"><span class="hl-variable">a</span></code> in place.
+The auxiliary function <code class="code"><span class="hl-variable">sort</span></code> sorts the subarray given by indices
+<code class="code"><span class="hl-variable">s</span></code> through <code class="code"><span class="hl-variable">t</span></code> by calling <code class="code"><span class="hl-variable">part</span></code> to partition
+the subarray and then recursively sorting the partitions.
+</p><pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-site">quicksort</span>(<span class="hl-variable">a</span>) =
+
+  <span class="hl-keyword">def</span> <span class="hl-site">swap</span>(<span class="hl-variable">x</span>, <span class="hl-variable">y</span>) = <span class="hl-site">a</span>(<span class="hl-variable">x</span>)<span class="hl-site">?</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">z</span><span class="hl-combinator">&gt;</span> <span class="hl-site">a</span>(<span class="hl-variable">x</span>) <span class="hl-site">:=</span> <span class="hl-site">a</span>(<span class="hl-variable">y</span>)<span class="hl-site">?</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">a</span>(<span class="hl-variable">y</span>) <span class="hl-site">:=</span> <span class="hl-variable">z</span>
+
+  <span class="hl-keyword">def</span> <span class="hl-site">part</span>(<span class="hl-variable">p</span>, <span class="hl-variable">s</span>, <span class="hl-variable">t</span>) =
+    <span class="hl-keyword">def</span> <span class="hl-site">lr</span>(<span class="hl-variable">i</span>) = <span class="hl-keyword">if</span> <span class="hl-variable">i</span> &lt; <span class="hl-variable">t</span> &amp;&amp; <span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-site">?</span> <span class="hl-site">&lt;=</span> <span class="hl-variable">p</span> <span class="hl-keyword">then</span> <span class="hl-site">lr</span>(<span class="hl-variable">i</span>+<span class="hl-literal">1</span>) <span class="hl-keyword">else</span> <span class="hl-variable">i</span>
+    <span class="hl-keyword">def</span> <span class="hl-site">rl</span>(<span class="hl-variable">i</span>) = <span class="hl-keyword">if</span> <span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-site">?</span> &gt; <span class="hl-variable">p</span> <span class="hl-keyword">then</span> <span class="hl-site">rl</span>(<span class="hl-variable">i</span>-<span class="hl-literal">1</span>) <span class="hl-keyword">else</span> <span class="hl-site">i</span>
+
+    (<span class="hl-site">lr</span>(<span class="hl-variable">s</span>), <span class="hl-site">rl</span>(<span class="hl-variable">t</span>)) <span class="hl-combinator">&gt;</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>')<span class="hl-combinator">&gt;</span>
+    ( <span class="hl-keyword">if</span> (<span class="hl-variable">s</span>' + <span class="hl-literal">1</span> &lt; <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">swap</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">part</span>(<span class="hl-variable">p</span>, <span class="hl-variable">s</span>'+<span class="hl-literal">1</span>, <span class="hl-variable">t</span>'-<span class="hl-literal">1</span>)
+    <span class="hl-combinator">|</span> <span class="hl-keyword">if</span> (<span class="hl-variable">s</span>' + <span class="hl-literal">1</span> = <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">swap</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>'
+    <span class="hl-combinator">|</span> <span class="hl-keyword">if</span> (<span class="hl-variable">s</span>' + <span class="hl-literal">1</span> &gt; <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">t</span>'
+    )
+
+  <span class="hl-keyword">def</span> <span class="hl-site">sort</span>(<span class="hl-variable">s</span>, <span class="hl-variable">t</span>) =
+     <span class="hl-keyword">if</span> <span class="hl-variable">s</span> <span class="hl-site">&gt;=</span> <span class="hl-variable">t</span> <span class="hl-keyword">then</span> <span class="hl-keyword">signal</span>
+     <span class="hl-keyword">else</span> <span class="hl-site">part</span>(<span class="hl-site">a</span>(<span class="hl-variable">s</span>)<span class="hl-site">?</span>, <span class="hl-variable">s</span>+<span class="hl-literal">1</span>, <span class="hl-variable">t</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">m</span><span class="hl-combinator">&gt;</span>
+          <span class="hl-site">swap</span>(<span class="hl-variable">m</span>, <span class="hl-variable">s</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+          (<span class="hl-site">sort</span>(<span class="hl-variable">s</span>, <span class="hl-variable">m</span>-<span class="hl-literal">1</span>), <span class="hl-site">sort</span>(<span class="hl-variable">m</span>+<span class="hl-literal">1</span>, <span class="hl-variable">t</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+          <span class="hl-keyword">signal</span>
+
+  <span class="hl-site">sort</span>(<span class="hl-literal">0</span>, <span class="hl-variable">a</span>.<span class="hl-site">length</span>()-<span class="hl-literal">1</span>)</pre><p>
+The function <code class="code"><span class="hl-variable">part</span></code> partitions the subarray given by indices
+<code class="code"><span class="hl-variable">s</span></code> through <code class="code"><span class="hl-variable">t</span></code> into two partitions, one containing values
+less than or equal to <code class="code"><span class="hl-variable">p</span></code> and the other containing values &gt; <code class="code"><span class="hl-variable">p</span></code>.  The last index of the lower partition is returned.
+The value at <code class="code"><span class="hl-site">a</span>(<span class="hl-variable">s</span>-<span class="hl-literal">1</span>)</code> is assumed to be less than or equal to <code class="code"><span class="hl-variable">p</span></code> --- this is satisfied
+by choosing <code class="code"><span class="hl-variable">p</span> = <span class="hl-site">a</span>(<span class="hl-variable">s</span>-<span class="hl-literal">1</span>)<span class="hl-site">?</span></code> initially.  To create the partitions, <code class="code"><span class="hl-variable">part</span></code>
+calls two auxiliary functions <code class="code"><span class="hl-variable">lr</span></code> and <code class="code"><span class="hl-variable">rl</span></code> concurrently.  These
+functions scan from the left and right of the subarray respectively, looking
+for out-of-place elements.  Once two such elements have been found, they are
+swapped using the auxiliary function <code class="code"><span class="hl-variable">swap</span></code>, and then the unscanned portion
+of the subarray is partitioned further.  Partitioning is complete when the
+entire subarray has been scanned.
+</p><p>
+This program uses the syntactic sugar <code class="code"><span class="hl-variable">x</span><span class="hl-site">?</span></code> for <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>
+and <code class="code"><span class="hl-variable">x</span> <span class="hl-site">:=</span> <span class="hl-variable">y</span></code> for <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">write</span>(<span class="hl-variable">y</span>)</code>.  Also note that the expression
+<code class="code"><span class="hl-site">a</span>(<span class="hl-variable">i</span>)</code> returns a reference to the element of array <code class="code"><span class="hl-variable">a</span></code> at index
+<code class="code"><span class="hl-variable">i</span></code>, counting from 0.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11411"></a>2.3.5.&nbsp;Meeting Scheduler</h3></div></div></div><p>
+Orc makes very few assumptions about the behaviors of services it uses. Therefore
+it is straightforward to write programs which interact with human agents and
+network services.  This makes Orc especially suitable for encoding
+<em class="firstterm">workflows</em>, the coordination of multiple activities
+involving multiple participants.  The following program illustrates a simple
+workflow for scheduling a business meeting.  Given a list of people and a date
+range, the program asks each person when they are available for a meeting.  It
+then combines all the responses, selects a meeting time which is acceptable to
+everyone, and notifies everyone of the selected time.
+</p><pre class="programlisting">
+<span class="hl-keyword">include</span> <span class="hl-literal">"net.inc"</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">during</span> = <span class="hl-site">Interval</span>(<span class="hl-site">LocalDate</span>(<span class="hl-literal">2009</span>, <span class="hl-literal">9</span>, <span class="hl-literal">10</span>),
+                      <span class="hl-site">LocalDate</span>(<span class="hl-literal">2009</span>, <span class="hl-literal">10</span>, <span class="hl-literal">17</span>))
+<span class="hl-keyword">val</span> <span class="hl-variable">invitees</span> = [<span class="hl-literal">"john@example.com"</span>, <span class="hl-literal">"jane@example.com"</span>]
+
+<span class="hl-keyword">def</span> <span class="hl-site">invite</span>(<span class="hl-variable">invitee</span>) =
+  <span class="hl-site">Form</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">f</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">f</span>.<span class="hl-site">addPart</span>(<span class="hl-site">DateTimeRangesField</span>(<span class="hl-literal">"times"</span>,
+    <span class="hl-literal">"When are you available for a meeting?"</span>, <span class="hl-variable">during</span>, <span class="hl-literal">9</span>, <span class="hl-literal">17</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">f</span>.<span class="hl-site">addPart</span>(<span class="hl-site">Button</span>(<span class="hl-literal">"submit"</span>, <span class="hl-literal">"Submit"</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">SendForm</span>(<span class="hl-variable">f</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">receiver</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">SendMail</span>(<span class="hl-variable">invitee</span>, <span class="hl-literal">"Meeting Request"</span>, <span class="hl-variable">receiver</span>.<span class="hl-site">getURL</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">receiver</span>.<span class="hl-site">get</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">response</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-variable">response</span>.<span class="hl-site">get</span>(<span class="hl-literal">"times"</span>)
+
+<span class="hl-keyword">def</span> <span class="hl-site">notify</span>([]) =
+  <span class="hl-site">each</span>(<span class="hl-variable">invitees</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">invitee</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">SendMail</span>(<span class="hl-variable">invitee</span>, <span class="hl-literal">"Meeting Request Failed"</span>,
+                    <span class="hl-literal">"No meeting time found."</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">notify</span>(<span class="hl-variable">first</span>:<span class="hl-variable">_</span>) =
+  <span class="hl-site">each</span>(<span class="hl-variable">invitees</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">invitee</span><span class="hl-combinator">&gt;</span>
+  <span class="hl-site">SendMail</span>(<span class="hl-variable">invitee</span>, <span class="hl-literal">"Meeting Request Succeeded"</span>,
+                    <span class="hl-variable">first</span>.<span class="hl-site">getStart</span>())
+
+<span class="hl-site">map</span>(<span class="hl-variable">invite</span>, <span class="hl-variable">invitees</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">responses</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">afold</span>(<span class="hl-keyword">lambda</span> (<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) = <span class="hl-variable">a</span>.<span class="hl-site">intersect</span>(<span class="hl-variable">b</span>), <span class="hl-variable">responses</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">times</span><span class="hl-combinator">&gt;</span>
+<span class="hl-site">notify</span>(<span class="hl-variable">times</span>)</pre><p>
+This program begins with declarations of <code class="code"><span class="hl-variable">during</span></code> (the date range for the
+proposed meeting) and <code class="code"><span class="hl-variable">invitees</span></code> (the list of people to invite represented
+by email addresses).
+</p><p>
+The <code class="code"><span class="hl-variable">invite</span></code> function obtains possible meeting times from a given invitee, as
+follows.  First it uses library sites (<code class="code"><span class="hl-variable">Form</span></code>, <code class="code"><span class="hl-variable">DateTimeRangesField</span></code>,
+<code class="code"><span class="hl-variable">Button</span></code>, and <code class="code"><span class="hl-variable">SendForm</span></code>) to construct a web form which may be used to
+submit possible meeting times.  Then it emails the URL of this form to the
+invitee and blocks waiting for a response.  When the invitee receives the
+email, he or she will use a web browser to visit the URL, complete the form,
+and submit it.  The corresponding execution of <code class="code"><span class="hl-variable">invite</span></code> receives the
+response in the variable <code class="code"><span class="hl-variable">response</span></code> and extracts the chosen meeting times.
+</p><p>
+The <code class="code"><span class="hl-variable">notify</span></code> function takes a list of possible meeting times, selects the
+first meeting time in the list, and emails everyone with this time.  If the
+list of possible meeting times is empty, it emails everyone indicating that no
+meeting time was found.
+</p><p>
+The goal expression of the program uses the library function <code class="code"><span class="hl-variable">map</span></code> to
+apply <code class="code"><span class="hl-variable">notify</span></code> to each invitee and collect the responses in a list. It
+then uses the library function <code class="code"><span class="hl-variable">afold</span></code> to intersect all of the responses.
+The result is a set of meeting times which are acceptable to everyone. Finally,
+<code class="code"><span class="hl-variable">notify</span></code> is called to select one of these times and notify everyone of the result.
+</p><p>
+This program may be extended to add more sophisticated features, such as a
+quorum (to select a meeting as soon as some subset of invitees responds) or
+timeouts (to remind invitees if they don't respond in a timely manner).  These
+modifications are local and do not affect the overall structure of the program.
+For complete details, see <a class="link" href="http://orc.csres.utexas.edu/tryorc.shtml" target="_top">examples on our website</a>.
+</p></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N112F2" name="ftn.N112F2" class="para">3</a>] </sup>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
+and fully distributed solution to the dining philosophers problem. In <span class="emphasis"><em>POPL</em></span>, pages
+133&ndash;138, 1981.</p></div><div class="footnote"><p><sup>[<a href="#N113B7" name="ftn.N113B7" class="para">4</a>] </sup>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
+Find: Algorithm 65. <span class="emphasis"><em>Communications of the ACM</em></span>,
+4(7):321&ndash;322, 1961.</p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch02s02.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch02.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">2.2.&nbsp;Programming Idioms&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</td></tr></table></div></body></html>

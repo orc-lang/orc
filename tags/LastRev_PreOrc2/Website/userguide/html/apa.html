@@ -1,0 +1,167 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="index.html" title="Orc User Guide v1.0.0"><link rel="prev" href="ch04s04.html" title="4.4.&nbsp;Syntax of Typed Orc"><link rel="next" href="apb.html" title="Appendix&nbsp;B.&nbsp;Standard Library"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch04s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="apb.html">Next</a></td></tr></table><hr></div><div class="appendix" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="N11CAC"></a>Appendix&nbsp;A.&nbsp;Complete Syntax of Orc</h2></div></div></div><p>
+
+<div class="table"><a name="full-ebnf-grammar"></a><p class="title"><b>Table&nbsp;A.1.&nbsp;Complete Syntax of Orc</b></p><div class="table-contents"><table summary="Complete Syntax of Orc" border="0" width="80%"><colgroup><col align="right"><col align="center"><col align="left"><col align="left"><col align="left"></colgroup><tbody><tr><td align="right">E</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Expression</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left">C</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>constant value</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">X</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>variable</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">stop</span></code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>silent expression</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">(</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">)</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>tuple</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">[</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">]</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>list</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E G+</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>call</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <span class="emphasis"><em>op</em></span> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>prefix operator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <span class="emphasis"><em>op</em></span> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>infix operator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&gt;</span></code>P<code class="code"><span class="hl-combinator">&gt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>sequential combinator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">|</span></code> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>parallel combinator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E<code class="code"> <span class="hl-combinator">&lt;</span></code>P<code class="code"><span class="hl-combinator">&lt;</span> </code>E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>pruning combinator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code"><span class="hl-combinator">;</span></code> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>otherwise combinator</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">lambda</span> (</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code> <code class="code">=</code> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>closure (untyped)</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">lambda</span></code>
+                                <code class="code">[</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">]</code>
+                                <code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code>
+                                <code class="code">::</code> T <code class="code">=</code> E </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>closure (typed)</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">if</span></code> E <code class="code"><span class="hl-keyword">then</span></code> E <code class="code"><span class="hl-keyword">else</span></code> E </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>conditional</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">D E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>scoped declaration</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code">::</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type ascription</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">E <code class="code">:!:</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type assertion</em></span>
+                            </td></tr><tr><td align="right">G</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Argument group</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left"> <code class="code">(</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">)</code> </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>arguments</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left"> <code class="code">[</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">]</code> <code class="code">(</code> E <code class="code">,</code> ... <code class="code">,</code> E <code class="code">)</code> </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type parameters plus arguments</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left"> <code class="code">.</code>
+                                <span class="emphasis"><em>field</em></span> </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>field access</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left"> <code class="code"><span class="hl-site">?</span></code> </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>dereference</em></span>
+                            </td></tr><tr><td align="right">C</td><td align="center">::=</td><td align="left">
+                                <span class="emphasis"><em>Boolean</em></span> | <span class="emphasis"><em>Number</em></span> | <span class="emphasis"><em>String</em></span> | <code class="code"><span class="hl-keyword">signal</span></code> | <code class="code"><span class="hl-literal">null</span></code>
+                            </td><td align="left">
+                                <span class="emphasis"><em>Constant</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">X</td><td align="center">::=</td><td align="left">
+                                <span class="emphasis"><em>identifier</em></span>
+                            </td><td align="left">
+                                <span class="emphasis"><em>Variable</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">D</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Declaration</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left">
+                                <code class="code"><span class="hl-keyword">val</span></code> P <code class="code">=</code> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>value declaration</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">site</span></code> X <code class="code">=</code> <span class="emphasis"><em>address</em></span>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>site declaration</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">class</span></code> X <code class="code">=</code> <span class="emphasis"><em>classname</em></span>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>class declaration</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">include</span></code> <code class="code"><span class="hl-literal">"</span></code> <span class="emphasis"><em>filename</em></span> <code class="code"><span class="hl-literal">"</span></code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>inclusion</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">def</span></code> X<code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code> <code class="code">=</code> E</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>function declaration</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">def</span></code> X<code class="code">[</code> X <code class="code">,</code> ... <code class="code">,</code> X <code class="code">]</code>
+                                <code class="code">(</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">)</code> <code class="code">::</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>function signature</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">type</span></code> X <code class="code">=</code> <span class="emphasis"><em>classname</em></span>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type import</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">type</span></code> X<code class="code">[</code> X <code class="code">,</code> ... <code class="code">,</code> X <code class="code">]</code> <code class="code">=</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type alias</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">type</span></code> X <code class="code">=</code> UC | ... | UC </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>datatype declaration (untyped)</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">type</span></code> X<code class="code">[</code> X <code class="code">,</code> ... <code class="code">,</code> X <code class="code">]</code> <code class="code">=</code> TC | ... | TC </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>datatype declaration (typed)</em></span>
+                            </td></tr><tr><td align="right">UC</td><td align="center">::=</td><td align="left"> X<code class="code">(<span class="hl-variable">_</span>,</code> ... <code class="code">,<span class="hl-variable">_</span>)</code> </td><td align="left">
+                                <span class="emphasis"><em>Constructor (untyped)</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">TC</td><td align="center">::=</td><td align="left"> X<code class="code">(</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">)</code>  </td><td align="left">
+                                <span class="emphasis"><em>Constructor (typed)</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">P</td><td align="center">::=</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Pattern</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left">X</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>variable</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">C</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>constant</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-variable">_</span></code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>wildcard</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">X <code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>datatype pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">(</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">)</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>tuple pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">[</code> P <code class="code">,</code> ... <code class="code">,</code> P <code class="code">]</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>list pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code">:</code> P</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>cons pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code"><span class="hl-keyword">as</span></code> X</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>as pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">=</code>X</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>equality pattern</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">P <code class="code">::</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>type ascription</em></span>
+                            </td></tr><tr><td align="right">T</td><td align="center">::=</td><td align="left">  </td><td align="left">
+                                <span class="emphasis"><em>Type</em></span>
+                            </td><td align="left">&nbsp;</td></tr><tr><td align="right">&nbsp;</td><td align="center">&nbsp;</td><td align="left">X</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Type variable</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-variable">Integer</span></code> | <code class="code"><span class="hl-variable">Boolean</span></code> | <code class="code"><span class="hl-variable">String</span></code> | <code class="code"><span class="hl-variable">Number</span></code> | <code class="code"><span class="hl-variable">Signal</span></code> | <code class="code"><span class="hl-variable">Top</span></code> | <code class="code"><span class="hl-variable">Bot</span></code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Ground type</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code">(</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">)</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Tuple type</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">
+                                <code class="code"><span class="hl-keyword">lambda</span></code> <code class="code">[</code> X <code class="code">,</code> ... <code class="code">,</code> X <code class="code">]</code> <code class="code">(</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">)</code> <code class="code">::</code> T</td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Function type</em></span>
+                            </td></tr><tr><td align="right">&nbsp;</td><td align="center">|</td><td align="left">X<code class="code">[</code> T <code class="code">,</code> ... <code class="code">,</code> T <code class="code">]</code>
+                            </td><td align="left">&nbsp;</td><td align="left">
+                                <span class="emphasis"><em>Type application</em></span>
+
+                            </td></tr></tbody></table></div></div><br class="table-break">
+</p><p>
+Where relevant, syntactic constructs are ordered by precedence, from highest to lowest. For example, among expressions, calls have higher precedence than
+any of the combinators, which in turn have higher precedence than conditionals.
+</p></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch04s04.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="apb.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">4.4.&nbsp;Syntax of Typed Orc&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Appendix&nbsp;B.&nbsp;Standard Library</td></tr></table></div></body></html>

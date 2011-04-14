@@ -1,0 +1,176 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;2.&nbsp;Programming Methodology</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.0.0"><link rel="up" href="index.html" title="Orc User Guide v1.0.0"><link rel="prev" href="ch01s04.html" title="1.4.&nbsp;Advanced Features of Orc"><link rel="next" href="ch02s02.html" title="2.2.&nbsp;Programming Idioms"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">Chapter&nbsp;2.&nbsp;Programming Methodology</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch01s04.html">Prev</a>&nbsp;</td><th align="center" width="60%">&nbsp;</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch02s02.html">Next</a></td></tr></table><hr></div><div class="chapter" lang="en"><div class="titlepage"><div><div><h2 class="title"><a name="chapter.methodology"></a>Chapter&nbsp;2.&nbsp;Programming Methodology</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="ch02.html#N10CE1">2.1. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="ch02.html#N10CE6">2.1.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="ch02.html#N10D22">2.1.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="ch02.html#style.pruning">2.1.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="ch02.html#N10DD5">2.1.4. Declarations</a></span></dt></dl></dd><dt><span class="section"><a href="ch02s02.html">2.2. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="ch02s02.html#N10E13">2.2.1. Channels</a></span></dt><dt><span class="section"><a href="ch02s02.html#N10E5A">2.2.2. Lists</a></span></dt><dt><span class="section"><a href="ch02s02.html#methodology.streams">2.2.3. Streams</a></span></dt><dt><span class="section"><a href="ch02s02.html#N10EA6">2.2.4. Mutable References</a></span></dt><dt><span class="section"><a href="ch02s02.html#N10F70">2.2.5. Loops</a></span></dt><dt><span class="section"><a href="ch02s02.html#N10F89">2.2.6. Parallel Matching</a></span></dt><dt><span class="section"><a href="ch02s02.html#N10FC6">2.2.7. Fork-join</a></span></dt><dt><span class="section"><a href="ch02s02.html#N11053">2.2.8. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="ch02s02.html#N1106E">2.2.9. Priority Poll</a></span></dt><dt><span class="section"><a href="ch02s02.html#N11091">2.2.10. Parallel Or</a></span></dt><dt><span class="section"><a href="ch02s02.html#N110CE">2.2.11. Timeout</a></span></dt><dt><span class="section"><a href="ch02s02.html#N11178">2.2.12. Priority</a></span></dt><dt><span class="section"><a href="ch02s02.html#N11188">2.2.13. Metronome</a></span></dt><dt><span class="section"><a href="ch02s02.html#N1119E">2.2.14. Routing</a></span></dt><dt><span class="section"><a href="ch02s02.html#N1124A">2.2.15. Interruption</a></span></dt><dt><span class="section"><a href="ch02s02.html#N1127C">2.2.16. Lifting</a></span></dt><dt><span class="section"><a href="ch02s02.html#N1128D">2.2.17. Fold</a></span></dt></dl></dd><dt><span class="section"><a href="ch02s03.html">2.3. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="ch02s03.html#N112ED">2.3.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="ch02s03.html#methodology.examples.hygenic">2.3.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="ch02s03.html#N11384">2.3.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="ch02s03.html#N113B2">2.3.4. Quicksort</a></span></dt><dt><span class="section"><a href="ch02s03.html#N11411">2.3.5. Meeting Scheduler</a></span></dt></dl></dd></dl></div><p>
+In <a class="link" href="ch01.html" title="Chapter&nbsp;1.&nbsp;The Orc Programming Language">Chapter 1</a>, we described the syntax and semantics of the Orc language. 
+Now, we turn our attention to how the language is used in practice, with guidelines on style and programming 
+methodology, including a number of common concurrency patterns.
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N10CE1"></a>2.1.&nbsp;Syntactic and Stylistic Conventions</h2></div></div></div><p>
+In this section we suggest some syntactic conventions for writing Orc programs. None of these 
+conventions are required by the parser; newlines are used only to disambiguate certain corner
+cases in parsing, and other whitespace is ignored. However, following programming convention 
+helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10CE6"></a>2.1.1.&nbsp;Parallel combinator</h3></div></div></div><p>
+When the combined expressions are small, write them all on one line.
+
+<pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>
+</pre>
+
+Note that we do not need parentheses here, since <code class="code"><span class="hl-combinator">|</span></code> is fully associative and commutative.
+</p><p>
+When the combined expressions are large enough to take up a full line, write one expression
+per line, with each subsequent expression aligned with the first and preceded by <code class="code"><span class="hl-combinator">|</span></code>. 
+Indent the first expression to improve readability.
+
+<pre class="programlisting">
+  <span class="bold"><strong>long expression</strong></span> 
+<span class="hl-combinator">|</span> <span class="bold"><strong>long expression</strong></span>
+<span class="hl-combinator">|</span> <span class="bold"><strong>long expression</strong></span>
+</pre>
+ 
+</p><p>
+A sequence of parallel expressions often form the left hand side of a sequential combinator. 
+Since the sequential combinator has higher precedence, use parentheses to group the
+combined parallel expressions together. 
+
+
+<pre class="programlisting">
+( <span class="bold"><strong>expression</strong></span> 
+<span class="hl-combinator">|</span> <span class="bold"><strong>expression</strong></span>
+) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> 
+<span class="bold"><strong>another expression</strong></span>
+</pre>
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10D22"></a>2.1.2.&nbsp;Sequential combinator</h3></div></div></div><p>
+When the combined expressions are small, write a cascade of sequential combinators
+all on the same line.
+</p><pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> <span class="bold"><strong>H</strong></span>
+</pre><p>
+Remember that sequential is right associative; in this example, <code class="code"><span class="hl-variable">x</span></code> is bound in both G and H, and <code class="code"><span class="hl-variable">y</span></code> is
+bound in H.
+</p><p>
+When the combined expressions are large enough to take up a full line, write one expression
+per line; each line ends with the combinator which binds the publications
+produced by that line.
+
+<pre class="programlisting">
+<span class="bold"><strong>long expression</strong></span>  <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span>  
+<span class="bold"><strong>long expression</strong></span>  <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> 
+<span class="bold"><strong>long expression</strong></span>
+</pre>
+ 
+</p><p>
+For very long-running expressions, or expressions that span multiple lines, write
+the combinators on separate lines, indented, between each expression. 
+
+<pre class="programlisting">
+<span class="bold"><strong>very long expression</strong></span> 
+  <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span>  
+<span class="bold"><strong>very long expression</strong></span> 
+  <span class="hl-combinator">&gt;</span><span class="hl-variable">y</span><span class="hl-combinator">&gt;</span> 
+<span class="bold"><strong>very long expression</strong></span>
+</pre>
+ 
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="style.pruning"></a>2.1.3.&nbsp;Pruning combinator</h3></div></div></div><p>
+When the combined expressions are small, write them on the same line:
+
+<pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="bold"><strong>G</strong></span>
+</pre>
+
+When multiple pruning combinators are used to bind multiple variables
+(especially when the scoped expression is long), start each line with a 
+combinator, aligned and indented, and continue with the expression.
+
+<pre class="programlisting">
+<span class="bold"><strong>long expression</strong></span> 
+  <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="bold"><strong>G</strong></span>
+  <span class="hl-combinator">&lt;</span><span class="hl-variable">y</span><span class="hl-combinator">&lt;</span> <span class="bold"><strong>H</strong></span>
+</pre>
+
+</p><p>
+The pruning combinator is not often written in its explicit form
+in Orc programs. Instead, the <code class="code"><span class="hl-keyword">val</span></code> declaration is often more
+convenient, since it is semantically equivalent and mentions the variable
+<code class="code"><span class="hl-variable">x</span></code> before its use in scope, rather than after.
+
+<pre class="programlisting">
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> = <span class="bold"><strong>G</strong></span>
+<span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="bold"><strong>H</strong></span>
+<span class="bold"><strong>long expression</strong></span> 
+</pre>
+
+</p><p>
+Additionally, when the variable is used in only one place, and the
+expression is small, it is often easier to use a nested expression.
+For example,
+
+<pre class="programlisting">
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> = <span class="bold"><strong>G</strong></span>
+<span class="hl-keyword">val</span> <span class="hl-variable">y</span> = <span class="bold"><strong>H</strong></span>
+<span class="hl-site">M</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
+</pre>
+
+is equivalent to
+
+<pre class="programlisting">
+<span class="hl-site">M</span>(<span class="bold"><strong>G</strong></span>,<span class="bold"><strong>H</strong></span>)
+</pre>
+
+</p><p>
+Sometimes, we use the pruning combinator simply for its capability to terminate
+expressions and get a single publication; binding a variable is irrelevant. This
+is a special case of nested expressions. We use the identity site <code class="code"><span class="hl-variable">let</span></code>
+to put the expression in the context of a function call.
+</p><p>
+For example,
+
+<pre class="programlisting">
+<span class="hl-variable">x</span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>
+</pre>
+
+is equivalent to
+
+<pre class="programlisting">
+<span class="hl-site">let</span>(<span class="bold"><strong>F</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>)
+</pre>
+</p><p>
+The translation uses a pruning combinator, but we don't need to write the combinator, 
+name an irrelevant variable, or worry about precedence (since the expression is enclosed
+in parentheses as part of the call).
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N10DD5"></a>2.1.4.&nbsp;Declarations</h3></div></div></div><p>
+Declarations should always end with a newline. 
+
+<pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-site">add</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) = <span class="hl-variable">x</span> + <span class="hl-variable">y</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">z</span> = <span class="hl-literal">7</span>
+<span class="hl-site">add</span>(<span class="hl-variable">z</span>,<span class="hl-variable">z</span>)
+</pre>
+
+While the parser does not require a newline to end a declaration, it uses the 
+newline to disambiguate certain corner cases in parsing, such as function application.
+</p><p>
+When the body of a declaration spans multiple lines, start the body on a new line
+after the <code class="code">=</code> symbol, and indent the entire body.
+
+<pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-site">f</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) =
+    <span class="bold"><strong>declaration</strong></span>
+    <span class="bold"><strong>declaration</strong></span>
+    <span class="bold"><strong>body expression</strong></span>
+</pre>
+
+</p><p>
+Apply this style recursively; if a def appears within a def, indent its contents even further.
+
+<pre class="programlisting">
+<span class="hl-keyword">def</span> <span class="hl-site">f</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) =
+    <span class="bold"><strong>declaration</strong></span>
+    <span class="hl-keyword">def</span> <span class="hl-site">helper</span>(<span class="hl-variable">z</span>) =
+    	<span class="bold"><strong>declaration in helper</strong></span>
+    	<span class="bold"><strong>declaration in helper</strong></span>
+    	<span class="bold"><strong>body of helper</strong></span>
+    <span class="bold"><strong>declaration</strong></span>
+    <span class="bold"><strong>body expression</strong></span>
+</pre>
+
+
+</p></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch01s04.html">Prev</a>&nbsp;</td><td align="center" width="20%">&nbsp;</td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch02s02.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">1.4.&nbsp;Advanced Features of Orc&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;2.2.&nbsp;Programming Idioms</td></tr></table></div></body></html>
