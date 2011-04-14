@@ -195,7 +195,6 @@ OUTPUT:PERMUTABLE
 
 		<itemizedlist>
 			<title>Related Reference Topics</title>
-			<listitem><para><link linkend="ref.syntax.lexical.tokens.numericliteral">Numeric literal</link></para></listitem>
 			<listitem><para><link linkend="ref.stdlib.core.Add"><code>+</code> operator</link></para></listitem>
 			<listitem><para><link linkend="ref.stdlib.core.Sub"><code>-</code> operator</link></para></listitem>
 			<listitem><para><link linkend="ref.stdlib.core.UMinus">unary <code>-</code> operator</link></para></listitem>

@@ -231,7 +231,7 @@ z >P> Ift(Gd) >> E
 			  The clause will <indexterm significance="preferred"><primary>clause failure</primary></indexterm><firstterm baseform="clause failure">fail</firstterm> under any of the following conditions:
 			  <orderedlist>
 			  <listitem><para>One of the parameters is a strict pattern, and that pattern fails to match.</para></listitem>
-			  <listitem><para>One of the parameters is a strict pattern, and the corresponding argument expression has halted <link linkend="ref.concepts.silence">silently</link>.</para></listitem>
+			  <listitem><para>One of the parameters is a strict pattern, and the corresponding argument expression has halted <link linkend="ref.concepts.silent">silently</link>.</para></listitem>
 			  <listitem><para>There is a guard expression, and it did not deflate to <code>true</code>.</para></listitem>
 			  </orderedlist>
 			  
