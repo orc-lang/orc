@@ -57,17 +57,23 @@ def reset() =
   running := false >> timeshown := 0
 
 def start() = -- record the clock value just before the end of this routine
- if running? 
-  then signal
-  else (running := true >> laststart := clk() )
+ if running? then 
+   signal
+ else 
+   running := true >> 
+   laststart := clk()
 
 def halt() = -- record the clock value as soon as this routine is entered
   clk() >c>
-  if running?
-  then (running := false >>
-        timeshown? + c - laststart? >v>  timeshown := v  >> 
-         v)
-  else timeshown?
+  (
+    if running? then 
+      running := false >>
+      timeshown? + c - laststart? >v>
+      timeshown := v  >> 
+      v
+    else 
+      timeshown?
+  )
 
 def isrunning() = running?
 

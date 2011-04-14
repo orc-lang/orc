@@ -60,14 +60,14 @@ def philosopher(name, mbox, missing) =
   def hungry() =
     def on(("fork", p)) =
       missing.remove(p) >>
-      if missing.isEmpty()
-      then
-        Println(name + " eating") >>
-        eating()
-      else hungry()
+      ( 
+        if missing.isEmpty() then
+          Println(name + " eating") >>
+          eating()
+        else hungry()
+      )
     def on(("request", p)) =
-      if clean.contains(p)
-      then
+      if clean.contains(p) then
         deferred.put(p) >>
         hungry()
       else
