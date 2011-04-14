@@ -38,7 +38,7 @@ import site Rclock = "orc.lib.time.Rclock"
 {--
 @site Rwait(Integer) :: Signal
 
-Return a signal after the given number of milliseconds.
+Return a <link linkend="ref.data.signal">signal</link> after the given number of milliseconds.
 
 @site Rtime() :: Integer
 
@@ -50,7 +50,7 @@ val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
 
 {--
 @def metronome(Integer) :: Signal
-Publish a signal at regular intervals, indefinitely. 
+Publish a <link linkend="ref.data.signal">signal</link> at regular intervals, indefinitely. 
 The period is given by the argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal

@@ -21,7 +21,7 @@ Web browsing, HTTP, and JSON capabilities.
 Attempts to open a browser window in whatever user context
 is available, pointing to the URL given by the string argument.
 The URL must be absolute and well-formed. If the URL is malformed
-or unreachable, the call halts silently. 
+or unreachable, the call <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>. 
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -42,7 +42,7 @@ Publishes an HTTP site which accepts HTTP requests on the given URL.
 
 Performs a GET request on the URL used to create this HTTP site. 
 The payload is empty. 
-The response is published as a single string.
+The response is published as a single <link linkend="ref.data.string">string</link>.
 
 @method http.post(String) :: String
 
@@ -62,7 +62,7 @@ Converts the given string to a URL U and then behaves as HTTP(U).
 
 @site HTTP(String, {..}) :: HTTP
 
-Takes a string S and a query record Q. Maps Q to a URL query string QS by translating each record binding to a query pair, escaping characters
+Takes a string S and a query <link linkend="ref.data.record">record</link> Q. Maps Q to a URL query string QS by translating each record binding to a query pair, escaping characters
 if necessary, and then behaves as HTTP(S+QS).
 
 --} 
@@ -74,8 +74,8 @@ import site HTTP = "orc.lib.web.HTTP"
 Parses a string representation of a JSON value, producing an Orc representation of that JSON value. 
 
 An Orc representation of a JSON value, called an OrcJSON value, 
-is either a record of OrcJSON values (representing a JSON object), 
-a list of OrcJSON values (representing a JSON array), 
+is either a <link linkend="ref.data.record">record</link> of OrcJSON values (representing a JSON object), 
+a <link linkend="ref.data.list">list</link> of OrcJSON values (representing a JSON array), 
 or a literal value (representing a JSON primitive value).
 
 ReadJSON and WriteJSON are mutual inverses. 
@@ -90,8 +90,8 @@ import site ReadJSON = "orc.lib.web.ReadJSON"
 Serializes an Orc representation of a JSON value, producing a string representation of that JSON value. 
 
 An Orc representation of a JSON value, called an OrcJSON value, 
-is either a record of OrcJSON values (representing a JSON object), 
-a list of OrcJSON values (representing a JSON array), 
+is either a <link linkend="ref.data.record">record</link> of OrcJSON values (representing a JSON object), 
+a <link linkend="ref.data.list">list</link> of OrcJSON values (representing a JSON array), 
 or a literal value (representing a JSON primitive value).
 
 WriteJSON and ReadJSON are mutual inverses. 

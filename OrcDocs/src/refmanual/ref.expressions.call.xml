@@ -71,7 +71,7 @@
 	  </para>
 	  
 	  <para>
-	    If a record without an <code>apply</code> member is called, the call halts <link linkend="ref.concepts.silence">silently</link>.
+	    If a record without an <code>apply</code> member is called, the call halts <link linkend="ref.concepts.silent">silently</link>.
 	  </para>
 
 	  </section>

@@ -78,7 +78,7 @@ true
 		  <title>Related Links</title>
 		<itemizedlist>
 			<title>Related Reference Topics</title>
-			<listitem><para><link linkend="ref.combinators.sequential.behavior">Sequential Combinator, <code><![CDATA[ >> ]]></code> Form</link></para></listitem>
+			<listitem><para><link linkend="ref.combinators.sequential">Sequential Combinator, <code><![CDATA[ >> ]]></code> Form</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>

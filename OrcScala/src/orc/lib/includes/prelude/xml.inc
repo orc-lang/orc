@@ -21,7 +21,7 @@ import type XML = "orc.lib.xml.XMLType"
 {--
 @site ReadXML(String) :: XML  
 
-Parses a string representation of XML into a structured form
+Parses a <link linkend="ref.data.string">string</link> representation of XML into a structured form
 that Orc can manipulate.
 --}
 import site ReadXML = "orc.lib.xml.ReadXML"
@@ -29,7 +29,7 @@ import site ReadXML = "orc.lib.xml.ReadXML"
 {--
 @site WriteXML(XML) :: String
 
-Serializes Orc's representation of XML to a string.
+Serializes Orc's representation of XML to a <link linkend="ref.data.string">string</link>.
 --}
 import site WriteXML = "orc.lib.xml.WriteXML"
 
@@ -38,7 +38,7 @@ import site WriteXML = "orc.lib.xml.WriteXML"
 
 Creates an XML element node with the given tag, attributes,
 and children. 
-This site may also be used for matching.
+This site may also be used for <link linkend="ref.patterns.call">matching</link>.
 --}
 import site XMLElement = "orc.lib.xml.XMLElementSite"
 
@@ -47,7 +47,7 @@ import site XMLElement = "orc.lib.xml.XMLElementSite"
 
 Creates an XML text node with the given contents. 
 Encoding may occur.
-This site may also be used for matching.
+This site may also be used for <link linkend="ref.patterns.call">matching</link>.
 --}
 import site XMLText = "orc.lib.xml.XMLTextSite"
 
@@ -56,7 +56,7 @@ import site XMLText = "orc.lib.xml.XMLTextSite"
 
 Creates an XML text node with the given contents.
 Contents will not be encoded.
-This site may also be used for matching.
+This site may also be used for <link linkend="ref.patterns.call">matching</link>.
 --}
 import site XMLCData = "orc.lib.xml.XMLCDataSite"
 
@@ -64,7 +64,7 @@ import site XMLCData = "orc.lib.xml.XMLCDataSite"
 @site IsXML(Top) :: XML
 
 Acts as the identity function for any XML node,
-and halts silently for any non-XML argument.
+and <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> for any non-XML argument.
 --}
 import site IsXML = "orc.lib.xml.IsXMLSite"
 
@@ -74,9 +74,9 @@ import site IsXML = "orc.lib.xml.IsXMLSite"
 
 Creates an XML element with the given tag and children,
 and no attributes.
-May also be used for matching. When matching, the second
+May also be used for <link linkend="ref.patterns.call">matching</link>. When matching, the second
 argument is a multimatch on each child, rather than a
-match on the list of children.
+match on the <link linkend="ref.data.list">list</link> of children.
 
 @implementation
 --}
@@ -100,9 +100,9 @@ val xml =
 @def xattr(XML, {. .}) :: XML
 
 Creates a copy of the XML element, adding new
-attributes as given by the record argument.
+attributes as given by the <link linkend="ref.data.record">record</link> argument.
 If there is a conflict, the new attributes override the old ones.
-May also be used for matching.
+May also be used for <link linkend="ref.patterns.call">matching</link>.
 
 @implementation
 --}  

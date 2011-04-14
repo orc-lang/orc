@@ -15,13 +15,13 @@
 General-purpose supplemental data structures.
 --}
 
--- Make the List type constructor available
+-- Make the <link linkend="ref.data.list.type">List</link> type constructor available
 import type List = "orc.lib.builtin.structured.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
 An optional value which is available.
-This site may also be used in a pattern.
+This site may also be used in a <link linkend="ref.patterns.call">pattern</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -33,7 +33,7 @@ Some((3,4)) >s> (
 
 @site None[A]() :: Option[A]
 An optional value which is not available.
-This site may also be used in a pattern.
+This site may also be used in a <link linkend="ref.patterns.call">pattern</link>.
 
 --}
 import type Option = "orc.lib.builtin.structured.OptionType"
@@ -106,7 +106,7 @@ Read the value of the ref. If the ref does not yet have a value, <link linkend="
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method ref[A].write(A) :: Signal
-Write a value to the ref, then publish a <link linkend="ref.data.signal"><code>signal</code></link>.
+Write a value to the ref, then return a <link linkend="ref.data.signal"><code>signal</code></link>.
 
 --}
 import site Ref = "orc.lib.state.Ref"
@@ -134,7 +134,7 @@ def (:=)(r,v) = r.write(v)
 
 {--
 @def swap[A](Ref[A], Ref[A]) :: Signal
-Swap the values in two references, then return a signal.
+Swap the values in two references, then return a <link linkend="ref.data.signal">signal</link>.
 
 @implementation
 --}
@@ -164,7 +164,7 @@ lock.release()]]></programlisting>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a <link linkend="ref.data.signal">signal</link>.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
 
 @method semaphore.acquireD() :: Signal
@@ -173,7 +173,7 @@ If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.b
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a <link linkend="ref.data.signal">signal</link>.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @method semaphore.release() :: Signal
@@ -193,7 +193,7 @@ increment the value beyond that with which the semaphore was constructed.
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a <link linkend="ref.data.signal">signal</link>.
 Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
 
 @method semaphore.snoopD() :: Signal
@@ -202,7 +202,7 @@ Otherwise, <link linkend="ref.concepts.states.block">block</link> until some cal
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a signal.
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a <link linkend="ref.data.signal">signal</link>.
 Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
 import site Semaphore = "orc.lib.state.Semaphore"
@@ -265,7 +265,7 @@ This has the effect of immediately causing any <link linkend="ref.concepts.state
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-When the channel is empty, return a signal.
+When the channel is empty, return a <link linkend="ref.data.signal">signal</link>.
 
 @method channel[A].closeD() :: Signal
 
@@ -274,7 +274,7 @@ When the channel is empty, return a signal.
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-Close the channel and return a signal immediately.
+Close the channel and return a <link linkend="ref.data.signal">signal</link> immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
@@ -295,7 +295,7 @@ If the channel is currently closed, return true, otherwise return false.
 </od:sitepropset>
 
 Get all of the items currently in the channel, emptying the channel and returning
-a list of the items in the order they were added. If there are no items in the
+a <link linkend="ref.data.list">list</link> of the items in the order they were added. If there are no items in the
 channel, return an empty list.
 --}
 import site Channel = "orc.lib.state.Channel"
@@ -382,7 +382,7 @@ initiated prior to closing the channel may still be allowed to return as usual.
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-Close the channel and return a signal immediately.
+Close the channel and return a <link linkend="ref.data.signal">signal</link> immediately.
 This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
@@ -423,7 +423,7 @@ Return the total number of slots (open or filled) in the channel.
 </od:sitepropset>
 
 Get all of the items currently in the channel or waiting to be added, emptying
-the channel and returning a list of the items in the order they were added. If
+the channel and returning a <link linkend="ref.data.list">list</link> of the items in the order they were added. If
 there are no items in the channel or waiting to be added, return an empty list.
 --}
 import site BoundedChannel = "orc.lib.state.BoundedChannel"
@@ -538,7 +538,7 @@ Increment the counter.
 </od:sitepropset>
 
 If the counter is already at zero, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
-the counter and return a signal.
+the counter and return a <link linkend="ref.data.signal">signal</link>.
 
 @method counter.onZero() :: Signal
 
@@ -546,7 +546,7 @@ the counter and return a signal.
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-If the counter is at zero, return a signal. Otherwise,
+If the counter is at zero, return a <link linkend="ref.data.signal">signal</link>. Otherwise,
 <link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
 
 @method counter.value() :: Integer
@@ -569,11 +569,11 @@ import type Counter = "orc.lib.state.types.CounterType"
 {--
 @site Dictionary() :: Dictionary
 Create a new dictionary (a mutable map from field names to values), initially
-empty.  The first time each field of the dictionary is accessed (using dot
-notation), the dictionary creates and returns a new empty 
+empty.  The first time a field of the dictionary is accessed (using a <link linkend="ref.expressions.dot">dot access</link>), 
+the dictionary creates and returns a new empty 
 <link linkend="ref.stdlib.state.Ref">Ref</link> which will also be returned on
-subsequent accesses of the same field.  Dictionaries allow you to easily create
-object-like data structures.
+subsequent accesses of the same field. A dictionary differs from a record in that
+it is both mutable and dynamically extensible.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -598,7 +598,7 @@ val d = Dictionary()
   d.two := 2 >>
   stop]]></programlisting>
 
-To create a multi-level dictionary, you must explicitly create sub-dictionaries
+To create a multi-level dictionary, one must explicitly create sub-dictionaries
 for each field. For example:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 2
@@ -608,10 +608,10 @@ d.one?.two := 2 >>
 Println(d.one?.two?) >>
 stop]]></programlisting>
 
-Note that you cannot write <code>d.one.two</code>: because <code>d.one</code>
-is a reference to a dictionary, and not simply a dictionary, you must
-dereference before accessing its fields, as in <code>d.one? >x> x.two</code>.
-For readers familiar with the C language, this is the same reason you must
+Note that <code>d.one.two</code> is not valid: because <code>d.one</code>
+is a reference to a dictionary, and not simply a dictionary, a dereference
+step is needed before accessing a field, as in <code>d.one? >x> x.two</code>.
+For readers familiar with the C language, this is the same reason one must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
@@ -619,7 +619,7 @@ import site Dictionary = "orc.lib.state.Dictionary"
 
 {--
 @def fst[A,B]((A,B)) :: A
-Return the first element of a pair.
+Return the first element of a <link linkend="ref.data.tuple">pair</link>.
 
 @implementation
 --}
@@ -628,7 +628,7 @@ def fst((x,_)) = x
 
 {--
 @def snd[A,B]((A,B)) :: B
-Return the second element of a pair.
+Return the second element of a <link linkend="ref.data.tuple">pair</link>.
 
 @implementation
 --}

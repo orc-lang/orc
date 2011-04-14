@@ -60,7 +60,7 @@
 		<code>Bot</code> is the empty type. 
 		No value has type <code>Bot</code>. 
 		<code>Bot</code> is a subtype of every type.
-		An expression has type <code>Bot</code> only if it is <link linkend="ref.concepts.silence">silent</link>. 
+		An expression has type <code>Bot</code> only if it is <link linkend="ref.concepts.silent">silent</link>. 
 		</para>
 		
 		<para>

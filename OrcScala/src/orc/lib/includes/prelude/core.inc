@@ -42,14 +42,14 @@ import type Signal = "orc.types.SignalType"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-When applied to no arguments, returns a signal.
+When called with no arguments, returns a <link linkend="ref.data.signal">signal</link>.
 
 
 @site Let(A) :: A
-When applied to a single argument, returns that argument (behaving as the identity function).
+When called with a single argument, returns that argument (behaving as the identity function).
 
 @site Let(A, ...) :: (A, ...)
-When applied to two or more arguments, returns the arguments as a <link linkend="ref.data.tuple">tuple</link>.
+When called with two or more arguments, returns the arguments as a <link linkend="ref.data.tuple">tuple</link>.
 --}
 import site Let = "orc.lib.builtin.Let"
 
@@ -61,7 +61,7 @@ import site Let = "orc.lib.builtin.Let"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-Returns a signal if the argument is true, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
+Returns a <link linkend="ref.data.signal">signal</link> if the argument is true, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -80,7 +80,7 @@ import site Ift = "orc.lib.builtin.Ift"
    <od:siteprop propname="pure"/>
 </od:sitepropset>
 
-Returns a signal if the argument is false, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
+Returns a <link linkend="ref.data.signal">signal</link> if the argument is false, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -99,7 +99,7 @@ import site Iff = "orc.lib.builtin.Iff"
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 
-Emits the provided error message, then <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Emits the given string as an error message, then <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
@@ -127,7 +127,7 @@ import site (-) = "orc.lib.math.Sub"
 @site (0-)(Number) :: Number
 Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
-zero, i.e. <code>(-a)</code>
+zero, i.e. <code>-a</code>
 --}
 import site (0-) = "orc.lib.math.UMinus"
 
@@ -242,7 +242,7 @@ import site (||) = "orc.lib.bool.Or"
 {--
 @site (:)[A](A, List[A]) :: List[A]
 
-The list <code>a:b</code> is formed by prepending the element <code>a</code> to
+The <link linkend="ref.data.list">list</link> <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.
 
 Example:
@@ -254,7 +254,7 @@ import site (:) = "orc.lib.builtin.structured.ConsConstructor"
 
 {--
 @def abs(Number) :: Number
-Return the absolute value of the argument.
+Publishes the absolute value of the argument.
 
 @implementation
 --}
@@ -263,7 +263,7 @@ def abs(x) = if x <: 0 then -x else x
 
 {--
 @def signum(Number) :: Number
-<code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
+<code>signum(a)</code> publishes <code>-1</code> if <code>a&lt;0</code>,
 <code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.
 
 @implementation
@@ -276,8 +276,8 @@ def signum(x) =
 
 {--
 @def min[A](A,A) :: A
-Return the lesser of the arguments. If the arguments
-are equal, return the first argument.
+Publishes the lesser of the arguments. If the arguments
+are equal, publishes the first argument.
 
 @implementation
 --}
@@ -286,8 +286,8 @@ def min(x,y) = if y <: x then y else x
 
 {--
 @def max[A](A,A) :: A
-Return the greater of the arguments. If the arguments
-are equal, return the second argument.
+Publishes the greater of the arguments. If the arguments
+are equal, publishes the second argument.
 
 @implementation
 --}
@@ -311,7 +311,7 @@ import site Ceil = "orc.lib.math.Ceil"
 
 {--
 @def sqrt(Number) :: Integer
-Return the square root of this number.
+Publish the square root of this number.
 If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 @implementation

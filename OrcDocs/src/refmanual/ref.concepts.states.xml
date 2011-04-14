@@ -54,7 +54,7 @@
 		arguments will never be bound because the expression that computes its
 		value has halted or has been killed. A ready call becomes externally blocked once
 		the call is made. A blocked call transitions to halted if it receives a
-		response or if the called site can <link linkend="ref.concepnts.helpful">determine that it will never
+		response or if the called site can <link linkend="ref.concepts.helpful">determine that it will never
 		respond</link>; a blocked call may remain blocked forever if the called site
 		can not determine if if it will ever respond. Note that a halted call
 		stays halted unless it is killed.

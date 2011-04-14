@@ -99,7 +99,7 @@ including Web services.
 </para>
 
 <para>
-The library sites <link linkend="ref.stdlib.xml.ReadXML"><code>ReadXML</code></link> and <link linkend="ref.stdlib.xmlWriteXML"><code>WriteXML</code></link> convert between string representations of XML
+The library sites <link linkend="ref.stdlib.xml.ReadXML"><code>ReadXML</code></link> and <link linkend="ref.stdlib.xml.WriteXML"><code>WriteXML</code></link> convert between string representations of XML
 values and Orc representations of those values. <code>ReadXML</code> parses a string representation of XML
 and creates an Orc representation, which can be manipulated by Orc's XML library sites. <code>WriteXML</code> 
 performs the inverse operation, taking an Orc representation of XML and serializing it to a string.

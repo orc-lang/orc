@@ -121,7 +121,7 @@ def compose(f,g) = lambda(x) = f(g(x))
 {--
 @def while[A](lambda (A) :: Boolean, lambda (A) :: A) :: lambda(A) :: A
 
-Iterate a function while a predicate is satisfied, publishing
+Iterate a function while a predicate is satisfied, <link linkend="ref.concepts.publish">publishing</link>
 each value passed to the function.
 
 Example:
@@ -142,7 +142,7 @@ def while(p,f) =
 
 {--
 @def repeat[A](lambda () :: A) :: A
-Call a function sequentially, publishing each value returned by the function.
+Call a function sequentially, <link linkend="ref.concepts.publish">publishing</link> each value returned by the function.
 The expression <code>repeat(f)</code> is equivalent to
 the infinite expression <code>f() >x> ( x | f() >x> ( x | f() >x> ... ) )</code>
 
@@ -153,7 +153,7 @@ def repeat(f) = f() >x> (x | repeat(f))
 
 {--
 @def fork[A](List[lambda () :: A]) :: A
-Call a list of functions in parallel, publishing
+Call a list of functions in parallel, <link linkend="ref.concepts.publish">publishing</link>
 all values published by the functions.
 
 The expression <code>fork([f,g,h])</code> is equivalent to
@@ -167,7 +167,7 @@ def fork(p:ps) = p() | fork(ps)
 
 {--
 @def forkMap[A,B](lambda (A) :: B, List[A]) :: B
-Apply a function to a list in parallel, publishing all values published
+Apply a function to a list in parallel, <link linkend="ref.concepts.publish">publishing</link> all values published
 by the applications.
 
 The expression <code>forkMap(f, [a,b,c])</code> is equivalent to
@@ -181,8 +181,8 @@ def forkMap(f, x:xs) = f(x) | forkMap(f, xs)
 
 {--
 @def seq[A](List[lambda () :: A]) :: Signal
-Call a list of functions in sequence, publishing
-a signal whenever the last function publishes. The
+Call a list of functions in sequence, <link linkend="ref.concepts.publish">publishing</link>
+a <link linkend="ref.data.signal">signal</link> whenever the last function publishes. The
 actual publications of the given functions are not
 published.
 
@@ -197,10 +197,10 @@ def seq(p:ps) = p() >> seq(ps)
 
 {--
 @def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
-Apply a function to a list in sequence, publishing
-a signal whenever the last application publishes. The
+Apply a function to a list in sequence, <link linkend="ref.concepts.publish">publishing</link>
+a <link linkend="ref.data.signal">signal</link> whenever the last application publishes. The
 actual publications of the given functions are not
-published.
+<link linkend="ref.concepts.publish">published</link>.
 
 The expression <code>seqMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
@@ -213,8 +213,8 @@ def seqMap(f, x:xs) = f(x) >> seqMap(f, xs)
  
 {--
 @def join[A](List[lambda () :: A]) :: Signal
-Call a list of functions in parallel and publish
-a signal once all functions have completed.
+Call a list of functions in parallel and <link linkend="ref.concepts.publish">publish</link>
+a <link linkend="ref.data.signal">signal</link> once all functions have completed.
 
 The expression <code>join([f,g,h])</code> is equivalent to
 the expression <code>(f(), g(), h()) >> signal</code>
@@ -227,8 +227,8 @@ def join(p:ps) = (p(), join(ps)) >> signal
  
 {--
 @def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
-Apply a function to a list in parallel and publish
-a signal once all applications have completed.
+Apply a function to a list in parallel and <link linkend="ref.concepts.publish">publish</link>
+a <link linkend="ref.data.signal">signal</link> once all applications have completed.
 
 The expression <code>joinMap(f, [a,b,c])</code> is equivalent to
 the expression <code>(f(a), f(b), f(c)) >> signal</code>
@@ -241,7 +241,7 @@ def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
 
 {--
 @def alt[A](List[lambda () :: A]) :: A
-Call each function in the list until one publishes.
+Call each function in the list until one of them <link linkend="ref.concepts.publish">publishes</link>.
 
 The expression <code>alt([f,g,h])</code> is equivalent to
 the expression <code>f() ; g() ; h()</code>
@@ -254,7 +254,7 @@ def alt(p:ps) = p() ; alt(ps)
 
 {--
 @def altMap[A,B](lambda (A) :: B, List[A]) :: B
-Apply the function to each element in the list until one publishes.
+Apply the function to each element in the list until one <link linkend="ref.concepts.publish">publishes</link>.
 
 The expression <code>altMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) ; f(b) ; f(c)</code>
@@ -267,7 +267,7 @@ def altMap(f, x:xs) = f(x) ; altMap(f, xs)
 
 {--
 @def por(List[lambda () :: Boolean]) :: Boolean
-Parallel or. Execute a list of boolean functions in parallel, publishing
+Parallel or. Execute a list of boolean functions in parallel, <link linkend="ref.concepts.publish">publishing</link>
 a value as soon as possible, and <link linkend="ref.concepts.states.kill">killing</link> any unnecessary ongoing
 computation.
 
@@ -284,7 +284,7 @@ def por(p:ps) =
   
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
-Parallel and. Execute a list of boolean functions in parallel, publishing
+Parallel and. Execute a list of boolean functions in parallel, <link linkend="ref.concepts.publish">publishing</link>
 a value as soon as possible, and <link linkend="ref.concepts.states.kill">killing</link> any unnecessary ongoing
 computation.
 
@@ -302,7 +302,7 @@ def pand(p:ps) =
 {--
 @def collect[A](lambda () :: A) :: List[A]
 Run a function, collecting all publications in a list.
-Return the list when the function <link linkend="ref.concepts.states.halt">halts</link>.
+<link linkend="ref.concepts.publish">Publish</link> the list when the function <link linkend="ref.concepts.states.halt">halts</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[

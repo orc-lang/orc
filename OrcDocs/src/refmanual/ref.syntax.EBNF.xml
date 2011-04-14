@@ -586,7 +586,6 @@
 		<itemizedlist>
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.syntax.lexical">Lexical Specifications</link></para></listitem>
-			<listitem><para><link linkend="ref.syntax.keywords">Keywords</link></para></listitem>
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>

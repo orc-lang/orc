@@ -89,7 +89,7 @@
 				<section xml:id="ref.syntax.lexical.tokens.literals">
 					<title>Literals</title>
 					<para>
-						<link linkend="ref.data.numeric.syntax">Numeric literals</link> and <link linkend="ref.data.string">character string literals</link> are
+						<link linkend="ref.data.numeric.literals.syntax">Numeric literals</link> and <link linkend="ref.data.string.literals.syntax">character string literals</link> are
 						recognized per the syntax given in those sections.
 					</para>
 				</section>

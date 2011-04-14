@@ -17,11 +17,11 @@ Miscellaneous utility functions.
 
 {--
 @site Random() :: Integer
-Return a random Integer value
-chosen from the range of all possible 32-bit Integer values.
+Return a random <link linkend="ref.data.numeric">integer</link>
+chosen from the range of all possible 32-bit integers.
 
 @site Random(Integer) :: Integer
-Return a pseudorandom, uniformly distributed Integer value
+Return a pseudorandom, uniformly distributed <link linkend="ref.data.numeric">integer</link>
 between 0 (inclusive) and the specified value (exclusive).
 If the argument is 0, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
@@ -29,14 +29,14 @@ import site Random = "orc.lib.util.Random"
 
 {--
 @site URandom() :: Number
-Returns a pseudorandom, uniformly distributed Double value
+Return a pseudorandom, uniformly distributed <link linkend="ref.data.numeric">number</link>
 between 0.0 (inclusive) and 1.0 (exclusive).
 --}
 import site URandom = "orc.lib.util.URandom"
 
 {--
 @site UUID() :: String
-Return a random (type 4) UUID represented as a string.
+Return a random (type 4) UUID represented as a <link linkend="ref.data.string">string</link>.
 --}
 import site UUID = "orc.lib.util.UUID"
 
@@ -59,7 +59,7 @@ Prompt("What is your name?")]]></programlisting>
 The user response is always taken to be a string. Thus, integer 
 3 as a response will be treated as "3". To convert the response 
 to its appropriate data type, use the library function
-<code>read</code>:
+<link linkend="ref.stdlib.text.Read"><code>Read</code></link>:
 
 <programlisting language="orc-demo"><![CDATA[
 -- Prompts the user to enter an integer, then parses the response.
@@ -69,7 +69,7 @@ import site Prompt = "orc.lib.util.Prompt"
 
 {--
 @def signals(Integer) :: Signal
-Publish the given number of signals, simultaneously.
+<link linkend="ref.concepts.publish">Publish</link> the given number of <link linkend="ref.data.signal">signals</link>, simultaneously.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -83,7 +83,7 @@ def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
 
 {--
 @def for(Integer, Integer) :: Integer
-Publish all values in the given half-open range, simultaneously.
+<link linkend="ref.concepts.publish">Publish</link> all values in the given half-open range, simultaneously.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -99,7 +99,7 @@ def for(low, high) =
 
 {--
 @def upto(Integer) :: Integer
-<code>upto(n)</code> publishes all values in the range <code>(0..n-1)</code>
+<code>upto(n)</code> <link linkend="ref.concepts.publish">publishes</link> all values in the range <code>(0..n-1)</code>
 simultaneously.
 
 Example:
@@ -123,14 +123,14 @@ Converts a Java object implementing the Iterable interface
 into an Orc stream backed by the object's iterator. 
 When the site is called, if the iterator has items remaining,
 the next item is returned. If the iterator has no items
-remaining, the call halts.
+remaining, the call <link linkend="ref.concepts.states.halt">halts</link>.
 --}
 import site IterableToStream = "orc.lib.util.IterableToStream"
 
 {--
 @def iterableToList[A](Iterable[A]) :: List[A]
 Given a Java object implementing the Iterable interface, 
-create an Orc list whose elements are the values produced by
+create an Orc <link linkend="ref.data.list">list</link> whose elements are the values produced by
 the object's iterator, in the same order. 
 
 @implementation
@@ -145,7 +145,7 @@ def iterableToList(iterable) =
 
 {--
 @def arrayToList[A](Array[A]) :: List[A]
-Given an array, create an Orc list whose elements are exactly
+Given an array, create an Orc <link linkend="ref.data.list">list</link> whose elements are exactly
 the contents of the array, in the same order. 
 
 @implementation
@@ -160,7 +160,7 @@ def arrayToList(a) =
 {--
 @def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
-by calling the function for each index in the array. Return the array
+by calling the function for each index in the array. <link linkend="ref.concepts.publish">Publish</link> the array
 once it has been populated.
 
 For example, to set all elements of an array to zero:
@@ -204,7 +204,7 @@ def sliceArray(orig, from, until) =
 {--
 @def takePubs[A](Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
-publishes the first <code>n</code> values published
+<link linkend="ref.concepts.publish">publishes</link> the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
 <link linkend="ref.concepts.states.halt">halts</link>.
 
@@ -223,7 +223,7 @@ def takePubs(n, f) =
 
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
-Acquire the semaphore and run a thunk which is expected to publish
+Acquire the semaphore and run a thunk which is expected to <link linkend="ref.concepts.publish">publish</link>
 no more than one value. Publishes the value published by the
 thunk and releases the semaphore.
 
