@@ -66,6 +66,7 @@ public class OrcTextHover implements ITextHover, ITextHoverExtension, IModelList
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.text.ITextHover#getHoverInfo(org.eclipse.jface.text.ITextViewer, org.eclipse.jface.text.IRegion)
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public String getHoverInfo(final ITextViewer textViewer, final IRegion hoverRegion) {
 		try {

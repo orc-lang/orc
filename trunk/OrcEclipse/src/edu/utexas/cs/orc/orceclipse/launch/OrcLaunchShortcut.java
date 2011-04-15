@@ -106,6 +106,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @param mode Launch mode
 	 * @return The chosen Orc launch configuration
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected ILaunchConfiguration findLaunchConfiguration(final IFile file, final String mode) {
 		List candidateConfigs = Collections.EMPTY_LIST;
 		try {
@@ -131,6 +132,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @param configList List of launch configs to show the user
 	 * @return User's chosen launch config
 	 */
+	@SuppressWarnings("rawtypes")
 	protected ILaunchConfiguration chooseConfiguration(final List configList) {
 		final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
 		final ElementListSelectionDialog dialog = new ElementListSelectionDialog(Display.getCurrent().getActiveShell(), labelProvider);

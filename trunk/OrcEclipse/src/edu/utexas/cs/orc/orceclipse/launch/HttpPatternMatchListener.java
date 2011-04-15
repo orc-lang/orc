@@ -66,6 +66,7 @@ public class HttpPatternMatchListener implements IPatternMatchListenerDelegate {
 			final IHyperlink link = new HttpHyperLink(observedConsole, uriText);
 			observedConsole.addHyperlink(link, offset, length);
 		} catch (final BadLocationException e) {
+			/* Discard */
 		}
 	}
 

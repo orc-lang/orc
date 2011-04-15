@@ -90,7 +90,9 @@ public class OrcPosPatternMatchListener implements IPatternMatchListenerDelegate
 			final IHyperlink link = new FileLink(file, null, -1, -1, lineNum);
 			observedConsole.addHyperlink(link, offset, length - 1);
 		} catch (final BadLocationException e) {
+			/* Discard */
 		} catch (final NumberFormatException e) {
+			/* Discard */
 		}
 	}
 

@@ -68,6 +68,7 @@ public class OrcWikiHyperLink implements IHyperlink {
 	 */
 	@Override
 	public void linkEntered() {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)
@@ -75,6 +76,7 @@ public class OrcWikiHyperLink implements IHyperlink {
 	 */
 	@Override
 	public void linkExited() {
+		/* Nothing to do */
 	}
 
 }

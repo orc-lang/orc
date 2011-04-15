@@ -170,6 +170,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * 
 	 * @see org.eclipse.imp.parser.IParseController#getTokenIterator(org.eclipse.jface.text.IRegion)
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Iterator getTokenIterator(final IRegion region) {
 		// Will throw a NullPointerException if called before parsing
@@ -231,6 +232,7 @@ public class OrcParseController extends ParseControllerBase {
 		final OrcStringInputContext ic = new OrcStringInputContext(contents);
 
 		final orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
+			@Override
 			public OrcInputContext openInclude(final String includeName, final OrcInputContext orcinputcontext, final OrcCompilationOptions orcoptions) {
 				return new OrcStringInputContext("") { //$NON-NLS-1$
 					@Override
@@ -240,6 +242,8 @@ public class OrcParseController extends ParseControllerBase {
 				};
 			}
 
+			@Override
+			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public Class loadClass(final String s) {
 				return null;
 			}

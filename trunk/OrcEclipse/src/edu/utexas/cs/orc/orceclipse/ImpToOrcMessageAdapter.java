@@ -65,6 +65,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, orc.AST, java.lang.Throwable)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode, final Throwable exception) {
 		Position locationNN = position;
 		if (locationNN == null) {
@@ -107,6 +108,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 	/* (non-Javadoc)
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String, scala.util.parsing.input.Position, orc.AST)
 	 */
+	@Override
 	public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode) {
 		recordMessage(severity, code, message, position, astNode, null);
 	}

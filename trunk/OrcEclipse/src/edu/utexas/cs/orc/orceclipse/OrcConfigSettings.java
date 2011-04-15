@@ -145,6 +145,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 	 * @param launchConfig
 	 * @throws CoreException 
 	 */
+	@SuppressWarnings("unchecked")
 	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException {
 
 		logLevel_$eq(launchConfig.getAttribute(LOG_LEVEL_ATTR_NAME, logLevel()));
