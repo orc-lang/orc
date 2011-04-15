@@ -66,6 +66,7 @@ public class OrcWikiPatternMatchListener implements IPatternMatchListenerDelegat
 			final IHyperlink link = new OrcWikiHyperLink(observedConsole, pageName);
 			observedConsole.addHyperlink(link, offset + 2, length - 4);
 		} catch (final BadLocationException e) {
+			/* Discard */
 		}
 	}
 

@@ -218,6 +218,7 @@ public class OrcLabelProvider implements ILabelProvider {
 	 */
 	@Override
 	public void dispose() {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)

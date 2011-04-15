@@ -43,6 +43,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 	 * @param parseController ParseController for these AST node instances
 	 */
 	public OrcSourcePositionLocator(final IParseController parseController) {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)

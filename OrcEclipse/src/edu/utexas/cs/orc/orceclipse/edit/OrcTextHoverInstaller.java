@@ -47,6 +47,7 @@ public class OrcTextHoverInstaller implements ILanguageService, IEditorService {
 	 *
 	 */
 	public OrcTextHoverInstaller() {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)
@@ -62,6 +63,7 @@ public class OrcTextHoverInstaller implements ILanguageService, IEditorService {
 	 */
 	@Override
 	public void update(final IParseController parseController, final IProgressMonitor monitor) {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)

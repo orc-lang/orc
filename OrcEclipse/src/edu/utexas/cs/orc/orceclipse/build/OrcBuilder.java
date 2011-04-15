@@ -210,6 +210,7 @@ public class OrcBuilder extends BuilderBase {
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.builder.BuilderBase#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor_) {
 		// This override is only needed as an IMP bug fix
@@ -239,6 +240,7 @@ public class OrcBuilder extends BuilderBase {
 			// Violate access controls of parent's fSourcesToCompile field
 			final Field fSourcesToCompileField = BuilderBase.class.getDeclaredField("fSourcesToCompile"); //$NON-NLS-1$
 			fSourcesToCompileField.setAccessible(true);
+			@SuppressWarnings("unchecked")
 			final int numFiles = ((Collection<IFile>) fSourcesToCompileField.get(this)).size();
 
 			monitor = new SubProgressMonitor(monitor_, 100000 / numFiles);
@@ -297,6 +299,9 @@ public class OrcBuilder extends BuilderBase {
 
 	/**
 	 * Check whether the build has been canceled.
+	 * 
+	 * @param monitor
+	 * @throws OperationCanceledException
 	 */
 	public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
 		if (monitor != null && monitor.isCanceled()) {

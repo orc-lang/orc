@@ -89,6 +89,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
 
@@ -188,6 +189,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private String[] getAbsoluteClasspathForClass(final Class classOfInterest) {
 		//FIXME: Is this possible without using the internal OSGi BaseData and DefaultClassLoader classes?
 		final BaseData basedata = ((DefaultClassLoader) classOfInterest.getClassLoader()).getClasspathManager().getBaseData();
@@ -216,6 +218,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	 * Derived from org.eclipse.jdt.internal.launching.StandardVMRunner.java,
 	 * Revision 1.56 (31 Mar 2009), trunk rev as of 20 Aug 2009 
 	 */
+	@SuppressWarnings("rawtypes")
 	protected static String convertClassPath(final List cp) {
 		final StringBuffer buf = new StringBuffer();
 		if (cp.size() == 0) {

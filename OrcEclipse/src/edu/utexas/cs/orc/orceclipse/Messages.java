@@ -80,5 +80,6 @@ public class Messages extends NLS {
 	}
 
 	private Messages() {
+		/* Nothing to do */
 	}
 }

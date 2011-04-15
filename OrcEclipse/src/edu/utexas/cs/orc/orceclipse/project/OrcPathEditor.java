@@ -106,6 +106,7 @@ public class OrcPathEditor extends PathEditor {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private String chooseWorkspaceFolder() {
 		final Class[] acceptedClasses = new Class[] { IProject.class, IFolder.class };
 
@@ -139,6 +140,7 @@ public class OrcPathEditor extends PathEditor {
 		return null;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private String chooseWorkspaceJarFile() {
 		final Class[] acceptedClasses = new Class[] { IFile.class };
 		final TypedElementSelectionValidator validator = new TypedElementSelectionValidator(acceptedClasses, true);

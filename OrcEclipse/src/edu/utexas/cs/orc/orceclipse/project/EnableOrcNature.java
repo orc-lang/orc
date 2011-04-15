@@ -39,6 +39,7 @@ public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
 	 *
 	 */
 	public EnableOrcNature() {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)
@@ -46,6 +47,7 @@ public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
 	 */
 	@Override
 	public void dispose() {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)
@@ -53,6 +55,7 @@ public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
 	 */
 	@Override
 	public void init(final IWorkbenchWindow window) {
+		/* Nothing to do */
 	}
 
 	/* (non-Javadoc)

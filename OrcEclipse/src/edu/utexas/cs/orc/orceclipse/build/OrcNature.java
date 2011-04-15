@@ -53,7 +53,7 @@ public class OrcNature extends ProjectNatureBase {
 	@Override
 	public void addToProject(final IProject project) {
 		super.addToProject(project);
-	};
+	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.builder.ProjectNatureBase#refreshPrefs()
