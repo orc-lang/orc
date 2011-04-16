@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- userguide.xml - DocBook source for the Orc user guide
 
      $Id$
@@ -44,12 +43,44 @@ Orc language implementation version
 <xi:include href="../../VERSION" parse="text"/>.
 </para>
 
+<para>
+This guide describes the Orc programming language in three steps. In Chapter 1, we
+discuss a small subset of Orc called Cor. Cor is a pure functional language,
+which has no features for concurrency, has no state, and does not communicate 
+with external services. Cor introduces us to the parts of Orc that are most familiar 
+from existing programming languages, such as arithmetic operations, variables,
+conditionals, and functions.
+</para>
+
+<para>
+In Chapter 2, we consider Orc itself, which in addition to Cor, comprises 
+external services and combinators for concurrent orchestration of those services. 
+We show how Orc interacts with these external services, how the combinators can be
+used to build up complex orchestrations from simple base expressions, and how the 
+functional constructs of Cor take on new, subtler behaviors in the concurrent 
+context of Orc.
+</para>
+
+<para>
+In Chapter 3, we discuss some additional features of Orc that extend 
+the basic syntax. These are useful for creating large-scale Orc programs, but 
+they are not essential to the understanding of the language.
+</para>
+
+<para>
+Next, in chapters 4 through 6, we turn our attention to how the language is used in practice, with guidelines on style and programming 
+methodology, including a number of common concurrency patterns.
+</para>
 
 </preface>
 
 <!-- Chapters -->
 <!--  TODO: Break sections out into chapters -->
-<xi:include href="ug.language.xml"/>
-<xi:include href="ug.methodology.xml"/>
+<xi:include href="ug.language.cor.xml"/>
+<xi:include href="ug.language.orc.xml"/>
+<xi:include href="ug.language.advanced.xml"/>
+<xi:include href="ug.methodology.convention.xml"/>
+<xi:include href="ug.methodology.idiom.xml"/>
+<xi:include href="ug.methodology.example.xml"/>
 		
 </book>

@@ -2,7 +2,6 @@
 
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
-    <!ENTITY targets.userguide SYSTEM "../build/targetdb/userguide.xml">
    <!ENTITY targets.refmanual SYSTEM "../build/targetdb/refmanual.xml">
    <!ENTITY targets.ref.combinators.otherwise SYSTEM "../build/targetdb/ref.combinators.otherwise.xml">
    <!ENTITY targets.ref.combinators.parallel SYSTEM "../build/targetdb/ref.combinators.parallel.xml">
@@ -40,8 +39,10 @@
    <!ENTITY targets.ref.expressions.dot SYSTEM "../build/targetdb/ref.expressions.dot.xml">
    <!ENTITY targets.ref.expressions.ifthenelse SYSTEM "../build/targetdb/ref.expressions.ifthenelse.xml">
    <!ENTITY targets.ref.expressions.lambda SYSTEM "../build/targetdb/ref.expressions.lambda.xml">
+   <!ENTITY targets.ref.expressions.literal SYSTEM "../build/targetdb/ref.expressions.literal.xml">
    <!ENTITY targets.ref.expressions.operators SYSTEM "../build/targetdb/ref.expressions.operators.xml">
    <!ENTITY targets.ref.expressions.stop SYSTEM "../build/targetdb/ref.expressions.stop.xml">
+   <!ENTITY targets.ref.expressions.variable SYSTEM "../build/targetdb/ref.expressions.variable.xml">
    <!ENTITY targets.ref.expressions SYSTEM "../build/targetdb/ref.expressions.xml">
    <!ENTITY targets.ref.index SYSTEM "../build/targetdb/ref.index.xml">
    <!ENTITY targets.ref.patterns.as SYSTEM "../build/targetdb/ref.patterns.as.xml">
@@ -69,29 +70,28 @@
    <!ENTITY targets.ref.stdlib.time SYSTEM "../build/targetdb/ref.stdlib.time.xml">
    <!ENTITY targets.ref.stdlib.util SYSTEM "../build/targetdb/ref.stdlib.util.xml">
    <!ENTITY targets.ref.stdlib.web SYSTEM "../build/targetdb/ref.stdlib.web.xml">
+   <!ENTITY targets.ref.stdlib.xml SYSTEM "../build/targetdb/ref.stdlib.xml.xml">
    <!ENTITY targets.ref.stdlib SYSTEM "../build/targetdb/ref.stdlib.xml">
    <!ENTITY targets.ref.syntax.EBNF SYSTEM "../build/targetdb/ref.syntax.EBNF.xml">
-   <!ENTITY targets.ref.syntax.keywords SYSTEM "../build/targetdb/ref.syntax.keywords.xml">
    <!ENTITY targets.ref.syntax.lexical SYSTEM "../build/targetdb/ref.syntax.lexical.xml">
    <!ENTITY targets.ref.syntax.precedence SYSTEM "../build/targetdb/ref.syntax.precedence.xml">
    <!ENTITY targets.ref.syntax SYSTEM "../build/targetdb/ref.syntax.xml">
    <!ENTITY targets.ref.time.real SYSTEM "../build/targetdb/ref.time.real.xml">
-   <!ENTITY targets.ref.time.virtual SYSTEM "../build/targetdb/ref.time.virtual.xml">
    <!ENTITY targets.ref.time SYSTEM "../build/targetdb/ref.time.xml">
-   <!ENTITY targets.ref.types.annotation SYSTEM "../build/targetdb/ref.types.annotation.xml">
    <!ENTITY targets.ref.types.context SYSTEM "../build/targetdb/ref.types.context.xml">
    <!ENTITY targets.ref.types.metatheory SYSTEM "../build/targetdb/ref.types.metatheory.xml">
+   <!ENTITY targets.ref.types.override SYSTEM "../build/targetdb/ref.types.override.xml">
    <!ENTITY targets.ref.types.polymorphism SYSTEM "../build/targetdb/ref.types.polymorphism.xml">
    <!ENTITY targets.ref.types.subtyping SYSTEM "../build/targetdb/ref.types.subtyping.xml">
+   <!ENTITY targets.ref.types.typeinfo SYSTEM "../build/targetdb/ref.types.typeinfo.xml">
    <!ENTITY targets.ref.types SYSTEM "../build/targetdb/ref.types.xml">
+   <!ENTITY targets.userguide SYSTEM "../build/targetdb/userguide.xml">
    <!ENTITY targets.ug.language.advanced SYSTEM "../build/targetdb/ug.language.advanced.xml">
    <!ENTITY targets.ug.language.cor SYSTEM "../build/targetdb/ug.language.cor.xml">
    <!ENTITY targets.ug.language.orc SYSTEM "../build/targetdb/ug.language.orc.xml">
-   <!ENTITY targets.ug.language SYSTEM "../build/targetdb/ug.language.xml">
    <!ENTITY targets.ug.methodology.convention SYSTEM "../build/targetdb/ug.methodology.convention.xml">
    <!ENTITY targets.ug.methodology.example SYSTEM "../build/targetdb/ug.methodology.example.xml">
    <!ENTITY targets.ug.methodology.idiom SYSTEM "../build/targetdb/ug.methodology.idiom.xml">
-   <!ENTITY targets.ug.methodology SYSTEM "../build/targetdb/ug.methodology.xml">
    ]>
 <targetset>
    <targetsetinfo>
@@ -221,11 +221,17 @@
 					  <document targetdoc="ref.expressions.lambda" baseuri="ref.expressions.lambda.html">
 					  	&targets.ref.expressions.lambda;
 					  </document>
+					  <document targetdoc="ref.expressions.literal" baseuri="ref.expressions.literal.html">
+					  	&targets.ref.expressions.literal;
+					  </document>
 					  <document targetdoc="ref.expressions.operators" baseuri="ref.expressions.operators.html">
 					  	&targets.ref.expressions.operators;
 					  </document>
 					  <document targetdoc="ref.expressions.stop" baseuri="ref.expressions.stop.html">
 					  	&targets.ref.expressions.stop;
+					  </document>
+					  <document targetdoc="ref.expressions.variable" baseuri="ref.expressions.variable.html">
+					  	&targets.ref.expressions.variable;
 					  </document>
 					  <document targetdoc="ref.expressions" baseuri="ref.expressions.html">
 					  	&targets.ref.expressions;
@@ -308,14 +314,14 @@
 					  <document targetdoc="ref.stdlib.web" baseuri="ref.stdlib.web.html">
 					  	&targets.ref.stdlib.web;
 					  </document>
+					  <document targetdoc="ref.stdlib.xml" baseuri="ref.stdlib.xml.html">
+					  	&targets.ref.stdlib.xml;
+					  </document>
 					  <document targetdoc="ref.stdlib" baseuri="ref.stdlib.html">
 					  	&targets.ref.stdlib;
 					  </document>
 					  <document targetdoc="ref.syntax.EBNF" baseuri="ref.syntax.EBNF.html">
 					  	&targets.ref.syntax.EBNF;
-					  </document>
-					  <document targetdoc="ref.syntax.keywords" baseuri="ref.syntax.keywords.html">
-					  	&targets.ref.syntax.keywords;
 					  </document>
 					  <document targetdoc="ref.syntax.lexical" baseuri="ref.syntax.lexical.html">
 					  	&targets.ref.syntax.lexical;
@@ -329,14 +335,8 @@
 					  <document targetdoc="ref.time.real" baseuri="ref.time.real.html">
 					  	&targets.ref.time.real;
 					  </document>
-					  <document targetdoc="ref.time.virtual" baseuri="ref.time.virtual.html">
-					  	&targets.ref.time.virtual;
-					  </document>
 					  <document targetdoc="ref.time" baseuri="ref.time.html">
 					  	&targets.ref.time;
-					  </document>
-					  <document targetdoc="ref.types.annotation" baseuri="ref.types.annotation.html">
-					  	&targets.ref.types.annotation;
 					  </document>
 					  <document targetdoc="ref.types.context" baseuri="ref.types.context.html">
 					  	&targets.ref.types.context;
@@ -344,11 +344,17 @@
 					  <document targetdoc="ref.types.metatheory" baseuri="ref.types.metatheory.html">
 					  	&targets.ref.types.metatheory;
 					  </document>
+					  <document targetdoc="ref.types.override" baseuri="ref.types.override.html">
+					  	&targets.ref.types.override;
+					  </document>
 					  <document targetdoc="ref.types.polymorphism" baseuri="ref.types.polymorphism.html">
 					  	&targets.ref.types.polymorphism;
 					  </document>
 					  <document targetdoc="ref.types.subtyping" baseuri="ref.types.subtyping.html">
 					  	&targets.ref.types.subtyping;
+					  </document>
+					  <document targetdoc="ref.types.typeinfo" baseuri="ref.types.typeinfo.html">
+					  	&targets.ref.types.typeinfo;
 					  </document>
 					  <document targetdoc="ref.types" baseuri="ref.types.html">
 					  	&targets.ref.types;
@@ -364,14 +370,8 @@
 	                  <document targetdoc="ug.language.cor" baseuri="ug.language.cor.html"> 
 	                     &targets.ug.language.cor;
 	                  </document>
-	                  <document targetdoc="ug.language.introduction" baseuri="ug.language.introduction.html"> 
-	                     &targets.ug.language.introduction;
-	                  </document>
 	                  <document targetdoc="ug.language.orc" baseuri="ug.language.orc.html"> 
 	                     &targets.ug.language.orc;
-	                  </document>
-	                  <document targetdoc="ug.language" baseuri="ug.language.html"> 
-	                     &targets.ug.language;
 	                  </document>
 	                  <document targetdoc="ug.methodology.convention" baseuri="ug.methodology.convention.html"> 
 	                     &targets.ug.methodology.convention;
@@ -381,9 +381,6 @@
 	                  </document>
 	                  <document targetdoc="ug.methodology.idiom" baseuri="ug.methodology.idiom.html"> 
 	                     &targets.ug.methodology.idiom;
-	                  </document>
-	                  <document targetdoc="ug.methodology" baseuri="ug.methodology.html"> 
-	                     &targets.ug.methodology;
 	                  </document>
 	              </dir>
                </dir>

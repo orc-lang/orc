@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ug.language.advanced.xml - DocBook source for the Orc user guide
 
      $Id$
@@ -11,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
   
-<section xml:id="ug.language.advanced"
+<chapter xml:id="ug.language.advanced"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -687,4 +686,4 @@ an implementation is given for the library site, <code>Stopwatch</code>; see
 </section>
 </section>
 </section>
-</section>
+</chapter>

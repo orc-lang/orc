@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ug.methodology.convention.xml - DocBook source for the Orc user guide
 
      $Id$
@@ -11,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ug.methodology.convention"
+<chapter xml:id="ug.methodology.convention"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -279,4 +278,4 @@ using <code>stop | (x,y)</code> is also valid.</para>
 	
 </section>
 
-</section>
+</chapter>
