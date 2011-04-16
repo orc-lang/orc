@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ug.language.cor.xml - DocBook source for the Orc user guide
 
      $Id$
@@ -13,7 +12,7 @@
 
 <!-- Replace Cor with Orc everywhere, and fix minor inconsistencies which result  -->
 <!-- Cut all reference material in this section. Maybe cut the entire section. -->
-<section xml:id="ug.language.cor"
+<chapter xml:id="ug.language.cor"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -689,4 +688,4 @@ Multi-line comments may be nested. They may appear anywhere, even in the middle 
 
 </section>
 
-</section>
+</chapter>

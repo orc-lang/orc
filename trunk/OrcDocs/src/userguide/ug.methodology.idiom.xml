@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ug.methodology.idiom.xml - DocBook source for the Orc user guide
 
      $Id$
@@ -11,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<section xml:id="ug.methodology.idiom"
+<chapter xml:id="ug.methodology.idiom"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -1229,4 +1228,4 @@ def cfold(f, xs) =
 </section>
 </section>
 
-</section>
+</chapter>

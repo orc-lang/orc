@@ -151,7 +151,7 @@
 			<element name="docbooktargetdb-elements" optional="true"
 				implicit="true"/>
 			<sequential>
-				<xslt style="docbook-xsl/html/docbook.xsl" basedir="@{srcdir}"
+				<xslt style="${docbook.xsl.dir}/html/docbook.xsl" basedir="@{srcdir}"
 					destdir="@{destdir}" processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison"
 					filenameparameter="targets.filename">
 					<docbooktargetdb-elements/>
@@ -192,7 +192,7 @@
          ================================= -->
 	<target name="html-titlepage" depends=""
 		description="Generate titlepage stylesheet">
-		<xslt style="${src.dir}/../docbook-xsl/template/titlepage.xsl"
+		<xslt style="${docbook.xsl.dir}/template/titlepage.xsl"
 			extension=".xsl" in="${src.dir}/xsl/titlepage-html-src.xml" out="${build.dir}/xsl/titlepage-html.xsl"
 			processor="org.apache.tools.ant.taskdefs.optional.TraXLiaison">
 		</xslt>
@@ -241,7 +241,7 @@
 			<param name="suppress.footer.navigation" expression="1"/>
 			<param name="navig.graphics" expression="1"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
@@ -288,7 +288,7 @@
 				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
@@ -327,7 +327,7 @@
 			<param name="section.autolabel.max.depth" expression="8"/>
 			<param name="chunk.quietly" expression="1"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="suppress.footer.navigation" expression="1"/>
@@ -375,7 +375,7 @@
 			<param name="variablelist.max.termlength" expression="12"/>
 			<include name="userguide.xml"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="userguide"/>
 
 			<param name="highlight.source" expression="1"/>
@@ -450,7 +450,7 @@
 			<param name="suppress.footer.navigation" expression="1"/>
 			<param name="navig.graphics" expression="1"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 
 			<param name="highlight.source" expression="1"/>
@@ -503,7 +503,7 @@
 				expression="1"/>
 			<param name="section.autolabel.max.depth" expression="8"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 			<param name="generate.toc" expression="book toc"/>
 
@@ -554,7 +554,7 @@
 			<param name="chunk.section.depth" expression="1"/>
 			<param name="suppress.footer.navigation" expression="1"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 
 			<param name="highlight.source" expression="1"/>
@@ -609,7 +609,7 @@
 			<param name="keep.relative.image.uris" expression="1"/>
 			<param name="img.src.path" expression="${basedir}/${src.dir}/refmanual/"/>
 
-			<param name="target.database.document" expression="../../${database.olink.dir}/olinkdb.xml"/>
+			<param name="target.database.document" expression="${basedir}/${database.olink.dir}/olinkdb.xml"/>
 			<param name="current.docid" expression="refmanual"/>
 
 			<param name="highlight.source" expression="1"/>
