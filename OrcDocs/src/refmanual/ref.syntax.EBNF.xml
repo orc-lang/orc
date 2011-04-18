@@ -42,6 +42,7 @@
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.list">List</nonterminal>		    
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.record">Record</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.call">Call</nonterminal>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.dot">DotAccess</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.prefixoperation">PrefixOperation</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.infixoperation">InfixOperation</nonterminal>
 				<sbr/>&#x2759; <nonterminal def="#ebnf.expression.infixoperation">PostfixOperation</nonterminal>
