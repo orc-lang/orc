@@ -16,9 +16,11 @@ def unzip(stream) =
 
 def skipto(reader, phrase) =
   reader.readLine() >line>
-  if line = null then ""
-  else if line.contains(phrase) then line
-  else skipto(reader, phrase)
+  (
+    if line = null then ""
+    else if line.contains(phrase) then line
+    else skipto(reader, phrase)
+  )
 
 def spellCheck([], i) = stop
 def spellCheck(word:words, i) =
