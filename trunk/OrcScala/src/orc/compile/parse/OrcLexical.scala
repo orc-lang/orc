@@ -101,7 +101,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   }
 
   ////////
-  // Token types in addition to those in StdTokens and Tokens 
+  // Token types in addition to those in StdTokens and Tokens
   ////////
 
   case class FloatingPointLit(chars: String) extends Token {
@@ -117,12 +117,12 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   ////////
 
   def multiLineCommentBody: Parser[Any] =
-    """(?s).*?(?=((\{-)|(-\})))""".r ~ 
+    """(?s).*?(?=((\{-)|(-\})))""".r ~
       ( "-}"
       | "{-" ~ multiLineCommentBody ~ multiLineCommentBody
       )
 
-  override val whitespace: Parser[Any] = 
+  override val whitespace: Parser[Any] =
     rep( ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
        | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
        | "{-" ~ multiLineCommentBody
@@ -146,7 +146,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     | stringLit               ^^ { StringLit(_) }
     | '\"' ~> err("unclosed string literal")
     | // Must be after other alternatives that a delim could be a prefix of
-    delimOperRegex            ^^ { Keyword(_) }
+      delimOperRegex          ^^ { Keyword(_) }
     | EofCh                   ^^^  EOF
     )
 
