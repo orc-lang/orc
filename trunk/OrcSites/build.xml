@@ -114,6 +114,12 @@
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
 			</zipfileset>
+			<zipfileset prefix="${target.name}/examples" dir="${orc.location.OrcExamples}/OrcSites">
+				<include name="**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name=".*"/>
+				<exclude name="**/.*/*"/>
+			</zipfileset>
 		</zip>
 	</target>
 
