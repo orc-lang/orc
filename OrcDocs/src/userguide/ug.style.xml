@@ -23,7 +23,7 @@ cases in parsing, and other whitespace is ignored. However, following programmin
 helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
 </para>
  
-<section><title>Parallel combinator</title> 
+<section xml:id="ug.style.parallel"><title>Parallel combinator</title> 
  
 <para>
 When the expressions to be combined are small, write them all on one line.
@@ -63,7 +63,7 @@ combined parallel expressions together.
 
 </section>
 
-<section><title>Sequential combinator</title>
+<section xml:id="ug.style.sequential"><title>Sequential combinator</title>
 
 <para>
 When the expressions to be combined are small, write a cascade of sequential combinators
@@ -186,7 +186,7 @@ in parentheses as part of the call).
 
 </section>
 
-<section><title>Declarations</title>
+<section xml:id="ug.style.declarations"><title>Declarations</title>
 	
 <para>
 When the body of a declaration spans multiple lines, start the body on a new line
@@ -218,7 +218,7 @@ def f(x,y) =
 
 </para>
 
-	<section><title>Ambiguous Declarations</title>
+	<section xml:id="ug.style.declarations.ambiguous"><title>Ambiguous Declarations</title>
 
 <para> The following situation could introduce syntactic ambiguity: the end
 of a declaration (def or val) is followed by an expression that starts with a
