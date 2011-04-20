@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.introduction.structures.xml - DocBook source for an Orc user guide section
+
+     $Id: ug.introduction.fundamentals.xml 2767 2011-04-16 23:54:16Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.introduction.structures">
+<title>Data Structures</title>
+
+<section xml:id="ug.introduction.structures.tuples"></section>
+<section xml:id="ug.introduction.structures.lists"></section>
+<section xml:id="ug.introduction.structures.patterns"></section>
+
+</section>

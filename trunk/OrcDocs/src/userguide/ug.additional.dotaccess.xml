@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.additional.dotaccess.xml - DocBook source for an Orc user guide section
+
+     $Id: ug.introduction.xml 2767 2011-04-16 23:54:16Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.additional.dotaccess">
+<title>The <code>.</code> notation</title>
+
+<para>
+In many object-oriented programming languages, one calls a method or accesses a field of an
+object using the dot operator; for example, <code>obj.m()</code> calls the method
+<code>m</code> of the object <code>obj</code>. 
+</para>
+
+<para>
+There is a special kind of site call in Orc which serves a similar purpose. One may write
+<code>x.msg</code>, for any identifiers <code>x</code> and <code>msg</code>. This treats
+ the value bound to <code>x</code> as a site, and calls it with a special 
+<firstterm>message</firstterm> value <code>msg</code>. 
+If the site understands the message <code>msg</code> (for example, if <code>x</code> is 
+bound to a Java object with a field called <code>msg</code>), the site interprets the message 
+and responds with some appropriate value. If the site does not 
+understand the message sent to it, it does not respond, and no publication occurs. 
+If <code>x</code> cannot be interpreted as a site, no call is made. 
+</para>
+
+<para>
+Typically this capability is used so that sites may be syntactically treated like objects, 
+with multiple methods and fields. For example, a channel <code>c</code> might understand the messages
+<code>get</code> and <code>put</code>, to get values from and put values on that channel,
+respectively. Such calls would be written <code>c.get()</code>, or <code>c.put(6)</code>.
+</para>
+
+<para>
+A call such as <code>c.put(6)</code> actually occurs in two steps. First <code>c.put</code> sends the message
+<code>put</code> to the site <code>c</code>; this publishes a site whose only purpose
+is to put values on the channel. Next, that site is called on the argument
+<code>6</code>, sending 6 on the channel. Readers familiar with functional programming
+will recognize this technique as <emphasis>currying</emphasis>. 
+</para>
+
+</section>

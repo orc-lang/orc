@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.introduction.xml - DocBook source for an Orc user guide chapter
+
+     $Id: ug.introduction.xml 2767 2011-04-16 23:54:16Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<chapter xml:id="ug.introduction"
+		 xmlns="http://docbook.org/ns/docbook" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>An Introduction to Orc</title>
+
+
+<!-- Sections -->
+<xi:include href="ug.introduction.fundamentals.xml"/>
+<xi:include href="ug.introduction.simple.xml"/>
+<xi:include href="ug.introduction.complex.xml"/>
+<xi:include href="ug.introduction.structures.xml"/>
+<xi:include href="ug.introduction.functions.xml"/>
+
+</chapter>

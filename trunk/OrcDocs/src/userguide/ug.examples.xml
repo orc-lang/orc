@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ug.methodology.example.xml - DocBook source for the Orc user guide
+<!-- ug.examples.xml - DocBook source for an Orc user guide chapter
 
      $Id$
 
@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<chapter xml:id="ug.methodology.example"
+<chapter xml:id="ug.examples"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -22,7 +22,7 @@ There are many more such examples available at the Orc website, on the
 <link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
 </para>
 
-<section><title>Dining Philosophers</title>
+<section xml:id="ug.examples.dining"><title>Dining Philosophers</title>
 
 <para>
 The dining philosophers problem is a well known and intensely studied problem
@@ -131,7 +131,7 @@ activities using Orc's combinators.
 
 </section>
 
-<section xml:id="methodology.examples.hygenic"><title>Hygienic Dining Philosophers</title>
+<section xml:id="ug.examples.hygenic"><title>Hygienic Dining Philosophers</title>
 
 <para>
 Here we implement a different solution to the Dining Philosophers problem,
@@ -311,7 +311,7 @@ fork, it knows who sent it and therefore which fork was received.
 </para>
 </section>
 
-<section><title>Readers-Writers</title>
+<section xml:id="ug.examples.rw"><title>Readers-Writers</title>
 
 <para>
 Here we present an Orc solution to the <link
@@ -412,7 +412,7 @@ waits for <code>c</code> to become zero again before granting any more requests.
 </para>
 </section>
 
-<section><title>Quicksort</title>
+<section xml:id="ug.examples.quicksort"><title>Quicksort</title>
 
 <para>
 The original quicksort algorithm
@@ -492,7 +492,7 @@ and <code>x := y</code> for <code>x.write(y)</code>.  Also note that the express
 </section>
 
 <!--  TODO: Add a note: this example may require Orchard to work -->
-<section><title>Meeting Scheduler</title>
+<section xml:id="ug.examples.meeting"><title>Meeting Scheduler</title>
 
 <para>
 Orc makes very few assumptions about the behaviors of services it uses. Therefore
@@ -575,63 +575,6 @@ modifications are local and do not affect the overall structure of the program.
 For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our website</link>.
 </para>
 </section>
-
-<!--
-Procedural implementation of graphs is terrible for readability. 
-Also, introducing this example would require an extended discussion of logical time.
-
-<section><title>Shortest Path</title>
-
-
-<programlisting><![CDATA[
-def path(source, sink, cell, succ) =
-  val timer = MakeTimer()
-  def run(n,p) =
-    cell(n).write(p) >>
-    succ(n) >(m,d)>
-    timer(d) >>
-    run(m,m:p)
-  run(source, [source])
-  ; reverse(cell(sink).read())
-
-{- A small test graph -}
-val source = 0
-val sink = 3
-
-val cell0 = Cell()
-val cell1 = Cell()
-val cell2 = Cell()
-val cell3 = Cell()
-
-def cell(0) = cell0
-def cell(1) = cell1
-def cell(2) = cell2
-def cell(3) = cell3
-
-def succ(0) = (1,2) | (2,6) | (3,9)
-def succ(1) = (3,7)
-def succ(2) = (3,2)
-def succ(3) = stop
-
-{-
-OUTPUT:
-[0, 2, 3]
--}
-path(source, sink, cell, succ)
-]]></programlisting>
-
-</section>
- -->
- 
-<!-- 
-<section><title>Spellchecker</title>
-</section>
--->
-
-<!-- 
-<section><title>Meeting Scheduler</title>
-</section>
- -->
 
 
 </chapter>

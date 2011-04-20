@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ug.methodology.convention.xml - DocBook source for the Orc user guide
+<!-- ug.style.xml - DocBook source for an Orc user guide chapter
 
      $Id$
 
@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<chapter xml:id="ug.methodology.convention"
+<chapter xml:id="ug.style"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -22,18 +22,6 @@ conventions are required by the parser; newlines are used only to disambiguate c
 cases in parsing, and other whitespace is ignored. However, following programming convention 
 helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
 </para>
-
-<!--
-<section><title>Identifiers</title>
-
-By convention, identifiers bound to sites should begin with a capital letter (e.g. <code>Rwait</code>,
-<code>Google</code>). Similarly, identifiers bound to functions which are strict and publish at 
-most one value should also begin with a capital letter. Identifiers bound to functions which are not
-strict, or may publish multiple values, should begin with a lowercase letter. Variable names
-are typically lowercase but may be made uppercase if it seems stylistically appropriate.
-
-</section>
- -->
  
 <section><title>Parallel combinator</title> 
  
