@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- ug.additional.defclass.xml - DocBook source for an Orc user guide section
 
-     $Id: ug.introduction.xml 2767 2011-04-16 23:54:16Z jthywissen $
+     $Id$
 
      Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
@@ -9,7 +9,7 @@
      the LICENSE file found in the project's top-level directory and also found at
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
-<section xml:id="ug.additional.defclass">
+<section xml:id="ug.additional.defclass" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Defining Classes</title>
 
 </section>
