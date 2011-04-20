@@ -33,9 +33,9 @@ picks up both forks, one at a time, eats, puts down both forks, and then
 resumes thinking.  Without further refinement, this scenario allows deadlock;
 if all philosophers become hungry and pick up their left-hand forks
 simultaneously, no philosopher will be able to pick up her right-hand fork to
-eat.  Lehmann and Rabin's solution<footnote><para>D. J. Lehmann and M. O. Rabin. On the advantages of free choice: A symmetric
-and fully distributed solution to the dining philosophers problem. In <emphasis>POPL</emphasis>, pages
-133–138, 1981.</para></footnote>, which we implement,
+eat.  Lehmann and Rabin's solution
+<footnote><para>Daniel Lehmann and Michael O. Rabin. 1981. On the advantages of free choice: a symmetric and fully distributed solution to the dining philosophers problem. In <citetitle>Proceedings of the 8th ACM SIGPLAN-SIGACT symposium on Principles of programming languages</citetitle> (POPL '81). ACM, New York, NY, USA, 133-138.</para></footnote>,
+ which we implement,
 requires that each philosopher pick up her forks in a random order.  If the
 second fork is not immediately available, the philosopher must set down both
 forks and try again.  While livelock is still possible if all philosophers
@@ -135,7 +135,8 @@ activities using Orc's combinators.
 
 <para>
 Here we implement a different solution to the Dining Philosophers problem,
-described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra.
+described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra
+<footnote><para>K. M. Chandy and J. Misra. 1984. The drinking philosophers problem. <citetitle>ACM Trans. Program. Lang. Syst.</citetitle> 6, 4 (October 1984), 632-646.</para></footnote>.
 Briefly, this algorithm efficiently and fairly solves the dining philosophers
 problem for philosophers connected in an arbitrary graph (as opposed to a
 simple ring).  The algorithm works by augmenting each fork with a clean/dirty
@@ -416,9 +417,7 @@ waits for <code>c</code> to become zero again before granting any more requests.
 
 <para>
 The original quicksort algorithm
-<footnote><para>C. A. R. Hoare. Partition: Algorithm 63, Quicksort: Algorithm 64, and
-Find: Algorithm 65. <emphasis>Communications of the ACM</emphasis>,
-4(7):321–322, 1961.</para></footnote>
+<footnote><para>C. A. R. Hoare. 1961. Algorithm 63: Partition, Algorithm 64: Quicksort, and Algorithm 65: Find. <citetitle>Commun. ACM</citetitle> 4, 7 (July 1961), 321-322.</para></footnote>
 was designed for efficient execution on a uniprocessor.
 Encoding it as a functional program typically ignores its efficient
 rearrangement of the elements of an array.
