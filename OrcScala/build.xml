@@ -39,6 +39,13 @@
         <fileset dir="tools" includes="*.jar"/>
     </path>
 
+	<path id="orc.tests.classpath" description="Test run classpath">
+        <pathelement location="build/classes"/>
+		<fileset refid="orc.runtime.jars"/>
+	    <pathelement location="${orc.location.OrcTests}/build"/>
+	    <fileset dir="${orc.location.OrcTests}/tools" includes="*.jar"/>
+    </path>
+
 	<!-- =================================
           target: compile
          ================================= -->
@@ -93,12 +100,17 @@
 	<!-- =================================
           target: test
          ================================= -->
+	<!--  DISABLED in preference to JUnit runner in Eclipse
 	<target name="test" depends="version" description="Execute JUnit tests">
         <mkdir dir="${junit.output.dir}"/>
 		<junit fork="yes" printsummary="withOutAndErr" haltonfailure="on">
             <formatter type="xml"/>
-            <test name="orc.test.AllTests" todir="${junit.output.dir}"/>
-            <classpath refid="orc.classpath"/>
+            <test name="orc.test.OrcParserTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.ExamplesTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.XMLExamplesTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.TypedExamplesTest" todir="${junit.output.dir}"/>
+		    <test name="orc.test.DocExamplesTest" todir="${junit.output.dir}"/>
+            <classpath refid="orc.tests.classpath"/>
 		</junit>
         <junitreport todir="${junit.output.dir}">
             <fileset dir="${junit.output.dir}">
@@ -107,6 +119,7 @@
             <report format="frames" todir="${junit.output.dir}"/>
         </junitreport>
 	</target>
+	-->
 
 	<!-- =================================
           target: copy-resources
@@ -179,77 +192,10 @@
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" duplicate="fail"/>
 	</target>
 
-	<!-- - - - - - - - - - - - - - - - - -
-          target: macosx-app
-         - - - - - - - - - - - - - - - - - -->
-	<!-- WARNING: This target requires UNIX's rm, cp, and ln utilities, for permission and symlink reasons. -->
-	<target name="macosx-app" depends="jar">
-		<fail message="The 'macosx-app' target can only be built on UNIX-like platforms">
-			<condition><not><os family="unix"/></not></condition>
-		</fail>
-		<property name="macosx-app.name" value="Orc"/>
-		<property name="macosx-app.dir" value="build/${target.name}-app/${macosx-app.name}.app"/>
-		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
-		<exec executable="rm" failonerror="true"> <!-- clean up any old files -->
-			<arg line="-rf"/>
-			<arg value="build/${target.name}-app"/>
-		</exec>
-		<mkdir dir="${macosx-app.dir}"/>
-		<!-- copy most files without filtering -->
-		<copy todir="${macosx-app.dir}">
-			<fileset dir="app-skeleton">
-				<include name="**/*"/>
-				<exclude name="**/*.plist"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-				<exclude name="**/JavaApplicationStub"/>
-			</fileset>
-		</copy>
-		<!-- copy plist files with token filtering -->
-		<copy todir="${macosx-app.dir}">
-			<fileset dir="app-skeleton">
-				<include name="**/*.plist"/>
-			</fileset>
-			<filterset>
-				<filter token="orc.jar" value="${target.name}.jar"/>
-				<filter token="orc.version" value="${orc.version}"/>
-				<filter token="orc.svnversion" value="${svnversion}"/>
-				<filter token="orc.copyright-year" value="${orc.copyright-year}"/>
-			</filterset>
-		</copy>
-		<!-- copy JavaApplicationStub with the unix cp command to preserve permissions -->
-		<exec executable="cp" failonerror="true">
-			<arg line="-p app-skeleton/Contents/MacOS/JavaApplicationStub"/>
-			<arg value="${macosx-app.dir}/Contents/MacOS/JavaApplicationStub"/>
-		</exec>
-		<!-- copy jar -->
-		<copy file="build/${target.name}.jar" todir="${macosx-app.dir}/Contents/Resources/Java"/>
-		<!-- create symlink -->
-		<exec executable="ln" failonerror="true">
-			<arg value="-s"/>
-			<arg value="/Developer/Applications/Xcode.app/Contents/Library/Spotlight/SourceCode.mdimporter/Contents/MacOS"/>
-			<arg value="${macosx-app.dir}/Contents/Library/Spotlight/Orc.mdimporter/Contents/MacOS"/>
-		</exec>
-		<!-- create directory with supplemental files -->
-		<copy todir="build/${target.name}-app">
-			<fileset dir=".">
-				<include name="README"/>
-				<include name="LICENSE"/>
-				<include name="INSTALL"/>
-				<include name="examples/**"/>
-				<include name="licenses.yml"/>
-				<include name="licenses/**"/>
-				<include name="doc/**"/>
-				<exclude name="**/CVS/*"/>
-				<exclude name="**/.svn/*"/>
-			</fileset>
-		</copy>
-	</target>
-
 	<!-- =================================
           target: build
          ================================= -->
-    <target name="build" depends="version,jar,javadoc,macosx-app" description="Build all targets"/>
+    <target name="build" depends="version,jar,javadoc" description="Build all targets"/>
 
 	<!-- - - - - - - - - - - - - - - - - -
           target: zip
@@ -266,40 +212,32 @@
 				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="INSTALL"/>
-				<include name="examples/**"/>
 				<include name="licenses.yml"/>
 				<include name="licenses/**"/>
 				<include name="doc/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
 			</zipfileset>
+			<zipfileset prefix="${target.name}/examples" dir="${orc.location.OrcExamples}">
+				<include name="**"/>
+				<exclude name="OrcSites/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name=".*"/>
+				<exclude name="**/.*/*"/>
+			</zipfileset>
 		</zip>
-	</target>
-
-	<!-- - - - - - - - - - - - - - - - - -
-          target: macosx-app-tgz
-         - - - - - - - - - - - - - - - - - -->
-	<!-- WARNING: This target requires UNIX's tar utility. -->
-	<target name="macosx-app-tgz" depends="macosx-app">
-		<fail message="The 'macosx-app-tgz' target can only be built on UNIX-like platforms">
-			<condition><not><os family="unix"/></not></condition>
-		</fail>
-		<!-- create tgz package -->
-		<exec executable="tar" dir="build" failonerror="true">
-			<arg line="-zcf ${target.name}-app.tgz ${target.name}-app"/>
-		</exec>
 	</target>
 
 	<!-- =================================
           target: package
          ================================= -->
-	<target name="package" depends="zip,macosx-app-tgz" description="Package for distribution">
+	<target name="package" depends="zip" description="Package for distribution">
 	</target>
 
 	<!-- =================================
           target: all
          ================================= -->
-    <target name="all" depends="build,test,package" description="Build all targets"/>
+    <target name="all" depends="build,package" description="Build all targets"/>
 
 	<!-- =================================
           target: upload
