@@ -1,5 +1,5 @@
 //
-// Prompt.scala -- Scala class/trait/object Prompt
+// Prompt.scala -- Scala object Prompt, class PromptEvent, and trait PromptCallback
 // Project OrcScala
 //
 // $Id$

@@ -1,5 +1,5 @@
 //
-// ErrorOnUndefinedInvocation.scala -- Scala class/trait/object ErrorOnUndefinedInvocation
+// ErrorOnUndefinedInvocation.scala -- Scala trait ErrorOnUndefinedInvocation
 // Project OrcScala
 //
 // $Id$

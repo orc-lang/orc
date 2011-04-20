@@ -1,5 +1,5 @@
 //
-// DocParsers.scala -- Scala class/trait/object DocParsers
+// DocParsers.scala -- Scala object DocParsers
 // Project OrcDocgen
 //
 // $Id$

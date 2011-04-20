@@ -1,5 +1,5 @@
 //
-// DocItem.scala -- Scala class/trait/object DocItem
+// DocItem.scala -- Scala trait DocItem and children
 // Project OrcDocgen
 //
 // $Id$

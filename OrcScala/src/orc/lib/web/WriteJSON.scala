@@ -1,5 +1,5 @@
 //
-// WriteJSON.scala -- Scala class/trait/object WriteJSON
+// WriteJSON.scala -- Scala object WriteJSON
 // Project OrcScala
 //
 // $Id$

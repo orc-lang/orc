@@ -1,6 +1,6 @@
 //
 // OrcParserTest.java -- Java class OrcParserTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //

@@ -1,5 +1,5 @@
 //
-// IterableToStream.scala -- Scala class/trait/object IterableToStream
+// IterableToStream.scala -- Scala object IterableToStream
 // Project OrcScala
 //
 // $Id$
