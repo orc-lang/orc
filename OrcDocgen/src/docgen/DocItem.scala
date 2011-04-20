@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Dec 17, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,7 +15,7 @@
 package docgen
 
 /**
- * 
+ *
  *
  * @author dkitchin
  */
@@ -30,12 +30,12 @@ case class DocText(content: String) extends DocItem
 
 // Parent of declared code elements (sites and defs)
 trait DocDecl extends DocItem {
-  
+
   val name: String
   val typeDeclaration: String
   val body: List[DocItem]
   val keyword: String
-  
+
 }
 
 // @site
@@ -59,4 +59,3 @@ case object DocImpl extends DocItem
 // Text in between document comment blocks. This is not processed directly
 // into XML, but is sometimes used to fill in a DocImpl
 case class DocOutside(content: String) extends DocItem
-
