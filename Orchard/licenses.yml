@@ -35,9 +35,9 @@ notes: Dependency of jaxws-rt.jar.
 
 ---
 
-files: [jetty-6.1.11.jar, jetty-util-6.1.11.jar]
+files: [jetty-6.1.22.jar, jetty-util-6.1.22.jar, jetty-j2se6-6.1.11.jar]
 project: Jetty
-version: 6.1.11
+version: 6.1.22
 url: http://www.mortbay.org/jetty/
 license: ASF2.0.txt
 phase: link
@@ -75,23 +75,13 @@ notes: Dependency of commons-fileupload-1.2.1.jar
 
 ---
 
-files: [servlet-api.jar]
+files: [servlet-api-2.5-20081211.jar]
 project: Java Servlet API
-version: 2.4
+version: 2.5
 url: http://java.sun.com/products/servlet/
 license: SunBCL-servlet.txt
 phase: extend
 notes: Used for various servlets.
-
----
-
-files: [one-jar-ant-task-0.96.jar]
-project: One-Jar
-version: 0.96
-url: http://one-jar.sourceforge.net/
-license: BSD-onejar.txt
-phase: link
-notes: Used for OrchardDemo local server JAR.
 
 ---
 
@@ -157,7 +147,7 @@ notes: Used for web/orc.js
 
 files: [web/codemirror/*]
 project: Codemirror
-version: 0.58
+version: 0.8
 url: http://marijn.haverbeke.nl/codemirror/
 license: BSD-codemirror.txt
 phase: extend

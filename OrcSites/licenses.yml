@@ -55,26 +55,6 @@ notes: Used for music calendar demo.
 
 ---
 
-files: [cxf-2.1.1.jar]
-project: Apache CXF
-version: 2.1.1
-url: http://cxf.apache.org/
-license: ASF2.0.txt
-phase: link
-notes: Used for alternative implementation of Webservice (CxfWebservice).
-
----
-
-files: [jaxb-xjc.jar]
-project: JAXB Reference Implementation
-version: 2.1.3
-url: https://jaxb.dev.java.net/
-license: GPLv2+classpath.txt
-phase: link
-notes: Used for implementation of Webservice.
-
----
-
 files: [jettison-1.0.1.jar]
 project: Jettison
 version: 1.0.1
@@ -115,9 +95,9 @@ notes: Used for SendMail site.
 
 ---
 
-files: [oauth-1.2.jar]
-project: OAuth Java Client
-version: 1.2
+files: [oauth-20100527.jar, oauth-consumer-20100527.jar, oauth-httpclient3-20090617.jar, oauth-provider-20100527.jar]
+project: OAuth Java Client and Provider
+version: various
 url: http://code.google.com/p/oauth/
 license: ASF2.0.txt
 phase: link
@@ -172,16 +152,6 @@ url: http://www.igniterealtime.org/projects/smack/
 license: ASF2.0.txt
 phase: link
 notes: Used for XMPP chat demos.
-
----
-
-files: [com.centerkey.utils.BareBonesBrowserLaunch]
-project: Bare Bones Browser Launch for Java
-version: 1.5
-url: http://www.centerkey.com/java/browser
-license: PublicDomain-BBBL.txt
-phase: link
-notes: Used for Redirect site.
 
 ---
 
