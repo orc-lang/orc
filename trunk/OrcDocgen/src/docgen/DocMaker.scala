@@ -1,5 +1,5 @@
 //
-// DocMaker.scala -- Scala class/trait/object DocMaker
+// DocMaker.scala -- Scala class DocMaker
 // Project OrcDocgen
 //
 // $Id$

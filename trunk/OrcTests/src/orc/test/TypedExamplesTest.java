@@ -1,6 +1,6 @@
 //
-// TypedExamplesTest.java -- Scala class/trait/object TypedExamplesTest
-// Project OrcScala
+// TypedExamplesTest.java -- Java class TypedExamplesTest
+// Project OrcTests
 //
 // $Id$
 //

@@ -1,5 +1,5 @@
 //
-// JavaType.scala -- Scala class/trait/object JavaType
+// JavaType.scala -- Scala trait JavaType
 // Project OrcScala
 //
 // $Id$

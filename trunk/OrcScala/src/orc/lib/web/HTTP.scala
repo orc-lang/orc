@@ -1,5 +1,5 @@
 //
-// HTTP.scala -- Scala class/trait/object HTTP
+// HTTP.scala -- Scala object HTTP
 // Project OrcScala
 //
 // $Id$

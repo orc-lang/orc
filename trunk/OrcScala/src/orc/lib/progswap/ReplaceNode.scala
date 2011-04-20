@@ -1,5 +1,5 @@
 //
-// ReplaceNode.scala -- Scala class/trait/object ReplaceNode
+// ReplaceNode.scala -- Scala class ReplaceNode
 // Project OrcScala
 //
 // $Id$

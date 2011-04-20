@@ -1,5 +1,5 @@
 //
-// SupportForJavaObjectInvocation.scala -- Scala class/trait/object SupportForJavaObjectInvocation
+// SupportForJavaObjectInvocation.scala -- Scala trait SupportForJavaObjectInvocation
 // Project OrcScala
 //
 // $Id$

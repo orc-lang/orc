@@ -1,5 +1,5 @@
 //
-// SupportForSiteInvocation.scala -- Scala class/trait/object SupportForSiteInvocation
+// SupportForSiteInvocation.scala -- Scala trait SupportForSiteInvocation
 // Project OrcScala
 //
 // $Id$

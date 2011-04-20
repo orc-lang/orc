@@ -1,5 +1,5 @@
 //
-// OrcJavaCompatibility.scala -- Scala class/trait/object OrcJavaCompatibility
+// OrcJavaCompatibility.scala -- Scala object OrcJavaCompatibility
 // Project OrcScala
 //
 // $Id$

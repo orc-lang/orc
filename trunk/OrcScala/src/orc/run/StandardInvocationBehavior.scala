@@ -1,5 +1,5 @@
 //
-// StandardInvocationBehavior.scala -- Scala class/trait/object StandardInvocationBehavior
+// StandardInvocationBehavior.scala -- Scala trait StandardInvocationBehavior
 // Project OrcScala
 //
 // $Id$

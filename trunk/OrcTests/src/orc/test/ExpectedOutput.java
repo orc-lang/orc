@@ -1,6 +1,6 @@
 //
 // ExpectedOutput.java -- Java class ExpectedOutput
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //

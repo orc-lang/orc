@@ -1,5 +1,5 @@
 //
-// Print.scala -- Scala class/trait/object Print
+// Print.scala -- Scala object Print, and class PrintEvent
 // Project OrcScala
 //
 // $Id$

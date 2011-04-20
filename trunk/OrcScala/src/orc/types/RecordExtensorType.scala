@@ -1,5 +1,5 @@
 //
-// RecordExtensorType.scala -- Scala class/trait/object RecordExtensorType
+// RecordExtensorType.scala -- Scala class RecordExtensorType
 // Project OrcScala
 //
 // $Id$

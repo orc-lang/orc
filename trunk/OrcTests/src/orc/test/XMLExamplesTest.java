@@ -1,6 +1,6 @@
 //
 // XMLExamplesTest.java -- Java class XMLExamplesTest
-// Project OrcScala
+// Project OrcTests
 //
 // $Id$
 //

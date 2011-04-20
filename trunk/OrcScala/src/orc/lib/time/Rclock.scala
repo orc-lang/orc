@@ -1,5 +1,5 @@
 //
-// Rwait.scala -- Scala class/trait/object Rwait
+// Rwait.scala -- Scala objects Rwait and Rclock, and class Rtime
 // Project OrcScala
 //
 // $Id$
