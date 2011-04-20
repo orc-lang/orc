@@ -136,7 +136,7 @@ activities using Orc's combinators.
 <para>
 Here we implement a different solution to the Dining Philosophers problem,
 described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra
-<footnote><para>K. M. Chandy and J. Misra. 1984. The drinking philosophers problem. <citetitle>ACM Trans. Program. Lang. Syst.</citetitle> 6, 4 (October 1984), 632-646.</para></footnote>.
+<footnote><para>K. Mani Chandy and Jayadev Misra. 1984. The drinking philosophers problem. <citetitle>ACM Trans. Program. Lang. Syst.</citetitle> 6, 4 (October 1984), 632-646.</para></footnote>.
 Briefly, this algorithm efficiently and fairly solves the dining philosophers
 problem for philosophers connected in an arbitrary graph (as opposed to a
 simple ring).  The algorithm works by augmenting each fork with a clean/dirty

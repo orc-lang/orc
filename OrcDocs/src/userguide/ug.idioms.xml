@@ -29,9 +29,9 @@ Despite the austerity of Orc's four combinators, we are able to encode a variety
 Orc has no communication primitives like pi-calculus
 channels<footnote><para>Robin Milner. 1999. <citetitle>Communicating and Mobile Systems:
 the &#x3C0;-Calculus</citetitle>. Cambridge University Press, New York, NY, USA.</para></footnote>
-or Erlang mailboxes<footnote><para>Robert Virding, Claes Wikstr&#xF6;m, and Mike Williams. 1996.
-<citetitle>Concurrent programming in ERLANG (2nd ed.)</citetitle>. Prentice Hall International (UK) Ltd.,
-Hertfordshire, UK.</para></footnote>. Instead, it makes use of sites
+or Erlang mailboxes<footnote><para>Joe Armstrong, Robert Virding, Claes Wikstr&#xF6;m, and Mike Williams. 1996.
+<citetitle>Concurrent programming in ERLANG (2nd ed.)</citetitle>. Prentice Hall,
+Englewood Cliffs, NJ, USA.</para></footnote>. Instead, it makes use of sites
 to create channels of communication. 
 </para>
 
