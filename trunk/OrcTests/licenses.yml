@@ -1,7 +1,7 @@
 # This file is in YAML format.  It lists all bundled third-party dependencies.
 # Each dependency includes the following information:
 # 
-# $Id$
+# $Id: licenses.yml 2129 2010-09-13 00:55:21Z jthywissen $
 #
 # files: list of incorporated files
 # project: the project from which the files were derived
@@ -15,20 +15,10 @@
 # notes: any notes about why the dependency is needed
 ---
 
-files: [scala-library.jar]
-project: Scala
-version: 2.8.0
-url: http://www.scala-lang.org/
-license: BSD-Scala.txt
-phase: extend
-notes: Scala runtime library, used extensively.
-
----
-
-files: [ant-googlecode-0.0.1.jar]
-project: ant-googlecode
-version: 0.0.1
-url: http://code.google.com/p/ant-googlecode/
-license: BSD-ant-googlecode.txt
+files: [junit-4.5.jar]
+project: JUnit
+version: 4.5
+url: http://www.junit.org/
+license: BSD-junit.txt
 phase: build
-notes: Used for google code upload task.
+notes: Used for unit testing.
