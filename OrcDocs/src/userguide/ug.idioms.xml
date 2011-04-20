@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ug.methodology.idiom.xml - DocBook source for the Orc user guide
+<!-- ug.methodology.idiom.xml - DocBook source for an Orc user guide chapter
 
      $Id$
 
@@ -10,7 +10,7 @@
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
 
-<chapter xml:id="ug.methodology.idiom"
+<chapter xml:id="ug.idioms"
 		 xmlns="http://docbook.org/ns/docbook" 
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
@@ -23,7 +23,7 @@ concurrent and functional programming.
 Despite the austerity of Orc's four combinators, we are able to encode a variety of idioms straightforwardly.
 </para>
 
-<section xml:id="methodology.channels"><title>Channels</title>
+<section xml:id="ug.idioms.channels"><title>Channels</title>
 
 <para>
 Orc has no communication primitives like pi-calculus
@@ -57,7 +57,7 @@ signal immediately.
 
 </section>
 
-<section><title>Lists</title>
+<section xml:id="ug.idioms.lists"><title>Lists</title>
 
 <para>
 In the section on Cor, we were introduced to lists: how to construct them,
@@ -95,7 +95,7 @@ the result list once they all return using a fork-join.
 
 </section>
 
-<section xml:id="methodology.streams"><title>Streams</title>
+<section xml:id="ug.idioms.streams"><title>Streams</title>
 
 <para>
 Sometimes a source of data is not explicitly represented by a list or other data structure. Instead,
@@ -139,7 +139,7 @@ repeat(c.get)
 </section>
 
 
-<section xml:id="methodology.mutable"><title>Mutable References</title>
+<section xml:id="ug.idioms.mutable"><title>Mutable References</title>
 
 <para>
 Variables in Orc are immutable. There is no assignment operator, and there is no way to
@@ -155,7 +155,7 @@ by many different parts of an Orc program, so race conditions may arise.
 </para> 
 
 
-<section><title>Rewritable references</title>
+<section xml:id="ug.idioms.mutable.Ref"><title>Rewritable references</title>
 <para>
 The <code>Ref</code> site creates rewritable reference cells.
 
@@ -198,7 +198,7 @@ OUTPUT:
 
 </section>
 
-<section><title>Write-once references</title>
+<section xml:id="ug.idioms.mutable.Cell"><title>Write-once references</title>
 
 <para>
 The Orc library also offers write-once reference cells, using the <code>Cell</code> site.
@@ -234,7 +234,7 @@ they have been studied extensively in the context of the
 </section>
 
 
-<section><title>Syntax for manipulating references</title>
+<section xml:id="ug.idioms.mutable.syntax"><title>Syntax for manipulating references</title>
 
 <para>Orc provides syntactic sugar for reading and writing mutable storage:</para>
 
@@ -271,7 +271,7 @@ Wrote 2
 
 </section>
 
-<section><title>Arrays</title>
+<section xml:id="ug.idioms.mutable.Array"><title>Arrays</title>
 
 <para>
 While lists are a very useful data structure, they are not mutable, and they are not indexed. However, 
@@ -357,7 +357,7 @@ upto(n) >i> A(i)? >address> Email(address, m)
 
 </section>
 
-<section><title>Tables</title>
+<section xml:id="ug.idioms.Table"><title>Tables</title>
 
 <para>
 Orc programs occasionally require a data structure that supports constant-time indexing but need not also
@@ -405,7 +405,7 @@ val cubes = Table(30, lambda(i) = i*i*i)
 
 </section>
 
-<section><title>Loops</title>
+<section xml:id="ug.idioms.loops"><title>Loops</title>
 
 <para>
 Orc does not have any explicit looping constructs. Most of the time, where a loop
@@ -414,23 +414,25 @@ might be used in other languages, Orc programs use one of two strategies:
 
 <orderedlist>
 
-<listitem>When the iterations of the loops can occur in parallel, write an expression
+<listitem><para>
+When the iterations of the loops can occur in parallel, write an expression
 that expands the data into a sequence of publications, and
 use a sequential operator to do something for each publication. This is the strategy
 that uses functions like <code>each</code>, <code>repeat</code>, and <code>upto</code>.
-</listitem>
-<listitem>When the iterations of the loops must occur in sequence, write a tail
+</para></listitem>
+<listitem><para>
+When the iterations of the loops must occur in sequence, write a tail
 recursive function that iterates over the data. Any loop can be rewritten as a 
 tail recursion. Typically the data of interest is in a list, so one of the standard
 list functions, such as <code>foldl</code>, applies. The library also defines a
 function <code>while</code>, which handles many of the common use cases of
 while loops.
-</listitem>
+</para></listitem>
 </orderedlist>
 
 </section>
 
-<section><title>Parallel Matching</title>
+<section xml:id="ug.idioms.matching"><title>Parallel Matching</title>
 
 <para>
 Matching a value against multiple patterns, as we have seen it so far, is a linear
@@ -519,7 +521,7 @@ publishing both <code>1</code> and <code>2</code>.
 
 </section>
 
-<section xml:id="methodology.forkjoin"><title>Fork-join</title>
+<section xml:id="ug.idioms.forkjoin"><title>Fork-join</title>
 
 <para>
 One of the most common concurrent idioms is a <firstterm>fork-join</firstterm>: run two processes concurrently,
@@ -548,7 +550,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 </para>
 
 
-<section><title>Example: Machine initialization</title>
+<section xml:id="ug.idioms.forkjoin.example.init"><title>Example: Machine initialization</title>
 
 <para>
 In Orc programs, we often use fork-join and recursion together to dispatch many tasks in parallel and wait
@@ -575,7 +577,7 @@ will never complete.
 
 </section>
 
-<section xml:id="example.auction"><title>Example: Simple parallel auction</title>
+<section xml:id="ug.idioms.forkjoin.example.auction"><title>Example: Simple parallel auction</title>
 
 <para>
 We can also use a recursive fork-join to obtain a value, rather than just signaling completion. Suppose we
@@ -598,7 +600,7 @@ to return a bid, then the auction will never complete.  Later we will see
 a <link linkend="example.auction-with-timeout">different solution</link> that addresses the issue of non-termination.
 </para>
 
-<section><title>Example: Barrier synchronization</title>
+<section xml:id="ug.idioms.forkjoin.example.barrier"><title>Example: Barrier synchronization</title>
 
 <para>
 Consider an expression of the following form, where F and G are expressions and M and N are sites:
@@ -625,7 +627,7 @@ free in G, nor <code>y</code> in F.
 
 </section>
 
-<section><title>Sequential Fork-Join</title>
+<section xml:id="ug.idioms.seqjoin"><title>Sequential Fork-Join</title>
 
 <para>
 Previous sections illustrate how Orc can use the fork-join idiom to process a
@@ -659,7 +661,7 @@ signal is published.
 </para>
 </section>
 
-<section><title>Priority Poll</title>
+<section xml:id="ug.idioms.prioritypoll"><title>Priority Poll</title>
 
 <para>
 The otherwise combinator is also useful for trying alternatives in sequence. Consider an expression of
@@ -688,7 +690,7 @@ def priorityPoll(b:bs) = b.getD() ; priorityPoll(bs)
 </programlisting>
 </section>
 
-<section><title>Parallel Or</title>
+<section xml:id="ug.idioms.parallelor"><title>Parallel Or</title>
 
 <para>
 ``Parallel or'' is a classic idiom of parallel programming.  The ``parallel or'' operation executes two
@@ -727,7 +729,7 @@ publish only the first result.
 </section>
 
 
-<section><title>Timeout</title>
+<section xml:id="ug.idioms.timeout"><title>Timeout</title>
 
 <para>
 <firstterm>Timeout</firstterm>, the ability to execute an expression for at most a specified
@@ -742,7 +744,7 @@ Let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
 </programlisting>
 
 
-<section xml:id="example.auction-with-timeout"><title>Auction with timeout</title>
+<section xml:id="ug.idioms.timeout.example.auction"><title>Auction with timeout</title>
 
 <para>
 In the <link linkend="example.auction">auction example</link> given previously, the auction may never complete if 
@@ -763,7 +765,7 @@ This version of the auction is guaranteed to complete within 8 seconds.
 </section>
 
 
-<section><title>Detecting timeout</title>
+<section xml:id="ug.idioms.timeout.detection"><title>Detecting timeout</title>
 
 <para>
 Sometimes, rather than just yielding a default value, we would like to
@@ -809,10 +811,10 @@ the time limit, <code>timeout</code> returns <code>Some(v)</code>. Otherwise, it
 
 </para>
 
-<section><title>Timeout streams</title>
+<section xml:id="ug.idioms.timeout.stream"><title>Timeout streams</title>
 
 <para>
-We can also apply timeout to <link linkend="methodology.streams">streams</link>. Let's
+We can also apply timeout to <link linkend="ug.idioms.streams">streams</link>. Let's
 define a modified version of the <code>repeat</code> function as follows:
 
 <programlisting><![CDATA[
@@ -856,7 +858,7 @@ repeat(f')
 
 </section>
 
-<section><title>Priority</title>
+<section xml:id="ug.idioms.priority"><title>Priority</title>
 
 <para>
 We can use a timer to give a window of priority to one computation over
@@ -877,7 +879,7 @@ Let( y | Rwait(1000) >> x )
 </section>
 
 
-<section><title>Metronome</title>
+<section xml:id="ug.idioms.metronome"><title>Metronome</title>
 
 <para>
 A timer can be used to execute an expression repeatedly at regular
@@ -909,7 +911,7 @@ the recursion is entirely contained within <code>metronome</code>.
 
 
 
-<section><title>Routing</title>
+<section xml:id="ug.idioms.routing"><title>Routing</title>
 
 <para>
 The Orc combinators restrict the passing of values among their component
@@ -921,7 +923,7 @@ store publications.  We call this technique <firstterm>routing</firstterm>
 because it involves routing values from one execution to another.
 </para>
 
-<section><title>Generalizing Termination</title>
+<section xml:id="ug.idioms.routing.termination"><title>Generalizing Termination</title>
 
 <para>
 The pruning combinator terminates an expression after it publishes its first
@@ -939,7 +941,7 @@ and still see its publications without those publications terminating the
 expression. 
 </para>
 
-<section><title>Enhanced Timeout</title>
+<section xml:id="ug.idioms.routing.timeout"><title>Enhanced Timeout</title>
 
 <para>
 As a simple demonstration of this concept, we construct a more powerful form 
@@ -966,7 +968,7 @@ take and publish values from <code>c</code> until it is closed.
 </section>
 
 
-<section><title>Test Pruning</title>
+<section xml:id="ug.idioms.routing.test"><title>Test Pruning</title>
 
 <para>
 We can also decide to terminate based on the values published. This expression
@@ -991,7 +993,7 @@ the termination of F.
 
 </section>
 
-<section><title>Interrupt</title>
+<section xml:id="ug.idioms.routing.interrupt"><title>Interrupt</title>
 
 <para>
 We can use routing to interrupt an expression based on a signal from
@@ -1011,7 +1013,7 @@ repeat(c.get) <<
 
 </section>
 
-<section><title>Publication Limit</title>
+<section xml:id="ug.idioms.routing.limit"><title>Publication Limit</title>
 
 <para>
 We can limit an expression to <emphasis>n</emphasis> publications,
@@ -1042,7 +1044,7 @@ publications from the channel <code>c</code>.  When no more publications are all
 </section>
 
 
-<section><title>Non-Terminating Pruning</title>
+<section xml:id="ug.idioms.routing.newprune"><title>Non-Terminating Pruning</title>
 
 <para>
 We can use routing to create a modified version of the pruning combinator.
@@ -1061,7 +1063,7 @@ signal >>
 
 </section>
 
-<section><title>Sequencing Otherwise</title>
+<section xml:id="ug.idioms.routing.newotherwise"><title>Sequencing Otherwise</title>
 
 <para>
 We can also use routing to create a modified version of the otherwise combinator. We'll
@@ -1083,69 +1085,8 @@ empty.
 
 </section>
 
-<section><title>Interruption</title>
 
-<para>
-We can write a function <code>interruptible</code> that implements the interrupt idiom
-to execute any function in an interruptible way.  <code>interruptible(g)</code>
-calls the function <code>g</code>, which is assumed to take no arguments, and
-silences its publications. It immediately publishes another function, which we
-can call at any time to terminate the execution of <code>g</code>. For simplicity,
-we assume that <code>g</code> itself publishes no values.
-</para>
-
-<para>
-Here is a naive implementation that doesn't quite work:
-</para>
-
-<programlisting><![CDATA[
-def interruptible(f) =
-  val done = Semaphore(0)
-  done.release
-    << f() >> stop 
-     | done.acquire() >> c.closeD()
-
-{- wrong! -}
-val stopper = interruptible(g)
-...
-]]>
-</programlisting>
-
-<para>
-The function <code>interruptible</code> is correct, but the way it is used causes a strange error.
-The function <code>g</code> executes, but is always immediately terminated! This happens because the
-<code>val</code> declaration which binds <code>stopper</code> also kills all of the remaining
-computation in <code>interruptible(g)</code>, including the execution of <code>g</code> itself.
-</para>
-
-<para>
-The solution is to bind the variable differently:
-</para>
-
-<programlisting><![CDATA[
-def interruptible(f) =
-  val done = Semaphore(0)
-  done.release
-    << f() >> stop 
-     | done.acquire() >> c.closeD()
-
-interruptible(g) >stopper>
-...
-]]>
-</programlisting>
-
-<para>
-This idiom, wherein a function publishes some value that can be used to monitor or control its 
-execution, arises occasionally in Orc programming. When using this idiom, always remember to
-avoid terminating that execution accidentally. Since Orc is a structured concurrent language,
-every process is contained with some other process; kill the containing process, and the
-contained processes die too.
-</para>
-
-</section>
-
-
-<section><title>Fold</title>
+<section xml:id="ug.idioms.fold"><title>Fold</title>
 
 <para>
 We consider various concurrent implementations of the classic "list fold"
@@ -1165,7 +1106,7 @@ can proceed in parallel.  However, if <code>f</code> is associative, we can over
 and implement fold concurrently. If <code>f</code> is also commutative, we can further increase concurrency.
 </para>
 
-<section><title>Associative Fold</title>
+<section xml:id="ug.idioms.fold.associative"><title>Associative Fold</title>
 
 <para>
 We first consider the case when the reduction operator is associative.  We
@@ -1195,7 +1136,7 @@ each iteration of <code>afold</code>.
   
 </section>
 
-<section><title>Associative, Commutative Fold</title>
+<section xml:id="ug.idioms.fold.commutative"><title>Associative, Commutative Fold</title>
 
 <para>
 We can make the implementation even more concurrent when the fold operator 

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.introduction.simple.xml - DocBook source for an Orc user guide section
+
+     $Id: ug.introduction.fundamentals.xml 2767 2011-04-16 23:54:16Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.introduction.simple">
+<title>Simple Expressions</title>
+
+In this section we show how some simple Orc expressions are written. 
+Execution of a simple expression publishes at most one value, and.
+
+<section xml:id="ug.introduction.simple.values">
+<title>Values</title>
+<para>
+
+The simplest expression one can write is a literal value.
+Executing that expression simply publishes the value.
+</para>
+
+<para>
+
+Orc has four kinds of literal values:
+
+<itemizedlist>
+
+<listitem>
+Booleans: <code>true</code> and <code>false</code>
+</listitem>
+
+<listitem>
+Numbers: <code> 5, -1, 2.71828, ... </code>
+</listitem> 
+
+<listitem>
+Strings: <code>"orc"</code>, <code>"ceci n'est pas une |"</code>
+</listitem>
+
+<listitem>
+A special value <code>signal</code>.
+</listitem>
+
+</itemizedlist>
+</para>
+
+</section>
+
+
+<section xml:id="ug.introduction.simple.operators"><title>Operators</title>
+<para>
+Orc has a standard set of arithmetic, logical, and comparison operators.
+As in most other programming languages, they are written in the usual 
+infix style. They have Java-like operator precedence, which can be
+overridden by adding parentheses.  
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>1+2</code> publishes <code>3</code>.</listitem>
+<listitem><code>(98+2)*17</code> publishes <code>1700</code>.</listitem>
+<listitem><code>4 = 20 / 5</code> publishes <code>true</code>.</listitem>
+<listitem><code>3-5 >= 5-3 </code> publishes <code>false</code>.</listitem>
+<listitem><code><![CDATA[true && (false || true)]]></code> publishes <code>true</code>.</listitem>
+<listitem><code>"leap" + "frog"</code> publishes <code>"leapfrog"</code>.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+For the moment, we assume that such expressions consist only of operators and values.
+In the next section, we will see how <emphasis>any</emphasis> expression may be used as an operand,
+even an expression that publishes multiple values.
+</para>
+
+</section>
+
+<section xml:id="ug.introduction.simple.sites"><title>Sites</title>
+<para>
+An Orc program interacts with the external world by calling <firstterm>sites</firstterm>.
+The use of sites is one of the two fundamental concepts of Orc programming.   
+</para>
+
+<para>
+A site call in Orc looks like a method, subroutine, or function call in other programming languages.
+Here are some examples:
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>1+2</code> publishes <code>3</code>.</listitem>
+<listitem><code>(98+2)*17</code> publishes <code>1700</code>.</listitem>
+<listitem><code>4 = 20 / 5</code> publishes <code>true</code>.</listitem>
+<listitem><code>3-5 >= 5-3 </code> publishes <code>false</code>.</listitem>
+<listitem><code><![CDATA[true && (false || true)]]></code> publishes <code>true</code>.</listitem>
+<listitem><code>"leap" + "frog"</code> publishes <code>"leapfrog"</code>.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+A site call might publish a useful value, or it might just publish a <code>signal</code>, or
+it might <firstterm>halt</firstterm>, refusing to publish anything, or it might even wait indefinitely.
+</para>
+
+</section>
+
+
+
+</section>

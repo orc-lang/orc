@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.introduction.complex.xml - DocBook source for an Orc user guide section
+
+     $Id: ug.introduction.fundamentals.xml 2767 2011-04-16 23:54:16Z jthywissen $
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.introduction.complex">
+<title>Complex Expressions</title>
+
+<section xml:id="ug.introduction.complex.combinators">
+
+	<section xml:id="ug.introduction.complex.combinators.parallel"></section>
+	<section xml:id="ug.introduction.complex.combinators.sequential"></section>
+	<section xml:id="ug.introduction.complex.combinators.pruning"></section>
+	<section xml:id="ug.introduction.complex.combinators.otherwise"></section>
+
+</section>
+
+
+<section xml:id="ug.introduction.complex.val">
+<!--  val declaration -->
+</section>
+
+
+<section xml:id="ug.introduction.complex.conditionals">
+<!--  if then else -->
+</section>
+
+
+<section xml:id="ug.introduction.complex.nesting">
+<!--  nested expressions, deflation, etc -->
+</section>
+
+
+</section>

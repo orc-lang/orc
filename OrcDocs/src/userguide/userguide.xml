@@ -20,8 +20,8 @@
 
 <xi:include href="../metainfo.xml" />
 
-<preface xml:id="ug.introduction">
-<title>Introduction</title>
+<preface xml:id="ug.preface">
+<title>Preface</title>
 	
 <para>
 Orc is a programming language designed to make distributed and
@@ -44,43 +44,39 @@ Orc language implementation version
 </para>
 
 <para>
-This guide describes the Orc programming language in three steps. In Chapter 1, we
-discuss a small subset of Orc called Cor. Cor is a pure functional language,
-which has no features for concurrency, has no state, and does not communicate 
-with external services. Cor introduces us to the parts of Orc that are most familiar 
-from existing programming languages, such as arithmetic operations, variables,
-conditionals, and functions.
+This guide introduces the reader to the Orc programming language. It does not
+cover every detail of the language; see the <olink targetdoc="refmanual">Reference Manual</olink>
+for comprehensive documentation of all language features.
 </para>
 
 <para>
-In Chapter 2, we consider Orc itself, which in addition to Cor, comprises 
-external services and combinators for concurrent orchestration of those services. 
-We show how Orc interacts with these external services, how the combinators can be
-used to build up complex orchestrations from simple base expressions, and how the 
-functional constructs of Cor take on new, subtler behaviors in the concurrent 
-context of Orc.
+Chapter 1 introduces the essential concepts of Orc, such as communication
+with external services, and building complex orchestrations from simpler
+programs using the four concurrency combinators. Data structues and function
+definitions are also discussed.
 </para>
 
 <para>
-In Chapter 3, we discuss some additional features of Orc that extend 
-the basic syntax. These are useful for creating large-scale Orc programs, but 
+In Chapter 2, we discuss some additional features of Orc that extend 
+the basic syntax. These are useful for creating practical Orc programs, but 
 they are not essential to the understanding of the language.
 </para>
 
 <para>
-Next, in chapters 4 through 6, we turn our attention to how the language is used in practice, with guidelines on style and programming 
-methodology, including a number of common concurrency patterns.
+In Chapters 3 through 5, 
+we turn our attention to how the language is used in practice, 
+with guidelines on style and programming methodology, 
+explanations of some common concurrency patterns,
+and larger example programs. 
 </para>
 
 </preface>
 
 <!-- Chapters -->
-<!--  TODO: Break sections out into chapters -->
-<xi:include href="ug.language.cor.xml"/>
-<xi:include href="ug.language.orc.xml"/>
-<xi:include href="ug.language.advanced.xml"/>
-<xi:include href="ug.methodology.convention.xml"/>
-<xi:include href="ug.methodology.idiom.xml"/>
-<xi:include href="ug.methodology.example.xml"/>
+<xi:include href="ug.introduction.xml"/>
+<xi:include href="ug.additional.xml"/>
+<xi:include href="ug.style.xml"/>
+<xi:include href="ug.idioms.xml"/>
+<xi:include href="ug.examples.xml"/>
 		
 </book>
