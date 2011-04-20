@@ -13,7 +13,9 @@
 <title>Simple Expressions</title>
 
 In this section we show how some simple Orc expressions are written. 
-Execution of a simple expression publishes at most one value, and.
+Simple expressions publish at most one value, and do not recursively
+contain other expressions. We will see later how some of these cases
+may also be used as complex expressions.
 
 <section xml:id="ug.introduction.simple.values">
 <title>Values</title>
@@ -67,13 +69,8 @@ overridden by adding parentheses.
 <listitem><code>3-5 >= 5-3 </code> publishes <code>false</code>.</listitem>
 <listitem><code><![CDATA[true && (false || true)]]></code> publishes <code>true</code>.</listitem>
 <listitem><code>"leap" + "frog"</code> publishes <code>"leapfrog"</code>.</listitem>
+<listitem><code>3 / 0</code> halts, publishing nothing.</listitem>
 </itemizedlist>
-</para>
-
-<para>
-For the moment, we assume that such expressions consist only of operators and values.
-In the next section, we will see how <emphasis>any</emphasis> expression may be used as an operand,
-even an expression that publishes multiple values.
 </para>
 
 </section>
@@ -81,28 +78,31 @@ even an expression that publishes multiple values.
 <section xml:id="ug.introduction.simple.sites"><title>Sites</title>
 <para>
 An Orc program interacts with the external world by calling <firstterm>sites</firstterm>.
-The use of sites is one of the two fundamental concepts of Orc programming.   
+Sites are one of the two fundamental concepts of Orc programming, the other
+being combinators.   
 </para>
 
 <para>
 A site call in Orc looks like a method, subroutine, or function call in other programming languages.
+A site call might publish a useful value, or it might just publish a <code>signal</code>, or
+it might halt, refusing to publish anything, or it might even wait indefinitely.
 Here are some examples:
 </para>
 
 <para>
 <itemizedlist><title>Examples</title>
-<listitem><code>1+2</code> publishes <code>3</code>.</listitem>
-<listitem><code>(98+2)*17</code> publishes <code>1700</code>.</listitem>
-<listitem><code>4 = 20 / 5</code> publishes <code>true</code>.</listitem>
-<listitem><code>3-5 >= 5-3 </code> publishes <code>false</code>.</listitem>
-<listitem><code><![CDATA[true && (false || true)]]></code> publishes <code>true</code>.</listitem>
-<listitem><code>"leap" + "frog"</code> publishes <code>"leapfrog"</code>.</listitem>
+<listitem><code>Println("hello world")</code> prints <code language="none">hello world</code> to the console and publishes a <code>signal</code>.</listitem>
+<listitem><code>Random(10)</code> publishes a random integer from 0 to 9, uniformly distributed.</listitem>
+<listitem><code>Browse("http://orc.csres.utexas.edu/")</code> opens a browser window pointing to the Orc home page and publishes a <code>signal</code>.</listitem>
+<listitem><code>Error("I AM ERROR")</code> reports an error message on the console, and halts. It publishes nothing.</listitem>
+<listitem><code>Rwait(420)</code> waits for 420 milliseconds, then publishes a <code>signal</code>.</listitem>
+<listitem><code>Prompt("Username:")</code> requests some input from the user, then publishes the user's response as a string. If the user never responds, the site waits forever.</listitem>
 </itemizedlist>
 </para>
 
 <para>
-A site call might publish a useful value, or it might just publish a <code>signal</code>, or
-it might <firstterm>halt</firstterm>, refusing to publish anything, or it might even wait indefinitely.
+Even the most basic operations in Orc are sites. For example, all of the operators are actually sites;
+<code>2+3</code> is just another way of writing the site call <code>(+)(2,3)</code>.
 </para>
 
 </section>

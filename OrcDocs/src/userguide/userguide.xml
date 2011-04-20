@@ -46,7 +46,7 @@ Orc language implementation version
 <para>
 This guide introduces the reader to the Orc programming language. It does not
 cover every detail of the language; see the <olink targetdoc="refmanual">Reference Manual</olink>
-for comprehensive documentation of all language features.
+for comprehensive and authoritative documentation of all language features.
 </para>
 
 <para>

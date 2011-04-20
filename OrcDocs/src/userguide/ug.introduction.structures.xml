@@ -7,13 +7,125 @@
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
-     URL: http://orc.csres.utexas.edu/license.shtml .
+     URL: http://orc.csres.u
+     
+     texas.edu/license.shtml .
   -->
 <section xml:id="ug.introduction.structures" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Data Structures</title>
 
-<section xml:id="ug.introduction.structures.tuples"></section>
-<section xml:id="ug.introduction.structures.lists"></section>
-<section xml:id="ug.introduction.structures.patterns"></section>
+<para>
+Orc supports three basic data structures, <firstterm>tuples</firstterm>, <firstterm>lists</firstterm>, and <firstterm>records</firstterm>.
+This section describes tuples and lists; records are described in a subsequent chapter.
+</para>
+
+<section xml:id="ug.introduction.structures.tuples">
+<title>Tuples</title>
+
+<para>
+A <firstterm>tuple expression</firstterm> is a comma-separated sequence of at least two 
+expressions, enclosed by parentheses. Each expression is executed and its first published
+value is taken; the value of the whole tuple expression is a tuple containing each of 
+these values in order. 
+If any of the expressions is silent, then the whole tuple expression is silent.
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><para>
+  <code>(1+2, 7)</code> evaluates to <code>(3,7)</code>.
+</para></listitem>
+<listitem><para>
+  <code><![CDATA[ ("true" + "false", true || false, true && false) ]]></code> evaluates to <code>("truefalse", true, false)</code>.
+</para></listitem>
+<listitem><para>
+  <code>(2/2, 2/1, 2/0)</code> is silent.
+</para></listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+<section xml:id="ug.introduction.structures.lists">
+
+<title>Lists</title>
+
+<para>
+A <firstterm>list expression</firstterm> is a comma-separated sequence of expressions enclosed by
+square brackets. It may be of any length, including zero. Each expression is executed and its first published
+value is taken; the value of the whole list expression is a list containing each of these values in order.   
+If any of the expressions is silent, then the whole list expression is silent.
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>[1,2+3] </code> publishes <code>[1,5]</code>.</listitem>
+<listitem><code><![CDATA[ [true && true] ]]> </code> publishes <code>[true]</code>.</listitem>
+<listitem><code>[]</code> just publishes <code>[]</code>, the empty list.</listitem>
+<listitem><code>[5, 5 / 0, 5]</code> is silent.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+There is also a concatenation (<firstterm>cons</firstterm>) operation on lists,
+written F<code>:</code>G, where F and G are expressions. It publishes a new list whose first element is the 
+value of F and whose remaining elements are the list value of G. 
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>(1+3):[2+5,6]</code> publishes <code>[4,7,6]</code>.</listitem>
+<listitem><code>2:2:5:[] </code> publishes <code>[2,2,5]</code>.</listitem>
+<listitem>Suppose <code>t</code> is bound to <code>[3,5]</code>. Then <code>1:t</code> publishes <code>[1,3,5]</code>.</listitem>
+<listitem><code>2:3</code> is silent, because <code>3</code> is not a list.</listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+<section xml:id="ug.introduction.structures.patterns">
+<title>Patterns</title>
+
+<para>
+The Orc language provides <firstterm>pattern matching</firstterm> capabilities to inspect and
+extract pieces of a data structure. A <firstterm>pattern</firstterm> may be used wherever a
+variable could be bound; for example, in a <code>val</code> declaration, or a sequential combinator.
+</para>
+
+<para>
+	The following <code>val</code> declarations bind <code>z</code> to <code>(3,4)</code>,
+	<code>x</code> to <code>3</code>, and <code>y</code> to <code>4</code>, using the tuple
+	pattern <code>(x,y)</code>:
+	
+<programlisting language="orc"><![CDATA[
+val z = (3,4)
+val (x,y) = z
+]]></programlisting> 
+</para>
+
+<para>
+The wildcard pattern <code>_</code> lets us ignore irrelevant parts of a data structure.
+Here is an expression which extracts the first element of a list:
+
+<programlisting language="orc-demo"><![CDATA[
+[1,2,3] >first:_> first
+]]></programlisting>
+
+Notice that cons (<code>:</code>) is being used as a pattern to separate a list into its head and tail.
+</para>
+
+<para>
+A pattern may also be used as a filter. A literal value may be used as a pattern; if the same
+value is not present in the data structure being matched, the pattern will <firstterm>fail</firstterm>,
+and the value will be discarded. Here is an expression which publishes the second element of pairs
+with first element 0, and ignores any other pair:
+
+<programlisting language="orc-demo"><![CDATA[
+( (0,3) | (1,4) | (2,5) | (0,6) ) >(0,x)> x
+]]></programlisting>
+
+</para>
+
+</section>
 
 </section>
