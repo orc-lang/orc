@@ -48,7 +48,7 @@ The <code>import class</code> declaration allows a Java class to be used as if
 it were an Orc site. The class constructor is imported as a site, and calls to
 that site return new Java objects whose methods and fields may be accessed using the dot
 notation. The specific details of this conversion 
-are <olink targetdoc="refmanual" targetptr="ref.sites.java">documented</olink> in the reference manual. 
+are <olink targetdoc="ref.sites.java" targetptr="ref.sites.java">documented</olink> in the reference manual. 
 </para>
 
 <para>
