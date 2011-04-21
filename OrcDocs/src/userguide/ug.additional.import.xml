@@ -14,7 +14,7 @@
 
 <para>
 While the Orc language itself is expressive, 
-and the <olink targetdoc="refmanual" targetptr="ref.stdlib">Standard Library</olink> offers a number of useful sites and functions,
+and the <olink targetdoc="ref.stdlib" targetptr="ref.stdlib">Standard Library</olink> offers a number of useful sites and functions,
 it is often necessary to extend the capabilities of a program by writing new sites,
 using existing Java or Scala code,
 or making use of Orc code written by other programmers.
@@ -27,7 +27,7 @@ Orc has three declarations, one corresponding to each of these three use cases.
 <para>
 The <code>import site</code> declaration allows a custom site to be imported
 and used in an Orc program. There are specific requirements that must be met
-by such sites; these are <olink targetdoc="refmanual" targetptr="ref.sites.custom">described in detail</olink> in the reference manual. 
+by such sites; these are <olink targetdoc="ref.sites.custom" targetptr="ref.sites.custom">described in detail</olink> in the reference manual. 
 </para>
 
 <para>
