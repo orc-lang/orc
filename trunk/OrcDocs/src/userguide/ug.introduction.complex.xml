@@ -34,7 +34,8 @@ and trying an alternative if some computation halts.
 	Orc's simplest combinator is <code>|</code>, the parallel combinator. Execution of
 	the complex expression F <code>|</code> G, where F and G are Orc expressions, executes 
 	F and G concurrently. Whenever a value is published during the execution of F or G,
-	the execution of F <code>|</code> G publishes that value. 
+	the execution of F <code>|</code> G publishes that value.  Note the publications of
+	F and G are interleaved arbitrarily.
 	</para>
 	
 	<para>
@@ -70,7 +71,7 @@ OUTPUT:PERMUTABLE
 	</para>
 	
 	<para>
-	The execution of F <code>&gt;x&gt;</code> G starts by executing F. Whenever F publishes a value, 
+	The execution of F<code><![CDATA[ >x> ]]></code>G starts by executing F. Whenever F publishes a value, 
 	a new execution of G begins in parallel with F (and with other executions of G). In that
 	instance of G, variable <code>x</code> is bound to the value published by F. Values published by the executions
 	of G are published by the whole expression, but the values published by F are not published
@@ -119,7 +120,7 @@ OUTPUT:
 </para>
 	
 	<para>
-	The sequential combinator may also be written without a variable, as in F <code>&gt;&gt;</code> G.
+	The sequential combinator may also be written without a variable, as in F<code><![CDATA[ >> ]]></code>G.
 	This has the same behavior, except that no variable name is given to the values published by F.
 	When F publishes only one value, this is similar to a sequential execution in an imperative
 	language. For example, suppose we want to print three messages in sequence:
@@ -145,7 +146,7 @@ Can
 
   <para>
   The simple expression <code>stop</code> does nothing and halts immediately.
-  In conjunction with <code>&gt;&gt;</code>, it can be used to ignore unneeded publications,
+  In conjunction with <code><![CDATA[ >> ]]></code>, it can be used to ignore unneeded publications,
   such as the <code>signal</code> that would be published by <code>Println("Can")</code>.
   </para>
 	
@@ -159,7 +160,7 @@ Can
 	a computation waiting for a result, or terminate a computation. The execution of 
 	F<code> &lt;x&lt; </code>G starts by executing F and G in parallel. Whenever
 	F publishes a value, that value is published by the entire execution. When G publishes
-	its first value, that value is bound to x in F, and then the execution of G is immediately 
+	its first value, that value is bound to <code>x</code> in F, and then the execution of G is immediately 
 	<firstterm>killed</firstterm>. A killed expression cannot make any more site calls or 
 	publish any values.
 	</para>
@@ -239,7 +240,7 @@ oh
 
 
 <section xml:id="ug.introduction.complex.val">
-<title>Val</title>
+<title><code>val</code></title>
 
 <para>
 An expression may be preceded by one or more <firstterm>declarations</firstterm>.
@@ -256,7 +257,7 @@ This is actually just a different way of writing the expression F<code> &lt;x&lt
 Thus, <code>val</code> shares all of the behavior of the pruning combinator: F executes
 in parallel with G, uses of <code>x</code> block until G has published, and when G
 publishes, it is killed. In fact, the <code>val</code> form is used much more often than the
-<code>&lt;x&lt;</code> form, since it is usually easier to read.
+<code> &lt;x&lt; </code> form, since it is usually easier to read.
 </para>
 
 </section>

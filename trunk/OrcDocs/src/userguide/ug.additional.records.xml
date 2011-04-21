@@ -25,7 +25,7 @@ Records may have any number of fields, including zero. Each expression is execut
 and its first published value is taken; the value of the whole record expression is a 
 record containing a pairing of each key with its associated value. 
 Order is irrelevant. 
-If any of the expressions is silent, then the whole record expression is silent.
+If any of the expressions are silent, then the whole record expression is silent.
 </para>
 
 <para>
@@ -37,7 +37,7 @@ If any of the expressions is silent, then the whole record expression is silent.
 
 <para>
 Elements of records are accessed using the dot (<code>.</code>) syntax
-described in the previous section.
+described earlier.
 The expression <code>r.k</code> publishes the value paired with key <code>k</code> in record <code>r</code>.
 If <code>k</code> is not present in <code>r</code>, the expression is silent.
 </para>

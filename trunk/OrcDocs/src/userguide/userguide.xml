@@ -57,14 +57,13 @@ definitions are also discussed.
 </para>
 
 <para>
-In Chapter 2, we discuss some additional features of Orc that extend 
+Chapter 2 discusses some additional features of Orc that extend 
 the basic syntax. These are useful for creating practical Orc programs, but 
 they are not essential to the understanding of the language.
 </para>
 
 <para>
-In Chapters 3 through 5, 
-we turn our attention to how the language is used in practice, 
+Chapters 3 through 5 turn our attention to how the language is used in practice, 
 with guidelines on style and programming methodology, 
 explanations of some common concurrency patterns,
 and larger example programs. 

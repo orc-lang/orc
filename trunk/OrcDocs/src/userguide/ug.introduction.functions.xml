@@ -22,7 +22,7 @@ def add(x,y) = x+y
 ]]></programlisting>
 
 The expression to the right of the <code>=</code> is called the <firstterm>body</firstterm> of the function.
-<code>x</code> and <code>y</code> are the parameters.
+<code>x</code> and <code>y</code> are the parameters.  By convention, all function names begin with a lowercase letter.
 </para>
 
 <para>
@@ -117,7 +117,8 @@ def odd(n) =
 ]]></programlisting>
 
 There is no special keyword for mutual recursion; any contiguous sequence of function declarations is assumed to be 
-mutually recursive.
+mutually recursive.  Also, note that <code>:></code> and <code>&lt;:</code> are the Orc symbols for
+'greater than' and 'less than' respectively.
 </para>
 
 </section>
