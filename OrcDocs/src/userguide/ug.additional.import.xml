@@ -12,4 +12,88 @@
 <section xml:id="ug.additional.import" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Importing Resources</title>
 
+<para>
+While the Orc language itself is expressive, 
+and the <olink targetdoc="refmanual" targetptr="ref.stdlib">Standard Library</olink> offers a number of useful sites and functions,
+it is often necessary to extend the capabilities of a program by writing new sites,
+using existing Java or Scala code,
+or making use of Orc code written by other programmers.
+Orc has three declarations, one corresponding to each of these three use cases.
+</para>
+
+<section xml:id="ug.additional.import.site">
+<title>Writing Custom Sites</title>
+
+<para>
+The <code>import site</code> declaration allows a custom site to be imported
+and used in an Orc program. There are specific requirements that must be met
+by such sites; these are <olink targetdoc="refmanual" targetptr="ref.sites.custom">described in detail</olink> in the reference manual. 
+</para>
+
+<para>
+Suppose one had written a custom site, implemented in the Java class <code language="java">my.example.site.ExampleSite</code>.
+The following code would make it available as a site named <code>Example</code> in an Orc program:
+
+<programlisting language="orc"><![CDATA[
+import site Example = "my.example.site.ExampleSite"
+]]></programlisting>
+</para>
+
+</section>
+
+<section xml:id="ug.additional.import.class">
+<title>Using Java Classes</title>
+<para>
+The <code>import class</code> declaration allows a Java class to be used as if
+it were an Orc site. The class constructor is imported as a site, and calls to
+that site return new Java objects whose methods and fields may be accessed using the dot
+notation. The specific details of this conversion 
+are <olink targetdoc="refmanual" targetptr="ref.sites.java">documented</olink> in the reference manual. 
+</para>
+
+<para>
+The following code imports and uses Java's <code language="java">File</code>,
+<code language="java">FileReader</code>, and <code language="java">BufferedReader</code> classes
+to read the first line of a text file.
+
+<programlisting language="orc"><![CDATA[
+import class File = "java.io.File"
+import class FileReader = "java.io.FileReader"
+import class BufferedReader = "java.io.BufferedReader"
+val f = File("example.txt")
+val reader = BufferedReader(FileReader(f))
+reader.readLine()
+]]></programlisting>
+</para>
+</section>
+
+<section xml:id="ug.additional.import.include">
+<title>Including Source Files</title>
+
+<para>
+The <code>include</code> declaration reads a text file containing Orc declarations
+and includes those declarations in the program as if they had occurred at the point
+where the <code>include</code> declaration occurred. Any declarations may be included:
+<code>val</code>, <code>def</code>, <code>import</code>, or even other <code>include</code>
+declarations. This provides a primitive form of modularity, where Orc code shared
+by many programs may be centralized in one or more include files.
+</para>
+
+<para>
+An <code>include</code> declaration may name any URL, not just a local file. Thus,
+useful include files can be shared over the Internet directly.
+</para>
+
+<para>
+<programlisting language="orc"><![CDATA[
+{- Retrieve an include file from the Orc website and print the example message declared there -}
+
+include "http://orc.csres.utexas.edu/documentation/example.inc"
+Println(example_message)
+]]></programlisting>
+</para>
+
+</section>
+
+
 </section>
