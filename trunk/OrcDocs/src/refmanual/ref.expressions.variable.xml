@@ -86,13 +86,10 @@ OUTPUT:
 			<listitem><para><link linkend="ref.concepts.states.block">Blocking</link></para></listitem>
 			<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
 		</itemizedlist>
-		  
-		  <!--
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-          				<listitem>TODO</listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.sequential">Sequential Combinator</olink></para></listitem>
 		</itemizedlist>
-		  -->
 
 	  </section>
 	</section>

@@ -47,12 +47,10 @@
 			<listitem><para><link linkend="ref.types.subtyping">Subtyping</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
 		</itemizedlist>
-		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.typecheck">Type Checking</olink></para></listitem>
 		</itemizedlist>
-		-->		  
 	  </section>
 	  
 </section>

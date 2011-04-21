@@ -122,12 +122,10 @@ append([1,2,3], [4,5])
 			<listitem><para><link linkend="ref.types.typeinfo.function">Adding Type Information to Functions</link></para></listitem>
 			<listitem><para><link linkend="ref.declarations.type.datatype">Datatype Declaration</link></para></listitem>
 		</itemizedlist>
-		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>		
-		-->  
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.typecheck">Type Checking</olink></para></listitem>
+		</itemizedlist>
 	  </section>
 	  
 </section>

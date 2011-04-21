@@ -49,12 +49,6 @@
 			<listitem><para><link linkend="ref.time.real"><code>Rwait</code></link></para></listitem>
 			<listitem><para><link linkend="ref.data.numeric">Numerics</link></para></listitem>
 		</itemizedlist>
-		<!-- 
-		<itemizedlist>
-			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>
-		-->
 
 	</section>
 	

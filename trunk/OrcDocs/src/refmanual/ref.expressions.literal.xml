@@ -65,13 +65,10 @@ OUTPUT:
 			<listitem><para><link linkend="ref.data">Data Values</link></para></listitem>
 			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
 		</itemizedlist>
-		  
-		  <!--
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-          				<listitem>TODO</listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.values">Literal Values</olink></para></listitem>
 		</itemizedlist>
-		  -->
 
 	  </section>
 	</section>

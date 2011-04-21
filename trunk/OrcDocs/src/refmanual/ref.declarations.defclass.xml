@@ -213,8 +213,14 @@ def class Cell() =
 
   stop
 
-TODO: Put a test/demo here
+val c = Cell()
 
+c := 42 >> c?
+
+{-
+OUTPUT:
+42
+-}
 ]]></programlisting>
 		  </example>
 
