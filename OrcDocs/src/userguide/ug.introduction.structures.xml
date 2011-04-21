@@ -39,7 +39,7 @@ If any of the expressions is silent, then the whole tuple expression is silent.
   <code><![CDATA[ ("true" + "false", true || false, true && false) ]]></code> evaluates to <code>("truefalse", true, false)</code>.
 </para></listitem>
 <listitem><para>
-  <code>(2/2, 2/1, 2/0)</code> is silent.
+  <code>(2/2, 2/1, 2/0)</code> is silent, since <code>2/0</code> is a silent expression.
 </para></listitem>
 </itemizedlist>
 </para>
@@ -62,7 +62,7 @@ If any of the expressions is silent, then the whole list expression is silent.
 <listitem><code>[1,2+3] </code> publishes <code>[1,5]</code>.</listitem>
 <listitem><code><![CDATA[ [true && true] ]]> </code> publishes <code>[true]</code>.</listitem>
 <listitem><code>[]</code> just publishes <code>[]</code>, the empty list.</listitem>
-<listitem><code>[5, 5 / 0, 5]</code> is silent.</listitem>
+<listitem><code>[5, 5/0, 5]</code> is silent, since <code>5/0</code> is a silent expression.</listitem>
 </itemizedlist>
 </para>
 

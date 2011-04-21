@@ -30,7 +30,7 @@ be killed by the Orc program, exactly as if it were a computation of an external
 <para>
 The following two examples demonstrate some of the behavior of <code>def class</code>.
 For a more comprehensive explanation of <code>def class</code> and its features, see the
-<olink targetdoc="ref.declarations.defclass" targetptr="ref.declarations.defclass">reference manual</olink>.
+<olink targetdoc="ref.declarations.defclass" targetptr="ref.declarations.defclass">Reference Manual</olink>.
 </para>
 
 <section xml:id="ug.additional.defclass.stack">

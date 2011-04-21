@@ -40,7 +40,7 @@ Here's an example:
 def diff(f) = f(1) - f(0)
 def triple(x) = x * 3
 
-diff(triple) {-   equivalent to triple(1) - triple(0)   -}
+diff(triple) {-  equivalent to triple(1) - triple(0)  -}
 ]]></programlisting>
 
 The use of higher-order functions is common in functional programming.

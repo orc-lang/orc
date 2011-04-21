@@ -23,7 +23,7 @@ program development.
 </para>
 
 <para>
-A full description of the Orc typechecker is available in the <olink targetdoc="ref.types" targetptr="ref.types">reference manual</olink>.
+A full description of the Orc typechecker is available in the <olink targetdoc="ref.types" targetptr="ref.types">Reference Manual</olink>.
 The reference manual section for each language feature describes how that feature interacts with the typechecker.
 </para>
 
