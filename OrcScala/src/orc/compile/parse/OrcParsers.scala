@@ -294,7 +294,7 @@ with CustomParserCombinators
           case (e, ":!:" ~ t) => TypeAssertion(e,t)
         }
       }
-    | parseDeclaration ~ parseExpression -> Declare
+    | parseDeclaration ~ (parseExpression | failExpecting("after declaration, expression") ) -> Declare
     | ("if" ~> parseExpression)
       ~ ("then" ~> parseExpression)
       ~ ("else" ~> parseExpression)
