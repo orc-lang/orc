@@ -49,7 +49,7 @@ def pickMeetingTime(_) = stop
 
 def inviteQuorum(invitees, quorum) =
   Let(
-    val c = Buffer()
+    val c = Channel()
     getN(c, quorum)
     | each(invitees) >invitee>
       invite(span, invitee) >response>
@@ -72,7 +72,7 @@ inviteQuorum(invitees, quorum) >responses>
 unzip(responses) >(responders,ranges)>
 afold(lambda (a,b) = a.intersect(b), ranges) >times>
 Let(
-  pickMeetingTime(times) >time>
+  pickMeetingTime(iterableToList(times)) >time>
   format.print(time) >time>
   notify(time, invitees, responders)
   ; "No acceptable meeting found")

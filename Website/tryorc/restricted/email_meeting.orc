@@ -33,13 +33,11 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
     Mandatory(DateField("start", "First Allowed Meeting Date")),
     Mandatory(DateField("end", "Last Allowed Meeting Date")),
     FormInstructions("limiti",
-      "The meeting will be scheduled once a quorum of invitees have
-      responded or the response time limit is reached, whichever comes first."),
+      "The meeting will be scheduled once a quorum of invitees have responded or the response time limit is reached, whichever comes first."),
     Mandatory(IntegerField("quorum", "Quorum")),
     Mandatory(IntegerField("timeLimit", "Response Time Limit (hours)")),
     FormInstructions("inviteesi",
-      "Invitees should be one per line: name and e-mail address, separated by space.
-       You may either upload the invitees or enter them in the text box below."),
+      "Invitees should be one per line: name and e-mail address, separated by space. You may either upload the invitees or enter them in the text box below."),
     UploadField("inviteesUpload", "Upload Invitees"),
     Textarea("inviteesText", "Enter Invitees", "", false),
     Mandatory(Textarea("requestTemplate", "Request Message", 
@@ -71,10 +69,10 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
       ; Error("No invitees found. Please try again.")
     val span =
       Interval(data.get("start"), data.get("end").plusDays(1)) >span>
-      if span.isEmpty()
+      (if span.isEmpty()
       then Error("Empty date range. Please try again.")
-      else span
-    (data.get("fromName")+" <"+data.get("fromEmail")+">",
+      else span)
+    signal >> (data.get("fromName")+" <"+data.get("fromEmail")+">",
      data.get("meetingTopic"), data.get("duration"),
      span, invitees,
      data.get("quorum"), data.get("timeLimit"),

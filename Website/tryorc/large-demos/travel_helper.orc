@@ -30,7 +30,7 @@ trip destination.  If none is found, halt.
 --}
 def extractLocation(description) =
   val desc = description.trim().toUpperCase()
-  if(desc.startsWith("TRIP TO ")) >>
+  Ift(desc.startsWith("TRIP TO ")) >>
   desc.substring(8)
 
 import site Geocoder = "orc.lib.net.GoogleGeocoder"
@@ -107,7 +107,7 @@ Repeats indefinitely, and never publishes.
 def notify(get) =
   get() >Trip(time, location) as trip> (
     val forecast = weather(trip)
-    val events = events(trip, "museum")
+    val events = arrayToList(events(trip, "museum"))
     -- at least one of forecast or events must be present
     Let(forecast | events) >>
     Println("TRIP TO " + location + " on " + time) >>
