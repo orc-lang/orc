@@ -12,4 +12,212 @@
 <section xml:id="ug.additional.typecheck" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Type Checking</title>
 
+<para>
+By default, Orc behaves as an untyped language. However, there is an optional static typechecker
+built into Orc, and an accompanying set of typed syntax and type annotations to support static
+typechecking. It can be enabled within the Orc Eclipse plugin, or via a command-line switch.
+The typechecker assures, up to the limitations of its algorithm, that no type errors will occur
+when the program is run. This is a useful sanity check on a program, making it easier to catch
+bugs early, or rule out certain causes for existing bugs. In some cases, it also speeds up
+program development.
+</para>
+
+<para>
+A full description of the Orc typechecker is available in the <olink targetdoc="refmanual" targetptr="ref.types">reference manual</olink>.
+The reference manual section for each language feature describes how that feature interacts with the typechecker.
+</para>
+
+<para>
+It is beyond the scope of this document to give a full tutorial on static type checking.
+However, we will briefly introduce the core concepts and describe the typical approach to
+using the type checker on an existing Orc program with no type information.
+</para>
+
+<section xml:id="ug.additional.typecheck.inferred">
+<title>Type Inference</title>
+
+<para>
+The Orc typechecker performs <firstterm>type inference</firstterm>, meaning that it can
+guess and confirm the type of many expressions without any extra information.
+</para>
+
+<para>
+For example, the typechecker will happily check the following untyped program without
+any assistance:
+
+<programlisting language="orc"><![CDATA[
+val pi = 3.141592653
+val radius = 7
+val area = pi * radius * radius
+
+Println("Area: " + area)
+]]></programlisting>
+
+This program has type <code>Signal</code>, since the body expression is a <code>Println</code>
+call, which publishes a <code>signal</code>. The typechecker verifies that all operations
+in the program are type-correct. 
+</para>
+
+<para>
+If we had introduced a type error somewhere, the typechecker would catch it. For example, both of
+these programs fail to typecheck:
+
+<programlisting language="orc"><![CDATA[
+val pi = 3.141592653
+val radius = 7
+val area = "pi" * radius * radius  {- type error -}
+
+Println("Area: " + area)
+]]></programlisting>
+
+<programlisting language="orc"><![CDATA[
+val pi = 3.141592653
+val radius = 7
+val area = pi * radius * radius  
+
+Println("Area ": area)   {- type error -}
+]]></programlisting>
+
+</para>
+
+</section>
+
+<section xml:id="ug.additional.typecheck.moreinfo">
+<title>Adding Type Information</title>
+
+<para>
+When we begin adding function definitions to a program, the typechecker will
+need more information in order to operate correctly.
+</para>
+
+<para>
+A defined function must have type information for each of its arguments.
+We add type information using the symbol <code>::</code>.
+This is similar to the requirements on methods in languages like Java or Scala:
+
+<programlisting><![CDATA[
+{- Orc -}
+def square(x :: Integer) = x * x
+
+/* Scala */
+def circleArea(x: int) = x * x
+
+/* Java */
+public int circleArea(int x) { return x * x; }
+]]></programlisting>
+
+</para>
+
+<para>
+If the function is recursive, we must also give its return type:
+
+<programlisting language="orc"><![CDATA[
+def metronome() :: Signal = signal | Rwait(1000) >> metronome()
+]]></programlisting>
+
+</para>
+
+<para>
+If the function has multiple clauses, or its arguments are complex patterns,
+this approach can be confusing. Instead of writing the types inline, we can
+write a <firstterm>signature</firstterm>, an extra declaration with the
+argument and return types:
+
+<programlisting language="orc"><![CDATA[
+def sum(List[Number]) :: Number  {-  a signature for 'sum' -}
+def sum([]) = 0
+def sum(h:t) = h + sum(t) 
+]]></programlisting>
+
+</para>
+
+<para>
+Notice the type of the list argument, <code>List[Number]</code>. 
+<code>List</code> is a polymorphic (or "generic") type, which we will
+discuss further in the next section.
+</para>
+
+</section>
+
+<section xml:id="ug.additional.typecheck.polymorphism">
+<title>Polymorphism</title>
+
+<para>
+The Orc type system has polymorphic, or "generic", types, such as <code>List</code>.
+These are the types of collections or containers whose contents might be of
+any type, so long as the type is consistent. For example, the list <code>[3,4,5]</code> has type <code>List[Integer]</code>, whereas
+<code>[[true], [false], []]</code> has type <code>List[Boolean]</code>. 
+</para>
+
+<para>
+A function may also be polymorphic, if it has polymorphic arguments. This must
+be made explicit in the function signature. For example, here is a list append function:
+
+<programlisting language="orc"><![CDATA[
+def append[X](List[X], List[X]) :: List[X]  {- Note the use of a type variable, X -}
+def append([], l) = l
+def append(h:t, l) = h:append(t,l)
+]]></programlisting>
+</para>
+
+<para>
+The typechecker will allow <code>append</code> to be used on any two lists with the
+same type of elements; <code>X</code> is the name of that type. In a program that
+uses append, the typechecker is actually guessing a <firstterm>type argument</firstterm>,
+which gets bound to <code>X</code>.
+</para>
+
+<para>
+When the programmer writes:
+
+<programlisting language="orc"><![CDATA[
+val a = [1,2,3]
+val b = [4,5]
+append(a,b)
+]]></programlisting>
+
+the typechecker fills in a type argument for <code>append</code>:
+
+<programlisting language="orc"><![CDATA[
+val a = [1,2,3]
+val b = [4,5]
+append[Integer](a,b)
+]]></programlisting>
+
+</para>
+
+<para>
+Sometimes the typechecker can't guess this type argument on its own.
+For example, the <code>Channel</code> site takes a type argument but no value arguments,
+so the typechecker doesn't have enough information available to guess the type argument
+when it encounters the call. It must be added explicitly:
+
+<programlisting language="orc"><![CDATA[
+{- Fails to typecheck -}
+val c = Channel()
+c.put(7)
+
+{- Typechecks -}
+val c = Channel[Integer]()
+c.put(7)
+]]></programlisting>
+
+This information may seem redundant, since <code>c.put(7)</code> obviously indicates that
+the channel will contain <code>Integer</code> values, but the typechecking algorithm does not
+use that information. It makes up for this limitation by providing more power in other areas.
+</para>
+
+<para>
+This limitation is not unusual. Java constructors for generic classes have a similar requirement:
+
+<programlisting language="java"><![CDATA[
+LinkedList<Integer> l = new LinkedList<Integer>();
+]]></programlisting>
+
+</para>
+
+</section>
+
+
+
 </section>
