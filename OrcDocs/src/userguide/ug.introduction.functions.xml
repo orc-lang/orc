@@ -17,7 +17,7 @@ Like most other programming languages, Orc provides the capability to define <fi
 which are expressions that have a defined name, and have some number of <firstterm>parameters</firstterm>. 
 Functions are declared using the keyword <code>def</code>, in the following way:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def add(x,y) = x+y
 ]]></programlisting>
 
@@ -33,7 +33,7 @@ associating the parameters with the arguments, followed by the body of the funct
 Every value published by the body expression is published by the call. This is
 unlike a site call, which publishes at most once. 
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- add(1+2, 3+4) is equivalent to: -}
 
 val x = 1+2
@@ -73,7 +73,7 @@ This call publishes <code>3</code> immediately, but blocks for 2 seconds before 
 <para>
 A function definition or call may have zero arguments, in which case we write <code>()</code> for the arguments.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def Zero() = 0
 ]]></programlisting>
 </para>
@@ -84,7 +84,7 @@ def Zero() = 0
 <para>
 A function can be recursive; that is, the name of a function may be used in its own body.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
 ]]></programlisting>
 
@@ -96,7 +96,7 @@ A recursive function may run forever, publishing an infinite number of times.
 The function <code>metronome</code> is a classic example; a call to <code>metronome</code>
 publishes a <code>signal</code> once per second, forever:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def metronome() = signal | Rwait(1000) >> metronome()
 ]]></programlisting>
 
@@ -105,7 +105,7 @@ def metronome() = signal | Rwait(1000) >> metronome()
 <para>
 Mutual recursion is also supported.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def even(n) = 
   if (n :> 0) then odd(n-1)
   else if (n <: 0) then odd(n+1)
@@ -135,7 +135,7 @@ different code depending on the structure of their arguments.
 <para>
 Here's an example.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def sum([]) = 0
 def sum(h:t) = h + sum(t)
 ]]></programlisting>
@@ -162,7 +162,7 @@ If no clause matches, the call remains silent.
 <para>
 We can use a literal pattern to define the base case of a recursive function in a straightforward way.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Fibonacci numbers -}
 def fib(0) = 1
 def fib(1) = 1
@@ -172,7 +172,7 @@ def fib(n) = fib(n-1) + fib(n-2)
 This definition of the Fibonacci function is straightforward, but slow, due to the repeated work in recursive
 calls to <code>fib</code>. We can define a linear-time version, again with the help of pattern matching:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Alternate definition of the Fibonacci function -}
 
 {- A helper function: find the pair (Fibonacci(n), Fibonacci(n+1)) -}
@@ -188,7 +188,7 @@ As a more complex example of matching, consider the following function which tak
 a list argument and returns a new list containing only the first <code>n</code> 
 elements of the argument list. 
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def take(0,_) = []
 def take(n,h:t) = h:take(n-1, t)
 ]]></programlisting>
@@ -211,7 +211,7 @@ argument:
 </para>
 
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- Fibonacci numbers -}
 def fib(0) = 1
 def fib(1) = 1
@@ -224,7 +224,7 @@ We can also improve the readability of a previous example:
 </para>
 
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def even(n) if (n :> 0) = odd(n-1)
 def even(n) if (n <: 0) = odd(n+1)
 def even(0) = true 

@@ -28,7 +28,7 @@ Despite the austerity of Orc's four combinators, we are able to encode a variety
 <para>
 Orc has no communication primitives like pi-calculus
 channels<footnote><para>Robin Milner. 1999. <citetitle>Communicating and Mobile Systems:
-the &#x3C0;-Calculus</citetitle>. Cambridge University Press, New York, NY, USA.</para></footnote>
+The &#x3C0;-Calculus</citetitle>. Cambridge University Press, New York, NY, USA.</para></footnote>
 or Erlang mailboxes<footnote><para>Joe Armstrong, Robert Virding, Claes Wikstr&#xF6;m, and Mike Williams. 1996.
 <citetitle>Concurrent programming in ERLANG (2nd ed.)</citetitle>. Prentice Hall,
 Englewood Cliffs, NJ, USA.</para></footnote>. Instead, it makes use of sites
@@ -77,7 +77,7 @@ as a value. The library function <code>each</code> does exactly that.
 Suppose we want to send the message <code>invite</code> to each email
 address in the list <code>inviteList</code>:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 each(inviteList) >address> Email(address, invite)
 ]]></programlisting>
 
@@ -112,7 +112,7 @@ available publications from a stream; it is called <code>repeat</code>, and it i
 <code>each</code> for lists.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def repeat(f) = f() >x> (x | repeat(f))
 ]]></programlisting>
 
@@ -127,7 +127,7 @@ call to <code>f</code> halts, then <code>repeat(f)</code> consequently halts.
 For example, it is very easy to treat a channel <code>c</code> as a stream, reading any 
 values put on the channel as they become available:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 repeat(c.get)
 ]]></programlisting>
 
@@ -346,7 +346,7 @@ publishes all of the numbers from <code>0</code> to
 an array simultaneously. Suppose we have an array <code>A</code> of <code>n</code> email 
 addresses and would like to send the message <code>m</code> to each one.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 upto(n) >i> A(i)? >address> Email(address, m)
 ]]></programlisting>
 
@@ -385,7 +385,7 @@ following code:
 </para>
 
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val size = 10
 val channels = Table(size, lambda (_) = Channel())
 ]]></programlisting>
@@ -397,7 +397,7 @@ identical. Here is another example, which memoizes the cubes of the first 30 nat
 </para>
 
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val cubes = Table(30, lambda(i) = i*i*i)
 ]]></programlisting>
 </para>
@@ -450,7 +450,7 @@ a signal for each 3 that occurs.
 <para>
 We could write:
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis><![CDATA[ >(x, y)>
   ( Ift(x = 3) >> signal
   | Ift(y = 3) >> signal ) 
@@ -459,7 +459,7 @@ We could write:
 
 But there is a more general alternative:
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis><![CDATA[ >x>
   ( x >(3, _)> signal
   | x >(_, 3)> signal ) 
@@ -530,7 +530,7 @@ two <code>val</code> declarations, and then form a tuple of their results, this 
 </para>
 
 <para>
-<programlisting>
+<programlisting language="orc">
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
    signal >> (x,y)
@@ -543,7 +543,7 @@ translations. In fact, the fork-join we wrote above could be expressed even more
 </para>
 
 <para>
-<programlisting>
+<programlisting language="orc">
 (<emphasis role="bold">F</emphasis>,<emphasis role="bold">G</emphasis>)
 </programlisting>
 </para>
@@ -558,7 +558,7 @@ initializes <code>m</code> and then publishes a signal when initialization is co
 <code>initAll</code> initializes a list of machines.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def initAll([]) = signal
 def initAll(m:ms) = ( m.init() , initAll(ms) ) >> signal
 ]]></programlisting>
@@ -586,7 +586,7 @@ bid. The function <code>auction</code> performs such an auction for a list of bi
 finds the maximum of its arguments):
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def auction([]) = 0
 def auction(b:bs) = max(b.ask(), auction(bs))
 ]]></programlisting>
@@ -604,7 +604,7 @@ a <link linkend="ug.idioms.timeout.example.auction">different solution</link> th
 <para>
 Consider an expression of the following form, where F and G are expressions and M and N are sites:
 
-<programlisting>
+<programlisting language="orc">
 M() <![CDATA[ >x> ]]> <emphasis role="bold">F</emphasis> | N() <![CDATA[ >y> ]]> <emphasis role="bold">G</emphasis>
 </programlisting>
 
@@ -616,7 +616,7 @@ executing at the same time, after both <code>M()</code> and <code>N()</code> res
 using the fork-join idiom. In the following, we assume that <code>x</code> does not occur
 free in G, nor <code>y</code> in F.
 
-<programlisting>
+<programlisting language="orc">
 ( M() , N() ) <![CDATA[ >(x,y)> ]]> ( <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> )
 </programlisting>
 
@@ -646,7 +646,7 @@ like a list, rather than streamed as publications from F.  A better solution
 uses the <code>;</code> combinator to detect when processing is complete:
 </para>
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis> >x> println(x) >> stop ; signal
 </programlisting>
 
@@ -683,7 +683,7 @@ channel. If all channels are empty, the function halts.  We use the <code>getnb<
 available item if there is one, and halts otherwise.
 </para>
 
-<programlisting>
+<programlisting language="orc">
 def priorityPoll([]) = stop
 def priorityPoll(b:bs) = b.getD() ; priorityPoll(bs)
 </programlisting>
@@ -705,7 +705,7 @@ The ``parallel or'' of expressions F and G may be expressed in Orc as
 follows:
 </para>
 
-<programlisting>
+<programlisting language="orc">
 val result =
   val a = <emphasis role="bold">F</emphasis>
   val b = <emphasis role="bold">G</emphasis>
@@ -738,7 +738,7 @@ The following program runs F for at most one second, publishing its result if
 available and the value <code>0</code> otherwise.
 </para>
 
-<programlisting>
+<programlisting language="orc">
 Let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
 </programlisting>
 
@@ -750,7 +750,7 @@ In the <link linkend="ug.idioms.forkjoin.example.auction">auction example</link>
 one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def auction([]) = 0
 def auction(b:bs) = 
   val bid = b.ask() | Rwait(8000) >> 0
@@ -780,14 +780,14 @@ Here, we run expression F with a time limit <code>t</code>. If it publishes
 within the time limit, we bind its result to <code>r</code> and execute G.
 Otherwise, we execute H.
 
-<programlisting>
+<programlisting language="orc">
 val (r, b) = (<emphasis role="bold">F</emphasis>, true) | (Rwait(t), false)
 if b then <emphasis role="bold">G</emphasis> else <emphasis role="bold">H</emphasis>
 </programlisting>
 
 Instead of using a boolean and conditional, we could use pattern matching:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rwait(t) >> None()
   s >Some(r)> ]]><emphasis role="bold">G</emphasis><![CDATA[
 | s >None()>  ]]><emphasis role="bold">H</emphasis>
@@ -799,7 +799,7 @@ val s = Some(]]><emphasis role="bold">F</emphasis><![CDATA[) | Rwait(t) >> None(
 
 It is even possible to encapsulate timeout as a function.
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())
 ]]></programlisting>
 
@@ -816,7 +816,7 @@ the time limit, <code>timeout</code> returns <code>Some(v)</code>. Otherwise, it
 We can also apply timeout to <link linkend="ug.idioms.streams">streams</link>. Let's
 define a modified version of the <code>repeat</code> function as follows:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def repeatWithTimeout(f, t) = 
   timeout(f(), t) 
     >Some(x)> 
@@ -843,7 +843,7 @@ stream has been reached.
 It is also possible to achieve this behavior with the existing <code>repeat</code> function,
 simply by changing the function passed to <code>repeat</code>:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def f'() = timeout(f(), t) >Some(x)> x
 repeat(f')
 ]]></programlisting>
@@ -867,7 +867,7 @@ but G's result is held until the time interval has elapsed.  If neither F nor
 G publishes a result within one second, then the first result from either
 is published.
 
-<programlisting>
+<programlisting language="orc">
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
 Let( y | Rwait(1000) >> x )
@@ -885,7 +885,7 @@ A timer can be used to execute an expression repeatedly at regular
 intervals, for example to poll a service.
 Recall the definition of <code>metronome</code> from the previous chapter:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def metronome(t) = signal | Rwait(t) >> metronome()
 ]]></programlisting>
 </para>
@@ -948,7 +948,7 @@ of timeout: allow an expression to execute, publishing arbitrarily many values
 (not just one), until a time limit is reached.
 </para>
 
-<programlisting>
+<programlisting language="orc">
 val c = Channel()
 repeat(c.get)<![CDATA[ << ]]>
     <emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop 
@@ -974,7 +974,7 @@ We can also decide to terminate based on the values published. This expression
 executes F until it publishes a negative number, and then terminates it:
 </para>
 
-<programlisting>
+<programlisting language="orc">
 val c = Channel()
 repeat(c.get)<![CDATA[ << ]]>
   <emphasis role="bold">F</emphasis><![CDATA[ >x> 
@@ -1003,7 +1003,7 @@ cause <code>done.acquire()</code> to publish), but otherwise F executes as norma
 may publish any number of values.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val c = Channel()
 val done = Semaphore(0)
 repeat(c.get) <<
@@ -1020,7 +1020,7 @@ rather than just one. Here is an expression which executes F until
 it publishes 5 values, and then terminates it.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val c = Channel()
 val done = Semaphore(0)
 def allow(0) = done.release() >> stop
@@ -1053,7 +1053,7 @@ it publishes a value, we will continue running it, ignoring its remaining
 publications.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val r = Cell()
 signal >>
    (]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
@@ -1070,7 +1070,7 @@ run F until it halts, and then run G, regardless of whether F published any valu
 or not.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 val c = Channel()
 repeat(c.get) | (]]><emphasis role="bold">F</emphasis><![CDATA[ >x> c.put(x) >> stop ; c.close() >> ]]><emphasis role="bold">G</emphasis>)  
 </programlisting>
@@ -1092,7 +1092,7 @@ We consider various concurrent implementations of the classic "list fold"
 function from functional programming:
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def fold(_, [x])  = x
 def fold(f, x:xs) = f(x, fold(xs))]]></programlisting>
 
@@ -1116,7 +1116,7 @@ to a single value.  Each step of the iteration applies the auxiliary function
 adjacent items. 
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def afold(_, [x]) = x
 def afold(f, xs) =
   def step([]) = []
@@ -1150,7 +1150,7 @@ in parallel as they become available. The last item in the channel is the
 result of the overall fold.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def cfold(f, xs) =
   val c = Channel()
   

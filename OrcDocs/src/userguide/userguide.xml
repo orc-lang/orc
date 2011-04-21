@@ -33,7 +33,7 @@ concurrent programming with applications in workflow, business process
 management, and web service orchestration. Orc provides constructs to
 orchestrate the concurrent invocation of services while managing
 time-outs, priorities, and failures of services or communication.  To
-learn more about Orc and run your own Orc programs, visit the website:
+learn more about Orc and run your own Orc programs, visit the Web site:
 <link xlink:href="http://orc.csres.utexas.edu/"><code>http://orc.csres.utexas.edu/</code></link>.
 </para>
 
