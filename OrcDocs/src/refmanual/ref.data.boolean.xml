@@ -102,8 +102,8 @@ false
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc.constants">Constants</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc.conditionals">Conditionals</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.values">Literal Values</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.conditionals">Conditionals</olink></para></listitem>
 		</itemizedlist>
 
 </section>

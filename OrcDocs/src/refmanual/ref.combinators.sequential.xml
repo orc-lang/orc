@@ -64,10 +64,10 @@
 		    </productionset>
 		  </para>
 		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
-			  <olink targetdoc="userguide" targetptr="combinators.sequential">sequential</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.parallel">parallel</olink> > 
-			  <olink targetdoc="userguide" targetptr="combinators.pruning">pruning</olink> >
-			  <olink targetdoc="userguide" targetptr="combinators.otherwise">otherwise</olink>
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.sequential">sequential</olink> >
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.pruning">pruning</olink> >
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.otherwise">otherwise</olink>
 			        [<link linkend="ref.syntax.precedence">Full Table</link>]
 			  </para>
 	  </section>
@@ -163,9 +163,9 @@ world
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="combinators.sequential">Sequential Combinator</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Pattern Matching Extensions</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites">Sites</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.sequential">Sequential Combinator</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.patterns">Patterns</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.sites">Sites</olink></para></listitem>
 		</itemizedlist>
 
 	  </section>

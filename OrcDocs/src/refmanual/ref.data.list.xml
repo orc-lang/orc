@@ -201,7 +201,8 @@ OUTPUT:PERMUTABLE:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.lists">Lists</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.lists">Idioms: Lists</olink></para></listitem>
 		</itemizedlist>
 </section>
 

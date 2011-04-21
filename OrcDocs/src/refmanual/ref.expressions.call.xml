@@ -192,7 +192,7 @@ true
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="chapter.services">Accessing External Services</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.import">Importing Resources</olink></para></listitem>
 		</itemizedlist>
 
 	  </section>

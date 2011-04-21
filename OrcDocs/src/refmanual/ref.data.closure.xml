@@ -88,7 +88,7 @@ OUTPUT:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc.language.currying">Currying</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.closures">First-Class Functions</olink></para></listitem>
 		</itemizedlist>
 </section>
 

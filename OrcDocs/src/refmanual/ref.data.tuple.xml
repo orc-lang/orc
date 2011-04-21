@@ -115,8 +115,8 @@ join
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="cor.data">Data Structures</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-Join</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.tuples">Tuples</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.forkjoin">Fork-Join</olink></para></listitem>
 		</itemizedlist>
 </section>
 
