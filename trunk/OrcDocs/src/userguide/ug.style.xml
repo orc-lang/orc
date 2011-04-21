@@ -28,7 +28,7 @@ helps to improve the readability of programs, so that the programmer's intent is
 <para>
 When the expressions to be combined are small, write them all on one line.
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
@@ -39,7 +39,7 @@ When the combined expressions are large enough to take up a full line, write one
 per line, with each subsequent expression aligned with the first and preceded by <code>|</code>. 
 Indent the first expression to improve readability.
 
-<programlisting>
+<programlisting language="orc">
   <emphasis role="bold">long expression</emphasis> 
 | <emphasis role="bold">long expression</emphasis>
 | <emphasis role="bold">long expression</emphasis>
@@ -53,7 +53,7 @@ Since the sequential combinator has higher precedence, use parentheses to group 
 combined parallel expressions together. 
 
 
-<programlisting>
+<programlisting language="orc">
 ( <emphasis role="bold">expression</emphasis> 
 | <emphasis role="bold">expression</emphasis>
 )<![CDATA[ >x> ]]>
@@ -70,7 +70,7 @@ When the expressions to be combined are small, write a cascade of sequential com
 all on the same line.
 </para> 
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis><![CDATA[ >x> ]]><emphasis role="bold">G</emphasis><![CDATA[ >y> ]]><emphasis role="bold">H</emphasis>
 </programlisting>
 
@@ -79,7 +79,7 @@ When the expressions to be combined are individually long enough to take up a fu
 per line; each line ends with the combinator which binds the publications
 produced by that line.
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">long expression</emphasis> <![CDATA[ >x> ]]> 
 <emphasis role="bold">long expression</emphasis> <![CDATA[ >y> ]]>
 <emphasis role="bold">long expression</emphasis>
@@ -91,7 +91,7 @@ produced by that line.
 For very long expressions, or expressions that span multiple lines, write
 the combinators on separate lines, indented, between each expression. 
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">very long expression</emphasis> 
  <![CDATA[ >x> ]]> 
 <emphasis role="bold">very long expression</emphasis> 
@@ -108,7 +108,7 @@ the combinators on separate lines, indented, between each expression.
 <para>
 When the expressions to be combined are small, write them on the same line:
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">F</emphasis><![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
 </programlisting>
 
@@ -116,7 +116,7 @@ When multiple pruning combinators are used to bind multiple variables
 (especially when the scoped expression is long), start each line with a 
 combinator, aligned and indented, and continue with the expression.
 
-<programlisting>
+<programlisting language="orc">
 <emphasis role="bold">long expression</emphasis> 
  <![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
  <![CDATA[ <y< ]]><emphasis role="bold">H</emphasis>
@@ -130,7 +130,7 @@ in Orc programs. Instead, the <code>val</code> declaration is often more
 convenient, since it is semantically equivalent and mentions the variable
 <code>x</code> before its use in scope, rather than after.
 
-<programlisting>
+<programlisting language="orc">
 val x = <emphasis role="bold">G</emphasis>
 val y = <emphasis role="bold">H</emphasis>
 <emphasis role="bold">long expression</emphasis> 
@@ -143,7 +143,7 @@ Additionally, when the variable is used in only one place, and the
 expression is small, it is often easier to use a nested expression.
 For example,
 
-<programlisting>
+<programlisting language="orc">
 val x = <emphasis role="bold">G</emphasis>
 val y = <emphasis role="bold">H</emphasis>
 M(x,y)
@@ -151,7 +151,7 @@ M(x,y)
 
 is equivalent to
 
-<programlisting>
+<programlisting language="orc">
 M(<emphasis role="bold">G</emphasis>,<emphasis role="bold">H</emphasis>)
 </programlisting>
 
@@ -167,13 +167,13 @@ to put the expression in the context of a function call.
 <para>
 For example,
 
-<programlisting>
+<programlisting language="orc">
 x<![CDATA[ <x< ]]><emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
 </programlisting>
 
 is equivalent to
 
-<programlisting>
+<programlisting language="orc">
 Let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>)
 </programlisting>
 </para>
@@ -192,7 +192,7 @@ in parentheses as part of the call).
 When the body of a declaration spans multiple lines, start the body on a new line
 after the <code>=</code> symbol, and indent the entire body.
 
-<programlisting>
+<programlisting language="orc">
 def f(x,y) =
     <emphasis role="bold">declaration</emphasis>
     <emphasis role="bold">declaration</emphasis>
@@ -204,7 +204,7 @@ def f(x,y) =
 <para>
 Apply this style recursively; if a def appears within a def, indent its contents even further.
 
-<programlisting>
+<programlisting language="orc">
 def f(x,y) =
     <emphasis role="bold">declaration</emphasis>
     def helper(z) =
@@ -226,7 +226,7 @@ non-alphanumeric symbol. Consider these example programs:
 </para>
 
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def f() =       
   def g() = h
   (x,y)
@@ -234,7 +234,7 @@ def f() =
 </para>
 		
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def f() =      
   val t = h
   (x,y)
@@ -242,7 +242,7 @@ def f() =
 </para>
 		
 <para>
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 def f() =       
   val t = u
   -3

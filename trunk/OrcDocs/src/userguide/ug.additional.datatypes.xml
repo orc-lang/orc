@@ -21,7 +21,7 @@ language family called <firstterm>datatypes</firstterm> (also called variants or
 <para>
 Datatypes are defined using the <code>type</code> declaration:
 
-<programlisting><![CDATA[
+<programlisting language="orc"><![CDATA[
 type Tree = Node(_,_,_) | Empty()
 ]]></programlisting>
 
@@ -37,7 +37,7 @@ wrapping those arguments. <code>Empty</code> takes no arguments and does the sam
 Once we have created these tagged values, we use a new pattern called a datatype pattern
 to match them and unwrap the arguments:
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 type Tree = Node(_,_,_) | Empty()
 {- Build up a small binary tree -}
 val l = Node(Empty(), 0, Empty())

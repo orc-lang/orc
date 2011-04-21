@@ -18,7 +18,7 @@
 
 <para>
 In this section we show a few larger Orc programs to demonstrate programming techniques. 
-There are many more such examples available at the Orc website, on the
+There are many more such examples available at the Orc Web site, on the
 <link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
 </para>
 
@@ -440,7 +440,7 @@ The auxiliary function <code>sort</code> sorts the subarray given by indices
 the subarray and then recursively sorting the partitions.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
 {- Perform Quicksort on a list -}
 
 def quicksort(a) =
@@ -493,7 +493,7 @@ and <code>x := y</code> for <code>x.write(y)</code>.  Also note that the express
 </para>
 </section>
 
-<!--  TODO: Add a note: this example may require Orchard to work -->
+
 <section xml:id="ug.examples.meeting"><title>Meeting Scheduler</title>
 
 <para>
@@ -508,7 +508,8 @@ then combines all the responses, selects a meeting time which is acceptable to
 everyone, and notifies everyone of the selected time.
 </para>
 
-<programlisting><![CDATA[
+<programlisting language="orc-demo"><![CDATA[
+{- This program requires the Orchard environment to run -}
 include "net.inc"
 val during = Interval(LocalDate(2009, 9, 10),
                       LocalDate(2009, 10, 17))
@@ -574,7 +575,7 @@ This program may be extended to add more sophisticated features, such as a
 quorum (to select a meeting as soon as some subset of invitees responds) or
 timeouts (to remind invitees if they don't respond in a timely manner).  These
 modifications are local and do not affect the overall structure of the program.
-For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our website</link>.
+For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our Web site</link>.
 </para>
 </section>
 
