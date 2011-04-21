@@ -112,7 +112,7 @@
             <dir name="build">
                <dir name="html">
 				  <dir name="refmanual">
-					  <document targetdoc="refmanual">
+					  <document targetdoc="refmanual" baseuri="index.html">
 						&targets.refmanual;
 					  </document>
 					  <document targetdoc="ref.combinators.otherwise" baseuri="ref.combinators.otherwise.html">
