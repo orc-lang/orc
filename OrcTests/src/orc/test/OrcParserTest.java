@@ -50,7 +50,6 @@ public class OrcParserTest {
     final LinkedList<File> files = new LinkedList<File>();
     TestUtils.findOrcFiles(new File("test_data"), files);
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
-    TestUtils.findOrcFiles(new File("../Website/tryorc"), files);
     final OrcBindings options = new OrcBindings();
     final StandardOrcCompiler envServices = new StandardOrcCompiler();
     for (final File file : files) {
