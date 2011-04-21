@@ -12,4 +12,60 @@
 <section xml:id="ug.additional.records" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Records</title>
 
+<para>
+In addition to tuples and lists, the Orc language has a third native data structure, called a <firstterm>record</firstterm>.
+</para>
+
+<para>
+A <firstterm>record expression</firstterm> is a comma-separated sequence of elements of the form 
+k<code> = </code> E, enclosed by
+record braces <code>{.</code> and <code>.}</code>, where each k is an identifier called a key, 
+and each E is an expression. 
+Records may have any number of fields, including zero. Each expression is executed
+and its first published value is taken; the value of the whole record expression is a 
+record containing a pairing of each key with its associated value. 
+Order is irrelevant. 
+If any of the expressions is silent, then the whole record expression is silent.
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>{. zero = 3 - 3, one = 0 + 1 .}</code> publishes <code>{. zero = 0, one = 1 .}</code>.</listitem>
+<listitem><code>{. .}</code> publishes <code>{. .}</code>, the empty record.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+Elements of records are accessed using the dot (<code>.</code>) syntax
+described in the previous section.
+The expression <code>r.k</code> publishes the value paired with key <code>k</code> in record <code>r</code>.
+If <code>k</code> is not present in <code>r</code>, the expression is silent.
+</para>
+
+<para>
+Suppose <code>r = {. x = 0, y = 1 .}</code>
+<itemizedlist><title>Examples</title>
+<listitem><code>r.x</code> publishes <code>0</code>.</listitem>
+<listitem><code>r.y</code> publishes <code>1</code>.</listitem>
+<listitem><code>r.z</code> is silent.</listitem>
+</itemizedlist>
+</para>
+
+
+<para>
+Like tuples and lists, records can also be matched by a pattern. However, unlike other
+patterns, a record pattern does not need to name all of the keys in the record being
+matched; it only needs to match a subset.
+</para>
+
+<para>
+Suppose <code>r = {. x = 0, y = 1, z = 2 .}</code>
+<itemizedlist><title>Examples</title>
+<listitem><code>r >{. y = a, x = b .}> (a,b)</code> publishes <code>(1,0)</code>.</listitem>
+<listitem><code>r >{. y = a, w = b .}> (a,b)</code> is silent.</listitem>
+</itemizedlist>
+</para>
+
+
+
 </section>
