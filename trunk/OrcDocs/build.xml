@@ -171,16 +171,10 @@
 			<!-- Create a database of the combined files by processing includes -->
 			<sysproperty key="org.apache.xerces.xni.parser.XMLParserConfiguration"
 				value="org.apache.xerces.parsers.XIncludeParserConfiguration"/>
-			<include name="*.xml"/>
+			<include name="userguide.xml"/>
 		</docbooktargetdb>
 
-		<!-- Create database of links for reference manual homepage (TOC) -->
-		<docbooktargetdb srcdir="${src.dir}/refmanual"
-			destdir="${build.dir}/targetdb">
-			<include name="*.xml"/>
-		</docbooktargetdb>
-
-		<!-- Create olink databases for modular chapters/sections -->
+		<!-- Create database of links for reference manual -->
 		<docbooktargetdb srcdir="${src.dir}/refmanual"
 			destdir="${build.dir}/targetdb">
 			<include name="*.xml"/>

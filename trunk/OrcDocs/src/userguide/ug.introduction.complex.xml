@@ -335,7 +335,7 @@ OUTPUT:
 <para>
 To be precise, whenever an Orc expression appears in such a context, it is treated as if it were 
 on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
-This is called <olink targetdoc="refmanual" targetptr="ref.concepts.deflate">deflation</olink>.
+This is called <olink targetdoc="ref.concepts.deflate" targetptr="ref.concepts.deflate">deflation</olink>.
 </para>
 
 

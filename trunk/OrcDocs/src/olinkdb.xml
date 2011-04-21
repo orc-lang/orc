@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- olinkdb.xml - DocBook olink xref targets database specification
+	 Project OrcDocs
+
+	 $Id$$
+
+	 Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+	 Use and redistribution of this file is governed by the license terms in
+	 the LICENSE file found in the project's top-level directory and also found at
+	 URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
 
 <!DOCTYPE targetset
    SYSTEM "../docbook-xsl/common/targetdatabase.dtd" [
@@ -86,22 +97,6 @@
    <!ENTITY targets.ref.types.typeinfo SYSTEM "../build/targetdb/ref.types.typeinfo.xml">
    <!ENTITY targets.ref.types SYSTEM "../build/targetdb/ref.types.xml">
    <!ENTITY targets.userguide SYSTEM "../build/targetdb/userguide.xml">
-   <!ENTITY targets.ug.additional.closures SYSTEM "../build/targetdb/ug.additional.closures.xml">
-   <!ENTITY targets.ug.additional.datatypes SYSTEM "../build/targetdb/ug.additional.datatypes.xml">
-   <!ENTITY targets.ug.additional.defclass SYSTEM "../build/targetdb/ug.additional.defclass.xml">
-   <!ENTITY targets.ug.additional.dotaccess SYSTEM "../build/targetdb/ug.additional.dotaccess.xml">
-   <!ENTITY targets.ug.additional.import SYSTEM "../build/targetdb/ug.additional.import.xml">
-   <!ENTITY targets.ug.additional.records SYSTEM "../build/targetdb/ug.additional.records.xml">
-   <!ENTITY targets.ug.additional.typecheck SYSTEM "../build/targetdb/ug.additional.typecheck.xml">
-   <!ENTITY targets.ug.additional SYSTEM "../build/targetdb/ug.additional.xml">
-   <!ENTITY targets.ug.examples SYSTEM "../build/targetdb/ug.examples.xml">
-   <!ENTITY targets.ug.idioms SYSTEM "../build/targetdb/ug.idioms.xml">
-   <!ENTITY targets.ug.introduction.complex SYSTEM "../build/targetdb/ug.introduction.complex.xml">
-   <!ENTITY targets.ug.introduction.functions SYSTEM "../build/targetdb/ug.introduction.functions.xml">
-   <!ENTITY targets.ug.introduction.simple SYSTEM "../build/targetdb/ug.introduction.simple.xml">
-   <!ENTITY targets.ug.introduction.structures SYSTEM "../build/targetdb/ug.introduction.structures.xml">
-   <!ENTITY targets.ug.introduction SYSTEM "../build/targetdb/ug.introduction.xml">
-   <!ENTITY targets.ug.style SYSTEM "../build/targetdb/ug.style.xml">
    ]>
 <targetset>
    <targetsetinfo>
@@ -370,54 +365,6 @@
 				  <dir name="userguide">
 					  <document targetdoc="userguide" baseuri="userguide.html"> 
 	                     &targets.userguide;
-	                  </document>
-	                  <document targetdoc="ug.additional.closures" baseuri="ug.additional.closures.html"> 
-	                     &targets.ug.additional.closures;
-	                  </document>
-	                  <document targetdoc="ug.additional.datatypes" baseuri="ug.additional.datatypes.html"> 
-	                     &targets.ug.additional.datatypes;
-	                  </document>
-	                  <document targetdoc="ug.additional.defclass" baseuri="ug.additional.defclass.html"> 
-	                     &targets.ug.additional.defclass;
-	                  </document>
-	                  <document targetdoc="ug.additional.dotaccess" baseuri="ug.additional.dotaccess.html"> 
-	                     &targets.ug.additional.dotaccess;
-	                  </document>
-	                  <document targetdoc="ug.additional.import" baseuri="ug.additional.import.html"> 
-	                     &targets.ug.additional.import;
-	                  </document>
-	                  <document targetdoc="ug.additional.records" baseuri="ug.additional.records.html"> 
-	                     &targets.ug.additional.records;
-	                  </document>
-	                  <document targetdoc="ug.additional.typecheck" baseuri="ug.additional.typecheck.html"> 
-	                     &targets.ug.additional.typecheck;
-	                  </document>
-	                  <document targetdoc="ug.additional" baseuri="ug.additional.html"> 
-	                     &targets.ug.additional;
-	                  </document>
-	                  <document targetdoc="ug.examples" baseuri="ug.examples.html"> 
-	                     &targets.ug.examples;
-	                  </document>
-	                  <document targetdoc="ug.idioms" baseuri="ug.idioms.html"> 
-	                     &targets.ug.idioms;
-	                  </document>
-	                  <document targetdoc="ug.introduction.complex" baseuri="ug.introduction.complex.html"> 
-	                     &targets.ug.introduction.complex;
-	                  </document>
-	                  <document targetdoc="ug.introduction.functions" baseuri="ug.introduction.functions.html"> 
-	                     &targets.ug.introduction.functions;
-	                  </document>
-	                  <document targetdoc="ug.introduction.simple" baseuri="ug.introduction.simple.html"> 
-	                     &targets.ug.introduction.simple;
-	                  </document>
-	                  <document targetdoc="ug.introduction.structures" baseuri="ug.introduction.structures.html"> 
-	                     &targets.ug.introduction.structures;
-	                  </document>
-	                  <document targetdoc="ug.introduction" baseuri="ug.introduction.html"> 
-	                     &targets.ug.introduction;
-	                  </document>
-	                  <document targetdoc="ug.style" baseuri="ug.style.html"> 
-	                     &targets.ug.style;
 	                  </document>
 	              </dir>
                </dir>
