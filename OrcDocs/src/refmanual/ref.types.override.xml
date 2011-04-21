@@ -47,18 +47,12 @@ they are not recommended for production code.
 </para>
 		 
 	<section xml:id="ref.types.override.links">
-	  <title>Related Links</title>
+		<title>Related Links</title>
 		<itemizedlist>
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.types.typeinfo">Adding Type Information</link></para></listitem>
 			<listitem><para><link linkend="ref.types.metatheory">Metatheory</link></para></listitem>
 		</itemizedlist>
-		<!-- 
-		<itemizedlist>
-			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>
-		-->		  
-	  </section>
+	</section>
 	  
 </section>

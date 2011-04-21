@@ -222,12 +222,6 @@
 			<listitem><para><link linkend="ref.combinators">Combinators</link></para></listitem>
 			<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
 		</itemizedlist>
-		<!-- 
-		<itemizedlist>
-			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>
-		-->
 		
 	</section>
 </section>

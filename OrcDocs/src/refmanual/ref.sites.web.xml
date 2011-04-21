@@ -278,12 +278,6 @@ randombytes(4)
 			<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
 			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
 		</itemizedlist>
-		<!-- 
-		<itemizedlist>
-			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>
-		-->
 </section>
 
 </section>

@@ -180,17 +180,11 @@
 		
 		 
 	<section xml:id="ref.types.subtyping.links">
-	  <title>Related Links</title>
+		<title>Related Links</title>
 		<itemizedlist>
 			<title>Related Reference Topics</title>
 			<listitem><para><link linkend="ref.types.metatheory">Type System Metatheory</link></para></listitem>
 		</itemizedlist>
-		<!-- 
-		<itemizedlist>
-			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
-		</itemizedlist>
-		-->		  
-	  </section>
-	  
+	</section>
+
 </section>

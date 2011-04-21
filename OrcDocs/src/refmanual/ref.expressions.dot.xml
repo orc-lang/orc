@@ -135,12 +135,10 @@ Received: 3
 			<listitem><para><link linkend="ref.declarations.class"><code>import class</code>:  Import Class from Java</link></para></listitem>
 			<listitem><para><link linkend="ref.sites.java">Java Sites</link></para></listitem>
 		</itemizedlist>
-		<!-- 
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para>TODO</para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.dotaccess">The <code>.</code> notation</olink></para></listitem>
 		</itemizedlist>
-      	-->
       	
 	  </section>
 	</section>
