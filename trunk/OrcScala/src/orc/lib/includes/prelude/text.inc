@@ -128,13 +128,7 @@ Endline characters are not included in the result.
 @implementation
 --}
 def lines(String) :: List[String]
-def lines(text) =
-  (
-  val out = text.split("\n|\r\n|\r")
-  if out.get(out.length()-1) = "" then
-    out.split(0, out.length()-1)
-  else out
-  )  :!: List[String]
+def lines(text) = arrayToList(text.split("\n|\r\n|\r"))
 
 {--
 @def unlines(List[String]) :: String
@@ -155,7 +149,7 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 --}
 
 def words(String) :: List[String]
-def words(text) = (text.trim().split("\\s+"))  :!: List[String]
+def words(text) = arrayToList(text.trim().split("\\s+"))
 
 
 {--
