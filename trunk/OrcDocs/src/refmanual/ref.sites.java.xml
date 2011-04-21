@@ -274,9 +274,7 @@ OUTPUT:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.class"><code>import class</code> declaration</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.services.orcvalues">Orc values in Java</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.services.scalavalues">Java Values in Orc</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.import"><code>import class</code> declaration</olink></para></listitem>
 		</itemizedlist>
 </section>
 

@@ -45,8 +45,8 @@ They reflect the concept of a storage location in a von Neumann style architectu
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="methodology.mutable">Mutable References</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="methodology.channels">Channels</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.mutable">Mutable References</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.channels">Channels</olink></para></listitem>
 		</itemizedlist>
 </section>
 

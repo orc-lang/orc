@@ -111,7 +111,7 @@ For a detailed description of the Orc-site interface, refer to the <link xlink:h
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.services.site"><code>site</code> Sites</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.import"><code>import site</code></olink></para></listitem>
 		</itemizedlist>
 </section>
 

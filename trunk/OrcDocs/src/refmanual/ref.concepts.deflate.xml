@@ -92,7 +92,7 @@ include "search.inc"
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="methodology.forkjoin">Fork-join</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.forkjoin">Fork-join</olink></para></listitem>
 		</itemizedlist>
 		  
 	  </section>

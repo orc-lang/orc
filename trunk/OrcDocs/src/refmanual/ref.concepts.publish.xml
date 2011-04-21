@@ -97,10 +97,10 @@ metronome()
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc">Orc expressions</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="combinators">Combinators</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="expression.nesting">Nesting expressions</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="orc.sites.calling">Calling a site</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple">Orc expressions</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators">Combinators</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.nesting">Nesting expressions</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.sites">Sites</olink></para></listitem>
 		</itemizedlist>
 
 	</section>

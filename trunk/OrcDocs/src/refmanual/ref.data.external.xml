@@ -79,7 +79,7 @@ OUTPUT:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.services.scalavalues">Java/Scala Values in Orc</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.import">Importing Resources</olink></para></listitem>
 		</itemizedlist>
 </section>
 

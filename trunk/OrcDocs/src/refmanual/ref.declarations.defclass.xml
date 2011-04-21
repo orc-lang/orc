@@ -389,7 +389,7 @@ true
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.language.class">Classes</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.defclass">Defining Classes</olink></para></listitem>
 		</itemizedlist>
 	  
 	  </section>

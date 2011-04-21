@@ -78,7 +78,7 @@ OUTPUT:PERMUTABLE
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="patterns.extensions">Extensions to Pattern Matching</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.patterns">Patterns</olink></para></listitem>
 		</itemizedlist>
 		  
 	  </section>

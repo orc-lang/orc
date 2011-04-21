@@ -150,7 +150,7 @@ Node(Node(Empty(), 0, Empty()), 1, Node(Empty(), 2, Empty()))
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="section.orc.datatypes">Datatypes</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.datatypes">Datatypes</olink></para></listitem>
 		</itemizedlist>
 
 	  </section>

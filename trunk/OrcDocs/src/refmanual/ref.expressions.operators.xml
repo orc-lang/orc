@@ -347,7 +347,7 @@ OUTPUT:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="language.base.operators">Operators</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.operators">Operators</olink></para></listitem>
 		</itemizedlist>
 
 </section>
