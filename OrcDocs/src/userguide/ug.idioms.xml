@@ -59,7 +59,7 @@ signal immediately.
 <section xml:id="ug.idioms.lists"><title>Lists</title>
 
 <para>
-In the section on Cor, we were introduced to lists: how to construct them,
+In the introduction to the Orc language, we were introduced to lists: how to construct them,
 and how to match them against patterns. While it is certainly feasible to
 write a specific function with an appropriate pattern match every time we
 want to access a list, it is helpful to have a handful of common operations

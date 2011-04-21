@@ -52,7 +52,7 @@ for comprehensive and authoritative documentation of all language features.
 <para>
 Chapter 1 introduces the essential concepts of Orc, such as communication
 with external services, and building complex orchestrations from simpler
-programs using the four concurrency combinators. Data structues and function
+programs using the four concurrency combinators. Data structures and function
 definitions are also discussed.
 </para>
 
