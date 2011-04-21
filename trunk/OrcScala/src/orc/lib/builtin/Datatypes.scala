@@ -33,7 +33,7 @@ object DatatypeBuilder extends TotalSite with TypedSite {
           "unapply" -> new DatatypeExtractor(tag) { override def name = siteName + ".unapply" }
         )
       }
-    OrcTuple(datasites)
+    OrcValue.letLike(datasites)
   }
      
   def orcType() = new CallableType with StrictType {
