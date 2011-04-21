@@ -117,9 +117,6 @@
             <dir name="build">
                <dir name="html">
 				  <dir name="refmanual">
-					  <dir name="content">
-						<!--  "content" contains source content, no output documents -->
-					  </dir>
 					  <document targetdoc="refmanual">
 						&targets.refmanual;
 					  </document>

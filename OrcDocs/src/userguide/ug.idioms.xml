@@ -596,7 +596,7 @@ def auction(b:bs) = max(b.ask(), auction(bs))
 <para>
 Note that all bidders are called simultaneously. Also note that if some bidder fails 
 to return a bid, then the auction will never complete.  Later we will see
-a <link linkend="example.auction-with-timeout">different solution</link> that addresses the issue of non-termination.
+a <link linkend="ug.idioms.timeout.example.auction">different solution</link> that addresses the issue of non-termination.
 </para>
 
 <section xml:id="ug.idioms.forkjoin.example.barrier"><title>Example: Barrier synchronization</title>
@@ -746,7 +746,7 @@ Let( <emphasis role="bold">F</emphasis> | Rwait(1000)<![CDATA[ >> ]]>0 )
 <section xml:id="ug.idioms.timeout.example.auction"><title>Auction with timeout</title>
 
 <para>
-In the <link linkend="example.auction">auction example</link> given previously, the auction may never complete if 
+In the <link linkend="ug.idioms.forkjoin.example.auction">auction example</link> given previously, the auction may never complete if 
 one of the bidders does not respond. We can add a timeout so that a bidder has at most 8 seconds to provide a bid:
 </para>
 
