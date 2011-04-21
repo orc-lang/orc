@@ -118,7 +118,7 @@ OUTPUT:
 		</itemizedlist>
 		<itemizedlist>
 			<title>Related Tutorial Sections</title>
-			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.TODO">Variables</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.val"><code>val</code> Declaration</olink></para></listitem>
 			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.pruning">Pruning Combinator</olink></para></listitem>
 			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.patterns">Patterns</olink></para></listitem>
 		</itemizedlist>
