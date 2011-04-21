@@ -24,7 +24,7 @@ def unzip(stream) =
   zip
 
 def skipto(reader, phrase) =
-  reader.readLine() >line>
+  val line = reader.readLine()
   if line = null then ""
   else if line.contains(phrase) then line
   else skipto(reader, phrase)
@@ -42,4 +42,4 @@ skipto(reader, "JABBERWOCKY") >>
 reader.readLine() >>
 map(lambda (_) = reader.readLine(), range(1, 5)) >lines>
 unlines(lines).trim().split("\\s+") >words>
-spellCheck(words, 1)
+spellCheck(arrayToList(words), 1)

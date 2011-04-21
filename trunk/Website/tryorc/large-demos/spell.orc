@@ -22,4 +22,4 @@ WebPrompt("File Upload", [
   UploadField("file", "Text File"),
   Button("upload", "Upload") ]) >data>
 data.get("file").getString() >text>
-spellCheck(take(20, text.split("\\s+")), 1)
+spellCheck(take(20, arrayToList(text.split("\\s+"))), 1)

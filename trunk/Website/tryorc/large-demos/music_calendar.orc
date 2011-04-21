@@ -47,10 +47,8 @@ def phrases() =
   | "site:www.myspace.com 'Austin, Texas' 'Band Members'"
 
 -- execution
-(
-    GoogleCalendar.authenticate() 
-  | Println("Authenticating...") >> stop
-) >>
+Println("Authenticating...") >>
+GoogleCalendar.authenticate() >>
 phrases() >phrase>
 Google(phrase) >pages>
 each(pages) >page>
