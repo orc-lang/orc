@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2.1.&nbsp;Literal Value</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.expressions.html" title="Chapter&nbsp;2.&nbsp;Expressions"><link rel="prev" href="ref.expressions.html" title="Chapter&nbsp;2.&nbsp;Expressions"><link rel="next" href="ref.expressions.variable.html" title="2.2.&nbsp;Variable"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.expressions.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.expressions.html">Chapter&nbsp;2.&nbsp;Expressions</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.expressions.variable.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.expressions.html">Chapter&nbsp;2.&nbsp;Expressions</a>&nbsp;</td><th align="center" width="60%">2.1.&nbsp;Literal Value</th><td align="right" width="20%"><a href="ref.expressions.variable.html">2.2.&nbsp;Variable</a>&nbsp;</td></tr></table></div><div class="section" title="2.1.&nbsp;Literal Value"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.literal"></a>2.1.&nbsp;Literal Value</h2></div></div></div><p>
+    A literal value may occur on its own as an expression. 
+    Execution of a literal value immediately <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publishes</a> that value and then <a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halts</a>.
+    </p><div class="section" title="2.1.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.literal.syntax"></a>2.1.1.&nbsp;Syntax</h3></div></div></div><p>
+		    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[51]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.literal">Literal</a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+				<a href="ref.syntax.EBNF.html#ebnf.literal.signal">SignalLiteral</a>
+				<br>&#10073; <a href="ref.syntax.EBNF.html#ebnf.literal.boolean">BooleanLiteral</a>
+				<br>&#10073; <a href="ref.syntax.EBNF.html#ebnf.literal.number">NumberLiteral</a>
+				<br>&#10073; <a href="ref.syntax.EBNF.html#ebnf.literal.string">CharacterStringLiteral</a>
+				<br>&#10073; <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">null</span></code>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+		  </p></div><div class="section" title="2.1.2.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.literal.type"></a>2.1.2.&nbsp;Type</h3></div></div></div><p>
+		    The type for each literal value is given in the <a class="link" href="ref.data.html" title="Chapter&nbsp;1.&nbsp;Data Values">Data Values</a> chapter.		     
+		  </p></div><div class="section" title="2.1.3.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.literal.examples"></a>2.1.3.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.literal.examples.magritte_link" onclick="toggle(this, 'ref.expressions.literal.examples.magritte_content')">
+					&minus;
+				</a><span class="exampleCaption">String Literal as Expression</span></div><div class="exampleBody" id="ref.expressions.literal.examples.magritte_content"><pre class="orc">
+<span class="hl-comment">{-
+  http://en.wikipedia.org/wiki/The_Treachery_of_Images
+-}</span>
+
+<span class="hl-literal">"ceci n'est pas une |"</span>
+
+<span class="hl-comment">{-
+OUTPUT:
+"ceci n'est pas une |"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.expressions.literal.examples.magritte_link'), 'ref.expressions.literal.examples.magritte_content'); }, 125);
+</script></div><div class="section" title="2.1.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.literal.links"></a>2.1.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.data.html" title="Chapter&nbsp;1.&nbsp;Data Values">Data Values</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">Publication</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.values" class="olink">Literal Values</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

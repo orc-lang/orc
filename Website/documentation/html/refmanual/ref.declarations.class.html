@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.5.&nbsp;import class: Import Class from Java</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="ref.declarations.html" title="Chapter&nbsp;4.&nbsp;Declarations"><link rel="prev" href="ref.declarations.site.html" title="4.4.&nbsp;import site: Import Site"><link rel="next" href="ref.declarations.type.html" title="4.6.&nbsp;type: Declare Type"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.declarations.site.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.declarations.html">Chapter&nbsp;4.&nbsp;Declarations</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.declarations.type.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.declarations.site.html">4.4.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">site</span></code>: Import Site</a>&nbsp;</td><th align="center" width="60%">4.5.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code>:  Import Class from Java</th><td align="right" width="20%"><a href="ref.declarations.type.html">4.6.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code>:  Declare Type</a>&nbsp;</td></tr></table></div><div class="section" title="4.5.&nbsp;import class: Import Class from Java"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.class"></a>4.5.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code>:  Import Class from Java</h2></div></div></div><p>
+Orc programs can use services of the platform on which the Orc runtime engine runs.
+In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
+<a name="N41F1F" class="indexterm"></a>Java classes may be imported into Orc 
+programs and <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">called</a> as Orc sites.
+	</p><p>
+The declaration <a name="N41F29" class="indexterm"></a><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span> </code><em class="replaceable"><code>S</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"</span></code><em class="replaceable"><code>J</code></em><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"</span></code>
+binds the variable <em class="replaceable"><code>S</code></em> to a site representing the Java class <em class="replaceable"><code>J</code></em>.
+Calls to <em class="replaceable"><code>S</code></em> invoke the corresponding <a name="N41F40" class="indexterm"></a>constructor of the Java class <em class="replaceable"><code>J</code></em>.
+The created class instance is published from the site call.
+Instance methods may be invoked on this published value.
+Calls to <em class="replaceable"><code>S</code></em><code class="code">.</code><em class="replaceable"><code>m</code></em> invoke the corresponding class static method of the Java class <em class="replaceable"><code>J</code></em>.
+The return value of the method is <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">published</a> from the site call.
+Further details of the Orc-Java interface are in the <a class="link" href="ref.sites.java.html" title="6.2.&nbsp;Java sites">Java sites</a> section.
+	</p><div class="section" title="4.5.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.class.syntax"></a>4.5.1.&nbsp;Syntax</h3></div></div></div><p>
+	    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[27]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.declaration.class"><a class="link" href="ref.declarations.class.html" title="4.5.&nbsp;import class: Import Class from Java">DeclareClass</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> <a href="ref.syntax.EBNF.html#ebnf.variable">Variable</a> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <a href="ref.syntax.EBNF.html#ebnf.classname">ClassName</a>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+	  </p></div><div class="section" title="4.5.2.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.class.type"></a>4.5.2.&nbsp;Type</h3></div></div></div><p>
+	    When typechecking declared classes, the Orc typechecker interfaces with the <a name="N41F6B" class="indexterm"></a>Java type system, so that operations on
+	    Java objects typecheck as one would expect in a Java program, with a few exceptions.
+	    
+	    </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>Methods with return type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">void</span></code> in Java have return type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Signal</span></code> in Orc.</p></li><li class="listitem"><p>Interfaces are not fully supported.</p></li><li class="listitem"><p>Type parameter bounds are not supported.</p></li></ul></div><p>
+	    
+	  </p><p>
+	  In addition to declaring a site, the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration also declares a type with the same name.
+	  It is the Orc type for instances of that Java class. For example, the declaration <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">File</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">java</span>.<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">io</span>.<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">File</span></code>
+	  declares a type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">File</span></code>, which is the type of all instances of <code class="code">java.io.File</code>.
+		</p><p>
+		If a <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code> declaration binds a generic Java class, then the corresponding Orc type is instead a <a class="link" href="ref.types.polymorphism.html" title="9.2.&nbsp;Parametric Polymorphism">type operator</a>,
+		and the constructor site takes type parameters.
+		</p><p>
+		<a class="link" href="ref.types.subtyping.html" title="9.3.&nbsp;Subtyping">Subtyping</a> between Java object types is determined by Java's subtyping relation: if
+		one class is a subclass of another, then that type will be a subtype of the other.
+		The typechecker does not implement a true <a class="link" href="ref.types.subtyping.html#ref.types.subtyping.join" title="9.3.3.&nbsp;Join">join</a> operation for Java types; it will
+		find a common ancestor, but not the least common ancestor. 
+		</p></div><div class="section" title="4.5.3.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.class.examples"></a>4.5.3.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.class.examples.call_link" onclick="toggle(this, 'ref.declarations.class.examples.call_content')">
+					&minus;
+				</a><span class="exampleCaption">Invoke a Java constructor and instance method</span></div><div class="exampleBody" id="ref.declarations.class.examples.call_content"><pre class="orc">
+<span class="hl-comment">{- Use a Java class to count the number of tokens in a string -}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">StringTokenizer</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.util.StringTokenizer"</span>
+
+<span class="hl-comment">-- Invoke a constructor:</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">st</span> <span class="hl-operator">=</span> <span class="hl-site">StringTokenizer</span>(<span class="hl-literal">"Elegance is not a dispensable luxury, but a quality that decides between success and failure."</span>, <span class="hl-literal">" "</span>)
+
+<span class="hl-comment">-- Invoke a method</span>
+<span class="hl-variable">st</span>.<span class="hl-site">countTokens</span>()
+
+<span class="hl-comment">{-
+OUTPUT:
+15
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.call_link'), 'ref.declarations.class.examples.call_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.class.examples.staticcall_link" onclick="toggle(this, 'ref.declarations.class.examples.staticcall_content')">
+					&minus;
+				</a><span class="exampleCaption">Invoke a Java static method</span></div><div class="exampleBody" id="ref.declarations.class.examples.staticcall_content"><pre class="orc">
+<span class="hl-comment">{- Use a Java class to calculate a log value -}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">JavaMath</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.lang.Math"</span>
+
+<span class="hl-comment">-- Invoke a static method:</span>
+<span class="hl-variable">JavaMath</span>.<span class="hl-site">log10</span>(<span class="hl-literal">42.0</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+1.6232492903979006
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.staticcall_link'), 'ref.declarations.class.examples.staticcall_content'); }, 125);
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.class.examples.generic_link" onclick="toggle(this, 'ref.declarations.class.examples.generic_content')">
+					&minus;
+				</a><span class="exampleCaption">Declaring and instantiating a Java generic class</span></div><div class="exampleBody" id="ref.declarations.class.examples.generic_content"><pre class="orc">
+<span class="hl-comment">{- Use a Java class to represent tree data structures -}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">TreeSet</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.util.TreeSet"</span>
+
+<span class="hl-keyword">val</span> <span class="hl-variable">s</span> <span class="hl-operator">=</span> <span class="hl-site">TreeSet</span>[<span class="hl-variable">String</span>]()
+<span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-literal">"Orc"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-literal">"Java"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-literal">"Orc"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">size</span>()
+
+<span class="hl-comment">{-
+OUTPUT:
+2
+-}</span> 
+		</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.generic_link'), 'ref.declarations.class.examples.generic_content'); }, 125);
+</script></div><div class="section" title="4.5.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.class.links"></a>4.5.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.sites.java.html" title="6.2.&nbsp;Java sites">Java Sites</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.dot.html" title="2.5.&nbsp;Dot Access">Dot Access</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Calls</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>
