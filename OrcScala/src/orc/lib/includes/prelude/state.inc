@@ -483,6 +483,21 @@ import type Array = "orc.lib.state.types.ArrayType"
 
 
 {--
+@def arrayToList[A](Array[A]) :: List[A]
+Given an array, create an Orc <link linkend="ref.data.list">list</link> whose elements are exactly
+the contents of the array, in the same order. 
+
+@implementation
+--}
+def arrayToList[A](Array[A]) :: List[A]
+def arrayToList(a) = 
+  def walk(Integer, List[A]) :: List[A]
+  def walk(0,acc) = acc
+  def walk(i,acc) = walk(i-1, a(i-1)? : acc)
+  walk(a.length?, [])
+  
+
+{--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
 The call <code>Table(n,f)</code>, where <code>n</code> is a
 natural number and <code>f</code> a total function over natural numbers,

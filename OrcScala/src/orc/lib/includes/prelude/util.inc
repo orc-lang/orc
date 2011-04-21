@@ -142,21 +142,6 @@ def iterableToList(iterable) =
   def walk(l) = s():l >m> walk(m) ; reverse(l) 
   walk([]) 
 
-
-{--
-@def arrayToList[A](Array[A]) :: List[A]
-Given an array, create an Orc <link linkend="ref.data.list">list</link> whose elements are exactly
-the contents of the array, in the same order. 
-
-@implementation
---}
-def arrayToList[A](Array[A]) :: List[A]
-def arrayToList(a) = 
-  def walk(Integer, List[A]) :: List[A]
-  def walk(0,acc) = acc
-  def walk(i,acc) = walk(i-1, a(i-1)? : acc)
-  walk(a.length?, [])
-
 {--
 @def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
