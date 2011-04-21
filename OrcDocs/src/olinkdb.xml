@@ -90,7 +90,6 @@
    <!ENTITY targets.ug.additional.datatypes SYSTEM "../build/targetdb/ug.additional.datatypes.xml">
    <!ENTITY targets.ug.additional.defclass SYSTEM "../build/targetdb/ug.additional.defclass.xml">
    <!ENTITY targets.ug.additional.dotaccess SYSTEM "../build/targetdb/ug.additional.dotaccess.xml">
-   <!ENTITY targets.ug.additional.guards SYSTEM "../build/targetdb/ug.additional.guards.xml">
    <!ENTITY targets.ug.additional.import SYSTEM "../build/targetdb/ug.additional.import.xml">
    <!ENTITY targets.ug.additional.records SYSTEM "../build/targetdb/ug.additional.records.xml">
    <!ENTITY targets.ug.additional.typecheck SYSTEM "../build/targetdb/ug.additional.typecheck.xml">
@@ -386,9 +385,6 @@
 	                  </document>
 	                  <document targetdoc="ug.additional.dotaccess" baseuri="ug.additional.dotaccess.html"> 
 	                     &targets.ug.additional.dotaccess;
-	                  </document>
-	                  <document targetdoc="ug.additional.guards" baseuri="ug.additional.guards.html"> 
-	                     &targets.ug.additional.guards;
 	                  </document>
 	                  <document targetdoc="ug.additional.import" baseuri="ug.additional.import.html"> 
 	                     &targets.ug.additional.import;

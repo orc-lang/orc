@@ -438,7 +438,6 @@ OUTPUT:
 			<title>Related Tutorial Sections</title>
 			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.functions">Functions</olink></para></listitem>
 			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.closures">First-class Functions</olink></para></listitem>
-			<listitem><para><olink targetdoc="userguide" targetptr="ug.additional.guards">Function Guards</olink></para></listitem>
 		</itemizedlist>
 		  
 	  </section>

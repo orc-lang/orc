@@ -15,6 +15,11 @@
 		 xmlns:xi="http://www.w3.org/2001/XInclude">
 <title>Additional Features of Orc</title>
 
+<para>
+Chapter 1 presented the essential features of the Orc programming language. Here we show a number
+of additional features, which are useful for programming in certain styles, making use of additional
+services and resources, and constructing larger programs.
+</para>
 
 <!-- Sections -->
 <xi:include href="ug.additional.closures.xml"/>
@@ -22,7 +27,6 @@
 <xi:include href="ug.additional.records.xml"/>
 <xi:include href="ug.additional.defclass.xml"/>
 <xi:include href="ug.additional.datatypes.xml"/>
-<xi:include href="ug.additional.guards.xml"/>
 <xi:include href="ug.additional.import.xml"/>
 <xi:include href="ug.additional.typecheck.xml"/>
 

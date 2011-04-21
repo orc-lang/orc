@@ -196,4 +196,44 @@ def take(n,h:t) = h:take(n-1, t)
 
 </section>
 
+<section xml:id="ug.introduction.functions.guards">
+<title>Guards</title>
+
+<para>
+Each clause of a function definition may also have a <firstterm>guard</firstterm>: a Boolean
+expression which determines whether or not the clause applies. If the guard publishes <code>false</code>,
+then the next clause is tried, just as if some pattern had failed to match.
+</para>
+
+<para>
+We can add guards to a previous example to protect against the degenerate case of a negative
+argument:
+</para>
+
+<para>
+<programlisting><![CDATA[
+{- Fibonacci numbers -}
+def fib(0) = 1
+def fib(1) = 1
+def fib(n) if (n :> 1) = fib(n-1) + fib(n-2)
+]]></programlisting>
+</para>
+
+<para>
+We can also improve the readability of a previous example:
+</para>
+
+<para>
+<programlisting><![CDATA[
+def even(n) if (n :> 0) = odd(n-1)
+def even(n) if (n <: 0) = odd(n+1)
+def even(0) = true 
+def odd(n) if (n :> 0) = even(n-1)
+def odd(n) if (n <: 0) = even(n+1)
+def odd(0) = false
+]]></programlisting>
+</para>
+
+</section>
+
 </section>
