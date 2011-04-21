@@ -49,6 +49,13 @@ t >Node(l,j,r)>
 l >Node(_,i,_)>
 r >Node(_,k,_)>
 ( i | j | k )
+
+{-
+OUTPUT:PERMUTABLE
+0
+1
+2
+-}
 ]]></programlisting>
 </para>
 

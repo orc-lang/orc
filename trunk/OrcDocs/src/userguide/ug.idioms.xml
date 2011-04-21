@@ -160,10 +160,16 @@ The <code>Ref</code> site creates rewritable reference cells.
 
 <programlisting language="orc-demo"><![CDATA[
 val r = Ref(0)
-println(r.read()) >>
+Println(r.read()) >>
 r.write(2) >> 
-println(r.read()) >>
+Println(r.read()) >>
 stop
+
+{-
+OUTPUT:
+0
+2
+-}
 ]]></programlisting>
 
 </para>
@@ -212,8 +218,8 @@ simply halt.
 -}
 
 val r = Cell()
-  Rwait(1000) >> r.write(2) >> println("Wrote 2") >> stop
-| Rwait(1000) >> r.write(3) >> println("Wrote 3") >> stop
+  Rwait(1000) >> r.write(2) >> Println("Wrote 2") >> stop
+| Rwait(1000) >> r.write(3) >> Println("Wrote 3") >> stop
 | r.read()
 
 {-
@@ -257,8 +263,8 @@ but lower precedence than any of the other operators.</listitem>
 -}
 
 val r = Cell()
-  Rwait(1000) >> r := 2 >> println("Wrote 2") >> stop
-| Rwait(1000) >> r := 3 >> println("Wrote 3") >> stop
+  Rwait(1000) >> r := 2 >> Println("Wrote 2") >> stop
+| Rwait(1000) >> r := 3 >> Println("Wrote 3") >> stop
 | r?
 
 {-
@@ -299,6 +305,12 @@ def initialize(i) =
     then a(i) := 2 ** i  >>  initialize(i+1)
     else signal
 initialize(0) >> (a(3)? | a(6)? | a(10)?)
+
+{-
+OUTPUT:
+8
+64
+-}
 ]]>
 </programlisting>
 
@@ -314,7 +326,13 @@ simultaneously create and initialize an array). Here are a few examples:
 
 <programlisting language="orc-demo">
 {- Create an array of 10 elements; element i is the ith power of 2 -}
-fillArray(Array(10), lambda(i) = 2 ** i)
+fillArray(Array(10), lambda(i) = 2 ** i) >a>
+a(4)?
+
+{-
+OUTPUT:
+16
+-}
 </programlisting>
 
 <programlisting language="orc-demo">
@@ -334,6 +352,11 @@ val A = fillArray(Array(2), lambda(_) = Channel())
   A(0)?.put(true) >> stop
 | A(0)?.get() >x> A(1)?.put(x) >> stop
 | A(1)?.get()
+
+{-
+OUTPUT:
+true
+-}
 </programlisting>
 </para>
 
@@ -497,20 +520,32 @@ is equivalent to
 
 whereas
 
-<programlisting  language="orc-demo">
+<programlisting language="orc-demo">
 def helper([]) = 0
 def helper([_]) = 1
 def helper(_) = 2
 helper([5])
+
+{-
+OUTPUT:
+1
+-}
 </programlisting>
 
 is <emphasis>not</emphasis> equivalent to
 
 <programlisting language="orc-demo"><![CDATA[
 [5] >x>
-  x >[]> 0
+( x >[]> 0
 | x >[_]> 1
 | x >_> 2
+)
+
+{-
+OUTPUT:PERMUTABLE
+1
+2
+-}
 ]]></programlisting>
 
 because the clauses are not mutually exclusive. Function clauses must attempt to match in linear order, whereas
