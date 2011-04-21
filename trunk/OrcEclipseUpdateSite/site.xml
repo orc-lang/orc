@@ -42,6 +42,9 @@
    <feature url="features/org.eclipse.imp.runtime_0.1.108.v201008201835.jar" id="org.eclipse.imp.runtime" version="0.1.108.v201008201835">
       <category name="(Dependencies for Orc)"/>
    </feature>
+   <feature url="features/edu.utexas.cs.orc.orceclipse_2.0.0.201104211812.jar" id="edu.utexas.cs.orc.orceclipse" version="2.0.0.201104211812">
+      <category name="Orc programming language"/>
+   </feature>
    <category-def name="Orc programming language" label="Orc programming language">
       <description>
          The Orc programming language, a structured concurrent programming language, from The University of Texas at Austin.
