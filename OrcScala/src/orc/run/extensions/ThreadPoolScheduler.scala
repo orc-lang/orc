@@ -34,6 +34,7 @@ import orc.run.Logger
 trait OrcWithThreadPoolScheduler extends Orc {
 
   private var executor: OrcRunner = null
+  private val executorLock = new Object()
 
   override def schedule(ts: List[GroupMember with Runnable]) {
     ts.foreach(schedule(_))
@@ -59,11 +60,13 @@ trait OrcWithThreadPoolScheduler extends Orc {
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
-    if (executor == null) {
-      executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
-      executor.startup()
-    } else {
-      throw new IllegalStateException("startScheduler() multiply invoked")
+    executorLock synchronized {
+      if (executor == null) {
+        executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
+        executor.startup()
+      } else {
+        throw new IllegalStateException("startScheduler() multiply invoked")
+      }
     }
   }
 
@@ -71,17 +74,19 @@ trait OrcWithThreadPoolScheduler extends Orc {
    * @see orc.run.Orc#stop()
    */
   override def stopScheduler() {
-    if (executor != null) {
-      // First, gently shut down
-      executor.shutdown()
-      // Wait "a little while"
-      if (!executor.awaitTermination(20L)) {
-        // Now, we insist
-        executor.shutdownNow()
-        // Wait long enough for all running workers to receive shutdown
-        executor.awaitTermination(2L)
+    executorLock synchronized {
+      if (executor != null) {
+        // First, gently shut down
+        executor.shutdown()
+        // Wait "a little while"
+        if (!executor.awaitTermination(20L)) {
+          // Now, we insist
+          executor.shutdownNow()
+          // Wait long enough for all running workers to receive shutdown
+          executor.awaitTermination(2L)
+        }
+        executor = null
       }
-      executor = null
     }
   }
 }
