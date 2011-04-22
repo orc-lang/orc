@@ -307,9 +307,10 @@ def initialize(i) =
 initialize(0) >> (a(3)? | a(6)? | a(10)?)
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE
 8
 64
+Error: java.lang.ArrayIndexOutOfBoundsException: 10
 -}
 ]]>
 </programlisting>

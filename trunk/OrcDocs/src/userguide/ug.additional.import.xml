@@ -56,7 +56,7 @@ The following code imports and uses Java's <code language="java">File</code>,
 <code language="java">FileReader</code>, and <code language="java">BufferedReader</code> classes
 to read the first line of a text file.
 
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 import class File = "java.io.File"
 import class FileReader = "java.io.FileReader"
 import class BufferedReader = "java.io.BufferedReader"

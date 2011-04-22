@@ -526,10 +526,11 @@ then combines all the responses, selects a meeting time which is acceptable to
 everyone, and notifies everyone of the selected time.
 </para>
 
-<programlisting language="orc-demo"><![CDATA[
+<programlisting language="orc"><![CDATA[
 {- This program requires the Orchard environment to run -}
-include "net.inc"
 include "forms.inc"
+include "mail.inc"
+
 val during = Interval(LocalDate(2009, 9, 10),
                       LocalDate(2009, 10, 17))
 val invitees = ["john@example.com", "jane@example.com"]

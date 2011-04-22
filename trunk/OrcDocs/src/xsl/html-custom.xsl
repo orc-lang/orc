@@ -59,10 +59,8 @@
 			<p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p>
 		</noscript>
 		<!-- Start the box collapsed -->
-		<!-- Must be expanded for CodeMirror to layout correctly -->
-		<!-- FIXME: Instead of delaying 125 ms, somehow wait for CodeMirror to finish rendering, then toggle to collapsed -->
 		<script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('<xsl:value-of select="$ex_link" />'), '<xsl:value-of select="$ex_content" />'); }, 125);
+toggle(document.getElementById('<xsl:value-of select="$ex_link" />'), '<xsl:value-of select="$ex_content" />');
 </script>
 	</xsl:template>
 
