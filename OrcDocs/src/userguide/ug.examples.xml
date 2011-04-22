@@ -150,124 +150,131 @@ full details of the algorithm, consult the original paper.
 </para>
 
 <programlisting language="orc-demo"><![CDATA[
-{- Start a philosopher actor; never publishes.
-   Messages sent between philosophers include:
-   - ("fork", p): philosopher p relinquishes the fork
-   - ("request", p): philosopher p requests the fork
-   - ("rumble", p): sent by a philosopher to itself when it should
-     become hungry
-
-   name: identify this process in status messages
-   mbox: our mailbox; the "address" of this philosopher is mbox.put
-   missing: set of neighboring philosophers holding our forks
+{- The "hygenic solution to the diners problem",
+   described in "The Drinking Philosophers Problem", by
+   K. M. Chandy and J. Misra.
 -}
 
-{- Define philosopher -}
+{- 
+Use a Scala set implementation.
+Operations on this set are not synchronized.
+-}
+import class ScalaSet = "scala.collection.mutable.HashSet"
+
+{-
+Make a set initialized to contain
+the items in the given list.
+-}
+def Set(items) = ScalaSet() >s> joinMap(s.add, items) >> s
+
+
+{-
+Start a philosopher process; never publishes.
+
+name: identify this process in status messages
+mbox: our mailbox
+missing: set of neighboring philosophers holding our fork
+-}
 def philosopher(name, mbox, missing) =
-  {- deferred requests for forks -}
+  val send = mbox.put
+  val receive = mbox.get
+  -- deferred requests for forks
   val deferred = Channel()
-  {- forks we hold which are clean -}
-  val clean = Set()
+  -- forks we hold which are clean
+  val clean = Set([])
 
   def sendFork(p) =
-    {- remember that we no longer hold the fork -}
     missing.add(p) >>
-    p(("fork", mbox.put))
+    p(("fork", send))
  
   def requestFork(p) =
-    p(("request", mbox.put))
+    clean.add(p) >>
+    p(("request", send))
   
-  {- Start a timer which will tell us when we're hungry. -}
+  -- While thinking, start a timer which
+  -- will tell us when we're hungry
   def digesting() =
       Println(name + " thinking") >>
       thinking()
-    | Rwait(Random(1000)) >>
-      mbox.put(("rumble", mbox.put)) >>
+    | Rwait(Random(30)) >>
+      send(("rumble", send)) >>
       stop
 
-  {- Wait to become hungry -}
   def thinking() =
     def on(("rumble", _)) =
       Println(name + " hungry") >>
-      map(requestFork, missing) >>
+      map(requestFork, missing.toList()) >>
       hungry()
     def on(("request", p)) =
-      sendFork(p) >> thinking()
-    on(mbox.get())
+      sendFork(p) >>
+      thinking()
+    on(receive())
 
-  {- Eat once we receive all forks -}
   def hungry() =
     def on(("fork", p)) =
       missing.remove(p) >>
-      clean.add(p) >>
-      if missing.isEmpty()
-      then Println(name + " eating") >> eating()
-      else hungry()
+      ( 
+        if missing.isEmpty() then
+          Println(name + " eating") >>
+          eating()
+        else hungry()
+      )
     def on(("request", p)) =
-      if clean.contains(p)
-      then deferred.put(p) >> hungry()
-      else sendFork(p) >> requestFork(p) >> hungry()
-    on(mbox.get())
+      if clean.contains(p) then
+        deferred.put(p) >>
+        hungry()
+      else
+        sendFork(p) >>
+        requestFork(p) >>
+        hungry()
+    on(receive())
 
-  {- Dirty forks, process deferred requests, then digest -}
   def eating() =
     clean.clear() >>
-    Rwait(Random(1000)) >>
+    Rwait(Random(10)) >>
     map(sendFork, deferred.getAll()) >>
     digesting()
 
-  {- All philosophers start out digesting -}
   digesting()
 
-{- Create an NxN 4-connected grid of philosophers.  Each philosopher
-   holds the fork for the connections below and to the right (so the
-   top left philosopher holds both its forks).
+{-
+Create an NxN 4-connected grid of philosophers.  Each philosopher holds the
+fork for the connections below and to the right (so the top left philosopher
+holds both its forks).
 -}
-
 def philosophers(n) =
-  {- A set with 1 item -}
-  def Set1(item) = Set() >s> s.add(item) >> s
-  {- A set with 2 items -}
-  def Set2(i1, i2) = Set() >s> s.add(i1) >> s.add(i2) >> s
-
-  {- create an NxN matrix of mailboxes -}
+  {- channels -}
   val cs = uncurry(Table(n, lambda (_) = Table(n, ignore(Channel))))
 
-  {- create the first row of philosophers -}
-  philosopher((0,0), cs(0,0), Set())
+  {- first row -}
+  philosopher((0,0), cs(0,0), Set([]))
   | for(1, n) >j>
-    philosopher((0,j), cs(0,j), Set1(cs(0,j-1).put))
+    philosopher((0,j), cs(0,j), Set([cs(0,j-1).put]))
 
-  {- create remaining rows -}
+  {- remaining rows -}
   | for(1, n) >i> (
-      philosopher((i,0), cs(i,0), Set1(cs(i-1,0).put))
+      philosopher((i,0), cs(i,0), Set([cs(i-1,0).put]))
       | for(1, n) >j>
-        philosopher((i,j), cs(i,j), Set2(cs(i-1,j).put, cs(i,j-1).put))
+        philosopher((i,j), cs(i,j), Set([cs(i-1,j).put, cs(i,j-1).put]))
     )
 
-{- Simulate a 3x3 grid of philosophers for 10 seconds -}
-Let(
-  philosophers(3)
-  | Rwait(10000)
-) >> "HALTED"
+philosophers(2)
 
 {-
 OUTPUT:EXAMPLE
 (0, 0) thinking
 (0, 1) thinking
-(0, 2) thinking
 (1, 0) thinking
-(2, 0) thinking
 (1, 1) thinking
-(2, 1) thinking
-(1, 2) thinking
-(2, 2) thinking
 (1, 0) hungry
 (0, 0) hungry
 (0, 1) hungry
+(1, 1) hungry
+(1, 1) eating
+(1, 1) thinking
 ...
-"HALTED"
--}]]></programlisting>
+-}
+]]></programlisting>
 
 <para>
 Our implementation is based on the <link
@@ -522,6 +529,7 @@ everyone, and notifies everyone of the selected time.
 <programlisting language="orc-demo"><![CDATA[
 {- This program requires the Orchard environment to run -}
 include "net.inc"
+include "forms.inc"
 val during = Interval(LocalDate(2009, 9, 10),
                       LocalDate(2009, 10, 17))
 val invitees = ["john@example.com", "jane@example.com"]
