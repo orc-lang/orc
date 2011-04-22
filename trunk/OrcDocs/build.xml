@@ -277,6 +277,7 @@
 			<param name="orchard.css.path" expression="../../../../Orchard/web/orc.css"/>
 			-->
 
+			<param name="toc.section.depth" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label"
 				expression="1"/>
@@ -315,6 +316,7 @@
 			<!-- no Orchard demos in Eclipse help - omit orchard.js.path & orchard.css.path 
 				params -->
 
+			<param name="toc.section.depth" expression="1"/>
 			<param name="section.autolabel" expression="1"/>
 			<param name="section.label.includes.component.label"
 				expression="1"/>
