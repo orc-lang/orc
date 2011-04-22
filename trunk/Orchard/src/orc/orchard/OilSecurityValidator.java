@@ -77,6 +77,7 @@ public class OilSecurityValidator {
 		allowedClasses.add("java.util.PriorityQueue");
 		allowedClasses.add("java.util.Random");
 		allowedClasses.add("java.util.Stack");
+		allowedClasses.add("java.util.StringTokenizer");
 		allowedClasses.add("java.util.TreeMap");
 		allowedClasses.add("java.util.TreeSet");
 		allowedClasses.add("java.util.Vector");
