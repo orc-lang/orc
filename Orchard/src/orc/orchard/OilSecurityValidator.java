@@ -111,7 +111,6 @@ public class OilSecurityValidator {
 		allowedClasses.add("org.joda.time.DateTime");
 		allowedClasses.add("org.joda.time.LocalDateTime");
 		allowedClasses.add("org.joda.time.LocalDate");
-
 	}
 
 	public static class SecurityProblem implements Positional {
@@ -174,8 +173,8 @@ public class OilSecurityValidator {
 			final NamelessAST child = (NamelessAST) node;
 			if (child instanceof Constant) {
 				final Object value = ((Constant) child).value();
-				if (!(value instanceof orc.values.sites.Site)) {
-					final String location = value.getClass().getCanonicalName();
+				if (value instanceof orc.values.sites.JavaProxy) {
+					final String location = ((orc.values.sites.JavaProxy)value).javaClassName();
 					if (!allowedClasses.contains(location)) {
 						hasProblems = true;
 						// FIXME: once we have source location information, use it
