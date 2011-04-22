@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.introduction.functions.xml - DocBook source for an Orc user guide section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.introduction.functions" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Functions</title>
+
+<para>
+Like most other programming languages, Orc provides the capability to define <firstterm>functions</firstterm>,
+which are expressions that have a defined name, and have some number of <firstterm>parameters</firstterm>. 
+Functions are declared using the keyword <code>def</code>, in the following way:
+
+<programlisting language="orc"><![CDATA[
+def add(x,y) = x+y
+]]></programlisting>
+
+The expression to the right of the <code>=</code> is called the <firstterm>body</firstterm> of the function.
+<code>x</code> and <code>y</code> are the parameters.  By convention, all function names begin with a lowercase letter.
+</para>
+
+<para>
+After defining the function, we can call it. 
+A function call looks just like a site call. 
+To execute a call, we treat it like a sequence of <code>val</code> declarations 
+associating the parameters with the arguments, followed by the body of the function.
+Every value published by the body expression is published by the call. This is
+unlike a site call, which publishes at most once. 
+
+<programlisting language="orc-demo"><![CDATA[
+{- add(1+2, 3+4) is equivalent to: -}
+
+val x = 1+2
+val y = 3+4
+x+y
+
+{-
+OUTPUT:
+10
+-}
+]]></programlisting>
+</para>
+
+<para>
+<itemizedlist><title>Examples</title>
+<listitem><code>add(10,10*10)</code> publishes <code>110</code>.</listitem>
+<listitem><code>add(add(5,3),5)</code> publishes <code>13</code>.</listitem>
+</itemizedlist>
+</para>
+
+<para>
+Notice that the execution of a function call can proceed even if some of the arguments
+haven't published a value yet. The parts of the body that depend on them will simply
+block.
+
+<programlisting language="orc-demo"><![CDATA[
+def demo(x,y) = x | y | x+y
+demo(3, Rwait(2000) >> 4)
+]]></programlisting>
+
+This call publishes <code>3</code> immediately, but blocks for 2 seconds before publishing
+<code>4</code> and <code>7</code>.
+
+</para>
+
+
+<para>
+A function definition or call may have zero arguments, in which case we write <code>()</code> for the arguments.
+
+<programlisting language="orc"><![CDATA[
+def Zero() = 0
+]]></programlisting>
+</para>
+
+<section xml:id="ug.introduction.functions.recursion">
+<title>Recursion</title>
+
+<para>
+A function can be recursive; that is, the name of a function may be used in its own body.
+
+<programlisting language="orc"><![CDATA[
+def sumto(n) = if n < 1 then 0 else n + sumto(n-1)
+]]></programlisting>
+
+The call <code>sumto(5)</code> publishes 15.
+</para>  
+
+<para>
+A recursive function may run forever, publishing an infinite number of times.
+The function <code>metronome</code> is a classic example; a call to <code>metronome</code>
+publishes a <code>signal</code> once per second, forever:
+
+<programlisting language="orc"><![CDATA[
+def metronome() = signal | Rwait(1000) >> metronome()
+]]></programlisting>
+
+</para>
+
+<para>
+Mutual recursion is also supported.
+
+<programlisting language="orc"><![CDATA[
+def even(n) = 
+  if (n :> 0) then odd(n-1)
+  else if (n <: 0) then odd(n+1)
+  else true
+def odd(n) = 
+  if (n :> 0) then even(n-1)
+  else if (n <: 0) then even(n+1)
+  else false
+]]></programlisting>
+
+There is no special keyword for mutual recursion; any contiguous sequence of function declarations is assumed to be 
+mutually recursive.  Also, note that <code>:></code> and <code>&lt;:</code> are the Orc symbols for
+'greater than' and 'less than' respectively.
+</para>
+
+</section>
+
+<section xml:id="ug.introduction.functions.clauses">
+<title>Clauses</title>
+
+<para>
+The combination of functions and pattern matching offers a powerful capability: 
+<firstterm>clausal</firstterm> definition of functions. We can define expressions which execute 
+different code depending on the structure of their arguments. 
+</para>
+
+
+<para>
+Here's an example.
+
+<programlisting language="orc"><![CDATA[
+def sum([]) = 0
+def sum(h:t) = h + sum(t)
+]]></programlisting>
+
+<code>sum(l)</code> publishes the sum of the numbers in the list <code>l</code>. It has two clauses: 
+one which matches the empty list, and one which matches any nonempty list. If its argument is an empty 
+list, it returns 0, the appropriate sum for an empty list. If the argument is a nonempty list, it adds 
+the first element of that list to the sum of all of the other elements. In this way, it recursively finds 
+the sum of the list.
+</para>
+
+<para>
+A function may have multiple clauses, each of which has a sequence of patterns to match each argument, 
+and a body expression. Naturally, all clauses of a function must have the same number of arguments. Any 
+contiguous sequence of definitions with the same name and different arguments is interpreted as a clausal 
+definition, where each individual declaration is a clause of the larger function. 
+</para>
+
+<para>
+When the function is called, the clauses are tried in the order in which they appear until a match is found. 
+If no clause matches, the call remains silent.
+</para>
+
+<para>
+We can use a literal pattern to define the base case of a recursive function in a straightforward way.
+
+<programlisting language="orc"><![CDATA[
+{- Fibonacci numbers -}
+def fib(0) = 1
+def fib(1) = 1
+def fib(n) = fib(n-1) + fib(n-2)
+]]></programlisting>
+
+This definition of the Fibonacci function is straightforward, but slow, due to the repeated work in recursive
+calls to <code>fib</code>. We can define a linear-time version, again with the help of pattern matching:
+
+<programlisting language="orc"><![CDATA[
+{- Alternate definition of the Fibonacci function -}
+
+{- A helper function: find the pair (Fibonacci(n), Fibonacci(n+1)) -}
+def H(0) = (1,1)
+def H(n) = H(n-1) >(x,y)> (y, x+y)
+
+def fib(n) = H(n) >(x,_)> x
+]]></programlisting>
+</para>
+
+<para>
+As a more complex example of matching, consider the following function which takes
+a list argument and returns a new list containing only the first <code>n</code> 
+elements of the argument list. 
+
+<programlisting language="orc"><![CDATA[
+def take(0,_) = []
+def take(n,h:t) = h:take(n-1, t)
+]]></programlisting>
+</para>
+
+</section>
+
+<section xml:id="ug.introduction.functions.guards">
+<title>Guards</title>
+
+<para>
+Each clause of a function definition may also have a <firstterm>guard</firstterm>: a Boolean
+expression which determines whether or not the clause applies. If the guard publishes <code>false</code>,
+then the next clause is tried, just as if some pattern had failed to match.
+</para>
+
+<para>
+We can add guards to a previous example to protect against the degenerate case of a negative
+argument:
+</para>
+
+<para>
+<programlisting language="orc"><![CDATA[
+{- Fibonacci numbers -}
+def fib(0) = 1
+def fib(1) = 1
+def fib(n) if (n :> 1) = fib(n-1) + fib(n-2)
+]]></programlisting>
+</para>
+
+<para>
+We can also improve the readability of a previous example:
+</para>
+
+<para>
+<programlisting language="orc"><![CDATA[
+def even(n) if (n :> 0) = odd(n-1)
+def even(n) if (n <: 0) = odd(n+1)
+def even(0) = true 
+def odd(n) if (n :> 0) = even(n-1)
+def odd(n) if (n <: 0) = even(n+1)
+def odd(0) = false
+]]></programlisting>
+</para>
+
+</section>
+
+</section>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<introContent>
+	<extensionContent path="whatsnew/@" style="orc_intro_item.css">
+		<group id="edu.utexas.cs.orc.orceclipse.help.intro.whatsnew_group" style-id="content-group">
+			<link
+					label="Orc Plug-in"
+					url="http://org.eclipse.ui.intro/showHelpTopic?id=/edu.utexas.cs.orc.orceclipse/help/pluginhelp/whatsnew.html"
+					id="orcIntroLink"
+					style-id="content-link">
+				<text>Find out about changes to the Orc Eclipse Plug-in</text>
+			</link>
+		</group>
+	</extensionContent>
+</introContent>

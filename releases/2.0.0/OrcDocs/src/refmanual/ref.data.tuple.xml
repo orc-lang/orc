@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.data.tuple.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<section xml:id="ref.data.tuple" xmlns="http://docbook.org/ns/docbook">
+<title>Tuples</title>
+
+<para>
+A <indexterm significance="preferred"><primary>tuple</primary></indexterm><firstterm>tuple</firstterm> is a sequence of at least two values. Orc does not have 0-tuples or 1-tuples.
+</para>
+
+<para>Tuples are intended to be used for sequences with a fixed length and varying element types,
+whereas <link linkend="ref.data.list">lists</link> are intended to be used for sequences with varying length and a fixed element type.</para> 
+
+<section xml:id="ref.data.tuple.syntax">
+  <title>Syntax</title>
+  <para>
+    <productionset>
+    <productionrecap linkend="ebnf.expression.tuple"/>
+    </productionset>
+  </para>
+</section>
+
+<section xml:id="ref.data.tuple.constructors">
+<title>Constructors</title>
+
+<para>
+The tuple expression <code>(</code> <replaceable>E<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>E<subscript>n</subscript></replaceable> <code>)</code> 
+<link linkend="ref.concepts.publish">publishes</link> the tuple value <code>(</code> <replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable> <code>)</code>
+only if each expression <replaceable>E<subscript>i</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to value <replaceable>v<subscript>i</subscript></replaceable>.
+Otherwise, it <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
+</para>
+</section>
+
+<section xml:id="ref.data.tuple.operations">
+<title>Operations</title>
+
+<para>Notable tuple operations include:
+<itemizedlist>
+<listitem><para>Return the tuple element at position <replaceable>index</replaceable>, starting from 0: <replaceable>tuple</replaceable><code>(</code><replaceable>index</replaceable><code>)</code></para></listitem>
+<listitem><para>Return the first element of a pair: <code>fst(</code><replaceable>tuple</replaceable><code>)</code></para></listitem>
+<listitem><para>Return the second element of a pair: <code>snd(</code><replaceable>tuple</replaceable><code>)</code></para></listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+<section xml:id="ref.data.tuple.type">
+<title>Type</title>
+<para>
+The type of a tuple value <code>(</code><replaceable>v<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>v<subscript>n</subscript></replaceable><code>)</code>
+where <replaceable>v<subscript>i</subscript></replaceable> has type <replaceable>T<subscript>i</subscript></replaceable>,
+is a tuple type, written <code>(</code><replaceable>T<subscript>0</subscript></replaceable> <code>,</code> &#x2026; <code>,</code> <replaceable>T<subscript>n</subscript></replaceable><code>)</code>.
+</para>
+</section>
+
+<section xml:id="ref.data.tuple.javacalls">
+<title>Java calls</title>
+
+<para>Orc tuples don't correspond to any Java value, so if a tuple is passed to Java code, it will be as a <code language="java">java.lang.Object</code> of a type not specified here.</para>
+
+</section>
+
+<section xml:id="ref.data.tuple.examples">
+<title>Examples</title>
+
+
+<example xml:id="ref.data.tuple.examples.tupselect">
+<title>Tuple Selection</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Unzip a list of tuples into a tuple of lists -}
+
+val squares = [(1,1), (2,4), (3,9), (4,16)]
+
+signal >> ( map(fst,squares) , map(snd,squares) ) 
+
+{-
+OUTPUT:
+([1, 2, 3, 4], [1, 4, 9, 16])
+-}
+]]></programlisting>
+</example>
+
+<example xml:id="ref.data.tuple.examples.forkjoin"><title>Fork-Join</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Print "fork", but wait at least 500ms before printing "join" -}
+
+( Println("fork"), Rwait(500) ) >> Println("join") >> stop
+
+{-
+OUTPUT:
+fork
+join
+-}
+]]></programlisting>
+</example>
+
+</section>
+
+<section xml:id="ref.data.tuple.links">
+<title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.patterns.tuple">Tuple pattern</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.fst"><code>fst</code> function</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.state.snd"><code>snd</code> function</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.tuples">Tuples</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.forkjoin">Fork-Join</olink></para></listitem>
+		</itemizedlist>
+</section>
+
+</section>
