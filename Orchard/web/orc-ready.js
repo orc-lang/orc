@@ -541,6 +541,10 @@ function orcify(code, defaultConfig) {
 
 	// private members
 	var $code = $(code);
+	
+	var hiddenParents = $code.parents(":hidden")
+	hiddenParents.show()
+	
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
 	var $widget = $('<div class="orc-wrapper" />');
 		//.width($code.width()+2);
@@ -657,6 +661,7 @@ function orcify(code, defaultConfig) {
 	$widget[0].orcFontSizeDown = function() {
 		setFontSize(fontSize * 0.8);
 	};
+	hiddenParents.hide()
 }
 
 /** Widget which is currently running. */
