@@ -219,7 +219,7 @@ simply halt.
 
 val r = Cell()
   Rwait(1000) >> r.write(2) >> Println("Wrote 2") >> stop
-| Rwait(1000) >> r.write(3) >> Println("Wrote 3") >> stop
+| Rwait(2000) >> r.write(3) >> Println("Wrote 3") >> stop
 | r.read()
 
 {-
@@ -264,7 +264,7 @@ but lower precedence than any of the other operators.</listitem>
 
 val r = Cell()
   Rwait(1000) >> r := 2 >> Println("Wrote 2") >> stop
-| Rwait(1000) >> r := 3 >> Println("Wrote 3") >> stop
+| Rwait(2000) >> r := 3 >> Println("Wrote 3") >> stop
 | r?
 
 {-
@@ -513,9 +513,10 @@ is equivalent to
 
 <programlisting  language="orc-demo"><![CDATA[
 [4, 6] >x>
-  x >[]> 0
+( x >[]> 0
 | x >[_]> 1
 | x >_:_:_> 2
+)
 ]]></programlisting>
 
 whereas
