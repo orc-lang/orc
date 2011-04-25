@@ -63,9 +63,7 @@ load it as tryorc.shtml?mock
 <p>
 Enter an Orc program in the text box below and then click the <b>run</b>
 button.  You may also load an example from the left panel, and then modify or
-run it.  For best results, please use a recent browser such as <a
-href="http://www.mozilla.com/en-US/firefox/">Firefox 3</a> or Internet
-Explorer 7. See <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a> for
+run it. See <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a> for
 tips and keyboard shortcuts.
 </p>
 </div>
