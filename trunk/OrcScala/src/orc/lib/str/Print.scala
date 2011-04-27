@@ -21,6 +21,7 @@ import orc.types.SignalType
 import orc.types.Top
 import orc.Handle
 import orc.OrcEvent
+import orc.values.Format.formatValue
 
 /**
  * 
@@ -33,20 +34,30 @@ case class PrintEvent(val text: String) extends OrcEvent
 
 abstract class PrintSite extends Site1 with TypedSite {
 
-  def call(a: AnyRef, h: Handle) = {
-    h.notifyOrc(PrintEvent(a.toString()))
-    h.publish()
-  }
+  def formatToPrint(v: AnyRef): String = 
+    v match {
+      case s: String => s
+      case t => formatValue(t)
+    }
   
   def orcType = SimpleFunctionType(Top, SignalType)
   
 }
 
-object Print extends PrintSite
+object Print extends PrintSite {
+  
+  def call(a: AnyRef, h: Handle) = {
+    h.notifyOrc(PrintEvent(formatToPrint(a)))
+    h.publish()
+  }
+  
+}
+
 object Println extends PrintSite {
   
-  override def call(a: AnyRef, h: Handle) {
-    super.call(a.toString() + "\n", h)
+  def call(a: AnyRef, h: Handle) = {
+    h.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
+    h.publish()
   }
   
 }
