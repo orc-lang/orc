@@ -1,0 +1,90 @@
+                      THE ORC PROGRAMMING LANGUAGE
+                   STRUCTURED CONCURRENT PROGRAMMING
+
+                   The University of Texas at Austin
+
+
+                        INSTALL for orchard.zip
+
+
+BUILDING, INSTALLING, AND RUNNING ORCHARD
+-----------------------------------------
+
+See also: http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=HowToInstallOrchard
+
+
+BEFORE BUILDING
+
+To build this package from source, you will need the OrcJava, OrcSites,
+and Website projects in Eclipse.
+
+You will also need "orchard.properties" and "oauth.jks" files in the Orchard
+project directory.  These are installation-specific, and contain some security-
+sensitive data, so they are not provided in the distribution.  A
+"sample.orchard.properties" is provided to get you started.  "oath.jks"
+is your OAuth Java keystore.
+
+
+TO BUILD & RUN THE MAC OS X STANDALONE DEMO APPLICATION
+
+Do a "clean" build and then use the Ant target "demo-app" to build a
+.tgz (gzip'ed tar) archive of the application.
+
+Un-archive and run the Orchard Mac OS X app, and it will open your
+default browser to a demo page running in an an embedded HTTP/servlet
+server on your workstation, port 8080.
+
+
+TO BUILD & RUN THE JAR'ED STANDALONE DEMO APPLICATION/SERVLETS
+
+Do a "clean" build and then use the Ant target "zip" to build a
+ZIP archive of the application with its required libraries.
+
+Unpack the ZIP in the location of you choice.
+
+Run the orc.OrchardDemo class, with the command:
+
+    java -cp <path-to-Orc>/orc-2.0.1.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.0.1.jar:<path-to-OrcSites>/lib/\*:orchard-2.0.1-demo.jar:lib/\* orc.OrchardDemo
+
+This will open your default browser to a demo page running in an an
+embedded HTTP/servlet server on your workstation, port 8080.
+
+Alternatively, you can run the class orc.Orchard, with:
+
+    java -cp <path-to-Orc>/orc-2.0.1.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.0.1.jar:<path-to-OrcSites>/lib/\*:orchard-2.0.1-demo.jar:lib/\* orc.Orchard
+
+and it will run as a standalone Orchard Web application (servlet) in
+an embedded HTTP/servlet server on your workstation, port 8081.
+
+
+TO BUILD & DEPLOY THE WAR (WEB APPLICATION ARCHIVE)
+
+Do a "clean" build and then use the Ant target "zip" to build a
+ZIP archive of WAR file of the Orchard servlets and supporting
+libraries.
+
+The contents of this archive should be deployed on a servlet 2.5+
+container of your choosing.
+
+Note: You will need to tell your JAX-WS implementation and servlet
+      container to use the same HTTP server.  For Jetty, you'll
+      need the J2SE6 module (see note below), and add the following to
+      the Configure Server element of jetty.xml: 
+
+    <!-- Use Jetty as Java 6 HTTP server provider - JAX-WS uses this for Endpoint publishing -->
+    <Call class="org.mortbay.jetty.j2se6.JettyHttpServerProvider" name="setServer">
+        <Arg><Ref id="Server"/></Arg>
+    </Call>
+
+Note: The J2SE6 module is found in Jetty's contrib directory. Do not
+      use a J2SE6 version after 6.1.20 -- the code was mangled in .21
+      and still is in .22.  (Later versions of Jetty itself are OK.)
+      There's a Jetty 7 equivalent, the "j2sehttpspi" module, but I
+      haven't tried it yet.
+
+      We've also included a subset of Jetty and its J2SE6 module in the
+      ZIP archive.
+
+
+--
+[$Id$]

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.additional.datatypes.xml - DocBook source for an Orc user guide section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.additional.datatypes" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Datatypes</title>
+
+<para>
+We have seen Orc's predefined data structures: tuples, lists, and records. Orc also provides the capability
+for programmers to define their own data structures, using a feature adopted from the ML/Haskell
+language family called <firstterm>datatypes</firstterm> (also called variants or tagged sums).
+</para>
+
+<para>
+Datatypes are defined using the <code>type</code> declaration:
+
+<programlisting language="orc"><![CDATA[
+type Tree = Node(_,_,_) | Empty()
+]]></programlisting>
+
+</para>
+
+<para>
+This declaration defines two new sites named <code>Node</code> and <code>Empty</code>.
+<code>Node</code> takes three arguments, and publishes a <emphasis>tagged value</emphasis>
+wrapping those arguments. <code>Empty</code> takes no arguments and does the same.
+</para>
+
+<para>
+Once we have created these tagged values, we use a new pattern called a datatype pattern
+to match them and unwrap the arguments:
+
+<programlisting language="orc-demo"><![CDATA[
+type Tree = Node(_,_,_) | Empty()
+{- Build up a small binary tree -}
+val l = Node(Empty(), 0, Empty())
+val r = Node(Empty(), 2, Empty())
+val t = Node(l,1,r)
+
+{- And then match it to extract its contents -}
+t >Node(l,j,r)>
+l >Node(_,i,_)>
+r >Node(_,k,_)>
+( i | j | k )
+
+{-
+OUTPUT:PERMUTABLE
+0
+1
+2
+-}
+]]></programlisting>
+</para>
+
+<para>
+One pair of datatypes is so commonly used that it is already predefined in the standard library:
+<code>Some(_)</code> and <code>None()</code>. These are used as return values for calls that
+need to distinguish between successfully returning a value (<code>Some(v)</code>), and successfully
+completing but having no meaningful value to return (<code>None()</code>). For example, a lookup
+function might return <code>Some(result)</code> if it found a result, or return <code>None()</code>
+if it successfully performed the lookup but found no suitable result.
+</para>
+
+</section>

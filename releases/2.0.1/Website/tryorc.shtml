@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--
+To play with this in your browser without running an Orchard server,
+load it as tryorc.shtml?mock
+-->
+<head>
+<title>Orc Demo</title>
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
+<link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
+<link rel="stylesheet" type="text/css" href="tryorc-menu.css"/>
+</head>
+<body>
+<div id="homelink" style="padding: 2px"><small>&lt; <a href="/">Back to Orc Home</a></small></div>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr><td width="200" valign="top" style="padding: 0 10px 0 10px" id="menu-td">
+<h1>Examples</h1>
+<p>Click an example to load it.</p>
+<ul id="menu" class="filetree">
+<li><span class="folder">Tutorial</span><ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/sites.orc">Site Calls</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/seq.orc">Sequential</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parseq.orc">Parallel/Sequential</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/prune.orc">Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/parprune.orc">Parallel/Pruning</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/ift.orc">Ift</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/stop.orc">Stop</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/rwait.orc">Rwait</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/metronome.orc">Metronome</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Small Demos</span><ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/treeswitch.orc">Load Balancing</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/mapreduce.orc">Map/Reduce</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/philosopher.orc">Dining Philosophers</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/tally.orc">Tally</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/dice.orc">Dice</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/walk.orc">Random Walk</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/search.orc">Web Search</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
+	</ul></li>
+<li class="closed"><span class="folder">Big Demos</span><ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li>
+	</ul></li>
+<li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</span>
+	<ul>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spell_io.orc">Spell-Check Gutenberg</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email_meeting.orc">Meeting Request Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email.orc">Send Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spam.orc">Spam</a></span></li>
+	</ul></li>
+<li id="login"><span class="file"><a href="https://orc.csres.utexas.edu/orchard/LoginServlet">Restricted Login</a></span></li>
+</ul>
+</td><td valign="top" style="padding: 0 10px 0 10px" id="main">
+<div id="header">
+<h1>Try Orc!</h1>
+
+<p>
+Enter an Orc program in the text box below and then click the <b>run</b>
+button.  You may also load an example from the left panel, and then modify or
+run it. See <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a> for
+tips and keyboard shortcuts.
+</p>
+</div>
+<div>
+<small>
+<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a></b>
+Font size:
+<a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
+<a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
+&nbsp;&nbsp;&nbsp;&nbsp;Full screen: <a href="#" style="cursor: pointer" onclick="toggleExamples()">toggle</a>
+&nbsp;&nbsp;&nbsp;&nbsp;Clear program: <a href="#" style="cursor: pointer" onclick="clearProgram()">clear</a>
+</small>
+</div>
+<textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
+</textarea>
+</td></tr></table>
+<script src="/orchard/orc.js" type="text/javascript"></script>
+<script type="text/javascript">
+if (Orc.query.k) {
+	$("#restricted_demos").show();
+	$("#login").hide();
+}
+</script>
+<script type="text/javascript" src="jquery.treeview.min.js"></script>
+<script type="text/javascript" src="tryorc-menu.js"></script>
+</body>
+</html>

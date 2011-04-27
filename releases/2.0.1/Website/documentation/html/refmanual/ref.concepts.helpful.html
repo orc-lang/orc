@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.5.&nbsp;Helpful Sites</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.1"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation"><link rel="next" href="ref.concepts.approximation.html" title="8.6.&nbsp;Approximation in Orc Implementation"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.concepts.deflate.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.concepts.html">Chapter&nbsp;8.&nbsp;Concepts</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.concepts.approximation.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.concepts.deflate.html">8.4.&nbsp;Deflation</a>&nbsp;</td><th align="center" width="60%">8.5.&nbsp;Helpful Sites</th><td align="right" width="20%"><a href="ref.concepts.approximation.html">8.6.&nbsp;Approximation in Orc Implementation</a>&nbsp;</td></tr></table></div><div class="section" title="8.5.&nbsp;Helpful Sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.helpful"></a>8.5.&nbsp;Helpful Sites</h2></div></div></div><a name="N42EAB" class="indexterm"></a><a name="N42EAE" class="indexterm"></a><p>
+		A <a name="N42EB3" class="indexterm"></a><em class="firstterm">helpful site</em> responds with an indication that it will never <a name="N42EBA" class="indexterm"></a><a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a>,
+		when it knows this outcome for a call. 
+	</p><p>
+		All library sites in Orc are helpful. Thus, <a class="link" href="ref.stdlib.core.html#ref.stdlib.core.Ift"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Ift</span></code></a> is a helpful site, and
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Ift</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">false</span>)</code> sends an indication to the caller that it will never
+		publish. A <a class="link" href="ref.stdlib.state.html#ref.stdlib.state.Channel"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Channel</span></code></a> is a helpful site, and some of its methods will send
+		an indication that they will never publish. In particular, the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">get</span></code>
+		method is blocked on an empty channel, but it sends an indication it
+		will never publish if the channel is closed.
+	</p><p>
+		The indication from a helpful site that it will never publish causes the call to <a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halt</a>.
+		This can be exploited by the caller by using the <a class="link" href="ref.combinators.otherwise.html" title="3.4.&nbsp;Otherwise Combinator">otherwise combinator</a>.
+	</p><p>
+		We do not expect arbitrary services to be helpful. 
+	</p><div class="section" title="8.5.1.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.helpful.links"></a>8.5.1.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.combinators.otherwise.html" title="3.4.&nbsp;Otherwise Combinator">Otherwise Combinator</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="ref.stdlib.html" title="Chapter&nbsp;11.&nbsp;Standard Library">Standard Library</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

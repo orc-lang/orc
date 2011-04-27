@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.style.xml - DocBook source for an Orc user guide chapter
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<chapter xml:id="ug.style"
+		 xmlns="http://docbook.org/ns/docbook" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Syntactic and Stylistic Conventions</title>
+
+<para>
+In this section we suggest some syntactic conventions for writing Orc programs. None of these 
+conventions are required by the parser; newlines are used only to disambiguate certain corner
+cases in parsing, and other whitespace is ignored. However, following programming convention 
+helps to improve the readability of programs, so that the programmer's intent is more readily apparent.
+</para>
+ 
+<section xml:id="ug.style.parallel"><title>Parallel combinator</title> 
+ 
+<para>
+When the expressions to be combined are small, write them all on one line.
+
+<programlisting language="orc">
+<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
+</programlisting>
+
+</para>
+
+<para>
+When the combined expressions are large enough to take up a full line, write one expression
+per line, with each subsequent expression aligned with the first and preceded by <code>|</code>. 
+Indent the first expression to improve readability.
+
+<programlisting language="orc">
+  <emphasis role="bold">long expression</emphasis> 
+| <emphasis role="bold">long expression</emphasis>
+| <emphasis role="bold">long expression</emphasis>
+</programlisting>
+ 
+</para>
+
+<para>
+A sequence of parallel expressions often form the left hand side of a sequential combinator. 
+Since the sequential combinator has higher precedence, use parentheses to group the
+combined parallel expressions together. 
+
+
+<programlisting language="orc">
+( <emphasis role="bold">expression</emphasis> 
+| <emphasis role="bold">expression</emphasis>
+)<![CDATA[ >x> ]]>
+<emphasis role="bold">another expression</emphasis>
+</programlisting>
+</para>
+
+</section>
+
+<section xml:id="ug.style.sequential"><title>Sequential combinator</title>
+
+<para>
+When the expressions to be combined are small, write a cascade of sequential combinators
+all on the same line.
+</para> 
+
+<programlisting language="orc">
+<emphasis role="bold">F</emphasis><![CDATA[ >x> ]]><emphasis role="bold">G</emphasis><![CDATA[ >y> ]]><emphasis role="bold">H</emphasis>
+</programlisting>
+
+<para>
+When the expressions to be combined are individually long enough to take up a full line, write one expression
+per line; each line ends with the combinator which binds the publications
+produced by that line.
+
+<programlisting language="orc">
+<emphasis role="bold">long expression</emphasis> <![CDATA[ >x> ]]> 
+<emphasis role="bold">long expression</emphasis> <![CDATA[ >y> ]]>
+<emphasis role="bold">long expression</emphasis>
+</programlisting>
+ 
+</para>
+
+<para>
+For very long expressions, or expressions that span multiple lines, write
+the combinators on separate lines, indented, between each expression. 
+
+<programlisting language="orc">
+<emphasis role="bold">very long expression</emphasis> 
+ <![CDATA[ >x> ]]> 
+<emphasis role="bold">very long expression</emphasis> 
+ <![CDATA[ >y> ]]>
+<emphasis role="bold">very long expression</emphasis>
+</programlisting>
+ 
+</para>
+
+</section>
+
+<section xml:id="style.pruning"><title>Pruning combinator</title>
+
+<para>
+When the expressions to be combined are small, write them on the same line:
+
+<programlisting language="orc">
+<emphasis role="bold">F</emphasis><![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
+</programlisting>
+
+When multiple pruning combinators are used to bind multiple variables
+(especially when the scoped expression is long), start each line with a 
+combinator, aligned and indented, and continue with the expression.
+
+<programlisting language="orc">
+<emphasis role="bold">long expression</emphasis> 
+ <![CDATA[ <x< ]]><emphasis role="bold">G</emphasis>
+ <![CDATA[ <y< ]]><emphasis role="bold">H</emphasis>
+</programlisting>
+
+</para>
+
+<para>
+The pruning combinator is not often written in its explicit form
+in Orc programs. Instead, the <code>val</code> declaration is often more
+convenient, since it is semantically equivalent and mentions the variable
+<code>x</code> before its use in scope, rather than after.
+
+<programlisting language="orc">
+val x = <emphasis role="bold">G</emphasis>
+val y = <emphasis role="bold">H</emphasis>
+<emphasis role="bold">long expression</emphasis> 
+</programlisting>
+
+</para>
+
+<para>
+Additionally, when the variable is used in only one place, and the
+expression is small, it is often easier to use a nested expression.
+For example,
+
+<programlisting language="orc">
+val x = <emphasis role="bold">G</emphasis>
+val y = <emphasis role="bold">H</emphasis>
+M(x,y)
+</programlisting>
+
+is equivalent to
+
+<programlisting language="orc">
+M(<emphasis role="bold">G</emphasis>,<emphasis role="bold">H</emphasis>)
+</programlisting>
+
+</para>
+
+<para>
+Sometimes, we use the pruning combinator simply for its capability to terminate
+expressions and get a single publication; binding a variable is irrelevant. This
+is a special case of nested expressions. We use the identity site <code>Let</code>
+to put the expression in the context of a function call.
+</para>
+
+<para>
+For example,
+
+<programlisting language="orc">
+x<![CDATA[ <x< ]]><emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>
+</programlisting>
+
+is equivalent to
+
+<programlisting language="orc">
+Let(<emphasis role="bold">F</emphasis> | <emphasis role="bold">G</emphasis> | <emphasis role="bold">H</emphasis>)
+</programlisting>
+</para>
+
+<para>
+The translation uses a pruning combinator, but we don't need to write the combinator, 
+name an irrelevant variable, or worry about precedence (since the expression is enclosed
+in parentheses as part of the call).
+</para>
+
+</section>
+
+<section xml:id="ug.style.declarations"><title>Declarations</title>
+	
+<para>
+When the body of a declaration spans multiple lines, start the body on a new line
+after the <code>=</code> symbol, and indent the entire body.
+
+<programlisting language="orc">
+def f(x,y) =
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">body expression</emphasis>
+</programlisting>
+
+</para>
+
+<para>
+Apply this style recursively; if a def appears within a def, indent its contents even further.
+
+<programlisting language="orc">
+def f(x,y) =
+    <emphasis role="bold">declaration</emphasis>
+    def helper(z) =
+    	<emphasis role="bold">declaration in helper</emphasis>
+    	<emphasis role="bold">declaration in helper</emphasis>
+    	<emphasis role="bold">body of helper</emphasis>
+    <emphasis role="bold">declaration</emphasis>
+    <emphasis role="bold">body expression</emphasis>
+</programlisting>
+
+
+</para>
+
+	<section xml:id="ug.style.declarations.ambiguous"><title>Ambiguous Declarations</title>
+
+<para> The following situation could introduce syntactic ambiguity: the end
+of a declaration (def or val) is followed by an expression that starts with a
+non-alphanumeric symbol. Consider these example programs:
+</para>
+
+<para>
+<programlisting language="orc"><![CDATA[
+def f() =       
+  def g() = h
+  (x,y)
+]]></programlisting>
+</para>
+		
+<para>
+<programlisting language="orc"><![CDATA[
+def f() =      
+  val t = h
+  (x,y)
+]]></programlisting>
+</para>
+		
+<para>
+<programlisting language="orc"><![CDATA[
+def f() =       
+  val t = u
+  -3
+]]></programlisting>
+</para>
+		
+<para>  <code>(x,y)</code> may be interpreted as the parameter list of <code>h</code>, and <code>-3</code> as
+continuation of <code>u</code>, or they may be regarded as completely
+separate expressions (in this case, the goal expression of <code>def f</code>). To avoid this ambiguity, 
+Orc imposes the following syntactic constraint:
+</para>
+		
+<para><emphasis>An expression that follows a declaration begins with an alphanumeric symbol</emphasis></para>
+	
+<para>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
+write it as <code>signal >> (x,y)</code>. Similarly, write <code>signal >> -3</code>, in case <code>-3</code> is
+the goal expression in the above example.  Note that there are many solutions to this problem; for example
+using <code>stop | (x,y)</code> is also valid.</para>
+
+</section>
+	
+</section>
+
+</chapter>
