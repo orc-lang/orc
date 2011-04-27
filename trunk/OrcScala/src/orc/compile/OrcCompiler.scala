@@ -15,11 +15,11 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer, FileOutputStream}
-import java.net.URI
+import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer, FileOutputStream }
+import java.net.{ MalformedURLException, URI, URISyntaxException }
 import orc.{ OrcCompilationOptions, OrcCompiler }
 import orc.compile.optimize._
-import orc.compile.parse.{ OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
+import orc.compile.parse.{ OrcNetInputContext, OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
 import orc.compile.translate.Translator
 import orc.compile.typecheck.Typechecker
 import orc.error.compiletime._
@@ -304,6 +304,19 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
     Logger.finer("openInclude "+includeFileName+", relative to "+Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName)+"("+baseIC.descr+")")
 
+    // If no include path, allow absolute HTTP and HTTPS includes
+    if (options.includePath.isEmpty && (includeFileName.toLowerCase.startsWith("http://") || includeFileName.toLowerCase.startsWith("https://"))) {
+      try {
+        val newIC = new OrcNetInputContext(new URI(includeFileName))
+        Logger.finer("include "+includeFileName+" opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
+        return newIC
+      } catch {
+        case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax ("+e.getMessage+")");
+        case e: MalformedURLException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax ("+e.getMessage+")");
+        case e: IOException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; IO error ("+e.getMessage+")");
+      }
+    }
+
     // Try filename under the include path list
     for (incPath <- scala.collection.JavaConversions.asIterable(options.includePath)) {
       try {
@@ -323,8 +336,8 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     // Try in the bundled include resources
     try {
       val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
-        Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
-        return newIC
+      Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
+      return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */
     }
