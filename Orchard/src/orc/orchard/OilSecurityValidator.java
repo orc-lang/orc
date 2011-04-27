@@ -112,6 +112,50 @@ public class OilSecurityValidator {
 		allowedClasses.add("org.joda.time.DateTime");
 		allowedClasses.add("org.joda.time.LocalDateTime");
 		allowedClasses.add("org.joda.time.LocalDate");
+		
+		// scala.collection
+		allowedClasses.add("scala.collection.BitSet");
+		allowedClasses.add("scala.collection.Map");
+		allowedClasses.add("scala.collection.Set");
+		allowedClasses.add("scala.collection.SortedMap");
+		allowedClasses.add("scala.collection.SortedSet");
+
+		allowedClasses.add("scala.collection.immutable.BitSet");
+		allowedClasses.add("scala.collection.immutable.HashMap");
+		allowedClasses.add("scala.collection.immutable.HashSet");
+		allowedClasses.add("scala.collection.immutable.IntMap");
+		allowedClasses.add("scala.collection.immutable.List");
+		allowedClasses.add("scala.collection.immutable.ListMap");
+		allowedClasses.add("scala.collection.immutable.LongMap");
+		allowedClasses.add("scala.collection.immutable.Map");
+		allowedClasses.add("scala.collection.immutable.Queue");
+		allowedClasses.add("scala.collection.immutable.Set");
+		allowedClasses.add("scala.collection.immutable.Stack");
+		allowedClasses.add("scala.collection.immutable.SortedMap");
+		allowedClasses.add("scala.collection.immutable.SortedSet");
+		allowedClasses.add("scala.collection.immutable.TreeHashMap");
+		allowedClasses.add("scala.collection.immutable.TreeMap");
+		allowedClasses.add("scala.collection.immutable.TreeSet");
+		allowedClasses.add("scala.collection.immutable.Vector");
+
+		allowedClasses.add("scala.collection.mutable.ArrayBuffer");
+		allowedClasses.add("scala.collection.mutable.ArrayStack");
+		allowedClasses.add("scala.collection.mutable.BitSet");
+		allowedClasses.add("scala.collection.mutable.Buffer");
+		allowedClasses.add("scala.collection.mutable.DoubleLinkedList");
+		allowedClasses.add("scala.collection.mutable.HashMap");
+		allowedClasses.add("scala.collection.mutable.HashSet");
+		allowedClasses.add("scala.collection.mutable.LinkedHashMap");
+		allowedClasses.add("scala.collection.mutable.LinkedHashSet");
+		allowedClasses.add("scala.collection.mutable.LinkedList");
+		allowedClasses.add("scala.collection.mutable.ListBuffer");
+		allowedClasses.add("scala.collection.mutable.ListMap");
+		allowedClasses.add("scala.collection.mutable.Map");
+		allowedClasses.add("scala.collection.mutable.MutableList");
+		allowedClasses.add("scala.collection.mutable.Queue");
+		allowedClasses.add("scala.collection.mutable.Set");
+		allowedClasses.add("scala.collection.mutable.Stack");
+		allowedClasses.add("scala.collection.mutable.WeakHashMap");
 	}
 
 	public static class SecurityProblem implements Positional {

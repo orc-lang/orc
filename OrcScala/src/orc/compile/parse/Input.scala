@@ -115,8 +115,8 @@ trait OrcInputContext {
   protected def resolve(baseURI: URI, pathElements: String*): URI = {
     def allowedURIchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
     def looksLikeFilename(s: String): Boolean =
-      (s(0).isLetter && s(1) == ':') ||                  // CP/M style drive letter
-      !s.filterNot(allowedURIchars.contains(_)).isEmpty  // Illegal URI chars
+      (s.length >= 2 && s(0).isLetter && s(1) == ':') ||  // CP/M style drive letter
+      !s.filterNot(allowedURIchars.contains(_)).isEmpty   // Illegal URI chars
     def nameToURI(s: String): URI = if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
     pathElements.foldLeft(baseURI)((x,y) => x.resolve(nameToURI(y)))
   }
