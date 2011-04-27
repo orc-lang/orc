@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc Reference Manual v2.0.0</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc Reference Manual v2.0.1</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
 // Expandable content script from flooble.com.
 // For more information please visit:
 // http://www.flooble.com/scripts/expand.php
@@ -15,10 +15,10 @@ function toggle(link, divId) {
 		d.style.display = 'none';
 	}
 }
-</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc Reference Manual v2.0.0"><div><div><div><h1 class="title"><a name="refmanual"></a>
-	Orc Reference Manual v2.0.0
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc Reference Manual v2.0.1"><div><div><div><h1 class="title"><a name="refmanual"></a>
+	Orc Reference Manual v2.0.1
 
-</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">http://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2011-04-21</p></div><div><p class="copyright">Copyright &copy; 2011 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
+</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">http://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2011-04-27</p></div><div><p class="copyright">Copyright &copy; 2011 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
 			Use and redistribution of this file is governed by the license terms in
 			the LICENSE file found in the project's top-level directory and also
 			found at
@@ -76,7 +76,7 @@ false
 false
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.boolean.examples.xor_link'), 'ref.data.boolean.examples.xor_content'); }, 125);
+toggle(document.getElementById('ref.data.boolean.examples.xor_link'), 'ref.data.boolean.examples.xor_content');
 </script></div><div class="section" title="1.1.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.boolean.links"></a>1.1.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.expressions.ifthenelse" title="2.7.&nbsp;if then else"><code class="code"><span class="hl-keyword">if</span> <span class="hl-keyword">then</span> <span class="hl-keyword">else</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Ift"><code class="code"><span class="hl-variable">Ift</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Iff"><code class="code"><span class="hl-variable">Iff</span></code></a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.values" class="olink">Literal Values</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.conditionals" class="olink">Conditionals</a></p></li></ul></div></div></div><div class="section" title="1.2.&nbsp;Numerics"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.numeric"></a>1.2.&nbsp;Numerics</h2></div></div></div><p>Orc includes two numeric types, <a name="N10113" class="indexterm"></a><em class="firstterm">integers</em> and <a name="N10119" class="indexterm"></a><em class="firstterm">numbers</em>.
 Orc's integers are arbitrary-precision two's complement integers. 
 Orc's numbers are <a name="N1011F" class="indexterm"></a>floating point numbers, with an arbitrary-precision two's complement significand and a 32-bit two's complement exponent (base 10).
@@ -150,7 +150,7 @@ OUTPUT:
 14
 -}</span>
 </pre><p>See the Orc <a class="link" href="#ref.syntax.precedence" title="10.3.&nbsp;Precedence, Fixity, and Associativity">precedence table</a>.</p></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.numeric.examples.precedence_link'), 'ref.data.numeric.examples.precedence_content'); }, 125);
+toggle(document.getElementById('ref.data.numeric.examples.precedence_link'), 'ref.data.numeric.examples.precedence_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.numeric.examples.int2float_link" onclick="toggle(this, 'ref.data.numeric.examples.int2float_content')">
 					&minus;
 				</a><span class="exampleCaption">Integer to Number Promotion</span></div><div class="exampleBody" id="ref.data.numeric.examples.int2float_content"><pre class="orc">
@@ -169,7 +169,7 @@ OUTPUT:
 (24.666666666666668, 24)
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.numeric.examples.int2float_link'), 'ref.data.numeric.examples.int2float_content'); }, 125);
+toggle(document.getElementById('ref.data.numeric.examples.int2float_link'), 'ref.data.numeric.examples.int2float_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.numeric.examples.sqrt_link" onclick="toggle(this, 'ref.data.numeric.examples.sqrt_content')">
 					&minus;
 				</a><span class="exampleCaption">Square Roots and Squares</span></div><div class="exampleBody" id="ref.data.numeric.examples.sqrt_content"><pre class="orc">
@@ -194,7 +194,7 @@ OUTPUT:PERMUTABLE
 (5.00, 2.23606797749979, 25.0000)
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.numeric.examples.sqrt_link'), 'ref.data.numeric.examples.sqrt_content'); }, 125);
+toggle(document.getElementById('ref.data.numeric.examples.sqrt_link'), 'ref.data.numeric.examples.sqrt_content');
 </script></div><div class="section" title="1.2.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.numeric.links"></a>1.2.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Add"><code class="code"><span class="hl-operator">+</span></code> operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Sub"><code class="code"><span class="hl-operator">-</span></code> operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.UMinus">unary <code class="code"><span class="hl-operator">-</span></code> operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Mult"><code class="code"><span class="hl-operator">*</span></code> operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Exponent"><code class="code"><span class="hl-operator">**</span></code> (exponentiation) operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Div"><code class="code"><span class="hl-operator">/</span></code> operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Mod"><code class="code"><span class="hl-operator">%</span></code> (modulus) operator</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.abs"><code class="code"><span class="hl-variable">abs</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.signum"><code class="code"><span class="hl-variable">signum</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Floor"><code class="code"><span class="hl-variable">Floor</span></code> site</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Ceil"><code class="code"><span class="hl-variable">Ceil</span></code> site</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.values" class="olink">Literal Values</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.operators" class="olink">Operators</a></p></li></ul></div></div></div><div class="section" title="1.3.&nbsp;Character Strings"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.string"></a>1.3.&nbsp;Character Strings</h2></div></div></div><p>Orc's character sequence representation is a <a name="N10277" class="indexterm"></a><a name="N1027C" class="indexterm"></a><em class="firstterm">string</em>.
 Characters in Orc strings are drawn from the Unicode
 character set, and are encoded in the UTF-16 encoding form.
@@ -226,7 +226,7 @@ OUTPUT:
 "hello world"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.string.examples.concat_link'), 'ref.data.string.examples.concat_content'); }, 125);
+toggle(document.getElementById('ref.data.string.examples.concat_link'), 'ref.data.string.examples.concat_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.string.examples.functions_link" onclick="toggle(this, 'ref.data.string.examples.functions_content')">
 					&minus;
 				</a><span class="exampleCaption">String Functions</span></div><div class="exampleBody" id="ref.data.string.examples.functions_content"><pre class="orc">
@@ -241,7 +241,7 @@ I go to the console
 "I like Orc"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.string.examples.functions_link'), 'ref.data.string.examples.functions_content'); }, 125);
+toggle(document.getElementById('ref.data.string.examples.functions_link'), 'ref.data.string.examples.functions_content');
 </script></div><div class="section" title="1.3.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.string.links"></a>1.3.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib.text.Write"><code class="code"><span class="hl-variable">Write</span></code> site</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.text.lines"><code class="code"><span class="hl-variable">lines</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.text.unlines"><code class="code"><span class="hl-variable">unlines</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.text.words"><code class="code"><span class="hl-variable">words</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.text.unwords"><code class="code"><span class="hl-variable">unwords</span></code> function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.values" class="olink">Literal Values</a></p></li></ul></div></div></div><div class="section" title="1.4.&nbsp;signal"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.signal"></a>1.4.&nbsp;<code class="code"><span class="hl-keyword">signal</span></code></h2></div></div></div><p>A <a name="N1034A" class="indexterm"></a><em class="firstterm">signal</em> is a value that carries no information. 
 It typically indicates completion of a <a class="link" href="#ref.expressions.call" title="2.4.&nbsp;Site and Function Calls">call</a>, when there is no other meaningful value to return. 
 It is analogous to <code class="code"><span class="hl-keyword">void</span></code> in Java or <code class="code">()</code> in ML.
@@ -293,7 +293,7 @@ OUTPUT:PERMUTABLE:
 [[1], [2, 2], [3, 3, 3]]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.list.examples.sample_link'), 'ref.data.list.examples.sample_content'); }, 125);
+toggle(document.getElementById('ref.data.list.examples.sample_link'), 'ref.data.list.examples.sample_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.list.examples.notsets_link" onclick="toggle(this, 'ref.data.list.examples.notsets_content')">
 					&minus;
 				</a><span class="exampleCaption">Lists Are Not Sets</span></div><div class="exampleBody" id="ref.data.list.examples.notsets_content"><pre class="orc">
@@ -311,7 +311,7 @@ true
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.list.examples.notsets_link'), 'ref.data.list.examples.notsets_content'); }, 125);
+toggle(document.getElementById('ref.data.list.examples.notsets_link'), 'ref.data.list.examples.notsets_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.list.examples.cons_link" onclick="toggle(this, 'ref.data.list.examples.cons_content')">
 					&minus;
 				</a><span class="exampleCaption">Building Lists with Cons</span></div><div class="exampleBody" id="ref.data.list.examples.cons_content"><pre class="orc">
@@ -324,7 +324,7 @@ OUTPUT:PERMUTABLE:
 [4, 3, 2, 1]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.list.examples.cons_link'), 'ref.data.list.examples.cons_content'); }, 125);
+toggle(document.getElementById('ref.data.list.examples.cons_link'), 'ref.data.list.examples.cons_content');
 </script></div><div class="section" title="1.5.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.list.links"></a>1.5.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.list" title="5.4.&nbsp;List Pattern">List pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.patterns.cons" title="5.7.&nbsp;Cons Pattern">Cons pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list" title="11.4.&nbsp;list: Operations on lists.">Standard library list functions</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.each"><code class="code"><span class="hl-variable">each</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.map"><code class="code"><span class="hl-variable">map</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.reverse"><code class="code"><span class="hl-variable">reverse</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.filter"><code class="code"><span class="hl-variable">filter</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.head"><code class="code"><span class="hl-variable">head</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.tail"><code class="code"><span class="hl-variable">tail</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.init"><code class="code"><span class="hl-variable">init</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.last"><code class="code"><span class="hl-variable">last</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.empty"><code class="code"><span class="hl-variable">empty</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.index"><code class="code"><span class="hl-variable">index</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.append"><code class="code"><span class="hl-variable">append</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.foldl"><code class="code"><span class="hl-variable">foldl</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.foldl1"><code class="code"><span class="hl-variable">foldl1</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.foldr"><code class="code"><span class="hl-variable">foldr</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.foldr1"><code class="code"><span class="hl-variable">foldr1</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.afold"><code class="code"><span class="hl-variable">afold</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.cfold"><code class="code"><span class="hl-variable">cfold</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.zip"><code class="code"><span class="hl-variable">zip</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.unzip"><code class="code"><span class="hl-variable">unzip</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.concat"><code class="code"><span class="hl-variable">concat</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.length"><code class="code"><span class="hl-variable">length</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.take"><code class="code"><span class="hl-variable">take</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.drop"><code class="code"><span class="hl-variable">drop</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.member"><code class="code"><span class="hl-variable">member</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.merge"><code class="code"><span class="hl-variable">merge</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.mergeBy"><code class="code"><span class="hl-variable">mergeBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.mergeUnique"><code class="code"><span class="hl-variable">mergeUnique</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.mergeUniqueBy"><code class="code"><span class="hl-variable">mergeUniqueBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.sort"><code class="code"><span class="hl-variable">sort</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.sortBy"><code class="code"><span class="hl-variable">sortBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.sortUnique"><code class="code"><span class="hl-variable">sortUnique</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.sortUniqueBy"><code class="code"><span class="hl-variable">sortUniqueBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.group"><code class="code"><span class="hl-variable">group</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.groupBy"><code class="code"><span class="hl-variable">groupBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.range"><code class="code"><span class="hl-variable">range</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.rangeBy"><code class="code"><span class="hl-variable">rangeBy</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.any"><code class="code"><span class="hl-variable">any</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.all"><code class="code"><span class="hl-variable">all</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.sum"><code class="code"><span class="hl-variable">sum</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.product"><code class="code"><span class="hl-variable">product</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.and"><code class="code"><span class="hl-variable">and</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.or"><code class="code"><span class="hl-variable">or</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.minimum"><code class="code"><span class="hl-variable">minimum</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.maximum"><code class="code"><span class="hl-variable">maximum</span></code> function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.lists" class="olink">Lists</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.idioms.lists" class="olink">Idioms: Lists</a></p></li></ul></div></div></div><div class="section" title="1.6.&nbsp;Tuples"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.tuple"></a>1.6.&nbsp;Tuples</h2></div></div></div><p>
 A <a name="N106F5" class="indexterm"></a><em class="firstterm">tuple</em> is a sequence of at least two values. Orc does not have 0-tuples or 1-tuples.
 </p><p>Tuples are intended to be used for sequences with a fixed length and varying element types,
@@ -357,7 +357,7 @@ OUTPUT:
 ([1, 2, 3, 4], [1, 4, 9, 16])
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.tuple.examples.tupselect_link'), 'ref.data.tuple.examples.tupselect_content'); }, 125);
+toggle(document.getElementById('ref.data.tuple.examples.tupselect_link'), 'ref.data.tuple.examples.tupselect_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.tuple.examples.forkjoin_link" onclick="toggle(this, 'ref.data.tuple.examples.forkjoin_content')">
 					&minus;
 				</a><span class="exampleCaption">Fork-Join</span></div><div class="exampleBody" id="ref.data.tuple.examples.forkjoin_content"><pre class="orc">
@@ -371,7 +371,7 @@ fork
 join
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.tuple.examples.forkjoin_link'), 'ref.data.tuple.examples.forkjoin_content'); }, 125);
+toggle(document.getElementById('ref.data.tuple.examples.forkjoin_link'), 'ref.data.tuple.examples.forkjoin_content');
 </script></div><div class="section" title="1.6.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.tuple.links"></a>1.6.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.tuple" title="5.3.&nbsp;Tuple Pattern">Tuple pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.state.fst"><code class="code"><span class="hl-variable">fst</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.state.snd"><code class="code"><span class="hl-variable">snd</span></code> function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.tuples" class="olink">Tuples</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.idioms.forkjoin" class="olink">Fork-Join</a></p></li></ul></div></div></div><div class="section" title="1.7.&nbsp;Records"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.record"></a>1.7.&nbsp;Records</h2></div></div></div><p>
 A <a name="N10808" class="indexterm"></a><em class="firstterm">record</em> is an unordered finite map from <a name="N1080F" class="indexterm"></a>keys to values. 
 The empty record is written as <code class="code">{. .}</code>. 
@@ -440,7 +440,7 @@ OUTPUT:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.record.examples.vecnorm_link'), 'ref.data.record.examples.vecnorm_content'); }, 125);
+toggle(document.getElementById('ref.data.record.examples.vecnorm_link'), 'ref.data.record.examples.vecnorm_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.record.examples.recexp_link" onclick="toggle(this, 'ref.data.record.examples.recexp_content')">
 					&minus;
 				</a><span class="exampleCaption">Record Extension</span></div><div class="exampleBody" id="ref.data.record.examples.recexp_content"><pre class="orc">
@@ -455,7 +455,7 @@ OUTPUT:
 128
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.record.examples.recexp_link'), 'ref.data.record.examples.recexp_content'); }, 125);
+toggle(document.getElementById('ref.data.record.examples.recexp_link'), 'ref.data.record.examples.recexp_content');
 </script></div><div class="section" title="1.7.8.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.links"></a>1.7.8.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.record" title="5.5.&nbsp;Record Pattern">Record pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.dot" title="2.5.&nbsp;Dot Access">Dot access</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.records" class="olink">Records</a></p></li></ul></div></div></div><div class="section" title="1.8.&nbsp;Algebraic Data Types"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.datatype"></a>1.8.&nbsp;Algebraic Data Types</h2></div></div></div><p>An Orc <a name="N109EC" class="indexterm"></a><a name="N109F1" class="indexterm"></a><em class="firstterm">datatype</em> is an algebraic data type, or "tagged union".
 A datatype value contains a sequence of values enclosed by a <a name="N109F8" class="indexterm"></a><em class="firstterm">tag</em>.
 This value can be <a name="N109FF" class="indexterm"></a><a class="link" href="#ref.patterns.call" title="5.6.&nbsp;Call Pattern">matched by a pattern</a>.
@@ -514,7 +514,7 @@ OUTPUT:
 [Secondary(), Tertiary()]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examples.enumeration_link'), 'ref.data.datatypes.examples.enumeration_content'); }, 125);
+toggle(document.getElementById('ref.data.datatypes.examples.enumeration_link'), 'ref.data.datatypes.examples.enumeration_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.shapes_link" onclick="toggle(this, 'ref.data.datatypes.examples.shapes_content')">
 					&minus;
 				</a><span class="exampleCaption">Geometric shape datatype</span></div><div class="exampleBody" id="ref.data.datatypes.examples.shapes_content"><pre class="orc">
@@ -532,7 +532,7 @@ OUTPUT:PERMUTABLE:
 3.14159265358970
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examples.shapes_link'), 'ref.data.datatypes.examples.shapes_content'); }, 125);
+toggle(document.getElementById('ref.data.datatypes.examples.shapes_link'), 'ref.data.datatypes.examples.shapes_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.binarytree_link" onclick="toggle(this, 'ref.data.datatypes.examples.binarytree_content')">
 					&minus;
 				</a><span class="exampleCaption">Binary tree node</span></div><div class="exampleBody" id="ref.data.datatypes.examples.binarytree_content"><pre class="orc">
@@ -554,7 +554,7 @@ OUTPUT:
 InnerNode(LeafNode(1), InnerNode(LeafNode(2), LeafNode(3)))
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examples.binarytree_link'), 'ref.data.datatypes.examples.binarytree_content'); }, 125);
+toggle(document.getElementById('ref.data.datatypes.examples.binarytree_link'), 'ref.data.datatypes.examples.binarytree_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.binarytreepoly_link" onclick="toggle(this, 'ref.data.datatypes.examples.binarytreepoly_content')">
 					&minus;
 				</a><span class="exampleCaption">Polymorphic binary tree node</span></div><div class="exampleBody" id="ref.data.datatypes.examples.binarytreepoly_content"><pre class="orc">
@@ -576,7 +576,7 @@ OUTPUT:
 InnerNode(LeafNode("A"), InnerNode(LeafNode("B"), LeafNode("C")))
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examples.binarytreepoly_link'), 'ref.data.datatypes.examples.binarytreepoly_content'); }, 125);
+toggle(document.getElementById('ref.data.datatypes.examples.binarytreepoly_link'), 'ref.data.datatypes.examples.binarytreepoly_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.option_link" onclick="toggle(this, 'ref.data.datatypes.examples.option_content')">
 					&minus;
 				</a><span class="exampleCaption">Orc built-in Option type</span></div><div class="exampleBody" id="ref.data.datatypes.examples.option_content"><pre class="programlisting">
@@ -588,7 +588,7 @@ setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examp
 NONRUNNABLE
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.datatypes.examples.option_link'), 'ref.data.datatypes.examples.option_content'); }, 125);
+toggle(document.getElementById('ref.data.datatypes.examples.option_link'), 'ref.data.datatypes.examples.option_content');
 </script></div><div class="section" title="1.8.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.links"></a>1.8.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.call" title="5.6.&nbsp;Call Pattern">Call pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.type" title="4.6.&nbsp;type: Declare Type"><code class="code"><span class="hl-keyword">type</span></code>:  Declare Type</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.datatypes" class="olink">Datatypes</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="1.9.&nbsp;Closures"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.closure"></a>1.9.&nbsp;Closures</h2></div></div></div><p>
 Functions are first-class values in Orc. <a class="link" href="#ref.declarations.def" title="4.2.&nbsp;def: Define Function">Defining a function</a> creates a special value called a 
 <a name="N10B44" class="indexterm"></a><em class="firstterm">closure</em>; the defined name of the function is a variable and the value bound to it
@@ -622,7 +622,7 @@ OUTPUT:
 7
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.closure.examples.stagedadd_link'), 'ref.data.closure.examples.stagedadd_content'); }, 125);
+toggle(document.getElementById('ref.data.closure.examples.stagedadd_link'), 'ref.data.closure.examples.stagedadd_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.closure.examples.onetwosum_link" onclick="toggle(this, 'ref.data.closure.examples.onetwosum_content')">
 					&minus;
 				</a><span class="exampleCaption">One Two Sum</span></div><div class="exampleBody" id="ref.data.closure.examples.onetwosum_content"><pre class="orc">
@@ -637,7 +637,7 @@ OUTPUT:
 9
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.closure.examples.onetwosum_link'), 'ref.data.closure.examples.onetwosum_content'); }, 125);
+toggle(document.getElementById('ref.data.closure.examples.onetwosum_link'), 'ref.data.closure.examples.onetwosum_content');
 </script></div><div class="section" title="1.9.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.closure.links"></a>1.9.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.declarations.def" title="4.2.&nbsp;def: Define Function"><code class="code"><span class="hl-keyword">def</span></code>: Define Function</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.lambda" title="2.8.&nbsp;lambda"><code class="code"><span class="hl-keyword">lambda</span></code> Expression</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.typeinfo.function" title="9.4.2.&nbsp;Function Type Information">Adding Type Information to Functons</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.closures" class="olink">First-Class Functions</a></p></li></ul></div></div></div><div class="section" title="1.10.&nbsp;Mutable State"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.mutable"></a>1.10.&nbsp;Mutable State</h2></div></div></div><p>A mutable object is a value on which operations may
 yield different results when called at different times.
 Mutable objects are common in imperative programming languages.
@@ -664,7 +664,7 @@ OUTPUT:
 "{2, 4}"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.external.examples.javabitset_link'), 'ref.data.external.examples.javabitset_content'); }, 125);
+toggle(document.getElementById('ref.data.external.examples.javabitset_link'), 'ref.data.external.examples.javabitset_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.external.examples.javahashmap_link" onclick="toggle(this, 'ref.data.external.examples.javahashmap_content')">
 					&minus;
 				</a><span class="exampleCaption">Java HashMap</span></div><div class="exampleBody" id="ref.data.external.examples.javahashmap_content"><pre class="orc">
@@ -682,7 +682,7 @@ OUTPUT:
 "Minnie"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.data.external.examples.javahashmap_link'), 'ref.data.external.examples.javahashmap_content'); }, 125);
+toggle(document.getElementById('ref.data.external.examples.javahashmap_link'), 'ref.data.external.examples.javahashmap_content');
 </script></div><div class="section" title="1.11.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.external.links"></a>1.11.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.sites.java" title="6.2.&nbsp;Java sites">Java Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.sites.web" title="6.3.&nbsp;Web Services">Web Services</a></p></li><li class="listitem"><p><a class="link" href="#ref.sites.custom" title="6.4.&nbsp;Custom sites">Custom Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.site.type" title="4.4.3.&nbsp;Type">Typing of Sites</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;2.&nbsp;Expressions"><div class="titlepage"><div><div><h2 class="title"><a name="ref.expressions"></a>Chapter&nbsp;2.&nbsp;Expressions</h2></div></div></div><p>
 	Orc <a name="N10CD2" class="indexterm"></a>expressions are executed, rather than evaluated.
 	An execution may call external services and <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publish</a> some number of values (possibly zero).
@@ -717,7 +717,7 @@ OUTPUT:
 "ceci n'est pas une |"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.literal.examples.magritte_link'), 'ref.expressions.literal.examples.magritte_content'); }, 125);
+toggle(document.getElementById('ref.expressions.literal.examples.magritte_link'), 'ref.expressions.literal.examples.magritte_content');
 </script></div><div class="section" title="2.1.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.literal.links"></a>2.1.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data" title="Chapter&nbsp;1.&nbsp;Data Values">Data Values</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.values" class="olink">Literal Values</a></p></li></ul></div></div></div><div class="section" title="2.2.&nbsp;Variable"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.variable"></a>2.2.&nbsp;Variable</h2></div></div></div><p>
     A variable may occur on its own as an expression. 
     Execution of a variable <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publishes</a> the value bound to that variable, and then <a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halts</a>.
@@ -756,7 +756,7 @@ OUTPUT:
 1
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.variable.examples.blockonvar_link'), 'ref.expressions.variable.examples.blockonvar_content'); }, 125);
+toggle(document.getElementById('ref.expressions.variable.examples.blockonvar_link'), 'ref.expressions.variable.examples.blockonvar_content');
 </script></div><div class="section" title="2.2.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.variable.links"></a>2.2.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="#ref.combinators" title="Chapter&nbsp;3.&nbsp;Combinators">Combinators</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.sequential" class="olink">Sequential Combinator</a></p></li></ul></div></div></div><div class="section" title="2.3.&nbsp;stop"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.stop"></a>2.3.&nbsp;<code class="code"><span class="hl-keyword">stop</span></code></h2></div></div></div><p>
 		The <code class="code"><a name="N10D9A" class="indexterm"></a><span class="hl-keyword">stop</span></code> expression does nothing. 
 		Execution of <code class="code"><span class="hl-keyword">stop</span></code> immediately <a name="N10DA2" class="indexterm"></a><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halts</a> <a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">silently</a>.
@@ -786,7 +786,7 @@ OUTPUT:
 3
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.stop.examples.printsilent_link'), 'ref.expressions.stop.examples.printsilent_content'); }, 125);
+toggle(document.getElementById('ref.expressions.stop.examples.printsilent_link'), 'ref.expressions.stop.examples.printsilent_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.stop.examples.squareroot_link" onclick="toggle(this, 'ref.expressions.stop.examples.squareroot_content')">
 					&minus;
 				</a><span class="exampleCaption">Square Root</span></div><div class="exampleBody" id="ref.expressions.stop.examples.squareroot_content"><pre class="orc">
@@ -802,7 +802,7 @@ setTimeout(function() { toggle(document.getElementById('ref.expressions.stop.exa
 OUTPUT:
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.stop.examples.squareroot_link'), 'ref.expressions.stop.examples.squareroot_content'); }, 125);
+toggle(document.getElementById('ref.expressions.stop.examples.squareroot_link'), 'ref.expressions.stop.examples.squareroot_content');
 </script></div><div class="section" title="2.3.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.stop.links"></a>2.3.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silence</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.subtyping.Bot" title="9.3.2.&nbsp;Bot"><code class="code"><span class="hl-variable">Bot</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.combinators.otherwise" title="3.4.&nbsp;Otherwise Combinator">Otherwise combinator</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.sequential" class="olink">Sequential Combinator</a></p></li></ul></div></div></div><div class="section" title="2.4.&nbsp;Site and Function Calls"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.call"></a>2.4.&nbsp;Site and Function Calls</h2></div></div></div><p>
 			A <a name="N10E08" class="indexterm"></a><em class="firstterm">call</em> is an invocation of a <a name="N10E0F" class="indexterm"></a><em class="firstterm">target</em> expression on a sequence of <a name="N10E16" class="indexterm"></a><em class="firstterm">argument</em> expressions. 
 			First, the target expression is <a name="N10E1D" class="indexterm"></a><a class="link" href="#ref.concepts.deflate" title="8.4.&nbsp;Deflation">deflated</a> to a value <em class="replaceable"><code>g</code></em>.
@@ -869,7 +869,7 @@ OUTPUT:
 Waited 0.5 seconds
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.call.examples.sites_are_strict_link'), 'ref.expressions.call.examples.sites_are_strict_content'); }, 125);
+toggle(document.getElementById('ref.expressions.call.examples.sites_are_strict_link'), 'ref.expressions.call.examples.sites_are_strict_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.call.examples.functions_are_lenient_link" onclick="toggle(this, 'ref.expressions.call.examples.functions_are_lenient_content')">
 					&minus;
 				</a><span class="exampleCaption">Functions are Lenient</span></div><div class="exampleBody" id="ref.expressions.call.examples.functions_are_lenient_content"><pre class="orc">
@@ -891,7 +891,7 @@ Immediate
 Waiting
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.call.examples.functions_are_lenient_link'), 'ref.expressions.call.examples.functions_are_lenient_content'); }, 125);
+toggle(document.getElementById('ref.expressions.call.examples.functions_are_lenient_link'), 'ref.expressions.call.examples.functions_are_lenient_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.call.examples.record_apply_link" onclick="toggle(this, 'ref.expressions.call.examples.record_apply_content')">
 					&minus;
 				</a><span class="exampleCaption">Function with Domain and Range</span></div><div class="exampleBody" id="ref.expressions.call.examples.record_apply_content"><pre class="orc">
@@ -921,7 +921,7 @@ true
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.call.examples.record_apply_link'), 'ref.expressions.call.examples.record_apply_content'); }, 125);
+toggle(document.getElementById('ref.expressions.call.examples.record_apply_link'), 'ref.expressions.call.examples.record_apply_content');
 </script></div><div class="section" title="2.4.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.call.links"></a>2.4.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.call" title="5.6.&nbsp;Call Pattern">Call Pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.dot" title="2.5.&nbsp;Dot Access">Dot Access</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.operators" title="2.6.&nbsp;Operators">Operators</a></p></li><li class="listitem"><p><a class="link" href="#ref.sites" title="Chapter&nbsp;6.&nbsp;Sites and Services">Sites and Services</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.closure" title="1.9.&nbsp;Closures">Closures</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.def" title="4.2.&nbsp;def: Define Function"><code class="code"><span class="hl-keyword">def</span></code>:  Define Function</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.deflate" title="8.4.&nbsp;Deflation">Deflation</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silence</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.kill" title="8.3.4.&nbsp;Killed">Killing</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.helpful" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.polymorphism.calls" title="9.2.3.&nbsp;Polymorphic calls">Polymorphic Calls</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><div class="section" title="2.5.&nbsp;Dot Access"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.dot"></a>2.5.&nbsp;Dot Access</h2></div></div></div><p>
 			A <a name="N11024" class="indexterm"></a><em class="firstterm">dot access</em> is an expression that retrieves a named <a name="N1102C" class="indexterm"></a><em class="firstterm">member</em> of a value.
 			It consists of a <a name="N11033" class="indexterm"></a><em class="firstterm">target</em> expression <em class="replaceable"><code>E</code></em> and a <a name="N1103D" class="indexterm"></a><em class="firstterm">key</em> <em class="replaceable"><code>K</code></em>.
@@ -964,7 +964,7 @@ OUTPUT:
 3.3
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.dot.examples.recordaccess_link'), 'ref.expressions.dot.examples.recordaccess_content'); }, 125);
+toggle(document.getElementById('ref.expressions.dot.examples.recordaccess_link'), 'ref.expressions.dot.examples.recordaccess_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.dot.examples.channelops_link" onclick="toggle(this, 'ref.expressions.dot.examples.channelops_content')">
 					&minus;
 				</a><span class="exampleCaption">Channel Operations</span></div><div class="exampleBody" id="ref.expressions.dot.examples.channelops_content"><pre class="orc">
@@ -987,7 +987,7 @@ OUTPUT:
 8
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.dot.examples.channelops_link'), 'ref.expressions.dot.examples.channelops_content'); }, 125);
+toggle(document.getElementById('ref.expressions.dot.examples.channelops_link'), 'ref.expressions.dot.examples.channelops_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.dot.examples.channelmethods_link" onclick="toggle(this, 'ref.expressions.dot.examples.channelmethods_content')">
 					&minus;
 				</a><span class="exampleCaption">Capture Channel Methods</span></div><div class="exampleBody" id="ref.expressions.dot.examples.channelmethods_content"><pre class="orc">
@@ -1010,7 +1010,7 @@ Received: 2
 Received: 3
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.dot.examples.channelmethods_link'), 'ref.expressions.dot.examples.channelmethods_content'); }, 125);
+toggle(document.getElementById('ref.expressions.dot.examples.channelmethods_link'), 'ref.expressions.dot.examples.channelmethods_content');
 </script></div><div class="section" title="2.5.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.dot.links"></a>2.5.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.defclass" title="4.3.&nbsp;def class: Define Site in Orc"><code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">class</span></code>: Define Site in Orc</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.class" title="4.5.&nbsp;import class: Import Class from Java"><code class="code"><span class="hl-keyword">import</span> <span class="hl-variable">class</span></code>:  Import Class from Java</a></p></li><li class="listitem"><p><a class="link" href="#ref.sites.java" title="6.2.&nbsp;Java sites">Java Sites</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.dotaccess" class="olink">The <code class="code">.</code> notation</a></p></li></ul></div></div></div><div class="section" title="2.6.&nbsp;Operators"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.operators"></a>2.6.&nbsp;Operators</h2></div></div></div><p>
 Orc has a standard set of infix, prefix, and postfix <a name="N11123" class="indexterm"></a><em class="firstterm">operators</em>. 
 Operators in Orc are syntactic sugar for <a name="N1112B" class="indexterm"></a><a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site calls</a>;
@@ -1082,7 +1082,7 @@ OUTPUT:
 7
 -}</span> 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.operators.examples.precedence_link'), 'ref.expressions.operators.examples.precedence_content'); }, 125);
+toggle(document.getElementById('ref.expressions.operators.examples.precedence_link'), 'ref.expressions.operators.examples.precedence_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.operators.examples.pubonce_link" onclick="toggle(this, 'ref.expressions.operators.examples.pubonce_content')">
 					&minus;
 				</a><span class="exampleCaption">Operators publish once</span></div><div class="exampleBody" id="ref.expressions.operators.examples.pubonce_content"><pre class="orc">
@@ -1097,7 +1097,7 @@ OUTPUT:
 4
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.operators.examples.pubonce_link'), 'ref.expressions.operators.examples.pubonce_content'); }, 125);
+toggle(document.getElementById('ref.expressions.operators.examples.pubonce_link'), 'ref.expressions.operators.examples.pubonce_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.expressions.operators.examples.redefine_link" onclick="toggle(this, 'ref.expressions.operators.examples.redefine_content')">
 					&minus;
 				</a><span class="exampleCaption">Redefine an operator</span></div><div class="exampleBody" id="ref.expressions.operators.examples.redefine_content"><pre class="orc">
@@ -1114,7 +1114,7 @@ OUTPUT:
 "To be, or not to be, that is the question."
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.operators.examples.redefine_link'), 'ref.expressions.operators.examples.redefine_content'); }, 125);
+toggle(document.getElementById('ref.expressions.operators.examples.redefine_link'), 'ref.expressions.operators.examples.redefine_content');
 </script></div><div class="section" title="2.6.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.operators.links"></a>2.6.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.syntax.precedence" title="10.3.&nbsp;Precedence, Fixity, and Associativity">Precedence and Associativity Table</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.numeric" title="1.2.&nbsp;Numerics">Numerics</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.string" title="1.3.&nbsp;Character Strings">Strings</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.boolean" title="1.1.&nbsp;Booleans">Booleans</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">Lists</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.state.Ref"><code class="code"><span class="hl-variable">Ref</span></code></a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.operators" class="olink">Operators</a></p></li></ul></div></div></div><div class="section" title="2.7.&nbsp;if then else"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.ifthenelse"></a>2.7.&nbsp;<code class="code"><span class="hl-keyword">if</span> <span class="hl-keyword">then</span> <span class="hl-keyword">else</span></code></h2></div></div></div><a name="N11389" class="indexterm"></a><p>
 		The expression <code class="code"><span class="hl-keyword">if</span></code> <em class="replaceable"><code>E<sub>c</sub></code></em> <code class="code"><span class="hl-keyword">then</span></code> <em class="replaceable"><code>E<sub>t</sub></code></em> <code class="code"><span class="hl-keyword">else</span></code> <em class="replaceable"><code>E<sub>f</sub></code></em>
 		is a conditional expression.
@@ -1166,7 +1166,7 @@ true
 false
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.ifthenelse.examples.binarysearch_link'), 'ref.expressions.ifthenelse.examples.binarysearch_content'); }, 125);
+toggle(document.getElementById('ref.expressions.ifthenelse.examples.binarysearch_link'), 'ref.expressions.ifthenelse.examples.binarysearch_content');
 </script></div><div class="section" title="2.7.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.ifthenelse.links"></a>2.7.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.boolean" title="1.1.&nbsp;Booleans">Booleans</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Ift"><code class="code"><span class="hl-variable">Ift</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.core.Iff"><code class="code"><span class="hl-variable">Iff</span></code></a></p></li></ul></div></div></div><div class="section" title="2.8.&nbsp;lambda"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.expressions.lambda"></a>2.8.&nbsp;<code class="code"><span class="hl-keyword">lambda</span></code></h2></div></div></div><p>
 		Sometimes one would like to create a <a class="link" href="#ref.data.closure" title="1.9.&nbsp;Closures">closure</a> directly, without bothering to give it a name. 
 		There is a special keyword <code class="code"><a name="N11458" class="indexterm"></a><span class="hl-keyword">lambda</span></code> for this purpose. By writing a 
@@ -1202,7 +1202,7 @@ OUTPUT:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.expressions.lambda.examples.onetwosum_link'), 'ref.expressions.lambda.examples.onetwosum_content'); }, 125);
+toggle(document.getElementById('ref.expressions.lambda.examples.onetwosum_link'), 'ref.expressions.lambda.examples.onetwosum_content');
 </script></div><div class="section" title="2.8.3.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.lambda.type"></a>2.8.3.&nbsp;Type</h3></div></div></div><p>
 		    The type of a <code class="code"><span class="hl-keyword">lambda</span></code> expression is exactly the type of the <a class="link" href="#ref.data.closure" title="1.9.&nbsp;Closures">closure</a> it creates.
 		  </p></div><div class="section" title="2.8.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.expressions.lambda.links"></a>2.8.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.closure" title="1.9.&nbsp;Closures">Closures</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.def" title="4.2.&nbsp;def: Define Function"><code class="code"><span class="hl-keyword">def</span></code>:  Define Function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.idioms" title="11.3.&nbsp;idioms: Higher-order Orc programming idioms.">Higher-Order Idioms</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.map"><code class="code"><span class="hl-variable">map</span></code> function</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.list.filter"><code class="code"><span class="hl-variable">filter</span></code> function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.closures" class="olink">First-Class Functions</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;3.&nbsp;Combinators"><div class="titlepage"><div><div><h2 class="title"><a name="ref.combinators"></a>Chapter&nbsp;3.&nbsp;Combinators</h2></div></div></div><p>
@@ -1247,7 +1247,7 @@ OUTPUT:PERMUTABLE
 2
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.parallel.examples.parapub_link'), 'ref.combinators.parallel.examples.parapub_content'); }, 125);
+toggle(document.getElementById('ref.combinators.parallel.examples.parapub_link'), 'ref.combinators.parallel.examples.parapub_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.parallel.examples.parasite_link" onclick="toggle(this, 'ref.combinators.parallel.examples.parasite_content')">
 					&minus;
 				</a><span class="exampleCaption">Parallel Site Calls</span></div><div class="exampleBody" id="ref.combinators.parallel.examples.parasite_content"><pre class="orc">
@@ -1263,7 +1263,7 @@ setTimeout(function() { toggle(document.getElementById('ref.combinators.parallel
 
 <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>)
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.parallel.examples.parasite_link'), 'ref.combinators.parallel.examples.parasite_content'); }, 125);
+toggle(document.getElementById('ref.combinators.parallel.examples.parasite_link'), 'ref.combinators.parallel.examples.parasite_content');
 </script></div><div class="section" title="3.1.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.combinators.parallel.links"></a>3.1.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.subtyping.join" title="9.3.3.&nbsp;Join">Join</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.parallel" class="olink">Parallel Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="3.2.&nbsp;Sequential Combinator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.combinators.sequential"></a>3.2.&nbsp;Sequential Combinator</h2></div></div></div><a name="N1161C" class="indexterm"></a><p>
 		  </p><div class="variablelist"><dl><dt><span class="term"><em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&gt;</span></code><em class="replaceable"><code>x</code></em><code class="code"><span class="hl-combinator">&gt;</span> </code><em class="replaceable"><code>G</code></em></span></dt><dd><p>
 			  The execution of <em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&gt;</span></code><em class="replaceable"><code>x</code></em><code class="code"><span class="hl-combinator">&gt;</span> </code><em class="replaceable"><code>G</code></em>
@@ -1314,7 +1314,7 @@ OUTPUT:PERMUTABLE
 2
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.sequential.examples.binding_link'), 'ref.combinators.sequential.examples.binding_content'); }, 125);
+toggle(document.getElementById('ref.combinators.sequential.examples.binding_link'), 'ref.combinators.sequential.examples.binding_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.sequential.examples.filtering_link" onclick="toggle(this, 'ref.combinators.sequential.examples.filtering_content')">
 					&minus;
 				</a><span class="exampleCaption">Filtering</span></div><div class="exampleBody" id="ref.combinators.sequential.examples.filtering_content"><pre class="orc">
@@ -1328,7 +1328,7 @@ OUTPUT:PERMUTABLE
 6
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.sequential.examples.filtering_link'), 'ref.combinators.sequential.examples.filtering_content'); }, 125);
+toggle(document.getElementById('ref.combinators.sequential.examples.filtering_link'), 'ref.combinators.sequential.examples.filtering_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.sequential.examples.suppressed_link" onclick="toggle(this, 'ref.combinators.sequential.examples.suppressed_content')">
 					&minus;
 				</a><span class="exampleCaption">Suppressed Publication</span></div><div class="exampleBody" id="ref.combinators.sequential.examples.suppressed_content"><pre class="orc">
@@ -1346,7 +1346,7 @@ goodbye
 world
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.sequential.examples.suppressed_link'), 'ref.combinators.sequential.examples.suppressed_content'); }, 125);
+toggle(document.getElementById('ref.combinators.sequential.examples.suppressed_link'), 'ref.combinators.sequential.examples.suppressed_content');
 </script></div><div class="section" title="3.2.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.combinators.sequential.links"></a>3.2.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silence</a></p></li><li class="listitem"><p><a class="link" href="#ref.patterns" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.signal" title="1.4.&nbsp;signal"><code class="code"><span class="hl-keyword">signal</span></code></a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.sequential" class="olink">Sequential Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.sites" class="olink">Sites</a></p></li></ul></div></div></div><div class="section" title="3.3.&nbsp;Pruning Combinator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.combinators.pruning"></a>3.3.&nbsp;Pruning Combinator</h2></div></div></div><a name="N1179D" class="indexterm"></a><p>
 		  </p><div class="variablelist"><dl><dt><span class="term"><em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&lt;</span></code><em class="replaceable"><code>x</code></em><code class="code"><span class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em></span></dt><dd><p>
 			  	The execution of <em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">&lt;</span></code><em class="replaceable"><code>x</code></em><code class="code"><span class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em> 
@@ -1399,7 +1399,7 @@ OUTPUT:
 "tails"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.examples.exclusive_link'), 'ref.combinators.pruning.examples.exclusive_content'); }, 125);
+toggle(document.getElementById('ref.combinators.pruning.examples.exclusive_link'), 'ref.combinators.pruning.examples.exclusive_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.pruning.examples.printfirst_link" onclick="toggle(this, 'ref.combinators.pruning.examples.printfirst_content')">
 					&minus;
 				</a><span class="exampleCaption">Print First Result</span></div><div class="exampleBody" id="ref.combinators.pruning.examples.printfirst_content"><pre class="orc">
@@ -1411,7 +1411,7 @@ setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.
 
 <span class="hl-site">Println</span>(<span class="hl-variable">result</span>) <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>) )
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.examples.printfirst_link'), 'ref.combinators.pruning.examples.printfirst_content'); }, 125);
+toggle(document.getElementById('ref.combinators.pruning.examples.printfirst_link'), 'ref.combinators.pruning.examples.printfirst_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.pruning.examples.patternpub_link" onclick="toggle(this, 'ref.combinators.pruning.examples.patternpub_content')">
 					&minus;
 				</a><span class="exampleCaption">Pattern Publication</span></div><div class="exampleBody" id="ref.combinators.pruning.examples.patternpub_content"><pre class="orc">
@@ -1428,7 +1428,7 @@ OUTPUT:
 25
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.examples.patternpub_link'), 'ref.combinators.pruning.examples.patternpub_content'); }, 125);
+toggle(document.getElementById('ref.combinators.pruning.examples.patternpub_link'), 'ref.combinators.pruning.examples.patternpub_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.pruning.examples.timed_link" onclick="toggle(this, 'ref.combinators.pruning.examples.timed_content')">
 					&minus;
 				</a><span class="exampleCaption">Timed Termination</span></div><div class="exampleBody" id="ref.combinators.pruning.examples.timed_content"><pre class="orc">
@@ -1449,7 +1449,7 @@ signal
 signal
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.examples.timed_link'), 'ref.combinators.pruning.examples.timed_content'); }, 125);
+toggle(document.getElementById('ref.combinators.pruning.examples.timed_link'), 'ref.combinators.pruning.examples.timed_content');
 </script></div><div class="section" title="3.3.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.combinators.pruning.links"></a>3.3.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.patterns" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.val" title="4.1.&nbsp;val: Bind Value"><code class="code"><span class="hl-keyword">val</span></code> Declaration</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.kill" title="8.3.4.&nbsp;Killed">Killing</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.deflate" title="8.4.&nbsp;Deflation">Deflation</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.pruning" class="olink">Pruning Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.sites" class="olink">Sites</a></p></li></ul></div></div></div><div class="section" title="3.4.&nbsp;Otherwise Combinator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.combinators.otherwise"></a>3.4.&nbsp;Otherwise Combinator</h2></div></div></div><a name="N11948" class="indexterm"></a><a name="N1194B" class="indexterm"></a><p>
 		  </p><div class="variablelist"><dl><dt><span class="term"><em class="replaceable"><code>F</code></em><code class="code"> <span class="hl-combinator">;</span> </code><em class="replaceable"><code>G</code></em></span></dt><dd><p>
 				The execution of
@@ -1487,7 +1487,7 @@ setTimeout(function() { toggle(document.getElementById('ref.combinators.pruning.
 
 <span class="hl-site">Google</span>(<span class="hl-literal">"cupcake"</span>) <span class="hl-combinator">;</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"cupcake"</span>)
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.otherwise.examples.fallback_link'), 'ref.combinators.otherwise.examples.fallback_content'); }, 125);
+toggle(document.getElementById('ref.combinators.otherwise.examples.fallback_link'), 'ref.combinators.otherwise.examples.fallback_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.otherwise.examples.sublist_link" onclick="toggle(this, 'ref.combinators.otherwise.examples.sublist_content')">
 					&minus;
 				</a><span class="exampleCaption">Lexicographic sublist</span></div><div class="exampleBody" id="ref.combinators.otherwise.examples.sublist_content"><pre class="orc">
@@ -1509,7 +1509,7 @@ OUTPUT:
 [-2, 4, -7]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.otherwise.examples.sublist_link'), 'ref.combinators.otherwise.examples.sublist_content'); }, 125);
+toggle(document.getElementById('ref.combinators.otherwise.examples.sublist_link'), 'ref.combinators.otherwise.examples.sublist_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.otherwise.examples.transfer_link" onclick="toggle(this, 'ref.combinators.otherwise.examples.transfer_content')">
 					&minus;
 				</a><span class="exampleCaption">Channel Transfer</span></div><div class="exampleBody" id="ref.combinators.otherwise.examples.transfer_content"><pre class="orc">
@@ -1530,7 +1530,7 @@ OUTPUT:
 [1, 2, 3, 4]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.otherwise.examples.transfer_link'), 'ref.combinators.otherwise.examples.transfer_content'); }, 125);
+toggle(document.getElementById('ref.combinators.otherwise.examples.transfer_link'), 'ref.combinators.otherwise.examples.transfer_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.combinators.otherwise.examples.helpfulpub_link" onclick="toggle(this, 'ref.combinators.otherwise.examples.helpfulpub_content')">
 					&minus;
 				</a><span class="exampleCaption">Helpful publication</span></div><div class="exampleBody" id="ref.combinators.otherwise.examples.helpfulpub_content"><pre class="programlisting">
@@ -1548,7 +1548,7 @@ NONRUNNABLE
    [1,2,3]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.combinators.otherwise.examples.helpfulpub_link'), 'ref.combinators.otherwise.examples.helpfulpub_content'); }, 125);
+toggle(document.getElementById('ref.combinators.otherwise.examples.helpfulpub_link'), 'ref.combinators.otherwise.examples.helpfulpub_content');
 </script></div><div class="section" title="3.4.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.combinators.otherwise.links"></a>3.4.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silence</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.helpful" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.stop" title="2.3.&nbsp;stop"><code class="code"><span class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.types.subtyping.join" title="9.3.3.&nbsp;Join">Join</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.otherwise" class="olink">Otherwise Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.sites" class="olink">Sites</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;4.&nbsp;Declarations"><div class="titlepage"><div><div><h2 class="title"><a name="ref.declarations"></a>Chapter&nbsp;4.&nbsp;Declarations</h2></div></div></div><p>
 A declaration binds variables to values, or type variables to types, in an expression.
 The values may be as simple as integers or booleans, or as complex as functions, sites, or classes. 
@@ -1584,7 +1584,7 @@ OUTPUT:
 "x is false, y is 2"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.val.examples.bindings_link'), 'ref.declarations.val.examples.bindings_content'); }, 125);
+toggle(document.getElementById('ref.declarations.val.examples.bindings_link'), 'ref.declarations.val.examples.bindings_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.val.examples.timeout_link" onclick="toggle(this, 'ref.declarations.val.examples.timeout_content')">
 					&minus;
 				</a><span class="exampleCaption">Timeout</span></div><div class="exampleBody" id="ref.declarations.val.examples.timeout_content"><pre class="orc">
@@ -1598,7 +1598,7 @@ setTimeout(function() { toggle(document.getElementById('ref.declarations.val.exa
 
 <span class="hl-variable">result</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.val.examples.timeout_link'), 'ref.declarations.val.examples.timeout_content'); }, 125);
+toggle(document.getElementById('ref.declarations.val.examples.timeout_link'), 'ref.declarations.val.examples.timeout_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.val.examples.die_link" onclick="toggle(this, 'ref.declarations.val.examples.die_content')">
 					&minus;
 				</a><span class="exampleCaption">Roll Die</span></div><div class="exampleBody" id="ref.declarations.val.examples.die_content"><pre class="orc">
@@ -1634,7 +1634,7 @@ OUTPUT:
 "You rolled 6"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.val.examples.die_link'), 'ref.declarations.val.examples.die_content'); }, 125);
+toggle(document.getElementById('ref.declarations.val.examples.die_link'), 'ref.declarations.val.examples.die_content');
 </script></div><div class="section" title="4.1.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.val.links"></a>4.1.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.combinators.pruning" title="3.3.&nbsp;Pruning Combinator">Pruning Combinator</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.patterns" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.kill" title="8.3.4.&nbsp;Killed">Killing</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">Halting</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.val" class="olink"><code class="code"><span class="hl-keyword">val</span></code> Declaration</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.val" class="olink">Val</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.sequential" class="olink">Sequential Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators.pruning" class="olink">Pruning Combinator</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="4.2.&nbsp;def: Define Function"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.def"></a>4.2.&nbsp;<code class="code"><span class="hl-keyword">def</span></code>:  Define Function</h2></div></div></div><a name="N11B52" class="indexterm"></a><p>
 			The <code class="code"><a name="N11B58" class="indexterm"></a><span class="hl-keyword">def</span></code> declaration defines a function. 
 			A function definition consists of an identifier, a sequence of <a name="N11B5D" class="indexterm"></a><em class="firstterm">parameters</em>,
@@ -1792,7 +1792,7 @@ OUTPUT:
 (0, 1)
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.lenientpairs_link'), 'ref.declarations.def.examples.lenientpairs_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.lenientpairs_link'), 'ref.declarations.def.examples.lenientpairs_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.parallelor_link" onclick="toggle(this, 'ref.declarations.def.examples.parallelor_content')">
 					&minus;
 				</a><span class="exampleCaption">Parallel-Or Function</span></div><div class="exampleBody" id="ref.declarations.def.examples.parallelor_content"><pre class="orc">
@@ -1810,7 +1810,7 @@ OUTPUT:
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.parallelor_link'), 'ref.declarations.def.examples.parallelor_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.parallelor_link'), 'ref.declarations.def.examples.parallelor_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.evenodd_link" onclick="toggle(this, 'ref.declarations.def.examples.evenodd_content')">
 					&minus;
 				</a><span class="exampleCaption">Even/Odd Using Mutual Recursion</span></div><div class="exampleBody" id="ref.declarations.def.examples.evenodd_content"><pre class="orc">
@@ -1830,7 +1830,7 @@ OUTPUT:
 false
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.evenodd_link'), 'ref.declarations.def.examples.evenodd_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.evenodd_link'), 'ref.declarations.def.examples.evenodd_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listhead_link" onclick="toggle(this, 'ref.declarations.def.examples.listhead_content')">
 					&minus;
 				</a><span class="exampleCaption">List Head</span></div><div class="exampleBody" id="ref.declarations.def.examples.listhead_content"><pre class="orc">
@@ -1847,7 +1847,7 @@ OUTPUT:
 2
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.listhead_link'), 'ref.declarations.def.examples.listhead_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.listhead_link'), 'ref.declarations.def.examples.listhead_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listlength_link" onclick="toggle(this, 'ref.declarations.def.examples.listlength_content')">
 					&minus;
 				</a><span class="exampleCaption">List Length</span></div><div class="exampleBody" id="ref.declarations.def.examples.listlength_content"><pre class="orc">
@@ -1862,7 +1862,7 @@ OUTPUT:
 3
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.listlength_link'), 'ref.declarations.def.examples.listlength_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.listlength_link'), 'ref.declarations.def.examples.listlength_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listsum_link" onclick="toggle(this, 'ref.declarations.def.examples.listsum_content')">
 					&minus;
 				</a><span class="exampleCaption">List Sum</span></div><div class="exampleBody" id="ref.declarations.def.examples.listsum_content"><pre class="orc">
@@ -1878,7 +1878,7 @@ OUTPUT:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.listsum_link'), 'ref.declarations.def.examples.listsum_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.listsum_link'), 'ref.declarations.def.examples.listsum_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.zip_link" onclick="toggle(this, 'ref.declarations.def.examples.zip_content')">
 					&minus;
 				</a><span class="exampleCaption">Same-Length Zip</span></div><div class="exampleBody" id="ref.declarations.def.examples.zip_content"><pre class="orc">
@@ -1898,7 +1898,7 @@ OUTPUT:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.examples.zip_link'), 'ref.declarations.def.examples.zip_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.examples.zip_link'), 'ref.declarations.def.examples.zip_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.clausal.examples.fib_link" onclick="toggle(this, 'ref.declarations.def.clausal.examples.fib_content')">
 					&minus;
 				</a><span class="exampleCaption">Fibonacci Function</span></div><div class="exampleBody" id="ref.declarations.def.clausal.examples.fib_content"><pre class="orc">
@@ -1915,7 +1915,7 @@ OUTPUT:
 8
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.def.clausal.examples.fib_link'), 'ref.declarations.def.clausal.examples.fib_content'); }, 125);
+toggle(document.getElementById('ref.declarations.def.clausal.examples.fib_link'), 'ref.declarations.def.clausal.examples.fib_content');
 </script></div><div class="section" title="4.2.9.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.links"></a>4.2.9.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.patterns" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.deflate" title="8.4.&nbsp;Deflation">Deflation</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.lambda" title="2.8.&nbsp;lambda"><code class="code"><span class="hl-keyword">lambda</span></code> Expressions</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.closure" title="1.9.&nbsp;Closures">Closures</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.typeinfo.function" title="9.4.2.&nbsp;Function Type Information">Adding Type Information to Functions</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.defclass" title="4.3.&nbsp;def class: Define Site in Orc"><code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">class</span></code>: Define Site in Orc</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.functions" class="olink">Functions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.closures" class="olink">First-class Functions</a></p></li></ul></div></div></div><div class="section" title="4.3.&nbsp;def class: Define Site in Orc"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.defclass"></a>4.3.&nbsp;<code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">class</span></code>: Define Site in Orc</h2></div></div></div><p>
       The <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">class</span></code> declaration provides the capability to implement 
       <a class="link" href="#ref.sites" title="Chapter&nbsp;6.&nbsp;Sites and Services">sites</a> within Orc itself.
@@ -2031,7 +2031,7 @@ OUTPUT:
 			matrix. This allows us to retrieve and update the matrix elements using
 			traditional notation.
 		  </p></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.matrix_link'), 'ref.declarations.defclass.semantics.examples.matrix_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.matrix_link'), 'ref.declarations.defclass.semantics.examples.matrix_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.defclass.semantics.examples.createsite_link" onclick="toggle(this, 'ref.declarations.defclass.semantics.examples.createsite_content')">
 					&minus;
 				</a><span class="exampleCaption">Create a Write-Once Site</span></div><div class="exampleBody" id="ref.declarations.defclass.semantics.examples.createsite_content"><p>
@@ -2064,7 +2064,7 @@ OUTPUT:
 42
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.createsite_link'), 'ref.declarations.defclass.semantics.examples.createsite_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.createsite_link'), 'ref.declarations.defclass.semantics.examples.createsite_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.defclass.semantics.examples.extendsite_link" onclick="toggle(this, 'ref.declarations.defclass.semantics.examples.extendsite_content')">
 					&minus;
 				</a><span class="exampleCaption">Extend Functionality of an Existing Site</span></div><div class="exampleBody" id="ref.declarations.defclass.semantics.examples.extendsite_content"><p>
@@ -2095,7 +2095,7 @@ OUTPUT:
 5
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.extendsite_link'), 'ref.declarations.defclass.semantics.examples.extendsite_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.extendsite_link'), 'ref.declarations.defclass.semantics.examples.extendsite_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.defclass.semantics.examples.concaccess_link" onclick="toggle(this, 'ref.declarations.defclass.semantics.examples.concaccess_content')">
 					&minus;
 				</a><span class="exampleCaption">Managing Concurrent Access</span></div><div class="exampleBody" id="ref.declarations.defclass.semantics.examples.concaccess_content"><p>
@@ -2134,7 +2134,7 @@ setTimeout(function() { toggle(document.getElementById('ref.declarations.defclas
 OUTPUT:
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.concaccess_link'), 'ref.declarations.defclass.semantics.examples.concaccess_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.concaccess_link'), 'ref.declarations.defclass.semantics.examples.concaccess_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.defclass.semantics.examples.goal_link" onclick="toggle(this, 'ref.declarations.defclass.semantics.examples.goal_content')">
 					&minus;
 				</a><span class="exampleCaption">Computing with the Goal Expression</span></div><div class="exampleBody" id="ref.declarations.defclass.semantics.examples.goal_content"><p>
@@ -2166,7 +2166,7 @@ OUTPUT:
 0
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.goal_link'), 'ref.declarations.defclass.semantics.examples.goal_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.goal_link'), 'ref.declarations.defclass.semantics.examples.goal_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.defclass.semantics.examples.stopwatch_link" onclick="toggle(this, 'ref.declarations.defclass.semantics.examples.stopwatch_content')">
 					&minus;
 				</a><span class="exampleCaption">Stopwatch</span></div><div class="exampleBody" id="ref.declarations.defclass.semantics.examples.stopwatch_content"><pre class="orc">
@@ -2214,7 +2214,7 @@ OUTPUT:
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.defclass.semantics.examples.stopwatch_link'), 'ref.declarations.defclass.semantics.examples.stopwatch_content'); }, 125);
+toggle(document.getElementById('ref.declarations.defclass.semantics.examples.stopwatch_link'), 'ref.declarations.defclass.semantics.examples.stopwatch_content');
 </script></div><div class="section" title="4.3.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.defclass.links"></a>4.3.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.dot" title="2.5.&nbsp;Dot Access">Dot Access</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record.type" title="1.7.5.&nbsp;Type">Record Types</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.helpful" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.def" title="4.2.&nbsp;def: Define Function"><code class="code"><span class="hl-keyword">def</span></code>:  Define Function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.defclass" class="olink">Defining Classes</a></p></li></ul></div></div></div><div class="section" title="4.4.&nbsp;import site: Import Site"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.site"></a>4.4.&nbsp;<code class="code"><span class="hl-keyword">import</span> <span class="hl-variable">site</span></code>: Import Site</h2></div></div></div><p>
 <a name="N11EDC" class="indexterm"></a>
 A <em class="firstterm">site declaration</em> makes an Orc <a class="link" href="#ref.sites" title="Chapter&nbsp;6.&nbsp;Sites and Services">site</a> that is present in the environment available for use by the program.
@@ -2264,7 +2264,7 @@ If no class is found on the site classpath, or the site classpath is not configu
 
 <span class="hl-site">MySite</span>()
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.site.examples.basic_link'), 'ref.declarations.site.examples.basic_content'); }, 125);
+toggle(document.getElementById('ref.declarations.site.examples.basic_link'), 'ref.declarations.site.examples.basic_content');
 </script></div><div class="section" title="4.4.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.site.links"></a>4.4.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib" title="Chapter&nbsp;11.&nbsp;Standard Library">Standard Library</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><div class="section" title="4.5.&nbsp;import class: Import Class from Java"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.class"></a>4.5.&nbsp;<code class="code"><span class="hl-keyword">import</span> <span class="hl-variable">class</span></code>:  Import Class from Java</h2></div></div></div><p>
 Orc programs can use services of the platform on which the Orc runtime engine runs.
 In this implementation of Orc, this platform is the Java Runtime Environment (JRE).
@@ -2319,7 +2319,7 @@ OUTPUT:
 15
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.call_link'), 'ref.declarations.class.examples.call_content'); }, 125);
+toggle(document.getElementById('ref.declarations.class.examples.call_link'), 'ref.declarations.class.examples.call_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.class.examples.staticcall_link" onclick="toggle(this, 'ref.declarations.class.examples.staticcall_content')">
 					&minus;
 				</a><span class="exampleCaption">Invoke a Java static method</span></div><div class="exampleBody" id="ref.declarations.class.examples.staticcall_content"><pre class="orc">
@@ -2335,7 +2335,7 @@ OUTPUT:
 1.6232492903979006
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.staticcall_link'), 'ref.declarations.class.examples.staticcall_content'); }, 125);
+toggle(document.getElementById('ref.declarations.class.examples.staticcall_link'), 'ref.declarations.class.examples.staticcall_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.class.examples.generic_link" onclick="toggle(this, 'ref.declarations.class.examples.generic_content')">
 					&minus;
 				</a><span class="exampleCaption">Declaring and instantiating a Java generic class</span></div><div class="exampleBody" id="ref.declarations.class.examples.generic_content"><pre class="orc">
@@ -2351,7 +2351,7 @@ OUTPUT:
 2
 -}</span> 
 		</pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.class.examples.generic_link'), 'ref.declarations.class.examples.generic_content'); }, 125);
+toggle(document.getElementById('ref.declarations.class.examples.generic_link'), 'ref.declarations.class.examples.generic_content');
 </script></div><div class="section" title="4.5.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.class.links"></a>4.5.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.sites.java" title="6.2.&nbsp;Java sites">Java Sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.dot" title="2.5.&nbsp;Dot Access">Dot Access</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Calls</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><div class="section" title="4.6.&nbsp;type: Declare Type"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.type"></a>4.6.&nbsp;<code class="code"><span class="hl-keyword">type</span></code>:  Declare Type</h2></div></div></div><a name="N12012" class="indexterm"></a><p>
 			A type declaration binds a type variable to a type. There are three kinds of 
 			type declarations: <em class="firstterm">aliases</em>, 
@@ -2400,7 +2400,7 @@ setTimeout(function() { toggle(document.getElementById('ref.declarations.class.e
 NONRUNNABLE
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.type.examples.aliases_link'), 'ref.declarations.type.examples.aliases_content'); }, 125);
+toggle(document.getElementById('ref.declarations.type.examples.aliases_link'), 'ref.declarations.type.examples.aliases_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.type.examples.imports_link" onclick="toggle(this, 'ref.declarations.type.examples.imports_content')">
 					&minus;
 				</a><span class="exampleCaption">Importing Types</span></div><div class="exampleBody" id="ref.declarations.type.examples.imports_content"><pre class="programlisting">
@@ -2413,7 +2413,7 @@ setTimeout(function() { toggle(document.getElementById('ref.declarations.type.ex
 NONRUNNABLE
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.type.examples.imports_link'), 'ref.declarations.type.examples.imports_content'); }, 125);
+toggle(document.getElementById('ref.declarations.type.examples.imports_link'), 'ref.declarations.type.examples.imports_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.type.examples.tree_link" onclick="toggle(this, 'ref.declarations.type.examples.tree_content')">
 					&minus;
 				</a><span class="exampleCaption">Binary Tree Type</span></div><div class="exampleBody" id="ref.declarations.type.examples.tree_content"><pre class="orc">
@@ -2442,7 +2442,7 @@ Node(Node(Empty(), false, Empty()), true, Empty())
 Node(Node(Empty(), 0, Empty()), 1, Node(Empty(), 2, Empty()))
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.type.examples.tree_link'), 'ref.declarations.type.examples.tree_content'); }, 125);
+toggle(document.getElementById('ref.declarations.type.examples.tree_link'), 'ref.declarations.type.examples.tree_content');
 </script></div><div class="section" title="4.6.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.type.links"></a>4.6.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.datatype" title="1.8.&nbsp;Algebraic Data Types">Algebraic Data Types</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.polymorphism.types" title="9.2.1.&nbsp;Parametric types">Parametric Types</a></p></li><li class="listitem"><p><a class="link" href="#ref.types.metatheory" title="9.1.&nbsp;Metatheory">Type System Metatheory</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.datatypes" class="olink">Datatypes</a></p></li></ul></div></div></div><div class="section" title="4.7.&nbsp;include: Include Orc File"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.include"></a>4.7.&nbsp;<code class="code"><span class="hl-keyword">include</span></code>:  Include Orc File</h2></div></div></div><p>
 It is often convenient to group related declarations into units that can be
 shared between programs. The <code class="code"><a name="N120C0" class="indexterm"></a><span class="hl-keyword">include</span></code> declaration offers a simple
@@ -2467,7 +2467,7 @@ found in the Orc JAR files.
 
 <span class="hl-keyword">def</span> <span class="hl-site">foldr</span>(<span class="hl-variable">f</span>,<span class="hl-variable">l</span>,<span class="hl-variable">s</span>) <span class="hl-operator">=</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-site">rev</span>(<span class="hl-variable">l</span>),<span class="hl-variable">s</span>)
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.include.examples.fold_link'), 'ref.declarations.include.examples.fold_content'); }, 125);
+toggle(document.getElementById('ref.declarations.include.examples.fold_link'), 'ref.declarations.include.examples.fold_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.include.examples.include_link" onclick="toggle(this, 'ref.declarations.include.examples.include_content')">
 					&minus;
 				</a><span class="exampleCaption">Include a separate file</span></div><div class="exampleBody" id="ref.declarations.include.examples.include_content"><pre class="programlisting">
@@ -2478,7 +2478,7 @@ setTimeout(function() { toggle(document.getElementById('ref.declarations.include
 
 <span class="hl-site">sum</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.declarations.include.examples.include_link'), 'ref.declarations.include.examples.include_content'); }, 125);
+toggle(document.getElementById('ref.declarations.include.examples.include_link'), 'ref.declarations.include.examples.include_content');
 </script></div><div class="section" title="4.7.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.include.links"></a>4.7.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.declarations" title="Chapter&nbsp;4.&nbsp;Declarations">Declarations</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;5.&nbsp;Patterns"><div class="titlepage"><div><div><h2 class="title"><a name="ref.patterns"></a>Chapter&nbsp;5.&nbsp;Patterns</h2></div></div></div><p>
 <a name="N12107" class="indexterm"></a><em class="firstterm">Patterns</em> are used in <a class="link" href="#ref.combinators" title="Chapter&nbsp;3.&nbsp;Combinators">combinators</a>, in <a class="link" href="#ref.declarations.val" title="4.1.&nbsp;val: Bind Value"><code class="code"><span class="hl-keyword">val</span></code></a> declarations, and in <a class="link" href="#ref.declarations.def.clauses" title="4.2.6.&nbsp;Clausal Definition">clausal definitions</a> of functions, to select values and bind variables to values. 
 A pattern is given by a shape and a set of variables. A <span class="emphasis"><em>shape</em></span> is either a tuple, a list, 
@@ -2528,7 +2528,7 @@ OUTPUT:
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.literal.examples.implication_link'), 'ref.patterns.literal.examples.implication_content'); }, 125);
+toggle(document.getElementById('ref.patterns.literal.examples.implication_link'), 'ref.patterns.literal.examples.implication_content');
 </script></div><div class="section" title="5.1.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.literal.links"></a>5.1.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.boolean" title="1.1.&nbsp;Booleans">Boolean literals</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.numeric" title="1.2.&nbsp;Numerics">Numeric literals</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.string" title="1.3.&nbsp;Character Strings">String literals</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.2.&nbsp;Variable Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.variable"></a>5.2.&nbsp;Variable Pattern</h2></div></div></div><p>
 		  When a <a name="N121B2" class="indexterm"></a><em class="firstterm">variable pattern</em> <em class="replaceable"><code>x</code></em> is matched against a value <em class="replaceable"><code>v</code></em>, 
 	    the <a name="N121BF" class="indexterm"></a>variable <em class="replaceable"><code>x</code></em> is bound to the value <em class="replaceable"><code>v</code></em>.
@@ -2552,7 +2552,7 @@ OUTPUT:
 7
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.variable.examples.pairsum_link'), 'ref.patterns.variable.examples.pairsum_content'); }, 125);
+toggle(document.getElementById('ref.patterns.variable.examples.pairsum_link'), 'ref.patterns.variable.examples.pairsum_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.patterns.variable.examples.pairtolist_link" onclick="toggle(this, 'ref.patterns.variable.examples.pairtolist_content')">
 					&minus;
 				</a><span class="exampleCaption">Pair to List</span></div><div class="exampleBody" id="ref.patterns.variable.examples.pairtolist_content"><pre class="orc">
@@ -2567,7 +2567,7 @@ OUTPUT:PERMUTABLE:
 [3, 4]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.variable.examples.pairtolist_link'), 'ref.patterns.variable.examples.pairtolist_content'); }, 125);
+toggle(document.getElementById('ref.patterns.variable.examples.pairtolist_link'), 'ref.patterns.variable.examples.pairtolist_content');
 </script></div><div class="section" title="5.2.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.variable.links"></a>5.2.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.combinators.sequential" title="3.2.&nbsp;Sequential Combinator">Sequential Combinator</a></p></li><li class="listitem"><p><a class="link" href="#ref.combinators.pruning" title="3.3.&nbsp;Pruning Combinator">Pruning Combinator</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.val" title="4.1.&nbsp;val: Bind Value"><code class="code"><span class="hl-keyword">val</span></code>:  Bind Value</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.3.&nbsp;Tuple Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.tuple"></a>5.3.&nbsp;Tuple Pattern</h2></div></div></div><p>
 				Each element of a <a name="N12228" class="indexterm"></a><em class="firstterm">tuple pattern</em> matches the corresponding element of a <a class="link" href="#ref.data.tuple" title="1.6.&nbsp;Tuples">tuple value</a>.
 			</p><div class="section" title="5.3.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.tuple.syntax"></a>5.3.1.&nbsp;Syntax</h3></div></div></div><p>
@@ -2593,7 +2593,7 @@ OUTPUT:
 signal
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.tuple.examples.filtering_link'), 'ref.patterns.tuple.examples.filtering_content'); }, 125);
+toggle(document.getElementById('ref.patterns.tuple.examples.filtering_link'), 'ref.patterns.tuple.examples.filtering_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.patterns.tuple.examples.patternpublication_link" onclick="toggle(this, 'ref.patterns.tuple.examples.patternpublication_content')">
 					&minus;
 				</a><span class="exampleCaption">Pattern Publication</span></div><div class="exampleBody" id="ref.patterns.tuple.examples.patternpublication_content"><pre class="orc">
@@ -2608,7 +2608,7 @@ OUTPUT:PERMUTABLE
 9
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.tuple.examples.patternpublication_link'), 'ref.patterns.tuple.examples.patternpublication_content'); }, 125);
+toggle(document.getElementById('ref.patterns.tuple.examples.patternpublication_link'), 'ref.patterns.tuple.examples.patternpublication_content');
 </script></div><div class="section" title="5.3.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.tuple.links"></a>5.3.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.tuple" title="1.6.&nbsp;Tuples">Tuples</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.4.&nbsp;List Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.list"></a>5.4.&nbsp;List Pattern</h2></div></div></div><p>
 			Each element of a <a name="N122B6" class="indexterm"></a><em class="firstterm">list pattern</em> matches the corresponding element of a <a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">list value</a>.
 		</p><div class="section" title="5.4.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.list.syntax"></a>5.4.1.&nbsp;Syntax</h3></div></div></div><p>
@@ -2641,7 +2641,7 @@ OUTPUT:
 [1, 1, 3, 4, 5, 9]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.list.examples.associative_link'), 'ref.patterns.list.examples.associative_content'); }, 125);
+toggle(document.getElementById('ref.patterns.list.examples.associative_link'), 'ref.patterns.list.examples.associative_content');
 </script></div><div class="section" title="5.4.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.list.links"></a>5.4.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.cons" title="5.7.&nbsp;Cons Pattern">Cons Pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">Lists</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.5.&nbsp;Record Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.record"></a>5.5.&nbsp;Record Pattern</h2></div></div></div><p>
 			When a <a name="N12331" class="indexterm"></a><em class="firstterm">record pattern</em> is matched against a <a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">record value</a>, 
 			each key mentioned in the record pattern must have a mapping in the record value, 
@@ -2682,7 +2682,7 @@ D. F. Automaton's application was accepted
 Harry Q. Bovik's application was accepted
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.record.examples.studentapp_link'), 'ref.patterns.record.examples.studentapp_content'); }, 125);
+toggle(document.getElementById('ref.patterns.record.examples.studentapp_link'), 'ref.patterns.record.examples.studentapp_content');
 </script></div><div class="section" title="5.5.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.record.links"></a>5.5.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.6.&nbsp;Call Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.call"></a>5.6.&nbsp;Call Pattern</h2></div></div></div><p>
 			A <a name="N123C0" class="indexterm"></a><em class="firstterm">call pattern</em>
 			allows a <a class="link" href="#ref.expressions.call" title="2.4.&nbsp;Site and Function Calls">call</a> to be made within a pattern match.
@@ -2742,7 +2742,7 @@ OUTPUT:PERMUTABLE
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.call.examples.trees_link'), 'ref.patterns.call.examples.trees_content'); }, 125);
+toggle(document.getElementById('ref.patterns.call.examples.trees_link'), 'ref.patterns.call.examples.trees_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.patterns.call.examples.isqrt_link" onclick="toggle(this, 'ref.patterns.call.examples.isqrt_content')">
 					&minus;
 				</a><span class="exampleCaption">Integer square root</span></div><div class="exampleBody" id="ref.patterns.call.examples.isqrt_content"><pre class="orc">
@@ -2777,7 +2777,7 @@ OUTPUT:PERMUTABLE:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.call.examples.isqrt_link'), 'ref.patterns.call.examples.isqrt_content'); }, 125);
+toggle(document.getElementById('ref.patterns.call.examples.isqrt_link'), 'ref.patterns.call.examples.isqrt_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.patterns.call.examples.factoring_link" onclick="toggle(this, 'ref.patterns.call.examples.factoring_content')">
 					&minus;
 				</a><span class="exampleCaption">Factoring Using Multimatch</span></div><div class="exampleBody" id="ref.patterns.call.examples.factoring_content"><pre class="orc">
@@ -2809,7 +2809,7 @@ OUTPUT:PERMUTABLE:
 -}</span>
 
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.call.examples.factoring_link'), 'ref.patterns.call.examples.factoring_content'); }, 125);
+toggle(document.getElementById('ref.patterns.call.examples.factoring_link'), 'ref.patterns.call.examples.factoring_content');
 </script></div><div class="section" title="5.6.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.call.links"></a>5.6.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.data.datatype" title="1.8.&nbsp;Algebraic Data Types">Algebraic Data Types</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record.specialkeys" title="1.7.4.&nbsp;Special Keys"><code class="code"><span class="hl-variable">unapply</span></code> key</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call" title="2.4.&nbsp;Site and Function Calls">Site and Function Calls</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.7.&nbsp;Cons Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.cons"></a>5.7.&nbsp;Cons Pattern</h2></div></div></div><p>
 			The <a name="N124E3" class="indexterm"></a><em class="firstterm">cons pattern</em> matches the head and the tail of a nonempty <a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">list</a>.
 		</p><div class="section" title="5.7.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.cons.syntax"></a>5.7.1.&nbsp;Syntax</h3></div></div></div><p>
@@ -2837,7 +2837,7 @@ OUTPUT:
 (1, [2, 3])
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.cons.examples.listdecons_link'), 'ref.patterns.cons.examples.listdecons_content'); }, 125);
+toggle(document.getElementById('ref.patterns.cons.examples.listdecons_link'), 'ref.patterns.cons.examples.listdecons_content');
 </script></div><div class="section" title="5.7.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.cons.links"></a>5.7.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.list" title="5.4.&nbsp;List Pattern">List Pattern</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">Lists</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.8.&nbsp;As Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.as"></a>5.8.&nbsp;As Pattern</h2></div></div></div><p>
 			The <a name="N12565" class="indexterm"></a><code class="code"><span class="hl-keyword">as</span></code> keyword binds a variable to the value matched by a pattern.
 			It is a more general way of binding variables than using <a class="link" href="#ref.patterns.variable" title="5.2.&nbsp;Variable Pattern">variable patterns</a> alone.
@@ -2869,7 +2869,7 @@ OUTPUT:PERMUTABLE
 [3, 4, (3, 4)]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.as.simplefrag_link'), 'ref.patterns.as.simplefrag_content'); }, 125);
+toggle(document.getElementById('ref.patterns.as.simplefrag_link'), 'ref.patterns.as.simplefrag_content');
 </script></div><div class="section" title="5.8.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.as.links"></a>5.8.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.patterns.variable" title="5.2.&nbsp;Variable Pattern">Variable Patterns</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><div class="section" title="5.9.&nbsp;Wildcard Pattern"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.patterns.wildcard"></a>5.9.&nbsp;Wildcard Pattern</h2></div></div></div><p>
 			The <a name="N125C8" class="indexterm"></a><em class="firstterm">wildcard pattern</em> matches any value and binds no variables.
 		</p><div class="section" title="5.9.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.wildcard.syntax"></a>5.9.1.&nbsp;Syntax</h3></div></div></div><p>
@@ -2893,7 +2893,7 @@ OUTPUT:
 [2, 3, 4]
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.wildcard.examples.assignments_link'), 'ref.patterns.wildcard.examples.assignments_content'); }, 125);
+toggle(document.getElementById('ref.patterns.wildcard.examples.assignments_link'), 'ref.patterns.wildcard.examples.assignments_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.patterns.wildcard.examples.implication_link" onclick="toggle(this, 'ref.patterns.wildcard.examples.implication_content')">
 					&minus;
 				</a><span class="exampleCaption">Implication by Fewer Cases</span></div><div class="exampleBody" id="ref.patterns.wildcard.examples.implication_content"><pre class="orc">
@@ -2912,7 +2912,7 @@ OUTPUT:
 true
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.patterns.wildcard.examples.implication_link'), 'ref.patterns.wildcard.examples.implication_content'); }, 125);
+toggle(document.getElementById('ref.patterns.wildcard.examples.implication_link'), 'ref.patterns.wildcard.examples.implication_content');
 </script></div><div class="section" title="5.9.4.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.patterns.wildcard.links"></a>5.9.4.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.combinators.sequential" title="3.2.&nbsp;Sequential Combinator">Sequential Combinator, <code class="code"> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> </code> Form</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;6.&nbsp;Sites and Services"><div class="titlepage"><div><div><h2 class="title"><a name="ref.sites"></a>Chapter&nbsp;6.&nbsp;Sites and Services</h2></div></div></div><p>
 Orc programs communicate with their environment by calling <a name="N1261B" class="indexterm"></a><em class="firstterm">sites</em>.
 Sites perform services, which the Orc program orchestrates.
@@ -2949,7 +2949,7 @@ OUTPUT:
 2
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.library.examples.floor_link'), 'ref.sites.library.examples.floor_content'); }, 125);
+toggle(document.getElementById('ref.sites.library.examples.floor_link'), 'ref.sites.library.examples.floor_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.library.examples.if_link" onclick="toggle(this, 'ref.sites.library.examples.if_content')">
 					&minus;
 				</a><span class="exampleCaption">Another standard library site: Ift</span></div><div class="exampleBody" id="ref.sites.library.examples.if_content"><pre class="orc">
@@ -2962,7 +2962,7 @@ OUTPUT:
 "correct"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.library.examples.if_link'), 'ref.sites.library.examples.if_content'); }, 125);
+toggle(document.getElementById('ref.sites.library.examples.if_link'), 'ref.sites.library.examples.if_content');
 </script></div><div class="section" title="6.1.2.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.library.links"></a>6.1.2.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib" title="Chapter&nbsp;11.&nbsp;Standard Library">Standard Library</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.helpful" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li></ul></div></div></div><div class="section" title="6.2.&nbsp;Java sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.java"></a>6.2.&nbsp;Java sites</h2></div></div></div><p>
 Essential to Orc's role as an orchestration language is Orc's interaction with its host platform,
 which in this implementation is the Java virtual machine (JVM).
@@ -3062,7 +3062,7 @@ OUTPUT:
 "OK"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.constructinvoke_link'), 'ref.sites.java.examples.constructinvoke_content'); }, 125);
+toggle(document.getElementById('ref.sites.java.examples.constructinvoke_link'), 'ref.sites.java.examples.constructinvoke_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.static_link" onclick="toggle(this, 'ref.sites.java.examples.static_content')">
 					&minus;
 				</a><span class="exampleCaption">Accessing class members</span></div><div class="exampleBody" id="ref.sites.java.examples.static_content"><pre class="orc">
@@ -3091,7 +3091,7 @@ true
 "2E+108"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.static_link'), 'ref.sites.java.examples.static_content'); }, 125);
+toggle(document.getElementById('ref.sites.java.examples.static_link'), 'ref.sites.java.examples.static_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.noarg_link" onclick="toggle(this, 'ref.sites.java.examples.noarg_content')">
 					&minus;
 				</a><span class="exampleCaption">No-arg constructor invocation, field assignment, and field dereference</span></div><div class="exampleBody" id="ref.sites.java.examples.noarg_content"><pre class="orc">
@@ -3113,7 +3113,7 @@ OUTPUT:
 "test 4"
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.noarg_link'), 'ref.sites.java.examples.noarg_content'); }, 125);
+toggle(document.getElementById('ref.sites.java.examples.noarg_link'), 'ref.sites.java.examples.noarg_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.sites.java.examples.intoverflow_link" onclick="toggle(this, 'ref.sites.java.examples.intoverflow_content')">
 					&minus;
 				</a><span class="exampleCaption">Integer conversion overflow</span></div><div class="exampleBody" id="ref.sites.java.examples.intoverflow_content"><pre class="orc">
@@ -3130,7 +3130,7 @@ OUTPUT:
 -1530464171
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.java.examples.intoverflow_link'), 'ref.sites.java.examples.intoverflow_content'); }, 125);
+toggle(document.getElementById('ref.sites.java.examples.intoverflow_link'), 'ref.sites.java.examples.intoverflow_content');
 </script></div><div class="section" title="6.2.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.java.links"></a>6.2.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.declarations.class" title="4.5.&nbsp;import class: Import Class from Java"><code class="code"><span class="hl-keyword">import</span> <span class="hl-variable">class</span></code> declaration</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.external" title="1.11.&nbsp;External Values">External data values</a></p></li><li class="listitem"><p><a class="link" href="#ref.sites.custom" title="6.4.&nbsp;Custom sites">Custom sites</a></p></li><li class="listitem"><p><a class="link" href="#ref.declarations.class.type" title="4.5.2.&nbsp;Type">Interacting with Java Types</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink"><code class="code"><span class="hl-keyword">import</span> <span class="hl-variable">class</span></code> declaration</a></p></li></ul></div></div></div><div class="section" title="6.3.&nbsp;Web Services"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.web"></a>6.3.&nbsp;Web Services</h2></div></div></div><p>
 Some sites provide access to remote services, rather than performing local computation.
 In particular, a site could provide access to a <a name="N127E2" class="indexterm"></a>Web service. 
@@ -3277,7 +3277,7 @@ Frameworks such as JAX-WS map SOAP web service functionality to Java classes; th
 
 <span class="hl-site">randombytes</span>(<span class="hl-literal">4</span>)
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.sites.web.examples.randombytes_link'), 'ref.sites.web.examples.randombytes_content'); }, 125);
+toggle(document.getElementById('ref.sites.web.examples.randombytes_link'), 'ref.sites.web.examples.randombytes_content');
 </script></div><div class="section" title="6.3.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.sites.web.links"></a>6.3.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib.web" title="11.10.&nbsp;web: Web browsing, HTTP, and JSON capabilities.">Standard Library: Web</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.xml" title="11.11.&nbsp;xml: XML manipulation.">Standard Library: XML</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">Lists</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li></ul></div></div></div><div class="section" title="6.4.&nbsp;Custom sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.sites.custom"></a>6.4.&nbsp;Custom sites</h2></div></div></div><p>
 For services beyond those available as library sites, Java sites, and Web service sites,
 Orc programs may call sites developed specifically as Orc sites.
@@ -3340,7 +3340,7 @@ red
 green
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.time.real.examples.simple_link'), 'ref.time.real.examples.simple_content'); }, 125);
+toggle(document.getElementById('ref.time.real.examples.simple_link'), 'ref.time.real.examples.simple_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.time.real.examples.timeout_link" onclick="toggle(this, 'ref.time.real.examples.timeout_content')">
 					&minus;
 				</a><span class="exampleCaption">Timeout</span></div><div class="exampleBody" id="ref.time.real.examples.timeout_content"><pre class="orc">
@@ -3353,7 +3353,7 @@ setTimeout(function() { toggle(document.getElementById('ref.time.real.examples.s
   <span class="hl-combinator">&lt;</span><span class="hl-variable">result</span><span class="hl-combinator">&lt;</span> ( <span class="hl-site">Google</span>(<span class="hl-literal">"impatience"</span>) 
            <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">5000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"Search timed out."</span>)
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.time.real.examples.timeout_link'), 'ref.time.real.examples.timeout_content'); }, 125);
+toggle(document.getElementById('ref.time.real.examples.timeout_link'), 'ref.time.real.examples.timeout_content');
 </script></div><div class="section" title="7.1.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.time.real.links"></a>7.1.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.stdlib.time" title="11.8.&nbsp;time: Real time.">Standard Library: Time</a></p></li><li class="listitem"><p><a class="link" href="#ref.stdlib.time.metronome"><code class="code"><span class="hl-variable">metronome</span></code> function</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.idioms.timeout" class="olink">Timeout</a></p></li></ul></div></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;8.&nbsp;Concepts"><div class="titlepage"><div><div><h2 class="title"><a name="ref.concepts"></a>Chapter&nbsp;8.&nbsp;Concepts</h2></div></div></div><p>
 These are a few concepts which are essential to Orc, and are used frequently in
 other parts of the reference manual.
@@ -3377,7 +3377,7 @@ The following is the publication behavior of a few common forms of Orc expressio
 OUTPUT:
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.publish.examples.pub0_link'), 'ref.concepts.publish.examples.pub0_content'); }, 125);
+toggle(document.getElementById('ref.concepts.publish.examples.pub0_link'), 'ref.concepts.publish.examples.pub0_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.pub2_link" onclick="toggle(this, 'ref.concepts.publish.examples.pub2_content')">
 					&minus;
 				</a><span class="exampleCaption">Publish one value</span></div><div class="exampleBody" id="ref.concepts.publish.examples.pub2_content"><pre class="orc">
@@ -3387,7 +3387,7 @@ OUTPUT:
 1
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.publish.examples.pub2_link'), 'ref.concepts.publish.examples.pub2_content'); }, 125);
+toggle(document.getElementById('ref.concepts.publish.examples.pub2_link'), 'ref.concepts.publish.examples.pub2_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.pub2seq_link" onclick="toggle(this, 'ref.concepts.publish.examples.pub2seq_content')">
 					&minus;
 				</a><span class="exampleCaption">Publish two values</span></div><div class="exampleBody" id="ref.concepts.publish.examples.pub2seq_content"><pre class="orc">
@@ -3398,7 +3398,7 @@ OUTPUT:PERMUTABLE
 32
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.publish.examples.pub2seq_link'), 'ref.concepts.publish.examples.pub2seq_content'); }, 125);
+toggle(document.getElementById('ref.concepts.publish.examples.pub2seq_link'), 'ref.concepts.publish.examples.pub2seq_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.metronome_link" onclick="toggle(this, 'ref.concepts.publish.examples.metronome_content')">
 					&minus;
 				</a><span class="exampleCaption">Publish an unbounded number of values (metronome)</span></div><div class="exampleBody" id="ref.concepts.publish.examples.metronome_content"><pre class="orc">
@@ -3406,7 +3406,7 @@ setTimeout(function() { toggle(document.getElementById('ref.concepts.publish.exa
 
 <span class="hl-site">metronome</span>()
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.publish.examples.metronome_link'), 'ref.concepts.publish.examples.metronome_content'); }, 125);
+toggle(document.getElementById('ref.concepts.publish.examples.metronome_link'), 'ref.concepts.publish.examples.metronome_content');
 </script></div><div class="section" title="8.1.2.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.publish.links"></a>8.1.2.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.combinators" title="Chapter&nbsp;3.&nbsp;Combinators">Combinators</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Call</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function Call</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.stop" title="2.3.&nbsp;stop"><code class="code"><span class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silent</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple" class="olink">Orc expressions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators" class="olink">Combinators</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.nesting" class="olink">Nesting expressions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.sites" class="olink">Sites</a></p></li></ul></div></div></div><div class="section" title="8.2.&nbsp;Silence"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.silent"></a>8.2.&nbsp;Silence</h2></div></div></div><div class="section" title="8.2.1.&nbsp;Definition"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.silent.definition"></a>8.2.1.&nbsp;Definition</h3></div></div></div><p>
 			An expression is <a name="N12C4C" class="indexterm"></a><em class="firstterm">silent</em> in an execution if it never <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publishes</a> in that execution. 
 			An expression is always silent if it does not publish in any execution.
@@ -3427,7 +3427,7 @@ OUTPUT:
 print but don't publish
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.silent.examples.sideeffects_link'), 'ref.concepts.silent.examples.sideeffects_content'); }, 125);
+toggle(document.getElementById('ref.concepts.silent.examples.sideeffects_link'), 'ref.concepts.silent.examples.sideeffects_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.silent.examples.conditional_link" onclick="toggle(this, 'ref.concepts.silent.examples.conditional_content')">
 					&minus;
 				</a><span class="exampleCaption">Conditional Silence</span></div><div class="exampleBody" id="ref.concepts.silent.examples.conditional_content"><pre class="orc">
@@ -3451,7 +3451,7 @@ signal
 OUTPUT:
 -}</span>
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.silent.examples.conditional_link'), 'ref.concepts.silent.examples.conditional_content'); }, 125);
+toggle(document.getElementById('ref.concepts.silent.examples.conditional_link'), 'ref.concepts.silent.examples.conditional_content');
 </script></div><div class="section" title="8.2.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.silent.links"></a>8.2.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publish</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.stop" title="2.3.&nbsp;stop"><code class="code"><span class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.types.subtyping.Bot" title="9.3.2.&nbsp;Bot"><code class="code"><span class="hl-variable">Bot</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.combinators.otherwise" title="3.4.&nbsp;Otherwise Combinator">Otherwise combinator</a></p></li></ul></div></div></div><div class="section" title="8.3.&nbsp;Expression States"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.states"></a>8.3.&nbsp;Expression States</h2></div></div></div><p>
 		A <a class="link" href="#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site call</a>, from the site's perspective, has three possible outcomes:
 		the site will definitely <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publish</a> a value, the site knows that it will
@@ -3558,7 +3558,7 @@ setTimeout(function() { toggle(document.getElementById('ref.concepts.silent.exam
 				be no response, causing <em class="replaceable"><code>G</code></em> to halt; otherwise,
 				<em class="replaceable"><code>G</code></em> stays blocked forever.
 			</p></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.parallel_link'), 'ref.concepts.states.examples.parallel_content'); }, 125);
+toggle(document.getElementById('ref.concepts.states.examples.parallel_link'), 'ref.concepts.states.examples.parallel_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.states.examples.prune_link" onclick="toggle(this, 'ref.concepts.states.examples.prune_content')">
 					&minus;
 				</a><span class="exampleCaption">Pruning combinator; killed state</span></div><div class="exampleBody" id="ref.concepts.states.examples.prune_content"><p>
@@ -3573,7 +3573,7 @@ setTimeout(function() { toggle(document.getElementById('ref.concepts.states.exam
 				As we have shown, <em class="replaceable"><code>G</code></em> will definitely <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publish</a>. Then <em class="replaceable"><code>G</code></em> is killed, and so
 				are its sub-expressions.
 			</p></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.prune_link'), 'ref.concepts.states.examples.prune_content'); }, 125);
+toggle(document.getElementById('ref.concepts.states.examples.prune_link'), 'ref.concepts.states.examples.prune_content');
 </script><div class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.states.examples.otherwise_link" onclick="toggle(this, 'ref.concepts.states.examples.otherwise_content')">
 					&minus;
 				</a><span class="exampleCaption">Sequential and otherwise combinators</span></div><div class="exampleBody" id="ref.concepts.states.examples.otherwise_content"><p>
@@ -3593,7 +3593,7 @@ setTimeout(function() { toggle(document.getElementById('ref.concepts.states.exam
 				halts silently, causing false to be published, or (3) the
 				call remains blocked forever, causing <em class="replaceable"><code>F</code></em> to remain blocked.
 			</p></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.states.examples.otherwise_link'), 'ref.concepts.states.examples.otherwise_content'); }, 125);
+toggle(document.getElementById('ref.concepts.states.examples.otherwise_link'), 'ref.concepts.states.examples.otherwise_content');
 </script></div><div class="section" title="8.3.7.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.links"></a>8.3.7.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.expressions" title="Chapter&nbsp;2.&nbsp;Expressions">Expressions</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call" title="2.4.&nbsp;Site and Function Calls">Site and Function Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.stop" title="2.3.&nbsp;stop"><code class="code"><span class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="#ref.combinators" title="Chapter&nbsp;3.&nbsp;Combinators">Combinators</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.helpful" title="8.5.&nbsp;Helpful Sites">Helpful Sites</a></p></li></ul></div></div></div><div class="section" title="8.4.&nbsp;Deflation"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.deflate"></a>8.4.&nbsp;Deflation</h2></div></div></div><div class="section" title="8.4.1.&nbsp;Definition"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.deflate.definition"></a>8.4.1.&nbsp;Definition</h3></div></div></div><p>
 			Deflation is an execution mechanism which extracts a single value from an expression that
 			might <a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publish</a> many values, so that such an expression can be executed in a context that expects
@@ -3635,7 +3635,7 @@ setTimeout(function() { toggle(document.getElementById('ref.concepts.states.exam
   <span class="hl-variable">yahoo</span> <span class="hl-operator">=</span> <span class="hl-site">Yahoo</span>(<span class="hl-literal">"Jack Burton"</span>) <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">7000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"no result"</span>
 .}
 </pre></div></div><noscript><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script type="text/javascript">
-setTimeout(function() { toggle(document.getElementById('ref.concepts.deflate.examples.search_link'), 'ref.concepts.deflate.examples.search_content'); }, 125);
+toggle(document.getElementById('ref.concepts.deflate.examples.search_link'), 'ref.concepts.deflate.examples.search_content');
 </script></div><div class="section" title="8.4.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.deflate.links"></a>8.4.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="#ref.combinators.pruning" title="3.3.&nbsp;Pruning Combinator">Pruning Combinator</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.silent" title="8.2.&nbsp;Silence">Silence</a></p></li><li class="listitem"><p><a class="link" href="#ref.concepts.states.kill" title="8.3.4.&nbsp;Killed">Killing</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.call" title="2.4.&nbsp;Site and Function Calls">Site and Function Calls</a></p></li><li class="listitem"><p><a class="link" href="#ref.expressions.operators" title="2.6.&nbsp;Operators">Operators</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.tuple" title="1.6.&nbsp;Tuples">Tuples</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.list" title="1.5.&nbsp;Lists">Lists</a></p></li><li class="listitem"><p><a class="link" href="#ref.data.record" title="1.7.&nbsp;Records">Records</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.idioms.forkjoin" class="olink">Fork-join</a></p></li></ul></div></div></div><div class="section" title="8.5.&nbsp;Helpful Sites"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.helpful"></a>8.5.&nbsp;Helpful Sites</h2></div></div></div><a name="N12EFA" class="indexterm"></a><a name="N12EFD" class="indexterm"></a><p>
 		A <a name="N12F02" class="indexterm"></a><em class="firstterm">helpful site</em> responds with an indication that it will never <a name="N12F09" class="indexterm"></a><a class="link" href="#ref.concepts.publish" title="8.1.&nbsp;Publication">publish</a>,
 		when it knows this outcome for a call. 

@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide v2.0.0</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide v2.0.1</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
 // Expandable content script from flooble.com.
 // For more information please visit:
 // http://www.flooble.com/scripts/expand.php
@@ -15,10 +15,10 @@ function toggle(link, divId) {
 		d.style.display = 'none';
 	}
 }
-</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc User Guide v2.0.0"><div><div><div><h1 class="title"><a name="userguide"></a>
-	Orc User Guide v2.0.0
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc User Guide v2.0.1"><div><div><div><h1 class="title"><a name="userguide"></a>
+	Orc User Guide v2.0.1
 
-</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">http://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2011-04-21</p></div><div><p class="copyright">Copyright &copy; 2011 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
+</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">http://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2011-04-27</p></div><div><p class="copyright">Copyright &copy; 2011 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
 			Use and redistribution of this file is governed by the license terms in
 			the LICENSE file found in the project's top-level directory and also
 			found at
@@ -30,7 +30,7 @@ function toggle(link, divId) {
 			recommendations expressed in this document are those of the authors
 			and do not necessarily reflect the views of the National Science
 			Foundation.
-		</p></div></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="preface"><a href="#ug.preface">Preface</a></span></dt><dt><span class="chapter"><a href="#ug.introduction">1. An Introduction to Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.simple">1.1. Simple Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.simple.values">1.1.1. Values</a></span></dt><dt><span class="section"><a href="#ug.introduction.simple.operators">1.1.2. Operators</a></span></dt><dt><span class="section"><a href="#ug.introduction.simple.sites">1.1.3. Sites</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.complex">1.2. Complex Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.complex.combinators">1.2.1. Combinators</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.val">1.2.2. <code class="code"><span class="hl-keyword">val</span></code></a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.conditionals">1.2.3. Conditional Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.nesting">1.2.4. Nested Expressions</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.structures">1.3. Data Structures</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.structures.tuples">1.3.1. Tuples</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures.lists">1.3.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures.patterns">1.3.3. Patterns</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.functions">1.4. Functions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.functions.recursion">1.4.1. Recursion</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions.clauses">1.4.2. Clauses</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions.guards">1.4.3. Guards</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#ug.additional">2. Additional Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.closures">2.1. First-Class Functions</a></span></dt><dt><span class="section"><a href="#ug.additional.dotaccess">2.2. The <code class="code">.</code> notation</a></span></dt><dt><span class="section"><a href="#ug.additional.records">2.3. Records</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass">2.4. Defining Sites in Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.defclass.stack">2.4.1. Example: Stack</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass.multicast">2.4.2. Example: Multicast</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.additional.datatypes">2.5. Datatypes</a></span></dt><dt><span class="section"><a href="#ug.additional.import">2.6. Importing Resources</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.import.site">2.6.1. Writing Custom Sites</a></span></dt><dt><span class="section"><a href="#ug.additional.import.class">2.6.2. Using Java Classes</a></span></dt><dt><span class="section"><a href="#ug.additional.import.include">2.6.3. Including Source Files</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.additional.typecheck">2.7. Type Checking</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.typecheck.inferred">2.7.1. Type Inference</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck.moreinfo">2.7.2. Adding Type Information</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck.polymorphism">2.7.3. Polymorphism</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#ug.style">3. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.style.parallel">3.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#ug.style.sequential">3.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">3.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#ug.style.declarations">3.4. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.style.declarations.ambiguous">3.4.1. Ambiguous Declarations</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#ug.idioms">4. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.mutable.Ref">4.4.1. Rewritable references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.Cell">4.4.2. Write-once references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.syntax">4.4.3. Syntax for manipulating references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.Array">4.4.4. Arrays</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.forkjoin.example.init">4.8.1. Example: Machine initialization</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin.example.auction">4.8.2. Example: Simple parallel auction</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin.example.barrier">4.8.3. Example: Barrier synchronization</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.timeout.example.auction">4.12.1. Auction with timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout.detection">4.12.2. Detecting timeout</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.routing.termination">4.15.1. Generalizing Termination</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing.newprune">4.15.2. Non-Terminating Pruning</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing.newotherwise">4.15.3. Sequencing Otherwise</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.fold.associative">4.16.1. Associative Fold</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold.commutative">4.16.2. Associative, Commutative Fold</a></span></dt></dl></dd></dl></dd><dt><span class="chapter"><a href="#ug.examples">5. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.examples.dining">5.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.hygenic">5.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.rw">5.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#ug.examples.quicksort">5.4. Quicksort</a></span></dt><dt><span class="section"><a href="#ug.examples.meeting">5.5. Meeting Scheduler</a></span></dt></dl></dd></dl></div><div class="preface" title="Preface"><div class="titlepage"><div><div><h2 class="title"><a name="ug.preface"></a>Preface</h2></div></div></div><p>
+		</p></div></div></div><hr></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="preface"><a href="#ug.preface">Preface</a></span></dt><dt><span class="chapter"><a href="#ug.introduction">1. An Introduction to Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.simple">1.1. Simple Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex">1.2. Complex Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures">1.3. Data Structures</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions">1.4. Functions</a></span></dt></dl></dd><dt><span class="chapter"><a href="#ug.additional">2. Additional Features of Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.closures">2.1. First-Class Functions</a></span></dt><dt><span class="section"><a href="#ug.additional.dotaccess">2.2. The <code class="code">.</code> notation</a></span></dt><dt><span class="section"><a href="#ug.additional.records">2.3. Records</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass">2.4. Defining Sites in Orc</a></span></dt><dt><span class="section"><a href="#ug.additional.datatypes">2.5. Datatypes</a></span></dt><dt><span class="section"><a href="#ug.additional.import">2.6. Importing Resources</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck">2.7. Type Checking</a></span></dt></dl></dd><dt><span class="chapter"><a href="#ug.style">3. Syntactic and Stylistic Conventions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.style.parallel">3.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#ug.style.sequential">3.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">3.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#ug.style.declarations">3.4. Declarations</a></span></dt></dl></dd><dt><span class="chapter"><a href="#ug.idioms">4. Programming Idioms</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt></dl></dd><dt><span class="chapter"><a href="#ug.examples">5. Larger Examples</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.examples.dining">5.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.hygenic">5.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.rw">5.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#ug.examples.quicksort">5.4. Quicksort</a></span></dt><dt><span class="section"><a href="#ug.examples.meeting">5.5. Meeting Scheduler</a></span></dt></dl></dd></dl></div><div class="preface" title="Preface"><div class="titlepage"><div><div><h2 class="title"><a name="ug.preface"></a>Preface</h2></div></div></div><p>
 Orc is a programming language designed to make distributed and
 concurrent programs simple and intuitive to write. Orc expresses
 orchestration, a type of structured concurrency. It emphasizes the
@@ -45,7 +45,7 @@ learn more about Orc and run your own Orc programs, visit the Web site:
 </p><p>
 Unless otherwise noted, all material in this document pertains to the
 Orc language implementation version
-2.0.0
+2.0.1
 .
 </p><p>
 This guide introduces the reader to the Orc programming language. It does not
@@ -65,7 +65,7 @@ Chapters 3 through 5 turn our attention to how the language is used in practice,
 with guidelines on style and programming methodology, 
 explanations of some common concurrency patterns,
 and larger example programs. 
-</p></div><div lang="" class="chapter" title="Chapter&nbsp;1.&nbsp;An Introduction to Orc"><div class="titlepage"><div><div><h2 class="title"><a name="ug.introduction"></a>Chapter&nbsp;1.&nbsp;An Introduction to Orc</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.introduction.simple">1.1. Simple Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.simple.values">1.1.1. Values</a></span></dt><dt><span class="section"><a href="#ug.introduction.simple.operators">1.1.2. Operators</a></span></dt><dt><span class="section"><a href="#ug.introduction.simple.sites">1.1.3. Sites</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.complex">1.2. Complex Expressions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.complex.combinators">1.2.1. Combinators</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.val">1.2.2. <code class="code"><span class="hl-keyword">val</span></code></a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.conditionals">1.2.3. Conditional Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex.nesting">1.2.4. Nested Expressions</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.structures">1.3. Data Structures</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.structures.tuples">1.3.1. Tuples</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures.lists">1.3.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures.patterns">1.3.3. Patterns</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.introduction.functions">1.4. Functions</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.introduction.functions.recursion">1.4.1. Recursion</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions.clauses">1.4.2. Clauses</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions.guards">1.4.3. Guards</a></span></dt></dl></dd></dl></div><p>
+</p></div><div lang="" class="chapter" title="Chapter&nbsp;1.&nbsp;An Introduction to Orc"><div class="titlepage"><div><div><h2 class="title"><a name="ug.introduction"></a>Chapter&nbsp;1.&nbsp;An Introduction to Orc</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.introduction.simple">1.1. Simple Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.complex">1.2. Complex Expressions</a></span></dt><dt><span class="section"><a href="#ug.introduction.structures">1.3. Data Structures</a></span></dt><dt><span class="section"><a href="#ug.introduction.functions">1.4. Functions</a></span></dt></dl></div><p>
 An Orc program is an <em class="firstterm">expression</em>. 
 Complex Orc expressions are built up recursively from simpler expressions. 
 Orc expressions are <em class="firstterm">executed</em>;
@@ -590,7 +590,7 @@ We can also improve the readability of a previous example:
 <span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>) <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> <span class="hl-operator">&lt;:</span> <span class="hl-literal">0</span>) <span class="hl-operator">=</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span><span class="hl-operator">+</span><span class="hl-literal">1</span>)
 <span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-literal">0</span>) <span class="hl-operator">=</span> <span class="hl-literal">false</span>
 </pre><p>
-</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;2.&nbsp;Additional Features of Orc"><div class="titlepage"><div><div><h2 class="title"><a name="ug.additional"></a>Chapter&nbsp;2.&nbsp;Additional Features of Orc</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.additional.closures">2.1. First-Class Functions</a></span></dt><dt><span class="section"><a href="#ug.additional.dotaccess">2.2. The <code class="code">.</code> notation</a></span></dt><dt><span class="section"><a href="#ug.additional.records">2.3. Records</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass">2.4. Defining Sites in Orc</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.defclass.stack">2.4.1. Example: Stack</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass.multicast">2.4.2. Example: Multicast</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.additional.datatypes">2.5. Datatypes</a></span></dt><dt><span class="section"><a href="#ug.additional.import">2.6. Importing Resources</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.import.site">2.6.1. Writing Custom Sites</a></span></dt><dt><span class="section"><a href="#ug.additional.import.class">2.6.2. Using Java Classes</a></span></dt><dt><span class="section"><a href="#ug.additional.import.include">2.6.3. Including Source Files</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.additional.typecheck">2.7. Type Checking</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.additional.typecheck.inferred">2.7.1. Type Inference</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck.moreinfo">2.7.2. Adding Type Information</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck.polymorphism">2.7.3. Polymorphism</a></span></dt></dl></dd></dl></div><p>
+</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;2.&nbsp;Additional Features of Orc"><div class="titlepage"><div><div><h2 class="title"><a name="ug.additional"></a>Chapter&nbsp;2.&nbsp;Additional Features of Orc</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.additional.closures">2.1. First-Class Functions</a></span></dt><dt><span class="section"><a href="#ug.additional.dotaccess">2.2. The <code class="code">.</code> notation</a></span></dt><dt><span class="section"><a href="#ug.additional.records">2.3. Records</a></span></dt><dt><span class="section"><a href="#ug.additional.defclass">2.4. Defining Sites in Orc</a></span></dt><dt><span class="section"><a href="#ug.additional.datatypes">2.5. Datatypes</a></span></dt><dt><span class="section"><a href="#ug.additional.import">2.6. Importing Resources</a></span></dt><dt><span class="section"><a href="#ug.additional.typecheck">2.7. Type Checking</a></span></dt></dl></div><p>
 Chapter 1 presented the essential features of the Orc programming language. Here we show a number
 of additional features, which are useful for programming in certain styles, making use of additional
 services and resources, and constructing larger programs.
@@ -888,7 +888,7 @@ The following code imports and uses Java's <code class="code">File</code>,
 <code class="code">FileReader</code>, and <code class="code">BufferedReader</code> classes
 to read the first line of a text file.
 
-</p><pre class="orc">
+</p><pre class="programlisting">
 <span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">File</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.io.File"</span>
 <span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">FileReader</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.io.FileReader"</span>
 <span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">BufferedReader</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.io.BufferedReader"</span>
@@ -1070,7 +1070,7 @@ This limitation is not unusual. Java constructors for generic classes have a sim
 LinkedList&lt;Integer&gt; l = <span class="hl-keyword">new</span> LinkedList&lt;Integer&gt;();
 </pre><p>
 
-</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions"><div class="titlepage"><div><div><h2 class="title"><a name="ug.style"></a>Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.style.parallel">3.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#ug.style.sequential">3.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">3.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#ug.style.declarations">3.4. Declarations</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.style.declarations.ambiguous">3.4.1. Ambiguous Declarations</a></span></dt></dl></dd></dl></div><p>
+</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions"><div class="titlepage"><div><div><h2 class="title"><a name="ug.style"></a>Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.style.parallel">3.1. Parallel combinator</a></span></dt><dt><span class="section"><a href="#ug.style.sequential">3.2. Sequential combinator</a></span></dt><dt><span class="section"><a href="#style.pruning">3.3. Pruning combinator</a></span></dt><dt><span class="section"><a href="#ug.style.declarations">3.4. Declarations</a></span></dt></dl></div><p>
 In this section we suggest some syntactic conventions for writing Orc programs. None of these 
 conventions are required by the parser; newlines are used only to disambiguate certain corner
 cases in parsing, and other whitespace is ignored. However, following programming convention 
@@ -1254,7 +1254,7 @@ Orc imposes the following syntactic constraint:
 </p><p><span class="emphasis"><em>An expression that follows a declaration begins with an alphanumeric symbol</em></span></p><p>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
 write it as <code class="code"><span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code>. Similarly, write <code class="code"><span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-operator">-</span><span class="hl-literal">3</span></code>, in case <code class="code"><span class="hl-operator">-</span><span class="hl-literal">3</span></code> is
 the goal expression in the above example.  Note that there are many solutions to this problem; for example
-using <code class="code"><span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> is also valid.</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;4.&nbsp;Programming Idioms"><div class="titlepage"><div><div><h2 class="title"><a name="ug.idioms"></a>Chapter&nbsp;4.&nbsp;Programming Idioms</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.mutable.Ref">4.4.1. Rewritable references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.Cell">4.4.2. Write-once references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.syntax">4.4.3. Syntax for manipulating references</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable.Array">4.4.4. Arrays</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.forkjoin.example.init">4.8.1. Example: Machine initialization</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin.example.auction">4.8.2. Example: Simple parallel auction</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin.example.barrier">4.8.3. Example: Barrier synchronization</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.timeout.example.auction">4.12.1. Auction with timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout.detection">4.12.2. Detecting timeout</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.routing.termination">4.15.1. Generalizing Termination</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing.newprune">4.15.2. Non-Terminating Pruning</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing.newotherwise">4.15.3. Sequencing Otherwise</a></span></dt></dl></dd><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt><dd><dl><dt><span class="section"><a href="#ug.idioms.fold.associative">4.16.1. Associative Fold</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold.commutative">4.16.2. Associative, Commutative Fold</a></span></dt></dl></dd></dl></div><p>
+using <code class="code"><span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> is also valid.</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;4.&nbsp;Programming Idioms"><div class="titlepage"><div><div><h2 class="title"><a name="ug.idioms"></a>Chapter&nbsp;4.&nbsp;Programming Idioms</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt></dl></div><p>
 In this section we give Orc implementations of some standard idioms from
 concurrent and functional programming. 
 
@@ -1394,7 +1394,7 @@ simply halt.
 
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> <span class="hl-operator">=</span> <span class="hl-site">Cell</span>()
   <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-<span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">2000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span>.<span class="hl-site">write</span>(<span class="hl-literal">3</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">r</span>.<span class="hl-site">read</span>()
 
 <span class="hl-comment">{-
@@ -1423,7 +1423,7 @@ but lower precedence than any of the other operators.</li></ul></div><p>Here is 
 
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> <span class="hl-operator">=</span> <span class="hl-site">Cell</span>()
   <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-operator">:=</span> <span class="hl-literal">2</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 2"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
-<span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-operator">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">2000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">r</span> <span class="hl-operator">:=</span> <span class="hl-literal">3</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"Wrote 3"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">r</span><span class="hl-operator">?</span>
 
 <span class="hl-comment">{-
@@ -1456,9 +1456,10 @@ halts because it is out of bounds (arrays are indexed from 0).
 <span class="hl-site">initialize</span>(<span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-site">a</span>(<span class="hl-literal">3</span>)<span class="hl-operator">?</span> <span class="hl-combinator">|</span> <span class="hl-site">a</span>(<span class="hl-literal">6</span>)<span class="hl-operator">?</span> <span class="hl-combinator">|</span> <span class="hl-site">a</span>(<span class="hl-literal">10</span>)<span class="hl-operator">?</span>)
 
 <span class="hl-comment">{-
-OUTPUT:
+OUTPUT:PERMUTABLE
 8
 64
+Error: java.lang.ArrayIndexOutOfBoundsException: 10
 -}</span>
 
 </pre><p>
@@ -1613,9 +1614,10 @@ is equivalent to
 
 </p><pre class="orc">
 [<span class="hl-literal">4</span>, <span class="hl-literal">6</span>] <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span>
-  <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span>[]<span class="hl-combinator">&gt;</span> <span class="hl-literal">0</span>
+( <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span>[]<span class="hl-combinator">&gt;</span> <span class="hl-literal">0</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span>[<span class="hl-variable">_</span>]<span class="hl-combinator">&gt;</span> <span class="hl-literal">1</span>
 <span class="hl-combinator">|</span> <span class="hl-variable">x</span> <span class="hl-combinator">&gt;</span><span class="hl-variable">_</span><span class="hl-operator">:</span><span class="hl-variable">_</span><span class="hl-operator">:</span><span class="hl-variable">_</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">2</span>
+)
 </pre><p>
 
 whereas
@@ -2171,124 +2173,131 @@ relinquish a fork to its neighbor if the fork is dirty. On receiving a fork,
 the philosopher cleans it. On eating, the philosopher dirties all forks.  For
 full details of the algorithm, consult the original paper.
 </p><pre class="orc">
-<span class="hl-comment">{- Start a philosopher actor; never publishes.
-   Messages sent between philosophers include:
-   - ("fork", p): philosopher p relinquishes the fork
-   - ("request", p): philosopher p requests the fork
-   - ("rumble", p): sent by a philosopher to itself when it should
-     become hungry
-
-   name: identify this process in status messages
-   mbox: our mailbox; the "address" of this philosopher is mbox.put
-   missing: set of neighboring philosophers holding our forks
+<span class="hl-comment">{- The "hygenic solution to the diners problem",
+   described in "The Drinking Philosophers Problem", by
+   K. M. Chandy and J. Misra.
 -}</span>
 
-<span class="hl-comment">{- Define philosopher -}</span>
+<span class="hl-comment">{- 
+Use a Scala set implementation.
+Operations on this set are not synchronized.
+-}</span>
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">ScalaSet</span> <span class="hl-operator">=</span> <span class="hl-literal">"scala.collection.mutable.HashSet"</span>
+
+<span class="hl-comment">{-
+Make a set initialized to contain
+the items in the given list.
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">Set</span>(<span class="hl-variable">items</span>) <span class="hl-operator">=</span> <span class="hl-site">ScalaSet</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-site">joinMap</span>(<span class="hl-variable">s</span>.<span class="hl-variable">add</span>, <span class="hl-variable">items</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>
+
+
+<span class="hl-comment">{-
+Start a philosopher process; never publishes.
+
+name: identify this process in status messages
+mbox: our mailbox
+missing: set of neighboring philosophers holding our fork
+-}</span>
 <span class="hl-keyword">def</span> <span class="hl-site">philosopher</span>(<span class="hl-variable">name</span>, <span class="hl-variable">mbox</span>, <span class="hl-variable">missing</span>) <span class="hl-operator">=</span>
-  <span class="hl-comment">{- deferred requests for forks -}</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">send</span> <span class="hl-operator">=</span> <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">receive</span> <span class="hl-operator">=</span> <span class="hl-variable">mbox</span>.<span class="hl-variable">get</span>
+  <span class="hl-comment">-- deferred requests for forks</span>
   <span class="hl-keyword">val</span> <span class="hl-variable">deferred</span> <span class="hl-operator">=</span> <span class="hl-site">Channel</span>()
-  <span class="hl-comment">{- forks we hold which are clean -}</span>
-  <span class="hl-keyword">val</span> <span class="hl-variable">clean</span> <span class="hl-operator">=</span> <span class="hl-site">Set</span>()
+  <span class="hl-comment">-- forks we hold which are clean</span>
+  <span class="hl-keyword">val</span> <span class="hl-variable">clean</span> <span class="hl-operator">=</span> <span class="hl-site">Set</span>([])
 
   <span class="hl-keyword">def</span> <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-operator">=</span>
-    <span class="hl-comment">{- remember that we no longer hold the fork -}</span>
     <span class="hl-variable">missing</span>.<span class="hl-site">add</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-    <span class="hl-site">p</span>((<span class="hl-literal">"fork"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>))
+    <span class="hl-site">p</span>((<span class="hl-literal">"fork"</span>, <span class="hl-variable">send</span>))
  
   <span class="hl-keyword">def</span> <span class="hl-site">requestFork</span>(<span class="hl-variable">p</span>) <span class="hl-operator">=</span>
-    <span class="hl-site">p</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>))
+    <span class="hl-variable">clean</span>.<span class="hl-site">add</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">p</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">send</span>))
   
-  <span class="hl-comment">{- Start a timer which will tell us when we're hungry. -}</span>
+  <span class="hl-comment">-- While thinking, start a timer which</span>
+  <span class="hl-comment">-- will tell us when we're hungry</span>
   <span class="hl-keyword">def</span> <span class="hl-site">digesting</span>() <span class="hl-operator">=</span>
       <span class="hl-site">Println</span>(<span class="hl-variable">name</span> <span class="hl-operator">+</span> <span class="hl-literal">" thinking"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
       <span class="hl-site">thinking</span>()
-    <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-site">Random</span>(<span class="hl-literal">1000</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-variable">mbox</span>.<span class="hl-site">put</span>((<span class="hl-literal">"rumble"</span>, <span class="hl-variable">mbox</span>.<span class="hl-variable">put</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-site">Random</span>(<span class="hl-literal">30</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">send</span>((<span class="hl-literal">"rumble"</span>, <span class="hl-variable">send</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
       <span class="hl-keyword">stop</span>
 
-  <span class="hl-comment">{- Wait to become hungry -}</span>
   <span class="hl-keyword">def</span> <span class="hl-site">thinking</span>() <span class="hl-operator">=</span>
     <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"rumble"</span>, <span class="hl-variable">_</span>)) <span class="hl-operator">=</span>
       <span class="hl-site">Println</span>(<span class="hl-variable">name</span> <span class="hl-operator">+</span> <span class="hl-literal">" hungry"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-site">map</span>(<span class="hl-variable">requestFork</span>, <span class="hl-variable">missing</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">map</span>(<span class="hl-variable">requestFork</span>, <span class="hl-variable">missing</span>.<span class="hl-site">toList</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
       <span class="hl-site">hungry</span>()
     <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">p</span>)) <span class="hl-operator">=</span>
-      <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">thinking</span>()
-    <span class="hl-site">on</span>(<span class="hl-variable">mbox</span>.<span class="hl-site">get</span>())
+      <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+      <span class="hl-site">thinking</span>()
+    <span class="hl-site">on</span>(<span class="hl-site">receive</span>())
 
-  <span class="hl-comment">{- Eat once we receive all forks -}</span>
   <span class="hl-keyword">def</span> <span class="hl-site">hungry</span>() <span class="hl-operator">=</span>
     <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"fork"</span>, <span class="hl-variable">p</span>)) <span class="hl-operator">=</span>
       <span class="hl-variable">missing</span>.<span class="hl-site">remove</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-variable">clean</span>.<span class="hl-site">add</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-      <span class="hl-keyword">if</span> <span class="hl-variable">missing</span>.<span class="hl-site">isEmpty</span>()
-      <span class="hl-keyword">then</span> <span class="hl-site">Println</span>(<span class="hl-variable">name</span> <span class="hl-operator">+</span> <span class="hl-literal">" eating"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">eating</span>()
-      <span class="hl-keyword">else</span> <span class="hl-site">hungry</span>()
+      ( 
+        <span class="hl-keyword">if</span> <span class="hl-variable">missing</span>.<span class="hl-site">isEmpty</span>() <span class="hl-keyword">then</span>
+          <span class="hl-site">Println</span>(<span class="hl-variable">name</span> <span class="hl-operator">+</span> <span class="hl-literal">" eating"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+          <span class="hl-site">eating</span>()
+        <span class="hl-keyword">else</span> <span class="hl-site">hungry</span>()
+      )
     <span class="hl-keyword">def</span> <span class="hl-site">on</span>((<span class="hl-literal">"request"</span>, <span class="hl-variable">p</span>)) <span class="hl-operator">=</span>
-      <span class="hl-keyword">if</span> <span class="hl-variable">clean</span>.<span class="hl-site">contains</span>(<span class="hl-variable">p</span>)
-      <span class="hl-keyword">then</span> <span class="hl-variable">deferred</span>.<span class="hl-site">put</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">hungry</span>()
-      <span class="hl-keyword">else</span> <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">requestFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">hungry</span>()
-    <span class="hl-site">on</span>(<span class="hl-variable">mbox</span>.<span class="hl-site">get</span>())
+      <span class="hl-keyword">if</span> <span class="hl-variable">clean</span>.<span class="hl-site">contains</span>(<span class="hl-variable">p</span>) <span class="hl-keyword">then</span>
+        <span class="hl-variable">deferred</span>.<span class="hl-site">put</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+        <span class="hl-site">hungry</span>()
+      <span class="hl-keyword">else</span>
+        <span class="hl-site">sendFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+        <span class="hl-site">requestFork</span>(<span class="hl-variable">p</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+        <span class="hl-site">hungry</span>()
+    <span class="hl-site">on</span>(<span class="hl-site">receive</span>())
 
-  <span class="hl-comment">{- Dirty forks, process deferred requests, then digest -}</span>
   <span class="hl-keyword">def</span> <span class="hl-site">eating</span>() <span class="hl-operator">=</span>
     <span class="hl-variable">clean</span>.<span class="hl-site">clear</span>() <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
-    <span class="hl-site">Rwait</span>(<span class="hl-site">Random</span>(<span class="hl-literal">1000</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    <span class="hl-site">Rwait</span>(<span class="hl-site">Random</span>(<span class="hl-literal">10</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
     <span class="hl-site">map</span>(<span class="hl-variable">sendFork</span>, <span class="hl-variable">deferred</span>.<span class="hl-site">getAll</span>()) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
     <span class="hl-site">digesting</span>()
 
-  <span class="hl-comment">{- All philosophers start out digesting -}</span>
   <span class="hl-site">digesting</span>()
 
-<span class="hl-comment">{- Create an NxN 4-connected grid of philosophers.  Each philosopher
-   holds the fork for the connections below and to the right (so the
-   top left philosopher holds both its forks).
+<span class="hl-comment">{-
+Create an NxN 4-connected grid of philosophers.  Each philosopher holds the
+fork for the connections below and to the right (so the top left philosopher
+holds both its forks).
 -}</span>
-
 <span class="hl-keyword">def</span> <span class="hl-site">philosophers</span>(<span class="hl-variable">n</span>) <span class="hl-operator">=</span>
-  <span class="hl-comment">{- A set with 1 item -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">Set1</span>(<span class="hl-variable">item</span>) <span class="hl-operator">=</span> <span class="hl-site">Set</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">item</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>
-  <span class="hl-comment">{- A set with 2 items -}</span>
-  <span class="hl-keyword">def</span> <span class="hl-site">Set2</span>(<span class="hl-variable">i1</span>, <span class="hl-variable">i2</span>) <span class="hl-operator">=</span> <span class="hl-site">Set</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">s</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">i1</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>.<span class="hl-site">add</span>(<span class="hl-variable">i2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>
-
-  <span class="hl-comment">{- create an NxN matrix of mailboxes -}</span>
+  <span class="hl-comment">{- channels -}</span>
   <span class="hl-keyword">val</span> <span class="hl-variable">cs</span> <span class="hl-operator">=</span> <span class="hl-site">uncurry</span>(<span class="hl-site">Table</span>(<span class="hl-variable">n</span>, <span class="hl-keyword">lambda</span> (<span class="hl-variable">_</span>) <span class="hl-operator">=</span> <span class="hl-site">Table</span>(<span class="hl-variable">n</span>, <span class="hl-site">ignore</span>(<span class="hl-variable">Channel</span>))))
 
-  <span class="hl-comment">{- create the first row of philosophers -}</span>
-  <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set</span>())
+  <span class="hl-comment">{- first row -}</span>
+  <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set</span>([]))
   <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">j</span><span class="hl-combinator">&gt;</span>
-    <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set1</span>(<span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span><span class="hl-operator">-</span><span class="hl-literal">1</span>).<span class="hl-variable">put</span>))
+    <span class="hl-site">philosopher</span>((<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set</span>([<span class="hl-site">cs</span>(<span class="hl-literal">0</span>,<span class="hl-variable">j</span><span class="hl-operator">-</span><span class="hl-literal">1</span>).<span class="hl-variable">put</span>]))
 
-  <span class="hl-comment">{- create remaining rows -}</span>
+  <span class="hl-comment">{- remaining rows -}</span>
   <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">i</span><span class="hl-combinator">&gt;</span> (
-      <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set1</span>(<span class="hl-site">cs</span>(<span class="hl-variable">i</span><span class="hl-operator">-</span><span class="hl-literal">1</span>,<span class="hl-literal">0</span>).<span class="hl-variable">put</span>))
+      <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-literal">0</span>), <span class="hl-site">Set</span>([<span class="hl-site">cs</span>(<span class="hl-variable">i</span><span class="hl-operator">-</span><span class="hl-literal">1</span>,<span class="hl-literal">0</span>).<span class="hl-variable">put</span>]))
       <span class="hl-combinator">|</span> <span class="hl-site">for</span>(<span class="hl-literal">1</span>, <span class="hl-variable">n</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">j</span><span class="hl-combinator">&gt;</span>
-        <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set2</span>(<span class="hl-site">cs</span>(<span class="hl-variable">i</span><span class="hl-operator">-</span><span class="hl-literal">1</span>,<span class="hl-variable">j</span>).<span class="hl-variable">put</span>, <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span><span class="hl-operator">-</span><span class="hl-literal">1</span>).<span class="hl-variable">put</span>))
+        <span class="hl-site">philosopher</span>((<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span>), <span class="hl-site">Set</span>([<span class="hl-site">cs</span>(<span class="hl-variable">i</span><span class="hl-operator">-</span><span class="hl-literal">1</span>,<span class="hl-variable">j</span>).<span class="hl-variable">put</span>, <span class="hl-site">cs</span>(<span class="hl-variable">i</span>,<span class="hl-variable">j</span><span class="hl-operator">-</span><span class="hl-literal">1</span>).<span class="hl-variable">put</span>]))
     )
 
-<span class="hl-comment">{- Simulate a 3x3 grid of philosophers for 10 seconds -}</span>
-<span class="hl-site">Let</span>(
-  <span class="hl-site">philosophers</span>(<span class="hl-literal">3</span>)
-  <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">10000</span>)
-) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">"HALTED"</span>
+<span class="hl-site">philosophers</span>(<span class="hl-literal">2</span>)
 
 <span class="hl-comment">{-
 OUTPUT:EXAMPLE
 (0, 0) thinking
 (0, 1) thinking
-(0, 2) thinking
 (1, 0) thinking
-(2, 0) thinking
 (1, 1) thinking
-(2, 1) thinking
-(1, 2) thinking
-(2, 2) thinking
 (1, 0) hungry
 (0, 0) hungry
 (0, 1) hungry
+(1, 1) hungry
+(1, 1) eating
+(1, 1) thinking
 ...
-"HALTED"
--}</span></pre><p>
+-}</span>
+</pre><p>
 Our implementation is based on the <a class="link" href="http://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
 concurrency.  An actor is a state machine which reacts to messages.  On
 receiving a message, an actor can send asynchronous messages to other actors,
@@ -2496,9 +2505,11 @@ workflow for scheduling a business meeting.  Given a list of people and a date
 range, the program asks each person when they are available for a meeting.  It
 then combines all the responses, selects a meeting time which is acceptable to
 everyone, and notifies everyone of the selected time.
-</p><pre class="orc">
+</p><pre class="programlisting">
 <span class="hl-comment">{- This program requires the Orchard environment to run -}</span>
-<span class="hl-keyword">include</span> <span class="hl-literal">"net.inc"</span>
+<span class="hl-keyword">include</span> <span class="hl-literal">"forms.inc"</span>
+<span class="hl-keyword">include</span> <span class="hl-literal">"mail.inc"</span>
+
 <span class="hl-keyword">val</span> <span class="hl-variable">during</span> <span class="hl-operator">=</span> <span class="hl-site">Interval</span>(<span class="hl-site">LocalDate</span>(<span class="hl-literal">2009</span>, <span class="hl-literal">9</span>, <span class="hl-literal">10</span>),
                       <span class="hl-site">LocalDate</span>(<span class="hl-literal">2009</span>, <span class="hl-literal">10</span>, <span class="hl-literal">17</span>))
 <span class="hl-keyword">val</span> <span class="hl-variable">invitees</span> <span class="hl-operator">=</span> [<span class="hl-literal">"john@example.com"</span>, <span class="hl-literal">"jane@example.com"</span>]
