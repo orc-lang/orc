@@ -28,17 +28,24 @@ package orc.values
  */
 object Format {
   
-  def formatValue(v: Any): String =
+  
+  def formatValue(v: Any): String = {
+    // Escape strings by default
+    formatValue(v, true)
+  }
+  
+  def formatValue(v: Any, escapeStrings: Boolean): String =
     v match {
       case null => "null"
       case l: List[_] => "[" + formatSequence(l) + "]"
-      case s: String => unparseString(s)
+      case s: String => if (escapeStrings) { unparseString(s) } else s
       case orcv: OrcValue => orcv.toOrcSyntax()
       case other => other.toString()
     }
 
   // For Java callers:
   def formatValueR(v: AnyRef): String = formatValue(v)
+  def formatValueR(v: AnyRef, escapeStrings: Boolean): String = formatValue(v, escapeStrings)
   
   def formatSequence(vs : List[_]) = 
     vs match {

@@ -91,11 +91,11 @@ public class Add extends EvalSite implements TypedSite {
 				try {
 					// the first argument is a string
 					final String a = args.stringArg(0);
-					return a + String.valueOf(args.getArg(1));
+					return a + orc.values.Format.formatValueR(args.getArg(1), false);
 				} catch (final TokenException _3) {
 					// the second argument is a string
 					final String b = args.stringArg(1);
-					return String.valueOf(args.getArg(0)) + b;
+					return orc.values.Format.formatValueR(args.getArg(0), false) + b;
 				}
 			}
 		}
