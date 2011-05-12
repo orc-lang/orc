@@ -17,6 +17,8 @@ package edu.utexas.cs.orc.orceclipse.project;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -43,6 +45,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 
 import edu.utexas.cs.orc.orceclipse.Messages;
+import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
 /**
  * A preference field editor for Java path lists. For a preference setting that
@@ -95,7 +98,7 @@ public class OrcPathEditor extends PathEditor {
 		case 2: // external dir:
 			final String selectedFolder = super.getNewInputObject();
 			if (selectedFolder != null) {
-				return Path.fromOSString(selectedFolder).toPortableString();
+				return Path.fromOSString(selectedFolder).addTrailingSeparator().toPortableString();
 			} else {
 				return null;
 			}
@@ -104,6 +107,23 @@ public class OrcPathEditor extends PathEditor {
 		default: // canceled
 			return null;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PathEditor#createList(java.lang.String[])
+	 */
+	@Override
+	protected String createList(String[] items) {
+		return OrcConfigSettings.pathListToString(Arrays.asList(items));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jface.preference.PathEditor#parseString(java.lang.String)
+	 */
+	@Override
+	protected String[] parseString(String stringList) {
+		final List<String> pathList = OrcConfigSettings.stringToPathList(stringList);
+		return pathList.toArray(new String[pathList.size()]);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -135,7 +155,7 @@ public class OrcPathEditor extends PathEditor {
 		dialog.setInitialSelection(null);
 
 		if (dialog.open() == Window.OK) {
-			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().toPortableString();
+			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().addTrailingSeparator().toPortableString();
 		}
 		return null;
 	}
