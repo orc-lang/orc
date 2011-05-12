@@ -114,11 +114,19 @@ trait OrcInputContext {
 
   protected def resolve(baseURI: URI, pathElements: String*): URI = {
     def allowedURIchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
+    /** True if the argument string is in a form that can only be a file name */
     def looksLikeFilename(s: String): Boolean =
       (s.length >= 2 && s(0).isLetter && s(1) == ':') ||  // CP/M style drive letter
       !s.filterNot(allowedURIchars.contains(_)).isEmpty   // Illegal URI chars
-    def nameToURI(s: String): URI = if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
-    pathElements.foldLeft(baseURI)((x,y) => x.resolve(nameToURI(y)))
+    def nameToURI(s: String): URI = {
+      if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
+    }
+    /** Ensure that "file:" URIs that refer to directories have a trailing slash. 
+     *  This is necessary per URI parsing and resolution rules. */
+    def slashifyDir(u: URI) = {
+      if (u != null && u.getScheme != null && u.getScheme.equals("file")) new File(u).toURI() else u
+    }
+    pathElements.foldLeft(slashifyDir(baseURI))((x,y) => slashifyDir(x.resolve(nameToURI(y))))
   }
 
   def newInputFromPath(pathElements: String*): OrcInputContext = {

@@ -15,7 +15,9 @@
 
 package edu.utexas.cs.orc.orceclipse;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import orc.Main.OrcCmdLineOptions$1;
 import orc.script.OrcBindings;
@@ -42,6 +44,8 @@ import org.eclipse.imp.preferences.PreferencesService;
  * @author jthywiss
  */
 public class OrcConfigSettings extends OrcCmdLineOptions$1 {
+	public static final String PATH_SEPARATOR = "|"; //$NON-NLS-1$
+
 	public static final String LOG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".LOG_LEVEL"; //$NON-NLS-1$
 	public static final String PRELUDE_ATTR_NAME = Activator.getInstance().getID() + ".USE_PRELUDE"; //$NON-NLS-1$
 	public static final String INCLUDE_PATH_ATTR_NAME = Activator.getInstance().getID() + ".INCLUDE_PATH"; //$NON-NLS-1$
@@ -61,13 +65,13 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 
 	public static final String LOG_LEVEL_DEFAULT = defaultConfig.logLevel();
 	public static final boolean PRELUDE_DEFAULT = defaultConfig.usePrelude();
-	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	public static final String ADDITIONAL_INCLUDES_DEFAULT = defaultConfig.additionalIncludes().isEmpty() ? "" : listMkString(defaultConfig.additionalIncludes(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
+	public static final String ADDITIONAL_INCLUDES_DEFAULT = defaultConfig.additionalIncludes().isEmpty() ? "" : listMkString(defaultConfig.additionalIncludes(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
 	public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.typecheck();
 	public static final boolean RECURSION_CHECK_DEFAULT = !defaultConfig.disableRecursionCheck();
 	public static final boolean ECHO_OIL_DEFAULT = defaultConfig.echoOil();
 	//public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
-	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), ":").concat(":"); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
 	public static final boolean SHOW_JAVA_STACK_TRACE_DEFAULT = defaultConfig.showJavaStackTrace();
 	public static final boolean NO_TCO_DEFAULT = defaultConfig.disableTailCallOpt();
 	public static final int MAX_STACK_DEPTH_DEFAULT = defaultConfig.stackSize();
@@ -104,10 +108,10 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 			usePrelude_$eq(prefSvc.getBooleanPreference(PRELUDE_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
-			includePath_$eq(Arrays.asList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
+			includePath_$eq(stringToPathList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME)));
 		}
 		if (prefSvc.isDefined(ADDITIONAL_INCLUDES_ATTR_NAME)) {
-			additionalIncludes_$eq(Arrays.asList(prefSvc.getStringPreference(ADDITIONAL_INCLUDES_ATTR_NAME).split(":"))); //$NON-NLS-1$
+			additionalIncludes_$eq(stringToPathList(prefSvc.getStringPreference(ADDITIONAL_INCLUDES_ATTR_NAME)));
 		}
 		if (prefSvc.isDefined(TYPE_CHECK_ATTR_NAME)) {
 			typecheck_$eq(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
@@ -122,7 +126,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 		//	oilOutputFile_$eq(new File(prefSvc.getStringPreference(OIL_OUT_ATTR_NAME)));
 		//}
 		if (prefSvc.isDefined(SITE_CLASSPATH_ATTR_NAME)) {
-			classPath_$eq(Arrays.asList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME).split(":"))); //$NON-NLS-1$
+			classPath_$eq(stringToPathList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME)));
 		}
 		if (prefSvc.isDefined(SHOW_JAVA_STACK_TRACE_ATTR_NAME)) {
 			showJavaStackTrace_$eq(prefSvc.getBooleanPreference(SHOW_JAVA_STACK_TRACE_ATTR_NAME));
@@ -194,5 +198,26 @@ public class OrcConfigSettings extends OrcCmdLineOptions$1 {
 			sb.append(sep);
 		}
 		return sb.substring(0, sb.length() - sep.length());
+	}
+	
+	public static List<String> stringToPathList(final String pathsString) {
+		if (pathsString.isEmpty()) {
+			return new ArrayList<String>(0);
+		}
+		StringTokenizer st = new StringTokenizer(pathsString, pathsString.substring(pathsString.length()-1, pathsString.length()));
+		ArrayList<String> pathList = new ArrayList<String>();
+		while (st.hasMoreElements()) {
+			pathList.add(st.nextToken());
+		}
+		return pathList;
+	}
+
+	public static String pathListToString(final List<String> pathList) {
+		StringBuffer pathListString = new StringBuffer(""); //$NON-NLS-1$
+		for (String path : pathList) {
+			pathListString.append(path);
+			pathListString.append(OrcConfigSettings.PATH_SEPARATOR);
+		}
+		return pathListString.toString();
 	}
 }
