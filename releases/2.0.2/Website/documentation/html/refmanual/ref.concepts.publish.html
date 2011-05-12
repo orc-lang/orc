@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.1.&nbsp;Publication</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="next" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.concepts.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.concepts.html">Chapter&nbsp;8.&nbsp;Concepts</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.concepts.silent.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.concepts.html">Chapter&nbsp;8.&nbsp;Concepts</a>&nbsp;</td><th align="center" width="60%">8.1.&nbsp;Publication</th><td align="right" width="20%"><a href="ref.concepts.silent.html">8.2.&nbsp;Silence</a>&nbsp;</td></tr></table></div><div class="section" title="8.1.&nbsp;Publication"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.publish"></a>8.1.&nbsp;Publication</h2></div></div></div><p>
+An Orc expression <a name="N42B3D" class="indexterm"></a><em class="firstterm">publishes</em> a value when the expression produces a value to be used in the context enclosing the expression.
+An extremely simple example of publication is a literal, for example the expression <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span></code>, which publishes a single integer <a name="N42B48" class="indexterm"></a>value.
+Orc expressions may publish zero or more values during their execution.
+The effect of publication depends on the context.
+For example, each publication of <em class="replaceable"><code>F</code></em> in the <a class="link" href="ref.combinators.sequential.html" title="3.2.&nbsp;Sequential Combinator">sequential combinator</a> expression <em class="replaceable"><code>F</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span></code>x<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code><em class="replaceable"><code>G</code></em>
+causes <em class="replaceable"><code>G</code></em> to be run with <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> bound to the published value.
+An expression that never publishes is said to be <a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">silent</a>.
+	</p><p>
+The following is the publication behavior of a few common forms of Orc expressions.
+		</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site calls</a> publish only zero or one value.</p></li><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function calls</a> may publish any number of values.</p></li><li class="listitem"><p>A <a class="link" href="ref.expressions.literal.html" title="2.1.&nbsp;Literal Value">literal expression</a> publishes exactly one value.</p></li><li class="listitem"><p><a class="link" href="ref.expressions.stop.html" title="2.3.&nbsp;stop"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code></a> never publishes.</p></li><li class="listitem"><p>A <a class="link" href="ref.expressions.variable.html" title="2.2.&nbsp;Variable">variable expression</a>, when executed, publishes its value, if bound.
+				If not, execution of the variable is <a class="link" href="ref.concepts.states.html#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">blocked</a> until it is bound.</p></li><li class="listitem"><p>Each of the Orc <a class="link" href="ref.combinators.html" title="Chapter&nbsp;3.&nbsp;Combinators">combinators</a> has a unique publication behavior.</p></li></ul></div><p>
+	</p><div class="section" title="8.1.1.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.publish.examples"></a>8.1.1.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.pub0_link" onclick="toggle(this, 'ref.concepts.publish.examples.pub0_content')">
+					&minus;
+				</a><span class="exampleCaption">Publish no values</span></div><div class="exampleBody" id="ref.concepts.publish.examples.pub0_content"><pre class="orc">
+(<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-comment">{-
+OUTPUT:
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.publish.examples.pub0_link'), 'ref.concepts.publish.examples.pub0_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.pub2_link" onclick="toggle(this, 'ref.concepts.publish.examples.pub2_content')">
+					&minus;
+				</a><span class="exampleCaption">Publish one value</span></div><div class="exampleBody" id="ref.concepts.publish.examples.pub2_content"><pre class="orc">
+<span class="hl-literal">1</span>
+<span class="hl-comment">{-
+OUTPUT:
+1
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.publish.examples.pub2_link'), 'ref.concepts.publish.examples.pub2_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.pub2seq_link" onclick="toggle(this, 'ref.concepts.publish.examples.pub2seq_content')">
+					&minus;
+				</a><span class="exampleCaption">Publish two values</span></div><div class="exampleBody" id="ref.concepts.publish.examples.pub2seq_content"><pre class="orc">
+(<span class="hl-literal">1</span> <span class="hl-combinator">|</span> <span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span> <span class="hl-operator">+</span> <span class="hl-literal">30</span>
+<span class="hl-comment">{-
+OUTPUT:PERMUTABLE
+31
+32
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.publish.examples.pub2seq_link'), 'ref.concepts.publish.examples.pub2seq_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.publish.examples.metronome_link" onclick="toggle(this, 'ref.concepts.publish.examples.metronome_content')">
+					&minus;
+				</a><span class="exampleCaption">Publish an unbounded number of values (metronome)</span></div><div class="exampleBody" id="ref.concepts.publish.examples.metronome_content"><pre class="orc">
+<span class="hl-keyword">def</span> <span class="hl-site">metronome</span>() <span class="hl-operator">=</span> <span class="hl-keyword">signal</span> <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">metronome</span>()
+
+<span class="hl-site">metronome</span>()
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.publish.examples.metronome_link'), 'ref.concepts.publish.examples.metronome_content');
+</script></div><div class="section" title="8.1.2.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.publish.links"></a>8.1.2.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.combinators.html" title="Chapter&nbsp;3.&nbsp;Combinators">Combinators</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">Site Call</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function Call</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.stop.html" title="2.3.&nbsp;stop"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">Silent</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple" class="olink">Orc expressions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.combinators" class="olink">Combinators</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.complex.nesting" class="olink">Nesting expressions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.simple.sites" class="olink">Sites</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

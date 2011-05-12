@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- refmanual.xml - DocBook source for the Orc reference manual
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<book xml:id="refmanual" version="5.0" xml:lang="en"
+	xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<title>
+	Orc Reference Manual v<xi:include href="../../VERSION" parse="text" />
+</title>
+
+<xi:include href="../metainfo.xml" />
+
+<xi:include href="ref.data.xml" />
+<xi:include href="ref.expressions.xml" />
+<xi:include href="ref.combinators.xml" />
+<xi:include href="ref.declarations.xml" />
+<xi:include href="ref.patterns.xml" />
+<xi:include href="ref.sites.xml" />
+<xi:include href="ref.time.xml" />
+<xi:include href="ref.concepts.xml" />
+<xi:include href="ref.types.xml" />
+<xi:include href="ref.syntax.xml" />
+<xi:include href="ref.stdlib.xml" />
+<xi:include href="ref.index.xml" />
+
+</book>

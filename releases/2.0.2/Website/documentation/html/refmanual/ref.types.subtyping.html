@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>9.3.&nbsp;Subtyping</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.types.html" title="Chapter&nbsp;9.&nbsp;Type System"><link rel="prev" href="ref.types.polymorphism.html" title="9.2.&nbsp;Parametric Polymorphism"><link rel="next" href="ref.types.typeinfo.html" title="9.4.&nbsp;Adding Type Information"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.types.polymorphism.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.types.html">Chapter&nbsp;9.&nbsp;Type System</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.types.typeinfo.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.types.polymorphism.html">9.2.&nbsp;Parametric Polymorphism</a>&nbsp;</td><th align="center" width="60%">9.3.&nbsp;Subtyping</th><td align="right" width="20%"><a href="ref.types.typeinfo.html">9.4.&nbsp;Adding Type Information</a>&nbsp;</td></tr></table></div><div class="section" title="9.3.&nbsp;Subtyping"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.types.subtyping"></a>9.3.&nbsp;Subtyping</h2></div></div></div><p>
+	A type <em class="replaceable"><code>S</code></em> is a <a name="N430A6" class="indexterm"></a><em class="firstterm">subtype</em> of a type <em class="replaceable"><code>T</code></em>, written <em class="replaceable"><code>S</code></em> <a name="N430B3" class="indexterm"></a>&le; <em class="replaceable"><code>T</code></em>,
+	if a value of type <em class="replaceable"><code>S</code></em> can be used in any context expecting a value of type <em class="replaceable"><code>T</code></em>.
+	</p><p>
+	A type <em class="replaceable"><code>U</code></em> is a <a name="N430C6" class="indexterm"></a><em class="firstterm">supertype</em> of a type <em class="replaceable"><code>T</code></em> if <em class="replaceable"><code>T</code></em> &le; <em class="replaceable"><code>U</code></em>.
+	</p><p>
+	Subtyping is reflexive: <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>S</code></em>. Subtyping is also
+	transitive: if <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em> and <em class="replaceable"><code>T</code></em> &le; <em class="replaceable"><code>U</code></em>,
+	then <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>U</code></em>.  
+	</p><p>
+	If an expression has type <em class="replaceable"><code>S</code></em>, and <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em>,
+	then that expression also has type <em class="replaceable"><code>T</code></em>. This is called <em class="firstterm">subsumption</em>.
+	</p><p>
+		Types in Orc form a bounded lattice. The lattice is ordered by the subtyping relation,
+		its maximal element is the special type <code class="code"><a name="N43104" class="indexterm"></a><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code>, and its minimal element is 
+		the special type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code>.
+  </p><div class="section" title="9.3.1.&nbsp;Top"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.top"></a>9.3.1.&nbsp;Top</h3></div></div></div><a name="N43110" class="indexterm"></a><p>
+			<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code> is the universal type. 
+			Every value has type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code>.
+			Every type is a subtype of <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code>.
+		</p></div><div class="section" title="9.3.2.&nbsp;Bot"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.Bot"></a>9.3.2.&nbsp;Bot</h3></div></div></div><a name="N43122" class="indexterm"></a><p>
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is the empty type. 
+		No value has type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code>. 
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is a subtype of every type.
+		An expression has type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> only if it is <a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">silent</a>. 
+		</p><p>
+		<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> has an interesting status in Orc. In other typed languages, if an expression
+		has type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code>, this usually indicates a guaranteed error, infinite loop, or other failure
+		to return a value. Since sequential programming rarely involves subexpressions that are guaranteed
+		never to return, <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is usually just a curiosity or a formal artifact of the type system,
+		and indeed many type systems do not have a <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> type at all.
+		</p><p> 
+		In Orc, however, <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is very useful, since it is frequently the case that Orc expressions 
+		are written to carry out ongoing concurrent activities but never <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a> any values, and the type system 
+		can use the type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> to indicate that no publications will ever be seen from such
+		expressions.
+		</p></div><div class="section" title="9.3.3.&nbsp;Join"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.join"></a>9.3.3.&nbsp;Join</h3></div></div></div><p>
+		  A <a name="N43157" class="indexterm"></a><em class="firstterm">common supertype</em> of two types <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is any type <em class="replaceable"><code>U</code></em> such that 
+		<em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>U</code></em> and <em class="replaceable"><code>T</code></em> &le; <em class="replaceable"><code>U</code></em>. 
+		The <a name="N43173" class="indexterm"></a><em class="firstterm">join</em> of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is the <span class="emphasis"><em>least</em></span> common 
+		supertype of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em>: it is a subtype of every common supertype of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em>.
+		</p><p>
+		  Some common cases:
+		  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		  The join of <em class="replaceable"><code>T</code></em> and <em class="replaceable"><code>T</code></em> is <em class="replaceable"><code>T</code></em>.
+		  </p></li><li class="listitem"><p>
+		  If <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em>, then the join of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is <em class="replaceable"><code>T</code></em>.
+		  </p></li><li class="listitem"><p>
+		  The join of <em class="replaceable"><code>T</code></em> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code> is <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code>.
+		  </p></li><li class="listitem"><p>
+		  The join of <em class="replaceable"><code>T</code></em> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is <em class="replaceable"><code>T</code></em>.
+		  </p></li></ul></div><p>
+		  The join of two unrelated types is usually <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code>.
+		</p></div><div class="section" title="9.3.4.&nbsp;Meet"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.meet"></a>9.3.4.&nbsp;Meet</h3></div></div></div><p>
+		  A <a name="N431D2" class="indexterm"></a><em class="firstterm">common subtype</em> of two types <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is any type <em class="replaceable"><code>U</code></em> such that 
+		<em class="replaceable"><code>U</code></em> &le; <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>U</code></em> &le; <em class="replaceable"><code>T</code></em>. 
+		The <a name="N431EE" class="indexterm"></a><em class="firstterm">meet</em> of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is the <span class="emphasis"><em>greatest</em></span> common 
+		subtype of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em>: it is a supertype of every common subtype of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em>.
+		</p><p>
+		  Some common cases:
+		  </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		  The meet of <em class="replaceable"><code>T</code></em> and <em class="replaceable"><code>T</code></em> is <em class="replaceable"><code>T</code></em>.
+		  </p></li><li class="listitem"><p>
+		  If <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em>, then the meet of <em class="replaceable"><code>S</code></em> and <em class="replaceable"><code>T</code></em> is <em class="replaceable"><code>S</code></em>.
+		  </p></li><li class="listitem"><p>
+		  The meet of <em class="replaceable"><code>T</code></em> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Top</span></code> is <em class="replaceable"><code>T</code></em>.
+		  </p></li><li class="listitem"><p>
+		  The meet of <em class="replaceable"><code>T</code></em> and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code> is <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code>.
+		  </p></li></ul></div><p>
+		  The meet of two unrelated types is usually <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code>.
+		</p></div><div class="section" title="9.3.5.&nbsp;Variance"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.variance"></a>9.3.5.&nbsp;Variance</h3></div></div></div><p>
+		When types contain other types as components, such as a tuple type or a polymorphic type, the
+		subtype relationship between these composite types depends on the subtype relationships between
+		their components. Suppose we have a composite type of the form <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>T</code></em>},
+		where <em class="replaceable"><code>T</code></em> is a type and <em class="replaceable"><code>C</code></em> is the context in
+		which it appears. The <a name="N43259" class="indexterm"></a><em class="firstterm">variance</em>
+	  of the context <em class="replaceable"><code>C</code></em> is defined in the standard way:
+		
+		</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		<em class="replaceable"><code>C</code></em> is <a name="N4326A" class="indexterm"></a><em class="firstterm">covariant</em> if <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em> implies that <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>S</code></em>} &le; <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>T</code></em>}
+		</p></li><li class="listitem"><p>
+		<em class="replaceable"><code>C</code></em> is <a name="N43289" class="indexterm"></a><em class="firstterm">contravariant</em> if <em class="replaceable"><code>S</code></em> &le; <em class="replaceable"><code>T</code></em> implies that <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>T</code></em>} &le; <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>S</code></em>}
+		</p></li><li class="listitem"><p>
+		<em class="replaceable"><code>C</code></em> is <a name="N432A8" class="indexterm"></a><em class="firstterm">invariant</em> if <em class="replaceable"><code>S</code></em> = <em class="replaceable"><code>T</code></em> implies that <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>S</code></em>} = <em class="replaceable"><code>C</code></em>{<em class="replaceable"><code>T</code></em>}.
+		</p></li></ul></div><p>
+		
+		</p><p>
+		<a class="link" href="ref.data.tuple.html#ref.data.tuple.type" title="1.6.4.&nbsp;Type">Tuple types</a>, <a class="link" href="ref.data.record.html#ref.data.record.type" title="1.7.5.&nbsp;Type">record types</a>, and <a class="link" href="ref.data.list.html#ref.data.list.type" title="1.5.4.&nbsp;Type">list types</a> are all covariant contexts. 
+		In a <a class="link" href="ref.data.closure.html#ref.data.closure.type" title="1.9.1.&nbsp;Type">function type</a>, the return type is a covariant context, but the argument types are contravariant contexts.
+		The type parameters of <a class="link" href="ref.data.mutable.html" title="1.10.&nbsp;Mutable State">mutable object</a> types are invariant contexts.
+		</p><p>
+		The variance of the type parameters in an <a class="link" href="ref.declarations.type.html#ref.declarations.type.alias" title="4.6.2.&nbsp;Type Alias">aliased type</a> or <a class="link" href="ref.data.datatype.html#ref.data.datatype.type" title="1.8.3.&nbsp;Type">datatype</a> is determined from the declaration itself, by observing the contexts in which the parameters appear. 
+		If a parameter appears only in covariant contexts, it is covariant. 
+		If it appears only in contravariant contexts, it is contravariant. 
+		If it appears in both contexts, it is invariant.
+		</p></div><div class="section" title="9.3.6.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.types.subtyping.links"></a>9.3.6.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.types.metatheory.html" title="9.1.&nbsp;Metatheory">Type System Metatheory</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

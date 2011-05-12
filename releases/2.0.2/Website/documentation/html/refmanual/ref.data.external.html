@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.11.&nbsp;External Values</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.data.html" title="Chapter&nbsp;1.&nbsp;Data Values"><link rel="prev" href="ref.data.mutable.html" title="1.10.&nbsp;Mutable State"><link rel="next" href="ref.expressions.html" title="Chapter&nbsp;2.&nbsp;Expressions"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.data.mutable.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.data.html">Chapter&nbsp;1.&nbsp;Data Values</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.expressions.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.data.mutable.html">1.10.&nbsp;Mutable State</a>&nbsp;</td><th align="center" width="60%">1.11.&nbsp;External Values</th><td align="right" width="20%"><a href="ref.expressions.html">Chapter&nbsp;2.&nbsp;Expressions</a>&nbsp;</td></tr></table></div><div class="section" title="1.11.&nbsp;External Values"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.external"></a>1.11.&nbsp;External Values</h2></div></div></div><p>Orc's value set is "open" &mdash; any value returned from a <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site call</a> can be used in an Orc execution.
+For example, Orc programs running on a Java virtual machine (JVM) can <a class="link" href="ref.sites.java.html" title="6.2.&nbsp;Java sites">interact with any Java object</a>.</p><div class="section" title="1.11.1.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.external.types"></a>1.11.1.&nbsp;Type</h3></div></div></div><p>
+    External values usually have types that cannot be represented using Orc's primitive types or structured types.
+    An <a class="link" href="ref.declarations.type.html#ref.declarations.type.import" title="4.6.3.&nbsp;Type Import"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">import</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code> declaration</a> may be used to import such a type into the Orc type system.
+  </p></div><div class="section" title="1.11.2.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.external.examples"></a>1.11.2.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.external.examples.javabitset_link" onclick="toggle(this, 'ref.data.external.examples.javabitset_content')">
+					&minus;
+				</a><span class="exampleCaption">Java BitSet</span></div><div class="exampleBody" id="ref.data.external.examples.javabitset_content"><pre class="orc">
+<span class="hl-comment">{- Using the Java class java.util.BitSet,
+   construct a new instance, and then
+   set bits 2 and 4 in the BitSet instance
+-}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">BitSet</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.util.BitSet"</span>
+
+<span class="hl-site">BitSet</span>() <span class="hl-combinator">&gt;</span><span class="hl-variable">b</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">set</span>(<span class="hl-literal">2</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">set</span>(<span class="hl-literal">4</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">b</span>.<span class="hl-site">toString</span>()
+
+<span class="hl-comment">{-
+OUTPUT:
+"{2, 4}"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.external.examples.javabitset_link'), 'ref.data.external.examples.javabitset_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.external.examples.javahashmap_link" onclick="toggle(this, 'ref.data.external.examples.javahashmap_content')">
+					&minus;
+				</a><span class="exampleCaption">Java HashMap</span></div><div class="exampleBody" id="ref.data.external.examples.javahashmap_content"><pre class="orc">
+<span class="hl-comment">{- Using the Java class java.util.HashMap, construct a new instance, 
+   and then put and get some entries
+-}</span>
+
+<span class="hl-keyword">import</span> <span class="hl-variable">class</span> <span class="hl-variable">HashMap</span> <span class="hl-operator">=</span> <span class="hl-literal">"java.util.HashMap"</span>
+
+<span class="hl-site">HashMap</span>[<span class="hl-variable">String</span>, <span class="hl-variable">String</span>]() <span class="hl-combinator">&gt;</span><span class="hl-variable">m</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">m</span>.<span class="hl-site">put</span>(<span class="hl-literal">"Mickey"</span>, <span class="hl-literal">"Minnie"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> 
+<span class="hl-variable">m</span>.<span class="hl-site">put</span>(<span class="hl-literal">"Donald"</span>, <span class="hl-literal">"Daisy"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">m</span>.<span class="hl-site">get</span>(<span class="hl-literal">"Mickey"</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+"Minnie"
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.external.examples.javahashmap_link'), 'ref.data.external.examples.javahashmap_content');
+</script></div><div class="section" title="1.11.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.external.links"></a>1.11.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.sites.java.html" title="6.2.&nbsp;Java sites">Java Sites</a></p></li><li class="listitem"><p><a class="link" href="ref.sites.web.html" title="6.3.&nbsp;Web Services">Web Services</a></p></li><li class="listitem"><p><a class="link" href="ref.sites.custom.html" title="6.4.&nbsp;Custom sites">Custom Sites</a></p></li><li class="listitem"><p><a class="link" href="ref.declarations.site.html#ref.declarations.site.type" title="4.4.3.&nbsp;Type">Typing of Sites</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

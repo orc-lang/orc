@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.3.&nbsp;Pruning combinator</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.0.2"><link rel="up" href="ug.style.html" title="Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions"><link rel="prev" href="ug.style.sequential.html" title="3.2.&nbsp;Sequential combinator"><link rel="next" href="ug.style.declarations.html" title="3.4.&nbsp;Declarations"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ug.style.sequential.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ug.style.html">Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ug.style.declarations.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ug.style.sequential.html">3.2.&nbsp;Sequential combinator</a>&nbsp;</td><th align="center" width="60%">3.3.&nbsp;Pruning combinator</th><td align="right" width="20%"><a href="ug.style.declarations.html">3.4.&nbsp;Declarations</a>&nbsp;</td></tr></table></div><div class="section" title="3.3.&nbsp;Pruning combinator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="style.pruning"></a>3.3.&nbsp;Pruning combinator</h2></div></div></div><p>
+When the expressions to be combined are small, write them on the same line:
+
+</p><pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> <span class="bold"><strong>G</strong></span>
+</pre><p>
+
+When multiple pruning combinators are used to bind multiple variables
+(especially when the scoped expression is long), start each line with a 
+combinator, aligned and indented, and continue with the expression.
+
+</p><pre class="programlisting">
+<span class="bold"><strong>long expression</strong></span> 
+  <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> <span class="bold"><strong>G</strong></span>
+  <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> <span class="bold"><strong>H</strong></span>
+</pre><p>
+
+</p><p>
+The pruning combinator is not often written in its explicit form
+in Orc programs. Instead, the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code> declaration is often more
+convenient, since it is semantically equivalent and mentions the variable
+<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> before its use in scope, rather than after.
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span class="bold"><strong>G</strong></span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span class="bold"><strong>H</strong></span>
+<span class="bold"><strong>long expression</strong></span> 
+</pre><p>
+
+</p><p>
+Additionally, when the variable is used in only one place, and the
+expression is small, it is often easier to use a nested expression.
+For example,
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span class="bold"><strong>G</strong></span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span class="bold"><strong>H</strong></span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">M</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span>)
+</pre><p>
+
+is equivalent to
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">M</span>(<span class="bold"><strong>G</strong></span>,<span class="bold"><strong>H</strong></span>)
+</pre><p>
+
+</p><p>
+Sometimes, we use the pruning combinator simply for its capability to terminate
+expressions and get a single publication; binding a variable is irrelevant. This
+is a special case of nested expressions. We use the identity site <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Let</span></code>
+to put the expression in the context of a function call.
+</p><p>
+For example,
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> <span class="bold"><strong>F</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>
+</pre><p>
+
+is equivalent to
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Let</span>(<span class="bold"><strong>F</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>)
+</pre><p>
+</p><p>
+The translation uses a pruning combinator, but we don't need to write the combinator, 
+name an irrelevant variable, or worry about precedence (since the expression is enclosed
+in parentheses as part of the call).
+</p></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

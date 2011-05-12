@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ug.additional.defclass.xml - DocBook source for an Orc user guide section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+<section xml:id="ug.additional.defclass" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xi="http://www.w3.org/2001/XInclude">
+<title>Defining Sites in Orc</title>
+
+<para>
+Orc has a special declaration, <code>def class</code>, which allows a site to be written in Orc itself. 
+This is a convenient mechanism for writing sites whose internal behavior is best expressed by an orchestration, which
+might be an awkward task in Java, Scala, or other similar languages.
+</para>
+
+<para>
+A <code>def class</code> resembles a <code>def</code> in its syntax, but not in its
+behavior. The site defined by <code>def class</code> is a factory which creates instances
+of the class. Each <code>def</code> within the body of the <code>def class</code> becomes
+a method of an instance. The scope expression of these declarations becomes the internal
+computation of the instance; it begins to run when the instance is created, and cannot
+be killed by the Orc program, exactly as if it were a computation of an external service.
+</para>
+
+<para>
+The following two examples demonstrate some of the behavior of <code>def class</code>.
+For a more comprehensive explanation of <code>def class</code> and its features, see the
+<olink targetdoc="ref.declarations.defclass" targetptr="ref.declarations.defclass">Reference Manual</olink>.
+</para>
+
+<section xml:id="ug.additional.defclass.stack">
+<title>Example: Stack</title>
+
+<para>
+The following code defines a site <code>Stack</code>, which creates stacks with <code>push</code> and
+<code>pop</code> methods:
+
+<programlisting language="orc-demo"><![CDATA[
+def class Stack() =
+  {- The stack is initially empty -}
+  val store = Ref([])
+
+  def push(x) = 
+    store? >xs> 
+    store := x:xs
+
+  {- Note that popping an empty stack simply halts, with no effect -}
+  def pop() = 
+    store? >h:t> 
+    store := t >> 
+    h
+
+  {- A stack instance has no ongoing computation -}
+  stop
+
+
+{- Test the stack -}
+val st = Stack()
+st.push(3) >> st.push(5) >> st.pop() >> st.pop()
+
+{-
+OUTPUT:
+3
+-}
+]]></programlisting>
+</para>
+
+</section>
+
+<section xml:id="ug.additional.defclass.multicast">
+<title>Example: Multicast</title>
+
+<para>
+Here is a more complex example, which creates a multicast.
+Whenever a value is available on the source channel,
+it is read, and broadcasted to all current listeners.
+Listeners may be added with the addListener method.
+
+<programlisting language="orc-demo"><![CDATA[
+def class Multicast(source) =
+  val listeners = Ref([])
+
+  def addListener(f) = 
+    listeners? >fs> 
+    listeners := f:fs
+
+  {- The ongoing computation of a multicast -}
+  repeat(source) >item> each(listeners?) >sink> sink(item)
+
+
+
+{- Test the multicast -}
+
+val c = Channel()
+val mcast = Multicast(c.get)
+val listenerA = Channel()
+val listenerB = Channel()
+
+{- At n seconds, broadcast n. Stop at 9 seconds. -} 
+  upto(10) >i> Rwait(1000*i) >> c.put(i) >> stop
+
+{- Listener A joins at 1.5 seconds, hearing 2..9 -}
+| Rwait(1500) >> mcast.addListener(listenerA.put) >> stop
+
+{- Listener B joins at 6.5 seconds, hearing 7..9 -}
+| Rwait(6500) >> mcast.addListener(listenerB.put) >> stop
+
+{- Publish everything that Listener A hears -}
+| repeat(listenerA.get) >a> ("A", a)
+
+{- Publish everything that Listener B hears -}
+| repeat(listenerB.get) >b> ("B", b)
+
+{- Shortly after 10 seconds, close down the channels -}
+| Rwait(10500) >> 
+    listenerA.close() >> 
+    listenerB.close() >> 
+    c.close() >>
+    stop
+
+
+{-
+OUTPUT:PERMUTABLE
+("A", 2)
+("A", 3)
+("A", 4)
+("A", 5)
+("A", 6)
+("A", 7)
+("B", 7)
+("A", 8)
+("B", 8)
+("A", 9)
+("B", 9)
+-}
+]]></programlisting>
+</para>
+
+</section>
+
+</section>

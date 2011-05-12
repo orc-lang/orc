@@ -1,0 +1,59 @@
+/* scavenged from templates-indigo/default.css */
+* {
+	margin: 0;
+	padding: 0;
+}
+a {
+	color: #F70;
+}
+a:hover {
+	color: #C60;
+}
+body {
+	color: #466;
+	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
+	margin: 0;
+	background-color: #fff;
+}
+input {
+	color: #555;
+}
+p,cite,code,ul {
+	margin-bottom: 10pt;
+}
+ul ul {
+	margin-bottom: 0;
+}
+h1,h2,h3 {
+	font-family: "Trebuchet MS",sans-serif;
+	color: #06C;
+	padding-top: 6px;
+}
+h1 {
+	margin-bottom: 4px;
+}
+small, .small {font: normal 10px Verdana,sans-serif;}
+
+h1 {
+	margin-top: 0;
+}
+.closed ul {
+	display: none;
+}
+.file a {
+	cursor: pointer;
+}
+/* I don't like the link highlighting */
+#menu a {
+	color: #466;
+	text-decoration: none;
+}
+#menu a.selected {
+	font-weight: bold;
+	background: none;
+	text-decoration: underline;
+}
+/* I don't like the red highlighting */
+.treeview .hover {
+	color: black;
+}
