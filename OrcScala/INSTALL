@@ -21,16 +21,16 @@ COMMAND LINE USERS
 You can run Orc programs directly from any OS's command prompt.
 
 To run <your script file>:
-  java -cp orc-2.0.1.jar:lib/\* orc.Main <your script file>
+  java -cp orc-2.0.2.jar:lib/\* orc.Main <your script file>
 
 To see command-line arguments, run:
-  java -cp orc-2.0.1.jar:lib/\* orc.Main -?
+  java -cp orc-2.0.2.jar:lib/\* orc.Main -?
 
 WINDOWS USERS
 -------------
 
 To associate .orc files with the Orc JAR, run SETUP.BAT from the directory
-where you put orc-2.0.1.jar.  If you move the orc-2.0.1.jar, you will need to
+where you put orc-2.0.2.jar.  If you move the orc-2.0.2.jar, you will need to
 rerun SETUP.BAT.  If desired, you can edit the association in Explorer's "File
 Types" dialog to add command-line arguments or change the icon.
 
@@ -38,7 +38,7 @@ ORC SITE DEVELOPERS
 -------------------
 
 The JAR can be used as a Java library with which you can develop your own
-Orc sites.  Simply place orc-2.0.1.jar and its dependencies on your project's
+Orc sites.  Simply place orc-2.0.2.jar and its dependencies on your project's
 classpath.
 
 Refer to the Javadoc at http://orc.csres.utexas.edu/javadoc/STABLE for
