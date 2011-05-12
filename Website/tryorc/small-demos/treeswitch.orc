@@ -3,8 +3,8 @@ A simple round-robbin load-balancer which starts multiple
 "compute" servers and routes input alternately to each.
 -}
 
-val in = Buffer()
-val out = Buffer()
+val in = Channel()
+val out = Channel()
 
 {- Trivial compute function -}
 def compute(x) = x
@@ -16,10 +16,10 @@ def net(1,in,out) =
 
 {- Inductive case: start n compute servers -}
 def net(n,in,out) =
-  val c = Buffer()
-  val c' = Buffer()
-  val d = Buffer()
-  val d' = Buffer()
+  val c = Channel()
+  val c' = Channel()
+  val d = Channel()
+  val d' = Channel()
   val (s,t) = (if (n%2 = 0) then (n/2,n/2) else ((n-1)/2, (n+1)/2))
 
   {- Copy input alternately to c and d -}
@@ -45,7 +45,7 @@ Test by feeding sequential numbers
 into the network starting at 0 and
 printing the output.
 -}
-def output()= out.get() >x> println(x) >> output()
+def output()= out.get() >x> Println(x) >> output()
 def input(i) = in.put(i) >> input(i+1)
 
   input(0)
