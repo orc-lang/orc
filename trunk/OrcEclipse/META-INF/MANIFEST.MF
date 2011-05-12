@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Orc Eclipse plug-in
 Bundle-SymbolicName: edu.utexas.cs.orc.orceclipse;singleton:=true
-Bundle-Version: 2.0.1.qualifier
+Bundle-Version: 2.0.2.qualifier
 Bundle-Activator: edu.utexas.cs.orc.orceclipse.Activator
 Bundle-Vendor: The University of Texas at Austin
 Require-Bundle: org.eclipse.ui;bundle-version="3.3.0",
@@ -36,6 +36,6 @@ Import-Package: com.ibm.icu.text,
  org.eclipse.ui.texteditor,
  org.eclipse.ui.wizards.newresource
 Bundle-ClassPath: .,
- lib/orc-2.0.1.jar,
+ lib/orc-2.0.2.jar,
  lib/scala-library.jar
 Export-Package: orc
