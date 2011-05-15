@@ -162,12 +162,12 @@ trait Orc extends OrcRuntime {
     // Specific to Groupcells
     def read(t: Token) = synchronized {
       state match {
+        case Bound(v) => t.publish(Some(v))
+        case Dead => t.publish(None)
         case Unbound(waitlist) => {
           t.blockOn(this)
           state = Unbound(t :: waitlist)
         }
-        case Bound(v) => t.publish(Some(v))
-        case Dead => t.publish(None)
       }
     }
 
@@ -463,6 +463,7 @@ trait Orc extends OrcRuntime {
           state = Live
           schedule(this)
         }
+        case Killed => {}
         case Suspending(Blocked(_: Region)) => {
           state = Suspending(Live)
           schedule(this)
@@ -471,7 +472,6 @@ trait Orc extends OrcRuntime {
           state = Suspended(Live)
         }
         case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
-        case Killed => {}
         case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state="+state) }
       }
     }
