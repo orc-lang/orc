@@ -89,7 +89,7 @@ trait CustomParserCombinators {
   implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
   implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
   implicit def CreateMaps5Parser[A,B,C,D,E](parser: Parser[A ~ B ~ C ~ D ~ E]): Maps5[A,B,C,D,E] = new Maps5(parser)
-  implicit def CreateMaps5Parser[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]): Maps6[A,B,C,D,E,F] = new Maps6(parser)
+  implicit def CreateMaps6Parser[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]): Maps6[A,B,C,D,E,F] = new Maps6(parser)
 
   ////////
   // Extended apply combinator -?->
