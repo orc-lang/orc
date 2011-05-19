@@ -74,7 +74,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
 		}
 
-		for (final AST currChild : JavaConversions.asIterable(ast.subtrees())) {
+		for (final AST currChild : JavaConversions.asJavaIterable(ast.subtrees())) {
 			visit(currChild);
 		}
 

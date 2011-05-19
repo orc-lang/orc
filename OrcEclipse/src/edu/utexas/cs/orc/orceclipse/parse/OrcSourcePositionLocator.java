@@ -63,7 +63,7 @@ public class OrcSourcePositionLocator implements ISourcePositionLocator {
 		if (startOffset < 0 || endOffset < 0) {
 			return null;
 		} else {
-			for (final AST child : JavaConversions.asList(((AST) ast).subtrees())) {
+			for (final AST child : JavaConversions.asJavaIterable(((AST) ast).subtrees())) {
 				if (child.pos() instanceof OffsetPosition) {
 					final int childOffset = ((OffsetPosition) child.pos()).offset();
 					if (childOffset >= startOffset && childOffset <= endOffset && (theWinner == null || childOffset <= ((OffsetPosition) ((Positional) theWinner).pos()).offset())) {

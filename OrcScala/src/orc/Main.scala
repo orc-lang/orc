@@ -34,9 +34,9 @@ import orc.ast.oil.xml.OrcXML
  * @author jthywiss
  */
 object Main {
+  class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
 
   def main(args: Array[String]) {
-    class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
     try {
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)

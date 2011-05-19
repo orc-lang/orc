@@ -214,7 +214,7 @@ public class OilSecurityValidator {
 	}
 
 	public void validate(final NamelessAST astNode) {
-		for (final AST node : JavaConversions.asIterable(astNode.subtrees())) {
+		for (final AST node : JavaConversions.asJavaIterable(astNode.subtrees())) {
 			final NamelessAST child = (NamelessAST) node;
 			if (child instanceof Constant) {
 				final Object value = ((Constant) child).value();
