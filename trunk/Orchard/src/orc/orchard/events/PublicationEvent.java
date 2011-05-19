@@ -42,7 +42,7 @@ public class PublicationEvent extends JobEvent {
 		public ListMarshalProxy(final scala.collection.Iterable scalaList) {
 			elements = new Object[scalaList.size()];
 			int i = 0;
-			for (final Object elem : JavaConversions.asIterable(scalaList)) {
+			for (final Object elem : JavaConversions.asJavaIterable(scalaList)) {
 				elements[i++] = toXmlMarshallableValue(elem);
 			}
 		}

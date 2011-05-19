@@ -166,7 +166,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 						// restore open slots
 						open += Channel.size() - writers.size();
 						// collect all values in a list
-						final Object out = JavaConversions.asIterable(Channel).toList();
+						final Object out = JavaConversions.collectionAsScalaIterable(Channel).toList();
 						Channel.clear();
 						// resume all writers
 						for (final Handle writer : writers) {

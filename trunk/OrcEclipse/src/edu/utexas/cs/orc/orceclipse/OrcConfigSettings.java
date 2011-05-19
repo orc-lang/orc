@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import orc.Main.OrcCmdLineOptions$1;
+import orc.Main.OrcCmdLineOptions;
 import orc.script.OrcBindings;
 
 import org.eclipse.core.resources.IProject;
@@ -43,7 +43,7 @@ import org.eclipse.imp.preferences.PreferencesService;
  * @see org.eclipse.debug.core.ILaunchConfiguration
  * @author jthywiss
  */
-public class OrcConfigSettings extends OrcCmdLineOptions$1 {
+public class OrcConfigSettings extends OrcCmdLineOptions {
 	public static final String PATH_SEPARATOR = "|"; //$NON-NLS-1$
 
 	public static final String LOG_LEVEL_ATTR_NAME = Activator.getInstance().getID() + ".LOG_LEVEL"; //$NON-NLS-1$

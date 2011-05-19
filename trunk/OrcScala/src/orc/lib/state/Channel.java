@@ -133,7 +133,7 @@ public class Channel extends EvalSite implements TypedSite {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					synchronized (ChannelInstance.this) {
-						final Object out = scala.collection.JavaConversions.asIterable(Channel).toList();
+						final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(Channel).toList();
 						Channel.clear();
 						if (closer != null) {
 							closer.publish(signal());

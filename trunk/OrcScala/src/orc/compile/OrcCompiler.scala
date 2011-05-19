@@ -318,7 +318,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     }
 
     // Try filename under the include path list
-    for (incPath <- scala.collection.JavaConversions.asIterable(options.includePath)) {
+    for (incPath <- scala.collection.JavaConversions.collectionAsScalaIterable(options.includePath)) {
       try {
         //FIXME: Security implications of including local files:
         // For Orchard's sake, OrcJava disallowed relative file names

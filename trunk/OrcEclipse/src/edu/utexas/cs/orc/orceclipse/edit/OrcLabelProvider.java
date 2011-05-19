@@ -242,7 +242,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 		s.append(d.name());
 		s.append('(');
-		s.append(listMkString(JavaConversions.asIterable(d.formals()), ", ")); //$NON-NLS-1$
+		s.append(listMkString(JavaConversions.asJavaIterable(d.formals()), ", ")); //$NON-NLS-1$
 		s.append(')');
 
 		return s.toString();
@@ -255,12 +255,12 @@ public class OrcLabelProvider implements ILabelProvider {
 
 		if (d.typeformals() != null && d.typeformals().isDefined()) {
 			s.append('[');
-			s.append(listMkString(JavaConversions.asIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
+			s.append(listMkString(JavaConversions.asJavaIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
 			s.append(']');
 		}
 
 		s.append('(');
-		s.append(listMkString(JavaConversions.asIterable(d.formals()), ", ")); //$NON-NLS-1$
+		s.append(listMkString(JavaConversions.asJavaIterable(d.formals()), ", ")); //$NON-NLS-1$
 		s.append(')');
 
 		return s.toString();
@@ -273,12 +273,12 @@ public class OrcLabelProvider implements ILabelProvider {
 
 		if (d.typeformals() != null && d.typeformals().isDefined()) {
 			s.append('[');
-			s.append(listMkString(JavaConversions.asIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
+			s.append(listMkString(JavaConversions.asJavaIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
 			s.append(']');
 		}
 
 		s.append('(');
-		s.append(listMkString(JavaConversions.asIterable(d.argtypes()), ", ")); //$NON-NLS-1$
+		s.append(listMkString(JavaConversions.asJavaIterable(d.argtypes()), ", ")); //$NON-NLS-1$
 		s.append(')');
 
 		s.append(" :: "); //$NON-NLS-1$
