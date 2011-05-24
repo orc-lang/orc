@@ -29,15 +29,15 @@ public class Dictionary extends EvalSite {
 
 		@Override
 		public Object evaluate(final Args args) throws TokenException {
-		  synchronized(DictionaryInstance.this) {
-			final String field = args.fieldName();
-			RefInstance out = map.get(field);
-			if (out == null) {
-				out = new RefInstance();
-				map.put(field, out);
+			synchronized (DictionaryInstance.this) {
+				final String field = args.fieldName();
+				RefInstance out = map.get(field);
+				if (out == null) {
+					out = new RefInstance();
+					map.put(field, out);
+				}
+				return out;
 			}
-			return out;
-		  }
 		}
 
 		@Override

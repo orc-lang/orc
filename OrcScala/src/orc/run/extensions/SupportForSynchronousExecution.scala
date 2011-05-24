@@ -1,12 +1,12 @@
 //
-// SupportForSynchronousExecution.scala -- Scala class/trait/object SupportForSynchronousExecution
+// SupportForSynchronousExecution.scala -- Scala trait SupportForSynchronousExecution
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,7 +17,7 @@ package orc.run.extensions
 import orc.OrcRuntime
 import orc.OrcEvent
 import orc.HaltedEvent
-import orc.OrcOptions
+import orc.OrcExecutionOptions
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.ExecutionException
 
@@ -33,7 +33,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
    * The continuation takes only values, not events.
    */
   @throws(classOf[ExecutionException])
-  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcOptions) {
+  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
       event match {
@@ -48,7 +48,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
 
   /** If no continuation is given, discard published values and run silently to completion. */
   @throws(classOf[ExecutionException])
-  def runSynchronous(node: Expression, options: OrcOptions) {
+  def runSynchronous(node: Expression, options: OrcExecutionOptions) {
     runSynchronous(node, { _: OrcEvent => }, options)
   }
  

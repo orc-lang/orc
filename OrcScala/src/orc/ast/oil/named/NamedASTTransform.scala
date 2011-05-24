@@ -1,12 +1,12 @@
 //
-// Transformation.scala -- Scala class/trait/object Transformation
+// Transformation.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -111,7 +111,6 @@ trait NamedASTTransform extends NamedASTFunction
         case left > x > right => recurse(left)  > x >  transform(right, x :: context, typecontext)
         case left < x < right => transform(left, x :: context, typecontext)  < x <  recurse(right)
         case left ow right => recurse(left) ow recurse(right)
-        case Atomic(body) => Atomic(recurse(body))
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
@@ -159,12 +158,13 @@ trait NamedASTTransform extends NamedASTFunction
         case TypeAbstraction(typeformals, t) => {
           TypeAbstraction(typeformals, transform(t, typeformals ::: typecontext))
         }
-        case VariantType(variants) => {
+        case VariantType(self, typeformals, variants) => {
+          val newTypeContext = self :: typeformals ::: typecontext
           val newVariants =
             for ((name, variant) <- variants) yield {
-              (name, variant map { _ map recurse })
+              (name, variant map { transform(_, newTypeContext) })
             }
-          VariantType(newVariants)
+          VariantType(self, typeformals, newVariants)
         }
       }
     }
@@ -190,10 +190,4 @@ trait NamedASTTransform extends NamedASTFunction
     }
   }
 
-
-  
-
-     
-
 }
-

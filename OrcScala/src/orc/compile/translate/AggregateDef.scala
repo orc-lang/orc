@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -47,31 +47,32 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: DefDeclaration): AggregateDef =
     defn -> {
-      case Def(_, List(formals), maybeReturnType, body) => {
+      case Def(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
-        val newclause = defn ->> Clause(newformals, body)
+        val newclause = defn ->> Clause(newformals, maybeGuard, body)
+        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn)) 
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+        AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
       }
-      case DefClass(name, List(formals), maybeReturnType, body) => {
-        this + Def(name, List(formals), maybeReturnType, new DefClassBody(body))
+      case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
+        this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
       }
-      case DefSig(_, typeformals2, argtypes2, maybeReturnType) => {
-        val argtypes3 = argtypes2 head // List[List[Type]] has only one entry
-        val newTypeFormals = unifyList(typeformals, Some(typeformals2), reportProblem(RedundantTypeParameters() at defn))
-        val newArgTypes = unifyList(argtypes, Some(argtypes3), reportProblem(RedundantArgumentType() at defn))
+      case DefSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
+        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
+        val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
       }
     }
 
   def +(lambda: Lambda): AggregateDef = {
-    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals.head)
-    val newclause = lambda ->> Clause(newformals, lambda.body)
+    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals)
+    val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
+    val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    AggregateDef(clauses ::: List(newclause), typeformals, newArgTypes, newReturnType)
+    AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
   }
 
   def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
@@ -92,7 +93,7 @@ case class AggregateDef(clauses: List[Clause],
     var existsNotClass = false
     for (aclause <- clauses) {
       aclause match {
-        case Clause(_, DefClassBody(_)) =>
+        case Clause(_, _, DefClassBody(_)) =>
           if (existsNotClass) { reportProblem(ClassDefInNonclassContext() at aclause) }
           else existsClass = true
         case _ =>

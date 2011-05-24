@@ -16,7 +16,7 @@ package orc.values.sites.compatibility;
 import java.util.Map;
 import java.util.TreeMap;
 
-import orc.TokenAPI;
+import orc.Handle;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 
@@ -32,7 +32,7 @@ import orc.error.runtime.UncallableValueException;
  * 
  * @author dkitchin
  */
-public abstract class DotSite extends SiteAdaptor  {
+public abstract class DotSite extends SiteAdaptor {
 
 	Map<String, Object> methodMap;
 
@@ -42,7 +42,7 @@ public abstract class DotSite extends SiteAdaptor  {
 	}
 
 	@Override
-	public void callSite(final Args args, final TokenAPI t) throws TokenException {
+	public void callSite(final Args args, final Handle t) throws TokenException {
 
 		String f;
 
@@ -74,7 +74,7 @@ public abstract class DotSite extends SiteAdaptor  {
 		methodMap.put(f, s);
 	}
 
-	protected void defaultTo(final Args args, final TokenAPI token) throws TokenException {
+	protected void defaultTo(final Args args, final Handle token) throws TokenException {
 		throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
 	}
 

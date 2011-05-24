@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,22 +12,34 @@
 //
 package orc.lib.builtin
 
-import orc.TokenAPI
-import orc.ast.oil.nameless.{Constant, Call}
-import orc.error.runtime.{RuntimeSupportException, ArityMismatchException}
-import orc.run.extensions.SupportForClasses
-import orc.values._
-import orc.values.sites._
+import orc.Handle
+import orc.error.runtime.ArityMismatchException
+import orc.error.compiletime.typing.ArgumentTypecheckingException
+import orc.error.compiletime.typing.ExpectedType
+import orc.values.sites.TotalSite1
+import orc.values.sites.TypedSite
+import orc.values.sites.UntypedSite
+import orc.values.Format
+import orc.types.UnaryCallableType
+import orc.types.FunctionType
+import orc.types.Type
+import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
-object MakeSite extends TotalSite with UntypedSite {
+object MakeSite extends TotalSite1 with TypedSite {
   override def name = "MakeSite"
-  def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(closure) => new RunLikeSite(closure)
-      case _ => throw new ArityMismatchException(1, args.size)
+  def eval(arg: AnyRef) = new RunLikeSite(arg)
+  
+  def orcType() = new UnaryCallableType {
+     def call(argType: Type): Type = {
+       argType match {
+         case f : FunctionType => f
+         case g => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
+       }
+     }
   }
+  
 }
 
 // Standalone class execution
@@ -36,12 +48,8 @@ class RunLikeSite(closure: AnyRef) extends UntypedSite {
   
   override def name = "class " + Format.formatValue(closure)
    
-  def call(args: List[AnyRef], caller: TokenAPI) {
-    val node = Call(Constant(closure), args map Constant, Some(Nil))
-    caller.runtime match {
-      case r: SupportForClasses => r.runEncapsulated(node, caller.asInstanceOf[r.Token])
-      case _ => caller !! new RuntimeSupportException("encapsulated execution")
-    }
+  def call(args: List[AnyRef], caller: Handle) {
+    caller.notifyOrc(InstanceEvent(closure, args, caller))
   }
   
 }

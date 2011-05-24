@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,7 +22,7 @@ import orc.compile.translate.PrimitiveForms._
 import scala.collection.immutable._
 import orc.error.compiletime._
 
-case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST {
+case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: Expression) extends orc.ast.AST {
 	
   val arity = formals.size
 	
@@ -43,21 +43,31 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
              ): named.Expression = {		
 
     import translator._
+
+    var targetConversion: Conversion = id
+    def extendConversion(f: Conversion) {
+      targetConversion = targetConversion andThen f
+    }
     
-    /* Ensure that patterns are linear even across multiple arguments of a clause */
-    var varNames: Set[String] = Set.empty
-    def mentioned(name: String) {
-      if (varNames contains name) {
-        reportProblem(NonlinearPatternException(name) at this)
-      }
-      else {
-        varNames = varNames + name
+    val targetContext: scala.collection.mutable.Map[String, named.Argument] = new scala.collection.mutable.HashMap()
+    def extendContext(dcontext: Map[String, named.Argument]) {
+      for ((name, y) <- dcontext) {
+        /* Ensure that patterns are linear even across multiple arguments of a clause */
+        if (targetContext contains name) {
+          reportProblem(NonlinearPatternException(name) at this)
+        }
+        else {
+          targetContext += { (name, y) }
+        }
       }
     }
     
-    
-    var targetConversion: Conversion = id
-    var targetContext: Map[String, named.Argument] = HashMap.empty
+    /* Convert this expression with respect to the current targetContext,
+     * using the current targetConversion. 
+     */
+    def convertInContext(e: Expression): named.Expression = {
+      targetConversion( translator.convert(e)(context ++ targetContext, typecontext) )  
+    }
 
     val (strictPairs, nonstrictPairs) = { 
       val zipped: List[(Pattern, named.BoundVar)] = formals zip args 
@@ -65,53 +75,83 @@ case class Clause(formals: List[Pattern], body: Expression) extends orc.ast.AST 
     }
 
     for ((p,x) <- nonstrictPairs) {
-      val (source, dcontext, target) = convertPattern(p, x)
-      targetConversion = targetConversion andThen target
-      targetContext = targetContext ++ dcontext
-      for (name <- dcontext.keys) { mentioned(name) }
+      val (_, dcontext, target) = convertPattern(p, x)
+      extendConversion(target)
+      extendContext(dcontext)
     }
 
     strictPairs match {
       /* 
        * There are no strict patterns. 
-       * There is no possibility of a failed match, so we just ignore the fallthrough case.
        */
       case Nil => {
-        // Make sure the remaining cases are not redundant.
-        fallthrough match {
-          case named.Stop() => {  }
-          case _ => { reportProblem(RedundantMatch() at fallthrough) }
+        maybeGuard match {
+          case Some(guard) => {
+            // If there are no strict patterns, then we just branch on the guard.
+            val newGuard = guard -> convertInContext
+            extendConversion( { makeConditional(newGuard, _, fallthrough) } )
+          }
+          case None => { 
+            /*
+             * If there are no strict patterns and there is no guard,
+             * then the clause is unconditional. If there are any
+             * subsequent clauses, they are redundant.
+             */
+            fallthrough match {
+              case named.Stop() => {  }
+              case _ => { reportProblem(RedundantMatch() at fallthrough) }
+            }
+          }
         }
       }
+        
       /* 
-       * There is exactly one strict pattern.
+       * There is at least one strict pattern.
        */
-      case (strictPattern, strictArg) :: Nil => {
+      case _ => {
+        
         val x = new named.BoundVar()
-        val (source, dcontext, target) = convertPattern(strictPattern, x)
-        for (name <- dcontext.keys) { mentioned(name) }
-        val src = source(strictArg)
-        targetContext = targetContext ++ dcontext
-        targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }                  
+        
+        val (newSource, dcontext, target) = 
+          strictPairs match {
+            case (strictPattern, strictArg)::Nil => {
+              val (source, dcontext, target) = convertPattern(strictPattern, x)
+              val newSource = source(strictArg)
+              (newSource, dcontext, target) 
+            }
+            /* If there is more than one strict pattern,
+             * we treat it as a single tuple pattern containing those patterns.
+             */
+            case _ => {
+              val (strictPatterns, strictArgs) = strictPairs.unzip
+              val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x)
+              val newSource = source(makeTuple(strictArgs))
+              (newSource, dcontext, target)
+            }
+          }
+        
+        extendContext(dcontext)
+        extendConversion(target)
+        
+        val guardedSource = 
+          maybeGuard match {
+            case Some(guard) => {
+              val g = new named.BoundVar()
+              val b = new named.BoundVar()
+              val newGuard = convertInContext(guard).subst(g,x)
+              newSource  > g >  ( callIft(b)  < b <  newGuard )  >>  g
+            }
+            case None => newSource
+          }
+        
+        extendConversion({ makeMatch(guardedSource, x, _, fallthrough) })
       }
-      /*
-       * There are multiple strict patterns.
-       */
-      case _ => { 
-        val (strictPatterns, strictArgs) = strictPairs.unzip
-        val x = new named.BoundVar()
-        val (source, dcontext, target) = convertPattern(TuplePattern(strictPatterns), x)
-        for (name <- dcontext.keys) { mentioned(name) }
-        val src = source(makeTuple(strictArgs))
-        targetContext = targetContext ++ dcontext
-        targetConversion = targetConversion andThen target andThen { makeMatch(src, x, _, fallthrough) }
-      }
-    }  
-
+    }
+        
     /* Finally, construct the new expression */
-    val newbody = translator.convert(body)(context ++ targetContext, typecontext)
-    this ->> targetConversion(newbody)
+    this ->> convertInContext(body)
   }
+  
 
 }
 

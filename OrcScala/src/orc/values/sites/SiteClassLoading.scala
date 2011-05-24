@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 26, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -78,7 +78,12 @@ object SiteClassLoading {
   private def path2URL(path: String): URL = {
     // The same logic as the AppClassLoader uses to parse system.class.path
     var canFile = new File(if (path.length == 0) "." else path)
-    try { canFile = canFile.getCanonicalFile } catch { case _ => { } }
+    try {
+      canFile = canFile.getCanonicalFile
+    } catch {
+      case e: InterruptedException => throw e
+      case e: Exception => { }
+    }
     canFile.toURI.toURL
   }
 

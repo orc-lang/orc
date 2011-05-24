@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,8 +14,6 @@
 //
 
 package orc.values
-
-import orc.lib.builtin.DataSite
 
 /**
  * An Orc-specific value, such as: a closure, a tagged value 
@@ -38,6 +36,9 @@ trait OrcValue extends AnyRef {
   def toOrcSyntax(): String = super.toString() 
   override def toString() = toOrcSyntax()  
   
+}
+
+object OrcValue {
   
   /**
    * Condense a list of values, using the classic Let site behavior.
@@ -51,6 +52,7 @@ trait OrcValue extends AnyRef {
       case _ => OrcTuple(vs)
     }
   }
+  
 }
 
 
@@ -65,7 +67,9 @@ case class Field(field: String) extends OrcValue {
   override def toOrcSyntax() = "." + field
 }
 
-case class TaggedValue(tag: DataSite, values: List[AnyRef]) extends OrcValue {
-  override def toOrcSyntax = tag.toOrcSyntax() + "(" + Format.formatSequence(values) + ")"
+class Tag(val name: String)
+
+case class TaggedValue(tag: Tag, values: List[AnyRef]) extends OrcValue {
+  override def toOrcSyntax = tag.name + "(" + Format.formatSequence(values) + ")"
 }
 

@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 30, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@
 
 package orc.values.sites
 
+import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
 
 
@@ -25,9 +26,15 @@ import orc.compile.Logger
  * @author jthywiss
  */
 object JavaSiteForm extends SiteForm {
-  @throws(classOf[ClassNotFoundException])
+  @throws(classOf[SiteResolutionException])
   def resolve(name: String) = {
     Logger.finer("Resolving Java class "+name)
-    new JavaClassProxy(loadClass(name))
+    try {
+      new JavaClassProxy(loadClass(name))
+    } catch {
+      case e: InterruptedException => throw e
+      case e: Exception =>
+        throw new SiteResolutionException(name, e)
+    }
   }
 }

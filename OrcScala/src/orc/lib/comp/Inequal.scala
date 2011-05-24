@@ -1,12 +1,12 @@
 //
-// NotEq.scala -- Scala class/trait/object NotEq
+// NotEq.scala -- Scala object Inequal
 // Project OrcScala
 //
 // $Id$
 //
 // Created by jthywiss on Jun 9, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,7 +28,7 @@ object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
   def evaluate(args: List[AnyRef]) =
     args match {
-      case List(a,b) => new java.lang.Boolean(!(a == b))
+      case List(a, b) => new java.lang.Boolean(!(a == b))
       case _ => throw new ArityMismatchException(2, args.size)
-  }
+    }
 }

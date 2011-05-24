@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -19,3 +19,6 @@ include "prelude/list.inc"
 include "prelude/text.inc"
 include "prelude/util.inc"
 include "prelude/reflect.inc"
+include "prelude/web.inc"
+include "prelude/xml.inc"
+

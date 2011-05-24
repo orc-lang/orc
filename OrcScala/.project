@@ -16,7 +16,7 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Orca build.xml version [Builder].launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/OrcScala build.xml version [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
@@ -26,17 +26,17 @@
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Orca build.xml jar [Builder].launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/OrcScala build.xml jar [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.ui.externaltools.ExternalToolBuilder</name>
-			<triggers>full,incremental,</triggers>
+			<triggers>clean,</triggers>
 			<arguments>
 				<dictionary>
 					<key>LaunchConfigHandle</key>
-					<value>&lt;project&gt;/.externalToolBuilders/Orca build.xml clean [Builder].launch</value>
+					<value>&lt;project&gt;/.externalToolBuilders/OrcScala build.xml clean [Builder].launch</value>
 				</dictionary>
 			</arguments>
 		</buildCommand>

@@ -47,7 +47,7 @@ public final class Intervals<T extends Comparable> implements Iterable<Interval<
 	 * This is most efficient when the interval goes at the front of the set.
 	 */
 	public Intervals<T> union(final Interval<T> interval_) {
-	    Interval<T> interval = interval_;
+		Interval<T> interval = interval_;
 		DTRCons headOut, tailOut;
 		headOut = tailOut = new DTRCons(null, null);
 		DTRCons it;

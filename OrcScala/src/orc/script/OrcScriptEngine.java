@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 25, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,10 +15,10 @@
 
 package orc.script;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.PrintWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,16 +31,19 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
+import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.compile.StandardOrcCompiler;
-import orc.run.StandardOrcRuntime;
 import orc.error.OrcException;
+import orc.lib.str.PrintEvent;
+import orc.run.OrcDesktopEventAction;
+import orc.run.StandardOrcRuntime;
 
 /**
  * @author jthywiss
  */
 public class OrcScriptEngine extends AbstractScriptEngine implements Compilable {
-
+  
 	private OrcScriptEngineFactory factory;
 	private StandardOrcCompiler compiler;
 	private StandardOrcRuntime executor;
@@ -83,19 +86,10 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		@Override
 		public Object eval(final ScriptContext ctx) throws ScriptException {
 			final List<Object> pubs = new ArrayList<Object>();
-			final OrcEventAction addPubToList = new OrcEventAction() {
+			final OrcEventAction addPubToList = new OrcDesktopEventAction() {
                 @Override
 				public void published(Object value) { pubs.add(value); }
-                @Override
-				public void printed(String output) {
-					try {
-						ctx.getWriter().write(output);
-						ctx.getWriter().flush();
-					} catch (IOException e) {
-						//Can't happen, according to API spec
-						throw new AssertionError(e);
-					}
-				}
+                
 				@Override
 				public void caught(Throwable e) {
 					//TODO: Consider saving the exception and throwing it out of this eval() invocation.  Can't throw here, because we're in engine when this OrcEventAction is called.
@@ -113,6 +107,23 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 				}
 				@Override
 				public void halted() { /* Do nothing */ }
+				
+				@Override
+                public void other(OrcEvent event) throws Exception {
+                  if (event instanceof PrintEvent) {
+				    try {
+				        PrintEvent pe = (PrintEvent)event;
+				        ctx.getWriter().write(pe.text());
+                        ctx.getWriter().flush();
+                    } catch (IOException e) {
+                        //Can't happen, according to API spec
+                        throw new AssertionError(e);
+                    }
+                  }
+                  else {
+                    super.other(event);
+                  }
+                }
 			};
 			run(ctx, addPubToList);
 			return pubs;
@@ -182,7 +193,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	public CompiledScript compile(final String script) throws ScriptException {
 		return compile(new StringReader(script));
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see javax.script.Compilable#compile(java.io.Reader)
 	 */
@@ -200,8 +211,6 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 		} catch (final ScriptException e) {
 			throw e;
         } catch (final IOException e) {
-          throw new ScriptException(e);
-        } catch (final ClassNotFoundException e) {
           throw new ScriptException(e);
 		}
 	}
@@ -294,5 +303,14 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			return new OrcBindings(b);
 		}
 	}
+
+	/** 
+	 * Pass an AST directly, skipping compilation.
+	 * Used when loading OIL rather than compiling from source. 
+	 */
+	public OrcCompiledScript loadDirectly(final orc.ast.oil.nameless.Expression oilAstRoot) {
+      return new OrcCompiledScript(oilAstRoot);
+    }
+
 
 }

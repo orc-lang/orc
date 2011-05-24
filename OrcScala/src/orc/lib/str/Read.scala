@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jun 9, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,7 +15,7 @@
 package orc.lib.str
 
 import orc.values.sites.TotalSite
-import orc.values.sites.UntypedSite
+import orc.values.sites.TypedSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.compile.parse.OrcLiteralParser
@@ -25,8 +25,10 @@ import orc.ast.ext.Constant
 import orc.ast.ext.ListExpr
 import orc.ast.ext.TupleExpr
 import orc.values.OrcTuple
+import orc.types._
 
-object Read extends TotalSite with UntypedSite {
+
+object Read extends TotalSite with TypedSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
     val parsedValue = args match {
       case List(s: String) => {
@@ -46,4 +48,7 @@ object Read extends TotalSite with UntypedSite {
     case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
     case mystery => throw new ParsingException("Don't know how to convert a "+(if (mystery != null) mystery.getClass().toString() else "null")+" to an Orc value", null)
   }
+  
+  def orcType(): Type = SimpleFunctionType(StringType, Top)
+
 }

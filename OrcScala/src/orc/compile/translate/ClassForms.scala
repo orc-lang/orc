@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 5, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -50,22 +50,13 @@ object ClassForms {
     if (dNames.isEmpty) {
       throw (DeflessClass() at body)
     }
-    val recordCall: ext.Call = new ext.Call(new ext.Constant(builtin.RecordConstructor), List(ext.Args(None, makeRecordArgs(dNames))))
-    ext.Parallel(ext.Sequential(body, None, ext.Stop()), recordCall)
-  }
-
-  /**
-   * Builds a list of Tuples (def-name,site-call) for every 
-   * definition name in the input list.
-   */
-  def makeRecordArgs(defNames: List[String]): List[ext.Expression] = {
-    var args: List[ext.Expression] = Nil
-    for (d <- defNames) {
-      val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
-      val tuple = ext.TupleExpr(List(new ext.Constant(d), call))
-      args = args ::: List(tuple)
-    }
-    args
+    val members =
+      for (d <- dNames) yield {
+        val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
+        (d, call)
+      }
+    val classRecord = new ext.RecordExpr(members.toList)
+    ext.Parallel(ext.Sequential(body, None, ext.Stop()), classRecord)
   }
 
 }

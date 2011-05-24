@@ -1,12 +1,12 @@
 //
-// PrettyPrint.scala -- Scala class/trait/object PrettyPrint
+// PrettyPrint.scala -- Scala class PrettyPrint
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jun 7, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -70,7 +70,7 @@ class PrettyPrint {
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({_ + _}) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {  
-        val name = f.optionalName.getOrElse(lookup(f))
+        val name = f.optionalVariableName.getOrElse(lookup(f))
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) + 
         (returntype match {
           case Some(t) => " :: " + reduce(t)
@@ -83,9 +83,10 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case Constant(v) => Format.formatValue(v)
-      case (x: BoundVar) => x.optionalName.getOrElse(lookup(x)) 
+      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) 
       case UnboundVar(s) => "?" + s  
-      case u: BoundTypevar => u.optionalName.getOrElse(lookup(u))
+      case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
+      case UnboundTypevar(s) => "?" + s
       case Top() => "Top"
       case Bot() => "Bot"
       case FunctionType(typeformals, argtypes, returntype) => {
@@ -94,17 +95,17 @@ class PrettyPrint {
       case TupleType(elements) => paren(elements)
       case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
       case AssertedType(assertedType) => reduce(assertedType) + "!"
-      case TypeAbstraction(typeformals, t) => brack(typeformals) + "{" + reduce(t) + "}"
+      case TypeAbstraction(typeformals, t) => brack(typeformals) + "(" + reduce(t) + ")"
       case ImportedType(classname) => classname
       case ClassType(classname) => classname
-      case VariantType(variants) => {
-        (for ((name, variant) <- variants) yield {
-          name + (variant map {t: Option[Type] => (t map reduce).getOrElse("_")}).mkString(",")
-        }).mkString(" | ")
+      case VariantType(_, typeformals, variants) => {
+        val variantSeq = 
+          for ((name, variant) <- variants) yield {
+            name + "(" + (variant map reduce).mkString(",") + ")"
+          }
+        brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
-      case UnboundTypevar(s) => "?" + s
       case _ => "???"
     }
 
 }
-  

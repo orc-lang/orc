@@ -15,19 +15,17 @@ package orc.lib.math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.LinkedList;
-import java.util.List;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Types;
 
-@SuppressWarnings({ "boxing", "synthetic-access" })
-public class Mod extends EvalSite {
+public class Mod extends EvalSite implements TypedSite {
+	@SuppressWarnings("synthetic-access")
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
@@ -43,32 +41,32 @@ public class Mod extends EvalSite {
 
 		@Override
 		public Number apply(final int a, final int b) {
-			return a % b;
+			return Integer.valueOf(a % b);
 		}
 
 		@Override
 		public Number apply(final long a, final long b) {
-			return a % b;
+			return Long.valueOf(a % b);
 		}
 
 		@Override
 		public Number apply(final byte a, final byte b) {
-			return a % b;
+			return Integer.valueOf(a % b);
 		}
 
 		@Override
 		public Number apply(final short a, final short b) {
-			return a % b;
+			return Integer.valueOf(a % b);
 		}
 
 		@Override
 		public Number apply(final double a, final double b) {
-			return a % b;
+			return Double.valueOf(a % b);
 		}
 
 		@Override
 		public Number apply(final float a, final float b) {
-			return a % b;
+			return Float.valueOf(a % b);
 		}
 	}
 
@@ -78,12 +76,7 @@ public class Mod extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		final List<Type> alts = new LinkedList<Type>();
-
-		alts.add(new ArrowType(Type.INTEGER, Type.INTEGER, Type.INTEGER));
-		alts.add(new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER));
-
-		return new MultiType(alts);
+	public Type orcType() {
+		return Types.overload(Types.function(Types.integer(), Types.integer(), Types.integer()), Types.function(Types.number(), Types.number(), Types.number()));
 	}
 }

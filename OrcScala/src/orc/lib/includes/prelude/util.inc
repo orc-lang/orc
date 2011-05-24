@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -16,47 +16,39 @@ Miscellaneous utility functions.
 --}
 
 {--
-@site random() :: Integer
-Return a random Integer value
-chosen from the range of all possible 32-bit Integer values.
+@site Random() :: Integer
+Return a random <link linkend="ref.data.numeric">integer</link>
+chosen from the range of all possible 32-bit integers.
 
-@site random(Integer) :: Integer
-Return a pseudorandom, uniformly distributed Integer value
+@site Random(Integer) :: Integer
+Return a pseudorandom, uniformly distributed <link linkend="ref.data.numeric">integer</link>
 between 0 (inclusive) and the specified value (exclusive).
-If the argument is 0, halt.
+If the argument is 0, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site random = "orc.lib.util.Random"
+import site Random = "orc.lib.util.Random"
 
 {--
-@site urandom() :: Number
-Returns a pseudorandom, uniformly distributed Double value
-between 0 and 1, inclusive.
+@site URandom() :: Number
+Return a pseudorandom, uniformly distributed <link linkend="ref.data.numeric">number</link>
+between 0.0 (inclusive) and 1.0 (exclusive).
 --}
-site urandom = "orc.lib.util.URandom"
+import site URandom = "orc.lib.util.URandom"
 
 {--
 @site UUID() :: String
-Return a random (type 4) UUID represented as a string.
+Return a random (type 4) UUID represented as a <link linkend="ref.data.string">string</link>.
 --}
-site UUID = "orc.lib.util.UUID"
-
-{--
-@site Thread(Top) :: Bot
-Given a site, return a new site which calls the original site
-in a separate thread.  This is necessary when calling
-a Java site which does not cooperate with Orc's scheduler
-and may block for an unpredictable amount of time.
-
-A limited number of threads are reserved in a pool for use
-by this site, so there is a limit to the number of blocking,
-uncooperative sites that can be called simultaneously.
---}
---FIXME:site Thread = "orc.lib.util.ThreadSite"
+import site UUID = "orc.lib.util.UUID"
 
 {--
 @site Prompt(String) :: String
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
 Prompt the user for some input. The user may cancel the prompt,
-in which case the site fails silently. Otherwise their response
+in which case the site fails <link linkend="ref.concepts.silent">silently</link>. Otherwise their response
 is returned as soon as it is received.
 
 Example:
@@ -67,17 +59,17 @@ Prompt("What is your name?")]]></programlisting>
 The user response is always taken to be a string. Thus, integer 
 3 as a response will be treated as "3". To convert the response 
 to its appropriate data type, use the library function
-<code>read</code>:
+<link linkend="ref.stdlib.text.Read"><code>Read</code></link>:
 
 <programlisting language="orc-demo"><![CDATA[
 -- Prompts the user to enter an integer, then parses the response.
-Prompt("Enter an integer:") >r> read(r)]]></programlisting>
+Prompt("Enter an integer:") >r> Read(r)]]></programlisting>
 --}
-site Prompt = "orc.lib.util.Prompt"
+import site Prompt = "orc.lib.util.Prompt"
 
 {--
 @def signals(Integer) :: Signal
-Publish the given number of signals, simultaneously.
+<link linkend="ref.concepts.publish">Publish</link> the given number of <link linkend="ref.data.signal">signals</link>, simultaneously.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -91,7 +83,7 @@ def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
 
 {--
 @def for(Integer, Integer) :: Integer
-Publish all values in the given half-open range, simultaneously.
+<link linkend="ref.concepts.publish">Publish</link> all values in the given half-open range, simultaneously.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
@@ -107,7 +99,7 @@ def for(low, high) =
 
 {--
 @def upto(Integer) :: Integer
-<code>upto(n)</code> publishes all values in the range <code>(0..n-1)</code>
+<code>upto(n)</code> <link linkend="ref.concepts.publish">publishes</link> all values in the range <code>(0..n-1)</code>
 simultaneously.
 
 Example:
@@ -120,17 +112,47 @@ upto(5)]]></programlisting>
 def upto(Integer) :: Integer
 def upto(high) = for(0, high)
 
+
+
+import class Iterable = "java.lang.Iterable"
+
+{--
+@site IterableToStream[A](Iterable[A]) :: lambda () :: A 
+
+Converts a Java object implementing the Iterable interface
+into an Orc stream backed by the object's iterator. 
+When the site is called, if the iterator has items remaining,
+the next item is returned. If the iterator has no items
+remaining, the call <link linkend="ref.concepts.states.halt">halts</link>.
+--}
+import site IterableToStream = "orc.lib.util.IterableToStream"
+
+{--
+@def iterableToList[A](Iterable[A]) :: List[A]
+Given a Java object implementing the Iterable interface, 
+create an Orc <link linkend="ref.data.list">list</link> whose elements are the values produced by
+the object's iterator, in the same order. 
+
+@implementation
+--}
+def iterableToList[A](Iterable[A]) :: List[A]
+def iterableToList(iterable) = 
+  val s = IterableToStream[A](iterable)
+  def walk(List[A]) :: List[A]
+  def walk(l) = s():l >m> walk(m) ; reverse(l) 
+  walk([]) 
+
 {--
 @def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 Given an array and a function from indices to values, populate the array
-by calling the function for each index in the array. Return the array
+by calling the function for each index in the array. <link linkend="ref.concepts.publish">Publish</link> the array
 once it has been populated.
 
 For example, to set all elements of an array to zero:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 0 0
 val a = fillArray(Array(3), lambda (_) = 0)
-a.get(0) | a.get(1) | a.get(2)]]></programlisting>
+a(0)? | a(1)? | a(2)?]]></programlisting>
 
 @implementation
 --}
@@ -146,28 +168,47 @@ def fillArray(a, f) =
   fill(0, f) ; a
 
 {--
+@def sliceArray[A](Array[A], Integer, Integer) :: Array[A]
+
+Given an array and a half-open index range, create a new array
+which contains the elements of the original array in that index
+range.
+
+@implementation
+--}
+def sliceArray[A](Array[A], Integer, Integer) :: Array[A]
+def sliceArray(orig, from, until) =
+  val size = until - from
+  val a = Array[A](size)
+  def copy(i :: Integer) :: Bot =
+    Ift(i <: size) >> 
+    a(i) := orig(from + i)? >> 
+    copy(i+1)
+  copy(0) ; a
+
+{--
 @def takePubs[A](Integer, lambda () :: A) :: A
 <code>takePubs(n, f)</code> calls <code>f()</code>,
-publishes the first <code>n</code> values published
+<link linkend="ref.concepts.publish">publishes</link> the first <code>n</code> values published
 by <code>f()</code> (as they are published), and then
-halts.
+<link linkend="ref.concepts.states.halt">halts</link>.
 
 @implementation
 --}
 
 def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
-  val out = Buffer[A]()
+  val out = Channel[A]()
   val c = Counter(n)
-  let(
+  Let(
     f() >x>
-    If(c.dec() >> out.put(x) >> false
-       ; out.closenb() >> true)
+    Ift(c.dec() >> out.put(x) >> false
+       ; out.closeD() >> true)
   ) >> stop | repeat(out.get)
 
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
-Acquire the semaphore and run a thunk which is expected to publish
+Acquire the semaphore and run a thunk which is expected to <link linkend="ref.concepts.publish">publish</link>
 no more than one value. Publishes the value published by the
 thunk and releases the semaphore.
 
@@ -177,7 +218,7 @@ thunk and releases the semaphore.
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
-    let(f()) >x>
+    Let(f()) >x>
     s.release() >>
     x
     ; s.release() >> stop
@@ -192,6 +233,5 @@ on the lock. Similar to Java's synchronized keyword.
 @implementation
 --}
 
-def synchronized[A](Semaphore, lambda () :: A)() :: A
-def synchronized(s,f)() = withLock(s, f)
-
+def synchronized[A](Semaphore, lambda () :: A) :: lambda() :: A
+def synchronized(s,f) = lambda() = withLock(s, f)

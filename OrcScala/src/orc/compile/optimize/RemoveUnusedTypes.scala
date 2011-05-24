@@ -1,12 +1,12 @@
 //
-// RemoveUnusedTypes.scala -- Scala class/trait/object RemoveUnusedTypes
+// RemoveUnusedTypes.scala -- Scala object RemoveUnusedTypes
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at

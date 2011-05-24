@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 19, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,7 +27,6 @@ case class TupleExpr(elements: List[Expression]) extends Expression { require(el
 case class ListExpr(elements: List[Expression]) extends Expression
 case class RecordExpr(elements: List[(String, Expression)]) extends Expression
 case class Call(target: Expression, gs: List[ArgumentGroup]) extends Expression
-case class Atomic(body: Expression) extends Expression
 case object Hole extends Expression
 
 sealed abstract class ArgumentGroup extends AST
@@ -42,9 +41,10 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Lambda(
-    typeformals: Option[List[Type]] = None, 
-    formals: List[List[Pattern]],
+    typeformals: Option[List[String]] = None, 
+    formals: List[Pattern],
     returntype: Option[Type] = None,
+    guard: Option[Expression] = None,
     body: Expression
 ) extends Expression
 
@@ -67,9 +67,9 @@ sealed abstract class NamedDeclaration extends Declaration {
 }
 
 sealed abstract class DefDeclaration extends NamedDeclaration 
-case class Def(name: String, formals: List[List[Pattern]],returntype: Option[Type], body: Expression) extends DefDeclaration
-case class DefClass(name: String, formals: List[List[Pattern]], returntype: Option[Type], body: Expression) extends DefDeclaration
-case class DefSig(name: String, typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends DefDeclaration
+case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
+case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends DefDeclaration
 
 // Convenience extractor for sequences of definitions enclosing some scope
 object DefGroup {
@@ -128,7 +128,7 @@ case class TuplePattern(elements: List[Pattern]) extends StrictPattern { overrid
 case class ListPattern(elements: List[Pattern]) extends StrictPattern { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("[", ", ", "]") }
 case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern { override def toOrcSyntax = name + args.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "("+head.toOrcSyntax+":"+tail.toOrcSyntax+")" }
-case class EqPattern(name: String) extends StrictPattern { override def toOrcSyntax = "="+name }
+case class RecordPattern(elements: List[(String, Pattern)]) extends StrictPattern { override def toOrcSyntax = elements.map({case (f,p) => f + " = " + p.toOrcSyntax}).mkString("{. ", ", ", " .}") }
 
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {
@@ -145,26 +145,11 @@ case class TypedPattern(p: Pattern, t: Type) extends Pattern {
 
 sealed abstract class Type extends AST with OrcSyntaxConvertible
 
-case class Top() extends Type { override def toOrcSyntax = "Top" }
-case class Bot() extends Type { override def toOrcSyntax = "Bot" }
 case class TypeVariable(name: String) extends Type { override def toOrcSyntax = name }
 case class TupleType(elements: List[Type]) extends Type { override def toOrcSyntax = elements.map(_.toOrcSyntax).mkString("(", ", ", ")") }
 case class RecordType(elements: List[(String, Type)]) extends Type { override def toOrcSyntax = elements.map({case (f,t) => f + " :: " + t.toOrcSyntax}).mkString("{. ", ", ", " .}") }
-case class LambdaType(typeformals: List[String], argtypes: List[List[Type]], returntype: Type) extends Type {
-  override def toOrcSyntax = "lambda" + (if (typeformals.size > 0) typeformals.mkString("[", ", ", "]") else "") + argtypes.map(_.map(_.toOrcSyntax).mkString("(", ", ", ")")).mkString("(", ", ", ")") + " :: " + returntype.toOrcSyntax
-  /* 
-   * Converts the type 'lambda (A)(B)(C) :: D'
-   * to 'lambda (A) :: (lambda (B) :: (lambda (C) :: D))'.
-   */
-  def cut = {
-      this match {
-        case LambdaType(typeFormals,List(args),retType) => this // Single type argument group
-        case LambdaType(typeFormals,argGroup::argGroupsTail,retType) => {
-          val f = (args: List[Type],ret: Type) => LambdaType(Nil,List(args),ret)
-          val newRetType = argGroupsTail.foldRight(retType)(f)
-          LambdaType(typeFormals,List(argGroup),newRetType)
-        }
-      }
-  }
+case class LambdaType(typeformals: List[String], argtypes: List[Type], returntype: Type) extends Type {
+  override def toOrcSyntax = "lambda" + (if (typeformals.size > 0) typeformals.mkString("[", ", ", "]") else "") + argtypes.map(_.toOrcSyntax).mkString("(", ", ", ")") + " :: " + returntype.toOrcSyntax
+  
 }
 case class TypeApplication(name: String, typeactuals: List[Type]) extends Type { override def toOrcSyntax = name + typeactuals.map(_.toOrcSyntax).mkString("[", ", ", "]") }

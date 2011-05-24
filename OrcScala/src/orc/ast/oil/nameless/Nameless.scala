@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,6 +17,7 @@ package orc.ast.oil.nameless
 
 import orc.ast.oil._
 import orc.ast.AST
+import orc.ast.hasOptionalVariableName
 
 
 
@@ -36,7 +37,6 @@ sealed abstract class NamelessAST extends AST {
     case Sequence(left,right) => List(left, right)
     case Prune(left,right) => List(left, right)
     case left ow right => List(left, right)
-    case Atomic(body) => List(body)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
@@ -47,8 +47,8 @@ sealed abstract class NamelessAST extends AST {
     case TypeApplication(_, typeactuals) => typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(_, t) => List(t)
-    case VariantType(variants) => {
-      for ((_, variant) <- variants; Some(t) <- variant) yield t
+    case VariantType(_, variants) => {
+      for ((_, variant) <- variants; t <- variant) yield t
     }
     case _ => Nil
   }
@@ -74,7 +74,6 @@ with NamelessToNamed
       case f >> g => f.freevars ++ shift(g.freevars, 1)
       case f << g => shift(f.freevars, 1) ++ g.freevars
       case f ow g => f.freevars ++ g.freevars
-      case Atomic(f) => f.freevars
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body,_) => body.freevars
       case DeclareType(_,body) => body.freevars
@@ -114,7 +113,6 @@ with NamelessToNamed
       case f >> g => f.subst(ctx) >> g.subst(None::ctx)
       case f << g => f.subst(None::ctx) << g.subst(ctx)
       case f ow g => f.subst(ctx) ow g.subst(ctx)
-      case Atomic(f) => Atomic(f.subst(ctx))
       case DeclareDefs(openvars, defs, body) => {
         val newctx = ( for (_ <- defs) yield None ).toList ::: ctx
         val newdefs = {
@@ -139,28 +137,29 @@ with NamelessToNamed
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, right: Expression) extends Expression
-case class Prune(left: Expression, right: Expression) extends Expression
-case class Atomic(body: Expression) extends Expression
+case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+case class Prune(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
-case class DeclareType(t: Type, body: Expression) extends Expression
+case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 
 sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument
-case class Variable(index: Int) extends Argument {
+case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
 }
-case class UnboundVariable(name: String) extends Argument
+case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
+  optionalVariableName = Some(name)
+}
 
 sealed abstract class Type extends NamelessAST with NamelessToNamed {
   lazy val withNames: named.Type = namelessToNamed(this, Nil)
 }
 case class Top() extends Type
 case class Bot() extends Type
-case class TypeVar(index: Int) extends Type
+case class TypeVar(index: Int) extends Type with hasOptionalVariableName
 case class TupleType(elements: List[Type]) extends Type
 case class RecordType(entries: Map[String,Type]) extends Type
 case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
@@ -169,11 +168,14 @@ case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: 
 case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
-case class VariantType(variants: List[(String, List[Option[Type]])]) extends Type
-case class UnboundTypeVariable(name: String) extends Type
+case class VariantType(typeFormalArity: Int, variants: List[(String, List[Type])]) extends Type
+case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
+  optionalVariableName = Some(name)
+}
 
 sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST 
 with hasFreeVars 
+with hasOptionalVariableName
 {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)

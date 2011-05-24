@@ -1,12 +1,12 @@
 //
-// NamelessToNamed.scala -- Scala class/trait/object NamelessToNamed
+// NamelessToNamed.scala -- Scala trait NamelessToNamed
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -50,7 +50,6 @@ trait NamelessToNamed {
         named.Prune(namelessToNamed(left, x::context, typecontext), x, recurse(right))
       }
       case left ow right => named.Otherwise(recurse(left), recurse(right))
-      case Atomic(body) => named.Atomic(recurse(body))
       case DeclareDefs(openvars, defs, body) => {
         val opennames = openvars map context
         val defnames = defs map { _ => new BoundVar() }
@@ -119,12 +118,15 @@ trait NamelessToNamed {
       }
       case ImportedType(classname) => named.ImportedType(classname)
       case ClassType(classname) => named.ClassType(classname)
-      case VariantType(variants) => {
+      case VariantType(typearity, variants) => {
+        val self = new BoundTypevar()
+        val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
+        val newTypeContext = self :: typeformals ::: typecontext
         val newVariants =
           for ((name, variant) <- variants) yield {
-            (name, variant map {_ map toType})
+            (name, variant map { namelessToNamed(_, newTypeContext) })
           }
-        named.VariantType(newVariants)
+        named.VariantType(self, typeformals, newVariants)
       }
     }  
   } 

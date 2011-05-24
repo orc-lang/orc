@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 19, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -131,7 +131,7 @@ trait CmdLineParser {
 
   case class StringOprd(val getter: Function0[String], val setter: (String => Unit), override val position: Int, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
+    def getValue: String = { getter() }
     def setValue(value: String) { setter(value) }
   }
 
@@ -143,8 +143,11 @@ trait CmdLineParser {
 
   case class FileOprd(val getter: Function0[File], val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(new File(value)) }
+    def getValue: String = { getter() match {
+      case null => ""
+      case f => f.toString }
+    }
+    def setValue(value: String) { if (value != null && !value.isEmpty) setter(new File(value)) }
   }
 
   case class PathListOprd(val getter: Function0[Seq[File]], val setter: (Seq[File] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
@@ -185,7 +188,7 @@ trait CmdLineParser {
 
   case class StringOpt(val getter: Function0[String], val setter: (String => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
+    def getValue: String = { getter() }
     def setValue(value: String) { setter(value) }
   }
 
@@ -197,8 +200,11 @@ trait CmdLineParser {
 
   case class FileOpt(val getter: Function0[File], val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(new File(value)) }
+    def getValue: String = { getter() match {
+      case null => ""
+      case f => f.toString }
+    }
+    def setValue(value: String) { if (value != null && !value.isEmpty) setter(new File(value)) }
   }
 
   case class PathListOpt(val getter: Function0[List[File]], val setter: (Seq[File] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)

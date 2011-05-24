@@ -16,19 +16,25 @@ package orc.lib.util;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.ThreadedSite;
+import orc.values.sites.compatibility.EvalSite;
 
 /**
- * Read an InputStreamReader into a String.
+ * Read an InputStreamReader into a String. Reads all remaining characters from
+ * the stream, and closes it.
+ * 
  * @author quark
  */
-public class ReadText extends ThreadedSite {
+public class ReadText extends EvalSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		try {
+			if (!(args.getArg(0) instanceof InputStreamReader)) {
+				throw new ArgumentTypeMismatchException(0, "InputStreamReader", args.getArg(0).getClass().getCanonicalName());
+			}
 			final InputStreamReader in = (InputStreamReader) args.getArg(0);
 			final StringBuilder out = new StringBuilder();
 			final char[] buff = new char[1024];
@@ -43,8 +49,6 @@ public class ReadText extends ThreadedSite {
 			return out.toString();
 		} catch (final IOException e) {
 			throw new JavaException(e);
-		} catch (final ClassCastException e) {
-			throw new JavaException(e); // TODO: Make more specific
 		}
 	}
 }
