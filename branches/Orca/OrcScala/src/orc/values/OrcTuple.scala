@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,6 +27,9 @@ import orc.error.runtime.TupleIndexOutOfBoundsException
  * @author dkitchin
  */
 case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
+  
+  assert(values.size > 1)
+  
   def evaluate(args: List[AnyRef]) = 
     args match {
       case List(bi: BigInt) => {

@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -15,17 +15,17 @@
 General-purpose supplemental data structures.
 --}
 
--- Make the List type constructor available
-type List = "orc.values.sites.compatibility.type.structured.ListType"
+-- Make the <link linkend="ref.data.list.type">List</link> type constructor available
+import type List = "orc.lib.builtin.structured.ListType"
 
 {--
 @site Some[A](A) :: Option[A]
 An optional value which is available.
-This site may also be used in a pattern.
+This site may also be used in a <link linkend="ref.patterns.call">pattern</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
--- Publishes: (3,4)
+-- Publishes: (3, 4)
 Some((3,4)) >s> (
     s >Some((x,y))> (x,y)
   | s >None()> signal
@@ -33,12 +33,12 @@ Some((3,4)) >s> (
 
 @site None[A]() :: Option[A]
 An optional value which is not available.
-This site may also be used in a pattern.
+This site may also be used in a <link linkend="ref.patterns.call">pattern</link>.
 
 --}
-type Option = "orc.values.sites.compatibility.type.structured.OptionType"
-site Some = "orc.lib.builtin.SomeConstructor"
-site None = "orc.lib.builtin.NoneConstructor"
+import type Option = "orc.lib.builtin.structured.OptionType"
+import site Some = "orc.lib.builtin.structured.SomeSite"
+import site None = "orc.lib.builtin.structured.NoneSite"
 
 
 {--
@@ -50,23 +50,67 @@ Example:
 -- Publishes: 5 5
 val c = Cell()
   c.write(5) >> c.read()
-| Rtimer(1) >> ( c.write(10) ; c.read() )]]></programlisting>
+| Rwait(1) >> ( c.write(10) ; c.read() )]]></programlisting>
 
-@method Cell[A].read() :: A
-Read a value from the cell. If the cell does not yet have a value, block until it receives one.
+@method cell[A].read() :: A
 
-@method Cell[A].readnb() :: A
-Read a value from the cell. If the cell does not yet have a value, halt.
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
 
-@method Cell[A].write() :: Signal
-Write a value to the cell. If the cell already has a value, halt.
+Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+
+@method cell[A].readD() :: A
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method cell[A].write(A) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+Write a value to the cell. If the cell already has a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Cell = orc.lib.state.Cell
-type Cell = orc.lib.state.types.CellType
+import site Cell = "orc.lib.state.Cell"
+import type Cell = "orc.lib.state.types.CellType"
 
 
-site Ref = "orc.lib.state.Ref"
-type Ref = "orc.lib.state.types.RefType"
+{--
+@site Ref[A]() :: Ref[A]
+Create a rewritable storage location without an initial value.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+val r = Ref()
+Rwait(1000) >> r := 5 >> stop
+| Println(r?) >>
+  r := 10 >>
+  Println(r?) >>
+  stop]]></programlisting>
+
+@site Ref[A](A) :: Ref[A]
+Create a rewritable storage location initialized to the provided value.
+
+@method ref[A].read() :: A
+Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+
+@method ref[A].readD() :: A
+Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method ref[A].write(A) :: Signal
+Write a value to the ref, then return a <link linkend="ref.data.signal"><code>signal</code></link>.
+
+--}
+import site Ref = "orc.lib.state.Ref"
+import type Ref = "orc.lib.state.types.RefType"
 
 {--
 @def (?)[A](Ref[A]) :: A
@@ -90,7 +134,7 @@ def (:=)(r,v) = r.write(v)
 
 {--
 @def swap[A](Ref[A], Ref[A]) :: Signal
-Swap the values in two references.
+Swap the values in two references, then return a <link linkend="ref.data.signal">signal</link>.
 
 @implementation
 --}
@@ -110,169 +154,280 @@ An example using a semaphore as a lock for a critical section:
 -- Leaving critical section
 val lock = Semaphore(1)
 lock.acquire() >>
-println("Entering critical section") >>
-println("Leaving critical section") >>
+Println("Entering critical section") >>
+Println("Leaving critical section") >>
 lock.release()]]></programlisting>
 
-@method Semaphore.acquire() :: Signal
-If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, block until it becomes greater than <code>0</code>.
+@method semaphore.acquire() :: Signal
 
-@method Semaphore.acquirenb() :: Signal
-If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a signal.
-If the semaphore's value is <code>0</code>, halt.
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
-@method Semaphore.release() :: Signal
-If any calls to <code>acquire</code> are blocked, allow the oldest such call
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a <link linkend="ref.data.signal">signal</link>.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
+
+@method semaphore.acquireD() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a <link linkend="ref.data.signal">signal</link>.
+If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method semaphore.release() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
 increment the value beyond that with which the semaphore was constructed.  
 
-@method Semaphore.snoop() :: Signal
-If any calls to <code>acquire</code> are blocked, return a signal.
-Otherwise, block until some call to <code>acquire</code> blocks.
+@method semaphore.snoop() :: Signal
 
-@method Semaphore.snoopnb() :: Signal
-If any calls to <code>acquire</code> are blocked, return a signal.
-Otherwise, halt.
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a <link linkend="ref.data.signal">signal</link>.
+Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
+
+@method semaphore.snoopD() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a <link linkend="ref.data.signal">signal</link>.
+Otherwise, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 --}
-site Semaphore = orc.lib.state.Semaphore
-type Semaphore = orc.lib.state.types.SemaphoreType
+import site Semaphore = "orc.lib.state.Semaphore"
+import type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
-@site Buffer[A]() :: Buffer[A]
-<!-- XSL/FO doesn't like me using an anchor tag here -->
-<para id="orc.lib.Buffer.close">
-Create a new buffer (FIFO channel) of unlimited size. A buffer supports
+@site Channel[A]() :: Channel[A]
+Create a new asyncrhonous FIFO channel of unlimited size. A channel supports
 get, put and close operations.
-</para>
 
-A buffer may be either empty or non-empty, and either open or closed.  When
-empty and open, calls to <code>get</code> block.  When empty and closed, calls
-to <code>get</code> halt.  When closed, calls to <code>put</code> halt.  In all
+A channel may be either empty or non-empty, and either open or closed.  When
+empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and closed, calls
+to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 10
-val b = Buffer()
-  Rtimer(1000) >> b.put(10) >> stop
+val b = Channel()
+  Rwait(1000) >> b.put(10) >> stop
 | b.get()]]></programlisting>
 
-@method Buffer[A].get() :: A
-Get an item from the buffer. If the buffer is open and no items are available,
-block until one becomes available. If the buffer is <link
-linkend="orc.lib.Buffer.close">closed</link> and no items are available, halt.
+@method channel[A].get() :: A
 
-@method Buffer[A].getnb() :: A
-Get an item from the buffer. If no items are available, halt.
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
-@method Buffer[A].put(A) :: Signal
-Put an item in the buffer. If the buffer is <link
-linkend="orc.lib.Buffer.close">closed</link>, halt.
+Get an item from the channel. If the channel is open and no items are available,
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
+linkend="ref.stdlib.state.Channel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].close() :: Signal
-Close the buffer and block until it is empty.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+@method channel[A].getD() :: A
 
-@method Buffer[A].closenb() :: Signal
-Close the buffer and return a signal immediately.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt.
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
-@method Buffer[A].isClosed() :: Boolean
-If the buffer is currently closed, return true, otherwise return false.
+Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method Buffer[A].getAll() :: List[A]
-Get all of the items currently in the buffer, emptying the buffer and returning
-a list of the items in the order they were added. If there are no items in the
-buffer, return an empty list.
+@method channel[A].put(A) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Put an item in the channel. If the channel is <link
+linkend="ref.stdlib.state.Channel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method channel[A].close() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+<firstterm xml:id="ref.stdlib.state.Channel.close">Close</firstterm> the channel and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+When the channel is empty, return a <link linkend="ref.data.signal">signal</link>.
+
+@method channel[A].closeD() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+Close the channel and return a <link linkend="ref.data.signal">signal</link> immediately.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method channel[A].isClosed() :: Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+If the channel is currently closed, return true, otherwise return false.
+
+@method channel[A].getAll() :: List[A]
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Get all of the items currently in the channel, emptying the channel and returning
+a <link linkend="ref.data.list">list</link> of the items in the order they were added. If there are no items in the
+channel, return an empty list.
 --}
-site Buffer = orc.lib.state.Buffer
-type Buffer = orc.lib.state.types.BufferType
+import site Channel = "orc.lib.state.Channel"
+import type Channel = "orc.lib.state.types.ChannelType"
 
 
 {--
-@site BoundedBuffer[A](Integer) :: BoundedBuffer[A]
-Create a new buffer (FIFO channel) with the given number of slots.
-Putting an item into the buffer fills a slot, and getting an item opens a slot.
-A buffer with zero slots is equivalent to a
-<link linkend="orc.lib.state.SyncChannel">synchronous channel</link>.
+@site BoundedChannel[A](Integer) :: BoundedChannel[A]
+Create a new asynchronous FIFO channel with the given number of slots.
+Putting an item into the channel fills a slot, and getting an item opens a slot.
+A channel with zero slots is equivalent to a synchronous channel.
 
-A bounded buffer may be empty, partly filled, or full, and either open or
-closed.  When empty and open, calls to <code>get</code> block.  When empty and
-closed, calls to <code>get</code> halt. When full and open, calls to
-<code>put</code> block. When closed, calls to <code>put</code> halt.  In all
+A bounded channel may be empty, partly filled, or full, and either open or
+closed.  When empty and open, calls to <code>get</code> <link linkend="ref.concepts.states.block">block</link>.  When empty and
+closed, calls to <code>get</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. When full and open, calls to
+<code>put</code> <link linkend="ref.concepts.states.block">block</link>. When closed, calls to <code>put</code> <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.  In all
 other cases, calls return normally.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Put 1" "Got 1" "Put 2" "Got 2"
-val c = BoundedBuffer(1)
+val c = BoundedChannel(1)
   c.put(1) >> "Put " + 1
 | c.put(2) >> "Put " + 2
-| Rtimer(1000) >> (
+| Rwait(1000) >> (
     c.get() >n> "Got " + n
   | c.get() >n> "Got " + n
   )]]></programlisting>
 
-@method BoundedBuffer[A].get() :: A
-Get an item from the buffer. If the buffer is open and no items are available,
-block until one becomes available. If the buffer is <link
-linkend="orc.lib.BoundedBuffer.close">closed</link> and no items are available, halt.
+@method boundedChannel[A].get() :: A
 
-@method BoundedBuffer[A].getnb() :: A
-Get an item from the buffer. If no items are available, halt.
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
-@method BoundedBuffer[A].put(A) :: Signal
-Put an item in the buffer. If no slots are open, block until one becomes open.
-If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+Get an item from the channel. If the channel is open and no items are available,
+<link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
+linkend="ref.stdlib.state.BoundedChannel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].putnb(A) :: Signal
-Put an item in the buffer. If no slots are open, halt.
-If the buffer is <link linkend="orc.lib.BoundedBuffer.close">closed</link>, halt.
+@method boundedChannel[A].getD() :: A
 
-@method BoundedBuffer[A].close() :: Signal
-<!-- XSL/FO doesn't like me using an anchor tag here -->
-<para id="orc.lib.BoundedBuffer.close">
-Close the buffer and block until it is empty.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt. Note that any blocked calls to <code>put</code>
-initiated prior to closing the buffer may still be allowed to return as usual.
-</para>
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
-@method BoundedBuffer[A].closenb() :: Signal
-Close the buffer and return a signal immediately.
-This has the effect of immediately causing any blocked calls to
-<code>get</code> to halt. In addition, any subsequent calls to <code>put</code>
-will halt, and once the buffer becomes empty, any subsequent calls to
-<code>get</code> will halt. Note that any blocked calls to <code>put</code>
-initiated prior to closing the buffer may still be allowed to return as usual.
+Get an item from the channel. If no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
-@method BoundedBuffer[A].isClosed() :: Boolean
-If the buffer is currently closed, return true, otherwise return false.
+@method boundedChannel[A].put(A) :: Signal
 
-@method BoundedBuffer[A].getOpen() :: Integer
-Return the number of open slots in the buffer. Because of concurrency
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
+If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method boundedChannel[A].putD(A) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@method boundedChannel[A].close() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+<firstterm xml:id="ref.stdlib.state.BoundedChannel.close">Close</firstterm> the channel and <link linkend="ref.concepts.states.block">block</link> until it is empty.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
+initiated prior to closing the channel may still be allowed to return as usual.
+
+@method boundedChannel[A].closeD() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+Close the channel and return a <link linkend="ref.data.signal">signal</link> immediately.
+This has the effect of immediately causing any <link linkend="ref.concepts.states.block">blocked</link> calls to
+<code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
+will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
+<code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
+initiated prior to closing the channel may still be allowed to return as usual.
+
+@method boundedChannel[A].isClosed() :: Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+If the channel is currently closed, return true, otherwise return false.
+
+@method boundedChannel[A].getOpen() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Return the number of open slots in the channel. Because of concurrency
 this value may become out-of-date so it should only be used for debugging
 or statistical measurements.
 
-@method BoundedBuffer[A].getBound() :: Integer
-Return the total number of slots (open or filled) in the buffer.
+@method boundedChannel[A].getBound() :: Integer
 
-@method BoundedBuffer[A].getAll() :: [A]
-Get all of the items currently in the buffer or waiting to be added, emptying
-the buffer and returning a list of the items in the order they were added. If
-there are no items in the buffer or waiting to be added, return an empty list.
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
+
+Return the total number of slots (open or filled) in the channel.
+
+@method boundedChannel[A].getAll() :: List[A]
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Get all of the items currently in the channel or waiting to be added, emptying
+the channel and returning a <link linkend="ref.data.list">list</link> of the items in the order they were added. If
+there are no items in the channel or waiting to be added, return an empty list.
 --}
-site BoundedBuffer = orc.lib.state.BoundedBuffer
-type BoundedBuffer = orc.lib.state.types.BoundedBufferType
+import site BoundedChannel = "orc.lib.state.BoundedChannel"
+import type BoundedChannel = "orc.lib.state.types.BoundedChannelType"
 
 
 {--
@@ -282,7 +437,7 @@ to contain <code>null</code>s.
 
 The resulting array can be called directly with an index, as if
 its type were <code>lambda (Integer) :: Ref[A]</code>.
-In this case, it returns a <link linkend="orc.lib.state.Ref">Ref</link>
+In this case, it returns a <link linkend="ref.stdlib.state.Ref">Ref</link>
 pointing to the element of the array specified by an index,
 counting from 0. Changes to the array are reflected immediately
 in the ref and visa versa.
@@ -314,50 +469,33 @@ primitive type, although a typechecker may not be able to verify this. This
 constructor is only necessary when interfacing with certain Java libraries; most
 programs will just use the  <code>Array(Integer)</code> constructor.
 
-@method Array[A].get(Integer) :: A
-Get the element of the array given by the index, counting from 0.
-<code>a.get(i)</code> is equivalent to <code>a(i)?</code>.
+@method array[A].length? :: Integer
 
-@method Array[A].set(Integer, A) :: Signal
-Set the element of the array given by the index, counting from 0.
-<code>a.set(i,v)</code> is equivalent to <code>a(i) := v</code>.
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
-@method Array[A].slice(Integer, Integer) :: Array[A]
-Return a copy of the portion of the array with indices covered by the given
-half-open range. The result array is still indexed counting from 0.
-
-@method Array[A].length? :: Integer
 Return the size of the array.
-
-@method Array[A].fill(A) :: Signal
-Set every element of the array to the given value. The given value is not
-copied, but is shared by every element of the array, so for example
-<code>a.fill(Semaphore(1))</code> would allow you to access the same semaphore
-from every element <code>a</code>.
-
-This method is primarily useful to initialize or reset an array to a constant
-value,
-for example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes: 0 0 0
-val a = Array(3)
-a.fill(0) >> each(a)]]></programlisting>
 --}
-site Array = "orc.lib.state.JavaArray"
-type Array = "orc.lib.state.types.ArrayType"
+import site Array = "orc.lib.state.JavaArray"
+import type Array = "orc.lib.state.types.ArrayType"
 
---TODO: define former array methods: get set slice fill length
-def slice(Array, Integer, Integer) :: Signal
-def slice(xs, from, until) =
-  class ScalaPredef = "scala.Predef"
-  ScalaPredef.refArrayOps(xs).slice(from, until)
 
-def fill[A](Array, A) :: Signal
-def fill(a, x) =
-  def fillBelow(i) =
-    if i <: 0 then signal
-    else ((a(i) := x), fillBelow(i-1)) >> signal
-  fillBelow(a.length?-1)
+{--
+@def arrayToList[A](Array[A]) :: List[A]
+Given an array, create an Orc <link linkend="ref.data.list">list</link> whose elements are exactly
+the contents of the array, in the same order. 
+
+@implementation
+--}
+def arrayToList[A](Array[A]) :: List[A]
+def arrayToList(a) = 
+  def walk(Integer, List[A]) :: List[A]
+  def walk(0,acc) = acc
+  def walk(i,acc) = walk(i-1, a(i-1)? : acc)
+  walk(a.length?, [])
+  
 
 {--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
@@ -366,8 +504,8 @@ natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). <code>Table</code> does
 not return a value until all calls to <code>f</code> have completed.
-Consequently, if <code>f</code> halts on any call, the call to 
-<code>Table</code> will halt.
+Consequently, if <code>f</code> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to 
+<code>Table</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 The user may also think of the call as returning an immutable array whose
 <code>i</code>th element is accessed by calling <code>f(i)</code>.
@@ -383,102 +521,55 @@ a(3)]]></programlisting>
 
 @implementation
 --}
-def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
+def Table[A](Integer, lambda (Integer) :: A) :: (lambda(Integer) :: A)
 def Table(n, f) =
-  val a = Array[A](n)
+  val a = Array[A](n) :: Array[A]
   def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =
     if i <: 0 then signal
     else ((a(i) := f(i)), fill(i-1, f)) >> signal
-  fill(n-1, f) >> (lambda (i) = a(i)?)
+  fill(n-1, f) >> (lambda (i :: Integer) = a(i)?)
 
-
-{--
-@site Set[A]() :: Set[A]
-Construct an empty mutable set. The set considers two
-values <code>a</code> and <code>b</code> to be the same if
-and only if <code>a=b</code>. This site conforms to the Java interface
-<code>java.util.Set</code>, except that it obeys Orc rules for equality of
-elements rather than Java rules.
-
-@method Set[A].add(A) :: Boolean
-Add a value to the set, returning true if the set did not already contain the value,
-and false otherwise.
-
-@method Set[A].remove(Signal) :: Boolean
-Remove a value from the set, returning true if the set contained the value,
-and false otherwise.
-
-@method Set[A].contains(Signal) :: Boolean
-Return true if the set contains the given value, and false otherwise.
-
-@method Set[A].isEmpty() :: Boolean
-Return true if the set contains no values.
-
-@method Set[A].clear() :: Signal
-Remove all values from the set.
-
-@method Set[A].size() :: Integer
-Return the number of unique values currently contained in the set.
---}
-class Set = "orc.lib.state.Set"
-
-{--
-@site Map[K,V]() :: Map[K,V]
-Construct an empty mutable map from keys to values.  Each key contained in the
-map is associated with exactly one value.  The mapping considers two keys
-<code>a</code> and <code>b</code> to be the same if and only if
-<code>a=b</code>. This site conforms to the Java interface
-<code>java.util.Map</code>, except that it obeys Orc rules for equality of keys
-rather than Java rules.
-
-@method Map[K,V].put(K, V) :: V
-<code>map.put(k,v)</code> associates the value <code>v</code> with the key
-<code>k</code> in <code>map</code>, such that <code>map.get(k)</code> returns
-<code>v</code>. Return the value previously associated with the key,
-if any, otherwise return <code>Null()</code>.
-
-@method Map[K,V].get(K) :: V
-Return the value currently associated with the given key, if any, otherwise
-return <code>Null()</code>.
-
-@method Map[K,V].remove(Signal) :: V
-Remove the given key from the map. Return the value previously associated with the key,
-if any, otherwise return <code>Null()</code>.
-
-@method Map[K,V].containsKey(Signal) :: Boolean
-Return true if the map contains the given key, and false otherwise.
-
-@method Map[K,V].isEmpty() :: Boolean
-Return true if the map contains no keys.
-
-@method Map[K,V].clear() :: Signal
-Remove all keys from the map.
-
-@method Map[K,V].size() :: Integer
-Return the number of unique keys currently contained in the map.
---}
-class Map = "orc.lib.state.Map"
 
 {--
 @site Counter(Integer) :: Counter
 Create a new counter initialized to the given value.
 
-@method Counter() :: Counter
+@site Counter() :: Counter
 Create a new counter initialized to zero.
 
-@method Counter.inc() :: Signal
+@method counter.inc() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
 Increment the counter.
 
-@method Counter.dec() :: Signal
-If the counter is already at zero, halt. Otherwise, decrement
-the counter and return a signal.
+@method counter.dec() :: Signal
 
-@method Counter.onZero() :: Signal
-If the counter is at zero, return a signal. Otherwise
-block until the counter reaches zero.
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
 
-@method Counter.value() :: Integer
+If the counter is already at zero, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Otherwise, decrement
+the counter and return a <link linkend="ref.data.signal">signal</link>.
+
+@method counter.onZero() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+If the counter is at zero, return a <link linkend="ref.data.signal">signal</link>. Otherwise,
+<link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
+
+@method counter.value() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
 Return the current value of the counter.
 
 Example:
@@ -487,24 +578,24 @@ Example:
 val c = Counter(5)
 repeat(c.dec)]]></programlisting>
 --}
-site Counter = "orc.lib.state.Counter"
-type Counter = "orc.lib.state.types.CounterType"
+import site Counter = "orc.lib.state.Counter"
+import type Counter = "orc.lib.state.types.CounterType"
 
 {--
 @site Dictionary() :: Dictionary
 Create a new dictionary (a mutable map from field names to values), initially
-empty.  The first time each field of the dictionary is accessed (using dot
-notation), the dictionary creates and returns a new empty <link
-linkend="orc.lib.state.Ref">Ref</link> which will also be returned on
-subsequent accesses of the same field.  Dictionaries allow you to easily create
-object-like data structures.
+empty.  The first time a field of the dictionary is accessed (using a <link linkend="ref.expressions.dot">dot access</link>), 
+the dictionary creates and returns a new empty 
+<link linkend="ref.stdlib.state.Ref">Ref</link> which will also be returned on
+subsequent accesses of the same field. A dictionary differs from a record in that
+it is both mutable and dynamically extensible.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()
-  println(d.one.read()) >>
-  println(d.two.read()) >>
+  Println(d.one.read()) >>
+  Println(d.two.read()) >>
   stop
 | d.one.write(1) >>
   d.two.write(2) >>
@@ -515,35 +606,35 @@ clarity:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 1 2
 val d = Dictionary()
-  println(d.one?) >>
-  println(d.two?) >>
+  Println(d.one?) >>
+  Println(d.two?) >>
   stop
 | d.one := 1 >>
   d.two := 2 >>
   stop]]></programlisting>
 
-To create a multi-level dictionary, you must explicitly create sub-dictionaries
+To create a multi-level dictionary, one must explicitly create sub-dictionaries
 for each field. For example:
 <programlisting language="orc-demo"><![CDATA[
 -- Prints: 2
 val d = Dictionary()
 d.one := Dictionary() >>
 d.one?.two := 2 >>
-println(d.one?.two?) >>
+Println(d.one?.two?) >>
 stop]]></programlisting>
 
-Note that you cannot write <code>d.one.two</code>: because <code>d.one</code>
-is a reference to a dictionary, and not simply a dictionary, you must
-dereference before accessing its fields, as in <code>d.one? >x> x.two</code>.
-For readers familiar with the C language, this is the same reason you must
+Note that <code>d.one.two</code> is not valid: because <code>d.one</code>
+is a reference to a dictionary, and not simply a dictionary, a dereference
+step is needed before accessing a field, as in <code>d.one? >x> x.two</code>.
+For readers familiar with the C language, this is the same reason one must
 write <code language="c">s->field</code> instead of <code>s.field</code> when
 <code>s</code> is a pointer to a struct.
 --}
-site Dictionary = orc.lib.state.Dictionary
+import site Dictionary = "orc.lib.state.Dictionary"
 
 {--
 @def fst[A,B]((A,B)) :: A
-Return the first element of a pair.
+Return the first element of a <link linkend="ref.data.tuple">pair</link>.
 
 @implementation
 --}
@@ -552,7 +643,7 @@ def fst((x,_)) = x
 
 {--
 @def snd[A,B]((A,B)) :: B
-Return the second element of a pair.
+Return the second element of a <link linkend="ref.data.tuple">pair</link>.
 
 @implementation
 --}
@@ -564,47 +655,47 @@ def snd((_,y)) = y
 <code>Interval(a,b)</code> returns an object representing the half-open
 interval [<code>a</code>,<code>b</code>).
 
-@method Interval[A].isEmpty() :: Boolean
+@method interval[A].isEmpty() :: Boolean
 Return true if this interval is empty.
 
-@method Interval[A].spans(A) :: Boolean
+@method interval[A].spans(A) :: Boolean
 Return true if the interval spans the given point, false otherwise.
 
-@method Interval[A].intersects(Interval[A]) :: Boolean
+@method interval[A].intersects(Interval[A]) :: Boolean
 Return true if the given interval has a non-empty intersection with this one,
 and false otherwise.
 
-@method Interval[A].intersect(Interval[A]) :: Interval[A]
+@method interval[A].intersect(Interval[A]) :: Interval[A]
 Return the intersection of this interval with another. If
 the two intervals do not intersect, returns an empty interval.
 
-@method Interval[A].contiguous(Interval[A]) :: Boolean
+@method interval[A].contiguous(Interval[A]) :: Boolean
 Return true if the given interval is contiguous with this one
 (overlaps or abuts), and false otherwise.
 
-@method Interval[A].union(Interval[A]) :: Interval[A]
-Return the union of this interval with another. Halts with an error if
+@method interval[A].union(Interval[A]) :: Interval[A]
+Return the union of this interval with another. <link linkend="ref.concepts.states.halt">Halts</link> with an error if
 the two intervals are not contiguous.
 --}
-class Interval = "orc.lib.state.Interval"
+import class Interval = "orc.lib.state.Interval"
 
 {--
 @site Intervals[A]() :: Intervals[A]
 Return an empty set of intervals. An Intervals object is iterable;
 iterating over the set returns disjoint intervals in increasing order.
 
-@method Intervals[A].isEmpty() :: Boolean
+@method intervals[A].isEmpty() :: Boolean
 Return true if this set of intervals is empty.
 
-@method Intervals[A].spans(A) :: Boolean
+@method intervals[A].spans(A) :: Boolean
 Return true if this set of intervals spans the given point, and false otherwise.
 
-@method Intervals[A].intersect(Intervals[A]) :: Intervals[A]
+@method intervals[A].intersect(Intervals[A]) :: Intervals[A]
 Return the intersection of this set of intervals with another.
 
-@method Intervals[A].union(Interval[A]) :: Intervals[A]
+@method intervals[A].union(Interval[A]) :: Intervals[A]
 Return the union of this set of intervals with the given interval.
 This method is most efficient when the given interval is before
 most of the intervals in the set.
 --}
-class Intervals = "orc.lib.state.Intervals"
+import class Intervals = "orc.lib.state.Intervals"

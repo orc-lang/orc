@@ -1,12 +1,12 @@
 //
-// NamedToNameless.scala -- Scala class/trait/object NamedToNameless
+// NamedToNameless.scala -- Scala trait NamedToNameless
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -36,7 +36,6 @@ trait NamedToNameless {
       case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x::context, typecontext))
       case left < x < right => nameless.Prune(namedToNameless(left, x::context, typecontext), toExp(right))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case Atomic(body) => nameless.Atomic(toExp(body))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
@@ -93,7 +92,7 @@ trait NamedToNameless {
       case Bot() => nameless.Bot()
       case FunctionType(typeformals, argtypes, returntype) => {
         val newTypeContext = typeformals ::: typecontext
-        val newArgTypes = argtypes map toType
+        val newArgTypes = argtypes map { namedToNameless(_, newTypeContext) }
         val newReturnType = namedToNameless(returntype, newTypeContext)
         nameless.FunctionType(typeformals.size, newArgTypes, newReturnType)
       }
@@ -115,12 +114,13 @@ trait NamedToNameless {
       }
       case ImportedType(classname) => nameless.ImportedType(classname)
       case ClassType(classname) => nameless.ClassType(classname)
-      case VariantType(variants) => {
+      case VariantType(self, typeformals, variants) => {
+        val newTypeContext = self :: typeformals ::: typecontext
         val newVariants =
           for ((name, variant) <- variants) yield {
-            (name, variant map {_ map toType})
+            (name, variant map { namedToNameless(_, newTypeContext) })
           }
-        nameless.VariantType(newVariants)
+        nameless.VariantType(typeformals.size, newVariants)
       }
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
     } 
@@ -139,4 +139,4 @@ trait NamedToNameless {
     } 
   }
 
-}   
+}

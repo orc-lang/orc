@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jun 1, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@
 
 package orc.compile.parse
 
+import java.text.Normalizer
 import scala.util.parsing.combinator.lexical.StdLexical
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.input.CharSequenceReader.EofCh
@@ -38,6 +39,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   // Identifiers per Unicode Standard Annex #31, Unicode Identifier and Pattern Syntax
   val identifier: Parser[String] = """[\p{javaUnicodeIdentifierStart}][\p{javaUnicodeIdentifierPart}']*""".r
+  override protected def processIdent(name: String) = super.processIdent(Normalizer.normalize(name, Normalizer.Form.NFC))
 
   // StdLexical wants a func for legal identifier chars other than digits
   override def identChar = elem("identifier character", { ch => ch.isUnicodeIdentifierPart || ch == '\'' })
@@ -61,12 +63,11 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   ////////
 
   /** The set of reserved identifiers: these will be returned as `Keyword's */
+  // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
   override val reserved = new HashSet[String] ++ List(
-    "true", "false", "signal", "stop", "null",
-    "lambda", "if", "then", "else", "as", "_",
-    "val", "def", "type", "site", "class", "include",
-    "Top", "Bot",
-    "atomic"
+    "as", "def", "else", "if", "import", "include",
+    "lambda", "signal", "stop", "then", "type", "val",
+    "true", "false", "null", "_"
     )
 
   val operators = List(
@@ -74,12 +75,12 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     "&&", "||", "~",
     "<", ">",
     "=", "<:", ":>", "<=", ">=", "/=",
-    ":", "++",
+    ":",
     ".", "?", ":="
     )
 
   /** The set of delimiters (ordering does not matter) */
-  override val delimiters = new HashSet[String] ++ (List(
+  override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
     "|", ";",
     "::", ":!:"
@@ -92,7 +93,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     o.toList.map(Pattern.quote(_)).mkString("|").r
   }
 
-  protected lazy val delimRegex = {
+  protected lazy val delimOperRegex = {
     val o = new Array[String](delimiters.size)
     delimiters.copyToArray(o, 0)
     scala.util.Sorting.quickSort(o)(new Ordering[String] { def compare(x: String, y: String) = y.length - x.length })
@@ -100,7 +101,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   }
 
   ////////
-  // Token types in addition to those in StdTokens and Tokens 
+  // Token types in addition to those in StdTokens and Tokens
   ////////
 
   case class FloatingPointLit(chars: String) extends Token {
@@ -116,20 +117,20 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   ////////
 
   def multiLineCommentBody: Parser[Any] =
-    """(?s).*?(?=((\{-)|(-\})))""".r ~ 
+    """(?s).*?(?=((\{-)|(-\})))""".r ~
       ( "-}"
       | "{-" ~ multiLineCommentBody ~ multiLineCommentBody
       )
 
-  override val whitespace: Parser[Any] = 
-    rep( ("[" + unicodeWhitespaceChars + "]+").r
-       | """(?m)--.*$""".r
+  override val whitespace: Parser[Any] =
+    rep( ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
+       | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
        | "{-" ~ multiLineCommentBody
        | '{' ~ '-' ~ err("unclosed comment")
        )
 
   val numberLit: Parser[String] =
-    """(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?(([1-9][0-9]*)|0))?""".r
+    """([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?""".r
 
   val stringLit: Parser[String] =
     '\"' ~> (( '\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
@@ -145,7 +146,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     | stringLit               ^^ { StringLit(_) }
     | '\"' ~> err("unclosed string literal")
     | // Must be after other alternatives that a delim could be a prefix of
-    delimRegex                ^^ { Keyword(_) }
+      delimOperRegex          ^^ { Keyword(_) }
     | EofCh                   ^^^  EOF
     )
 

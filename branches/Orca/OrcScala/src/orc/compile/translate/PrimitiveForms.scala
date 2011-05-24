@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,10 +16,12 @@
 package orc.compile.translate
 
 import orc.ast.oil.named._
+import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
+import orc.lib.builtin.structured._
 import orc.ast.oil._
 import orc.ast.ext
-import orc.values.Signal
+import orc.values.{Signal, Field}
 import orc.values.sites.Site
 
 object PrimitiveForms {
@@ -28,8 +30,8 @@ object PrimitiveForms {
   def unaryBuiltinCall(s: Site)(a: Argument) = Call(Constant(s), List(a), None)
   def binaryBuiltinCall(s: Site)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
 
-  val callIf = unaryBuiltinCall(If) _
-  val callUnless = unaryBuiltinCall(Unless) _
+  val callIft = unaryBuiltinCall(Ift) _
+  val callIff = unaryBuiltinCall(Iff) _
   val callEq = binaryBuiltinCall(Eq) _
 
   val callCons = binaryBuiltinCall(ConsConstructor) _
@@ -42,10 +44,15 @@ object PrimitiveForms {
   val callNone = nullaryBuiltinCall(NoneConstructor) _
   val callIsNone = unaryBuiltinCall(NoneExtractor) _
   val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
-
+  
+  def callRecordMatcher(a: Argument, shape: List[String]) = {
+    val shapeArgs = shape map { s: String => Constant(Field(s)) }
+    Call(Constant(RecordMatcher), a :: shapeArgs, None)
+  }
+  
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
-    val getExtractor = Call(Constant(FindExtractor), List(constructor), None)
+    val getExtractor = Call(constructor, List(Constant(Field("unapply"))), None)
     val invokeExtractor = Call(extractor, List(a), None)
     getExtractor > extractor > invokeExtractor
   }
@@ -73,16 +80,32 @@ object PrimitiveForms {
 
   def makeRecord(tuples: List[Argument]) = Call(Constant(RecordConstructor), tuples, None)
 
-  def makeDatatype(declaredVariant: BoundTypevar, constructors: List[ext.Constructor], translator: Translator) = {
+  def makeDatatype(declaredVariant: BoundTypevar, variantArity: Int, constructors: List[ext.Constructor], translator: Translator) = {
     val datatypeSite = Constant(DatatypeBuilder)
     val datatypePairs =
-      for (ext.Constructor(name, types) <- constructors) yield { makeTuple(List(Constant(name), Constant(BigInt(types.size)))) }
-    val pairsVar = new BoundVar()
-
-    translator.unfold(datatypePairs, makeTuple) > pairsVar >
-      Call(datatypeSite, List(pairsVar), Some(List(declaredVariant)))
+      for (ext.Constructor(name, types) <- constructors) yield {
+        val cname = Constant(name)
+        val carity = Constant(BigInt(types.size))
+        makeTuple(List(cname, carity)) 
+      }
+    val typeParameter = 
+      if (variantArity > 0) {
+        TypeApplication(declaredVariant, List.fill(variantArity)(Top()))
+      }
+      else {
+        declaredVariant
+      }
+    unfold(datatypePairs, { Call(datatypeSite, _, Some(List(typeParameter))) })
   }
 
+
+  
+  def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
+    val b = new BoundVar()
+    val nb = new BoundVar()
+    ( (callIft(b) >> trueBranch)  ||  (callIff(b) >> falseBranch) )  < b <  test
+  }
+  
   /*
    * Return a composite expression with the following behavior:
    * 
@@ -107,5 +130,5 @@ object PrimitiveForms {
       }
     }
   }
-		
+	  
 }

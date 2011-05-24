@@ -15,10 +15,12 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
+import orc.Handle;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.SyncChannelType;
+import orc.lib.state.types.SyncChannelType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
@@ -29,29 +31,27 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author dkitchin
  */
 @SuppressWarnings("hiding")
-public class SyncChannel extends EvalSite {
+public class SyncChannel extends EvalSite implements TypedSite {
 
 	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.TokenAPI, orc.runtime.values.GroupCell, orc.OrcRuntime)
+	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
 	public Object evaluate(final Args args) {
 		return new SyncChannelInstance();
 	}
 
-//	@Override
-//	public Type type() throws TypeException {
-//		final Type X = new TypeVariable(0);
-//		final Type ChannelOfX = new SyncChannelType().instance(X);
-//		return new ArrowType(ChannelOfX, 1);
-//	}
+	@Override
+	public Type orcType() {
+		return SyncChannelType.getBuilder();
+	}
 
 	private class SenderItem {
 
-		TokenAPI sender;
+		Handle sender;
 		Object sent;
 
-		SenderItem(final TokenAPI sender, final Object sent) {
+		SenderItem(final Handle sender, final Object sent) {
 			this.sender = sender;
 			this.sent = sent;
 		}
@@ -61,11 +61,11 @@ public class SyncChannel extends EvalSite {
 
 		// Invariant: senderQueue is empty or receiverQueue is empty
 		protected final LinkedList<SenderItem> senderQueue;
-		protected final LinkedList<TokenAPI> receiverQueue;
+		protected final LinkedList<Handle> receiverQueue;
 
 		SyncChannelInstance() {
 			senderQueue = new LinkedList<SenderItem>();
-			receiverQueue = new LinkedList<TokenAPI>();
+			receiverQueue = new LinkedList<Handle>();
 		}
 
 		@Override
@@ -76,21 +76,19 @@ public class SyncChannel extends EvalSite {
 
 		protected class getMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI receiver) {
+			public void callSite(final Args args, final Handle receiver) {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
-					//FIXME:receiver.setQuiescent();
 					receiverQueue.addLast(receiver);
 				}
 				// If there is a waiting sender, both sender and receiver return
 				else {
 					final SenderItem si = senderQueue.removeFirst();
-					final TokenAPI sender = si.sender;
+					final Handle sender = si.sender;
 					final Object item = si.sent;
 
 					receiver.publish(object2value(item));
-					//FIXME:sender.unsetQuiescent();
 					sender.publish(signal());
 				}
 
@@ -99,21 +97,19 @@ public class SyncChannel extends EvalSite {
 
 		protected class putMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI sender) throws TokenException {
+			public void callSite(final Args args, final Handle sender) throws TokenException {
 
 				final Object item = args.getArg(0);
 
 				// If there are no waiting receivers, put this sender on the queue
 				if (receiverQueue.isEmpty()) {
-					//FIXME:sender.setQuiescent();
 					senderQueue.addLast(new SenderItem(sender, item));
 				}
 
 				// If there is a waiting receiver, both receiver and sender return
 				else {
-					final TokenAPI receiver = receiverQueue.removeFirst();
+					final Handle receiver = receiverQueue.removeFirst();
 
-					//FIXME:receiver.unsetQuiescent();
 					receiver.publish(object2value(item));
 					sender.publish(signal());
 				}

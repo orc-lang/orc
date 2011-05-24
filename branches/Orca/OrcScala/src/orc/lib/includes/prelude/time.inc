@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -12,86 +12,49 @@
 --
 
 {--
-Real and logical time.
+Real time.
 --}
 
 {--
-@site Rtimer(Integer) :: Signal
-Publish a signal after the given number of milliseconds.
+@site Rclock() :: {. time :: (lambda () :: Integer), wait :: (lambda (Integer) :: Signal) .}
 
-@method Rtimer.time() :: Integer
-Return the current real time in milliseconds, as
-measured from midnight January 1, 1970 UTC.
-Ranges from 0 to <code>Long.MAX_VALUE</code>.
+Create a new realtime clock instance.
+
+
+@method rclock.wait(Integer) :: Signal
+
+Return a <link linkend="ref.data.signal">signal</link> after the given number of milliseconds.
+
+
+@method rclock.time() :: Integer
+
+Return the total number of milliseconds that have passed
+since this clock was created.
+Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
+
 --}
-site Rtimer = "orc.lib.time.Rtimer"
+import site Rclock = "orc.lib.time.Rclock"
 
 {--
-@def Clock()() :: Number
-A call to <code>Clock</code> creates a new relative real-time clock.
-Calling a relative clock returns the number
-of milliseconds which have elapsed since the
-clock was created.
+@site Rwait(Integer) :: Signal
 
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Publishes a value near 1000
-val c = Clock()
-Rtimer(1000) >> c()]]></programlisting>
+Return a <link linkend="ref.data.signal">signal</link> after the given number of milliseconds.
+
+@site Rtime() :: Integer
+
+Return the total number of milliseconds that have passed
+since this program began executing.
+Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
 --}
-def Clock()() :: Integer
-def Clock() =
-  val time = Rtimer.time()
-  lambda () = Rtimer.time() - time
+val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
 
-{--
-@site Ltimer(Integer) :: Signal
-Publish a signal after the given number of logical timesteps,
-as measured by the current logical clock.
-The logical time advances whenever the computation controlled
-by the logical clock is quiescent (i.e. cannot advance on its own).
-
-@method Ltimer.time() :: Integer
-Return the current logical time, as measured by logical
-clock which was current when <code>Ltimer.time</code> was evaluated.
-Ranges from 0 to <code>Integer.MAX_VALUE</code>.
---}
---site Ltimer = "orc.lib.time.Ltimer"
-
-{-
-  Ltimer is not yet implemented in OrcScala
-  Currently we use Rtimer as a stub for Ltimer, 
-  increasing the granularity to avoid mis-ordering on small inputs.
--}
-def Ltimer(i) = Rtimer(100 * i)
-
-{--
-@def withLtimer[A](lambda () :: A) :: A
-Run the given thunk in the context of a new inner logical clock.
-Within the computation represented by the thunk, calls to
-<code>Ltimer</code> refer to the new clock. The
-outer clock can only advance when the inner clock becomes
-quiescent.
---}
-{-
-def withLtimer[A](lambda () :: A) :: A
-def withLtimer(thunk) =
-  site pushLtimer = "orc.lib.time.PushLtimer"
-  site popLtimer = "orc.lib.time.PopLtimer"
-  thunk >> -- wait for free variables to become bound
-  pushLtimer() >>
-  thunk() >x>
-  popLtimer() >>
-  x
--}
 {--
 @def metronome(Integer) :: Signal
-Publish a signal at regular intervals, indefinitely. The period is given by the
-argument, in milliseconds.
+Publish a <link linkend="ref.data.signal">signal</link> at regular intervals, indefinitely. 
+The period is given by the argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal
-def metronome(t) = signal | Rtimer(t) >> metronome(t)
-
+def metronome(t) = signal | Rwait(t) >> metronome(t)
 
 {-
 @def timeout[A](A, Integer) :: Option[A]
@@ -100,9 +63,4 @@ If it does become bound to a value v, publish Some(v).
 If instead the timeout is reached, publish None().
 -}
 def timeout[A](A, Integer) :: Option[A]
-def timeout(x, t) = let(Some(x) | Rtimer(t) >> None())
-
-
-site Vtimer = "orc.lib.time.Vtimer"
-site Vclock = "orc.lib.time.Vclock"
-
+def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())

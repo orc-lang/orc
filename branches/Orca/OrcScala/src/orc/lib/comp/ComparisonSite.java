@@ -16,86 +16,83 @@ package orc.lib.comp;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import orc.error.runtime.JavaException;
+import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Types;
 
 /**
  * @author quark
  */
-@SuppressWarnings({"synthetic-access", "boxing"})
-public abstract class ComparisonSite extends EvalSite {
+@SuppressWarnings("synthetic-access")
+public abstract class ComparisonSite extends EvalSite implements TypedSite {
 	private static class MyOperator implements NumericBinaryOperator<Integer> {
 		@Override
 		public Integer apply(final BigInteger a, final BigInteger b) {
-			return a.compareTo(b);
+			return Integer.valueOf(a.compareTo(b));
 		}
 
 		@Override
 		public Integer apply(final BigDecimal a, final BigDecimal b) {
-			return a.compareTo(b);
+			return Integer.valueOf(a.compareTo(b));
 		}
 
 		@Override
 		public Integer apply(final int a, final int b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final long a, final long b) {
-			return (int) (a - b);
+			return Integer.valueOf((int) (a - b));
 		}
 
 		@Override
 		public Integer apply(final byte a, final byte b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final short a, final short b) {
-			return a - b;
+			return Integer.valueOf(a - b);
 		}
 
 		@Override
 		public Integer apply(final double a, final double b) {
-			return Double.compare(a, b);
+			return Integer.valueOf(Double.compare(a, b));
 		}
 
 		@Override
 		public Integer apply(final float a, final float b) {
-			return Float.compare(a, b);
+			return Integer.valueOf(Float.compare(a, b));
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see orc.runtime.sites.EvalSite#evaluate(java.lang.Object[])
-	 */
-    @Override
+	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final Object arg0 = args.getArg(0);
 		final Object arg1 = args.getArg(1);
-		try {
-			if (arg0 instanceof Number && arg1 instanceof Number) {
-				final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator());
-				return compare(a);
-			} else {
-			    @SuppressWarnings("unchecked")
-				final int a = ((Comparable<Object>) arg0).compareTo(arg1);
-				return compare(a);
+		if (arg0 instanceof Number && arg1 instanceof Number) {
+			final int a = Args.applyNumericOperator((Number) arg0, (Number) arg1, new MyOperator()).intValue();
+			return Boolean.valueOf(compare(a));
+		} else {
+			if (!(arg0 instanceof Comparable)) {
+				throw new ArgumentTypeMismatchException(0, "Comparable<Object>", args.getArg(0).getClass().getCanonicalName());
 			}
-		} catch (final ClassCastException e) {
-			throw new JavaException(e); // TODO: Make more specific
+			@SuppressWarnings("unchecked")
+			final int a = ((Comparable<Object>) arg0).compareTo(arg1);
+			return Boolean.valueOf(compare(a));
 		}
 	}
 
 	abstract public boolean compare(int a);
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.TOP, Type.TOP, Type.BOOLEAN);
+	public Type orcType() {
+		return Types.function(Types.top(), Types.top(), Types.bool());
 	}
 }

@@ -1,13 +1,12 @@
 //
-
-// Guarded.scala -- Scala class/trait/object Guarded
+// Guarded.scala -- Scala trait Guarding
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Aug 4, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -66,7 +65,6 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case Atomic(body) => check(body)
       case DeclareDefs(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

@@ -1,12 +1,12 @@
 //
-// Input.scala -- Scala class/trait/object Input
+// Input.scala -- Scala classes, traits, and objects relating to parser input sources
 // Project OrcScala
 //
 // $Id$
 //
 // Created by jthywiss on Jun 6, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -114,11 +114,19 @@ trait OrcInputContext {
 
   protected def resolve(baseURI: URI, pathElements: String*): URI = {
     def allowedURIchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
+    /** True if the argument string is in a form that can only be a file name */
     def looksLikeFilename(s: String): Boolean =
-      (s(0).isLetter && s(1) == ':') ||                  // CP/M style drive letter
-      !s.filterNot(allowedURIchars.contains(_)).isEmpty  // Illegal URI chars
-    def nameToURI(s: String): URI = if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
-    pathElements.foldLeft(baseURI)((x,y) => x.resolve(nameToURI(y)))
+      (s.length >= 2 && s(0).isLetter && s(1) == ':') ||  // CP/M style drive letter
+      !s.filterNot(allowedURIchars.contains(_)).isEmpty   // Illegal URI chars
+    def nameToURI(s: String): URI = {
+      if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
+    }
+    /** Ensure that "file:" URIs that refer to directories have a trailing slash. 
+     *  This is necessary per URI parsing and resolution rules. */
+    def slashifyDir(u: URI) = {
+      if (u != null && u.getScheme != null && u.getScheme.equals("file")) new File(u).toURI() else u
+    }
+    pathElements.foldLeft(slashifyDir(baseURI))((x,y) => slashifyDir(x.resolve(nameToURI(y))))
   }
 
   def newInputFromPath(pathElements: String*): OrcInputContext = {
@@ -195,5 +203,5 @@ class OrcNetInputContext(val uri: URI) extends OrcInputContext {
   override val descr: String = uri.toString
   override def toURI: URI = uri
   override def toURL: URL = uri.toURL
-  override val reader: OrcReader = OrcReader(new InputStreamReader(toURL.openStream), descr)  //URL.openStream returns a buffered SockentInputStream, so no additional buffering should be needed
+  override val reader: OrcReader = OrcReader(new InputStreamReader(toURL.openStream,"UTF-8"), descr)  //URL.openStream returns a buffered SockentInputStream, so no additional buffering should be needed
 }

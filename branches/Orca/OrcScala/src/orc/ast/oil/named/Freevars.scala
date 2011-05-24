@@ -1,12 +1,12 @@
 //
-// Freevars.scala -- Scala class/trait/object Freevars
+// Freevars.scala -- Scala traits hasVars, hasFreeVars, hasFreeTypeVars, hasUnboundVars, hasUnboundTypeVars
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 13, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -91,4 +91,3 @@ trait hasUnboundTypeVars {
     Set.empty ++ varset
   }
 }
-

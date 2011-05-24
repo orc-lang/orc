@@ -25,16 +25,6 @@ notes: Scala runtime library, used extensively.
 
 ---
 
-files: [junit-4.5.jar]
-project: JUnit
-version: 4.5
-url: http://www.junit.org/
-license: BSD-junit.txt
-phase: build
-notes: Used for unit testing.
-
----
-
 files: [ant-googlecode-0.0.1.jar]
 project: ant-googlecode
 version: 0.0.1
@@ -42,13 +32,3 @@ url: http://code.google.com/p/ant-googlecode/
 license: BSD-ant-googlecode.txt
 phase: build
 notes: Used for google code upload task.
-
----
-
-files: [JavaApplicationStub]
-project: Apple OS X
-version: 10.5.6
-url: http://www.apple.com/macosx/
-license: JavaApplicationStub.txt
-phase: build
-notes: Included in the Mac OS X App version of the Orc tool.

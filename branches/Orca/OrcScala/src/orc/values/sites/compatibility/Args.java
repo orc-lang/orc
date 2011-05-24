@@ -22,12 +22,10 @@ import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.InsufficientArgsException;
 import orc.error.runtime.JavaException;
-import orc.error.runtime.TokenException;
 import orc.values.Field;
-import orc.values.Signal$;
 
 /**
- * Container for arguments to a site. 
+ * Container for arguments to a site.
  * 
  * @author dkitchin
  */
@@ -40,23 +38,23 @@ public class Args implements Serializable {
 		this.values = values.toArray(this.values);
 	}
 
+	/**
+	 * @return number of arguments
+	 */
 	public int size() {
 		return values.length;
 	}
 
-	public Object condense() {
-	    if (values.length == 0) {
-	      return Signal$.MODULE$;
-	    } else if (values.length == 1) {
-	      return values[0];
-	    } else {
-	        return values; //FIXME: A tuple, not a Java array
-	    }
-	}
-
-	public String fieldName() throws TokenException {
+	/**
+	 * Helper function to, assuming the argument is an Orc field, retrieve the
+	 * field's name
+	 * 
+	 * @return
+	 * @throws ArityMismatchException
+	 * @throws ArgumentTypeMismatchException
+	 */
+	public String fieldName() throws ArityMismatchException, ArgumentTypeMismatchException {
 		if (values.length != 1) {
-			//throw new TokenException("Arity mismatch resolving field reference.");
 			throw new ArityMismatchException(1, values.length);
 		}
 		final Object v = values[0];
@@ -66,7 +64,7 @@ public class Args implements Serializable {
 		if (v instanceof Field) {
 			return ((Field) v).field();
 		} else {
-			throw new ArgumentTypeMismatchException(0, "message", ((v != null) ? v.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(0, "message", (v != null ? v.getClass().toString() : "null"));
 		}
 	}
 
@@ -74,9 +72,11 @@ public class Args implements Serializable {
 	 * Helper function to retrieve the nth element as an object (starting from
 	 * 0), with error checking
 	 * 
-	 * @throws TokenException
+	 * @param n
+	 * @return
+	 * @throws InsufficientArgsException
 	 */
-	public Object getArg(final int n) throws TokenException {
+	public Object getArg(final int n) throws InsufficientArgsException {
 		try {
 			return values[n];
 		} catch (final ArrayIndexOutOfBoundsException e) {
@@ -85,8 +85,10 @@ public class Args implements Serializable {
 	}
 
 	/**
-	 * Return the entire tuple as an object array.
-	 * Please don't mutate the array.
+	 * Return the entire tuple as an object array. Please don't mutate the
+	 * array.
+	 * 
+	 * @return
 	 */
 	public Object[] asArray() {
 		return values;
@@ -94,9 +96,13 @@ public class Args implements Serializable {
 
 	/**
 	 * Helper function for integers
-	 * @throws TokenException 
+	 * 
+	 * @param n
+	 * @return
+	 * @throws ArgumentTypeMismatchException
+	 * @throws InsufficientArgsException 
 	 */
-	public int intArg(final int n) throws TokenException {
+	public int intArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
 			throw new ArgumentTypeMismatchException(n, "int", "null");
@@ -104,16 +110,19 @@ public class Args implements Serializable {
 		try {
 			return ((Number) a).intValue();
 		} catch (final ClassCastException e) {
-			// throw new TokenException("Argument " + n + " should be an int, got " + ((a != null) ? a.getClass().toString() : "null")+ " instead."); 
-			throw new ArgumentTypeMismatchException(n, "int", ((a != null) ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "int", (a != null ? a.getClass().toString() : "null"));
 		}
 	}
 
 	/**
 	 * Helper function for longs
-	 * @throws TokenException 
+	 * 
+	 * @param n
+	 * @return
+	 * @throws ArgumentTypeMismatchException
+	 * @throws InsufficientArgsException 
 	 */
-	public long longArg(final int n) throws TokenException {
+	public long longArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
 			throw new ArgumentTypeMismatchException(n, "long", "null");
@@ -121,12 +130,17 @@ public class Args implements Serializable {
 		try {
 			return ((Number) a).longValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "long", ((a != null) ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "long", (a != null ? a.getClass().toString() : "null"));
 		}
-		// { throw new TokenException("Argument " + n + " should be an int, got " + ((a != null) ? a.getClass().toString() : "null") + " instead."); } 
 	}
 
-	public Number numberArg(final int n) throws TokenException {
+	/**
+	 * @param n
+	 * @return
+	 * @throws ArgumentTypeMismatchException
+	 * @throws InsufficientArgsException 
+	 */
+	public Number numberArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
 			throw new ArgumentTypeMismatchException(n, "Number", "null");
@@ -134,15 +148,19 @@ public class Args implements Serializable {
 		try {
 			return (Number) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "Number", ((a != null) ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "Number", (a != null ? a.getClass().toString() : "null"));
 		}
 	}
 
 	/**
 	 * Helper function for booleans
-	 * @throws TokenException 
+	 * 
+	 * @param n
+	 * @return
+	 * @throws ArgumentTypeMismatchException
+	 * @throws InsufficientArgsException
 	 */
-	public boolean boolArg(final int n) throws TokenException {
+	public boolean boolArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
 			throw new ArgumentTypeMismatchException(n, "boolean", "null");
@@ -150,20 +168,21 @@ public class Args implements Serializable {
 		try {
 			return ((Boolean) a).booleanValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "boolean", ((a != null) ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "boolean", (a != null ? a.getClass().toString() : "null"));
 		}
-		//{ throw new TokenException("Argument " + n + " to site '" + this.toString() + "' should be a boolean, got " + ((a != null) ? a.getClass().toString() : "null") + " instead."); } 
-
 	}
 
 	/**
-	 * Helper function for strings.
-	 * Note that this requires a strict String type.
-	 * If you don't care whether the argument is really a string,
-	 * use valArg(n).toString().
-	 * @throws TokenException 
+	 * Helper function for strings. Note that this requires a strict String
+	 * type. If you don't care whether the argument is really a string, use
+	 * valArg(n).toString().
+	 * 
+	 * @param n
+	 * @return
+	 * @throws ArgumentTypeMismatchException
+	 * @throws InsufficientArgsException
 	 */
-	public String stringArg(final int n) throws TokenException {
+	public String stringArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
 			throw new ArgumentTypeMismatchException(n, "String", "null");
@@ -171,7 +190,7 @@ public class Args implements Serializable {
 		try {
 			return (String) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "String", ((a != null) ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "String", (a != null ? a.getClass().toString() : "null"));
 		}
 	}
 
@@ -214,10 +233,16 @@ public class Args implements Serializable {
 	}
 
 	/**
-	 * Dispatch a binary operator based on the widest
-	 * type of two numbers.
+	 * Dispatch a binary operator based on the widest type of two numbers.
+	 * 
+	 * @param <T>
+	 * @param a
+	 * @param b
+	 * @param op
+	 * @return
+	 * @throws JavaException
 	 */
-	public static <T> T applyNumericOperator(final Number a, final Number b, final NumericBinaryOperator<T> op) throws TokenException {
+	public static <T> T applyNumericOperator(final Number a, final Number b, final NumericBinaryOperator<T> op) throws JavaException {
 		try {
 			if (a instanceof BigDecimal) {
 				if (b instanceof BigDecimal) {
@@ -256,7 +281,7 @@ public class Args implements Serializable {
 			} else if (a instanceof Byte || b instanceof Byte) {
 				return op.apply(a.byteValue(), b.byteValue());
 			} else {
-				throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + ((a != null) ? a.getClass().toString() : "null") + ", " + ((b != null) ? b.getClass().toString() : "null") + ")"));
+				throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + (a != null ? a.getClass().toString() : "null") + ", " + (b != null ? b.getClass().toString() : "null") + ")"));
 			}
 		} catch (final ArithmeticException e) {
 			throw new JavaException(e);
@@ -265,8 +290,14 @@ public class Args implements Serializable {
 
 	/**
 	 * Dispatch a unary operator based on the type of a number.
+	 * 
+	 * @param <T>
+	 * @param a
+	 * @param op
+	 * @return
+	 * @throws JavaException
 	 */
-	public static <T> T applyNumericOperator(final Number a, final NumericUnaryOperator<T> op) throws TokenException {
+	public static <T> T applyNumericOperator(final Number a, final NumericUnaryOperator<T> op) throws JavaException {
 		if (a instanceof BigDecimal) {
 			return op.apply((BigDecimal) a);
 		} else if (a instanceof Double) {
@@ -284,7 +315,7 @@ public class Args implements Serializable {
 		} else if (a instanceof Byte) {
 			return op.apply(a.byteValue());
 		} else {
-			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + ((a != null) ? a.getClass().toString() : "null") + ")"));
+			throw new JavaException(new IllegalArgumentException("Unexpected Number type in (" + (a != null ? a.getClass().toString() : "null") + ")"));
 		}
 	}
 }

@@ -14,23 +14,24 @@
 package orc.lib.util;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.Types;
 
 /**
  * Generate random UUIDs.
  * @author quark
  */
-public class UUID extends EvalSite {
+public class UUID extends EvalSite implements TypedSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		return java.util.UUID.randomUUID().toString();
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.STRING);
+	public Type orcType() {
+		return Types.function(Types.string());
 	}
 }

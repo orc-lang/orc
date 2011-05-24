@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,10 +30,11 @@ object FractionDefs extends NamedASTTransform {
   
     override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
       case DeclareDefs(defs, body) => {
-        val defnames = defs map { _.name }
-        val defslists = fraction(defs) 
-        val newbody = transform(body, defnames ::: context, typecontext)
-        defslists.foldRight(newbody) { DeclareDefs }
+        val newdefs = defs map { transform(_, context, typecontext) }
+        val newdefnames = newdefs map { _.name }
+        val newdeflists = fraction(newdefs)
+        val newbody = transform(body, newdefnames ::: context, typecontext)
+        newdeflists.foldRight(newbody) { DeclareDefs }
       }
     }  
   

@@ -21,7 +21,7 @@ package orc.error.runtime;
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-abstract public class SiteException extends TokenException {
+public class SiteException extends TokenException {
 
 	public SiteException(final String message) {
 		super(message);

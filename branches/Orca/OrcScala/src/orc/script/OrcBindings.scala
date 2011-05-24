@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -45,20 +45,37 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def includePath_=(newVal: java.util.List[String]) = putPathList("orc.includePath", newVal)
   def additionalIncludes: java.util.List[String] = getPathList("orc.additionalIncludes", List())
   def additionalIncludes_=(newVal: java.util.List[String]) = putPathList("orc.additionalIncludes", newVal)
-  def exceptionsOn: Boolean = getBoolean("orc.exceptionsOn", false)
-  def exceptionsOn_=(newVal: Boolean) = putBoolean("orc.exceptionsOn", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
-
+  def disableRecursionCheck: Boolean = getBoolean("orc.disableRecursionCheck", false)
+  def disableRecursionCheck_=(newVal: Boolean) = putBoolean("orc.disableRecursionCheck", newVal)
+  def echoOil: Boolean = getBoolean("orc.echoOil", false)
+  def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
+  def oilOutputFile: Option[File] = {
+    getString("orc.oilOutputFile", "") match {
+      case "" => None
+      case f => Some(new File(f))
+    }
+  }
+  def oilOutputFile_=(newVal: Option[File]) = putString("orc.oilOutputFile", newVal.map(_.toString).getOrElse(""))
+  def compileOnly: Boolean = getBoolean("orc.onlyCompile", false)
+  def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
+  def runOil: Boolean = getBoolean("orc.runOil", false)
+  def runOil_=(newVal: Boolean) = putBoolean("orc.runOil", newVal)
+  
   // Execution options
-  def maxPublications: Int = getInt("orc.maxPublications", -1)
-  def maxPublications_=(newVal: Int) = putInt("orc.maxPublications", newVal)
-  def tokenPoolSize: Int = getInt("orc.tokenPoolSize", -1)
-  def tokenPoolSize_=(newVal: Int) = putInt("orc.tokenPoolSize", newVal)
-  def stackSize: Int = getInt("orc.stackSize", -1)
-  def stackSize_=(newVal: Int) = putInt("orc.stackSize", newVal)
   def classPath: java.util.List[String] = getPathList("orc.classPath", List())
   def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
+  def showJavaStackTrace: Boolean = getBoolean("orc.showJavaStackTrace", false)
+  def showJavaStackTrace_=(newVal: Boolean) = putBoolean("orc.showJavaStackTrace", newVal)
+  def disableTailCallOpt: Boolean = getBoolean("orc.disableTailCallOpt", false)
+  def disableTailCallOpt_=(newVal: Boolean) = putBoolean("orc.disableTailCallOpt", newVal)
+  def stackSize: Int = getInt("orc.stackSize", -1)
+  def stackSize_=(newVal: Int) = putInt("orc.stackSize", newVal)
+  def maxTokens: Int = getInt("orc.maxTokens", -1)
+  def maxTokens_=(newVal: Int) = putInt("orc.maxTokens", newVal)
+  def maxSiteThreads: Int = getInt("orc.maxSiteThreads", -1)
+  def maxSiteThreads_=(newVal: Int) = putInt("orc.maxSiteThreads", newVal)
   var capabilities = new java.util.HashMap[String, Boolean]()
   def hasRight(rightName: String): Boolean = {
     if (capabilities.containsKey(rightName)) {

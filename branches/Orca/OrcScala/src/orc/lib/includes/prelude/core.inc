@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -20,107 +20,122 @@ followed by the operands.  When the site name is surrounded in parentheses, as
 in <code>(+)</code>, it denotes an infix operator.
 
 For a more complete description of the built-in operators and their syntax, see
-the <link linkend="language.base.operators">Operators</link> section of the
-User Guide.
+the <link linkend="ref.expressions.operators">Operators</link> article.
 --}
 
 {-
 Basic types
 -}
-type String = "java.lang.String"
-type Number = "java.lang.BigDecimal"
-type Boolean = "java.lang.Boolean"
-type Integer = "java.lang.BigInt"
-type Signal = "orc.ast.oil.Signal"
+import type Top = "orc.types.Top"
+import type Bot = "orc.types.Bot"
+import type String = "orc.types.StringType"
+import type Number = "orc.types.NumberType"
+import type Boolean = "orc.types.BooleanType"
+import type Integer = "orc.types.IntegerType"
+import type Signal = "orc.types.SignalType"
 
 {--
-@site let() :: Signal
-When applied to no arguments, return a signal.
+@site Let() :: Signal
 
-@site let[A](A) :: A
-When applied to a single argument, return that argument (behaving as the identity function).
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
-@site let[A, ...](A, ...) :: (A, ...)
-When applied to two or more arguments, return the arguments in a tuple.
+When called with no arguments, returns a <link linkend="ref.data.signal">signal</link>.
+
+
+@site Let(A) :: A
+When called with a single argument, returns that argument (behaving as the identity function).
+
+@site Let(A, ...) :: (A, ...)
+When called with two or more arguments, returns the arguments as a <link linkend="ref.data.tuple">tuple</link>.
 --}
-site let = "orc.lib.builtin.Let"
+import site Let = "orc.lib.builtin.Let"
 
 {--
-@site If(Boolean) :: Signal
-Fail silently if the argument is false. Otherwise return a signal.
+@site Ift(Boolean) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
+
+Returns a <link linkend="ref.data.signal">signal</link> if the argument is true, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  If(false) >> "Never publishes"
-| If(true) >> "Always publishes"]]></programlisting>
+  Ift(false) >> "Never publishes"
+| Ift(true) >> "Always publishes"]]></programlisting>
+
 --}
-site If = "orc.lib.builtin.If"
+import site Ift = "orc.lib.builtin.Ift"
 
 {--
-@site Unless(Boolean) :: Signal
-Fail silently if the argument is true. Otherwise return a signal.
+@site Iff(Boolean) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
+
+Returns a <link linkend="ref.data.signal">signal</link> if the argument is false, otherwise <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: "Always publishes"
-  Unless(false) >> "Always publishes"
-| Unless(true) >> "Never publishes"]]></programlisting>
+  Iff(false) >> "Always publishes"
+| Iff(true) >> "Never publishes"]]></programlisting>
+
 --}
-site Unless = "orc.lib.builtin.Unless"
-
-{- Aliases for different styles of conditional site usage -}
-val Ift = If
-val IfT = If
-val IfTrue = If
-
-val Iff = Unless
-val IfF = Unless
-val IfFalse = Unless
+import site Iff = "orc.lib.builtin.Iff"
 
 
 {--
-@site error(String) :: Bot
-Halt with the given error message.
+@site Error(String) :: Bot
 
-Example, using <code>error</code> to implement assertions:
+<od:sitepropset>   
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Emits the given string as an error message, then <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+Example, using <code>Error</code> to implement assertions:
 <programlisting language="orc-demo"><![CDATA[
 def assert(b) =
-  if b then signal else error("assertion failed")
-
+  if b then signal else Error("assertion failed")
 -- Fail with the error message: "assertion failed"
 assert(false)]]></programlisting>
 --}
-
---FIXME:site error = "orc.lib.???.Error"
-def error(_) = stop
+import site Error = "orc.lib.util.Error"
 
 
 {--
 @site (+)(Number, Number) :: Number
 <code>a+b</code> returns the sum of <code>a</code> and <code>b</code>.
 --}
-site (+) = "orc.lib.math.Add"
+import site (+) = "orc.lib.math.Add"
 
 {--
 @site (-)(Number, Number) :: Number
 <code>a-b</code> returns the value of <code>a</code> minus the value of <code>b</code>.
 --}
-site (-) = "orc.lib.math.Sub"
+import site (-) = "orc.lib.math.Sub"
 
 {--
 @site (0-)(Number) :: Number
 Return the additive inverse of the argument.
 When this site appears as an operator, it is written in prefix form without the
-zero, i.e. <code>(-a)</code>
+zero, i.e. <code>-a</code>
 --}
-site (0-) = "orc.lib.math.UMinus"
+import site (0-) = "orc.lib.math.UMinus"
 
 {--
 @site (*)(Number, Number) :: Number
 <code>a*b</code> returns the product of <code>a</code> and <code>b</code>.
 --}
-site (*) = "orc.lib.math.Mult"
+import site (*) = "orc.lib.math.Mult"
 
 {--
 @site (**)(Number, Number) :: Number
@@ -128,21 +143,21 @@ site (*) = "orc.lib.math.Mult"
 <inlineequation><mathphrase>a<superscript>b</superscript></mathphrase></inlineequation>,
 i.e. <code>a</code> raised to the <code>b</code>th power.
 --}
-site (**) = "orc.lib.math.Exponent"
+import site (**) = "orc.lib.math.Exponent"
 
 {--
 @site (/)(Number, Number) :: Number
 <code>a/b</code> returns <code>a</code> divided by <code>b</code>.
 If both arguments have integral types, <code>(/)</code> performs integral
 division, rounding towards zero. Otherwise, it performs floating-point
-division. If <code>b=0</code>, <code>a/b</code> halts with an error.
+division. If <code>b=0</code>, <code>a/b</code> <link linkend="ref.concepts.states.halt">halts</link> with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
   7/3   -- publishes 2
 | 7/3.0 -- publishes 2.333...]]></programlisting>
 --}
-site (/) = "orc.lib.math.Div"
+import site (/) = "orc.lib.math.Div"
 
 {--
 @site (%)(Number, Number) :: Number
@@ -151,34 +166,34 @@ and <code>b</code> have integral types, then the remainder is given by
 the expression <code>a - (a/b)*b</code>. For a full description, see the
 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.17.3">Java Language Specification, 3rd edition</link>.
 --}
-site (%) = "orc.lib.math.Mod"
+import site (%) = "orc.lib.math.Mod"
 
 {--
-@site (<:)(Signal, Signal) :: Boolean
+@site (<:)(Top, Top) :: Boolean
 <code>a &lt;: b</code> returns true if <code>a</code> is less than <code>b</code>, and false otherwise.
 --}
-site (<:) = "orc.lib.comp.Less"
+import site (<:) = "orc.lib.comp.Less"
 
 {--
-@site (<=)(Signal, Signal) :: Boolean
+@site (<=)(Top, Top) :: Boolean
 <code>a &lt;= b</code> returns true if <code>a</code> is less than or equal to <code>b</code>, and false otherwise.
 --}
-site (<=) = "orc.lib.comp.Leq"
+import site (<=) = "orc.lib.comp.Leq"
 
 {--
-@site (:>)(Signal, Signal) :: Boolean
+@site (:>)(Top, Top) :: Boolean
 <code>a :> b</code> returns true if <code>a</code> is greater than <code>b</code>, and false otherwise.
 --}
-site (:>) = "orc.lib.comp.Greater"
+import site (:>) = "orc.lib.comp.Greater"
 
 {--
-@site (>=)(Signal, Signal) :: Boolean
+@site (>=)(Top, Top) :: Boolean
 <code>a >= b</code> returns true if <code>a</code> is greater than or equal to <code>b</code>, and false otherwise.
 --}
-site (>=) = "orc.lib.comp.Greq"
+import site (>=) = "orc.lib.comp.Greq"
 
 {--
-@site (=)(Signal, Signal) :: Boolean
+@site (=)(Top, Top) :: Boolean
 <code>a = b</code> returns true if <code>a</code> is equal to <code>b</code>,
 and false otherwise.  The precise definition of "equal" depends on the values
 being compared, but always obeys the rule that if two values are considered
@@ -186,71 +201,60 @@ equal, then one may be substituted locally for the other without affecting the
 behavior of the program.
 
 Two values with the same object identity are always considered equal.
-In addition, Cor <link linkend="cor.constants">constant values</link> and <link
-linkend="cor.data">data structures</link> are considered equal if their
-contents are equal. Other types are free to implement their own equality
+Orc data structures, such as tuples, are equal if their contents are equal.
+Other types are free to implement their own equality
 relationship provided it conforms to the rules given here.
 
-Note that although values of dUnlesserent types may be compared with
+Note that although values of different types may be compared with
 <code>=</code>, the substitutability principle requires that such values are
 always considered inequal, i.e. the comparison will return <code>false</code>.
 --}
-site (=) = "orc.lib.builtin.Eq"
+import site (=) = "orc.lib.builtin.Eq"
 
 {--
-@site (/=)(Signal, Signal) :: Boolean
+@site (/=)(Top, Top) :: Boolean
 <code>a/=b</code> returns false if <code>a=b</code>, and true otherwise.
 --}
-site (/=) = "orc.lib.comp.Inequal"
+import site (/=) = "orc.lib.comp.Inequal"
 
 {--
 @site (~)(Boolean) :: Boolean
 Return the logical negation of the argument.
 --}
-site (~) = "orc.lib.bool.Not"
+import site (~) = "orc.lib.bool.Not"
 
 {--
 @site (&&)(Boolean, Boolean) :: Boolean
 Return the logical conjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 --}
-site (&&) = "orc.lib.bool.And"
+import site (&&) = "orc.lib.bool.And"
 
 {--
 @site (||)(Boolean, Boolean) :: Boolean
 Return the logical disjunction of the arguments. This is not a short-circuiting
-operator; both arguments must be evaluated and available before the result is
+operator; both arguments must publish before the result is
 computed.
 --}
-site (||) = "orc.lib.bool.Or"
+import site (||) = "orc.lib.bool.Or"
 
 {--
 @site (:)[A](A, List[A]) :: List[A]
 
-The list <code>a:b</code> is formed by prepending the element <code>a</code> to
+The <link linkend="ref.data.list">list</link> <code>a:b</code> is formed by prepending the element <code>a</code> to
 the list <code>b</code>.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: (3, [4, 5])
 3:4:5:[] >x:xs> (x,xs)]]></programlisting>
-
-In patterns, the <code>(:)</code> deconstructor can be applied to a variety of
-list-like values such as <code>Array</code>s and Java <code>Iterable</code>s,
-in which case it returns the first element of the list-like value, and a new
-list-like value (not necessarily of the same type as the original list-like
-value) representing the tail.  Modifying the structure of the original
-value (e.g. adding an element to an <code>Iterable</code>) may render
-old "tail"s unusable, so you should refrain from modifying a value
-while you are deconstructing it.  This feature is highly experimental
-and will probably change in future versions of the implementation.
 --}
-site (:) = "orc.lib.builtin.ConsConstructor"
+import site (:) = "orc.lib.builtin.structured.ConsConstructor"
 
 {--
 @def abs(Number) :: Number
-Return the absolute value of the argument.
+Publishes the absolute value of the argument.
 
 @implementation
 --}
@@ -259,7 +263,7 @@ def abs(x) = if x <: 0 then -x else x
 
 {--
 @def signum(Number) :: Number
-<code>signum(a)</code> returns <code>-1</code> if <code>a&lt;0</code>,
+<code>signum(a)</code> publishes <code>-1</code> if <code>a&lt;0</code>,
 <code>1</code> if <code>a&gt;0</code>, and <code>0</code> if <code>a=0</code>.
 
 @implementation
@@ -272,8 +276,8 @@ def signum(x) =
 
 {--
 @def min[A](A,A) :: A
-Return the lesser of the arguments. If the arguments
-are equal, return the first argument.
+Publishes the lesser of the arguments. If the arguments
+are equal, publishes the first argument.
 
 @implementation
 --}
@@ -282,8 +286,8 @@ def min(x,y) = if y <: x then y else x
 
 {--
 @def max[A](A,A) :: A
-Return the greater of the arguments. If the arguments
-are equal, return the second argument.
+Publishes the greater of the arguments. If the arguments
+are equal, publishes the second argument.
 
 @implementation
 --}
@@ -292,15 +296,26 @@ def max(x,y) = if x :> y then x else y
 
 
 {--
-@site floor(Number) :: Integer
+@site Floor(Number) :: Integer
 Return the greatest integer less than
 or equal to this number.
 --}
-site floor = "orc.lib.math.Floor"
+import site Floor = "orc.lib.math.Floor"
 
 {--
-@site ceil(Number) :: Integer
+@site Ceil(Number) :: Integer
 Return the least integer greater than
 or equal to this number.
 --}
-site ceil = "orc.lib.math.Ceil"
+import site Ceil = "orc.lib.math.Ceil"
+
+{--
+@def sqrt(Number) :: Integer
+Publish the square root of this number.
+If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+
+@implementation
+--}
+def sqrt(Number) :: Number
+def sqrt(n) = n ** 0.5
+

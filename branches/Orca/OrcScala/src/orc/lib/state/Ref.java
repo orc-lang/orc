@@ -16,73 +16,70 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.error.compiletime.typing.TypeException;
+import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
-//import orc.lib.state.types.RefType;
+import orc.lib.state.types.RefType;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.TokenAPI;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.TypeVariable;
-import orc.values.sites.compatibility.type.structured.ArrowType;
-import orc.values.sites.compatibility.type.structured.MultiType;
 
 /**
+ * Rewritable mutable reference. The reference can be initialized with a value,
+ * or left initially empty. Read operations block if the reference is empty.
+ * Write operations always succeed.
+ * 
  * @author dkitchin
- *
- * Rewritable mutable reference.
- * The reference can be initialized with a value, or left initially empty. 
- * Read operations block if the reference is empty.
- * Write operatons always succeed.
- *
  */
-public class Ref extends EvalSite {
+public class Ref extends EvalSite implements TypedSite {
 
-	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.EvalSite#evaluate(orc.values.sites.compatibility.Args)
-	 */
 	@Override
-	public Object evaluate(final Args args) {
+	public Object evaluate(final Args args) throws TokenException {
 
-		// If we were passed arguments, condense those arguments and store them in the ref as an initial value
-		if (args.size() > 0) {
-			return new RefInstance(args.condense());
+		// If we were passed an argument, store it in the ref as an initial value
+		if (args.size() == 1) {
+			return new RefInstance(args.getArg(0));
 		}
-		// Otherwise, create an initially empty reference
-		else {
+		// With no args, create an initially empty reference
+		else if (args.size() == 0) {
 			return new RefInstance();
+		} else {
+			throw new ArityMismatchException(1, args.size());
 		}
 	}
 
 	@Override
-	public Type type() throws TypeException {
-		final Type X = new TypeVariable(0);
-		final Type RefOfX = null;//FIXME:new RefType().instance(X);
-		return new MultiType(new ArrowType(RefOfX, 1), new ArrowType(X, RefOfX, 1));
+	public Type orcType() {
+		return RefType.getBuilder();
 	}
 
 	public static class RefInstance extends DotSite {
 
-		protected Queue<TokenAPI> readQueue;
+		protected Queue<Handle> readQueue;
 		Object contents;
 
 		public RefInstance() {
 			this.contents = null;
 
-			/* Note that the readQueue also signals whether the reference has been assigned.
-			 * If it is non-null (as it is initially), the reference is unassigned.
-			 * If it is null, the reference has been assigned.
-			 * 
-			 * This allows the reference to contain a null value if needed, and it also
-			 * frees the memory associated with the read queue once the reference has been assigned.
+			/*
+			 * Note that the readQueue also signals whether the reference has
+			 * been assigned. If it is non-null (as it is initially), the
+			 * reference is unassigned. If it is null, the reference has been
+			 * assigned.
+			 *
+			 * This allows the reference to contain a null value if needed, and
+			 * it also frees the memory associated with the read queue once the
+			 * reference has been assigned.
 			 */
-			this.readQueue = new LinkedList<TokenAPI>();
+			this.readQueue = new LinkedList<Handle>();
 		}
 
-		/* Create the reference with an initial value already assigned.
-		 * In this case, we don't need a reader queue.
+		/*
+		 * Create the reference with an initial value already assigned. In this
+		 * case, we don't need a reader queue.
 		 */
 		public RefInstance(final Object initial) {
 			this.contents = initial;
@@ -93,68 +90,74 @@ public class Ref extends EvalSite {
 		protected void addMembers() {
 			addMember("read", new readMethod());
 			addMember("write", new writeMethod());
-			addMember("readnb", new SiteAdaptor() {
+			addMember("readD", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final TokenAPI caller) throws TokenException {
-				  synchronized(RefInstance.this) {
-				    if (readQueue != null) {
-						caller.halt();
-					} else {
-						caller.publish(object2value(contents));
+				public void callSite(final Args args, final Handle caller) throws TokenException {
+					synchronized (RefInstance.this) {
+						if (readQueue != null) {
+							caller.halt();
+						} else {
+							caller.publish(object2value(contents));
+						}
 					}
-				  }
 				}
 			});
 		}
 
 		protected class readMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI reader) {
-              synchronized(RefInstance.this) {
-				/* If the read queue is not null, the ref has not been set.
-				 * Add this caller to the read queue.
-				 */
-				if (readQueue != null) {
-					readQueue.add(reader);
-					//FIXME:reader.setQuiescent();
+			public void callSite(final Args args, final Handle reader) {
+				synchronized (RefInstance.this) {
+					/*
+					 * If the read queue is not null, the ref has not been set.
+					 * Add this caller to the read queue.
+					 */
+					if (readQueue != null) {
+						readQueue.add(reader);
+					}
+					/* Otherwise, return the contents of the ref */
+					else {
+						reader.publish(object2value(contents));
+					}
 				}
-				/* Otherwise, return the contents of the ref */
-				else {
-					reader.publish(object2value(contents));
-				}
-              }
 			}
 		}
 
 		protected class writeMethod extends SiteAdaptor {
 			@Override
-			public void callSite(final Args args, final TokenAPI writer) throws TokenException {
-              synchronized(RefInstance.this) {
+			public void callSite(final Args args, final Handle writer) throws TokenException {
+				synchronized (RefInstance.this) {
 
-				final Object val = args.getArg(0);
+					final Object val = args.getArg(0);
 
-				/* Set the contents of the ref */
-				contents = val;
+					/* Set the contents of the ref */
+					contents = val;
 
-				/* If the read queue is not null, the ref has not yet been set. */
-				if (readQueue != null) {
+					/*
+					 * If the read queue is not null, the ref has not yet been
+					 * set.
+					 */
+					if (readQueue != null) {
 
-					/* Wake up all queued readers and report the written value to them. */
-					for (final TokenAPI reader : readQueue) {
-						//FIXME:reader.unsetQuiescent();
-						reader.publish(object2value(val));
+						/*
+						 * Wake up all queued readers and report the written
+						 * value to them.
+						 */
+						for (final Handle reader : readQueue) {
+							reader.publish(object2value(val));
+						}
+
+						/*
+						 * Null out the read queue. This indicates that the ref
+						 * has been written. It also allowed the associated
+						 * memory to be reclaimed.
+						 */
+						readQueue = null;
 					}
 
-					/* Null out the read queue. 
-					 * This indicates that the ref has been written.
-					 * It also allowed the associated memory to be reclaimed.
-					 */
-					readQueue = null;
+					/* A write always succeeds and publishes a signal. */
+					writer.publish(object2value(signal()));
 				}
-
-				/* A write always succeeds and publishes a signal. */
-				writer.publish(object2value(signal()));
-              }
 			}
 		}
 

@@ -17,14 +17,15 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
+import orc.types.Type;
+import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
-import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
-import orc.values.sites.compatibility.type.Type;
-import orc.values.sites.compatibility.type.structured.ArrowType;
+import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.Types;
 
-@SuppressWarnings({ "boxing", "synthetic-access" })
-public class Exponent extends EvalSite {
+public class Exponent extends EvalSite implements TypedSite {
+	@SuppressWarnings("synthetic-access")
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
@@ -33,49 +34,47 @@ public class Exponent extends EvalSite {
 			return a.pow(b.intValue());
 		}
 
-		
-    @Override
-	public Number apply(final BigDecimal a, final BigDecimal b) {
-
+		@Override
+		public Number apply(final BigDecimal a, final BigDecimal b) {
 			try {
 				// Arbitrary-precision exponentiation only works if the exponent is integral
 				return a.pow(b.intValueExact());
 			} catch (final ArithmeticException e) {
 				// If the exponent is fractional or out of range, just use native double exponentiation
 				// This _can_ lose precision.
-				return java.lang.Math.pow(a.doubleValue(), b.doubleValue());
+				return Double.valueOf(java.lang.Math.pow(a.doubleValue(), b.doubleValue()));
 			}
 
 		}
 
 		@Override
 		public Number apply(final int a, final int b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 
 		@Override
 		public Number apply(final long a, final long b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 
 		@Override
 		public Number apply(final byte a, final byte b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 
 		@Override
 		public Number apply(final short a, final short b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 
 		@Override
 		public Number apply(final double a, final double b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 
 		@Override
 		public Number apply(final float a, final float b) {
-			return java.lang.Math.pow(a, b);
+			return Double.valueOf(java.lang.Math.pow(a, b));
 		}
 	}
 
@@ -85,7 +84,7 @@ public class Exponent extends EvalSite {
 	}
 
 	@Override
-	public Type type() {
-		return new ArrowType(Type.NUMBER, Type.NUMBER, Type.NUMBER);
+	public Type orcType() {
+		return Types.function(Types.number(), Types.number(), Types.number());
 	}
 }

@@ -1,12 +1,12 @@
 //
-// OrcRecord.scala -- Scala class/trait/object OrcRecord
+// OrcRecord.scala -- Scala class OrcRecord
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,13 +20,21 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
 
+import scala.collection.immutable.Map
 
 /**
  * 
  *
  * @author dkitchin
  */
-case class OrcRecord(entries: scala.collection.mutable.Map[String,AnyRef]) extends PartialSite with UntypedSite {
+case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite {
+  
+  def this(entries: (String, AnyRef)*) = {
+    this(entries.toMap)
+  }
+  
+  def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
+  
   override def evaluate(args: List[AnyRef]) = 
     args match {
       case List(Field(name)) => 

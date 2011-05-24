@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -18,14 +18,14 @@ Operations on strings.
 {--
 @site String
 
-Strings themselves have a set of methods associated with them. These methods can
+<link linkend="ref.data.string">Strings</link> themselves have a set of methods associated with them. These methods can
 be invoked on any string literal or any variable bound to a string.
 
 The methods documented here are only a subset of those available in the Java
 implementation. In practice, strings in the Java implementation support all 
 methods provided by Java's <code>String</code> class.
 
-@method String.length() :: Integer
+@method string.length() :: Integer
 Return the length of the string.
 
 Example:
@@ -33,7 +33,7 @@ Example:
 -- Publishes: 4
 "four".length()]]></programlisting>
 
-@method String.substring(Integer, Integer) :: String
+@method string.substring(Integer, Integer) :: String
 Return the substring of this string covered by the given half-open range.
 
 Example:
@@ -42,7 +42,7 @@ Example:
 val s = "apple orchard"
 s.substring(6,9)]]></programlisting>
 
-@method String.indexOf(String) :: Integer
+@method string.indexOf(String) :: Integer
 Return the starting index of the first occurrence of the given string.
 
 Example:
@@ -52,48 +52,57 @@ Example:
 --}
 
 {--
-@site cat(Top, ...) :: String
-Return the string representation of one or more values, concatenated.
+@site Print(Top) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Print a value as a string to standard output.
 For Java objects, this will call <code>toString()</code> to convert
 the object to a String.
+
+@site Println(Top) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Same as <code>Print</code>, appending a newline.
 --}
-site cat = "orc.lib.str.Cat"
+import site Print = "orc.lib.str.Print"
+import site Println = "orc.lib.str.Println"
 
 {--
-@site print(Top, ...) :: Signal
-Print one or more values as strings, concatenated, to standard output.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.
---}
-site print = "orc.lib.str.Print"
+@site Read[A](String) :: A
 
-{--
-@site println(Top, ...) :: Signal
-Print one or more values as strings, concatenated,
-to standard output, with each value followed by a newline.
-For Java objects, this will call <code>toString()</code> to convert
-the object to a String.
---}
-site println = "orc.lib.str.Println"
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
 
-{--
-@site read[A](String) :: A
 Given a string representing an Orc value (using standard
 Orc literal syntax), return the corresponding value. If
 the argument does not conform to Orc literal syntax,
-halt with an error.
+<link linkend="ref.concepts.states.halt">halt</link> with an error.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  read("true") -- publishes the boolean true
-| read("1") -- publishes the integer 1
-| read("(3.0, [])") -- publishes the tuple (3.0, [])
-| read("\"hi\"") -- publishes the string "hi"]]></programlisting>
+  Read("true") -- publishes the boolean true
+| Read("1") -- publishes the integer 1
+| Read("(3.0, [])") -- publishes the tuple (3.0, [])
+| Read("\"hi\"") -- publishes the string "hi"]]></programlisting>
 --}
-site read = "orc.lib.str.Read"
+import site Read = "orc.lib.str.Read"
 
 {--
-@site write(Top) :: String
+@site Write(Top) :: String
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="pure"/>
+</od:sitepropset>
+
 Given an Orc value, return its string representation
 using standard Orc literal syntax.  If the value is
 of a type with no literal syntax,
@@ -102,12 +111,12 @@ representation which is intended to be human-readable.
 
 Example:
 <programlisting language="orc-demo"><![CDATA[
-  write(true) -- publishes "true"
-| write(1) -- publishes "1"
-| write((3.0, [])) -- publishes "(3.0, [])"
-| write("hi") -- publishes "\"hi\""]]></programlisting>
+  Write(true) -- publishes "true"
+| Write(1) -- publishes "1"
+| Write((3.0, [])) -- publishes "(3.0, [])"
+| Write("hi") -- publishes "\"hi\""]]></programlisting>
 --}
-site write = "orc.lib.str.Write"
+import site Write = "orc.lib.str.Write"
 
 {--
 @def lines(String) :: List[String]
@@ -119,13 +128,7 @@ Endline characters are not included in the result.
 @implementation
 --}
 def lines(String) :: List[String]
-def lines(text) =
-  (
-  val out = text.split("\n|\r\n|\r")
-  if out.get(out.length()-1) = "" then
-    out.split(0, out.length()-1)
-  else out
-  )  :!: List[String]
+def lines(text) = arrayToList(text.split("\n|\r\n|\r"))
 
 {--
 @def unlines(List[String]) :: String
@@ -135,7 +138,7 @@ and concatenate the results.
 @implementation
 --}
 def unlines(List[String]) :: String
-def unlines(line:lines) = cat(line, "\n", unlines(lines))
+def unlines(line:lines) = line + "\n" + unlines(lines)
 def unlines([]) = ""
   
 {--
@@ -146,7 +149,7 @@ Split a string into words, which are sequences of non-whitespace characters sepa
 --}
 
 def words(String) :: List[String]
-def words(text) = (text.trim().split("\\s+"))  :!: List[String]
+def words(text) = arrayToList(text.trim().split("\\s+"))
 
 
 {--
@@ -159,4 +162,22 @@ each string.
 def unwords(List[String]) :: String
 def unwords([]) = ""
 def unwords([word]) = word
-def unwords(word:words) = cat(word, " ", unwords(words))
+def unwords(word:words) = word + " " + unwords(words)
+
+{--
+@def characters(String) :: List[String]
+Convert a string to a list of strings of length 1,
+where the list items are the characters of the given string.
+
+Example:
+characters("Hello") = ["H", "e", "l", "l", "o"]
+
+@implementation
+--}
+def characters(String) :: List[String]
+def characters(s) =
+  def rest(Integer) :: List[String]
+  def rest(i) =
+      Ift (i >= s.length()) >> []
+    | Ift (i <: s.length()) >> s.substring(i,i+1):rest(i+1)
+  rest(0)

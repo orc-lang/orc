@@ -1,12 +1,12 @@
 //
-// Format.scala -- Scala class/trait/object Format
+// Format.scala -- Scala object Format
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,17 +28,24 @@ package orc.values
  */
 object Format {
   
-  def formatValue(v: Any): String =
+  
+  def formatValue(v: Any): String = {
+    // Escape strings by default
+    formatValue(v, true)
+  }
+  
+  def formatValue(v: Any, escapeStrings: Boolean): String =
     v match {
       case null => "null"
       case l: List[_] => "[" + formatSequence(l) + "]"
-      case s: String => unparseString(s)
+      case s: String => if (escapeStrings) { unparseString(s) } else s
       case orcv: OrcValue => orcv.toOrcSyntax()
       case other => other.toString()
     }
 
   // For Java callers:
   def formatValueR(v: AnyRef): String = formatValue(v)
+  def formatValueR(v: AnyRef, escapeStrings: Boolean): String = formatValue(v, escapeStrings)
   
   def formatSequence(vs : List[_]) = 
     vs match {
