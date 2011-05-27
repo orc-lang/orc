@@ -31,7 +31,7 @@ trait hasFreeVars {
 
 sealed abstract class NamelessAST extends AST {
   
-  override val subtrees: List[NamelessAST] = this match {
+  override val subtrees: Iterable[NamelessAST] = this match {
     case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
     case left || right => List(left, right)
     case Sequence(left,right) => List(left, right)
@@ -44,13 +44,17 @@ sealed abstract class NamelessAST extends AST {
       body :: ( argtypes.toList.flatten ::: returntype.toList )
     }
     case TupleType(elements) => elements
+    case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(_, t) => List(t)
+    case RecordType(entries) => entries.values
     case VariantType(_, variants) => {
       for ((_, variant) <- variants; t <- variant) yield t
     }
-    case _ => Nil
+    case Constant(_)|UnboundVariable(_)|Variable(_)|Hole(_,_)|Stop() => Nil
+    case Bot()|ClassType(_)|ImportedType(_)|Top()|TypeVar(_)|UnboundTypeVariable(_) => Nil
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamelessAST.subtrees")
   }
 }
 

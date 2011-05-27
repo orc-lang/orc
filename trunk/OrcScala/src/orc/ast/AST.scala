@@ -16,7 +16,7 @@
 package orc.ast
 
 import orc.error.OrcException
-import scala.collection.mutable.MutableList
+import scala.collection.mutable.{ArrayBuffer, Buffer}
 import scala.util.parsing.input.{NoPosition, Position, Positional}
 
 trait AST extends Positional {
@@ -69,24 +69,24 @@ trait AST extends Positional {
   /**
    * All AST node children of this node, as a single list
    */
-  def subtrees: List[AST] = {
+  def subtrees: Iterable[AST] = {
 
-    def flattenAstNodes(x: Any, flatList: MutableList[AST]) {
+    def flattenAstNodes(x: Any, flatList: Buffer[AST]) {
       def isGood(y: Any): Boolean = y match {
         case _: AST => true
-        case i: Iterable[_] => i.forall(isGood(_))
+        case i: Traversable[_] => i.forall(isGood(_))
         case _ => false
       }
       def traverseAndAdd(z: Any) {
         z match {
           case a: AST => flatList += a
-          case i: Iterable[_] => i.foreach(traverseAndAdd(_))
+          case i: Traversable[_] => i.foreach(traverseAndAdd(_))
         }
       }
       if (isGood(x)) traverseAndAdd(x)
     }
 
-    val goodKids = new MutableList[AST]();
+    val goodKids = new ArrayBuffer[AST]();
     for (f <- this.productIterator) {
       if (f.isInstanceOf[AST] || f.isInstanceOf[scala.collection.Iterable[_]]) {
         flattenAstNodes(f, goodKids);
