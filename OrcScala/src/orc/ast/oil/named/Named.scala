@@ -26,7 +26,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
   
-  override val subtrees: List[NamedAST] = this match {
+  override val subtrees: Iterable[NamedAST] = this match {
     case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
     case left || right => List(left, right)
     case Sequence(left,x,right) => List(left, x, right)
@@ -39,13 +39,18 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
       f :: ( formals ::: ( List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList ) )
     }
     case TupleType(elements) => elements
+    case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
+    case RecordType(entries) => entries.values
     case VariantType(self, typeformals, variants) => {
       self :: typeformals ::: ( for ((_, variant) <- variants; t <- variant) yield t )
     }
-    case _ => Nil
+    case Constant(_)|UnboundVar(_)|Hole(_,_)|Stop() => Nil
+    case Bot()|ClassType(_)|ImportedType(_)|Top()|UnboundTypevar(_) => Nil
+    case _: BoundVar | _: BoundTypevar => Nil
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
   }
   
 }
