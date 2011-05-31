@@ -26,7 +26,7 @@ import orc.run.Orc
  *
  * @author jthywiss
  */
-class ReplaceNode(oldNode: NamelessAST, newNode: NamelessAST) extends AstEditOperation {
+case class ReplaceNode[A, B](oldNode: A, newNode: B) extends AstEditOperation {
   def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
 
   def isTokenAffected(token: Orc#Token): Boolean = { tokenCracker(token).node == oldNode }

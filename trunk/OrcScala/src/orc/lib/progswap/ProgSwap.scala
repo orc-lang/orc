@@ -59,8 +59,8 @@ object ProgSwap extends Site with UntypedSite {
   }
 
   /**
-   * Update the OIL AST <code>oldOilAst</code>, running in the Orc engine
-   * <code>engine</code>, to the AST found in OIL file <code>newOilFile</code>,
+   * Update the OIL AST running in the execution group <code>execGroup</code>
+   * to the AST found in OIL file <code>newOilFile</code>,
    * by moving currently executing tokens to the new AST. This will result
    * in the engine being suspended during the update. When the update
    * successfully completes, the engine's config will reflect the new source
@@ -76,17 +76,30 @@ object ProgSwap extends Site with UntypedSite {
    */
   def update(execGroup: SwappableASTs#Execution, newOilFile: File): Boolean = {
     val oldOilAst = execGroup.node
+    Console.err.println(">>loading new program...")
     val newOilAst = loadNewProgram(newOilFile, execGroup)
-    val editList = AstEditScript.computeEditScript(oldOilAst, newOilAst)
+    Console.err.println(">>matching ASTs...")
+    val matching = FastMatchCRGMW96.matchAsts(oldOilAst, newOilAst)
+    Console.err.println(">>matching generated "+matching.size+" node matches")
+    Console.err.println(">>computing edit script...")
+    val editList = EditScriptCRGMW96.computeEditScript(oldOilAst, newOilAst, matching)
+    Console.err.println(">>editList: ("+editList.size+" operations):")
+    Console.err.println(editList.mkString("- ", "\n- ", "\n>>End edit list"))
     if (editList != null && !editList.isEmpty) {
+      Console.err.println(">>suspending execution group...")
       suspendEngine(execGroup)
       if (!isSafeState(execGroup, oldOilAst, newOilAst, editList)) {
+        Console.err.println(">>not safe to update, resuming execution group...")
         resumeEngine(execGroup)
         return false
       }
+      Console.err.println(">>migrating tokens to new...")
       migrateTokens(execGroup, oldOilAst, newOilAst, editList)
+      Console.err.println(">>moving execution group to new AST...")
       changeAst(execGroup, oldOilAst, newOilAst, editList)
+      Console.err.println(">>updating execution group configuration to reflect new program...")
       updateConfig(execGroup, newOilFile.toString)
+      Console.err.println(">>resuming execution group...")
       resumeEngine(execGroup)
     } else {
       Console.err.println("No changes")

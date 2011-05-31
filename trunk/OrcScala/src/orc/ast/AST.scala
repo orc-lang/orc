@@ -70,7 +70,6 @@ trait AST extends Positional {
    * All AST node children of this node, as a single list
    */
   def subtrees: Iterable[AST] = {
-
     def flattenAstNodes(x: Any, flatList: Buffer[AST]) {
       def isGood(y: Any): Boolean = y match {
         case _: AST => true
@@ -92,8 +91,23 @@ trait AST extends Positional {
         flattenAstNodes(f, goodKids);
       }
     }
-    goodKids.toList
+    goodKids
   }
+
+  def equalsIgnoreChildren(that: AnyRef): Boolean = {
+    if (this eq that) {
+      return true
+    } else if (this.getClass == that.getClass) {
+      val thatT = that.asInstanceOf[this.type]
+      def p[A, B](a: A, b: B): Boolean = {
+        ((a.isInstanceOf[AST] && b.isInstanceOf[AST]) || (a.isInstanceOf[scala.collection.Iterable[_]] && b.isInstanceOf[scala.collection.Iterable[_]]) || a.equals(b))
+      }
+      this.productIterator.toSeq.corresponds(thatT.productIterator.toSeq)(p)
+    } else {
+      return false
+    }
+  }
+
   def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
 }
 
