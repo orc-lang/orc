@@ -58,7 +58,7 @@ trait Orc extends OrcRuntime {
     def onHalt(): Unit
 
     var members: Set[GroupMember] = Set()
-    
+
     var pendingKills: Set[GroupMember] = Set()
 
     def halt(t: Token) = synchronized { remove(t) }
@@ -68,7 +68,7 @@ trait Orc extends OrcRuntime {
       pendingKills ++= members
       schedule(this)
     }
-    
+
     def run() = pendingKills.map(_.kill)
 
     def suspend() = synchronized {
@@ -86,7 +86,7 @@ trait Orc extends OrcRuntime {
       m match {
         case t: Token if (root.options.maxTokens > 0) => {
           if (root.tokenCount.incrementAndGet() > root.options.maxTokens)
-                  throw new TokenLimitReachedError(root.options.maxTokens)
+            throw new TokenLimitReachedError(root.options.maxTokens)
         }
         case _ => {}
       }
@@ -354,9 +354,17 @@ trait Orc extends OrcRuntime {
     caller.blockOn(this)
 
     var listener: Option[Token] = Some(caller)
-    
+    var invocationThread: Option[Thread] = None
+
     def run() {
       try {
+        synchronized {
+          if (listener.isDefined) {
+            invocationThread = Some(Thread.currentThread)
+          } else {
+            throw new InterruptedException()
+          }
+        }
         invoke(this, calledSite, actuals)
       } catch {
         case e: OrcException => this !! e
@@ -392,6 +400,7 @@ trait Orc extends OrcRuntime {
 
     def kill() =
       synchronized {
+        invocationThread foreach { _.interrupt() }
         listener = None
       }
 
@@ -439,7 +448,7 @@ trait Orc extends OrcRuntime {
         case Published(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => {
           state match {
             case Blocked(handle: SiteCallHandle) => handle.kill()
-            case _ => { }
+            case _ => {}
           }
 
           state = Killed
@@ -453,7 +462,7 @@ trait Orc extends OrcRuntime {
       state match {
         case Live => state = Blocked(blocker)
         case Killed => {}
-        case _ => throw new AssertionError("Only live tokens may be blocked: state="+state)
+        case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state)
       }
     }
 
@@ -472,7 +481,7 @@ trait Orc extends OrcRuntime {
           state = Suspended(Live)
         }
         case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
-        case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state="+state) }
+        case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state=" + state) }
       }
     }
 
@@ -605,7 +614,7 @@ trait Orc extends OrcRuntime {
           case _ => {
             functionFramesPushed = functionFramesPushed + 1
             if (options.stackSize > 0 &&
-                functionFramesPushed > options.stackSize)
+              functionFramesPushed > options.stackSize)
               throw new StackLimitReachedError(options.stackSize)
             push(new FunctionFrame(node, env))
           }
@@ -627,31 +636,30 @@ trait Orc extends OrcRuntime {
       state = Blocked(sh)
       schedule(sh)
     }
-    
+
     def makeCall(target: AnyRef, params: List[Binding]): Unit = {
       target match {
         case c: Closure => {
           functionCall(c.code, c.context, params)
         }
-        
+
         /* I wish this didn't need a special case... 
          * but if the record element is a closure,
          * it can't be handled by an invocation trait.
          * -dkitchin
          */
-        case r@ OrcRecord(entries) if entries contains "apply" => {
+        case r @ OrcRecord(entries) if entries contains "apply" => {
           leftToRight(resolve, params) {
-            case args@ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supersede other member accesses
+            case args @ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supersede other member accesses
             case _ => makeCall(entries("apply"), params)
           }
         }
-        
+
         case s => {
           leftToRight(resolve, params) { siteCall(s, _) }
         }
       }
     }
-    
 
     def isLive = { state = Live }
 
@@ -721,7 +729,7 @@ trait Orc extends OrcRuntime {
           schedule(l.join(region).move(left))
         }
 
-        case decldefs@DeclareDefs(openvars, defs, body) => {
+        case decldefs @ DeclareDefs(openvars, defs, body) => {
           /* Closure compaction: Bind only the free variables
            * of the defs in this lexical context.
            */
@@ -764,7 +772,7 @@ trait Orc extends OrcRuntime {
         case Published(_) | Live | Blocked(_) | Suspending(_) => {
           state match {
             case Blocked(handle: SiteCallHandle) => handle.kill()
-            case _ => { }
+            case _ => {}
           }
 
           state = Halted
