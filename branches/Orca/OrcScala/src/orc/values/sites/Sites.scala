@@ -16,7 +16,7 @@
 package orc.values.sites
 
 import orc.values.{OrcValue, Field, OrcRecord}
-import orc.Handle
+import orc.{Handle, TransactionalHandle, TransactionInterface}
 import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
 import orc.error.NotYetImplementedException
@@ -87,6 +87,28 @@ trait UnimplementedSite extends Site {
   }
 }
 
+
+/** New in Orca */
+
+/* A site that may be invoked from within a transaction. */
+trait TransactionalSite {
+  def call(args: List[AnyRef], h: Handle, tx: TransactionInterface): Unit
+}
+
+
+/* A site with no side effects. 
+ * 
+ * A call to a pure site P obeys the following algebraic law:
+ * 
+ * P(...) >> stop   ==   stop
+ * 
+ */
+trait PureSite extends Site with TransactionalSite {
+  def call(args: List[AnyRef], h: Handle, tx: TransactionInterface) {
+    // Discard the transactional context.
+    call(args, h) 
+  }
+}
 
 
 /* Enforce arity only */

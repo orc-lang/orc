@@ -116,6 +116,24 @@ case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedEvent extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
 
+
+/** New in Orca */
+
+trait TransactionInterface {
+  val parentTransaction: Option[TransactionInterface]
+  def join(p: Participant): Boolean
+}
+
+trait Participant {
+  def prepare(): Boolean
+  def commit(): Unit
+  def rollback(): Unit
+}
+
+trait TransactionalHandle extends Handle { val context: TransactionInterface }
+
+case object TransactionAbortEvent extends OrcEvent
+
 /**
  * An action for a few major events reported by an Orc execution.
  * This is an alternative to receiving <code>OrcEvents</code> for a client

@@ -124,7 +124,7 @@ with CustomParserCombinators
                  [highest precedence]
   ----------------------------------------------------
    ?               postfix     dereference
-   .               postfix     field projection
+   .               postfix     dot access
    ()              postfix     application
   ----------------------------------------------------
    ~               prefix      boolean not
@@ -155,13 +155,15 @@ with CustomParserCombinators
   ----------------------------------------------------
    :=              none        ref assignment
   ----------------------------------------------------
+   atomic          prefix      atomic
+  ----------------------------------------------------
    >>              right       sequence
   ----------------------------------------------------
    |               both        parallel
   ----------------------------------------------------
-   <<              left        where
+   <<              left        pruning
   ----------------------------------------------------
-   ;               both        semicolon
+   ;               both        otherwise
   ----------------------------------------------------
    ::              left        type information
    :!:             left        type override
@@ -261,15 +263,19 @@ with CustomParserCombinators
   val parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
   val parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
 
+  val parseAtomicExpression = (
+      "atomic" ~> parseInfixOpExpression -> Atomic
+    | parseInfixOpExpression
+  )
+  
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
-  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
-
   val parseSequentialExpression =
-    parseInfixOpExpression rightInterleave parseSequentialCombinator apply Sequential
+    parseAtomicExpression rightInterleave parseSequentialCombinator apply Sequential
 
   val parseParallelExpression =
     rep1sep(parseSequentialExpression, "|") -> { _ reduceLeft Parallel }
 
+  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
   val parsePruningExpression =
     parseParallelExpression leftInterleave parsePruningCombinator apply Pruning
 

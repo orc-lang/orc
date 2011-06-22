@@ -35,6 +35,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case DeclareDefs(defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
+    case Atomic(body) => List(body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
       f :: ( formals ::: ( List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList ) )
     }
@@ -76,6 +77,7 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
+case class Atomic(body: Expression) extends Expression
 
 /* Match an expression with exactly one hole. 
  * Matches as Module(f), where f is a function which takes

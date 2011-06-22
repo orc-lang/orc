@@ -81,6 +81,7 @@ class PrettyPrint {
         "\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
+      case Atomic(body) => "(atomic " + reduce(body) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case Constant(v) => Format.formatValue(v)
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) 

@@ -36,6 +36,7 @@ trait NamedToNameless {
       case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x::context, typecontext))
       case left < x < right => nameless.Prune(namedToNameless(left, x::context, typecontext), toExp(right))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
+      case Atomic(body) => nameless.Atomic(toExp(body))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }

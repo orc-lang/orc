@@ -50,6 +50,7 @@ trait NamelessToNamed {
         named.Prune(namelessToNamed(left, x::context, typecontext), x, recurse(right))
       }
       case left ow right => named.Otherwise(recurse(left), recurse(right))
+      case Atomic(body) => named.Atomic(recurse(body))
       case DeclareDefs(openvars, defs, body) => {
         val opennames = openvars map context
         val defnames = defs map { _ => new BoundVar() }

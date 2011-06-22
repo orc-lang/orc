@@ -40,6 +40,7 @@ sealed abstract class NamelessAST extends AST {
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
+    case Atomic(body) => List(body)
     case Def(_, _, body, argtypes, returntype) => {
       body :: ( argtypes.toList.flatten ::: returntype.toList )
     }
@@ -81,6 +82,7 @@ with NamelessToNamed
       case Hole(_,_) => {
         Set.empty
       }
+      case Atomic(body) => body.freevars
     }
   }
   
@@ -127,6 +129,7 @@ with NamelessToNamed
       case Hole(holeContext, holeTypeContext) => {
         Hole(holeContext mapValues { _.subst(ctx).asInstanceOf[Argument] }, holeTypeContext)
       }
+      case Atomic(body) => Atomic(body.subst(ctx))
     }
   }
   
@@ -144,6 +147,7 @@ case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expressio
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
+case class Atomic(body: Expression) extends Expression
 
 sealed abstract class Argument extends Expression 
 case class Constant(value: AnyRef) extends Argument

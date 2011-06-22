@@ -16,6 +16,7 @@
 package orc.run
 
 import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
+import orc.{ TransactionInterface, Participant, TransactionalHandle, TransactionAbortEvent }
 import orc.values.OrcRecord
 import orc.values.Field
 import orc.ast.oil.nameless._
@@ -175,14 +176,14 @@ trait Orc extends OrcRuntime {
 
   /** A Region is the group associated with expression f in (f ; g) */
   class Region(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
+    
+    t.blockOn(this)
 
     /* Some(t): No publications have left this region.
      *          If the group halts silently, t will be scheduled.
      *
      *    None: One or more publications has left this region.
      */
-    t.blockOn(this)
-
     var pending: Option[Token] = Some(t)
 
     def publish(t: Token, v: AnyRef) = synchronized {
@@ -197,6 +198,109 @@ trait Orc extends OrcRuntime {
     }
 
   }
+  
+  
+  /** New in Orca **/
+  
+  trait TransactionStatus
+  case object TxnRunning extends TransactionStatus
+  case object TxnPreparing extends TransactionStatus
+  case object TxnPrepared extends TransactionStatus
+  case object TxnCommitting extends TransactionStatus
+  case object TxnCommitted extends TransactionStatus
+  case object TxnAborting extends TransactionStatus
+  case object TxnAborted extends TransactionStatus
+  
+  
+  
+  class Transaction(init: Token) extends Subgroup(init.group) with TransactionInterface with Blocker {
+   
+     init.blockOn(this)
+    
+     val parentTransaction: Option[Transaction] = init.txn
+     
+     var commitValues: Set[AnyRef] = Set()
+     var participants: Set[Participant] = Set()
+     var status: TransactionStatus = TxnRunning
+          
+     override def notifyOrc(event: OrcEvent) = {
+       event match {
+         case TransactionAbortEvent => abort()
+         case _ => super.notifyOrc(event)
+       }
+     }
+     
+     def publish(t: Token, v: AnyRef) = {
+       synchronized { commitValues += v }
+       t.halt()
+     }
+    
+     def onHalt() = prepare()
+     
+     override def kill() = abort()
+          
+     def join(p: Participant): Boolean = {
+       synchronized {
+         status match {
+           case TxnRunning => {
+             participants += p
+             true
+           }
+           case TxnAborting | TxnAborted => {
+             false
+           }
+           case TxnPreparing | TxnPrepared | TxnCommitting | TxnCommitted => {
+             /* This is not possible; in these states, the
+              * transaction body has already halted, so there
+              * are no outstanding calls.
+              */
+             throw new AssertionError("Received erroneous txn join request after txn body halt.")   
+           }
+         }
+       }
+     }
+     
+     def prepare(): Unit = {
+       synchronized {
+         status match {
+           case TxnRunning => status = TxnPreparing
+           case _ => return
+         }
+       }
+       val canCommit = participants forall { _.prepare() }
+       synchronized { status = TxnPrepared }
+       if (canCommit) { commit() } else { abort() }
+     }
+     
+     def commit(): Unit = {
+       synchronized {
+         status match {
+           case TxnPrepared => status = TxnCommitting
+           case _ => return
+         }
+       }
+       participants foreach { _.commit() }
+       init.publishAll(commitValues)
+       synchronized { status = TxnCommitted }
+     }
+     
+     def abort(): Unit = {
+       synchronized {
+         status match {
+           case TxnRunning => status = TxnAborting
+           case _ => return
+         }
+       }
+       super.kill()
+       participants foreach { _.rollback() }
+       synchronized { status = TxnAborted }
+       init.unblock() /* retry */
+     }
+   
+  }
+  
+  
+  
 
   /** A type alias for Orc event handlers */
   type OrcHandler = PartialFunction[OrcEvent, Unit]
@@ -396,13 +500,22 @@ trait Orc extends OrcRuntime {
       }
 
   }
+  
+  class TxnCallHandle(
+    caller: Token, 
+    calledSite: AnyRef, 
+    actuals: List[AnyRef], 
+    val context: Transaction
+  ) extends SiteCallHandle(caller, calledSite, actuals) with TransactionalHandle
+  
 
   class Token private (
     var node: Expression,
     var stack: List[Frame] = Nil,
     var env: List[Binding] = Nil,
     var group: Group,
-    var state: TokenState = Live) extends GroupMember with Runnable {
+    var state: TokenState = Live,
+    var txn: Option[Transaction] = None) extends GroupMember with Runnable {
 
     var functionFramesPushed: Int = 0;
 
@@ -421,9 +534,10 @@ trait Orc extends OrcRuntime {
       stack: List[Frame] = stack,
       env: List[Binding] = env,
       group: Group = group,
-      state: TokenState = state): Token = {
-
-      new Token(node, stack, env, group, state)
+      state: TokenState = state,
+      txn: Option[Transaction] = txn): Token = 
+    {
+      new Token(node, stack, env, group, state, txn)
     }
 
     // A live token is added to its group when it is created
@@ -459,19 +573,18 @@ trait Orc extends OrcRuntime {
 
     def unblock() = synchronized {
       state match {
-        case Blocked(_: Region) => {
+        case Blocked(_) => {
           state = Live
           schedule(this)
         }
         case Killed => {}
-        case Suspending(Blocked(_: Region)) => {
+        case Suspending(Blocked(_)) => {
           state = Suspending(Live)
           schedule(this)
         }
-        case Suspended(Blocked(_: Region)) => {
+        case Suspended(Blocked(_)) => {
           state = Suspended(Live)
         }
-        case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
         case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state="+state) }
       }
     }
@@ -623,7 +736,10 @@ trait Orc extends OrcRuntime {
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
-      val sh = new SiteCallHandle(this, s, actuals)
+      val sh = txn match {
+        case None => new SiteCallHandle(this, s, actuals)
+        case Some(t) => new TxnCallHandle(this, s, actuals, t)
+      }
       state = Blocked(sh)
       schedule(sh)
     }
@@ -720,6 +836,13 @@ trait Orc extends OrcRuntime {
           val region = new Region(group, r.move(right))
           schedule(l.join(region).move(left))
         }
+        
+        case Atomic(body) => {
+          val (outer, inner) = fork
+          val txn = new Transaction(outer)
+          inner.txn = Some(txn)
+          schedule(inner.join(txn).move(body))
+        }
 
         case decldefs@DeclareDefs(openvars, defs, body) => {
           /* Closure compaction: Bind only the free variables
@@ -757,6 +880,11 @@ trait Orc extends OrcRuntime {
         case Published(_) => throw new AssertionError("Already published!")
         case Halted | Killed => {}
       }
+    }
+    
+    def publishAll(vs: Traversable[AnyRef]) {
+      for (v <- vs) { copy().publish(v) }
+      halt()
     }
 
     def halt() {
