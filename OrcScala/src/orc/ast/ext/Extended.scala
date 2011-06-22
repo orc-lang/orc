@@ -40,6 +40,7 @@ case class Sequential(left: Expression, p: Option[Pattern] = None, right: Expres
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
+case class Atomic(body: Expression) extends Expression
 case class Lambda(
     typeformals: Option[List[String]] = None, 
     formals: List[Pattern],
