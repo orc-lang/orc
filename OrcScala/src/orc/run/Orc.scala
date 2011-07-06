@@ -226,7 +226,7 @@ trait Orc extends OrcRuntime {
      init.blockOn(this)
     
      val parentTransaction: Option[TransactionInterface] = Some(init.txn)
-     val initialVersion: Int = init.txn.version
+     val initialVersion: Int = init.txn.bump
      var commitValues: Set[AnyRef] = Set()
      var participants: Set[Participant] = Set()
      var status: TransactionStatus = TxnRunning()
@@ -292,7 +292,7 @@ trait Orc extends OrcRuntime {
      def abort(): Unit = {
        synchronized {
          status match {
-           case TxnRunning() => status = TxnAborting()
+           case TxnRunning() | TxnPrepared() => status = TxnAborting()
            case _ => return
          }
        }
