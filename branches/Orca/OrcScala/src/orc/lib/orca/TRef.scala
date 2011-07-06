@@ -80,10 +80,14 @@ class History[T] {
    * newest version (largest #) to oldest version (smallest #)
    */
   private var history: List[(Int, T)] = Nil 
-  private var writeLock = new java.util.concurrent.Semaphore(1, true)
+  private var writeLock = new java.util.concurrent.Semaphore(1)
   
-  def lock() = writeLock.acquire()
-  def unlock() = { writeLock.tryAcquire() ; writeLock.release() }
+  def lock() = {
+    writeLock.acquire()
+  }
+  def unlock() = { 
+    writeLock.release() 
+  }
   
   /* Insert an entry into an ordered versioned list, preserving the order. 
    * Duplicate versions are not allowed; if a duplicate is found, an error is raised. 
@@ -215,7 +219,6 @@ class Repository[T] {
       }
       else {
         /* Request abort. */
-        parentHistory.unlock()
         None
       }
     }

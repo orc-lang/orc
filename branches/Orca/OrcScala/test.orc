@@ -1,6 +1,6 @@
-val t = TRef()
+def inc(x) = atomic (x := x? + 1)
 
-atomic (t := 1) | atomic (t := 2)
+TRef() >t> atomic (t := 0) >> (inc(t), inc(t), inc(t)) >> atomic( t? )
 
 {-
 def randabort() = Ift(Random(2) = 0) >> Abort()
