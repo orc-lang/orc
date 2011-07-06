@@ -21,6 +21,7 @@ import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.InvalidNontransactionalCallException
 import orc.run.Logger
 import orc.types.Type
 import orc.types.Bot
@@ -91,8 +92,16 @@ trait UnimplementedSite extends Site {
 /** New in Orca */
 
 /* A site that may be invoked from within a transaction. */
-trait TransactionalSite {
+trait TransactionalSite extends Site {
   def call(args: List[AnyRef], h: Handle, tx: TransactionInterface): Unit
+}
+
+
+/* A site that may _only_ be invoked from within a transaction. */
+trait TransactionOnlySite extends TransactionalSite {
+  def call(args: List[AnyRef], h: Handle) {
+    h !! new InvalidNontransactionalCallException(this) 
+  }
 }
 
 

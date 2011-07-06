@@ -109,6 +109,22 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
 class UncallableValueException(val uncallable: Any) extends
  RuntimeTypeException("Value not callable: \""+uncallable.toString()+"\"")
 
+/**
+ * New in Orca.
+ * A transaction-only site was called from a nontransactional context.
+ */
+class InvalidNontransactionalCallException(val txonly: Any) extends
+ RuntimeTypeException("Site \""+txonly.toString()+"\" may only be invoked within a transaction.")
+
+/**
+ * New in Orca.
+ * A nontransactional site was called from a transactional context.
+ */
+class InvalidTransactionalCallException(val nontx: Any) extends
+ RuntimeTypeException("Site \""+nontx.toString()+"\" may not be invoked within a transaction.")
+
+
+
 
 /**
  * Attempted dot access at an unknown member.

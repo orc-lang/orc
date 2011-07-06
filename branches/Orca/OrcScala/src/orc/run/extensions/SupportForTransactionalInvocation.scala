@@ -19,6 +19,7 @@ import orc.{Handle, TransactionalHandle}
 import orc.values.sites.{Site, TransactionalSite}
 import orc.error.OrcException
 import orc.error.runtime.JavaException
+import orc.error.runtime.InvalidTransactionalCallException
 
 /**
  * 
@@ -30,15 +31,16 @@ trait SupportForTransactionalInvocation extends InvocationBehavior {
     (v, h) match {
       case (ts: TransactionalSite, th: TransactionalHandle) => 
         try {
-          ts.call(vs, th, th.context) // No abort capability yet.
+          ts.call(vs, th, th.context)
         } catch {
           case e: OrcException => th !! e
           case e: InterruptedException => throw e
           case e: Exception => th !! new JavaException(e)
         }
-      case (_, _ : TransactionalHandle) => {
-        // FIXME: Make this error more specific
-        throw new AssertionError("Can't call a nontransactional site in a transactional context.")
+      case (nts, th : TransactionalHandle) => {
+        //throw new InvalidTransactionalCallException(nts)
+        println("Warning: " + nts + " is not a transactional site; atomicity may be violated.")
+        super.invoke(h, v, vs)
       }
       case _ => super.invoke(h, v, vs)
     }

@@ -119,20 +119,38 @@ case class CaughtEvent(e: Throwable) extends OrcEvent
 
 /** New in Orca */
 
-trait TransactionInterface {
+trait TransactionInterface extends Versioned {
+  val initialVersion: Int
   val parentTransaction: Option[TransactionInterface]
   def join(p: Participant): Boolean
+  def abort(): Unit
+}
+
+/* The root transaction is not actually transactional.
+ * It is simply responsible for maintaining global version counting
+ * and providing the nontransactional view of all transactional resources.
+ */
+trait RootTransactionInterface extends TransactionInterface {
+  val initialVersion = 0
+  val parentTransaction = None
+  def join(p: Participant) = false /* The root has no participants */
+  def abort() { } /* The root can't be aborted */
 }
 
 trait Participant {
-  def prepare(): Boolean
-  def commit(): Unit
+  /* Return Some(f) with commit thunk f, or None if a rollback is requested. */
+  def prepare(): (Option[() => Unit])
+  
+  /* Unconditionally roll back this participant. */
   def rollback(): Unit
 }
 
 trait TransactionalHandle extends Handle { val context: TransactionInterface }
 
-case object TransactionAbortEvent extends OrcEvent
+trait Versioned {
+  def bump: Int
+  def version: Int
+}
 
 /**
  * An action for a few major events reported by an Orc execution.
