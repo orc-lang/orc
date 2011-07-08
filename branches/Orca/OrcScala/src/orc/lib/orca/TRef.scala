@@ -14,12 +14,13 @@
 //
 package orc.lib.orca
 
-import orc.values.sites.TotalSite0
+import orc.values.sites.TotalSite
 import orc.values.sites.TransactionOnlySite
 import orc.values.OrcRecord
 import orc.Handle
 import orc.TransactionInterface
 import orc.error.NotYetImplementedException
+import orc.error.runtime.ArityMismatchException
 import orc.Participant
 
 /**
@@ -27,10 +28,16 @@ import orc.Participant
  *
  * @author dkitchin
  */
-object TRef extends TotalSite0 {
+object TRef extends TotalSite {
 
-  def eval() = {
-    val instance = new TRefInstance()
+  def evaluate(args: List[AnyRef]): AnyRef = {
+    val instance = {
+      args match {
+        case Nil => new TRefInstance(None)
+        case List(a) => new TRefInstance(Some(a))
+        case _ => throw new ArityMismatchException(1, args.size)
+      }
+    }
     new OrcRecord(
       "read" -> instance.readSite,
       "write" -> instance.writeSite
@@ -40,13 +47,13 @@ object TRef extends TotalSite0 {
 }
 
 
-class TRefInstance {
+class TRefInstance(initialContents: Option[AnyRef]) {
   
-  val repos = new Repository[AnyRef]()
+  val repository = new Repository[AnyRef](initialContents)
   
   val readSite = new TransactionOnlySite {
     def call(args: List[AnyRef], h: Handle, tx: TransactionInterface) {
-      repos.read(tx) match {
+      repository.read(tx) match {
         case Some(v) => {
           h.publish(v)
         }
@@ -60,8 +67,13 @@ class TRefInstance {
   
   val writeSite = new TransactionOnlySite {
     def call(args: List[AnyRef], h: Handle, tx: TransactionInterface) {
-      repos.write(tx, args.head) // TODO: Add arity checking
-      h.publish()
+      args match {
+        case List(arg) => {
+          repository.write(tx, args.head) // TODO: Add arity checking
+          h.publish()
+        }
+        case _ => throw new ArityMismatchException(1, args.size) 
+      }
     }
   }
   
@@ -80,10 +92,10 @@ class History[T] {
    * newest version (largest #) to oldest version (smallest #)
    */
   private var history: List[(Int, T)] = Nil 
-  private var writeLock = new java.util.concurrent.locks.ReentrantLock()
+  private var internalLock = new scala.concurrent.Lock()
   
-  def lock() = { writeLock.lock() }
-  def unlock() = { writeLock.unlock() }
+  def lock() = { internalLock.acquire() }
+  def unlock() = { internalLock.release() }
   
   /* Insert an entry into an ordered versioned list, preserving the order. 
    * Duplicate versions are not allowed; if a duplicate is found, an error is raised. 
@@ -120,6 +132,12 @@ class History[T] {
     //println("Content of history " + this + ": " + history)
   }
   
+  /*
+   * Return true if this history has no entries,
+   * false otherwise.
+   */
+  def isEmpty: Boolean = history.isEmpty
+  
   /* Read the most recent version in the history, or None if the history is empty. */
   // TODO: Replace None with a reserved min-version value.
   def clock: Option[Int] = {
@@ -132,10 +150,9 @@ class History[T] {
   
 }
 
-class Repository[T] {
+class Repository[T](initialContents: Option[T]) {
     
   val txTable = new scala.collection.mutable.HashMap[TransactionInterface, History[T]]
-  
   
   private def retrieve(tx: TransactionInterface, version: Int): Option[T] = {
     txTable get tx flatMap { _ lookup version } 
@@ -143,7 +160,6 @@ class Repository[T] {
   
   /* Find the history for this transaction.
    * If there is no history, create one.
-   * If a history was created, join the forcing transaction as a participant.
    */
   // TODO: Check if the tx is live before synthesizing a history for it.
   private def forceLookup(tx: TransactionInterface): History[T] = { 
@@ -153,7 +169,6 @@ class Repository[T] {
         case None => {
           val newHistory = new History[T]()
           txTable put (tx, newHistory)
-          tx join (new RepositoryParticipant(tx))
           newHistory
         }
       }
@@ -169,7 +184,7 @@ class Repository[T] {
         }
       }
     }
-    seek(hostTx, hostTx.version)
+    seek(hostTx, hostTx.version) orElse initialContents
   }
   
   def write(hostTx: TransactionInterface, newContent: T): Unit = {
@@ -178,6 +193,7 @@ class Repository[T] {
      * during a child transaction commit.
      */
     targetHistory.lock()
+    if (targetHistory.isEmpty) { hostTx join (new RepositoryParticipant(hostTx)) }
     targetHistory.add(newContent, hostTx.bump)
     targetHistory.unlock()
   }

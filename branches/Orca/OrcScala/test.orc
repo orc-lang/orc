@@ -1,22 +1,11 @@
-def inc(x) = atomic (x := x? + 1)
+def inc(x) = atomic x := x? + 1
+def inc2(x) = atomic (inc(x), inc(x))
 
-def report(n) =
-  def show(1000) = "0"
-  def show(1001) = "1"
-  def show(1002) = "2"
-  def show(1003) = "_"
-  Print(show(n)) >> stop
+def assert(x, n) if (x = n) = Println("ok") >> stop
+def assert(x, _) = Println("Unexpected result: " + x) >> stop
 
 
-upto(500) >>
-  TRef() >t> 
-    atomic (t := 1000) >> 
-      (inc(t), inc(t), inc(t)) >> 
-        atomic( t? ) >r> 
-          report(r)
-
-{-
-def randabort() = Ift(Random(2) = 0) >> Abort()
-
-atomic ( Println("txn initiated") >> 1 | Rwait(2000) >> 2 | Rwait(1000) >> randabort())
--}
+upto(100) >>
+TRef(0) >t> 
+(inc(t), inc(t), inc(t)) >> 
+assert(atomic t?, 3)
