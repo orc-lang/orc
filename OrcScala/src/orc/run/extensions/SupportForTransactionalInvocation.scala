@@ -39,7 +39,8 @@ trait SupportForTransactionalInvocation extends InvocationBehavior {
         }
       case (nts, th : TransactionalHandle) => {
         //throw new InvalidTransactionalCallException(nts)
-        println("Warning: " + nts + " is not a transactional site; atomicity may be violated.")
+        // TODO: Reinstate warning or forbid nontx accesses entirely.
+        //println("Warning: " + nts + " is not a transactional site; atomicity may be violated.")
         super.invoke(h, v, vs)
       }
       case _ => super.invoke(h, v, vs)

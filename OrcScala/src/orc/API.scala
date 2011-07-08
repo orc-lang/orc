@@ -138,8 +138,10 @@ trait RootTransactionInterface extends TransactionInterface {
 }
 
 trait Participant {
-  /* Return Some(f) with commit thunk f, or None if a rollback is requested. */
-  def prepare(): (Option[() => Unit])
+  /* Return Some(f) with commit function f
+   * (its argument is the agreed final parent version), 
+   * or None if a rollback is requested. */
+  def prepare(): (Option[Int => Unit])
   
   /* Unconditionally roll back this participant. */
   def rollback(): Unit
