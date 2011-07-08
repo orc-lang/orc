@@ -226,7 +226,7 @@ trait Orc extends OrcRuntime {
      init.blockOn(this)
     
      val parentTransaction: Option[TransactionInterface] = Some(init.txn)
-     val initialVersion: Int = init.txn.bump
+     val initialVersion: Int = init.txn.version 
      var commitValues: Set[AnyRef] = Set()
      var participants: Set[Participant] = Set()
      var status: TransactionStatus = TxnRunning()
@@ -276,14 +276,15 @@ trait Orc extends OrcRuntime {
        }
      }
      
-     def commit(promises: List[() => Unit]): Unit = {
+     def commit(promises: List[Int => Unit]): Unit = {
        synchronized {
          status match {
            case TxnPrepared() => status = TxnCommitting()
            case _ => return
          }
        }
-       promises foreach { p => p() }
+       val commitVersion = parentTransaction.get.bump
+       promises foreach { p => p(commitVersion) }
        init.publishAll(commitValues)
        synchronized { status = TxnCommitted() }
        parent.remove(this)
@@ -845,6 +846,7 @@ trait Orc extends OrcRuntime {
         }
         
         case Atomic(body) => {
+          //println("Entered atomic expression at " + node.pos)
           val (outer, inner) = fork
           val txn = new Transaction(outer)
           inner.txn = txn

@@ -80,14 +80,10 @@ class History[T] {
    * newest version (largest #) to oldest version (smallest #)
    */
   private var history: List[(Int, T)] = Nil 
-  private var writeLock = new java.util.concurrent.Semaphore(1)
+  private var writeLock = new java.util.concurrent.locks.ReentrantLock()
   
-  def lock() = {
-    writeLock.acquire()
-  }
-  def unlock() = { 
-    writeLock.release() 
-  }
+  def lock() = { writeLock.lock() }
+  def unlock() = { writeLock.unlock() }
   
   /* Insert an entry into an ordered versioned list, preserving the order. 
    * Duplicate versions are not allowed; if a duplicate is found, an error is raised. 
@@ -121,6 +117,7 @@ class History[T] {
    */
   def add(value: T, version: Int): Unit = {
     history = insert(value, version, history)
+    //println("Content of history " + this + ": " + history)
   }
   
   /* Read the most recent version in the history, or None if the history is empty. */
@@ -188,12 +185,7 @@ class Repository[T] {
 
   class RepositoryParticipant(hostTx: TransactionInterface) extends Participant {
     
-    /*
-     * Lock parent history.
-     * Check initial version against max version in parent history.
-     * 
-     */
-    def prepare(): Option[() => Unit] = {
+    def prepare(): Option[Int => Unit] = {
       /* Determine the final value to be committed. */
       val finalValue = retrieve(hostTx, hostTx.version) getOrElse { throw new AssertionError("History for an active participant should not be empty.") }
       
@@ -209,15 +201,18 @@ class Repository[T] {
        * past the initial version of the committing transaction. 
        */
       parentHistory.lock()
-      if (parentHistory.clock map { _ < hostTx.initialVersion } getOrElse true) {
+      //println("Comparing host initial version " + hostTx.initialVersion + " to parent current version " + parentHistory.clock.getOrElse(-1))
+      if (parentHistory.clock map { _ <= hostTx.initialVersion } getOrElse true) {
         /* Agree to commit, returning a commit thunk. */
-        def onCommit() = {
-          parentHistory.add(finalValue, hostTx.initialVersion)
+        def onCommit(n: Int) = {
+          parentHistory.add(finalValue, n)
+          //println("committed txn " + hostTx)
           parentHistory.unlock()
         }
         Some(onCommit)
       }
       else {
+        //println("aborted txn " + hostTx)
         /* Request abort. */
         None
       }
