@@ -5,7 +5,7 @@ def assert(x, n) if (x = n) = Println("ok") >> stop
 def assert(x, _) = Println("Unexpected result: " + x) >> stop
 
 
-upto(100) >>
+upto(10000) >>
 TRef(0) >t> 
-(inc(t), inc(t), inc(t)) >> 
-assert(atomic t?, 3)
+(inc2(t), inc(t), inc2(t)) >> 
+assert(atomic t?, 5)

@@ -93,9 +93,27 @@ class History[T] {
    */
   private var history: List[(Int, T)] = Nil 
   private var internalLock = new scala.concurrent.Lock()
+  private var reserved = false
   
   def lock() = { internalLock.acquire() }
   def unlock() = { internalLock.release() }
+  
+  def prepare() = {
+    internalLock.acquire()
+    reserved = true
+  }
+  
+  def commit() = {
+    reserved = false
+    internalLock.release()
+  }
+  
+  def abort() = {
+    if (reserved) {
+      reserved = false
+      internalLock.release()
+    }
+  }
   
   /* Insert an entry into an ordered versioned list, preserving the order. 
    * Duplicate versions are not allowed; if a duplicate is found, an error is raised. 
@@ -203,10 +221,15 @@ class Repository[T](initialContents: Option[T]) {
     
     def prepare(): Option[Int => Unit] = {
       /* Determine the final value to be committed. */
-      val finalValue = retrieve(hostTx, hostTx.version) getOrElse { throw new AssertionError("History for an active participant should not be empty.") }
+      // TODO: Figure out why synchronization on txTable matters here.
+      val finalValue = txTable.synchronized { retrieve(hostTx, hostTx.version) } getOrElse { 
+        throw new AssertionError("History for an active participant should have at least one visible write.") 
+      }
       
       /* Determine the parent transaction to which to commit. */
-      val parent = hostTx.parentTransaction getOrElse { throw new AssertionError("The root transaction has no parent.") }
+      val parent = hostTx.parentTransaction getOrElse { 
+        throw new AssertionError("The root transaction has no parent.") 
+      }
       
       /* Find the parent history.
        * If there is no parent history, create one. 
@@ -216,20 +239,23 @@ class Repository[T](initialContents: Option[T]) {
       /* Lock the parent history (to block parent writes), then check if it has advanced 
        * past the initial version of the committing transaction. 
        */
-      parentHistory.lock()
-      //println("Comparing host initial version " + hostTx.initialVersion + " to parent current version " + parentHistory.clock.getOrElse(-1))
+      parentHistory.prepare()
       if (parentHistory.clock map { _ <= hostTx.initialVersion } getOrElse true) {
         /* Agree to commit, returning a commit thunk. */
         def onCommit(n: Int) = {
+          // If this commit is the first 'write' to the parent, this repository becomes a participant for the parent.
+          // Note that at present, this works even if the parent is the root, because joins to the root are no-ops.
+          if (parentHistory.isEmpty) { parent join (new RepositoryParticipant(parent)) }
           parentHistory.add(finalValue, n)
           //println("committed txn " + hostTx)
-          parentHistory.unlock()
+          parentHistory.commit()
         }
         Some(onCommit)
       }
       else {
         //println("aborted txn " + hostTx)
         /* Request abort. */
+        parentHistory.abort()
         None
       }
     }
@@ -239,7 +265,8 @@ class Repository[T](initialContents: Option[T]) {
       val parent = hostTx.parentTransaction getOrElse { throw new AssertionError("The root transaction has no parent.") }
       
       /* Unlock the parent history, if one exists. */
-      txTable get parent map { _.unlock() }
+      // TODO: Do a proper state change to prevent an early rollback from exposing a concurrent write.
+      txTable get parent map { _.abort() }
       
       // TODO: Perform proper garbage collection of stale txtable entries.
     }
