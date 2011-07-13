@@ -1,6 +1,6 @@
 def burst(width, rate) =
-  upto(width) >> signal
-| Rwait(rate) >> burst(width, rate)
+  upto(Random(width)) >> signal
+| Rwait(Random(rate)) >> burst(width, rate)
 
 
 def metronome(rate) =
@@ -15,10 +15,10 @@ val box =
   Table(10, fill)
 
 {- Shuffle refs repeatedly -}
-burst(Random(20), Random(10)) >> swap(box(Random(10)), box(Random(10))) >> stop
+burst(20, 10) >> swap(box(Random(10)), box(Random(10))) >> stop
 
 |
 
 {- Read list every 200ms -}
-metronome(200) >> atomic (map (lambda (i) = box(i)?, range(0, 10)) ) 
+metronome(200) >> atomic (map (lambda (i) = box(i)?, range(0, 10)) )
 
