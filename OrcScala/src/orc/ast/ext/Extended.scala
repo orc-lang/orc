@@ -54,6 +54,9 @@ case class Declare(declaration: Declaration, body: Expression) extends Expressio
 case class TypeAscription(e: Expression, t: Type) extends Expression
 case class TypeAssertion(e: Expression, t: Type) extends Expression
 
+case class AtomicChoice(choices: List[Expression]) extends Expression
+case class InfixJoin(joins: List[Expression]) extends Expression
+
 // An internal representation for the body of a 'def class'
 case class DefClassBody(body: Expression) extends Expression
 

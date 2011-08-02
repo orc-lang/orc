@@ -155,6 +155,10 @@ with CustomParserCombinators
   ----------------------------------------------------
    :=              none        ref assignment
   ----------------------------------------------------
+   &               both        infix join
+  ----------------------------------------------------
+   ++              both        atomic choice 
+  ----------------------------------------------------
    atomic          prefix      atomic
   ----------------------------------------------------
    >>              right       sequence
@@ -262,10 +266,22 @@ with CustomParserCombinators
   val parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
   val parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
   val parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
-
+  
+  val parseInfixJoinExpression = 
+    rep1sep(parseInfixOpExpression, "&") -> { 
+      case List(e) => e  
+      case es => InfixJoin(es) 
+    }
+    
+  val parseAtomicChoiceExpression = 
+    rep1sep(parseInfixJoinExpression, "++") -> { 
+      case List(e) => e 
+      case es => AtomicChoice(es) 
+    }
+  
   val parseAtomicExpression = (
-      "atomic" ~> parseInfixOpExpression -> Atomic
-    | parseInfixOpExpression
+      "atomic" ~> parseAtomicChoiceExpression -> Atomic
+    | parseAtomicChoiceExpression
   )
   
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"

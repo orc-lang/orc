@@ -16,7 +16,8 @@
 package orc.run
 
 import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
-import orc.{ TransactionInterface, Participant, TransactionalHandle }
+import orc.Schedulable
+import orc.orca._
 import orc.values.OrcRecord
 import orc.values.Field
 import orc.ast.oil.nameless._
@@ -24,8 +25,6 @@ import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
 import scala.collection.mutable.Set
 import orc.util.OptionMapExtension._
-import orc.RootTransactionInterface
-import orc.util.VersionCounting
 
 
 trait Orc extends OrcRuntime {
@@ -33,7 +32,7 @@ trait Orc extends OrcRuntime {
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
     val root = new Orc.this.Execution(node, k, options)
-    val t = new Token(node, root)
+    val t = new Token(node, root, new RootTransactionInstance())
     schedule(t)
   }
 
@@ -58,7 +57,8 @@ trait Orc extends OrcRuntime {
 
   sealed trait Blocker
 
-  trait Group extends GroupMember with Runnable {
+  trait Group extends GroupMember with Schedulable {
+    
     def publish(t: Token, v: AnyRef): Unit
     def onHalt(): Unit
 
@@ -68,12 +68,12 @@ trait Orc extends OrcRuntime {
 
     def halt(t: Token) = synchronized { remove(t) }
 
-    /* Note: this is _not_ lazy termination */
     def kill() = synchronized {
       pendingKills ++= members
       schedule(this)
     }
     
+    override val nonblocking = true
     def run() = pendingKills.map(_.kill)
 
     def suspend() = synchronized {
@@ -207,100 +207,132 @@ trait Orc extends OrcRuntime {
   /** New in Orca **/
   
   trait TransactionStatus
-  // These are written as nullary case classes due to a compiler bug:
+  // This is written as a nullary case class due to a compiler bug:
   // https://issues.scala-lang.org/browse/SI-4593
-  // TODO: Once this bug is fixed, revert these to case objects
-  case class TxnRunning() extends TransactionStatus
-  case class TxnPreparing() extends TransactionStatus
-  case class TxnPrepared() extends TransactionStatus
-  case class TxnCommitting() extends TransactionStatus
-  case class TxnCommitted() extends TransactionStatus
-  case class TxnAborting() extends TransactionStatus
-  case class TxnAborted() extends TransactionStatus
+  // TODO: Once this bug is fixed, revert to a case object
+  case class Running() extends TransactionStatus
+  case class Preparing(count: Int) extends TransactionStatus
+  case class Committing(count: Int) extends TransactionStatus
+  case class Aborting(count: Int) extends TransactionStatus
   
+  trait TransactionSchedulerAccess extends Transaction { 
+    def enqueue(p: Participant) = schedule(p)
+  }
   
-  class RootTransaction extends RootTransactionInterface with VersionCounting { }
+  class RootTransactionInstance extends RootTransaction with VersionCounting with TransactionSchedulerAccess
   
-  class Transaction(init: Token) extends Subgroup(init.group) with TransactionInterface with Blocker with VersionCounting {
+  class TransactionInstance(init: Token) extends Subgroup(init.group) with Transaction with Blocker with VersionCounting with TransactionSchedulerAccess {
    
      init.blockOn(this)
     
-     val parentTransaction: Option[TransactionInterface] = Some(init.txn)
-     val initialVersion: Int = init.txn.version 
+     val parentTransaction: Option[Transaction] = Some(init.txn)
+     val initialVersion: Int = init.txn.version
+     
      var commitValues: Set[AnyRef] = Set()
      var participants: Set[Participant] = Set()
-     var status: TransactionStatus = TxnRunning()
+     
+     var status: TransactionStatus = Running()
      
      def publish(t: Token, v: AnyRef) = {
        synchronized { commitValues += v }
        t.halt()
      }
-    
-     def onHalt() = prepare()
-     
-     override def kill() = abort()
           
      def join(p: Participant): Boolean = {
        synchronized {
          status match {
-           case TxnRunning() => {
-             participants += p
-             true
-           }
-           case TxnAborting() | TxnAborted() => {
-             false
-           }
-           case TxnPreparing() | TxnPrepared() | TxnCommitting() | TxnCommitted() => {
-             /* This is not possible; in these states, the
-              * transaction body has already halted, so there
-              * are no outstanding calls.
-              */
-             throw new AssertionError("Received erroneous txn join request after txn body halt.")   
-           }
+           case Running() => { participants += p; true }
+           case Aborting(_) => false 
          }
        }
      }
      
-     def prepare(): Unit = {
+     
+     def onHalt() = prepare()
+     override def kill() = abort()
+     
+     
+     def prepare() {
+       println(this + " preparing " + participants.size + " cohorts.")
        synchronized {
          status match {
-           case TxnRunning() => status = TxnPreparing()
-           case _ => return
+           case Running() => { status = Preparing(participants.size) }
+           case Aborting(_) => return
          }
        }
-       val promises = participants.toList optionMap { _.prepare() }
-       synchronized { status = TxnPrepared() }
-       promises match {
-         case None => abort()
-         case Some(ps) => commit(ps)
+       
+       def castVote(vote: Boolean) = {
+         if (vote) {
+           // Vote to commit.
+           if (synchronized {
+             status match {
+               case Preparing(n) if (n > 1) => { status = Preparing(n-1); false }
+               case Preparing(1) => { status = Preparing(0); true }
+               case Aborting(_) => { false }
+             }
+           }) commit()
+         }
+         else {
+           // Vote to abort.
+           if (synchronized {
+             status match {
+               case Preparing(n) if (n > 0) => { true }
+               case Aborting(_) => { false }
+             }
+           }) abort()
+         }
        }
+       
+       for (p <- participants) { schedule(p.moveToVote(castVote)) }
      }
      
-     def commit(promises: List[Int => Unit]): Unit = {
+     
+     def commit() {
        synchronized {
          status match {
-           case TxnPrepared() => status = TxnCommitting()
-           case _ => return
+           case Preparing(0) => { status = Committing(participants.size) }
+           case Aborting(_) => return
          }
        }
-       val commitVersion = parentTransaction.get.bump
-       promises foreach { p => p(commitVersion) }
-       init.publishAll(commitValues)
-       synchronized { status = TxnCommitted() }
+       val finalVersion = parentTransaction.get.bump
        parent.remove(this)
+       
+       def acknowledge() = {
+         val done = 
+           synchronized {
+             status match {
+               case Committing(n) if (n > 1) => { status = Committing(n-1); false }
+               case Committing(1) => { status = Committing(0); true }
+             }
+           }
+         if (done) { println("committed") ; init.publishAll(commitValues) }
+       }
+       
+       for (p <- participants) { schedule(p.moveToCommit(finalVersion, acknowledge)) }
      }
      
-     def abort(): Unit = {
+     
+     def abort() {
        synchronized {
          status match {
-           case TxnRunning() | TxnPrepared() => status = TxnAborting()
-           case _ => return
+           case Running() | Preparing(_) => { status = Aborting(participants.size) }
+           case Committing(_) | Aborting(_) => return
          }
        }
        super.kill()
-       participants foreach { _.rollback() }
-       synchronized { status = TxnAborted() }
-       init.unblock() /* retry */
+       
+       def acknowledge() = {
+         val done = 
+           synchronized {
+             status match {
+               case Aborting(n) if (n > 1) => { status = Aborting(n-1); false }
+               case Aborting(1) => { status = Aborting(0); true }
+             }
+           }
+         if (done) { println("aborted") ; init.unblock() }
+       }
+         
+       for (p <- participants) { schedule(p.moveToAbort(acknowledge)) }
      }
    
   }
@@ -328,7 +360,6 @@ trait Orc extends OrcRuntime {
     def options = _options;
 
     val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
-    val txn = new RootTransaction()
 
     def publish(t: Token, v: AnyRef) = synchronized {
       k(PublishedEvent(v))
@@ -460,11 +491,13 @@ trait Orc extends OrcRuntime {
   /** Live Token with a value to propagate */
   case class Published(v: AnyRef) extends TokenState
 
-  class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Blocker {
+  class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Schedulable with Blocker {
 
     caller.blockOn(this)
 
     var listener: Option[Token] = Some(caller)
+    
+    val context = caller.txn
     
     def run() {
       try {
@@ -507,14 +540,6 @@ trait Orc extends OrcRuntime {
       }
 
   }
-  
-  class TxnCallHandle(
-    caller: Token, 
-    calledSite: AnyRef, 
-    actuals: List[AnyRef], 
-    val context: Transaction
-  ) extends SiteCallHandle(caller, calledSite, actuals) with TransactionalHandle
-  
 
   class Token private (
     var node: Expression,
@@ -522,13 +547,13 @@ trait Orc extends OrcRuntime {
     var env: List[Binding] = Nil,
     var group: Group,
     var state: TokenState = Live,
-    var txn: TransactionInterface) extends GroupMember with Runnable {
+    var txn: Transaction) extends GroupMember with Schedulable {
 
     var functionFramesPushed: Int = 0;
 
     /** Public constructor */
-    def this(start: Expression, g: Group) = {
-      this(node = start, group = g, stack = List(GroupFrame), txn = g.root.txn)
+    def this(start: Expression, g: Group, tx: Transaction) = {
+      this(node = start, group = g, stack = List(GroupFrame), txn = tx)
     }
 
     def runtime = Orc.this
@@ -542,7 +567,7 @@ trait Orc extends OrcRuntime {
       env: List[Binding] = env,
       group: Group = group,
       state: TokenState = state,
-      txn: TransactionInterface = txn): Token = 
+      txn: Transaction = txn): Token = 
     {
       new Token(node, stack, env, group, state, txn)
     }
@@ -743,11 +768,7 @@ trait Orc extends OrcRuntime {
     }
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
-      val sh = 
-        txn match {
-          case t: Transaction => new TxnCallHandle(this, s, actuals, t)
-          case _ => new SiteCallHandle(this, s, actuals)
-        }
+      val sh = new SiteCallHandle(this, s, actuals)
       state = Blocked(sh)
       schedule(sh)
     }
@@ -779,6 +800,9 @@ trait Orc extends OrcRuntime {
 
     def isLive = { state = Live }
 
+    
+    override val nonblocking = true
+    
     def run() {
       var runNode = false
       synchronized {
@@ -848,7 +872,7 @@ trait Orc extends OrcRuntime {
         case Atomic(body) => {
           //println("Entered atomic expression at " + node.pos)
           val (outer, inner) = fork
-          val txn = new Transaction(outer)
+          val txn = new TransactionInstance(outer)
           inner.txn = txn
           schedule(inner.join(txn).move(body))
         }
