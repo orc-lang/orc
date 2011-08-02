@@ -12,9 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.util
-
-import orc.Versioned
+package orc.orca
 
 /**
  * 

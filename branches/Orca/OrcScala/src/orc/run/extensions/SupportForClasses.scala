@@ -35,7 +35,7 @@ trait SupportForClasses extends Orc { self =>
         assert(closure.isInstanceOf[self.Closure])
         val node = Call(Constant(closure), args map Constant, Some(Nil))
         val exec = new ClassExecution(caller, host)
-        val t = new Token(node, exec)
+        val t = new Token(node, exec, caller.context)
         schedule(t)
       }
     } : PartialFunction[OrcEvent, Unit]

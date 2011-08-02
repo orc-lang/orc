@@ -76,7 +76,8 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     "<", ">",
     "=", "<:", ":>", "<=", ">=", "/=",
     ":",
-    ".", "?", ":="
+    ".", "?", ":=",
+    "&", "++"
     )
 
   /** The set of delimiters (ordering does not matter) */

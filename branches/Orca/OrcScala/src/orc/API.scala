@@ -25,6 +25,7 @@ import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
+import orc.orca.Transaction
 
 /**
  * The interface from a caller to the Orc compiler
@@ -69,18 +70,23 @@ trait OrcRuntimeRequires {
 /**
  * An Orc runtime 
  */
+trait Schedulable extends Runnable {
+  /* A schedulable unit may declare itself nonblocking;
+   * the scheduler may exploit this information.
+   * It is assumed by default that a schedulable unit might block.
+   */
+  val nonblocking: Boolean = false
+}
+
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
-  type GroupMember
   
   def startScheduler(options: OrcExecutionOptions): Unit
 
-  def schedule(ts: List[GroupMember with Runnable]): Unit
+  def schedule(ts: List[Schedulable]): Unit
 
   // Schedule function is overloaded for convenience
-  def schedule(t: GroupMember with Runnable) { schedule(List(t)) }
-  def schedule(t: GroupMember with Runnable, u: GroupMember with Runnable) { schedule(List(t, u)) }
-
-  def schedule(h: Handle): Unit
+  def schedule(t: Schedulable) { schedule(List(t)) }
+  def schedule(t: Schedulable, u: Schedulable) { schedule(List(t, u)) }
 
   def stopScheduler(): Unit
 }
@@ -95,7 +101,7 @@ trait InvocationBehavior extends OrcRuntime {
 /**
  * The interface through which the environment response to site calls.
  */
-trait Handle extends Runnable {
+trait Handle {
   
   def notifyOrc(event: OrcEvent): Unit
   
@@ -105,6 +111,8 @@ trait Handle extends Runnable {
   def !!(e: OrcException): Unit
   
   def isLive: Boolean
+  
+  def context: Transaction
 }
 
 /**
@@ -115,44 +123,6 @@ trait OrcEvent
 case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedEvent extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
-
-
-/** New in Orca */
-
-trait TransactionInterface extends Versioned {
-  val initialVersion: Int
-  val parentTransaction: Option[TransactionInterface]
-  def join(p: Participant): Boolean
-  def abort(): Unit
-}
-
-/* The root transaction is not actually transactional.
- * It is simply responsible for maintaining global version counting
- * and providing the nontransactional view of all transactional resources.
- */
-trait RootTransactionInterface extends TransactionInterface {
-  val initialVersion = 0
-  val parentTransaction = None
-  def join(p: Participant) = false /* The root has no participants */
-  def abort() { } /* The root can't be aborted */
-}
-
-trait Participant {
-  /* Return Some(f) with commit function f
-   * (its argument is the agreed final parent version), 
-   * or None if a rollback is requested. */
-  def prepare(): (Option[Int => Unit])
-  
-  /* Unconditionally roll back this participant. */
-  def rollback(): Unit
-}
-
-trait TransactionalHandle extends Handle { val context: TransactionInterface }
-
-trait Versioned {
-  def bump: Int
-  def version: Int
-}
 
 /**
  * An action for a few major events reported by an Orc execution.

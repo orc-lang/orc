@@ -7,7 +7,7 @@ def metronome(rate) =
   signal
 | Rwait(rate) >> metronome(rate)
 
-def swap(x,y) = atomic ( (x?, y?) >(a,b)> (x := b, y := a) >> signal )
+def swap(x,y) = atomic ( (x?, y?) >(a,b)> x := b  &  y := a )
 
 val box =
   val contents = [2,3,5,7,11,13,17,19,23,29]
@@ -20,5 +20,5 @@ burst(20, 10) >> swap(box(Random(10)), box(Random(10))) >> stop
 |
 
 {- Read list every 200ms -}
-metronome(200) >> atomic (map (lambda (i) = box(i)?, range(0, 10)) )
+metronome(200) >> atomic (map (lambda (i) = box(i)?, range(0, 10)) ) >l> (l, product(l))
 

@@ -1,10 +1,10 @@
 //
-// Abort.scala -- Scala class/trait/object Abort
+// Versioned.scala -- Scala class/trait/object Versioned
 // Project Orca
 //
 // $Id$
 //
-// Created by dkitchin on Jun 27, 2011.
+// Created by dkitchin on Jul 21, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
@@ -12,21 +12,15 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.lib.orca
+package orc.orca
 
-import orc.values.sites.Site
-import orc.Handle
-import orc.orca.Transaction
 
 /**
  * 
- * Abort the closest enclosing transaction.
  *
  * @author dkitchin
  */
-object Abort extends Site {
-  def call(args: List[AnyRef], h: Handle) {
-    h.context.abort()
-    h.halt
-  }
+trait Versioned {
+  def bump: Int
+  def version: Int
 }

@@ -15,13 +15,13 @@
 package orc.lib.orca
 
 import orc.values.sites.TotalSite
-import orc.values.sites.TransactionOnlySite
+import orc.values.sites.Site0
+import orc.values.sites.Site1
 import orc.values.OrcRecord
 import orc.Handle
-import orc.TransactionInterface
+import orc.orca._
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
-import orc.Participant
 
 /**
  * 
@@ -49,10 +49,11 @@ object TRef extends TotalSite {
 
 class TRefInstance(initialContents: Option[AnyRef]) {
   
-  val repository = new Repository[AnyRef](initialContents)
+  val repository = new Repository[Option[AnyRef]](initialContents)
   
-  val readSite = new TransactionOnlySite {
-    def call(args: List[AnyRef], h: Handle, tx: TransactionInterface) {
+  val readSite = new Site0 {
+    def call(h: Handle) {
+      val tx = h.context
       repository.read(tx) match {
         case Some(v) => {
           h.publish(v)
@@ -65,214 +66,17 @@ class TRefInstance(initialContents: Option[AnyRef]) {
     }
   }
   
-  val writeSite = new TransactionOnlySite {
-    def call(args: List[AnyRef], h: Handle, tx: TransactionInterface) {
-      args match {
-        case List(arg) => {
-          repository.write(tx, args.head) // TODO: Add arity checking
-          h.publish()
-        }
-        case _ => throw new ArityMismatchException(1, args.size) 
-      }
+  val writeSite = new Site1 {
+    def call(a: AnyRef, h: Handle) {
+      val tx = h.context
+      repository.write(tx, Some(a), h)
     }
   }
   
 }
 
-/* 
- * A sequence of version-stamped values of type T. 
- * 
- * Adding a new version is a synchronized operation.
- * Reading a version is unsynchronized.
- * 
- */
-class History[T] {
-  
-  /* A list of versioned values, maintained in sorted order, from
-   * newest version (largest #) to oldest version (smallest #)
-   */
-  private var history: List[(Int, T)] = Nil 
-  private var internalLock = new scala.concurrent.Lock()
-  private var reserved = false
-  
-  def lock() = { internalLock.acquire() }
-  def unlock() = { internalLock.release() }
-  
-  def prepare() = {
-    internalLock.acquire()
-    reserved = true
-  }
-  
-  def commit() = {
-    reserved = false
-    internalLock.release()
-  }
-  
-  def abort() = {
-    if (reserved) {
-      reserved = false
-      internalLock.release()
-    }
-  }
-  
-  /* Insert an entry into an ordered versioned list, preserving the order. 
-   * Duplicate versions are not allowed; if a duplicate is found, an error is raised. 
-   */
-  private def insert(value: T, version: Int, tail: List[(Int, T)]): List[(Int, T)] = {
-    tail match {
-      case Nil => {
-        List( (version, value) )
-      }
-      case (thisVersion, _) :: _ if (version >= thisVersion) => {
-        assert(version != thisVersion, { "duplicate version # " + version + " in the same history." })
-        (version, value) :: tail
-      }
-      case h::t => {
-        h::(insert(value, version, t))
-      }
-    }
-  }
-  
-  /* Read the value v at the given version; return Some(v).
-   * It is possible that all versions in this history exceed the requested version;
-   * in this case, return None. 
-   */
-  def lookup(version: Int): Option[T] = {
-    history find { _._1 <= version } map { _._2 }
-  }
-  
-  /*
-   * Add a value to the history at the given version.
-   * If the version already exists, an exception is raised.
-   */
-  def add(value: T, version: Int): Unit = {
-    history = insert(value, version, history)
-    //println("Content of history " + this + ": " + history)
-  }
-  
-  /*
-   * Return true if this history has no entries,
-   * false otherwise.
-   */
-  def isEmpty: Boolean = history.isEmpty
-  
-  /* Read the most recent version in the history, or None if the history is empty. */
-  // TODO: Replace None with a reserved min-version value.
-  def clock: Option[Int] = {
-    history match {
-      case Nil => None
-      case (n, _)::_ => Some(n)
-    }
-  }
-  
-  
-}
 
-class Repository[T](initialContents: Option[T]) {
-    
-  val txTable = new scala.collection.mutable.HashMap[TransactionInterface, History[T]]
-  
-  private def retrieve(tx: TransactionInterface, version: Int): Option[T] = {
-    txTable get tx flatMap { _ lookup version } 
-  }
-  
-  /* Find the history for this transaction.
-   * If there is no history, create one.
-   */
-  // TODO: Check if the tx is live before synthesizing a history for it.
-  private def forceLookup(tx: TransactionInterface): History[T] = { 
-    txTable.synchronized {
-      txTable get tx match {
-        case Some(history) => history
-        case None => {
-          val newHistory = new History[T]()
-          txTable put (tx, newHistory)
-          newHistory
-        }
-      }
-    }
-  }
-    
-  
-  def read(hostTx: TransactionInterface): Option[T] = {
-    def seek(thisTx: TransactionInterface, version: Int): Option[T] = {
-      retrieve(thisTx, version) orElse { 
-        thisTx.parentTransaction flatMap { 
-          seek(_, thisTx.initialVersion) 
-        }
-      }
-    }
-    seek(hostTx, hostTx.version) orElse initialContents
-  }
-  
-  def write(hostTx: TransactionInterface, newContent: T): Unit = {
-    val targetHistory = forceLookup(hostTx)
-    /* Wait for the history lock to prevent a write from occurring
-     * during a child transaction commit.
-     */
-    targetHistory.lock()
-    if (targetHistory.isEmpty) { hostTx join (new RepositoryParticipant(hostTx)) }
-    targetHistory.add(newContent, hostTx.bump)
-    targetHistory.unlock()
-  }
-  
 
-  class RepositoryParticipant(hostTx: TransactionInterface) extends Participant {
-    
-    def prepare(): Option[Int => Unit] = {
-      /* Determine the final value to be committed. */
-      // TODO: Figure out why synchronization on txTable matters here.
-      val finalValue = txTable.synchronized { retrieve(hostTx, hostTx.version) } getOrElse { 
-        throw new AssertionError("History for an active participant should have at least one visible write.") 
-      }
-      
-      /* Determine the parent transaction to which to commit. */
-      val parent = hostTx.parentTransaction getOrElse { 
-        throw new AssertionError("The root transaction has no parent.") 
-      }
-      
-      /* Find the parent history.
-       * If there is no parent history, create one. 
-       */
-      val parentHistory = forceLookup(parent)
-        
-      /* Lock the parent history (to block parent writes), then check if it has advanced 
-       * past the initial version of the committing transaction. 
-       */
-      parentHistory.prepare()
-      if (parentHistory.clock map { _ <= hostTx.initialVersion } getOrElse true) {
-        /* Agree to commit, returning a commit thunk. */
-        def onCommit(n: Int) = {
-          // If this commit is the first 'write' to the parent, this repository becomes a participant for the parent.
-          // Note that at present, this works even if the parent is the root, because joins to the root are no-ops.
-          if (parentHistory.isEmpty) { parent join (new RepositoryParticipant(parent)) }
-          parentHistory.add(finalValue, n)
-          //println("committed txn " + hostTx)
-          parentHistory.commit()
-        }
-        Some(onCommit)
-      }
-      else {
-        //println("aborted txn " + hostTx)
-        /* Request abort. */
-        parentHistory.abort()
-        None
-      }
-    }
-    
-    def rollback(): Unit = {
-      /* Determine the parent transaction under which to roll back. */
-      val parent = hostTx.parentTransaction getOrElse { throw new AssertionError("The root transaction has no parent.") }
-      
-      /* Unlock the parent history, if one exists. */
-      // TODO: Do a proper state change to prevent an early rollback from exposing a concurrent write.
-      txTable get parent map { _.abort() }
-      
-      // TODO: Perform proper garbage collection of stale txtable entries.
-    }
-    
-  }
-  
-}
+
 
 
