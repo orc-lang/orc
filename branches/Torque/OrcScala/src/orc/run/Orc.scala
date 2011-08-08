@@ -21,7 +21,8 @@ import orc.values.Field
 import orc.ast.oil.nameless._
 import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
-import scala.collection.mutable.Set
+import scala.collection.mutable
+import orc.lib.time._
 
 trait Orc extends OrcRuntime {
 
@@ -51,15 +52,17 @@ trait Orc extends OrcRuntime {
     def notifyOrc(event: OrcEvent): Unit
   }
 
-  sealed trait Blocker
+  sealed trait Blocker {
+    val quiescentWhileBlocked: Boolean
+  }
 
   trait Group extends GroupMember with Runnable {
     def publish(t: Token, v: AnyRef): Unit
     def onHalt(): Unit
 
-    var members: Set[GroupMember] = Set()
+    var members: mutable.Set[GroupMember] = mutable.Set()
 
-    var pendingKills: Set[GroupMember] = Set()
+    var pendingKills: mutable.Set[GroupMember] = mutable.Set()
 
     def halt(t: Token) = synchronized { remove(t) }
 
@@ -134,6 +137,8 @@ trait Orc extends OrcRuntime {
   /** A Groupcell is the group associated with expression g in (f <x< g) */
   class Groupcell(parent: Group) extends Subgroup(parent) with Blocker {
 
+    val quiescentWhileBlocked = true
+    
     var state: GroupcellState = Unbound(Nil)
 
     def publish(t: Token, v: AnyRef) = synchronized {
@@ -178,12 +183,13 @@ trait Orc extends OrcRuntime {
 
     /* Some(t): No publications have left this region.
      *          If the group halts silently, t will be scheduled.
-     *
      *    None: One or more publications has left this region.
      */
-    t.blockOn(this)
-
     var pending: Option[Token] = Some(t)
+    
+    val quiescentWhileBlocked = true
+    
+    t.blockOn(this)
 
     def publish(t: Token, v: AnyRef) = synchronized {
       pending foreach { _.halt() } // Remove t from its group
@@ -241,6 +247,72 @@ trait Orc extends OrcRuntime {
 
   }
 
+  
+  
+  ////////
+  // Virtual Clocks
+  ////////
+  
+  type Time = AnyRef
+  class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (Time, Time) => Int) {
+     
+    val queueOrder = new Ordering[(Handle,Time)] {
+      // TODO: This comparison may need to be reversed
+      def compare(x: (Handle,Time), y: (Handle,Time)) = ordering(x._2, y._2)
+    } 
+        
+    var currentTime: Option[Time] = None 
+    val waiterQueue: mutable.PriorityQueue[(Handle,Time)] = new mutable.PriorityQueue()(queueOrder)
+    
+    private var readyCount: Int = 0
+    
+    protected def onZero() {
+      parent foreach { _.setQuiescent() }
+      waiterQueue.headOption match {
+        case Some((_, minimumTime)) => {
+          currentTime = Some(minimumTime)
+          def atMinimum(entry: (Handle, Time)) = ordering(entry._2, minimumTime) == 0
+          val allMins = waiterQueue takeWhile atMinimum
+          allMins foreach { entry => entry._1.publish() } 
+        }
+        case None => {}
+      }
+    }
+    
+    def setQuiescent() {
+      synchronized {
+        readyCount -= 1
+        if (readyCount == 0) onZero()
+      }
+    }
+    
+    def unsetQuiescent() { synchronized { readyCount += 1 } }
+    
+    def await(h: Handle, t: Time) {
+      synchronized {
+        currentTime match {
+          case None => waiterQueue += ( (h,t) )
+          case Some(ct) => {
+            ordering(t, ct) match {
+              // t is earlier than the current time
+              case -1 => h.halt
+              
+              // t is at the current time
+              case 0 => h.publish()
+              
+              // t is later than the current time
+              case 1 => waiterQueue += ( (h,t) )
+            }
+          }
+        }
+      }
+    }
+    
+    def now(): Option[Time] = synchronized { currentTime }
+    
+  }
+  
+  
   ////////
   // Bindings
   ////////
@@ -315,7 +387,7 @@ trait Orc extends OrcRuntime {
     }
   }
 
-  case class KFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
+  case class PruningFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
     def k = _k
     def apply(t: Token, v: AnyRef) {
       val _v = v.asInstanceOf[Option[AnyRef]]
@@ -333,28 +405,46 @@ trait Orc extends OrcRuntime {
   // Tokens
   ////////
 
-  sealed trait TokenState
+  sealed trait TokenState {
+    val isQuiescent: Boolean
+  }
   /** Token is ready to make progress */
-  case object Live extends TokenState
+  case object Live extends TokenState { 
+    val isQuiescent = false 
+  }
   /** Token is waiting on another task */
-  case class Blocked(blocker: Blocker) extends TokenState
+  case class Blocked(blocker: Blocker) extends TokenState { 
+    val isQuiescent = blocker.quiescentWhileBlocked 
+  }
   /** Token has been told to suspend, but it's still in the scheduler queue */
-  case class Suspending(prevState: TokenState) extends TokenState
+  case class Suspending(prevState: TokenState) extends TokenState {
+    val isQuiescent = prevState.isQuiescent
+  }
   /** Suspended Tokens must be re-scheduled upon resume */
-  case class Suspended(prevState: TokenState) extends TokenState
+  case class Suspended(prevState: TokenState) extends TokenState {
+    val isQuiescent = prevState.isQuiescent
+  }
   /** Token halted itself */
-  case object Halted extends TokenState
+  case object Halted extends TokenState {
+    val isQuiescent = true
+  }
   /** Token killed by engine */
-  case object Killed extends TokenState
+  case object Killed extends TokenState {
+    val isQuiescent = true
+  }
   /** Live Token with a value to propagate */
-  case class Published(v: AnyRef) extends TokenState
+  case class Published(v: AnyRef) extends TokenState {
+    val isQuiescent = false
+  }
 
   class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Blocker {
 
-    caller.blockOn(this)
-
+    val quiescentWhileBlocked = quiescentWhileInvoked(calledSite)
+    
     var listener: Option[Token] = Some(caller)
     var invocationThread: Option[Thread] = None
+    
+    caller.blockOn(this)
 
     def run() {
       try {
@@ -411,6 +501,7 @@ trait Orc extends OrcRuntime {
     var stack: List[Frame] = Nil,
     var env: List[Binding] = Nil,
     var group: Group,
+    var clock: Option[VirtualClock] = None,
     var state: TokenState = Live) extends GroupMember with Runnable {
 
     var functionFramesPushed: Int = 0;
@@ -430,9 +521,10 @@ trait Orc extends OrcRuntime {
       stack: List[Frame] = stack,
       env: List[Binding] = env,
       group: Group = group,
+      clock: Option[VirtualClock] = clock,
       state: TokenState = state): Token = {
 
-      new Token(node, stack, env, group, state)
+      new Token(node, stack, env, group, clock, state)
     }
 
     // A live token is added to its group when it is created
@@ -440,7 +532,18 @@ trait Orc extends OrcRuntime {
       case Published(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
       case Halted | Killed => {}
     }
-
+    
+    
+    def setState(newState: TokenState) {
+      (state.isQuiescent, newState.isQuiescent) match {
+        case (true, false) => clock foreach { _.unsetQuiescent() }
+        case (false, true) => clock foreach { _.setQuiescent() }
+        case _ => {}
+      }
+      state = newState
+    }
+    
+    
     def notifyOrc(event: OrcEvent) { group.notifyOrc(event) }
 
     def kill() = synchronized {
@@ -450,8 +553,7 @@ trait Orc extends OrcRuntime {
             case Blocked(handle: SiteCallHandle) => handle.kill()
             case _ => {}
           }
-
-          state = Killed
+          setState(Killed)
           group.halt(this)
         }
         case Halted | Killed => {}
@@ -460,7 +562,7 @@ trait Orc extends OrcRuntime {
 
     def blockOn(blocker: Blocker) = synchronized {
       state match {
-        case Live => state = Blocked(blocker)
+        case Live => setState(Blocked(blocker))
         case Killed => {}
         case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state)
       }
@@ -469,16 +571,16 @@ trait Orc extends OrcRuntime {
     def unblock() = synchronized {
       state match {
         case Blocked(_: Region) => {
-          state = Live
+          setState(Live)
           schedule(this)
         }
         case Killed => {}
         case Suspending(Blocked(_: Region)) => {
-          state = Suspending(Live)
+          setState(Suspending(Live))
           schedule(this)
         }
         case Suspended(Blocked(_: Region)) => {
-          state = Suspended(Live)
+          setState(Suspended(Live))
         }
         case Blocked(_) => { throw new AssertionError("Tokens may only receive _.unblock from a region") }
         case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state=" + state) }
@@ -487,19 +589,31 @@ trait Orc extends OrcRuntime {
 
     def suspend() = synchronized {
       state match {
-        case Live | Blocked(_) | Published(_) => state = Suspending(state)
+        case Live | Blocked(_) | Published(_) => setState(Suspending(state))
         case Suspending(_) | Suspended(_) | Halted | Killed => {}
       }
     }
 
     def resume() = synchronized {
       state match {
-        case Suspending(prevState) => state = prevState
+        case Suspending(prevState) => setState(prevState)
         case Suspended(prevState) => {
-          state = prevState
+          setState(prevState)
           schedule(this)
         }
         case Published(_) | Live | Blocked(_) | Halted | Killed => {}
+      }
+    }
+    
+    def setQuiescent() {
+      if (!state.isQuiescent) {
+        clock foreach { _.setQuiescent() }
+      }
+    }
+    
+    def unsetQuiescent() {
+      if (state.isQuiescent) {
+        clock foreach { _.unsetQuiescent() }
       }
     }
 
@@ -573,7 +687,7 @@ trait Orc extends OrcRuntime {
             case u => k(Some(u))
           }
         case BoundStop => k(None)
-        case BoundCell(g) => stack = KFrame(k) :: stack; g read this // TODO: push k on stack before calling read
+        case BoundCell(g) => stack = PruningFrame(k) :: stack; g read this // TODO: push k on stack before calling read
       }
     }
 
@@ -633,8 +747,30 @@ trait Orc extends OrcRuntime {
 
     def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
       val sh = new SiteCallHandle(this, s, actuals)
-      state = Blocked(sh)
-      schedule(sh)
+      setState(Blocked(sh))
+      (s, actuals) match {
+        // Arity errors for these calls are caught in invoke(...)
+        case (`Timeline`,List(_)) => {
+          // TODO: Remove stub comparator
+          synchronized { clock = Some(new VirtualClock(clock,{ (x,y) => 0 })) }
+          sh.publish()
+        }
+        case (`Await`,List(t)) => {
+          clock match {
+            case Some(cl) => cl.await(sh, t)
+            case None => sh.halt
+          }
+        }
+        case (`Now`,Nil) => {
+          clock flatMap { _.now() } match {
+            case Some(t) => sh.publish(t)
+            case None => sh.halt
+          }
+        }
+        case (_,_) => {
+          schedule(sh)
+        }
+      }
     }
 
     def makeCall(target: AnyRef, params: List[Binding]): Unit = {
@@ -661,20 +797,20 @@ trait Orc extends OrcRuntime {
       }
     }
 
-    def isLive = { state = Live }
-
+    def isLive = { setState(Live) }
+    
     def run() {
       var runNode = false
       synchronized {
         state match {
           case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
           case Blocked(_) => throw new AssertionError("blocked token scheduled")
-          case Suspending(prevState) => state = Suspended(prevState)
+          case Suspending(prevState) => setState(Suspended(prevState))
           case Suspended(_) => throw new AssertionError("suspended token scheduled")
           case Halted => throw new AssertionError("halted token scheduled")
           case Killed => {} // This token was killed while it was on the schedule queue; ignore it
           case Published(v) => {
-            state = Live
+            setState(Live)
             stack match {
               case f :: fs => {
                 stack = fs
@@ -752,15 +888,15 @@ trait Orc extends OrcRuntime {
       state match {
         case Blocked(_: Region) => throw new AssertionError("publish on a pending Token")
         case Live | Blocked(_) => {
-          state = Published(v)
+          setState(Published(v))
           schedule(this)
         }
         case Suspending(_) => {
-          state = Suspending(Published(v))
+          setState(Suspending(Published(v)))
           schedule(this)
         }
         case Suspended(_) => {
-          state = Suspended(Published(v))
+          setState(Suspended(Published(v)))
         }
         case Published(_) => throw new AssertionError("Already published!")
         case Halted | Killed => {}
@@ -775,7 +911,7 @@ trait Orc extends OrcRuntime {
             case _ => {}
           }
 
-          state = Halted
+          setState(Halted)
           group.halt(this)
         }
         case Suspended(_) => throw new AssertionError("halt on a suspended Token")

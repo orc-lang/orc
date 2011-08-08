@@ -28,6 +28,8 @@ import orc.types.RecordType
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
+  // BIG TODO: Remove this default value
+  val quiescentWhileInvoked: Boolean = false
 }
 
 trait Site extends OrcValue with SiteMetadata {
@@ -219,8 +221,6 @@ trait TotalSite3 extends TotalSite {
   
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
 }
-
-
 
 
 /* Template for building values which act as constructor-extractor sites,

@@ -62,8 +62,15 @@ trait OrcRuntimeProvides {
 /**
  *  The interface from an Orc runtime to its environment
  */
-trait OrcRuntimeRequires {
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit
+trait OrcRuntimeRequires extends InvocationBehavior
+
+/** 
+ * Define invocation behaviors for a runtime 
+ */
+trait InvocationBehavior {
+  /* By default, an invocation halts silently. This will be overridden by other traits. */
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
+  def quiescentWhileInvoked(v: AnyRef): Boolean = false
 }
 
 /**
@@ -85,11 +92,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def stopScheduler(): Unit
 }
 
-/* Define invocation behaviors for a runtime */
-trait InvocationBehavior extends OrcRuntime {
-  /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
-}
+
 
 
 /**

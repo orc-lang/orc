@@ -39,4 +39,11 @@ trait SupportForSiteInvocation extends InvocationBehavior {
       case _ => super.invoke(h, v, vs)
     }
   }
+  
+  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
+    v match {
+      case (s: Site) => s.quiescentWhileInvoked
+      case _ => super.quiescentWhileInvoked(v)
+    }
+  }
 }
