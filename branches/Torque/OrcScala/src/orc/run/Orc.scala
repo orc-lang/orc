@@ -18,9 +18,10 @@ package orc.run
 import orc.{ OrcExecutionOptions, CaughtEvent, HaltedEvent, PublishedEvent, OrcEvent, Handle, OrcRuntime }
 import orc.values.OrcRecord
 import orc.values.Field
+import orc.values.sites.TotalSite
 import orc.ast.oil.nameless._
 import orc.error.OrcException
-import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
 import scala.collection.mutable
 import orc.lib.time._
 
@@ -264,25 +265,27 @@ trait Orc extends OrcRuntime {
     var currentTime: Option[Time] = None 
     val waiterQueue: mutable.PriorityQueue[(Handle,Time)] = new mutable.PriorityQueue()(queueOrder)
     
-    private var readyCount: Int = 0
+    private var readyCount: Int = 1
     
-    protected def onZero() {
-      parent foreach { _.setQuiescent() }
+    protected def advance() {      
       waiterQueue.headOption match {
         case Some((_, minimumTime)) => {
           currentTime = Some(minimumTime)
           def atMinimum(entry: (Handle, Time)) = ordering(entry._2, minimumTime) == 0
           val allMins = waiterQueue takeWhile atMinimum
+          allMins foreach { _ => waiterQueue.dequeue() }
           allMins foreach { entry => entry._1.publish() } 
         }
-        case None => {}
+        case None => { } // println("onZero on empty queue..") }
       }
     }
     
     def setQuiescent() {
       synchronized {
+        assert(readyCount > 0)
         readyCount -= 1
-        if (readyCount == 0) onZero()
+        parent foreach { _.setQuiescent() }
+        if (readyCount == 0) advance()
       }
     }
     
@@ -291,7 +294,10 @@ trait Orc extends OrcRuntime {
     def await(h: Handle, t: Time) {
       synchronized {
         currentTime match {
-          case None => waiterQueue += ( (h,t) )
+          case None => {
+            waiterQueue += ( (h,t) )
+            if (readyCount == 0) advance()
+          }
           case Some(ct) => {
             ordering(t, ct) match {
               // t is earlier than the current time
@@ -301,10 +307,14 @@ trait Orc extends OrcRuntime {
               case 0 => h.publish()
               
               // t is later than the current time
-              case 1 => waiterQueue += ( (h,t) )
+              case 1 => {
+                waiterQueue += ( (h,t) )
+                if (readyCount == 0) advance()
+              }
             }
           }
         }
+        
       }
     }
     
@@ -459,7 +469,7 @@ trait Orc extends OrcRuntime {
       } catch {
         case e: OrcException => this !! e
         case e: InterruptedException => throw e
-        case e => { notifyOrc(CaughtEvent(e)); halt() }
+        case e: Exception => { notifyOrc(CaughtEvent(e)); halt() }
       }
     }
 
@@ -604,18 +614,6 @@ trait Orc extends OrcRuntime {
         case Published(_) | Live | Blocked(_) | Halted | Killed => {}
       }
     }
-    
-    def setQuiescent() {
-      if (!state.isQuiescent) {
-        clock foreach { _.setQuiescent() }
-      }
-    }
-    
-    def unsetQuiescent() {
-      if (state.isQuiescent) {
-        clock foreach { _.unsetQuiescent() }
-      }
-    }
 
     def fork() = { (this, copy()) }
 
@@ -750,18 +748,31 @@ trait Orc extends OrcRuntime {
       setState(Blocked(sh))
       (s, actuals) match {
         // Arity errors for these calls are caught in invoke(...)
-        case (`Timeline`,List(_)) => {
-          // TODO: Remove stub comparator
-          synchronized { clock = Some(new VirtualClock(clock,{ (x,y) => 0 })) }
-          sh.publish()
+        case (`Vclock`,List(f)) => {
+          f match {
+            case totalf: TotalSite => { 
+              def ordering(x: AnyRef, y: AnyRef) = {
+                // TODO: Add error handling, either here or in the scheduler.
+                // A comparator error should kill the engine.
+                val i = totalf.evaluate(List(x,y)).asInstanceOf[Int]
+                assert(i == -1 || i == 0 || i == 1)
+                i
+              }
+              synchronized { clock = Some(new VirtualClock(clock, ordering)) }
+              sh.publish()
+            }
+            case _ => {
+              sh !! (new ArgumentTypeMismatchException(0, "TotalSite", f.toString()))
+            }
+          }
         }
-        case (`Await`,List(t)) => {
+        case (`Vawait`,List(t)) => {
           clock match {
             case Some(cl) => cl.await(sh, t)
             case None => sh.halt
           }
         }
-        case (`Now`,Nil) => {
+        case (`Vtime`,Nil) => {
           clock flatMap { _.now() } match {
             case Some(t) => sh.publish(t)
             case None => sh.halt

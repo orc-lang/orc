@@ -1,5 +1,5 @@
 //
-// Now.scala -- Scala class/trait/object Now
+// Vtime.scala -- Scala class/trait/object Vtime
 // Project OrcScala
 //
 // $Id$
@@ -23,8 +23,8 @@ import orc.error.runtime.RuntimeSupportException
  *
  * @author dkitchin
  */
-object Now extends Site0 {
-  // Invocation behavior defined in orc.run.extensions.SupportForTimelines; do not invoke directly.
-  def call(h: Handle) { h !! (new RuntimeSupportException("Now")) } 
+object Vtime extends Site0 {
+  // Do not invoke directly.
+  def call(h: Handle) { h !! (new RuntimeSupportException("Vtime")) } 
   override val quiescentWhileInvoked: Boolean = false
 }

@@ -1,5 +1,5 @@
 //
-// Await.scala -- Scala class/trait/object Await
+// Vawait.scala -- Scala class/trait/object Vawait
 // Project OrcScala
 //
 // $Id$
@@ -23,8 +23,8 @@ import orc.error.runtime.RuntimeSupportException
  *
  * @author dkitchin
  */
-object Await extends Site1 {
-  // Invocation behavior defined in orc.run.extensions.SupportForTimelines; do not invoke directly.
-  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Await")) }  
+object Vawait extends Site1 {
+  // Do not invoke directly.
+  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }  
   override val quiescentWhileInvoked: Boolean = true
 }

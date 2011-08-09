@@ -1,5 +1,5 @@
 //
-// Timeline.scala -- Scala class/trait/object Timeline
+// Vclock.scala -- Scala class/trait/object Vclock
 // Project OrcScala
 //
 // $Id$
@@ -23,8 +23,8 @@ import orc.error.runtime.RuntimeSupportException
  *
  * @author dkitchin
  */
-object Timeline extends Site1 {
-  // Invocation behavior defined in orc.run.extensions.SupportForTimelines; do not invoke directly.
-  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Timeline")) }
+object Vclock extends Site1 {
+  // Do not invoke directly.
+  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vclock")) }
   override val quiescentWhileInvoked: Boolean = false
 }
