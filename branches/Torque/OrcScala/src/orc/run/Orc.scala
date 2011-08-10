@@ -226,12 +226,12 @@ trait Orc extends OrcRuntime {
 
     val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
-    def publish(t: Token, v: AnyRef) = synchronized {
+    def publish(t: Token, v: AnyRef) {
       k(PublishedEvent(v))
       t.halt()
     }
 
-    def onHalt() = synchronized {
+    def onHalt() {
       k(HaltedEvent)
     }
 
@@ -546,12 +546,16 @@ trait Orc extends OrcRuntime {
     if (!state.isQuiescent) { clock foreach { _.unsetQuiescent() } }
     
     def setState(newState: TokenState) {
-      (state.isQuiescent, newState.isQuiescent) match {
-        case (true, false) => clock foreach { _.unsetQuiescent() }
-        case (false, true) => clock foreach { _.setQuiescent() }
+      val (oldState, oldClock) = synchronized {
+        val oldState = state
+        state = newState
+        (oldState, clock)
+      }
+      (oldState.isQuiescent, newState.isQuiescent) match {
+        case (true, false) => oldClock foreach { _.unsetQuiescent() }
+        case (false, true) => oldClock foreach { _.setQuiescent() }
         case _ => {}
       }
-      state = newState
     }
     
     
@@ -808,8 +812,6 @@ trait Orc extends OrcRuntime {
         }
       }
     }
-
-    def isLive = { setState(Live) }
     
     def run() {
       var runNode = false
