@@ -258,8 +258,7 @@ trait Orc extends OrcRuntime {
   class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (Time, Time) => Int) {
      
     val queueOrder = new Ordering[(Handle,Time)] {
-      // TODO: This comparison may need to be reversed
-      def compare(x: (Handle,Time), y: (Handle,Time)) = ordering(x._2, y._2)
+      def compare(x: (Handle,Time), y: (Handle,Time)) = ordering(y._2, x._2)
     } 
         
     var currentTime: Option[Time] = None 
@@ -276,7 +275,7 @@ trait Orc extends OrcRuntime {
           allMins foreach { _ => waiterQueue.dequeue() }
           allMins foreach { entry => entry._1.publish() } 
         }
-        case None => { } // println("onZero on empty queue..") }
+        case None => { }
       }
     }
     
@@ -543,6 +542,8 @@ trait Orc extends OrcRuntime {
       case Halted | Killed => {}
     }
     
+    // A nonquiescent token is added to its clock when it is created
+    if (!state.isQuiescent) { clock foreach { _.unsetQuiescent() } }
     
     def setState(newState: TokenState) {
       (state.isQuiescent, newState.isQuiescent) match {
