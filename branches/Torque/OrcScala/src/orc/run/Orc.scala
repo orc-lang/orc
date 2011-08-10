@@ -227,8 +227,10 @@ trait Orc extends OrcRuntime {
     val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
     def publish(t: Token, v: AnyRef) {
-      k(PublishedEvent(v))
-      t.halt()
+      synchronized {
+        k(PublishedEvent(v))
+        t.halt()
+      }
     }
 
     def onHalt() {
@@ -290,30 +292,29 @@ trait Orc extends OrcRuntime {
     
     def unsetQuiescent() { synchronized { readyCount += 1 } }
     
-    def await(h: Handle, t: Time) {
-      synchronized {
-        currentTime match {
-          case None => {
-            waiterQueue += ( (h,t) )
-            if (readyCount == 0) advance()
-          }
-          case Some(ct) => {
-            ordering(t, ct) match {
-              // t is earlier than the current time
-              case -1 => h.halt
-              
-              // t is at the current time
-              case 0 => h.publish()
-              
-              // t is later than the current time
-              case 1 => {
-                waiterQueue += ( (h,t) )
-                if (readyCount == 0) advance()
-              }
+    def await(h: Handle, t: Time): Boolean = {
+      currentTime match {
+        case None => {
+          waiterQueue += ( (h,t) )
+          if (readyCount == 0) advance()
+          true
+        }
+        case Some(ct) => {
+          ordering(t, ct) match {
+            // t is earlier than the current time
+            case -1 => h.halt ; false
+            
+            // t is at the current time
+            case 0 => h.publish() ; false
+            
+            // t is later than the current time
+            case 1 => {
+              waiterQueue += ( (h,t) )
+              if (readyCount == 0) advance()
+              true
             }
           }
         }
-        
       }
     }
     
@@ -545,7 +546,7 @@ trait Orc extends OrcRuntime {
     // A nonquiescent token is added to its clock when it is created
     if (!state.isQuiescent) { clock foreach { _.unsetQuiescent() } }
     
-    def setState(newState: TokenState) {
+    def setState(newState: TokenState)  {
       val (oldState, oldClock) = synchronized {
         val oldState = state
         state = newState
@@ -773,7 +774,11 @@ trait Orc extends OrcRuntime {
         }
         case (`Vawait`,List(t)) => {
           clock match {
-            case Some(cl) => cl.await(sh, t)
+            case Some(cl) => {
+              if (cl.await(sh, t)) {
+                cl.setQuiescent()
+              }
+            }
             case None => sh.halt
           }
         }
@@ -812,7 +817,7 @@ trait Orc extends OrcRuntime {
         }
       }
     }
-    
+
     def run() {
       var runNode = false
       synchronized {

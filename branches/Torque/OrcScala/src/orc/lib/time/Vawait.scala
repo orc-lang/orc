@@ -26,5 +26,7 @@ import orc.error.runtime.RuntimeSupportException
 object Vawait extends Site1 {
   // Do not invoke directly.
   def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }  
-  override val quiescentWhileInvoked: Boolean = true
+  
+  // Will become quiescent if enqueued
+  override val quiescentWhileInvoked: Boolean = false
 }
