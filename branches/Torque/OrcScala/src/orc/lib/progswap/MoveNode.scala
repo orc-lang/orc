@@ -15,6 +15,7 @@ package orc.lib.progswap
 import orc.ast.oil.nameless.NamelessAST
 import orc.run.extensions.SwappableASTs
 import orc.run.Orc
+import orc.run.core.Token
 
 /**
  * Edit operation that is a relocation of a node within a tree.
@@ -23,16 +24,16 @@ import orc.run.Orc
  */
 case class MoveNode[A, B](movingNode: A, movedNode: B, oldParent: A, newParent: B, position:Int) extends AstEditOperation {
 
-  def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
+  def tokenCracker(token: Token): Token = token.asInstanceOf[Token]
 
-  def isTokenAffected(token: Orc#Token): Boolean = { tokenCracker(token).node == movingNode }
+  def isTokenAffected(token: Token): Boolean = { tokenCracker(token).getNode() == movingNode }
 
-  def isTokenSafe(token: Orc#Token): Boolean = { true }
+  def isTokenSafe(token: Token): Boolean = { true }
 
-  def migrateToken(token: Orc#Token): Boolean = { false }
+  def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Orc#Token): Unit = {  }
+  def migrateClosures(token: Token): Unit = {  }
 
-  def migrateFrameStack(token: Orc#Token): Unit = {  }
+  def migrateFrameStack(token: Token): Unit = {  }
 
 }

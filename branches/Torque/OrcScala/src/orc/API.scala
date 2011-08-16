@@ -73,32 +73,35 @@ trait InvocationBehavior {
   def quiescentWhileInvoked(v: AnyRef): Boolean = false
 }
 
+trait Schedulable extends Runnable {
+  /* A schedulable unit may declare itself nonblocking;
+   * the scheduler may exploit this information.
+   * It is assumed by default that a schedulable unit might block.
+   */
+  val nonblocking: Boolean = false
+}
+
 /**
  * An Orc runtime 
  */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
-  type GroupMember
   
   def startScheduler(options: OrcExecutionOptions): Unit
 
-  def schedule(ts: List[GroupMember with Runnable]): Unit
+  def schedule(ts: List[Schedulable]): Unit
 
   // Schedule function is overloaded for convenience
-  def schedule(t: GroupMember with Runnable) { schedule(List(t)) }
-  def schedule(t: GroupMember with Runnable, u: GroupMember with Runnable) { schedule(List(t, u)) }
-
-  def schedule(h: Handle): Unit
+  def schedule(t: Schedulable) { schedule(List(t)) }
+  def schedule(t: Schedulable, u: Schedulable) { schedule(List(t, u)) }
 
   def stopScheduler(): Unit
+  
 }
-
-
-
 
 /**
  * The interface through which the environment response to site calls.
  */
-trait Handle extends Runnable {
+trait Handle extends Schedulable {
   
   def notifyOrc(event: OrcEvent): Unit
   

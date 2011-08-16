@@ -14,6 +14,7 @@ package orc.lib.progswap
 
 import orc.run.Orc
 import orc.ast.oil.nameless.NamelessAST
+import orc.run.core.Token
 
 /**
  * Edit operation that is an addition of a new node to a tree.
@@ -22,14 +23,14 @@ import orc.ast.oil.nameless.NamelessAST
  */
 case class InsertNode[A, B](newNode: B, oldParent: A, newParent: B, position: Int) extends AstEditOperation {
 
-  def isTokenAffected(token: Orc#Token): Boolean = { false }
+  def isTokenAffected(token: Token): Boolean = { false }
 
-  def isTokenSafe(token: Orc#Token): Boolean = { true }
+  def isTokenSafe(token: Token): Boolean = { true }
 
-  def migrateToken(token: Orc#Token): Boolean = { false }
+  def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Orc#Token): Unit = {  }
+  def migrateClosures(token: Token): Unit = {  }
 
-  def migrateFrameStack(token: Orc#Token): Unit = {  }
+  def migrateFrameStack(token: Token): Unit = {  }
 
 }
