@@ -358,18 +358,22 @@ trait Orc extends OrcRuntime {
 
     def run() {
       try {
-        synchronized {
+        if (synchronized {
           if (listener.isDefined) {
             invocationThread = Some(Thread.currentThread)
-          } else {
-            throw new InterruptedException()
           }
+          listener.isDefined
+        }) {
+          invoke(this, calledSite, actuals)
         }
-        invoke(this, calledSite, actuals)
       } catch {
         case e: OrcException => this !! e
-        case e: InterruptedException => throw e
+        case e: InterruptedException => halt()  //Thread interrupt causes halt without notify
         case e => { notifyOrc(CaughtEvent(e)); halt() }
+      } finally {
+        synchronized {
+          invocationThread = None
+        }
       }
     }
 
@@ -400,8 +404,9 @@ trait Orc extends OrcRuntime {
 
     def kill() =
       synchronized {
-        invocationThread foreach { _.interrupt() }
+        /* Called from the listener's Token.kill, so the listener is not notified. */
         listener = None
+        invocationThread foreach { _.interrupt() }
       }
 
   }
@@ -770,11 +775,6 @@ trait Orc extends OrcRuntime {
     def halt() {
       state match {
         case Published(_) | Live | Blocked(_) | Suspending(_) => {
-          state match {
-            case Blocked(handle: SiteCallHandle) => handle.kill()
-            case _ => {}
-          }
-
           state = Halted
           group.halt(this)
         }
