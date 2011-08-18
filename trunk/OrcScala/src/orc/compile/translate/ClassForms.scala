@@ -47,9 +47,6 @@ object ClassForms {
       case _ => {}
     }
     val dNames = defNames.distinct
-    if (dNames.isEmpty) {
-      throw (DeflessClass() at body)
-    }
     val members =
       for (d <- dNames) yield {
         val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
