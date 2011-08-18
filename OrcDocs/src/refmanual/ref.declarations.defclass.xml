@@ -23,8 +23,7 @@
       <para>
       The body of a <code>def class</code> consists of a sequence of declarations followed by a 
       <indexterm significance="preferred"><primary>goal expression</primary></indexterm><firstterm baseform="goal expression">goal</firstterm> expression. Each <code>def</code> or
-			<code>def class</code> declaration in this sequence is called a <indexterm significance="preferred"><primary>method</primary></indexterm><firstterm>method</firstterm>; 
-			a class must have at least one method.       
+			<code>def class</code> declaration in this sequence is called a <indexterm significance="preferred"><primary>method</primary></indexterm><firstterm>method</firstterm>.     
       </para>
       
       <para>

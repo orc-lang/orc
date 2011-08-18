@@ -217,7 +217,7 @@
 		<production xml:id="ebnf.declaration.defclass">
 		  <lhs><link linkend="ref.declarations.defclass">DeclareDefclass</link></lhs>
 		  <rhs>
-		    <code>def class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.declaration">Declaration</nonterminal><emphasis role="bold">+</emphasis> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
+		    <code>def class</code> <nonterminal def="#ebnf.variable">Variable</nonterminal> <nonterminal def="#ebnf.typeparameters">TypeParameters</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.parameters">Parameters</nonterminal> <nonterminal def="#ebnf.returntype">ReturnType</nonterminal><emphasis role="bold">?</emphasis> <nonterminal def="#ebnf.guard">Guard</nonterminal><emphasis role="bold">?</emphasis> <code>=</code> <nonterminal def="#ebnf.expression">Expression</nonterminal> 
 		  </rhs>
 		</production>
 		
