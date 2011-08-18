@@ -9,7 +9,7 @@ val sequence_generator = gen_seq(0)
 
 sequence_generator.next() | sequence_generator.next() 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 0
 1
 -}
