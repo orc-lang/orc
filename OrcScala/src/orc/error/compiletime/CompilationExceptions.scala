@@ -135,11 +135,7 @@ case class UnboundVariableException(val varName: String)
 case class UnboundTypeVariableException(val typevarName: String)
   extends SyntacticException("Type variable " + typevarName + " is unbound")
   with SeverityError
-
-
-case class DeflessClass()
-  extends SyntacticException("A class must contain at least one 'def' declaration")
-  with SeverityFatal
+  
   
 /**
  * The compilation process has produced a malformed expression; 
