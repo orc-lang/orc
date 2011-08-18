@@ -41,7 +41,7 @@ trait SupportForRwait extends Orc {
    * timer when the runtime is shut down.
    */
   
-  override def generateOrcHandlers(host: Execution): List[PartialFunction[OrcEvent, Unit]] = {
+  override def installHandlers(host: Execution) {
     val thisHandler = { 
       case RwaitEvent(delay, caller) => {
         val callback =  
@@ -53,7 +53,8 @@ trait SupportForRwait extends Orc {
       }
     } : PartialFunction[OrcEvent, Unit]
     
-    thisHandler :: super.generateOrcHandlers(host)
+    host.installHandler(thisHandler)
+    super.installHandlers(host)
   }
     
 }

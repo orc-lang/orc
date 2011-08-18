@@ -33,8 +33,8 @@ import orc.run.Orc
  */
 class Execution(
     private[run] var _node: Expression, 
-    k: OrcEvent => Unit, 
     private[run] var _options: OrcExecutionOptions,
+    private var eventHandler: OrcEvent => Unit,
     val runtime: OrcRuntime) 
 extends Group {
 
@@ -45,20 +45,18 @@ extends Group {
 
   def publish(t: Token, v: AnyRef) {
     synchronized {
-      k(PublishedEvent(v))
+      notifyOrc(PublishedEvent(v))
       t.halt()
     }
   }
 
   def onHalt() {
-    k(HaltedEvent)
+    notifyOrc(HaltedEvent)
   }
-
-  val eventHandler: OrcEvent => Unit = {
-    val handlers = runtime.asInstanceOf[Orc].generateOrcHandlers(this)
-    val baseHandler = { case e => k(e) }: PartialFunction[OrcEvent, Unit]
-    def composeOrcHandlers(f: PartialFunction[OrcEvent, Unit], g: PartialFunction[OrcEvent, Unit]) = f orElse g
-    handlers.foldRight(baseHandler)(composeOrcHandlers)
+  
+  def installHandler(newHandler: PartialFunction[OrcEvent, Unit]) = {
+    val oldHandler = eventHandler
+    eventHandler = { e => if (newHandler isDefinedAt e) { newHandler(e) } else { oldHandler(e) }}
   }
 
   def notifyOrc(event: OrcEvent) = { eventHandler(event) }

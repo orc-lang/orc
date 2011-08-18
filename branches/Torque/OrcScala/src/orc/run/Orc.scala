@@ -27,7 +27,10 @@ trait Orc extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
-    val root = new Execution(node, k, options, this)
+    
+    val root = new Execution(node, options, k, this)
+    installHandlers(root)
+    
     val t = new Token(node, root)
     schedule(t)
   }
@@ -37,10 +40,10 @@ trait Orc extends OrcRuntime {
   }
 
   /**
-   * Generate the list of event handlers for an execution.
+   * Add all needed event handlers to an execution.
    * Traits which add support for more events will override this
    * method and introduce more handlers.
    */
-  def generateOrcHandlers(host: Execution): List[PartialFunction[OrcEvent, Unit]] = Nil
+  def installHandlers(host: Execution) {}
   
 }

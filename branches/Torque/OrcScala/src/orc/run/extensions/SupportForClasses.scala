@@ -34,7 +34,7 @@ case class InstanceEvent(c: Closure, args: List[AnyRef], caller: Handle) extends
 
 trait SupportForClasses extends Orc {
  
-  override def generateOrcHandlers(host: Execution): List[PartialFunction[OrcEvent, Unit]] = {
+  override def installHandlers(host: Execution) {
     val thisHandler = {
       case InstanceEvent(closure, args, caller) => {
         val node = Call(Constant(closure), args map Constant, Some(Nil))
@@ -44,7 +44,8 @@ trait SupportForClasses extends Orc {
       }
     } : PartialFunction[OrcEvent, Unit]
     
-    thisHandler :: super.generateOrcHandlers(host)
+    host.installHandler(thisHandler)
+    super.installHandlers(host)
   }
 
   
