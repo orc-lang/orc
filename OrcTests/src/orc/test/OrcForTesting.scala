@@ -14,8 +14,9 @@
 //
 package orc.test
 
-import java.io.FileReader
+import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.InputStreamReader
 import java.util.concurrent.FutureTask
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit.SECONDS
@@ -51,7 +52,7 @@ object OrcForTesting {
     try {
       options.filename = filename
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new FileReader(options.filename)
+      val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
     } catch {
       case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
