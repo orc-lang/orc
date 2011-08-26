@@ -156,7 +156,9 @@ object OrcJavaCompatibility {
     // 4. unboxing conversion (one of 8) (JLS §5.1.8) optionally followed by a widening primitive conversion
     // "Method invocation conversions specifically do not include the implicit narrowing of integer constants which is part of assignment conversion"
 
-    if (!allowConversion || (!formalParamType.isPrimitive() && !actualArgType.isPrimitive())) {
+    if (!formalParamType.isPrimitive() && actualArgType == null) {
+      true // Null type is a subtype of all reference types (JLS §4.10) 
+    } else if (!allowConversion || (!formalParamType.isPrimitive() && !actualArgType.isPrimitive())) {
       formalParamType.isAssignableFrom(actualArgType)
     } else if (formalParamType.isPrimitive() && actualArgType.isPrimitive()) {
       isPrimWidenable(actualArgType, formalParamType)

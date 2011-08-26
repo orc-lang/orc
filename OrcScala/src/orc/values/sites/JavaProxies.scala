@@ -95,7 +95,7 @@ abstract class JavaProxy extends Site {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
     try {
       val method = try {
-          chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map { _.getClass() })
+          chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map {a => {if (a != null) a.getClass() else null}} )
         } catch { // Fill in "blank" exceptions with more details
           case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
         }
