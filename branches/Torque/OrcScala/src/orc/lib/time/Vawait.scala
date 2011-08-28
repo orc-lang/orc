@@ -17,13 +17,14 @@ package orc.lib.time
 import orc.Handle
 import orc.values.sites.Site1
 import orc.error.runtime.RuntimeSupportException
+import orc.run.core.VirtualClockOperation
 
 /**
  * 
  *
  * @author dkitchin
  */
-object Vawait extends Site1 {
+object Vawait extends Site1 with VirtualClockOperation {
   // Do not invoke directly.
   def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }  
   

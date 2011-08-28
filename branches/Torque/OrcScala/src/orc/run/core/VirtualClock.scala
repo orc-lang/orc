@@ -17,6 +17,10 @@ package orc.run.core
 import orc.Handle
 import orc.lib.time._
 import scala.collection.mutable
+import orc.values.sites.SpecificArity
+import orc.Schedulable
+import orc.values.sites.Site
+import orc.OrcRuntime
 
 /**
  * 
@@ -24,8 +28,14 @@ import scala.collection.mutable
  * @author dkitchin
  */
 
-class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int) {
 
+trait VirtualClockOperation extends Site with SpecificArity
+
+class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
+extends Schedulable {
+
+  override val nonblocking = true
+  
   type Time = AnyRef
   
   val queueOrder = new Ordering[(Handle,Time)] {
@@ -37,16 +47,21 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
   
   private var readyCount: Int = 1
   
-  protected def advance() {      
-    waiterQueue.headOption match {
-      case Some((_, minimumTime)) => {
-        currentTime = Some(minimumTime)
-        def atMinimum(entry: (Handle, Time)) = ordering(entry._2, minimumTime) == 0
-        val allMins = waiterQueue takeWhile atMinimum
-        allMins foreach { _ => waiterQueue.dequeue() }
-        allMins foreach { entry => entry._1.publish() } 
+  protected def run() {
+    synchronized {
+      if (readyCount == 0) {
+        waiterQueue.headOption match {
+          case Some((_, minimumTime)) => {
+            currentTime = Some(minimumTime)
+            def atMinimum(entry: (Handle, Time)) = ordering(entry._2, minimumTime) == 0
+            val allMins = waiterQueue takeWhile atMinimum
+            allMins foreach { _ => waiterQueue.dequeue() }
+            allMins.head._1.publish(true.asInstanceOf[AnyRef])
+            allMins.tail foreach { entry => entry._1.publish(false.asInstanceOf[AnyRef]) }
+          }
+          case None => { }
+        }
       }
-      case None => { }
     }
   }
   
@@ -54,36 +69,39 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
     synchronized {
       assert(readyCount > 0)
       readyCount -= 1
-      parent foreach { _.setQuiescent() }
-      if (readyCount == 0) advance()
+      if (readyCount == 0) {
+        parent foreach { _.setQuiescent() }
+        runtime.schedule(this)
+      }
     }
   }
   
-  def unsetQuiescent() { synchronized { readyCount += 1 } }
+  def unsetQuiescent() { 
+    synchronized { 
+      if (readyCount == 0) {
+        parent foreach { _.unsetQuiescent() }
+      }
+      readyCount += 1 
+    } 
+  }
   
-  def await(h: Handle, t: Time): Boolean = {
-    currentTime match {
-      case None => {
-        waiterQueue += ( (h,t) )
-        if (readyCount == 0) advance()
-        true
-      }
-      case Some(ct) => {
-        ordering(t, ct) match {
-          // t is earlier than the current time
-          case -1 => h.halt ; false
-          
-          // t is at the current time
-          case 0 => h.publish() ; false
-          
-          // t is later than the current time
-          case 1 => {
-            waiterQueue += ( (h,t) )
-            if (readyCount == 0) advance()
-            true
-          }
-        }
-      }
+  def await(caller: Token, t: Time) {
+    val h = new ClockCallHandle(caller)
+    val timeOrder = synchronized {
+      assert(readyCount > 0)
+      val order = currentTime map { ordering(t, _) } getOrElse 1
+      if (order == 1) { waiterQueue += ( (h,t) ) } 
+      order
+    }
+    timeOrder match {
+      // Awaiting a time that has already passed.
+      case -1 => caller.halt()
+      
+      // Awaiting the current time.
+      case 0 => caller.publish()
+      
+      // Awaiting a future time.
+      case 1 => caller.blockOn(h)
     }
   }
   

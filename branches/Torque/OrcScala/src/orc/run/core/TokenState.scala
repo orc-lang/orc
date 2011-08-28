@@ -31,7 +31,7 @@ case object Live extends TokenState {
 }
 
 /** Token is propagating a published value */
-case class Published(v: AnyRef) extends TokenState {
+case class Publishing(v: AnyRef) extends TokenState {
   val isQuiescent = false
   val isLive = true
 }

@@ -21,39 +21,37 @@ import orc.Schedulable
 
 /**
  * 
+ * A Group is a structure associated with dynamic instances of an expression,
+ * tracking all of the executions occurring within that expression.
+ * Different combinators make use of different Group subclasses.
  *
  * @author dkitchin
  */
-////////
-// Groups
-////////
-
-// A Group is a structure associated with dynamic instances of an expression,
-// tracking all of the executions occurring within that expression.
-// Different combinators make use of different Group subclasses.
 
 trait Group extends GroupMember with Schedulable {
   
   def publish(t: Token, v: AnyRef): Unit
   def onHalt(): Unit
+  def run(): Unit
 
   override val nonblocking = true
   
   val runtime: OrcRuntime
   
   var members: mutable.Set[GroupMember] = mutable.Set()
-
-  var pendingKills: mutable.Set[GroupMember] = mutable.Set()
+  var alive = true
 
   def halt(t: Token) = synchronized { remove(t) }
 
-  /* Note: this is _not_ lazy termination */
   def kill() = synchronized {
-    pendingKills ++= members
-    runtime.schedule(this)
+    if (alive) {
+      alive = false
+      for (m <- members) { runtime.schedule(m) }
+      // TODO: null out members
+    }
   }
-
-  def run() = pendingKills.map(_.kill)
+  
+  def isKilled() = { !alive }
 
   def suspend() = synchronized {
     for (m <- members) m.suspend()

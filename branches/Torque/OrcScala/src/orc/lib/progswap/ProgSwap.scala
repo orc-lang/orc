@@ -42,7 +42,7 @@ import orc.run.core.SiteCallHandle
 object ProgSwap extends Site with UntypedSite {
 
   override def call(args: List[AnyRef], callHandle: Handle) {
-    def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[SiteCallHandle].listener.get
+    def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[SiteCallHandle].caller
     val execGroup: Execution = handleCracker(callHandle).getGroup().root
     var updateSuceeded = false
     args match {

@@ -19,65 +19,46 @@ import orc.CaughtEvent
 import orc.OrcRuntime
 
 /**
- * 
+ *
+ * A call handle specific to site calls.
+ * Scheduling this call handle will invoke the site.
  *
  * @author dkitchin
  */
-class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Blocker {
+class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) {
 
-    val quiescentWhileBlocked = caller.runtime.quiescentWhileInvoked(calledSite)
-    
-    var listener: Option[Token] = Some(caller)
-    var invocationThread: Option[Thread] = None
-    
-    caller.blockOn(this)
-
-    def run() {
-      try {
-        synchronized {
-          if (listener.isDefined) {
-            invocationThread = Some(Thread.currentThread)
-          } else {
-            throw new InterruptedException()
-          }
-        }
-        caller.runtime.invoke(this, calledSite, actuals)
-      } catch {
-        case e: OrcException => this !! e
-        case e: InterruptedException => throw e
-        case e: Exception => { notifyOrc(CaughtEvent(e)); halt() }
+  var invocationThread: Option[Thread] = None
+  
+  val quiescentWhileBlocked = caller.runtime.quiescentWhileInvoked(calledSite)    
+  
+  def run() {
+    try {
+      if (synchronized {
+        if (isLive) {
+          invocationThread = Some(Thread.currentThread)
+        } 
+        isLive
+      }) 
+      {
+        caller.runtime.invoke(this, calledSite, actuals)  
+      }
+    } catch {
+      case e: OrcException => this !! e
+      case e: InterruptedException => halt() // Thread interrupt causes halt without notify
+      case e: Exception => { notifyOrc(CaughtEvent(e)); halt() }
+    } finally {
+      synchronized {
+        invocationThread = None
       }
     }
-
-    def publish(v: AnyRef) =
-      synchronized {
-        listener foreach { _ publish v }
-      }
-
-    def halt() =
-      synchronized {
-        listener foreach { _.halt() }
-      }
-
-    def !!(e: OrcException) =
-      synchronized {
-        listener foreach { _ !! e }
-      }
-
-    def notifyOrc(event: orc.OrcEvent) =
-      synchronized {
-        listener foreach { _ notifyOrc event }
-      }
-
-    def isLive =
-      synchronized {
-        listener.isDefined
-      }
-
-    def kill() =
-      synchronized {
-        invocationThread foreach { _.interrupt() }
-        listener = None
-      }
+  }
+  
+  
+  override def kill() {
+    synchronized {
+      super.kill()
+      invocationThread foreach { _.interrupt() }
+    }
+  }
 
 }

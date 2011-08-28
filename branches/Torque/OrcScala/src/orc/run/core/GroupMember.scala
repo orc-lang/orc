@@ -14,13 +14,14 @@
 //
 package orc.run.core
 import orc.OrcEvent
+import orc.Schedulable
 
 /**
  * 
  *
  * @author dkitchin
  */
-trait GroupMember {
+trait GroupMember extends Schedulable {
   def kill(): Unit
   def suspend(): Unit
   def resume(): Unit

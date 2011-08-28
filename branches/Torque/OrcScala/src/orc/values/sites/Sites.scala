@@ -50,6 +50,10 @@ trait UntypedSite extends TypedSite {
   def orcType() = Bot
 }
 
+trait SpecificArity extends Site {
+  val arity: Int
+}
+
 
 /* Enforce totality */
 trait TotalSite extends Site {
@@ -92,7 +96,9 @@ trait UnimplementedSite extends Site {
 
 
 /* Enforce arity only */
-trait Site0 extends Site {
+trait Site0 extends Site with SpecificArity {
+  
+  val arity = 0
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -105,7 +111,9 @@ trait Site0 extends Site {
 
 }
 
-trait Site1 extends Site {
+trait Site1 extends Site with SpecificArity {
+  
+  val arity = 1
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -118,7 +126,9 @@ trait Site1 extends Site {
   
 }
 
-trait Site2 extends Site {
+trait Site2 extends Site with SpecificArity {
+  
+  val arity = 2
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -133,7 +143,9 @@ trait Site2 extends Site {
 
 
 /* Enforce arity and nonblocking, but do not enforce totality */
-trait PartialSite0 extends PartialSite {
+trait PartialSite0 extends PartialSite with SpecificArity {
+  
+  val arity = 0
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -145,7 +157,9 @@ trait PartialSite0 extends PartialSite {
   def eval(): Option[AnyRef]
 }
 
-trait PartialSite1 extends PartialSite {
+trait PartialSite1 extends PartialSite with SpecificArity {
+  
+  val arity = 1
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -158,7 +172,9 @@ trait PartialSite1 extends PartialSite {
 }
 
 
-trait PartialSite2 extends PartialSite {
+trait PartialSite2 extends PartialSite with SpecificArity {
+  
+  val arity = 2
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -173,7 +189,9 @@ trait PartialSite2 extends PartialSite {
 
 
 /* Enforce arity and totality */
-trait TotalSite0 extends TotalSite {
+trait TotalSite0 extends TotalSite with SpecificArity {
+  
+  val arity = 0
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -186,7 +204,9 @@ trait TotalSite0 extends TotalSite {
 }
 
 
-trait TotalSite1 extends TotalSite {
+trait TotalSite1 extends TotalSite with SpecificArity {
+  
+  val arity = 1
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -198,8 +218,10 @@ trait TotalSite1 extends TotalSite {
   def eval(x: AnyRef): AnyRef
 }
 
-trait TotalSite2 extends TotalSite {
+trait TotalSite2 extends TotalSite with SpecificArity {
   
+  val arity = 2 
+    
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(x,y) => eval(x,y)
@@ -210,7 +232,9 @@ trait TotalSite2 extends TotalSite {
   def eval(x: AnyRef, y: AnyRef): AnyRef
 }
 
-trait TotalSite3 extends TotalSite {
+trait TotalSite3 extends TotalSite with SpecificArity {
+  
+  val arity = 3
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {

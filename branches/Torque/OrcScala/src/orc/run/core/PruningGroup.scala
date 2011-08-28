@@ -13,45 +13,39 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
+import orc.Schedulable
 
 /**
  * 
+ * A PruningGroup is the group associated with expression g in (f <x< g).
  *
  * @author dkitchin
  */
 
-/** Possible states of a PruningGroup */
-class PruningGroupState
-case class Unbound(waitlist: List[Token]) extends PruningGroupState
-case class Bound(v: AnyRef) extends PruningGroupState
-case object Dead extends PruningGroupState
-
-
-/** A PruningGroup is the group associated with expression g in (f <x< g) */
 class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   val quiescentWhileBlocked = true
   
-  var state: PruningGroupState = Unbound(Nil)
+  var state: PruningGroupState = RightSideUnknown(Nil)
 
   def publish(t: Token, v: AnyRef) = synchronized {
     state match {
-      case Unbound(waitlist) => {
-        state = Bound(v)
-        t.halt()
+      case RightSideUnknown(waitlist) => {
+        state = RightSidePublished(v)
+        t.kill()
         this.kill()
-        for (t <- waitlist) { t.publish(Some(v)) }
+        for (w <- waitlist) { runtime.schedule(w) }
       }
-      case _ => t.halt()
+      case _ => t.kill()
     }
   }
 
   def onHalt() = synchronized {
     state match {
-      case Unbound(waitlist) => {
-        state = Dead
+      case RightSideUnknown(waitlist) => {
+        state = RightSideSilent
         parent.remove(this)
-        for (t <- waitlist) { t.publish(None) }
+        for (w <- waitlist) { runtime.schedule(w) }
       }
       case _ => {}
     }
@@ -60,13 +54,30 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
   // Specific to PruningGroups
   def read(t: Token) = synchronized {
     state match {
-      case Bound(v) => t.publish(Some(v))
-      case Dead => t.publish(None)
-      case Unbound(waitlist) => {
+      case RightSidePublished(v) => t.publish(Some(v))
+      case RightSideSilent => t.publish(None)
+      case RightSideUnknown(waitlist) => {
         t.blockOn(this)
-        state = Unbound(t :: waitlist)
+        state = RightSideUnknown(t :: waitlist)
+      }
+    }
+  }
+  
+  def check(t: Token) {
+    synchronized {
+      state match {
+        case RightSidePublished(v) => t.publish(Some(v))
+        case RightSideSilent => t.publish(None)
+        case RightSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }
   }
 
 }
+
+
+/** Possible states of a PruningGroup */
+class PruningGroupState
+case class RightSideUnknown(waitlist: List[Schedulable]) extends PruningGroupState
+case class RightSidePublished(v: AnyRef) extends PruningGroupState
+case object RightSideSilent extends PruningGroupState

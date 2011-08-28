@@ -26,6 +26,8 @@ abstract class Subgroup(parent: Group) extends Group {
   
   def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
 
+  def run() = { if (parent.isKilled()) { kill() } }
+  
   override val root = parent.root
   
   val runtime = parent.runtime

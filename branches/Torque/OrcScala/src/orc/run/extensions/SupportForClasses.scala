@@ -61,7 +61,7 @@ trait SupportForClasses extends Orc {
         }
         case None => {}
       }
-      t.halt
+      t.halt()
     }
 
     override def onHalt = synchronized {

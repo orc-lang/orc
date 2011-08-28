@@ -16,31 +16,58 @@ package orc.run.core
 
 /**
  * 
+ * An OtherwiseGroup is the group associated with expression f in (f ; g)
  *
  * @author dkitchin
  */
-/** A OtherwiseGroup is the group associated with expression f in (f ; g) */
 class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
 
+  val quiescentWhileBlocked = true
+  
   /* Some(t): No publications have left this group.
    *          If the group halts silently, t will be scheduled.
    *    None: One or more publications has left this group.
    */
-  var pending: Option[Token] = Some(t)
-  
-  val quiescentWhileBlocked = true
+  var state: OtherwiseGroupState = LeftSideUnknown(t)
   
   t.blockOn(this)
 
-  def publish(t: Token, v: AnyRef) = synchronized {
-    pending foreach { _.halt() } // Remove t from its group
-    pending = None
+  def publish(t: Token, v: AnyRef) {
+    synchronized {
+      state match {
+        case LeftSideUnknown(r) => { state = LeftSidePublished; r.schedule() }
+        case LeftSidePublished => { /* Left side publication is idempotent */ }
+        case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
+      }
+    }
     t.migrate(parent).publish(v)
   }
 
-  def onHalt() = synchronized {
-    pending foreach { _.unblock }
+  def onHalt() {
+    synchronized {
+      state match {
+        case LeftSideUnknown(r) => { state = LeftSideSilent; r.schedule() }
+        case LeftSidePublished => { /* Halting after publication does nothing */ }
+        case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
+      }
+    }
     parent.remove(this)
+  }
+      
+  def check(t: Token) {
+    synchronized {
+      state match {
+        case LeftSidePublished => { t.halt() }
+        case LeftSideSilent => { t.unblock() }
+        case LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
+      }
+    }
   }
 
 }
+
+/** Possible states of an OtherwiseGroup */
+class OtherwiseGroupState
+case class LeftSideUnknown(r: Token) extends OtherwiseGroupState
+case object LeftSidePublished extends OtherwiseGroupState
+case object LeftSideSilent extends OtherwiseGroupState

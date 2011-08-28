@@ -54,6 +54,9 @@ extends Group {
     notifyOrc(HaltedEvent)
   }
   
+  // TODO: Narrow the inheritance of Schedulable. It's not needed for all groups.
+  def run() = { /* Do nothing. */ }
+  
   def installHandler(newHandler: PartialFunction[OrcEvent, Unit]) = {
     val oldHandler = eventHandler
     eventHandler = { e => if (newHandler isDefinedAt e) { newHandler(e) } else { oldHandler(e) }}

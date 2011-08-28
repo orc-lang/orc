@@ -17,13 +17,14 @@ package orc.lib.time
 import orc.Handle
 import orc.values.sites.Site0
 import orc.error.runtime.RuntimeSupportException
+import orc.run.core.VirtualClockOperation
 
 /**
  * 
  *
  * @author dkitchin
  */
-object Vtime extends Site0 {
+object Vtime extends Site0 with VirtualClockOperation {
   // Do not invoke directly.
   def call(h: Handle) { h !! (new RuntimeSupportException("Vtime")) } 
   override val quiescentWhileInvoked: Boolean = false

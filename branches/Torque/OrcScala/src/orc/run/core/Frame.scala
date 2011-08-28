@@ -49,7 +49,7 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
   }
 }
 
-case class PruningFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
+case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
   def k = _k
   def apply(t: Token, v: AnyRef) {
     val _v = v.asInstanceOf[Option[AnyRef]]
