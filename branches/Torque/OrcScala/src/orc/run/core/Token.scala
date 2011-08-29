@@ -150,13 +150,10 @@ extends GroupMember with Schedulable {
   def kill() {
     def collapseState(victimState: TokenState) {
       victimState match {
-        // TODO: Make sure group.halt incurs no danger of deadlock.
-        case Live | Publishing(_) => { group.halt(this) }
         case Suspending(s) => collapseState(s)
         case Suspended(s) => collapseState(s)
-        case Blocked(handle: SiteCallHandle) => { handle.kill(); group.halt(this) }
-        case Blocked(_) => { group.halt(this) }
-        case Halted | Killed => {}
+        case Blocked(handle: SiteCallHandle) => { handle.kill() }
+        case Live | Publishing(_) | Blocked(_) | Halted | Killed => {}
       }
     }
     synchronized {

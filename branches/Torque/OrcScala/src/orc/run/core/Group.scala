@@ -51,6 +51,11 @@ trait Group extends GroupMember with Schedulable {
     }
   }
   
+  /* 
+   * Note: This is a local live check.
+   * A global check requires a linear-time
+   * ascension of the group tree.
+   */
   def isKilled() = { !alive }
 
   def suspend() = synchronized {
