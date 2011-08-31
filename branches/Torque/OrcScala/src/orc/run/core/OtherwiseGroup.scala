@@ -24,10 +24,6 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
 
   val quiescentWhileBlocked = true
   
-  /* Some(t): No publications have left this group.
-   *          If the group halts silently, t will be scheduled.
-   *    None: One or more publications has left this group.
-   */
   var state: OtherwiseGroupState = LeftSideUnknown(t)
   
   t.blockOn(this)

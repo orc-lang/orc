@@ -50,6 +50,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
     }
+    t.onSchedule() 
     executor.executeTask(t)
   }
 
@@ -173,6 +174,14 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     }
     //FIXME: Don't allow blocking tasks to consume all worker threads
     execute(task)
+  }
+  
+  override def afterExecute(r: Runnable, t: Throwable): Unit = {
+    r match {
+      case s: Schedulable => s.onComplete()
+      case _ => {}
+    }
+    
   }
 
   def awaitTermination(timeoutMillis: Long) = {

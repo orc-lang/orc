@@ -81,18 +81,8 @@ extends GroupMember with Schedulable {
     case Halted | Killed => {}
   }
   
-  /*
-   * On creation: Add a token to its clock if it is not quiescent.
-   */
-  if (!state.isQuiescent) { clock foreach { _.unsetQuiescent() } }
- 
-  
   /**
    * Change this token's state.
-   * 
-   * The state change may trigger activity in the token's clock.
-   * If the token's state is already Killed, it remaines Killed,
-   * and no clock activity is triggered.
    * 
    * Return true if the token's state was successfully set
    * to the requested state.
@@ -111,20 +101,20 @@ extends GroupMember with Schedulable {
       if (state != Killed) { state = newState } else { return false }
     }
     
-    /*
-     * Update the clock based on any change in the
-     * quiescence of this token.
-     */
-    (oldState.isQuiescent, newState.isQuiescent) match {
-      case (true, false) => clock foreach { _.unsetQuiescent() }
-      case (false, true) => clock foreach { _.setQuiescent() }
-      case _ => {}
-    }
-    
     /* The state change did take effect. */
     true
   }
       
+  
+  /* When a token is scheduled, notify its clock accordingly */
+  override def onSchedule() {
+    clock foreach { _.unsetQuiescent() }
+  }
+  
+  /* When a token is finished running, notify its clock accordingly */
+  override def onComplete() {
+    clock foreach { _.setQuiescent() }
+  }
   
   /**
    * 
@@ -255,6 +245,7 @@ extends GroupMember with Schedulable {
   def getNode(): Expression = { node }
   def getEnv(): List[Binding] = { env }
   def getStack(): List[Frame] = { stack }
+  def getClock(): Option[VirtualClock] = { clock }
   
   def migrate(newGroup: Group) = {
     val oldGroup = group

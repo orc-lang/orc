@@ -20,9 +20,6 @@ package orc.run.core
  * @author dkitchin
  */
 trait Blocker {
-  /* Is a token quiescent while it is blocked on this resource? */
-  val quiescentWhileBlocked: Boolean
-  
   /* 
    * When a token blocked on this resource is scheduled,
    * it performs this check to receive the effect of any state change. 

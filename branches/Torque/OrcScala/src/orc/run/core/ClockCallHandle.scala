@@ -21,12 +21,6 @@ package orc.run.core
  * @author dkitchin
  */
 class ClockCallHandle(caller: Token) extends CallHandle(caller) {
-
-  /* 
-   * A token only blocks on this handle if the Await call was for a future time.
-   * Thus, whenever a token is blocked on this handle, it is also quiescent. 
-   */
-  val quiescentWhileBlocked = true
   
   def run() { /* Running a clock handle does nothing. */ }
   

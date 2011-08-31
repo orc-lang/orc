@@ -31,6 +31,8 @@ import orc.OrcRuntime
 
 trait VirtualClockOperation extends Site with SpecificArity
 
+class AwaitCallHandle(caller: Token) extends CallHandle(caller) { def run() { /* Do nothing */ } }
+
 class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
 extends Schedulable {
 
@@ -38,12 +40,12 @@ extends Schedulable {
   
   type Time = AnyRef
   
-  val queueOrder = new Ordering[(Handle,Time)] {
-    def compare(x: (Handle,Time), y: (Handle,Time)) = ordering(y._2, x._2)
+  val queueOrder = new Ordering[(AwaitCallHandle,Time)] {
+    def compare(x: (AwaitCallHandle,Time), y: (AwaitCallHandle,Time)) = ordering(y._2, x._2)
   } 
       
   var currentTime: Option[Time] = None 
-  val waiterQueue: mutable.PriorityQueue[(Handle,Time)] = new mutable.PriorityQueue()(queueOrder)
+  val waiterQueue: mutable.PriorityQueue[(AwaitCallHandle,Time)] = new mutable.PriorityQueue()(queueOrder)
   
   private var readyCount: Int = 1
   
@@ -53,7 +55,7 @@ extends Schedulable {
         waiterQueue.headOption match {
           case Some((_, minimumTime)) => {
             currentTime = Some(minimumTime)
-            def atMinimum(entry: (Handle, Time)) = ordering(entry._2, minimumTime) == 0
+            def atMinimum(entry: (AwaitCallHandle, Time)) = ordering(entry._2, minimumTime) == 0
             val allMins = waiterQueue takeWhile atMinimum
             allMins foreach { _ => waiterQueue.dequeue() }
             allMins.head._1.publish(true.asInstanceOf[AnyRef])
@@ -78,15 +80,15 @@ extends Schedulable {
   
   def unsetQuiescent() { 
     synchronized { 
-      if (readyCount == 0) {
+      readyCount += 1
+      if (readyCount == 1) {
         parent foreach { _.unsetQuiescent() }
       }
-      readyCount += 1 
     } 
   }
   
   def await(caller: Token, t: Time) {
-    val h = new ClockCallHandle(caller)
+    val h = new AwaitCallHandle(caller)
     val timeOrder = synchronized {
       assert(readyCount > 0)
       val order = currentTime map { ordering(t, _) } getOrElse 1

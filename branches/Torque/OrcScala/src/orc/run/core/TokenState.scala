@@ -20,48 +20,40 @@ package orc.run.core
  * @author dkitchin
  */
 trait TokenState {
-  val isQuiescent: Boolean
   val isLive: Boolean
 }
 
 /** Token is ready to make progress */
 case object Live extends TokenState { 
-  val isQuiescent = false 
   val isLive = true
 }
 
 /** Token is propagating a published value */
 case class Publishing(v: AnyRef) extends TokenState {
-  val isQuiescent = false
   val isLive = true
 }
 
 /** Token is waiting on another task */
 case class Blocked(blocker: Blocker) extends TokenState { 
-  val isQuiescent = blocker.quiescentWhileBlocked
   val isLive = true
 }
 
 /** Token has been told to suspend, but it's still in the scheduler queue */
 case class Suspending(prevState: TokenState) extends TokenState {
-  val isQuiescent = prevState.isQuiescent
   val isLive = prevState.isLive
 }
 
 /** Suspended Tokens must be re-scheduled upon resume */
 case class Suspended(prevState: TokenState) extends TokenState {
-  val isQuiescent = prevState.isQuiescent
   val isLive = prevState.isLive
 }
 
 /** Token halted itself */
 case object Halted extends TokenState {
-  val isQuiescent = true
   val isLive = false
 }
 
 /** Token killed by engine */
 case object Killed extends TokenState {
-  val isQuiescent = true
   val isLive = false
 }

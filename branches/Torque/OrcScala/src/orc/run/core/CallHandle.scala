@@ -26,11 +26,18 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   protected var state: CallState = CallInProgress
   
-  protected def setState(newState: CallState) {
+  /* Returns true if the state transition was made, 
+   * false otherwise (e.g. if the handle was already in a final state)
+   */
+  protected def setState(newState: CallState): Boolean = {
     synchronized {
       if (isLive) { 
         state = newState
-        caller.schedule() 
+        caller.schedule()
+        true
+      }
+      else { 
+        false 
       }
     }
   }
@@ -47,7 +54,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     }
   }
 
-  def isLive = synchronized { state.isLive }
+  def isLive = synchronized { !state.isFinal }
 
   def kill() {
     synchronized {
@@ -56,6 +63,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   }
   
   def check(t: Token) {
+    // TODO: Synchrony may be unnecessary here, since check should only be called from one listener. 
     synchronized {
       state match {
         case CallInProgress => { throw new AssertionError("Spurious check") }
@@ -70,10 +78,13 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 }
 
 /** Possible states of a CallHandle */
-trait CallState { val isLive: Boolean = false }
+trait CallState { val isFinal: Boolean }
 
-case object CallInProgress extends CallState { override val isLive = true }
-case class CallReturnedValue(v: AnyRef) extends CallState
-case object CallSilent extends CallState
-case class CallRaisedException(e: OrcException) extends CallState
-case object CallWasKilled extends CallState
+trait NonterminalCallState extends CallState { val isFinal = false }
+case object CallInProgress extends NonterminalCallState
+
+trait TerminalCallState extends CallState { val isFinal = true }
+case class CallReturnedValue(v: AnyRef) extends TerminalCallState
+case class CallRaisedException(e: OrcException) extends TerminalCallState
+case object CallSilent extends TerminalCallState
+case object CallWasKilled extends TerminalCallState

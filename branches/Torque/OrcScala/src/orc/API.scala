@@ -79,6 +79,22 @@ trait Schedulable extends Runnable {
    * It is assumed by default that a schedulable unit might block.
    */
   val nonblocking: Boolean = false
+  
+  /* 
+   * This method is invoked when this schedulable unit
+   * is put on the scheduler queue (not when it is executed).
+   * It is invoked synchronously within the thread that
+   * called the scheduler. 
+   */
+  def onSchedule() {}
+  
+  /*
+   * This method is invoked when this schedulable unit 
+   * has been run by the scheduler and completed.
+   * It is invoked within the same thread that
+   * ran the unit.
+   */
+  def onComplete() {}
 }
 
 /**
