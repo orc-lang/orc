@@ -17,6 +17,7 @@ import orc.error.OrcException
 import orc.Handle
 import orc.CaughtEvent
 import orc.OrcRuntime
+import orc.Schedulable
 
 /**
  *
@@ -25,7 +26,7 @@ import orc.OrcRuntime
  *
  * @author dkitchin
  */
-class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) {
+class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
 
   var invocationThread: Option[Thread] = None
   

@@ -22,7 +22,8 @@ package orc.run.core
 trait Blocker {
   /* 
    * When a token blocked on this resource is scheduled,
-   * it performs this check to receive the effect of any state change. 
+   * it performs this check to observe any changes in
+   * the state of this resource. 
    */
   def check(t: Token): Unit
 }

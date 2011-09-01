@@ -28,7 +28,7 @@ import orc.Schedulable
  * @author dkitchin
  */
 
-trait Group extends GroupMember with Schedulable {
+trait Group extends GroupMember {
   
   def publish(t: Token, v: AnyRef): Unit
   def onHalt(): Unit

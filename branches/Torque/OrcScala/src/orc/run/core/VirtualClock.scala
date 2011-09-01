@@ -31,7 +31,7 @@ import orc.OrcRuntime
 
 trait VirtualClockOperation extends Site with SpecificArity
 
-class AwaitCallHandle(caller: Token) extends CallHandle(caller) { def run() { /* Do nothing */ } }
+class AwaitCallHandle(caller: Token) extends CallHandle(caller)
 
 class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
 extends Schedulable {

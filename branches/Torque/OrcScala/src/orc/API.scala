@@ -83,16 +83,14 @@ trait Schedulable extends Runnable {
   /* 
    * This method is invoked when this schedulable unit
    * is put on the scheduler queue (not when it is executed).
-   * It is invoked synchronously within the thread that
-   * called the scheduler. 
+   * It is run in the thread that made the enqueueing call. 
    */
   def onSchedule() {}
   
   /*
    * This method is invoked when this schedulable unit 
-   * has been run by the scheduler and completed.
-   * It is invoked within the same thread that
-   * ran the unit.
+   * has been run by the scheduler and has completed (successfully or not).
+   * It is run in the same thread that executed the unit.
    */
   def onComplete() {}
 }
@@ -117,7 +115,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 /**
  * The interface through which the environment response to site calls.
  */
-trait Handle extends Schedulable {
+trait Handle {
   
   def notifyOrc(event: OrcEvent): Unit
   

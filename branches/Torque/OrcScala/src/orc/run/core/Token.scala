@@ -31,6 +31,7 @@ import orc.OrcRuntime
 import orc.Schedulable
 import orc.values.OrcRecord
 import orc.values.Signal
+import orc.util.BlockableMapExtension._
 
 /**
  * 
@@ -339,7 +340,7 @@ extends GroupMember with Schedulable {
         case Some(v) => k(BoundValue(v))
         case None => k(BoundStop)
       }
-    leftToRight(resolveBound, bs)(k)
+    bs.blockableMap(resolveBound)(k)
   }
 
   
@@ -448,14 +449,14 @@ extends GroupMember with Schedulable {
        * -dkitchin
        */
       case r @ OrcRecord(entries) if entries contains "apply" => {
-        leftToRight(resolve, params) {
+        params.blockableMap(resolve) {
           case args @ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supersede other member accesses
           case _ => makeCall(entries("apply"), params)
         }
       }
 
       case s => {
-        leftToRight(resolve, params) { siteCall(s, _) }
+        params.blockableMap(resolve) { siteCall(s, _) }
       }
     }
   }
@@ -615,15 +616,46 @@ extends GroupMember with Schedulable {
     halt()
   }
 
-  /** Utility function for chaining a continuation across a list */
-  protected def leftToRight[X, Y](f: X => (Y => Unit) => Unit, xs: List[X])(k: List[Y] => Unit): Unit = {
-    def walk(xs: List[X], ys: List[Y]): Unit = {
-      xs match {
-        case z :: zs => f(z) { y: Y => walk(zs, y :: ys) }
-        case Nil => k(ys.reverse)
-      }
-    }
-    walk(xs, Nil)
-  }
-
 }
+
+
+
+trait TokenState {
+  val isLive: Boolean
+}
+
+/** Token is ready to make progress */
+case object Live extends TokenState { 
+  val isLive = true
+}
+
+/** Token is propagating a published value */
+case class Publishing(v: AnyRef) extends TokenState {
+  val isLive = true
+}
+
+/** Token is waiting on another task */
+case class Blocked(blocker: Blocker) extends TokenState { 
+  val isLive = true
+}
+
+/** Token has been told to suspend, but it's still in the scheduler queue */
+case class Suspending(prevState: TokenState) extends TokenState {
+  val isLive = prevState.isLive
+}
+
+/** Suspended Tokens must be re-scheduled upon resume */
+case class Suspended(prevState: TokenState) extends TokenState {
+  val isLive = prevState.isLive
+}
+
+/** Token halted itself */
+case object Halted extends TokenState {
+  val isLive = false
+}
+
+/** Token killed by engine */
+case object Killed extends TokenState {
+  val isLive = false
+}
+

@@ -177,11 +177,11 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
   }
   
   override def afterExecute(r: Runnable, t: Throwable): Unit = {
+    super.afterExecute(r,t)
     r match {
       case s: Schedulable => s.onComplete()
       case _ => {}
     }
-    
   }
 
   def awaitTermination(timeoutMillis: Long) = {
