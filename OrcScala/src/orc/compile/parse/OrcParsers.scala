@@ -124,7 +124,7 @@ with CustomParserCombinators
                  [highest precedence]
   ----------------------------------------------------
    ?               postfix     dereference
-   .               postfix     dot access
+   .               postfix     field projection
    ()              postfix     application
   ----------------------------------------------------
    ~               prefix      boolean not
@@ -155,19 +155,13 @@ with CustomParserCombinators
   ----------------------------------------------------
    :=              none        ref assignment
   ----------------------------------------------------
-   &               both        infix join
-  ----------------------------------------------------
-   ++              both        atomic choice 
-  ----------------------------------------------------
-   atomic          prefix      atomic
-  ----------------------------------------------------
    >>              right       sequence
   ----------------------------------------------------
    |               both        parallel
   ----------------------------------------------------
-   <<              left        pruning
+   <<              left        where
   ----------------------------------------------------
-   ;               both        otherwise
+   ;               both        semicolon
   ----------------------------------------------------
    ::              left        type information
    :!:             left        type override
@@ -266,32 +260,16 @@ with CustomParserCombinators
   val parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
   val parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
   val parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
-  
-  val parseInfixJoinExpression = 
-    rep1sep(parseInfixOpExpression, "&") -> { 
-      case List(e) => e  
-      case es => InfixJoin(es) 
-    }
-    
-  val parseAtomicChoiceExpression = 
-    rep1sep(parseInfixJoinExpression, "++") -> { 
-      case List(e) => e 
-      case es => AtomicChoice(es) 
-    }
-  
-  val parseAtomicExpression = (
-      "atomic" ~> parseAtomicChoiceExpression -> Atomic
-    | parseAtomicChoiceExpression
-  )
-  
+
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
+  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
+
   val parseSequentialExpression =
-    parseAtomicExpression rightInterleave parseSequentialCombinator apply Sequential
+    parseInfixOpExpression rightInterleave parseSequentialCombinator apply Sequential
 
   val parseParallelExpression =
     rep1sep(parseSequentialExpression, "|") -> { _ reduceLeft Parallel }
 
-  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
   val parsePruningExpression =
     parseParallelExpression leftInterleave parsePruningCombinator apply Pruning
 

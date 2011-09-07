@@ -122,9 +122,6 @@ trait NamedASTTransform extends NamedASTFunction
           val newbody = transform(body, context, u :: typecontext)
           DeclareType(u, newt, newbody)
         }
-        case Atomic(body) => {
-          Atomic(recurse(body))
-        }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
       }
     }     

@@ -21,7 +21,6 @@ import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.InvalidNontransactionalCallException
 import orc.run.Logger
 import orc.types.Type
 import orc.types.Bot
@@ -29,6 +28,8 @@ import orc.types.RecordType
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
+  // BIG TODO: Remove this default value
+  val quiescentWhileInvoked: Boolean = false
 }
 
 trait Site extends OrcValue with SiteMetadata {
@@ -47,6 +48,10 @@ trait TypedSite extends Site {
 /* Use sparingly; this is equivalent to using a type override */
 trait UntypedSite extends TypedSite {
   def orcType() = Bot
+}
+
+trait SpecificArity extends Site {
+  val arity: Int
 }
 
 
@@ -89,25 +94,11 @@ trait UnimplementedSite extends Site {
 }
 
 
-/** New in Orca */
-
-trait SemanticSiteProperty extends Site
-
-/* A site with no side effects. 
- * 
- * A call to a pure site P obeys the following algebraic law:
- * 
- * P(...) >> stop   ==   stop
- * 
- */
-trait PureSite extends SemanticSiteProperty
-
-
-
-
 
 /* Enforce arity only */
-trait Site0 extends Site {
+trait Site0 extends Site with SpecificArity {
+  
+  val arity = 0
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -120,7 +111,9 @@ trait Site0 extends Site {
 
 }
 
-trait Site1 extends Site {
+trait Site1 extends Site with SpecificArity {
+  
+  val arity = 1
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -133,7 +126,9 @@ trait Site1 extends Site {
   
 }
 
-trait Site2 extends Site {
+trait Site2 extends Site with SpecificArity {
+  
+  val arity = 2
   
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -148,7 +143,9 @@ trait Site2 extends Site {
 
 
 /* Enforce arity and nonblocking, but do not enforce totality */
-trait PartialSite0 extends PartialSite {
+trait PartialSite0 extends PartialSite with SpecificArity {
+  
+  val arity = 0
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -160,7 +157,9 @@ trait PartialSite0 extends PartialSite {
   def eval(): Option[AnyRef]
 }
 
-trait PartialSite1 extends PartialSite {
+trait PartialSite1 extends PartialSite with SpecificArity {
+  
+  val arity = 1
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -173,7 +172,9 @@ trait PartialSite1 extends PartialSite {
 }
 
 
-trait PartialSite2 extends PartialSite {
+trait PartialSite2 extends PartialSite with SpecificArity {
+  
+  val arity = 2
   
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     args match {
@@ -188,7 +189,9 @@ trait PartialSite2 extends PartialSite {
 
 
 /* Enforce arity and totality */
-trait TotalSite0 extends TotalSite {
+trait TotalSite0 extends TotalSite with SpecificArity {
+  
+  val arity = 0
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -201,7 +204,9 @@ trait TotalSite0 extends TotalSite {
 }
 
 
-trait TotalSite1 extends TotalSite {
+trait TotalSite1 extends TotalSite with SpecificArity {
+  
+  val arity = 1
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -213,8 +218,10 @@ trait TotalSite1 extends TotalSite {
   def eval(x: AnyRef): AnyRef
 }
 
-trait TotalSite2 extends TotalSite {
+trait TotalSite2 extends TotalSite with SpecificArity {
   
+  val arity = 2 
+    
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(x,y) => eval(x,y)
@@ -225,7 +232,9 @@ trait TotalSite2 extends TotalSite {
   def eval(x: AnyRef, y: AnyRef): AnyRef
 }
 
-trait TotalSite3 extends TotalSite {
+trait TotalSite3 extends TotalSite with SpecificArity {
+  
+  val arity = 3
   
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
@@ -236,8 +245,6 @@ trait TotalSite3 extends TotalSite {
   
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
 }
-
-
 
 
 /* Template for building values which act as constructor-extractor sites,

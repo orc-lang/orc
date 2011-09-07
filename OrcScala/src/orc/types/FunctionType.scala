@@ -116,10 +116,6 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
 /* Use cases */
 object SimpleFunctionType {
   
-  def apply() = {
-    FunctionType(Nil, Nil, SignalType)
-  }
-  
   def apply(returnType: Type) = {
     FunctionType(Nil, Nil, returnType)
   }

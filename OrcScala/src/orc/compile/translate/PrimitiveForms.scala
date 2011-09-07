@@ -29,7 +29,7 @@ object PrimitiveForms {
   def nullaryBuiltinCall(s: Site)() = Call(Constant(s), Nil, None)
   def unaryBuiltinCall(s: Site)(a: Argument) = Call(Constant(s), List(a), None)
   def binaryBuiltinCall(s: Site)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
-  
+
   val callIft = unaryBuiltinCall(Ift) _
   val callIff = unaryBuiltinCall(Iff) _
   val callEq = binaryBuiltinCall(Eq) _
@@ -49,8 +49,6 @@ object PrimitiveForms {
     val shapeArgs = shape map { s: String => Constant(Field(s)) }
     Call(Constant(RecordMatcher), a :: shapeArgs, None)
   }
-  
-  val callGuard = nullaryBuiltinCall(MakeGuard) _
   
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
@@ -129,19 +127,6 @@ object PrimitiveForms {
         ( 
             ( callIsSome(y)  > x >  target )  ||  ( callIsNone(y) >> fail )
         )
-      }
-    }
-  }
-  
-  
-  def makeAtomicChoice(choices: List[Expression]) = {
-    choices match {
-      case Nil => Stop()
-      case _ => {
-        val G = new BoundVar()
-        val callG = Call(G, Nil, None)
-        val guardedChoices = choices map { e => Atomic( callG >> e ) }
-        callGuard()  > G >  ( guardedChoices reduceLeft Parallel )
       }
     }
   }

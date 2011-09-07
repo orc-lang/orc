@@ -18,6 +18,11 @@ import orc.run.Orc
 import orc.ast.oil.nameless.{Expression, Call, Constant}
 import orc.{ OrcExecutionOptions, OrcEvent, Handle }
 import orc.error.runtime.ExecutionException
+import orc.run.core.Subgroup
+import orc.run.core.Execution
+import orc.run.core.Group
+import orc.run.core.Closure
+import orc.run.core.Token
 
 /**
  * 
@@ -25,22 +30,22 @@ import orc.error.runtime.ExecutionException
  * @author dkitchin
  */
 
-case class InstanceEvent(c: AnyRef, args: List[AnyRef], caller: Handle) extends OrcEvent
+case class InstanceEvent(c: Closure, args: List[AnyRef], caller: Handle) extends OrcEvent
 
-trait SupportForClasses extends Orc { self =>
+trait SupportForClasses extends Orc {
  
-  override def generateOrcHandlers(host: Execution): List[OrcHandler] = {
+  override def installHandlers(host: Execution) {
     val thisHandler = {
       case InstanceEvent(closure, args, caller) => {
-        assert(closure.isInstanceOf[self.Closure])
         val node = Call(Constant(closure), args map Constant, Some(Nil))
         val exec = new ClassExecution(caller, host)
-        val t = new Token(node, exec, caller.context)
+        val t = new Token(node, exec)
         schedule(t)
       }
     } : PartialFunction[OrcEvent, Unit]
     
-    thisHandler :: super.generateOrcHandlers(host)
+    host.installHandler(thisHandler)
+    super.installHandlers(host)
   }
 
   
@@ -56,7 +61,7 @@ trait SupportForClasses extends Orc { self =>
         }
         case None => {}
       }
-      t.halt
+      t.halt()
     }
 
     override def onHalt = synchronized {
