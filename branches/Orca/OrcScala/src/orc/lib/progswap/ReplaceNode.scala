@@ -2,7 +2,7 @@
 // ReplaceNode.scala -- Scala class ReplaceNode
 // Project OrcScala
 //
-// $Id: ReplaceNode.scala 2775 2011-04-20 01:30:01Z jthywissen $
+// $Id: ReplaceNode.scala 2864 2011-08-16 21:54:40Z dkitchin $
 //
 // Created by jthywiss on Sep 30, 2010.
 //
@@ -20,20 +20,26 @@ import orc.run.extensions.SwappableASTs
 import orc.ast.oil.nameless.NamelessAST
 import orc.ast.oil.nameless.Expression
 import orc.run.Orc
+import orc.run.core.BoundValue
+import orc.run.core.Token
+import orc.run.core.Closure
+import orc.run.core.Binding
+import orc.run.core.FunctionFrame
+import orc.run.core.SequenceFrame
 
 /**
  * Edit operation that is a to-one mapping of an AST node. 
  *
  * @author jthywiss
  */
-class ReplaceNode(oldNode: NamelessAST, newNode: NamelessAST) extends AstEditOperation {
-  def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
+case class ReplaceNode[A, B](oldNode: A, newNode: B) extends AstEditOperation {
+  def tokenCracker(token: Token): Token = token.asInstanceOf[Token]
 
-  def isTokenAffected(token: Orc#Token): Boolean = { tokenCracker(token).node == oldNode }
+  def isTokenAffected(token: Token): Boolean = { tokenCracker(token).getNode() == oldNode }
 
-  def isTokenSafe(token: Orc#Token): Boolean = { true }
+  def isTokenSafe(token: Token): Boolean = { true }
 
-  def migrateToken(token: Orc#Token): Boolean = {
+  def migrateToken(token: Token): Boolean = {
     if (isTokenAffected(token)) {
       Console.err.println(">>Move " + token + " from " + oldNode + " to " + newNode)
       tokenCracker(token).move(newNode.asInstanceOf[Expression])
@@ -43,22 +49,22 @@ class ReplaceNode(oldNode: NamelessAST, newNode: NamelessAST) extends AstEditOpe
     }
   }
 
-  def migrateClosures(token: Orc#Token) {
-    migrateClosures(tokenCracker(token).env, Nil)
+  def migrateClosures(token: Token) {
+    migrateClosures(tokenCracker(token).getEnv(), Nil)
   }
 
-  private def migrateClosures(bindings: List[SwappableASTs#Binding], completedClosures: List[SwappableASTs#Closure]) {
+  private def migrateClosures(bindings: List[Binding], completedClosures: List[Closure]) {
     for (binding <- bindings)
       binding match {
-        case bv: SwappableASTs#BoundValue => {
+        case bv: BoundValue => {
           bv.v match {
-            case c: SwappableASTs#Closure => {
+            case c: Closure => {
               SwappableASTs.setClosureDef(c, c.defs map { d => if (d == oldNode) newNode.asInstanceOf[Def] else d })
               // Filter recursive bindings
               val cEnv = c.lexicalContext filterNot {
-                  case bv2: SwappableASTs#BoundValue => {
+                  case bv2: BoundValue => {
                     bv2.v match {
-                      case c2: SwappableASTs#Closure => completedClosures.contains(c2)
+                      case c2: Closure => completedClosures.contains(c2)
                     }
                   }
                   case _ => false
@@ -72,11 +78,11 @@ class ReplaceNode(oldNode: NamelessAST, newNode: NamelessAST) extends AstEditOpe
       }
   }
 
-  def migrateFrameStack(token: Orc#Token) {
-    for (frame <- tokenCracker(token).stack) {
+  def migrateFrameStack(token: Token) {
+    for (frame <- tokenCracker(token).getStack()) {
       frame match {
-        case sf: SwappableASTs#SequenceFrame if (sf.node == oldNode) => SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression])
-        case ff: SwappableASTs#FunctionFrame if (ff.callpoint == oldNode) => SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression])
+        case sf: SequenceFrame if (sf.node == oldNode) => SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression])
+        case ff: FunctionFrame if (ff.callpoint == oldNode) => SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression])
         case _ => { }
       }
     }

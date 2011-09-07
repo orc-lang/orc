@@ -25,7 +25,6 @@ import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
-import orc.orca.Transaction
 
 /**
  * The interface from a caller to the Orc compiler
@@ -63,21 +62,42 @@ trait OrcRuntimeProvides {
 /**
  *  The interface from an Orc runtime to its environment
  */
-trait OrcRuntimeRequires {
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit
+trait OrcRuntimeRequires extends InvocationBehavior
+
+/** 
+ * Define invocation behaviors for a runtime 
+ */
+trait InvocationBehavior {
+  /* By default, an invocation halts silently. This will be overridden by other traits. */
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
+  def quiescentWhileInvoked(v: AnyRef): Boolean = false
 }
 
-/**
- * An Orc runtime 
- */
 trait Schedulable extends Runnable {
   /* A schedulable unit may declare itself nonblocking;
    * the scheduler may exploit this information.
    * It is assumed by default that a schedulable unit might block.
    */
   val nonblocking: Boolean = false
+  
+  /* 
+   * This method is invoked when this schedulable unit
+   * is put on the scheduler queue (not when it is executed).
+   * It is run in the thread that made the enqueueing call. 
+   */
+  def onSchedule() {}
+  
+  /*
+   * This method is invoked when this schedulable unit 
+   * has been run by the scheduler and has completed (successfully or not).
+   * It is run in the same thread that executed the unit.
+   */
+  def onComplete() {}
 }
 
+/**
+ * An Orc runtime 
+ */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   
   def startScheduler(options: OrcExecutionOptions): Unit
@@ -89,14 +109,8 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def schedule(t: Schedulable, u: Schedulable) { schedule(List(t, u)) }
 
   def stopScheduler(): Unit
+  
 }
-
-/* Define invocation behaviors for a runtime */
-trait InvocationBehavior extends OrcRuntime {
-  /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
-}
-
 
 /**
  * The interface through which the environment response to site calls.
@@ -111,8 +125,6 @@ trait Handle {
   def !!(e: OrcException): Unit
   
   def isLive: Boolean
-  
-  def context: Transaction
 }
 
 /**

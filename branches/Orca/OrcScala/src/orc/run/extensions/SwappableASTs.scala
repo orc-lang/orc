@@ -2,7 +2,7 @@
 // SwappableASTs.scala -- Scala trait/object SwappableASTs
 // Project OrcScala
 //
-// $Id: SwappableASTs.scala 2583 2011-03-21 21:46:20Z dkitchin $
+// $Id: SwappableASTs.scala 2864 2011-08-16 21:54:40Z dkitchin $
 //
 // Created by jthywiss on Oct 23, 2010.
 //
@@ -19,6 +19,10 @@ import orc.OrcExecutionOptions
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.nameless.Def
 import orc.run.Orc
+import orc.run.core.Execution
+import orc.run.core.FunctionFrame
+import orc.run.core.SequenceFrame
+import orc.run.core.Closure
 
 /**
  * Trait that mixes-in update access to Orc runtime engine objects that
@@ -30,9 +34,9 @@ trait SwappableASTs extends Orc {
 }
 
 object SwappableASTs {
-  def setExecutionNode(e: SwappableASTs#Execution, node: Expression) { e._node = node }
-  def setExecutionOptions(e: SwappableASTs#Execution, options: OrcExecutionOptions) { e._options = options }
-  def setClosureDef(c: SwappableASTs#Closure, defs: List[Def]) { c._defs = defs }
-  def setSequenceFrameNode(sf: SwappableASTs#SequenceFrame, node: Expression) { sf._node = node }
-  def setFunctionFrameCallpoint(ff: SwappableASTs#FunctionFrame, callpoint: Expression) { ff._callpoint = callpoint }
+  def setExecutionNode(e: Execution, node: Expression) { e._node = node }
+  def setExecutionOptions(e: Execution, options: OrcExecutionOptions) { e._options = options }
+  def setClosureDef(c: Closure, defs: List[Def]) { c._defs = defs }
+  def setSequenceFrameNode(sf: SequenceFrame, node: Expression) { sf._node = node }
+  def setFunctionFrameCallpoint(ff: FunctionFrame, callpoint: Expression) { ff._callpoint = callpoint }
 }

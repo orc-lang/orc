@@ -72,7 +72,6 @@ trait Guarding {
       }
       case DeclareType(_, _, body) => check(body)
       case HasType(body, _) => check(body)
-      case Atomic(body) => check(body)
     }
   }
   

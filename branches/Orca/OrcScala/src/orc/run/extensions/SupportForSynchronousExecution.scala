@@ -42,8 +42,12 @@ trait SupportForSynchronousExecution extends OrcRuntime {
       }
       k(event)
     }
-    this.run(node, syncAction, options)
-    done.get
+    try {
+      this.run(node, syncAction, options)
+      done.get
+    } finally {
+      this.stop
+    }
   }
 
   /** If no continuation is given, discard published values and run silently to completion. */

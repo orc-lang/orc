@@ -2,7 +2,7 @@
 // SupportForSiteInvocation.scala -- Scala trait SupportForSiteInvocation
 // Project OrcScala
 //
-// $Id: SupportForSiteInvocation.scala 2775 2011-04-20 01:30:01Z jthywissen $
+// $Id: SupportForSiteInvocation.scala 2859 2011-08-08 23:35:24Z dkitchin $
 //
 // Created by dkitchin on Jan 24, 2011.
 //
@@ -37,6 +37,13 @@ trait SupportForSiteInvocation extends InvocationBehavior {
           case e: Exception => h !! new JavaException(e)
         }
       case _ => super.invoke(h, v, vs)
+    }
+  }
+  
+  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
+    v match {
+      case (s: Site) => s.quiescentWhileInvoked
+      case _ => super.quiescentWhileInvoked(v)
     }
   }
 }

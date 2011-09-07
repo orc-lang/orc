@@ -2,7 +2,7 @@
 // ThreadPoolScheduler.scala -- Scala traits OrcWithThreadPoolScheduler, OrcRunner, and OrcThreadPoolExecutor
 // Project OrcScala
 //
-// $Id: ThreadPoolScheduler.scala 2818 2011-04-22 16:41:54Z jthywissen $
+// $Id: ThreadPoolScheduler.scala 2877 2011-09-01 22:45:36Z dkitchin $
 //
 // Created by jthywiss on Mar 29, 2011.
 //
@@ -19,11 +19,11 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
-
 import orc.Handle
 import orc.OrcExecutionOptions
 import orc.run.Orc
 import orc.run.Logger
+import orc.run.core.GroupMember
 import orc.Schedulable
 
 /**
@@ -38,10 +38,20 @@ trait OrcWithThreadPoolScheduler extends Orc {
   private val executorLock = new Object()
 
   override def schedule(ts: List[Schedulable]) {
+    ts.foreach(schedule(_))
+  }
+
+  override def schedule(t: Schedulable, u: Schedulable) {
+    schedule(t)
+    schedule(u)
+  }
+
+  override def schedule(t: Schedulable) {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
     }
-    for (task <- ts) { executor._execute(task) }
+    t.onSchedule() 
+    executor.executeTask(t)
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
@@ -83,7 +93,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
  * @author jthywiss
  */
 trait OrcRunner {
-
+  
   /** Begin executing submitted tasks */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
@@ -92,7 +102,7 @@ trait OrcRunner {
   /** Submit task for execution */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def _execute(task: Schedulable): Unit
+  def executeTask(task: Schedulable): Unit
 
   /** Orderly shutdown; let running & enqueued tasks complete */
   @throws(classOf[IllegalStateException])
@@ -158,12 +168,20 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     }
   }
 
-  def _execute(task: Schedulable): Unit = {
+  def executeTask(task: Schedulable): Unit = {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
     //FIXME: Don't allow blocking tasks to consume all worker threads
     execute(task)
+  }
+  
+  override def afterExecute(r: Runnable, t: Throwable): Unit = {
+    super.afterExecute(r,t)
+    r match {
+      case s: Schedulable => s.onComplete()
+      case _ => {}
+    }
   }
 
   def awaitTermination(timeoutMillis: Long) = {

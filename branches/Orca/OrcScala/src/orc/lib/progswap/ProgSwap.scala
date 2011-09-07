@@ -2,7 +2,7 @@
 // ProgSwap.scala -- Scala object ProgSwap
 // Project OrcScala
 //
-// $Id: ProgSwap.scala 2583 2011-03-21 21:46:20Z dkitchin $
+// $Id: ProgSwap.scala 2874 2011-08-28 20:51:14Z dkitchin $
 //
 // Created by jthywiss on Sep 30, 2010.
 //
@@ -29,6 +29,9 @@ import orc.run.extensions.SwappableASTs
 import orc.values.Signal
 import orc.values.sites.{Site, UntypedSite}
 import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException}
+import orc.run.core.Execution
+import orc.run.core.Token
+import orc.run.core.SiteCallHandle
 
 /**
  * Update a running Orc program to the supplied OIL program. One argument is
@@ -39,8 +42,8 @@ import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException}
 object ProgSwap extends Site with UntypedSite {
 
   override def call(args: List[AnyRef], callHandle: Handle) {
-    def handleCracker(callHandle: Handle): Orc#Token = callHandle.asInstanceOf[Orc#SiteCallHandle].listener.get
-    val execGroup: SwappableASTs#Execution = handleCracker(callHandle).group.root.asInstanceOf[SwappableASTs#Execution]
+    def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[SiteCallHandle].caller
+    val execGroup: Execution = handleCracker(callHandle).getGroup().root
     var updateSuceeded = false
     args match {
       case List(filename: String) => updateSuceeded = update(execGroup, new File(filename))
@@ -59,8 +62,8 @@ object ProgSwap extends Site with UntypedSite {
   }
 
   /**
-   * Update the OIL AST <code>oldOilAst</code>, running in the Orc engine
-   * <code>engine</code>, to the AST found in OIL file <code>newOilFile</code>,
+   * Update the OIL AST running in the execution group <code>execGroup</code>
+   * to the AST found in OIL file <code>newOilFile</code>,
    * by moving currently executing tokens to the new AST. This will result
    * in the engine being suspended during the update. When the update
    * successfully completes, the engine's config will reflect the new source
@@ -74,19 +77,32 @@ object ProgSwap extends Site with UntypedSite {
    * @throws CompilationException If new OIL file fails to unmarshal or resolve
    * @throws NullPointerException If any param is null
    */
-  def update(execGroup: SwappableASTs#Execution, newOilFile: File): Boolean = {
+  def update(execGroup: Execution, newOilFile: File): Boolean = {
     val oldOilAst = execGroup.node
+    Console.err.println(">>loading new program...")
     val newOilAst = loadNewProgram(newOilFile, execGroup)
-    val editList = AstEditScript.computeEditScript(oldOilAst, newOilAst)
+    Console.err.println(">>matching ASTs...")
+    val matching = FastMatchCRGMW96.matchAsts(oldOilAst, newOilAst)
+    Console.err.println(">>matching generated "+matching.size+" node matches")
+    Console.err.println(">>computing edit script...")
+    val editList = EditScriptCRGMW96.computeEditScript(oldOilAst, newOilAst, matching)
+    Console.err.println(">>editList: ("+editList.size+" operations):")
+    Console.err.println(editList.mkString("- ", "\n- ", "\n>>End edit list"))
     if (editList != null && !editList.isEmpty) {
+      Console.err.println(">>suspending execution group...")
       suspendEngine(execGroup)
       if (!isSafeState(execGroup, oldOilAst, newOilAst, editList)) {
+        Console.err.println(">>not safe to update, resuming execution group...")
         resumeEngine(execGroup)
         return false
       }
+      Console.err.println(">>migrating tokens to new...")
       migrateTokens(execGroup, oldOilAst, newOilAst, editList)
+      Console.err.println(">>moving execution group to new AST...")
       changeAst(execGroup, oldOilAst, newOilAst, editList)
+      Console.err.println(">>updating execution group configuration to reflect new program...")
       updateConfig(execGroup, newOilFile.toString)
+      Console.err.println(">>resuming execution group...")
       resumeEngine(execGroup)
     } else {
       Console.err.println("No changes")
@@ -101,7 +117,7 @@ object ProgSwap extends Site with UntypedSite {
    * @throws IOException If new OIL file cannot be read
    * @throws CompilationException If new OIL file fails to unmarshal or resolve 
    */
-  protected def loadNewProgram(newOilFile: File, execGroup: SwappableASTs#Execution): Expression = {
+  protected def loadNewProgram(newOilFile: File, execGroup: Execution): Expression = {
     Console.err.println(">>Load new Orc file "+newOilFile)
     //orc.ast.oil.nameless.OrcXML.readOilFromStream(new FileInputStream(newOilFile))
     val compiler = new StandardOrcCompiler()
@@ -115,7 +131,7 @@ object ProgSwap extends Site with UntypedSite {
   /**
    * @param execGroup Orc program execution group to be suspended
    */
-  protected def suspendEngine(execGroup: SwappableASTs#Execution) {
+  protected def suspendEngine(execGroup: Execution) {
     execGroup.suspend()
     //FIXME: Need to wait for token schedule queue to be empty
     //FIXME: Need to handle blocked tokens (currently, we silently fail to suspend)
@@ -128,7 +144,7 @@ object ProgSwap extends Site with UntypedSite {
    * @param editList
    * @return
    */
-  protected def isSafeState(execGroup: SwappableASTs#Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript): Boolean = {
+  protected def isSafeState(execGroup: Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript): Boolean = {
     execGroup.inhabitants forall { tok => editList forall { editOp => editOp.isTokenSafe(tok) } }
   }
 
@@ -138,7 +154,7 @@ object ProgSwap extends Site with UntypedSite {
    * @param newOilAst
    * @param editList
    */
-  protected def migrateTokens(execGroup: SwappableASTs#Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript) {
+  protected def migrateTokens(execGroup: Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript) {
     for (token <- execGroup.inhabitants)
       breakable {
         for (editOp <- editList) {
@@ -150,7 +166,7 @@ object ProgSwap extends Site with UntypedSite {
         }
         // ALL tokens in the old tree MUST be covered by some edit operation.
         // Assuming tokens not migrated belong to other ASTs.
-        Console.err.println("AstEditScript did not migrate Token " + token + ", which is at node " + token.node);
+        Console.err.println("AstEditScript did not migrate Token " + token + ", which is at node " + token.getNode());
       }
   }
 
@@ -160,7 +176,7 @@ object ProgSwap extends Site with UntypedSite {
    * @param newOilAst
    * @param editList
    */
-  protected def changeAst(execGroup: SwappableASTs#Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript) {
+  protected def changeAst(execGroup: Execution, oldOilAst: Expression, newOilAst: Expression, editList: AstEditScript) {
     SwappableASTs.setExecutionNode(execGroup, newOilAst)
   }
 
@@ -168,14 +184,14 @@ object ProgSwap extends Site with UntypedSite {
    * @param execGroup Orc program execution group to update (not null)
    * @param newOilFileName
    */
-  protected def updateConfig(execGroup: SwappableASTs#Execution, newOilFileName: String) {
+  protected def updateConfig(execGroup: Execution, newOilFileName: String) {
     execGroup.options.filename = newOilFileName
   }
 
   /**
    * @param execGroup Orc program execution group to be resumed
    */
-  protected def resumeEngine(execGroup: SwappableASTs#Execution) {
+  protected def resumeEngine(execGroup: Execution) {
     execGroup.resume()
   }
 

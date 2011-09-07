@@ -26,7 +26,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
   
-  override val subtrees: List[NamedAST] = this match {
+  override val subtrees: Iterable[NamedAST] = this match {
     case Call(target, args, typeargs) => target :: ( args ::: typeargs.toList.flatten )
     case left || right => List(left, right)
     case Sequence(left,x,right) => List(left, x, right)
@@ -35,18 +35,22 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case DeclareDefs(defs, body) => defs ::: List(body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
-    case Atomic(body) => List(body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
       f :: ( formals ::: ( List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList ) )
     }
     case TupleType(elements) => elements
+    case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
+    case RecordType(entries) => entries.values
     case VariantType(self, typeformals, variants) => {
       self :: typeformals ::: ( for ((_, variant) <- variants; t <- variant) yield t )
     }
-    case _ => Nil
+    case Constant(_)|UnboundVar(_)|Hole(_,_)|Stop() => Nil
+    case Bot()|ClassType(_)|ImportedType(_)|Top()|UnboundTypevar(_) => Nil
+    case _: BoundVar | _: BoundTypevar => Nil
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
   }
   
 }
@@ -77,7 +81,6 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
-case class Atomic(body: Expression) extends Expression
 
 /* Match an expression with exactly one hole. 
  * Matches as Module(f), where f is a function which takes

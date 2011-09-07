@@ -2,7 +2,7 @@
 // SupportForJavaObjectInvocation.scala -- Scala trait SupportForJavaObjectInvocation
 // Project OrcScala
 //
-// $Id: SupportForJavaObjectInvocation.scala 2775 2011-04-20 01:30:01Z jthywissen $
+// $Id: SupportForJavaObjectInvocation.scala 2859 2011-08-08 23:35:24Z dkitchin $
 //
 // Created by dkitchin on Jan 24, 2011.
 //
@@ -33,6 +33,13 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
         val successful = JavaCall(v, vs, h)
         if (!successful) { super.invoke(h, v, vs) }
       }
+    }
+  }
+  
+  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
+    v match {
+      case v : OrcValue => super.quiescentWhileInvoked(v)
+      case _ => false
     }
   }
 

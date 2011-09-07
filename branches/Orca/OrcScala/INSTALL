@@ -15,6 +15,7 @@ included here, in the "lib" directory.
 
 Read one of the following sections depending on your environment.
 
+
 COMMAND LINE USERS
 ------------------
 
@@ -26,6 +27,13 @@ To run <your script file>:
 To see command-line arguments, run:
   java -cp orc-2.0.2.jar:lib/\* orc.Main -?
 
+Suggested .profile entry, assuming Orc is in your ${HOME}/orc directory:
+  alias orc='java -cp ${HOME}/orc/orc-2.0.2.jar:${HOME}/orc/lib/\* orc.Main'
+
+Windows command line users, change the classpath options above to:
+  -cp orc-2.0.2.jar;lib\*
+
+
 WINDOWS USERS
 -------------
 
@@ -33,6 +41,7 @@ To associate .orc files with the Orc JAR, run SETUP.BAT from the directory
 where you put orc-2.0.2.jar.  If you move the orc-2.0.2.jar, you will need to
 rerun SETUP.BAT.  If desired, you can edit the association in Explorer's "File
 Types" dialog to add command-line arguments or change the icon.
+
 
 ORC SITE DEVELOPERS
 -------------------

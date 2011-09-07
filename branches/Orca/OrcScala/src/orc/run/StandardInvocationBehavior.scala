@@ -28,4 +28,3 @@ trait StandardInvocationBehavior extends InvocationBehavior
 with ErrorOnUndefinedInvocation
 with SupportForJavaObjectInvocation
 with SupportForSiteInvocation
-// TODO: Add an invocation trait to filter out tx-context-violating calls, such as a nontransactional call to a transaction-only site.
