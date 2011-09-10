@@ -100,7 +100,15 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
-
+      case ext.Atomic(body) => Atomic(convert(body))
+      
+      case ext.AtomicChoice(choices) => {
+        makeAtomicChoice(choices map convert)
+      }
+      case ext.InfixJoin(joins) => {
+        convert( ext.Sequential(ext.TupleExpr(joins), None, ext.Constant(orc.values.Signal)) )
+      }
+      
       case lambda: ext.Lambda => {
         val lambdaName = new BoundVar()
         val newdef = AggregateDef(lambda)(this).convert(lambdaName, context, typecontext)

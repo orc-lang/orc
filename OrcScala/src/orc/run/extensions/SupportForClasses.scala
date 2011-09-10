@@ -39,7 +39,7 @@ trait SupportForClasses extends Orc {
       case InstanceEvent(closure, args, caller) => {
         val node = Call(Constant(closure), args map Constant, Some(Nil))
         val exec = new ClassExecution(caller, host)
-        val t = new Token(node, exec)
+        val t = new Token(node, exec, caller.context)
         schedule(t)
       }
     } : PartialFunction[OrcEvent, Unit]
