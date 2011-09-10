@@ -25,6 +25,7 @@ import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
+import orc.run.orca.TransactionalContext
 
 /**
  * The interface from a caller to the Orc compiler
@@ -113,7 +114,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 }
 
 /**
- * The interface through which the environment response to site calls.
+ * The interface through which the environment responds to site calls.
  */
 trait Handle {
   
@@ -125,6 +126,8 @@ trait Handle {
   def !!(e: OrcException): Unit
   
   def isLive: Boolean
+  
+  def context: TransactionalContext
 }
 
 /**

@@ -32,6 +32,8 @@ import orc.Schedulable
 import orc.values.OrcRecord
 import orc.values.Signal
 import orc.util.BlockableMapExtension._
+import orc.run.orca.TransactionalContext
+import orc.run.orca.Transaction
 
 /**
  * 
@@ -45,7 +47,8 @@ class Token protected (
   protected var env: List[Binding] = Nil,
   protected var group: Group,
   protected var clock: Option[VirtualClock] = None,
-  protected var state: TokenState = Live) 
+  protected var state: TokenState = Live,
+  protected var txn: TransactionalContext) 
 extends GroupMember with Schedulable {
 
   var functionFramesPushed: Int = 0
@@ -57,8 +60,8 @@ extends GroupMember with Schedulable {
   override val nonblocking = true
   
   /** Public constructor */
-  def this(start: Expression, g: Group) = {
-    this(node = start, group = g, stack = List(GroupFrame))
+  def this(start: Expression, g: Group, tx: TransactionalContext) = {
+    this(node = start, group = g, stack = List(GroupFrame), txn = tx)
   }
 
   /** Copy constructor with defaults */
@@ -68,9 +71,10 @@ extends GroupMember with Schedulable {
     env: List[Binding] = env,
     group: Group = group,
     clock: Option[VirtualClock] = clock,
-    state: TokenState = state): Token = 
+    state: TokenState = state,
+    txn: TransactionalContext = txn): Token = 
   {
-    new Token(node, stack, env, group, clock, state)
+    new Token(node, stack, env, group, clock, state, txn)
   }
   
   
@@ -247,6 +251,7 @@ extends GroupMember with Schedulable {
   def getEnv(): List[Binding] = { env }
   def getStack(): List[Frame] = { stack }
   def getClock(): Option[VirtualClock] = { clock }
+  def getTxn(): TransactionalContext = { txn }
   
   def migrate(newGroup: Group) = {
     val oldGroup = group
@@ -545,6 +550,16 @@ extends GroupMember with Schedulable {
         l.move(left)
         runtime.schedule(l)
       }
+      
+      case Atomic(body) => {
+        val (outer, inner) = fork
+        val txn = new Transaction(outer)
+        outer.blockOn(txn)
+        inner.txn = txn
+        inner.join(txn)
+        inner.move(body)
+        runtime.schedule(inner)
+      }
 
       case decldefs @ DeclareDefs(openvars, defs, body) => {
         /* Closure compaction: Bind only the free variables
@@ -592,6 +607,11 @@ extends GroupMember with Schedulable {
   
   def publish() { publish(Signal) }
 
+  def publishAll(vs: Traversable[AnyRef]) {
+    for (v <- vs) { copy().publish(v) }
+    halt()
+  }
+  
   def halt() {
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {

@@ -15,13 +15,13 @@
 
 package orc.run
 
-
 import orc.ast.oil.nameless.Expression
 import orc.run.core.Token
 import orc.run.core.Execution
 import orc.OrcRuntime
 import orc.OrcEvent
 import orc.OrcExecutionOptions
+import orc.run.orca.RootContext
 
 trait Orc extends OrcRuntime {
 
@@ -31,7 +31,9 @@ trait Orc extends OrcRuntime {
     val root = new Execution(node, options, k, this)
     installHandlers(root)
     
-    val t = new Token(node, root)
+    val context = new RootContext()
+    
+    val t = new Token(node, root, context)
     schedule(t)
   }
 

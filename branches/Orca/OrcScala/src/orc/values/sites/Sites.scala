@@ -21,6 +21,7 @@ import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
 import orc.error.NotYetImplementedException
 import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.InvalidNontransactionalCallException
 import orc.run.Logger
 import orc.types.Type
 import orc.types.Bot

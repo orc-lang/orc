@@ -498,7 +498,7 @@ def arrayToList(a) =
   
 
 {--
-@def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
+@def Table[A](Integer, lambda (Integer) :: A) :: (lambda (Integer) :: A)
 The call <code>Table(n,f)</code>, where <code>n</code> is a
 natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>

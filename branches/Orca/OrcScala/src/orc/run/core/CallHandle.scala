@@ -24,6 +24,8 @@ import orc.Handle
  */
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
+  val context = caller.getTxn()
+  
   protected var state: CallState = CallInProgress
   
   /* Returns true if the state transition was made, 
