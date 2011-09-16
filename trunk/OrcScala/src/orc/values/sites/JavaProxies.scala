@@ -128,7 +128,7 @@ abstract class JavaProxy extends Site {
  *
  * @author jthywiss
  */
-case class JavaClassProxy(val javaClass: Class[_]) extends JavaProxy with TypedSite {
+case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends JavaProxy with TypedSite {
   // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.  
 
   override lazy val name = javaClass.getName()
@@ -202,7 +202,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
  *
  * @author jthywiss
  */
-class JavaStaticMemberProxy(declaringClass: Class[_], memberName: String) extends JavaMemberProxy(null, memberName) {
+class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], memberName: String) extends JavaMemberProxy(null, memberName) {
 
   override def javaClass = declaringClass
 
