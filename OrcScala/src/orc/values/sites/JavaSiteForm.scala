@@ -30,7 +30,7 @@ object JavaSiteForm extends SiteForm {
   def resolve(name: String) = {
     Logger.finer("Resolving Java class "+name)
     try {
-      new JavaClassProxy(loadClass(name))
+      new JavaClassProxy(loadClass(name).asInstanceOf[Class[_ <: java.lang.Object]])
     } catch {
       case e: InterruptedException => throw e
       case e: Exception =>
