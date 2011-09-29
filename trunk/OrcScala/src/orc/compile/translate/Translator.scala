@@ -55,8 +55,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.ListExpr(es) => unfold(es map convert, makeList)
       case ext.RecordExpr(es) => {
         val seen = new scala.collection.mutable.HashSet[String]()
-        val tuples = es map 
-          { 
+        val tuples = es map
+          {
             case (s, e) => {
               if (seen contains s) { reportProblem(DuplicateKeyException(s) at e) } else { seen += s }
               val f = Constant(Field(s))
@@ -83,6 +83,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.Sequential(l, None, r) => convert(l) >> convert(r)
+      case ext.Sequential(l, Some(ext.VariablePattern(name)), r) => {
+        val x = new BoundVar(Some(name))
+        val newl = convert(l)
+        val newr = convert(r)(context + ((name, x)), typecontext)
+        newl > x > newr
+      }
       case ext.Sequential(l, Some(p), r) => {
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
@@ -91,6 +97,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         source(newl) > x > target(newr)
       }
       case ext.Pruning(l, None, r) => convert(l) << convert(r)
+      case ext.Pruning(l, Some(ext.VariablePattern(name)), r) => {
+        val x = new BoundVar(Some(name))
+        val newl = convert(l)(context + ((name, x)), typecontext)
+        val newr = convert(r)
+        newl < x < newr
+      }
       case ext.Pruning(l, Some(p), r) => {
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
@@ -172,7 +184,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           val newtypecontext = typecontext ++ dtypecontext + { (name, selfVar) }
           val variants =
             for (ext.Constructor(name, types) <- constructors) yield {
-              val newtypes = types map { 
+              val newtypes = types map {
                 case Some(t) => convertType(t)(newtypecontext)
                 case None => Top()
               }
@@ -220,14 +232,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /**
    *  Convert a list of extended AST def declarations to:
-   *  
-   *        a list of named OIL definitions 
-   *  and   
+   *
+   *        a list of named OIL definitions
+   *  and
    *        a mapping from their string names to their new bound names
    *
    */
   def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
-    
+
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
     for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
@@ -271,9 +283,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /**
    * Convert a list of type formal names to:
-   * 
+   *
    *     A list of bound type formal variables
-   * and 
+   * and
    *     A context mapping those names to those vars
    */
   def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
@@ -293,9 +305,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /**
    *  Convert an extended AST pattern to:
-   *  
+   *
    *        A filtering conversion for the source expression
-   *  and      
+   *  and
    *        A binding conversion for the target expression,
    *        parameterized on the variable carrying the result
    *
@@ -307,6 +319,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def convertPattern(p: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
 
     var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
+
     def bind(name: String, x: BoundVar) {
       if (bindingMap contains name) {
         reportProblem(NonlinearPatternException(name) at p)
@@ -314,7 +327,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         bindingMap += { (name, x) }
       }
     }
-
+    
     def unravel(p: ext.Pattern, focus: BoundVar): (Conversion) = {
       p match {
         case ext.Wildcard() => {
@@ -417,8 +430,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
       case neededResults => {
         /* More than one result is needed */
-        /* Note: This can only occur in a strict pattern. 
-         * Thus, the source conversion for a non-strict pattern is always the identity function. */ 
+        /* Note: This can only occur in a strict pattern.
+         * Thus, the source conversion for a non-strict pattern is always the identity function. */
         val sourceConversion: Conversion =
           { _ > sourceVar > filterInto(makeLet(neededResults)) }
 
