@@ -31,7 +31,10 @@ import orc.OrcRuntime
 
 trait VirtualClockOperation extends Site with SpecificArity
 
-class AwaitCallHandle(caller: Token) extends CallHandle(caller)
+class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
+  
+  override def toString() = "ach"
+}
 
 class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
 extends Schedulable {
@@ -49,17 +52,37 @@ extends Schedulable {
   
   private var readyCount: Int = 1
   
+  /*
+   * Take all minimum time elements from the waiter queue.
+   * Return Some tuple contaning the minimum time and a nonempty list of waiters on that time.
+   * If the queue is empty, return None instead.
+   */
+  private def dequeueMins(): Option[(Time, List[AwaitCallHandle])] = {
+    waiterQueue.headOption match {
+      case Some( (_, minTime) ) => {
+        def allMins(): List[AwaitCallHandle] = {
+          waiterQueue.headOption match {
+            case Some( (h, time) ) if (ordering(time, minTime) == 0) => { 
+              waiterQueue.dequeue()
+              h :: allMins() 
+            }
+            case _ => { Nil }
+          }
+        }
+        Some( (minTime, allMins()) )
+      }
+      case None => None  
+    }    
+  }
+  
   protected def run() {
     synchronized {
       if (readyCount == 0) {
-        waiterQueue.headOption match {
-          case Some((_, minimumTime)) => {
-            currentTime = Some(minimumTime)
-            def atMinimum(entry: (AwaitCallHandle, Time)) = ordering(entry._2, minimumTime) == 0
-            val allMins = waiterQueue takeWhile atMinimum
-            allMins foreach { _ => waiterQueue.dequeue() }
-            allMins.head._1.publish(true.asInstanceOf[AnyRef])
-            allMins.tail foreach { entry => entry._1.publish(false.asInstanceOf[AnyRef]) }
+        dequeueMins() match {
+          case Some( (newTime, first::rest) ) => {
+            currentTime = Some(newTime)
+            first.publish(true.asInstanceOf[AnyRef])
+            rest foreach { _.publish(false.asInstanceOf[AnyRef]) }
           }
           case None => { }
         }
@@ -100,7 +123,7 @@ extends Schedulable {
       case -1 => caller.halt()
       
       // Awaiting the current time.
-      case 0 => caller.publish()
+      case 0 => caller.publish(false.asInstanceOf[AnyRef])
       
       // Awaiting a future time.
       case 1 => caller.blockOn(h)
