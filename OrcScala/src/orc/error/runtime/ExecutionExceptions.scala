@@ -95,7 +95,7 @@ class BadArrayElementTypeException(val badType: String) extends
  * 
  */
 class TupleIndexOutOfBoundsException(val index: Int) extends
-  RuntimeTypeException("String index out of range: " + index)
+  RuntimeTypeException("Tuple index out of range: " + index)
 
 /**
  * 
