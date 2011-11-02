@@ -79,11 +79,15 @@ trait OrcWithThreadPoolScheduler extends Orc {
         // First, gently shut down
         executor.shutdown()
         // Wait "a little while"
-        if (!executor.awaitTermination(20L)) {
+        if (!executor.awaitTermination(120L)) {
           // Now, we insist
           executor.shutdownNow()
-          // Wait long enough for all running workers to receive shutdown
-          executor.awaitTermination(2L)
+          // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
+          if (!executor.awaitTermination(303000L)) {
+            Logger.log(Level.SEVERE, "Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
+            // Depending on who called Orc.stop, this exception gets ignored, so don't count on it
+            throw new RuntimeException("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
+          }
         }
         executor = null
       }
@@ -194,6 +198,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     val mainLockField = getClass.getSuperclass.getDeclaredField("mainLock")
     mainLockField.setAccessible(true)
     val mainLock = mainLockField.get(this).asInstanceOf[java.util.concurrent.locks.ReentrantLock]
+    val threadBuffer = new Array[Thread](getMaximumPoolSize+2)
 
     try {
       while (!isShutdown) {
@@ -215,8 +220,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
           // We want enough RUNNABLE+BLOCKED threads to keep all CPU cores busy, but not more.
 
           // This approach is stochastic; and the following calculation is approximate -- there are transients
-          val threadBuffer = new Array[Thread](threadGroup.activeCount)
-          val liveThreads = threadBuffer.take(threadGroup.enumerate(threadBuffer, false))
+          val liveThreads = threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false))
           val workingThreads = getActiveCount // Number of Workers running a Task
           val supervisor = Thread.currentThread
           val progressingThreadCount = liveThreads.count({t => t != supervisor && (t.getState == Thread.State.RUNNABLE || t.getState == Thread.State.BLOCKED || t.getState == Thread.State.NEW)})
@@ -228,6 +232,10 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
           //Logger.finest("progressingThreadCount = " + progressingThreadCount)
           //Logger.finest("nonProgressingWorkingThreadCount = " + nonProgressingWorkingThreadCount)
           //Logger.finest("numCores*2 + nonProgressingTaskCount = " + (numCores*2 + nonProgressingWorkingThreadCount))
+
+          for (i <- 0 until threadBuffer.length) {
+            threadBuffer.update(i, null)
+          }
 
           setCorePoolSize(math.min(math.max(4, numCores*2 + nonProgressingWorkingThreadCount), getMaximumPoolSize))
         } finally {
