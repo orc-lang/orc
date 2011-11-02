@@ -351,10 +351,10 @@ trait Orc extends OrcRuntime {
 
   class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends Handle with Blocker {
 
-    caller.blockOn(this)
-
     var listener: Option[Token] = Some(caller)
     var invocationThread: Option[Thread] = None
+
+    caller.blockOn(this)
 
     def run() {
       try {
