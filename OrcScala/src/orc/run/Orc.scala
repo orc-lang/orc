@@ -20,7 +20,7 @@ import orc.values.OrcRecord
 import orc.values.Field
 import orc.ast.oil.nameless._
 import orc.error.OrcException
-import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenLimitReachedError }
+import orc.error.runtime.{ ArityMismatchException, TokenException, StackLimitReachedError, TokenError, TokenLimitReachedError }
 import scala.collection.mutable.Set
 
 trait Orc extends OrcRuntime {
@@ -69,7 +69,14 @@ trait Orc extends OrcRuntime {
       schedule(this)
     }
 
-    def run() = pendingKills.map(_.kill)
+    def run() {
+      try {
+        pendingKills.map(_.kill)
+      } catch {
+        case e: InterruptedException => throw e
+        case e => { notifyOrc(CaughtEvent(e)) }
+      }
+    }
 
     def suspend() = synchronized {
       for (m <- members) m.suspend()
@@ -230,7 +237,11 @@ trait Orc extends OrcRuntime {
 
     val eventHandler: OrcEvent => Unit = {
       val handlers = generateOrcHandlers(this)
-      val baseHandler = { case e => k(e) }: PartialFunction[OrcEvent, Unit]
+      val baseHandler = {
+        case e@ CaughtEvent(_: Error) => { Orc.this.stop; k(e) }
+        case e@ CaughtEvent(_: TokenError) => { kill(); k(e) }
+        case e => k(e)
+      }: PartialFunction[OrcEvent, Unit]
       def composeOrcHandlers(f: OrcHandler, g: OrcHandler) = f orElse g
       handlers.foldRight(baseHandler)(composeOrcHandlers)
     }
@@ -368,7 +379,7 @@ trait Orc extends OrcRuntime {
         }
       } catch {
         case e: OrcException => this !! e
-        case e: InterruptedException => halt()  //Thread interrupt causes halt without notify
+        case e: InterruptedException => { halt(); throw e }  //Thread interrupt causes halt without notify
         case e => { notifyOrc(CaughtEvent(e)); halt() }
       } finally {
         synchronized {
@@ -620,7 +631,7 @@ trait Orc extends OrcRuntime {
             functionFramesPushed = functionFramesPushed + 1
             if (options.stackSize > 0 &&
               functionFramesPushed > options.stackSize)
-              throw new StackLimitReachedError(options.stackSize)
+              this !! new StackLimitReachedError(options.stackSize)
             push(new FunctionFrame(node, env))
           }
         }
@@ -669,30 +680,36 @@ trait Orc extends OrcRuntime {
     def isLive = { state = Live }
 
     def run() {
-      var runNode = false
-      synchronized {
-        state match {
-          case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
-          case Blocked(_) => throw new AssertionError("blocked token scheduled")
-          case Suspending(prevState) => state = Suspended(prevState)
-          case Suspended(_) => throw new AssertionError("suspended token scheduled")
-          case Halted => throw new AssertionError("halted token scheduled")
-          case Killed => {} // This token was killed while it was on the schedule queue; ignore it
-          case Published(v) => {
-            state = Live
-            stack match {
-              case f :: fs => {
-                stack = fs
-                f(this, v)
-              }
-              case List() => {
-                throw new AssertionError("publish on an empty stack")
+      try {
+        var runNode = false
+        synchronized {
+          state match {
+            case Live => runNode = true // Run this token's current AST node, ouside this synchronized block
+            case Blocked(_) => throw new AssertionError("blocked token scheduled")
+            case Suspending(prevState) => state = Suspended(prevState)
+            case Suspended(_) => throw new AssertionError("suspended token scheduled")
+            case Halted => throw new AssertionError("halted token scheduled")
+            case Killed => {} // This token was killed while it was on the schedule queue; ignore it
+            case Published(v) => {
+              state = Live
+              stack match {
+                case f :: fs => {
+                  stack = fs
+                  f(this, v)
+                }
+                case List() => {
+                  throw new AssertionError("publish on an empty stack")
+                }
               }
             }
           }
         }
+        if (runNode) eval(node)
+      } catch {
+        case e: OrcException => this !! e
+        case e: InterruptedException => { halt(); throw e }  //Thread interrupt causes halt without notify
+        case e => { notifyOrc(CaughtEvent(e)); halt() }
       }
-      if (runNode) eval(node)
     }
 
     def eval(node: orc.ast.oil.nameless.Expression) {

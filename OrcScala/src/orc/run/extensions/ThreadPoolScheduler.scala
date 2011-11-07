@@ -76,17 +76,26 @@ trait OrcWithThreadPoolScheduler extends Orc {
   override def stopScheduler() {
     executorLock synchronized {
       if (executor != null) {
-        // First, gently shut down
-        executor.shutdown()
-        // Wait "a little while"
-        if (!executor.awaitTermination(120L)) {
-          // Now, we insist
-          executor.shutdownNow()
-          // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
-          if (!executor.awaitTermination(303000L)) {
-            Logger.log(Level.SEVERE, "Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
-            // Depending on who called Orc.stop, this exception gets ignored, so don't count on it
-            throw new RuntimeException("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
+        try {
+          // First, gently shut down
+          executor.shutdown()
+          // Wait "a little while"
+          if (!executor.awaitTermination(120L)) {
+            // Now, we insist
+            executor.shutdownNow()
+            // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
+            if (!executor.awaitTermination(303000L)) {
+              Logger.severe("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
+              // Depending on who called Orc.stop, this exception gets ignored, so don't count on it
+              throw new RuntimeException("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
+            }
+          }
+        } catch {
+          case e: InterruptedException => {
+            Logger.warning("Thread \""+Thread.currentThread().getName()+"\" interrupted when stopping scheduler")
+            // Do what we can to force a shutdown
+            executor.shutdownNow()
+            throw e;
           }
         }
         executor = null
