@@ -30,9 +30,9 @@ trait SwappableASTs extends Orc {
 }
 
 object SwappableASTs {
-  def setExecutionNode(e: SwappableASTs#Execution, node: Expression) { e._node = node }
-  def setExecutionOptions(e: SwappableASTs#Execution, options: OrcExecutionOptions) { e._options = options }
-  def setClosureDef(c: SwappableASTs#Closure, defs: List[Def]) { c._defs = defs }
-  def setSequenceFrameNode(sf: SwappableASTs#SequenceFrame, node: Expression) { sf._node = node }
-  def setFunctionFrameCallpoint(ff: SwappableASTs#FunctionFrame, callpoint: Expression) { ff._callpoint = callpoint }
+  def setExecutionNode(e: SwappableASTs#Execution, node: Expression) { Console.err.println(">>SwappableASTs.setExecutionNode"); e._node = node }
+  def setExecutionOptions(e: SwappableASTs#Execution, options: OrcExecutionOptions) { Console.err.println(">>SwappableASTs.setExecutionOptions"); e._options = options }
+  def setClosureDef(c: SwappableASTs#Closure, defs: List[Def]) { Console.err.println(">>SwappableASTs.setClosureDef"); c._defs = defs }
+  def setSequenceFrameNode(sf: SwappableASTs#SequenceFrame, node: Expression) { Console.err.println(">>SwappableASTs.setSequenceFrameNode"); sf._node = node }
+  def setFunctionFrameCallpoint(ff: SwappableASTs#FunctionFrame, callpoint: Expression) { Console.err.println(">>SwappableASTs.setFunctionFrameCallpoint"); ff._callpoint = callpoint }
 }

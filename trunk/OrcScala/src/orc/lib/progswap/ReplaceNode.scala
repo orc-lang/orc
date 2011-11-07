@@ -14,11 +14,9 @@
 //
 package orc.lib.progswap
 
-import orc.ast.oil.nameless.Def
-import scala.collection.mutable.Buffer
+import orc.ast.AST
+import orc.ast.oil.nameless.{Def, Expression, NamelessAST}
 import orc.run.extensions.SwappableASTs
-import orc.ast.oil.nameless.NamelessAST
-import orc.ast.oil.nameless.Expression
 import orc.run.Orc
 
 /**
@@ -26,7 +24,7 @@ import orc.run.Orc
  *
  * @author jthywiss
  */
-case class ReplaceNode[A, B](oldNode: A, newNode: B) extends AstEditOperation {
+case class ReplaceNode[A <: AST, B <: AST](oldNode: A, newNode: B) extends AstEditOperation {
   def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
 
   def isTokenAffected(token: Orc#Token): Boolean = { tokenCracker(token).node == oldNode }
@@ -73,7 +71,9 @@ case class ReplaceNode[A, B](oldNode: A, newNode: B) extends AstEditOperation {
   }
 
   def migrateFrameStack(token: Orc#Token) {
+    Console.err.println(">>ReplaceNode.migrateFrameStack("+token+")")
     for (frame <- tokenCracker(token).stack) {
+      Console.err.println("  "+frame)
       frame match {
         case sf: SwappableASTs#SequenceFrame if (sf.node == oldNode) => SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression])
         case ff: SwappableASTs#FunctionFrame if (ff.callpoint == oldNode) => SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression])
