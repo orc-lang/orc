@@ -199,7 +199,10 @@ public final class Job implements JobMBean {
 			} catch (final OrcException e) {
 				jea.caught(e);
 			} finally {
+				jea.halted();
 				stop(); // kill threads and reclaim resources
+				Job.this.engine = null;
+				Job.this.worker = null;
 			}
 		}
 
@@ -278,7 +281,7 @@ public final class Job implements JobMBean {
 	private int nextPromptID = 1;
 	private final Map<Integer, PromptCallback> pendingPrompts = new HashMap<Integer, PromptCallback>();
 	/** The engine will handle all the interesting work of the job. */
-	private final JobEngine engine;
+	private JobEngine engine;
 	/** Events which can be monitored. */
 	private final EventBuffer events;
 	/** Tasks to run when the job finishes. */
@@ -311,7 +314,7 @@ public final class Job implements JobMBean {
 	}
 
 	public synchronized void start() throws InvalidJobStateException {
-		if (worker != null) {
+		if (worker != null || events.isClosed()) {
 			throw new InvalidJobStateException(getState());
 		}
 		worker = new Thread(engine, "Orchard Job " + id);
@@ -366,7 +369,7 @@ public final class Job implements JobMBean {
 
 	@Override
 	public synchronized String getState() {
-		if (worker == null) {
+		if (worker == null && !events.isClosed()) {
 			return "NEW";
 		} else if (events.isClosed()) {
 			return "DONE";
