@@ -348,9 +348,6 @@ public final class Job implements JobMBean {
 			return;
 		}
 		engine.stop();
-		// if the engine is blocked, interrupt it
-		// so it can halt
-		worker.interrupt();
 	}
 
 	/**
