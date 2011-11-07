@@ -33,6 +33,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
    * The continuation takes only values, not events.
    */
   @throws(classOf[ExecutionException])
+  @throws(classOf[InterruptedException])
   def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
@@ -52,6 +53,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
 
   /** If no continuation is given, discard published values and run silently to completion. */
   @throws(classOf[ExecutionException])
+  @throws(classOf[InterruptedException])
   def runSynchronous(node: Expression, options: OrcExecutionOptions) {
     runSynchronous(node, { _: OrcEvent => }, options)
   }

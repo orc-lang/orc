@@ -196,6 +196,8 @@ public final class Job implements JobMBean {
 			final JobEventActions jea = new JobEventActions();
 			try {
 				runSynchronous(expression, jea.asFunction(), config);
+			} catch (final InterruptedException e) {
+				Thread.currentThread().interrupt();
 			} catch (final OrcException e) {
 				jea.caught(e);
 			} finally {
@@ -344,10 +346,12 @@ public final class Job implements JobMBean {
 
 	@Override
 	public synchronized void halt() {
-		if (worker == null) {
-			return;
+		if (engine != null) {
+			engine.stop();
 		}
-		engine.stop();
+		if (worker != null) {
+			worker.interrupt();
+		}
 	}
 
 	/**
