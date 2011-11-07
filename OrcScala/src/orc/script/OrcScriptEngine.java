@@ -154,6 +154,8 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 			// TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
 			try {
 				exec.runSynchronous(astRoot, pubAct.asFunction(), asOrcBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)));
+            } catch (final InterruptedException e) {
+              Thread.currentThread().interrupt();
             } catch (final OrcException e) {
 				throw new OrcScriptException(e);
 			} finally {
