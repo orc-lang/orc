@@ -73,7 +73,7 @@ trait Orc extends OrcRuntime {
       try {
         pendingKills.map(_.kill)
       } catch {
-        case e: InterruptedException => throw e
+        case e: InterruptedException => Thread.currentThread().interrupt()
         case e => { notifyOrc(CaughtEvent(e)) }
       }
     }
@@ -379,7 +379,7 @@ trait Orc extends OrcRuntime {
         }
       } catch {
         case e: OrcException => this !! e
-        case e: InterruptedException => { halt(); throw e }  //Thread interrupt causes halt without notify
+        case e: InterruptedException => { halt(); Thread.currentThread().interrupt() }  //Thread interrupt causes halt without notify
         case e => { notifyOrc(CaughtEvent(e)); halt() }
       } finally {
         synchronized {
@@ -707,7 +707,7 @@ trait Orc extends OrcRuntime {
         if (runNode) eval(node)
       } catch {
         case e: OrcException => this !! e
-        case e: InterruptedException => { halt(); throw e }  //Thread interrupt causes halt without notify
+        case e: InterruptedException => { halt(); Thread.currentThread().interrupt() }  //Thread interrupt causes halt without notify
         case e => { notifyOrc(CaughtEvent(e)); halt() }
       }
     }
