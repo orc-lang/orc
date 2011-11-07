@@ -12,15 +12,15 @@
 //
 package orc.lib.progswap
 
+import orc.ast.AST
 import orc.run.Orc
-import orc.ast.oil.nameless.NamelessAST
 
 /**
  * Edit operation that is an addition of a new node to a tree.
  *
  * @author jthywiss
  */
-case class InsertNode[A, B](newNode: B, oldParent: A, newParent: B, position: Int) extends AstEditOperation {
+case class InsertNode[A <: AST, B <: AST](newNode: B, oldParent: A, newParent: B, position: Int) extends AstEditOperation {
 
   def isTokenAffected(token: Orc#Token): Boolean = { false }
 

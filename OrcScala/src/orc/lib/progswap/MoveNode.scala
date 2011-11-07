@@ -12,7 +12,7 @@
 //
 package orc.lib.progswap
 
-import orc.ast.oil.nameless.NamelessAST
+import orc.ast.AST
 import orc.run.extensions.SwappableASTs
 import orc.run.Orc
 
@@ -21,7 +21,7 @@ import orc.run.Orc
  *
  * @author jthywiss
  */
-case class MoveNode[A, B](movingNode: A, movedNode: B, oldParent: A, newParent: B, position:Int) extends AstEditOperation {
+case class MoveNode[A <: AST, B <: AST](movingNode: A, movedNode: B, oldParent: A, newParent: B, position:Int) extends AstEditOperation {
 
   def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
 

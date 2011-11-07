@@ -104,7 +104,7 @@ object EditScriptCRGMW96 {
         editScript += new ReplaceNode(oldNode.get, newNode)
         if (matchOfParentNewNode != parentOldNode) {
           val k = findPos(newNode)
-          editScript += new MoveNode(oldNode, newNode, matchOfParentNewNode, parentNew(newNode), k)
+          editScript += new MoveNode(oldNode.get, newNode, matchOfParentNewNode, parentNew(newNode), k)
           /* Update old tree to reflect move */
           parentOld.update(oldNode.get, matchOfParentNewNode)
           childrenOld.update(parentOldNode, childrenOld(parentOldNode).filterNot(_ eq oldNode.get))
@@ -113,7 +113,7 @@ object EditScriptCRGMW96 {
           childrenOld.update(matchOfParentNewNode, siblings)
         }
       } else {
-        // Only operation the works on roots is "replace"
+        // The only operation that is available on the tree roots is "replace"
         editScript += new ReplaceNode(oldOilAst, newOilAst)
       }
 
@@ -128,7 +128,7 @@ object EditScriptCRGMW96 {
       for (oldChild <- s1 if !inOrder.contains(oldChild)) {
         val newChild = matchOldNew(oldChild)
         val k = findPos(newChild)
-        editScript += new MoveNode(oldChild, newChild, oldNode, newNode, k)
+        editScript += new MoveNode(oldChild, newChild, oldNode.get, newNode, k)
         /* Update old tree to reflect move */
         childrenOldNode -= (oldChild)
         childrenOldNode.insert(k, oldChild)
