@@ -38,7 +38,7 @@ trait Group extends GroupMember {
   
   val runtime: OrcRuntime
   
-  var members: mutable.Set[GroupMember] = mutable.Set()
+  var members: mutable.Buffer[GroupMember] = mutable.Buffer()
   var alive = true
 
   def halt(t: Token) = synchronized { remove(t) }
@@ -68,7 +68,7 @@ trait Group extends GroupMember {
 
   def add(m: GroupMember) {
     synchronized {
-      members.add(m)
+      members += m
     }
     m match {
       case t: Token if (root.options.maxTokens > 0) => {
@@ -81,7 +81,7 @@ trait Group extends GroupMember {
 
   def remove(m: GroupMember) {
     synchronized {
-      members.remove(m)
+      members -= m
       if (members.isEmpty) { onHalt }
     }
     m match {
