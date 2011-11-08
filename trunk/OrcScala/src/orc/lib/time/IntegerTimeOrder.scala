@@ -1,5 +1,5 @@
 //
-// IntegerTimeOrder.scala -- Scala class/trait/object IntegerTimeOrder
+// IntegerTimeOrder.scala -- Scala object IntegerTimeOrder
 // Project OrcScala
 //
 // $Id$
@@ -13,13 +13,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.lib.time
+
 import orc.values.sites.TotalSite2
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 object IntegerTimeOrder extends TotalSite2 {
 
   def eval(x: AnyRef, y: AnyRef): AnyRef = {
@@ -28,5 +27,5 @@ object IntegerTimeOrder extends TotalSite2 {
     val j = y.asInstanceOf[BigInt]
     (i compare j).asInstanceOf[AnyRef]
   }
-  
+
 }

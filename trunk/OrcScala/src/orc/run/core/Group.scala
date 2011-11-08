@@ -1,5 +1,5 @@
 //
-// Group.scala -- Scala class/trait/object Group
+// Group.scala -- Scala trait Group
 // Project OrcScala
 //
 // $Id$
@@ -15,29 +15,26 @@
 package orc.run.core
 
 import scala.collection.mutable
-import orc.error.runtime.TokenLimitReachedError
+
 import orc.OrcRuntime
-import orc.Schedulable
+import orc.error.runtime.TokenLimitReachedError
 
-/**
- * 
- * A Group is a structure associated with dynamic instances of an expression,
- * tracking all of the executions occurring within that expression.
- * Different combinators make use of different Group subclasses.
- *
- * @author dkitchin
- */
-
+/** A Group is a structure associated with dynamic instances of an expression,
+  * tracking all of the executions occurring within that expression.
+  * Different combinators make use of different Group subclasses.
+  *
+  * @author dkitchin
+  */
 trait Group extends GroupMember {
-  
+
   def publish(t: Token, v: AnyRef): Unit
   def onHalt(): Unit
   def run(): Unit
 
   override val nonblocking = true
-  
+
   val runtime: OrcRuntime
-  
+
   var members: mutable.Buffer[GroupMember] = mutable.Buffer()
   var alive = true
 
@@ -50,7 +47,7 @@ trait Group extends GroupMember {
       // TODO: null out members
     }
   }
-  
+
   /* 
    * Note: This is a local live check.
    * A global check requires a linear-time

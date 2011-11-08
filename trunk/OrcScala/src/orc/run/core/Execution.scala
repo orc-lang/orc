@@ -1,5 +1,5 @@
 //
-// Execution.scala -- Scala class/trait/object Execution
+// Execution.scala -- Scala class Execution
 // Project OrcScala
 //
 // $Id$
@@ -14,30 +14,20 @@
 //
 package orc.run.core
 
+import orc.{PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedEvent, CaughtEvent}
 import orc.ast.oil.nameless.Expression
-import orc.HaltedEvent
-import orc.OrcEvent
-import orc.OrcExecutionOptions
-import orc.OrcRuntime
-import orc.PublishedEvent
-import orc.run.Orc
-import orc.CaughtEvent
 import orc.error.runtime.TokenError
 
-/**
- * 
- *
- * @author dkitchin
- */
-/**
- * An execution is a special toplevel group,
- * associated with the entire program.
- */
+/** An execution is a special toplevel group,
+  * associated with the entire program.
+  *
+  * @author dkitchin
+  */
 class Execution(
-    private[run] var _node: Expression, 
-    private[run] var _options: OrcExecutionOptions,
-    private var eventHandler: OrcEvent => Unit,
-    val runtime: OrcRuntime) 
+  private[run] var _node: Expression,
+  private[run] var _options: OrcExecutionOptions,
+  private var eventHandler: OrcEvent => Unit,
+  val runtime: OrcRuntime)
   extends Group {
 
   def node = _node;
@@ -55,19 +45,19 @@ class Execution(
   def onHalt() {
     notifyOrc(HaltedEvent)
   }
-  
+
   def run() = { /* Do nothing. */ }
-  
+
   val oldHandler = eventHandler
   eventHandler = {
-    case e@ CaughtEvent(_: Error) => { runtime.stop; oldHandler(e) }
-    case e@ CaughtEvent(_: TokenError) => { kill(); oldHandler(e) }
+    case e @ CaughtEvent(_: Error) => { runtime.stop; oldHandler(e) }
+    case e @ CaughtEvent(_: TokenError) => { kill(); oldHandler(e) }
     case e => oldHandler(e)
   }
 
   def installHandler(newHandler: PartialFunction[OrcEvent, Unit]) = {
     val oldHandler = eventHandler
-    eventHandler = { e => if (newHandler isDefinedAt e) { newHandler(e) } else { oldHandler(e) }}
+    eventHandler = { e => if (newHandler isDefinedAt e) { newHandler(e) } else { oldHandler(e) } }
   }
 
   def notifyOrc(event: OrcEvent) = { eventHandler(event) }

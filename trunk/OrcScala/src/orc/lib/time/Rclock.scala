@@ -14,64 +14,61 @@
 //
 package orc.lib.time
 
-import orc.values.sites.Site1
-import orc.values.sites.TypedSite
-import orc.values.sites.TotalSite0
-import orc.values.OrcRecord
-import orc.types.SimpleFunctionType
-import orc.types.RecordType
-import orc.types.IntegerType
-import orc.types.SignalType
-import orc.types.OverloadedType
-import orc.run.extensions.RwaitEvent
+import scala.math.BigInt.int2bigInt
+
 import orc.Handle
 import orc.error.runtime.ArgumentTypeMismatchException
+import orc.run.extensions.RwaitEvent
+import orc.types.{SimpleFunctionType, SignalType, RecordType, IntegerType}
+import orc.values.sites.{TypedSite, TotalSite0, Site1}
+import orc.values.OrcRecord
 
-
+/**
+ *
+ */
 object Rclock extends TotalSite0 with TypedSite {
-  
+
   def eval() = {
     new OrcRecord(
       "time" -> new Rtime(System.currentTimeMillis()),
-      "wait" -> Rwait  
-    )
+      "wait" -> Rwait)
   }
-    
-  def orcType = 
+
+  def orcType =
     SimpleFunctionType(
       new RecordType(
         "time" -> SimpleFunctionType(IntegerType),
-        "wait" -> SimpleFunctionType(IntegerType, SignalType)
-      )
-    )
-    
+        "wait" -> SimpleFunctionType(IntegerType, SignalType)))
+
 }
 
+/**
+ *
+ */
 class Rtime(startTime: Long) extends TotalSite0 {
-  
+
   def eval() = (System.currentTimeMillis() - startTime).asInstanceOf[AnyRef]
-  
+
 }
 
+/**
+ *
+ */
 object Rwait extends Site1 {
 
   def call(a: AnyRef, h: Handle) {
     a match {
       case delay: BigInt => {
-        if (delay > 0) { 
-          h.notifyOrc(RwaitEvent(delay, h)) 
-        } 
-        else if (delay == 0) {
-          h.publish() 
-        }
-        else {
+        if (delay > 0) {
+          h.notifyOrc(RwaitEvent(delay, h))
+        } else if (delay == 0) {
+          h.publish()
+        } else {
           h.halt
         }
       }
       case _ => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
     }
   }
-  
+
 }
-
-

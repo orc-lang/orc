@@ -1,5 +1,5 @@
 //
-// CallHandle.scala -- Scala class/trait/object CallHandle
+// CallHandle.scala -- Scala class CallHandle
 // Project OrcScala
 //
 // $Id$
@@ -13,43 +13,41 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
+
 import orc.error.OrcException
 import orc.Handle
 
-/**
- * 
- * An abstract call handle for any call made by a token.
- *
- * @author dkitchin
- */
+/** An abstract call handle for any call made by a token.
+  *
+  * @author dkitchin
+  */
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   protected var state: CallState = CallInProgress
-  
+
   /* Returns true if the state transition was made, 
    * false otherwise (e.g. if the handle was already in a final state)
    */
   protected def setState(newState: CallState): Boolean = {
     synchronized {
-      if (isLive) { 
+      if (isLive) {
         state = newState
         caller.schedule()
         true
-      }
-      else { 
-        false 
+      } else {
+        false
       }
     }
   }
-    
+
   def publish(v: AnyRef) { setState(CallReturnedValue(v)) }
-  def halt() { setState(CallSilent) }   
+  def halt() { setState(CallSilent) }
   def !!(e: OrcException) { setState(CallRaisedException(e)) }
 
   def notifyOrc(event: orc.OrcEvent) {
-    synchronized { 
-      if (isLive) { 
-        caller.notifyOrc(event) 
+    synchronized {
+      if (isLive) {
+        caller.notifyOrc(event)
       }
     }
   }
@@ -61,20 +59,20 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
       state = CallWasKilled
     }
   }
-  
+
   def check(t: Token) {
     // TODO: Synchrony may be unnecessary here, since check should only be called from one listener. 
     synchronized {
       state match {
         case CallInProgress => { throw new AssertionError("Spurious check") }
         case CallReturnedValue(v) => { t.publish(v) }
-        case CallSilent => {  t.halt() }
+        case CallSilent => { t.halt() }
         case CallRaisedException(e) => { t !! e }
         case CallWasKilled => { throw new AssertionError("Spurious check") }
       }
     }
   }
-  
+
 }
 
 /** Possible states of a CallHandle */

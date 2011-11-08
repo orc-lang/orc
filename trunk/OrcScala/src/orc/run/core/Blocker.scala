@@ -1,5 +1,5 @@
 //
-// Blocker.scala -- Scala class/trait/object Blocker
+// Blocker.scala -- Scala trait Blocker
 // Project OrcScala
 //
 // $Id$
@@ -15,10 +15,8 @@
 package orc.run.core
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 trait Blocker {
   /* 
    * When a token blocked on this resource is scheduled,

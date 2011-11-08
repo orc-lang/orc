@@ -1,5 +1,5 @@
 //
-// Binding.scala -- Scala class/trait/object Binding
+// Binding.scala -- Scala trait Binding and subclasses
 // Project OrcScala
 //
 // $Id$
@@ -15,13 +15,15 @@
 package orc.run.core
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 trait Binding
 
-
+/**  */
 case class BoundValue(v: AnyRef) extends Binding
+
+/**  */
 case class BoundFuture(g: PruningGroup) extends Binding
+
+/**  */
 case object BoundStop extends Binding

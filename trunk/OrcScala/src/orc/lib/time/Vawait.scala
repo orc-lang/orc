@@ -1,5 +1,5 @@
 //
-// Vawait.scala -- Scala class/trait/object Vawait
+// Vawait.scala -- Scala object Vawait
 // Project OrcScala
 //
 // $Id$
@@ -15,19 +15,17 @@
 package orc.lib.time
 
 import orc.Handle
-import orc.values.sites.Site1
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
+import orc.values.sites.Site1
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 object Vawait extends Site1 with VirtualClockOperation {
   // Do not invoke directly.
-  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }  
-  
+  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }
+
   // Will become quiescent if enqueued
   override val quiescentWhileInvoked: Boolean = false
 }

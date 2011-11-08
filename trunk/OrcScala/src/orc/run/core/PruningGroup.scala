@@ -1,5 +1,5 @@
 //
-// PruningGroup.scala -- Scala class/trait/object PruningGroup
+// PruningGroup.scala -- Scala class PruningGroup
 // Project OrcScala
 //
 // $Id$
@@ -13,19 +13,17 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
+
 import orc.Schedulable
 
-/**
- * 
- * A PruningGroup is the group associated with expression g in (f <x< g).
- *
- * @author dkitchin
- */
-
+/** A PruningGroup is the group associated with expression g in (f <x< g).
+  *
+  * @author dkitchin
+  */
 class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   val quiescentWhileBlocked = true
-  
+
   var state: PruningGroupState = RightSideUnknown(Nil)
 
   def publish(t: Token, v: AnyRef) = synchronized {
@@ -62,7 +60,7 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
       }
     }
   }
-  
+
   def check(t: Token) {
     synchronized {
       state match {
@@ -74,7 +72,6 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
   }
 
 }
-
 
 /** Possible states of a PruningGroup */
 class PruningGroupState
