@@ -2,7 +2,7 @@
 // BlockableMapExtension.scala -- Scala object BlockableMapExtension
 // Project OrcScala
 //
-// $Id: BlockableMapExtension.scala 2773 2011-04-20 01:12:36Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on May 19, 2010.
 //
