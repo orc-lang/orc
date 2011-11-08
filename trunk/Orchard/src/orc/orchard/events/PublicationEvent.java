@@ -150,9 +150,9 @@ public class PublicationEvent extends JobEvent {
 			return ((scala.math.BigInt) value).bigInteger();
 		} else if (value instanceof OrcValue) {
 			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), ((OrcValue) value).toOrcSyntax());
-		} else if (value instanceof orc.run.Orc.Closure) {
+		} else if (value instanceof orc.run.core.Closure) {
 			//TODO:Is there any useful way to marshall this?
-			final orc.run.Orc.Closure closure = (orc.run.Orc.Closure) value;
+			final orc.run.core.Closure closure = (orc.run.core.Closure) value;
 			return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), "{- " + closure.defs().size() + " defs closed over " + closure.lexicalContext().size() + " bindings -}");
 		} else if (value instanceof scala.Some) {
 			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).x()) + ")");

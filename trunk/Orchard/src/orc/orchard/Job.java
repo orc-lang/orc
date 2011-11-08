@@ -39,6 +39,7 @@ import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
+import orc.run.core.SiteCallHandle;
 import scala.util.parsing.input.Positional;
 
 /**
@@ -300,12 +301,7 @@ public final class Job implements JobMBean {
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
 		try {
-			final scala.Option<Orc.Token> listener = ((Orc.SiteCallHandle) callHandle).listener();
-			if (listener.isDefined()) {
-				return ((JobEngine) ((Orc.Token) (listener.get())).runtime()).getJob();
-			} else {
-				return null;
-			}
+			return ((JobEngine)(((SiteCallHandle) callHandle).caller()).runtime()).getJob();
 		} catch (final ClassCastException e) {
 			throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
 		}
