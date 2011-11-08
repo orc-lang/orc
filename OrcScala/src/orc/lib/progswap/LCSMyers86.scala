@@ -92,7 +92,7 @@ object LCSMyers86 extends LCS {
     }
     /* LCS should have been found by now. See Myers (1986, p. 256). */
     throw new java.lang.AssertionError("LCS: Fell out of bottom of loop")
-    (seq1.take(0), seq2.take(0))
+    //(seq1.take(0), seq2.take(0))
   }
 
   protected def backtrack[A, B](seq1: Seq[A], seq2: Seq[B], isEqual: (A, B) => Boolean, endPoint: Array[Array[Int]], dPathLen: Int, diagNum: Int): (Seq[A], Seq[B]) = {

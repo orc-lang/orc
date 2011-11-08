@@ -19,11 +19,12 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
-
 import orc.Handle
 import orc.OrcExecutionOptions
 import orc.run.Orc
 import orc.run.Logger
+import orc.run.core.GroupMember
+import orc.Schedulable
 
 /**
  * An Orc runtime engine extension which
@@ -36,27 +37,21 @@ trait OrcWithThreadPoolScheduler extends Orc {
   private var executor: OrcRunner = null
   private val executorLock = new Object()
 
-  override def schedule(ts: List[GroupMember with Runnable]) {
+  override def schedule(ts: List[Schedulable]) {
     ts.foreach(schedule(_))
   }
 
-  override def schedule(t: GroupMember with Runnable, u: GroupMember with Runnable) {
+  override def schedule(t: Schedulable, u: Schedulable) {
     schedule(t)
     schedule(u)
   }
 
-  override def schedule(t: GroupMember with Runnable) {
+  override def schedule(t: Schedulable) {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
     }
-    executor.execute(t, false)
-  }
-
-  override def schedule(h: Handle) {
-    if (executor == null) {
-      throw new IllegalStateException("Cannot schedule a task without an inited executor")
-    }
-    executor.execute(h, true)
+    t.onSchedule() 
+    executor.executeTask(t)
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
@@ -111,9 +106,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
  * @author jthywiss
  */
 trait OrcRunner {
-
-  type Task = Runnable
-
+  
   /** Begin executing submitted tasks */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
@@ -122,7 +115,7 @@ trait OrcRunner {
   /** Submit task for execution */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def execute(task: Task, taskMayBlock: Boolean): Unit
+  def executeTask(task: Schedulable): Unit
 
   /** Orderly shutdown; let running & enqueued tasks complete */
   @throws(classOf[IllegalStateException])
@@ -134,7 +127,7 @@ trait OrcRunner {
    */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def shutdownNow(): java.util.List[Task]
+  def shutdownNow(): java.util.List[Runnable]
 
   @throws(classOf[InterruptedException])
   def awaitTermination(timeoutMillis: Long): Boolean
@@ -188,12 +181,20 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     }
   }
 
-  override def execute(task: Task, taskMayBlock: Boolean): Unit = {
+  def executeTask(task: Schedulable): Unit = {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
     //FIXME: Don't allow blocking tasks to consume all worker threads
-    super.execute(task)
+    execute(task)
+  }
+  
+  override def afterExecute(r: Runnable, t: Throwable): Unit = {
+    super.afterExecute(r,t)
+    r match {
+      case s: Schedulable => s.onComplete()
+      case _ => {}
+    }
   }
 
   def awaitTermination(timeoutMillis: Long) = {

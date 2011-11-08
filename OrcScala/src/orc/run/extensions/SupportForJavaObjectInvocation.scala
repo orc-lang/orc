@@ -35,5 +35,12 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
       }
     }
   }
+  
+  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
+    v match {
+      case v : OrcValue => super.quiescentWhileInvoked(v)
+      case _ => false
+    }
+  }
 
 }

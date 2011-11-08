@@ -15,6 +15,12 @@ package orc.lib.progswap
 import orc.ast.AST
 import orc.run.extensions.SwappableASTs
 import orc.run.Orc
+import orc.run.core.BoundValue
+import orc.run.core.Token
+import orc.run.core.Closure
+import orc.run.core.Binding
+import orc.run.core.FunctionFrame
+import orc.run.core.SequenceFrame
 
 /**
  * Edit operation that is a deletion of a node.
@@ -23,29 +29,29 @@ import orc.run.Orc
  */
 case class DeleteNode[A <: AST](deletedNode: A, oldParent: A) extends AstEditOperation {
 
-  def tokenCracker(token: Orc#Token): SwappableASTs#Token = token.asInstanceOf[SwappableASTs#Token]
+  def tokenCracker(token: Token): Token = token.asInstanceOf[Token]
 
-  def isTokenAffected(token: Orc#Token): Boolean = {
+  def isTokenAffected(token: Token): Boolean = {
     /* Token at deleted node */
-    (tokenCracker(token).node == deletedNode) ||
+    (tokenCracker(token).getNode() == deletedNode) ||
     /* Token has deleted node in a closure */
-    checkClosures(tokenCracker(token).env, Nil) ||
+    checkClosures(tokenCracker(token).getEnv(), Nil) ||
     /* Token has deleted node on its stack */
     checkFrameStack(token)
   }
   
-  private def checkClosures(bindings: List[SwappableASTs#Binding], completedClosures: List[SwappableASTs#Closure]): Boolean = {
+  private def checkClosures(bindings: List[Binding], completedClosures: List[Closure]): Boolean = {
     for (binding <- bindings)
       binding match {
-        case bv: SwappableASTs#BoundValue => {
+        case bv: BoundValue => {
           bv.v match {
-            case c: SwappableASTs#Closure => {
+            case c: Closure => {
               for (d <- c.defs) if (d == deletedNode) return true
               // Filter recursive bindings
               val cEnv = c.lexicalContext filterNot {
-                  case bv2: SwappableASTs#BoundValue => {
+                  case bv2: BoundValue => {
                     bv2.v match {
-                      case c2: SwappableASTs#Closure => completedClosures.contains(c2)
+                      case c2: Closure => completedClosures.contains(c2)
                     }
                   }
                   case _ => false
@@ -60,21 +66,21 @@ case class DeleteNode[A <: AST](deletedNode: A, oldParent: A) extends AstEditOpe
     return false
   }
 
-  private def checkFrameStack(token: Orc#Token): Boolean = {
-    for (frame <- tokenCracker(token).stack) {
+  private def checkFrameStack(token: Token): Boolean = {
+    for (frame <- tokenCracker(token).getStack()) {
       frame match {
-        case sf: SwappableASTs#SequenceFrame if (sf.node == deletedNode) => return true
-        case ff: SwappableASTs#FunctionFrame if (ff.callpoint == deletedNode) => return true
+        case sf: SequenceFrame if (sf.node == deletedNode) => return true
+        case ff: FunctionFrame if (ff.callpoint == deletedNode) => return true
         case _ => { }
       }
     }
     return false
   }
 
-  def isTokenSafe(token: Orc#Token): Boolean = { true }//!isTokenAffected(token) }
+  def isTokenSafe(token: Token): Boolean = { true }//!isTokenAffected(token) }
 
-  def migrateToken(token: Orc#Token): Boolean = {
-    if (tokenCracker(token).node == deletedNode) {
+  def migrateToken(token: Token): Boolean = {
+    if (tokenCracker(token).getNode() == deletedNode) {
       Console.err.println(">>Delete " + token + " at " + deletedNode)
       tokenCracker(token).kill
       true
@@ -83,8 +89,8 @@ case class DeleteNode[A <: AST](deletedNode: A, oldParent: A) extends AstEditOpe
     }
   }
 
-  def migrateClosures(token: Orc#Token) { /*FIXME*/ }
+  def migrateClosures(token: Token) { /*FIXME*/ }
 
-  def migrateFrameStack(token: Orc#Token) { /*FIXME*/ }
+  def migrateFrameStack(token: Token) { /*FIXME*/ }
 
 }

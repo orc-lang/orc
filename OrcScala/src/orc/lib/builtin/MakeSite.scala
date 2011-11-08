@@ -24,12 +24,22 @@ import orc.types.UnaryCallableType
 import orc.types.FunctionType
 import orc.types.Type
 import orc.run.extensions.InstanceEvent
+import orc.error.runtime.ArgumentTypeMismatchException
+import orc.run.extensions.InstanceEvent
+import orc.run.extensions.InstanceEvent
+import orc.run.core.Closure
+import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
 object MakeSite extends TotalSite1 with TypedSite {
   override def name = "MakeSite"
-  def eval(arg: AnyRef) = new RunLikeSite(arg)
+  def eval(arg: AnyRef) = { 
+    arg match {
+      case c: Closure => new RunLikeSite(c)
+      case _ => throw new ArgumentTypeMismatchException(0, "Closure", arg.getClass().getCanonicalName())
+    }
+  }
   
   def orcType() = new UnaryCallableType {
      def call(argType: Type): Type = {
@@ -44,7 +54,7 @@ object MakeSite extends TotalSite1 with TypedSite {
 
 // Standalone class execution
 
-class RunLikeSite(closure: AnyRef) extends UntypedSite {
+class RunLikeSite(closure: Closure) extends UntypedSite {
   
   override def name = "class " + Format.formatValue(closure)
    
