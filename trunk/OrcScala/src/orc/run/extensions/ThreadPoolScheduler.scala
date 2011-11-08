@@ -55,6 +55,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
   }
 
   override def startScheduler(options: OrcExecutionOptions) {
+    Logger.entering(getClass().getCanonicalName(), "startScheduler")
     executorLock synchronized {
       if (executor == null) {
         executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
@@ -69,6 +70,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
    * @see orc.run.Orc#stop()
    */
   override def stopScheduler() {
+    Logger.entering(getClass().getCanonicalName(), "stopScheduler")
     executorLock synchronized {
       if (executor != null) {
         try {
@@ -87,7 +89,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
           }
         } catch {
           case e: InterruptedException => {
-            Logger.warning("Thread \""+Thread.currentThread().getName()+"\" interrupted when stopping scheduler")
+            Logger.warning("Thread \""+Thread.currentThread().getName()+"\" interrupted when stopping scheduler (perhaps a double-shutdown), will now force shutdown without waiting")
             // Do what we can to force a shutdown
             executor.shutdownNow()
             throw e;
