@@ -14,9 +14,12 @@
 //
 package orc.run.core
 
+import java.util.logging.Level
+
 import orc.{PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedEvent, CaughtEvent}
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
+import orc.run.Logger
 
 /** An execution is a special toplevel group,
   * associated with the entire program.
@@ -50,7 +53,7 @@ class Execution(
 
   val oldHandler = eventHandler
   eventHandler = {
-    case e @ CaughtEvent(_: Error) => { runtime.stop; oldHandler(e) }
+    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Java Error: Stopping Orc runtime", je); runtime.stop; oldHandler(e) }
     case e @ CaughtEvent(_: TokenError) => { kill(); oldHandler(e) }
     case e => oldHandler(e)
   }
