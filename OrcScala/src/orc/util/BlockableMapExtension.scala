@@ -15,23 +15,21 @@
 
 package orc.util
 
-/**
- * 
- * Adds the blockableMap method to Lists.
- * 
- * xs.blockableMap(f)(k) calls f(x)(g) on each element x of xs,
- * where g is a function that captures a mapped value y and
- * continues the evaluation of blockableMap.
- * 
- * Once the evaluation of blockableMap reaches the end of the list, 
- * k is invoked on the assembled list of mapped values y.
- * 
- * This method is used to map over a list of potentially blocking
- * entities. It uses the continuation g to resume mapping after blocking
- * on an element.
- *
- * @author dkitchin
- */
+/** Adds the blockableMap method to Lists.
+  *
+  * xs.blockableMap(f)(k) calls f(x)(g) on each element x of xs,
+  * where g is a function that captures a mapped value y and
+  * continues the evaluation of blockableMap.
+  *
+  * Once the evaluation of blockableMap reaches the end of the list,
+  * k is invoked on the assembled list of mapped values y.
+  *
+  * This method is used to map over a list of potentially blocking
+  * entities. It uses the continuation g to resume mapping after blocking
+  * on an element.
+  *
+  * @author dkitchin
+  */
 object BlockableMapExtension {
 
   class ListWithBlockableMap[X](xs: List[X]) {
@@ -45,7 +43,7 @@ object BlockableMapExtension {
       walk(xs, Nil)
     }
   }
-  
+
   implicit def addBlockableMapToList[A](xs: List[A]) = new ListWithBlockableMap(xs)
 
 }

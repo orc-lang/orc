@@ -1,5 +1,5 @@
 //
-// Subgroup.scala -- Scala class/trait/object Subgroup
+// Subgroup.scala -- Scala class Subgroup
 // Project OrcScala
 //
 // $Id$
@@ -16,16 +16,13 @@ package orc.run.core
 
 import orc.{OrcEvent, CaughtEvent}
 
-
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 abstract class Subgroup(parent: Group) extends Group {
 
   override def kill() = synchronized { super.kill(); parent.remove(this) }
-  
+
   def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
 
   def run() {
@@ -36,9 +33,9 @@ abstract class Subgroup(parent: Group) extends Group {
       case e => { notifyOrc(CaughtEvent(e)) }
     }
   }
-  
+
   override val root = parent.root
-  
+
   val runtime = parent.runtime
 
   parent.add(this)

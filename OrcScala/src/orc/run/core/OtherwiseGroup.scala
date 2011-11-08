@@ -1,5 +1,5 @@
 //
-// OtherwiseGroup.scala -- Scala class/trait/object OtherwiseGroup
+// OtherwiseGroup.scala -- Scala class OtherwiseGroup
 // Project OrcScala
 //
 // $Id$
@@ -14,18 +14,16 @@
 //
 package orc.run.core
 
-/**
- * 
- * An OtherwiseGroup is the group associated with expression f in (f ; g)
- *
- * @author dkitchin
- */
+/** An OtherwiseGroup is the group associated with expression f in (f ; g)
+  *
+  * @author dkitchin
+  */
 class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
 
   val quiescentWhileBlocked = true
-  
+
   var state: OtherwiseGroupState = LeftSideUnknown(t)
-  
+
   t.blockOn(this)
 
   def publish(t: Token, v: AnyRef) {
@@ -49,7 +47,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
     }
     parent.remove(this)
   }
-      
+
   def check(t: Token) {
     synchronized {
       state match {

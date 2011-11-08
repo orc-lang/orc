@@ -1,5 +1,5 @@
 //
-// SiteCallHandle.scala -- Scala class/trait/object SiteCallHandle
+// SiteCallHandle.scala -- Scala class SiteCallHandle
 // Project OrcScala
 //
 // $Id$
@@ -13,42 +13,36 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
-import orc.error.OrcException
-import orc.Handle
-import orc.CaughtEvent
-import orc.OrcRuntime
-import orc.Schedulable
 
-/**
- *
- * A call handle specific to site calls.
- * Scheduling this call handle will invoke the site.
- *
- * @author dkitchin
- */
+import orc.{Schedulable, CaughtEvent}
+import orc.error.OrcException
+
+/** A call handle specific to site calls.
+  * Scheduling this call handle will invoke the site.
+  *
+  * @author dkitchin
+  */
 class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
 
   var invocationThread: Option[Thread] = None
-  
+
   val governingClock = {
-    if (caller.runtime.quiescentWhileInvoked(calledSite)) { 
-      None 
-    } 
-    else { 
-      caller.getClock() 
-    } 
+    if (caller.runtime.quiescentWhileInvoked(calledSite)) {
+      None
+    } else {
+      caller.getClock()
+    }
   }
-  
+
   def run() {
     try {
       if (synchronized {
         if (isLive) {
           invocationThread = Some(Thread.currentThread)
-        } 
+        }
         isLive
-      }) 
-      {
-        caller.runtime.invoke(this, calledSite, actuals)  
+      }) {
+        caller.runtime.invoke(this, calledSite, actuals)
       }
     } catch {
       case e: OrcException => this !! e
@@ -60,12 +54,12 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
       }
     }
   }
-  
+
   /* When a site call handle is scheduled, notify its clock accordingly. */
   override def onSchedule() {
     governingClock foreach { _.unsetQuiescent() }
   }
-  
+
   /* NOTE: We do not override onComplete. A site call is not 'complete' until
    * the listener token is reawakened. Instead, we override the setState method.
    */
@@ -82,7 +76,7 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
       success
     }
   }
-  
+
   override def kill() {
     synchronized {
       super.kill()

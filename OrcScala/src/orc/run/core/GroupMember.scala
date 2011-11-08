@@ -1,5 +1,5 @@
 //
-// GroupMember.scala -- Scala class/trait/object GroupMember
+// GroupMember.scala -- Scala trait GroupMember
 // Project OrcScala
 //
 // $Id$
@@ -13,14 +13,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
-import orc.OrcEvent
-import orc.Schedulable
+
+import orc.{Schedulable, OrcEvent}
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 trait GroupMember extends Schedulable {
   def kill(): Unit
   def suspend(): Unit

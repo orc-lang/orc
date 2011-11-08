@@ -1,5 +1,5 @@
 //
-// Token.scala -- Scala class/trait/object Token
+// Token.scala -- Scala class Token
 // Project OrcScala
 //
 // $Id$
@@ -14,48 +14,35 @@
 //
 package orc.run.core
 
-import orc.ast.oil.nameless._
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.StackLimitReachedError
-import orc.error.runtime.TokenException
+import orc.{Schedulable, OrcRuntime, OrcEvent, CaughtEvent}
+import orc.ast.oil.nameless.{Variable, UnboundVariable, Stop, Sequence, Prune, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument}
+import orc.error.runtime.{TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException}
 import orc.error.OrcException
-import orc.lib.time.Vawait
-import orc.lib.time.Vclock
-import orc.lib.time.Vtime
+import orc.lib.time.{Vtime, Vclock, Vawait}
+import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
-import orc.values.Field
-import orc.CaughtEvent
-import orc.OrcEvent
-import orc.OrcRuntime
-import orc.Schedulable
-import orc.values.OrcRecord
-import orc.values.Signal
-import orc.util.BlockableMapExtension._
+import orc.values.{Signal, OrcRecord, Field}
 
 /**
- * 
- *
- * @author dkitchin
- */
-
+  * @author dkitchin
+  */
 class Token protected (
   protected var node: Expression,
   protected var stack: List[Frame] = Nil,
   protected var env: List[Binding] = Nil,
   protected var group: Group,
   protected var clock: Option[VirtualClock] = None,
-  protected var state: TokenState = Live) 
-extends GroupMember with Schedulable {
+  protected var state: TokenState = Live)
+  extends GroupMember with Schedulable {
 
   var functionFramesPushed: Int = 0
-  
+
   val runtime: OrcRuntime = group.runtime
   val options = group.root.options
-  
+
   /** Execution of a token cannot indefinitely block the executing thread. */
   override val nonblocking = true
-  
+
   /** Public constructor */
   def this(start: Expression, g: Group) = {
     this(node = start, group = g, stack = List(GroupFrame))
@@ -68,12 +55,11 @@ extends GroupMember with Schedulable {
     env: List[Binding] = env,
     group: Group = group,
     clock: Option[VirtualClock] = clock,
-    state: TokenState = state): Token = 
-  {
-    new Token(node, stack, env, group, clock, state)
-  }
-  
-  
+    state: TokenState = state): Token =
+    {
+      new Token(node, stack, env, group, clock, state)
+    }
+
   /*
    * On creation: Add a token to its group if it is not halted or killed.
    */
@@ -81,19 +67,18 @@ extends GroupMember with Schedulable {
     case Publishing(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
     case Halted | Killed => {}
   }
-  
-  /**
-   * Change this token's state.
-   * 
-   * Return true if the token's state was successfully set
-   * to the requested state.
-   * 
-   * Return false if the token's state was already Killed.
-   */
-  protected def setState(newState: TokenState): Boolean =  {
+
+  /** Change this token's state.
+    *
+    * Return true if the token's state was successfully set
+    * to the requested state.
+    *
+    * Return false if the token's state was already Killed.
+    */
+  protected def setState(newState: TokenState): Boolean = {
     /* Record the previous state */
     val oldState = state
-    
+
     /* 
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
@@ -101,43 +86,37 @@ extends GroupMember with Schedulable {
     synchronized {
       if (state != Killed) { state = newState } else { return false }
     }
-    
+
     /* The state change did take effect. */
     true
   }
-      
-  
+
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
     clock foreach { _.unsetQuiescent() }
   }
-  
+
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
     clock foreach { _.setQuiescent() }
   }
-  
-  /**
-   * 
-   * Pass an event to this token's enclosing group.
-   * 
-   * This method is asynchronous:
-   * it may be called from a thread other than 
-   * the thread currently running this token.
-   * 
-   */
+
+  /** Pass an event to this token's enclosing group.
+    *
+    * This method is asynchronous:
+    * it may be called from a thread other than
+    * the thread currently running this token.
+    *
+    */
   def notifyOrc(event: OrcEvent) { group.notifyOrc(event) }
 
-
-  /**
-   * 
-   * Kill this token.
-   * 
-   * This method is asynchronous:
-   * it may be called from a thread other than 
-   * the thread currently running this token.
-   * 
-   */
+  /** Kill this token.
+    *
+    * This method is asynchronous:
+    * it may be called from a thread other than
+    * the thread currently running this token.
+    *
+    */
   def kill() {
     def collapseState(victimState: TokenState) {
       victimState match {
@@ -153,15 +132,13 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * 
-   * Make this token block on some resource.
-   * 
-   * This method is synchronous:
-   * it must only be called from a thread that is currently 
-   * executing the run() method of this token.
-   * 
-   */
+  /** Make this token block on some resource.
+    *
+    * This method is synchronous:
+    * it must only be called from a thread that is currently
+    * executing the run() method of this token.
+    *
+    */
   def blockOn(blocker: Blocker) {
     state match {
       case Live => setState(Blocked(blocker))
@@ -170,17 +147,14 @@ extends GroupMember with Schedulable {
     }
   }
 
-  
-  /**
-   * 
-   * Unblock a token that is currently blocked on some resource.
-   * Schedule the token to run.
-   * 
-   * This method is synchronous:
-   * it must only be called from a thread that is currently 
-   * executing the run() method of this token.
-   * 
-   */
+  /** Unblock a token that is currently blocked on some resource.
+    * Schedule the token to run.
+    *
+    * This method is synchronous:
+    * it must only be called from a thread that is currently
+    * executing the run() method of this token.
+    *
+    */
   def unblock() {
     state match {
       case Blocked(_) => {
@@ -197,15 +171,13 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * 
-   * Suspend the token in preparation for a program rewrite.
-   * 
-   * This method is asynchronous:
-   * it may be called from a thread other than 
-   * the thread currently running this token.
-   * 
-   */
+  /** Suspend the token in preparation for a program rewrite.
+    *
+    * This method is asynchronous:
+    * it may be called from a thread other than
+    * the thread currently running this token.
+    *
+    */
   def suspend() {
     state match {
       case Live | Blocked(_) | Publishing(_) => setState(Suspending(state))
@@ -213,15 +185,13 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * 
-   * Resume the token from suspension after a program rewrite.
-   * 
-   * This method is asynchronous:
-   * it may be called from a thread other than 
-   * the thread currently running this token.
-   * 
-   */
+  /** Resume the token from suspension after a program rewrite.
+    *
+    * This method is asynchronous:
+    * it may be called from a thread other than
+    * the thread currently running this token.
+    *
+    */
   def resume() {
     state match {
       case Suspending(prevState) => setState(prevState)
@@ -233,13 +203,13 @@ extends GroupMember with Schedulable {
   }
 
   def schedule() = runtime.schedule(this)
-  
+
   protected def fork() = synchronized { (this, copy()) }
 
   def move(e: Expression) = { node = e; this }
 
   def jump(context: List[Binding]) = { env = context; this }
-  
+
   protected def push(f: Frame) = { stack = f :: stack; this }
 
   def getGroup(): Group = { group }
@@ -247,7 +217,7 @@ extends GroupMember with Schedulable {
   def getEnv(): List[Binding] = { env }
   def getStack(): List[Frame] = { stack }
   def getClock(): Option[VirtualClock] = { clock }
-  
+
   def migrate(newGroup: Group) = {
     val oldGroup = group
     newGroup.add(this); oldGroup.remove(this)
@@ -255,16 +225,12 @@ extends GroupMember with Schedulable {
     this
   }
 
-  protected def join(newGroup: Group) = { 
+  protected def join(newGroup: Group) = {
     push(GroupFrame)
-    migrate(newGroup) 
+    migrate(newGroup)
     this
   }
 
-  
-  
-  
-  
   def bind(b: Binding) = {
     env = b :: env
     stack match {
@@ -277,7 +243,7 @@ extends GroupMember with Schedulable {
     }
     this
   }
-  
+
   def unbind(n: Int) = { env = env.drop(n); this }
 
   protected def lookup(a: Argument): Binding = {
@@ -288,13 +254,12 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * Attempt to resolve a binding to a value.
-   * When the binding resolves to v, call k(v).
-   * (If it is already resolved, k is called immediately)
-   *
-   * If the binding resolves to a halt, halt this token.
-   */
+  /** Attempt to resolve a binding to a value.
+    * When the binding resolves to v, call k(v).
+    * (If it is already resolved, k is called immediately)
+    *
+    * If the binding resolves to a halt, halt this token.
+    */
   protected def resolve(b: Binding)(k: AnyRef => Unit) {
     resolveOptional(b) {
       case Some(v) => k(v)
@@ -302,15 +267,14 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * Attempt to resolve a binding to a value.
-   * When the binding resolves to v, call k(Some(v)).
-   * (If it is already resolved, k is called immediately)
-   *
-   * If the binding resolves to a halt, call k(None).
-   *
-   * Note that resolving a closure also encloses its context.
-   */
+  /** Attempt to resolve a binding to a value.
+    * When the binding resolves to v, call k(Some(v)).
+    * (If it is already resolved, k is called immediately)
+    *
+    * If the binding resolves to a halt, call k(None).
+    *
+    * Note that resolving a closure also encloses its context.
+    */
   protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
     b match {
       case BoundValue(v) =>
@@ -329,11 +293,10 @@ extends GroupMember with Schedulable {
     }
   }
 
-  /**
-   * Create a new Closure object whose lexical bindings are all resolved and replaced.
-   * Such a closure will have no references to any group.
-   * This object is then passed to the continuation.
-   */
+  /** Create a new Closure object whose lexical bindings are all resolved and replaced.
+    * Such a closure will have no references to any group.
+    * This object is then passed to the continuation.
+    */
   protected def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
     def resolveBound(b: Binding)(k: Binding => Unit) =
       resolveOptional(b) {
@@ -343,9 +306,6 @@ extends GroupMember with Schedulable {
     bs.blockableMap(resolveBound)(k)
   }
 
-  
-  
-  
   protected def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
     if (params.size != d.arity) {
       this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
@@ -387,16 +347,15 @@ extends GroupMember with Schedulable {
     }
   }
 
-  
   protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]): Unit = {
     (vc, actuals) match {
-      case (`Vclock`,List(f)) => {
+      case (`Vclock`, List(f)) => {
         f match {
-          case totalf: TotalSite => { 
+          case totalf: TotalSite => {
             def ordering(x: AnyRef, y: AnyRef) = {
               // TODO: Add error handling, either here or in the scheduler.
               // A comparator error should kill the engine.
-              val i = totalf.evaluate(List(x,y)).asInstanceOf[Int]
+              val i = totalf.evaluate(List(x, y)).asInstanceOf[Int]
               assert(i == -1 || i == 0 || i == 1)
               i
             }
@@ -408,13 +367,13 @@ extends GroupMember with Schedulable {
           }
         }
       }
-      case (`Vawait`,List(t)) => {
+      case (`Vawait`, List(t)) => {
         clock match {
           case Some(cl) => cl.await(this, t)
           case None => halt()
         }
       }
-      case (`Vtime`,Nil) => {
+      case (`Vtime`, Nil) => {
         clock flatMap { _.now() } match {
           case Some(t) => publish(t)
           case None => halt()
@@ -423,7 +382,7 @@ extends GroupMember with Schedulable {
       case _ => throw new ArityMismatchException(vc.arity, actuals.size)
     }
   }
-  
+
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
     s match {
       case vc: VirtualClockOperation => {
@@ -461,17 +420,14 @@ extends GroupMember with Schedulable {
     }
   }
 
-  
-  
-  
   def run() {
     try {
       if (group.isKilled()) { kill() }
       state match {
         case Live => eval(node)
-        case Suspending(prevState) => setState(Suspended(prevState))      
+        case Suspending(prevState) => setState(Suspended(prevState))
         case Blocked(b) => b.check(this)
-        
+
         // TODO: Remove this state entirely to reduce scheduler pummeling
         //       and more faithfully replicate semantics.
         case Publishing(v) => {
@@ -490,15 +446,15 @@ extends GroupMember with Schedulable {
             }
           }
         }
-        
+
         case Killed => {} // This token was killed while it was on the schedule queue; ignore it
-        
+
         case Suspended(_) => throw new AssertionError("suspended token scheduled")
         case Halted => throw new AssertionError("halted token scheduled")
       }
     } catch {
       case e: OrcException => this !! e
-      case e: InterruptedException => { halt(); Thread.currentThread().interrupt() }  //Thread interrupt causes halt without notify
+      case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
       case e => { notifyOrc(CaughtEvent(e)); halt() }
     }
   }
@@ -576,7 +532,6 @@ extends GroupMember with Schedulable {
     }
   }
 
-
   def publish(v: AnyRef) {
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
@@ -595,7 +550,7 @@ extends GroupMember with Schedulable {
       case Halted | Killed => {}
     }
   }
-  
+
   def publish() { publish(Signal) }
 
   def halt() {
@@ -624,14 +579,13 @@ extends GroupMember with Schedulable {
 
 }
 
-
-
+/**  */
 trait TokenState {
   val isLive: Boolean
 }
 
 /** Token is ready to make progress */
-case object Live extends TokenState { 
+case object Live extends TokenState {
   val isLive = true
 }
 
@@ -641,7 +595,7 @@ case class Publishing(v: AnyRef) extends TokenState {
 }
 
 /** Token is waiting on another task */
-case class Blocked(blocker: Blocker) extends TokenState { 
+case class Blocked(blocker: Blocker) extends TokenState {
   val isLive = true
 }
 
@@ -664,4 +618,3 @@ case object Halted extends TokenState {
 case object Killed extends TokenState {
   val isLive = false
 }
-

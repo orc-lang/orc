@@ -1,5 +1,5 @@
 //
-// Frame.scala -- Scala class/trait/object Frame
+// Frame.scala -- Scala trait Frame and subclasses
 // Project OrcScala
 //
 // $Id$
@@ -17,20 +17,24 @@ package orc.run.core
 import orc.ast.oil.nameless.Expression
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 trait Frame {
   def apply(t: Token, v: AnyRef): Unit
 }
 
+/**
+  * @author dkitchin
+  */
 case class BindingFrame(n: Int) extends Frame {
   def apply(t: Token, v: AnyRef) {
     t.unbind(n).publish(v)
   }
 }
 
+/**
+  * @author dkitchin
+  */
 case class SequenceFrame(private[run] var _node: Expression) extends Frame {
   def node = _node
   def apply(t: Token, v: AnyRef) {
@@ -40,6 +44,9 @@ case class SequenceFrame(private[run] var _node: Expression) extends Frame {
   }
 }
 
+/**
+  * @author dkitchin
+  */
 case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding]) extends Frame {
   def callpoint = _callpoint
   def apply(t: Token, v: AnyRef) {
@@ -49,6 +56,9 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
   }
 }
 
+/**
+  * @author dkitchin
+  */
 case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
   def k = _k
   def apply(t: Token, v: AnyRef) {
@@ -57,6 +67,9 @@ case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit)) extends Frame {
   }
 }
 
+/**
+  * @author dkitchin
+  */
 case object GroupFrame extends Frame {
   def apply(t: Token, v: AnyRef) {
     t.getGroup().publish(t, v)

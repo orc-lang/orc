@@ -1,5 +1,5 @@
 //
-// Closure.scala -- Scala class/trait/object Closure
+// Closure.scala -- Scala class Closure
 // Project OrcScala
 //
 // $Id$
@@ -17,10 +17,8 @@ package orc.run.core
 import orc.ast.oil.nameless.Def
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 case class Closure(private[run] var _defs: List[Def], pos: Int, lexicalContext: List[Binding]) {
 
   def defs = _defs
