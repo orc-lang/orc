@@ -35,7 +35,7 @@ trait Group extends GroupMember {
 
   val runtime: OrcRuntime
 
-  var members: mutable.Buffer[GroupMember] = mutable.Buffer()
+  var members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
   var alive = true
 
   def halt(t: Token) = synchronized { remove(t) }
