@@ -37,7 +37,6 @@ import orc.orchard.events.PrintlnEvent;
 import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
-import orc.run.Orc;
 import orc.run.StandardOrcRuntime;
 import orc.run.core.SiteCallHandle;
 import scala.util.parsing.input.Positional;
