@@ -56,7 +56,7 @@ trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
 trait OrcRuntimeProvides {
   @throws(classOf[ExecutionException])
   def run(e: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions): Unit
-  def stop: Unit
+  def stop(): Unit
 }
 
 /**

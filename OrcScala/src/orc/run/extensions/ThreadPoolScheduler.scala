@@ -83,7 +83,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
             if (!executor.awaitTermination(303000L)) {
               Logger.severe("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
-              // Depending on who called Orc.stop, this exception gets ignored, so don't count on it
+              // Depending on who called Orc.stop(), this exception gets ignored, so don't count on it
               throw new RuntimeException("Orc shutdown was unable to terminate "+executor.asInstanceOf[OrcThreadPoolExecutor].getPoolSize()+" worker threads")
             }
           }

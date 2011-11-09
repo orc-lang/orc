@@ -21,6 +21,12 @@ import orc.{OrcEvent, CaughtEvent}
   */
 abstract class Subgroup(parent: Group) extends Group {
 
+  override val runtime = parent.runtime
+
+  override val root = parent.root
+
+  parent.add(this)
+
   override def kill() = synchronized { super.kill(); parent.remove(this) }
 
   def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
@@ -33,11 +39,5 @@ abstract class Subgroup(parent: Group) extends Group {
       case e => { notifyOrc(CaughtEvent(e)) }
     }
   }
-
-  override val root = parent.root
-
-  val runtime = parent.runtime
-
-  parent.add(this)
 
 }

@@ -27,12 +27,12 @@ import orc.values.{Signal, OrcRecord, Field}
   * @author dkitchin
   */
 class Token protected (
-  protected var node: Expression,
-  protected var stack: List[Frame] = Nil,
-  protected var env: List[Binding] = Nil,
-  protected var group: Group,
-  protected var clock: Option[VirtualClock] = None,
-  protected var state: TokenState = Live)
+    protected var node: Expression,
+    protected var stack: List[Frame] = Nil,
+    protected var env: List[Binding] = Nil,
+    protected var group: Group,
+    protected var clock: Option[VirtualClock] = None,
+    protected var state: TokenState = Live)
   extends GroupMember with Schedulable {
 
   var functionFramesPushed: Int = 0
@@ -50,15 +50,14 @@ class Token protected (
 
   /** Copy constructor with defaults */
   private def copy(
-    node: Expression = node,
-    stack: List[Frame] = stack,
-    env: List[Binding] = env,
-    group: Group = group,
-    clock: Option[VirtualClock] = clock,
-    state: TokenState = state): Token =
-    {
-      new Token(node, stack, env, group, clock, state)
-    }
+      node: Expression = node,
+      stack: List[Frame] = stack,
+      env: List[Binding] = env,
+      group: Group = group,
+      clock: Option[VirtualClock] = clock,
+      state: TokenState = state): Token = {
+    new Token(node, stack, env, group, clock, state)
+  }
 
   /*
    * On creation: Add a token to its group if it is not halted or killed.
@@ -128,7 +127,10 @@ class Token protected (
     }
     synchronized {
       collapseState(state)
-      setState(Killed)
+      if (setState(Killed)) {
+        /* group.remove(this) conceptually runs here, but
+         * as an optimization, this is unnecessary. */
+      }
     }
   }
 
@@ -490,7 +492,7 @@ class Token protected (
       }
 
       case Prune(left, right) => {
-        val (l, r) = fork
+        val (l, r) = fork()
         val pg = new PruningGroup(group)
         l.bind(BoundFuture(pg))
         r.join(pg)

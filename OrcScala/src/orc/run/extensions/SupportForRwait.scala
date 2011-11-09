@@ -34,7 +34,7 @@ trait SupportForRwait extends Orc {
   
   val timer: Timer = new Timer()
   
-  override def stop = { timer.cancel() ; super.stop }
+  override def stop() = { timer.cancel() ; super.stop() }
   
   /* Note that all executions in a runtime with Rwait support
    * will share the same timer queue, so that we can stop the
