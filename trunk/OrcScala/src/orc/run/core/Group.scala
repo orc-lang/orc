@@ -72,9 +72,8 @@ trait Group extends GroupMember {
   }
 
   def add(m: GroupMember) {
-    //assert(!members.contains(m), "Double Group.add of "+m)
     synchronized {
-      //if (members.contains(m)) return
+      assert(!members.contains(m), "Double Group.add of "+m)
       members += m
     }
     m match {
@@ -87,8 +86,8 @@ trait Group extends GroupMember {
   }
 
   def remove(m: GroupMember) {
-    //assert(members.contains(m), "Double Group.remove of "+m)
     synchronized {
+      assert(members.contains(m), "Double Group.remove of "+m)
       members -= m
       if (members.isEmpty) { onHalt }
     }
