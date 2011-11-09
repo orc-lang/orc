@@ -27,24 +27,32 @@ import orc.error.runtime.TokenLimitReachedError
   */
 trait Group extends GroupMember {
 
-  def publish(t: Token, v: AnyRef): Unit
-  def onHalt(): Unit
-  def run(): Unit
-
   override val nonblocking = true
+
+  val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
 
   val runtime: OrcRuntime
 
-  var members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
-  var alive = true
+  /** Find the root of this group tree. */
+  val root: Execution
+
+  private var alive = true
+
+  def publish(t: Token, v: AnyRef): Unit
+  def onHalt(): Unit
+  def run(): Unit
 
   def halt(t: Token) = synchronized { remove(t) }
 
   def kill() = synchronized {
     if (alive) {
       alive = false
-      for (m <- members) { runtime.schedule(m) }
-      // TODO: null out members
+      for (m <- members) {
+        runtime.schedule(m)
+        /* Optimization: assume Tokens do not remove themselves from Groups */
+        if (root.options.maxTokens > 0 && m.isInstanceOf[Token]) root.tokenCount.decrementAndGet()
+      }
+      // TODO: members.clear() ?  Only needed for Tokens
     }
   }
 
@@ -64,7 +72,9 @@ trait Group extends GroupMember {
   }
 
   def add(m: GroupMember) {
+    //assert(!members.contains(m), "Double Group.add of "+m)
     synchronized {
+      if (members.contains(m)) return
       members += m
     }
     m match {
@@ -77,7 +87,9 @@ trait Group extends GroupMember {
   }
 
   def remove(m: GroupMember) {
+    //assert(members.contains(m), "Double Group.remove of "+m)
     synchronized {
+      if (!members.contains(m)) return
       members -= m
       if (members.isEmpty) { onHalt }
     }
@@ -92,8 +104,5 @@ trait Group extends GroupMember {
       case t: Token => List(t)
       case g: Group => g.inhabitants
     }
-
-  /* Find the root of this group tree. */
-  val root: Execution
 
 }
