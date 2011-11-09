@@ -30,13 +30,16 @@ class Execution(
   private[run] var _node: Expression,
   private[run] var _options: OrcExecutionOptions,
   private var eventHandler: OrcEvent => Unit,
-  val runtime: OrcRuntime)
+  override val runtime: OrcRuntime)
   extends Group {
 
-  def node = _node;
-  def options = _options;
+  override val root = this
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
+
+  def node = _node;
+
+  def options = _options;
 
   def publish(t: Token, v: AnyRef) {
     synchronized {
@@ -45,15 +48,20 @@ class Execution(
     }
   }
 
+  override def kill() = {
+    super.kill()
+    notifyOrc(HaltedEvent)
+  }
+
   def onHalt() {
     notifyOrc(HaltedEvent)
   }
 
-  def run() = { /* Do nothing. */ }
+  def run() = { assert(false, "Execution scheduled") }
 
   val oldHandler = eventHandler
   eventHandler = {
-    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Java Error: Stopping Orc runtime", je); runtime.stop; oldHandler(e) }
+    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Java Error -- killing Execution: ", je); kill(); oldHandler(e) }
     case e @ CaughtEvent(_: TokenError) => { kill(); oldHandler(e) }
     case e => oldHandler(e)
   }
@@ -64,7 +72,5 @@ class Execution(
   }
 
   def notifyOrc(event: OrcEvent) = { eventHandler(event) }
-
-  val root = this
 
 }
