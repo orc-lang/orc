@@ -224,6 +224,7 @@ class Token protected (
   def getClock(): Option[VirtualClock] = { clock }
 
   def migrate(newGroup: Group) = {
+    require(newGroup != group)
     val oldGroup = group
     newGroup.add(this); oldGroup.remove(this)
     group = newGroup
