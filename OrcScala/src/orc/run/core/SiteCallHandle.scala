@@ -58,6 +58,7 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
   /* When a site call handle is scheduled, notify its clock accordingly. */
   override def onSchedule() {
     governingClock foreach { _.unsetQuiescent() }
+    super.onSchedule()
   }
 
   /* NOTE: We do not override onComplete. A site call is not 'complete' until

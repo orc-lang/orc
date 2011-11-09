@@ -38,6 +38,7 @@ class Token protected (
   var functionFramesPushed: Int = 0
 
   val runtime: OrcRuntime = group.runtime
+
   val options = group.root.options
 
   /** Execution of a token cannot indefinitely block the executing thread. */
@@ -93,11 +94,13 @@ class Token protected (
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
     clock foreach { _.unsetQuiescent() }
+    super.onSchedule()
   }
 
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
     clock foreach { _.setQuiescent() }
+    super.onComplete()
   }
 
   /** Pass an event to this token's enclosing group.
