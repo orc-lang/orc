@@ -87,11 +87,12 @@ trait Group extends GroupMember {
 
   def remove(m: GroupMember) {
     synchronized {
-      assert(members.contains(m), "Double Group.remove of "+m)
       members -= m
       if (members.isEmpty) { onHalt }
     }
     m match {
+      /* NOTE: We rely on the fact that Tokens are not removed from their group when killed.
+       * Thus, there is not kill-halt race for tokens.  */
       case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
       case _ => {}
     }
