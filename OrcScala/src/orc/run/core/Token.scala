@@ -28,7 +28,7 @@ import orc.values.{Signal, OrcRecord, Field}
   */
 class Token protected (
     protected var node: Expression,
-    protected var stack: List[Frame] = Nil,
+    protected var stack: Frame = EmptyFrame,
     protected var env: List[Binding] = Nil,
     protected var group: Group,
     protected var clock: Option[VirtualClock] = None,
@@ -46,13 +46,13 @@ class Token protected (
 
   /** Public constructor */
   def this(start: Expression, g: Group) = {
-    this(node = start, group = g, stack = List(GroupFrame))
+    this(node = start, group = g, stack = GroupFrame(EmptyFrame))
   }
 
   /** Copy constructor with defaults */
   private def copy(
       node: Expression = node,
-      stack: List[Frame] = stack,
+      stack: Frame = stack,
       env: List[Binding] = env,
       group: Group = group,
       clock: Option[VirtualClock] = clock,
@@ -214,12 +214,36 @@ class Token protected (
 
   def jump(context: List[Binding]) = { env = context; this }
 
-  protected def push(f: Frame) = { stack = f :: stack; this }
-
+  protected def push(newStack: Frame) = { 
+    if (newStack.isInstanceOf[FunctionFrame]) {
+      functionFramesPushed = functionFramesPushed + 1
+      if (options.stackSize > 0 && functionFramesPushed > options.stackSize) {
+        this !! new StackLimitReachedError(options.stackSize)
+      }
+    }
+    stack = newStack
+    this 
+  }
+  
+  
+  /** Remove the top frame of this token's stack.
+    *
+    * This method is synchronous:
+    * it must only be called from a thread that is currently
+    * executing the run() method of this token.
+    *
+    */
+  def pop() = { 
+    if (stack.isInstanceOf[FunctionFrame]) {
+      functionFramesPushed = functionFramesPushed - 1
+    }
+    stack = stack.asInstanceOf[CompositeFrame].previous 
+  }
+  
   def getGroup(): Group = { group }
   def getNode(): Expression = { node }
   def getEnv(): List[Binding] = { env }
-  def getStack(): List[Frame] = { stack }
+  def getStack(): Frame = { stack }
   def getClock(): Option[VirtualClock] = { clock }
 
   def migrate(newGroup: Group) = {
@@ -231,7 +255,7 @@ class Token protected (
   }
 
   protected def join(newGroup: Group) = {
-    push(GroupFrame)
+    push(GroupFrame(stack))
     migrate(newGroup)
     this
   }
@@ -239,12 +263,12 @@ class Token protected (
   def bind(b: Binding) = {
     env = b :: env
     stack match {
-      case BindingFrame(n) :: fs => { stack = (new BindingFrame(n + 1)) :: fs }
+      case BindingFrame(n, previous) => { stack = BindingFrame(n+1, previous) }
 
       /* Tail call optimization (part 1 of 2) */
-      case FunctionFrame(_, _) :: fs if (!options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
+      case _ : FunctionFrame if (!options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
 
-      case fs => { stack = BindingFrame(1) :: fs }
+      case _ => { push(BindingFrame(1, stack)) }
     }
     this
   }
@@ -292,7 +316,7 @@ class Token protected (
         }
       case BoundStop => k(None)
       case BoundFuture(g) => {
-        stack = FutureFrame(k) :: stack
+        push(FutureFrame(k, stack))
         g read this
       }
     }
@@ -325,19 +349,12 @@ class Token protected (
        */
 
       /* Tail call optimization (part 2 of 2) */
-      stack match {
-        /*
-         * Push a new FunctionFrame
-         * only if the call is not a tail call.
-         */
-        case FunctionFrame(_, _) :: fs if (!options.disableTailCallOpt) => {}
-        case _ => {
-          functionFramesPushed = functionFramesPushed + 1
-          if (options.stackSize > 0 &&
-            functionFramesPushed > options.stackSize)
-            this !! new StackLimitReachedError(options.stackSize)
-          push(new FunctionFrame(node, env))
-        }
+      /*
+       * Push a new FunctionFrame
+       * only if the call is not a tail call.
+       */
+      if (!stack.isInstanceOf[FunctionFrame] || options.disableTailCallOpt) {
+        push(FunctionFrame(node, env, stack))
       }
 
       /* Jump into the function context */
@@ -346,7 +363,7 @@ class Token protected (
       /* Bind the args */
       for (p <- params) { bind(p) }
 
-      /* Jump into the function body */
+      /* Move into the function body */
       move(d.body)
       schedule()
     }
@@ -433,28 +450,8 @@ class Token protected (
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
         case Blocked(b) => b.check(this)
-
-        // TODO: Remove this state entirely to reduce scheduler pummeling
-        //       and more faithfully replicate semantics.
-        case Publishing(v) => {
-          if (setState(Live)) {
-            stack match {
-              case f :: fs => {
-                stack = fs
-                if (f.isInstanceOf[FunctionFrame]) {
-                  functionFramesPushed = functionFramesPushed - 1
-                }
-                f(this, v)
-              }
-              case Nil => {
-                throw new AssertionError("publish on an empty stack")
-              }
-            }
-          }
-        }
-
+        case Publishing(v) => if (setState(Live)) { stack(this, v) }
         case Killed => {} // This token was killed while it was on the schedule queue; ignore it
-
         case Suspended(_) => throw new AssertionError("suspended token scheduled")
         case Halted => throw new AssertionError("halted token scheduled")
       }
@@ -489,8 +486,7 @@ class Token protected (
       }
 
       case Sequence(left, right) => {
-        val frame = new SequenceFrame(right)
-        push(frame)
+        push(SequenceFrame(right, stack))
         move(left)
         schedule()
       }
@@ -574,7 +570,7 @@ class Token protected (
     e.setPosition(node.pos)
     e match {
       case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
-        val callPoints = stack collect { case f: FunctionFrame => f.callpoint.pos }
+        val callPoints = stack.toList collect { case f: FunctionFrame => f.callpoint.pos }
         te.setBacktrace(callPoints.toArray)
       }
       case _ => {} // Not a TokenException; no need to collect backtrace
