@@ -64,11 +64,11 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     // TODO: Synchrony may be unnecessary here, since check should only be called from one listener. 
     synchronized {
       state match {
-        case CallInProgress => { throw new AssertionError("Spurious check") }
+        case CallInProgress => { t.scheduledBy.printStackTrace(); throw new AssertionError("Spurious check of call handle. state="+this.state) }
         case CallReturnedValue(v) => { t.publish(v) }
         case CallSilent => { t.halt() }
         case CallRaisedException(e) => { t !! e }
-        case CallWasKilled => { throw new AssertionError("Spurious check") }
+        case CallWasKilled => { }
       }
     }
   }

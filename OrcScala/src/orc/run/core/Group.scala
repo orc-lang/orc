@@ -61,7 +61,7 @@ trait Group extends GroupMember {
    * A global check requires a linear-time
    * ascension of the group tree.
    */
-  def isKilled() = { !alive }
+  def isKilled() = synchronized { !alive }
 
   def suspend() = synchronized {
     for (m <- members) m.suspend()
@@ -91,8 +91,8 @@ trait Group extends GroupMember {
       if (members.isEmpty) { onHalt }
     }
     m match {
-      /* NOTE: We rely on the fact that Tokens are not removed from their group when killed.
-       * Thus, there is not kill-halt race for tokens.  */
+      /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
+       * Thus, there is no kill-halt multiple remove issue for tokens.  */
       case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
       case _ => {}
     }
