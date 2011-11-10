@@ -75,24 +75,22 @@ class Token protected (
     *
     * Return false if the token's state was already Killed.
     */
-  protected def setState(newState: TokenState): Boolean = {
-    /* Record the previous state */
-    val oldState = state
-
+  protected def setState(newState: TokenState): Boolean = synchronized {
     /* 
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
-    synchronized {
-      if (state != Killed) { state = newState } else { return false }
-    }
-
-    /* The state change did take effect. */
-    true
+    if (state != Killed) { state = newState; true } else false
   }
 
+  @volatile
+  var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
+  @volatile
+  var inQueue = false
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
+    scheduledBy = new Throwable("Task scheduled by")
+    if (inQueue && !group.isKilled()) Console.err.println("Token scheduled, inQueue && group alive, state="+state+"\n"+scheduledBy.toString()); inQueue = true
     clock foreach { _.unsetQuiescent() }
     super.onSchedule()
   }
@@ -131,8 +129,9 @@ class Token protected (
     synchronized {
       collapseState(state)
       if (setState(Killed)) {
-        /* group.remove(this) conceptually runs here, but
-         * as an optimization, this is unnecessary. */
+        /* group.remove(this) conceptually runs here, but as an optimization,
+         * this is unnecessary. Note that the current Group.remove implementation
+         * relies on this optimization for correctness of the tokenCount. */
       }
     }
   }
@@ -427,6 +426,7 @@ class Token protected (
   }
 
   def run() {
+    /*assert(inQueue, "Token run, !inQueue, state="+state);*/ inQueue = false
     try {
       if (group.isKilled()) { kill() }
       state match {
