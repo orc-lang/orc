@@ -83,14 +83,12 @@ class Token protected (
     if (state != Killed) { state = newState; true } else false
   }
 
-  @volatile
-  var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
-  @volatile
-  var inQueue = false
+  //@volatile
+  //var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
-    scheduledBy = new Throwable("Task scheduled by")
-    if (inQueue && !group.isKilled()) Console.err.println("Token scheduled, inQueue && group alive, state="+state+"\n"+scheduledBy.toString()); inQueue = true
+    //scheduledBy = new Throwable("Task scheduled by")
+    //if (runtime.asInstanceOf[OrcWithThreadPoolScheduler].executor.asInstanceOf[OrcThreadPoolExecutor].getQueue().contains(this) && !group.isKilled()) Console.err.println("Token scheduled, in queue, && group alive! state="+state+"\n"+scheduledBy.toString())
     clock foreach { _.unsetQuiescent() }
     super.onSchedule()
   }
@@ -442,8 +440,13 @@ class Token protected (
     }
   }
 
+  def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
+    testStack.length==4+offset && testStack(1+offset).getMethodName()=="runTask" ||
+    testStack(1+offset).getMethodName()=="eval" && testStack(2+offset).getMethodName()=="run" && stackOK(testStack, offset+2)
+
   def run() {
-    /*assert(inQueue, "Token run, !inQueue, state="+state);*/ inQueue = false
+    //val ourStack = new Throwable("Entering Token.run").getStackTrace()
+    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
     try {
       if (group.isKilled()) { kill() }
       state match {
