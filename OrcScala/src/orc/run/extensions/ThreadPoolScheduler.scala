@@ -34,7 +34,7 @@ import orc.Schedulable
  */
 trait OrcWithThreadPoolScheduler extends Orc {
 
-    var executor: OrcRunner = null
+  private var executor: OrcRunner = null
   private val executorLock = new Object()
 
   override def schedule(ts: List[Schedulable]) {
