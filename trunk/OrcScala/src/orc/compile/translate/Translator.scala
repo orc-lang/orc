@@ -443,7 +443,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           for ((name, `r`) <- bindingMap) {
             dcontext = dcontext + { (name, y) }
           }
-          targetConversion = targetConversion compose { _ < y < makeNth(bridge, i) }
+          targetConversion = targetConversion compose { makeNth(bridge, i)  > y >  _ }
         }
 
         (sourceConversion, dcontext, targetConversion)
