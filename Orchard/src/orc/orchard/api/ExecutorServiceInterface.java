@@ -80,6 +80,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 *             if registering this job would exceed quotas.
 	 * @throws InvalidOilException
 	 *             if the program is invalid.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public String submit(String devKey, String program) throws QuotaException, InvalidOilException, RemoteException;
 
@@ -87,19 +88,31 @@ public interface ExecutorServiceInterface extends Remote {
 	 * Combine compilation and submission into a single step.
 	 * This is useful for simple clients that don't want to
 	 * bother calling a separate compiler.
+	 *
+	 * @return String Job ID of new job.
+	 * @throws QuotaException
+	 *             if registering this job would exceed quotas.
+	 * @throws InvalidProgramException in case of compilation error.
+	 * @throws InvalidOilException
+	 *             if the program is invalid.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public String compileAndSubmit(String devKey, String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException;
 
 	/**
 	 * URIs of unfinished jobs started from this executor.
+	 *
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public Set<String> jobs(String devKey) throws RemoteException;
 
 	/**
 	 * Begin executing the job.
 	 * 
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
 	 * @throws InvalidJobStateException
 	 *             if the job was already started, or was aborted.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void startJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
 
@@ -111,16 +124,18 @@ public interface ExecutorServiceInterface extends Remote {
 	 * Once this method is called, the service provider is free to garbage
 	 * collect the service and the service URL may become invalid, so no other
 	 * methods should be called after this.
-	 * 
-	 * @throws InvalidJobStateException
-	 *             if the job is RUNNING or WAITING.
-	 * @throws RemoteException
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
-	public void finishJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
+	public void finishJob(String devKey, String job) throws InvalidJobException, RemoteException;
 
 	/**
 	 * Halt the job safely, using the same termination semantics as the "pull"
 	 * combinator.
+	 * 
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void haltJob(String devKey, String job) throws InvalidJobException, RemoteException;
 
@@ -130,7 +145,10 @@ public interface ExecutorServiceInterface extends Remote {
 	 * RUNNING: started and processing tokens.
 	 * BLOCKED: blocked because event buffer is full.
 	 * DONE: finished executing. 
+	 *
 	 * @return the current state of the job.
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public String jobState(String devKey, String job) throws InvalidJobException, RemoteException;
 
@@ -141,8 +159,10 @@ public interface ExecutorServiceInterface extends Remote {
 	 * 
 	 * <p>FIXME: ensure clients like web/orc.js can recover from connection timeouts.
 	 * 
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
 	 * @throws InterruptedException
 	 *             if the request times out.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public List<JobEvent> jobEvents(String devKey, String job) throws InvalidJobException, InterruptedException, RemoteException;
 
@@ -150,20 +170,27 @@ public interface ExecutorServiceInterface extends Remote {
 	 * Purge all events from the event buffer which have been returned by
 	 * jobEvents. The client is responsible for calling this method regularly to
 	 * keep the event buffer from filling up.
-	 * 
-	 * @throws RemoteException
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void purgeJobEvents(String devKey, String job) throws InvalidJobException, RemoteException;
 
 	/**
 	 * Submit a response to a prompt (initiated by the Prompt site).
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
 	 * @throws InvalidPromptException if the promptID is not valid.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void respondToPrompt(String devKey, String job, int promptID, String response) throws InvalidJobException, InvalidPromptException, RemoteException;
 
 	/**
 	 * Cancel a prompt (initiated by the Prompt site).
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
 	 * @throws InvalidPromptException if the promptID is not valid.
+	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void cancelPrompt(String devKey, String job, int promptID) throws InvalidJobException, InvalidPromptException, RemoteException;
 }
