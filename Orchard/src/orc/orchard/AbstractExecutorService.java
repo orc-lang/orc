@@ -104,7 +104,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	}
 
 	@Override
-	public void finishJob(final String devKey, final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
+	public void finishJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
 		logger.info("finishJob(" + devKey + ", " + job + ")");
 		getAccounts().getAccount(devKey).getJob(job).finish();
 	}
