@@ -200,6 +200,8 @@ public final class Job implements JobMBean {
 				Thread.currentThread().interrupt();
 			} catch (final OrcException e) {
 				jea.caught(e);
+            } catch (final InterruptedException e) {
+                /* We were stopped, just clean up (finally block below) */ 
 			} finally {
 				jea.halted();
 				stop(); // kill threads and reclaim resources

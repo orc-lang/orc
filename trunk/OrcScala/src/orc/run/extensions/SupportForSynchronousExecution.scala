@@ -27,7 +27,8 @@ import orc.error.runtime.ExecutionException
  * @author dkitchin
  */
 trait SupportForSynchronousExecution extends OrcRuntime {
-  
+  protected var runSyncThread: Thread = null
+
   /**
    * Wait for execution to complete, rather than dispatching asynchronously.
    * The continuation takes only values, not events.
@@ -35,6 +36,10 @@ trait SupportForSynchronousExecution extends OrcRuntime {
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
   def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
+    synchronized {
+      if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
+      runSyncThread = Thread.currentThread()
+    }
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
       event match {
@@ -47,6 +52,10 @@ trait SupportForSynchronousExecution extends OrcRuntime {
       this.run(node, syncAction, options)
       done.get
     } finally {
+      // Important: runSyncThread must be null before calling stop
+      synchronized {
+        runSyncThread = null
+      }
       this.stop()
     }
   }
@@ -57,5 +66,12 @@ trait SupportForSynchronousExecution extends OrcRuntime {
   def runSynchronous(node: Expression, options: OrcExecutionOptions) {
     runSynchronous(node, { _: OrcEvent => }, options)
   }
- 
+
+  abstract override def stop() = {
+    super.stop()
+    synchronized {
+      if (runSyncThread != null) runSyncThread.interrupt()
+    }
+  }
+
 }

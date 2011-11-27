@@ -157,7 +157,9 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
             } catch (final InterruptedException e) {
               Thread.currentThread().interrupt();
             } catch (final OrcException e) {
-				throw new OrcScriptException(e);
+              throw new OrcScriptException(e);
+            } catch (final InterruptedException e) {
+              throw new ScriptException(e);
 			} finally {
 				exec.stop(); // kill threads and reclaim resources
 				ctx.removeAttribute("context", ScriptContext.ENGINE_SCOPE);
