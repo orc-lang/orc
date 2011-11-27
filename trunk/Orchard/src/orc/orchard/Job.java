@@ -310,6 +310,12 @@ public final class Job implements JobMBean {
 		return id;
 	}
 
+	/**
+	 * Begin executing the job.
+	 * 
+	 * @throws InvalidJobStateException
+	 *             if the job was already started, or was aborted.
+	 */
 	public synchronized void start() throws InvalidJobStateException {
 		if (worker != null || events.isClosed()) {
 			throw new InvalidJobStateException(getState());
@@ -318,6 +324,15 @@ public final class Job implements JobMBean {
 		worker.start();
 	}
 
+	/**
+	 * Indicate that the client is done with the job. The job will be halted if
+	 * necessary.
+	 * 
+	 * <p>
+	 * Once this method is called, the service provider is free to garbage
+	 * collect the service and the service URL may become invalid, so no other
+	 * methods should be called after this.
+	 */
 	@Override
 	public synchronized void finish() {
 		halt();
@@ -339,6 +354,10 @@ public final class Job implements JobMBean {
 		finishers.add(f);
 	}
 
+	/**
+	 * Halt the job safely, using the same termination semantics as the "pull"
+	 * combinator.
+	 */
 	@Override
 	public synchronized void halt() {
 		if (engine != null) {
@@ -354,15 +373,31 @@ public final class Job implements JobMBean {
 	 * If no events have occurred, block using waiter until one occurs.
 	 * If/when the job completes (so no more events can occur), return
 	 * an empty list.
+	 * 
+	 * @throws InterruptedException
+	 *             if the request times out.
 	 */
 	public List<JobEvent> getEvents(final Waiter waiter) throws InterruptedException {
 		return events.get(waiter);
 	}
 
+	/**
+	 * Purge all events from the event buffer which have been returned by
+	 * jobEvents. The client is responsible for calling this method regularly to
+	 * keep the event buffer from filling up.
+	 */
 	public void purgeEvents() {
 		events.purge();
 	}
 
+	/**
+	 * What is the job's state? Possible return values:
+	 * NEW: not yet started.
+	 * RUNNING: started and processing tokens.
+	 * BLOCKED: blocked because event buffer is full.
+	 * DONE: finished executing. 
+	 * @return the current state of the job.
+	 */
 	@Override
 	public synchronized String getState() {
 		if (worker == null && !events.isClosed()) {
@@ -398,6 +433,10 @@ public final class Job implements JobMBean {
 		callback.respondToPrompt(response);
 	}
 
+	/**
+	 * Cancel a prompt (initiated by the Prompt site).
+	 * @throws InvalidPromptException if the promptID is not valid.
+	 */
 	public synchronized void cancelPrompt(final int promptID) throws InvalidPromptException {
 		final PromptCallback callback = pendingPrompts.get(promptID);
 		if (callback == null) {
