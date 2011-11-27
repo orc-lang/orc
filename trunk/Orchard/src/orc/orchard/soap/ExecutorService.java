@@ -148,7 +148,7 @@ public class ExecutorService extends AbstractExecutorService {
 	/** Do-nothing override. 
 	 * @throws InvalidJobException */
 	@Override
-	public void finishJob(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
+	public void finishJob(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InvalidJobException {
 		super.finishJob(devKey, job);
 	}
 
