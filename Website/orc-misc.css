@@ -3,6 +3,11 @@
  * $Id$
  */
 
+/* Position Orc logo */
+.title h1 img {
+    vertical-align: baseline;
+}
+
 /* For "Opens in new window" icon */
 .newWindowIcon {
     margin: 0;
