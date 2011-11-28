@@ -5,9 +5,9 @@
 
 /* For "Opens in new window" icon */
 .newWindowIcon {
-    margin: none;
+    margin: 0;
     border: none;
-    padding: none;
+    padding: 0;
 }
 
 /* For Orc in-line demos */
