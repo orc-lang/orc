@@ -97,7 +97,7 @@ object OrcForTesting {
       val future = new FutureTask[Unit](new Callable[Unit]() {
         def call() { compiledScript.run(eventActions) }
       });
-      new Thread(future, "Orc engine").start();
+      new Thread(future, "Orc Test Main Thread").start();
       try {
         try {
           future.get(timeout, SECONDS);
