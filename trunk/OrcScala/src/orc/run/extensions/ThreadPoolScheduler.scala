@@ -59,7 +59,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
     Logger.entering(getClass().getCanonicalName(), "startScheduler")
     executorLock synchronized {
       if (executor == null) {
-        executor = new OrcThreadPoolExecutor(options.maxSiteThreads)
+        executor = new OrcThreadPoolExecutor(engineInstanceName, options.maxSiteThreads)
         executor.startupRunner()
       } else {
         throw new IllegalStateException("startScheduler() multiply invoked")
@@ -115,7 +115,7 @@ trait OrcRunner {
  *
  * @author jthywiss
  */
-class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
+class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
     //TODO: Make more of these params configurable
     math.max(4, Runtime.getRuntime().availableProcessors * 2),
     if (maxSiteThreads > 0) maxSiteThreads else 256,
@@ -123,7 +123,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
     new LinkedBlockingQueue[Runnable],
     new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
-  val threadGroup = new ThreadGroup("Orc Runtime Engine ThreadGroup")
+  val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 
   object OrcWorkerThreadFactory extends ThreadFactory {
     var threadCreateCount = 0
@@ -133,7 +133,7 @@ class OrcThreadPoolExecutor(maxSiteThreads: Int) extends ThreadPoolExecutor(
         ourThreadNum = threadCreateCount
         threadCreateCount += 1
       }
-      "Orc Worker Thread " + ourThreadNum
+      engineInstanceName + " Worker Thread " + ourThreadNum
     }
     def newThread(r: Runnable): Thread = {
       new Thread(threadGroup, r, getNewThreadName())

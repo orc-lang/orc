@@ -177,8 +177,8 @@ public final class Job implements JobMBean {
 		private final Expression expression;
 		private final OrcOptions config;
 
-		public JobEngine(final Expression expression, final OrcOptions config) {
-			super();
+		public JobEngine(final Expression expression, final OrcOptions config, final String engineInstanceName) {
+			super(engineInstanceName);
 			this.expression = expression;
 			this.config = config;
 		}
@@ -286,7 +286,7 @@ public final class Job implements JobMBean {
 	protected Job(final String id, final Expression expression, final OrcOptions config) throws ExecutionException {
 		this.id = id;
 		this.events = new EventBuffer(10);
-		engine = new JobEngine(expression, config/*, "Orchard Job " + id*/);
+		engine = new JobEngine(expression, config, "Orchard Job " + id);
 	}
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {

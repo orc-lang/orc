@@ -20,7 +20,7 @@ import orc.ast.oil.nameless.Expression
 import orc.{OrcRuntime, OrcExecutionOptions, OrcEvent}
 import orc.run.core.{Token, Execution}
 
-trait Orc extends OrcRuntime {
+abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)

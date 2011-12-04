@@ -19,7 +19,7 @@ import orc.OrcRuntime
 import orc.OrcOptions
 import orc.run.extensions._
 
-class StandardOrcRuntime extends Orc
+class StandardOrcRuntime(engineInstanceName: String) extends Orc(engineInstanceName)
 with StandardInvocationBehavior
 with OrcWithThreadPoolScheduler
 with SupportForRwait
