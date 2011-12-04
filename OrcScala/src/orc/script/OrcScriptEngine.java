@@ -284,7 +284,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 	StandardOrcRuntime getExecutor() {
 		synchronized (this) {
 			if (executor == null) {
-				executor = new StandardOrcRuntime();
+				executor = new StandardOrcRuntime("Orc");
 			}
 		}
 		return executor;
