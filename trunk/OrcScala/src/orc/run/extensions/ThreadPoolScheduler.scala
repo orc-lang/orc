@@ -151,7 +151,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
       if (supervisorThread != null || isShutdown) {
         throw new IllegalStateException("OrcThreadPoolExecutor.startup() on a started instance")
       }
-      supervisorThread = new Thread(threadGroup, this, "Orc Runtime Engine Thread Pool Supervisor")
+      supervisorThread = new Thread(threadGroup, this, engineInstanceName + " Thread Pool Supervisor")
       supervisorThread.start()
     }
   }
