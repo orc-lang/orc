@@ -51,9 +51,9 @@
 			<attribute name="javadoc_location" value="http://velocity.apache.org/engine/releases/velocity-1.5/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jetty-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-6.1.22.jar" sourcepath="/Users/jthywiss/Projects/ExternalSources/jetty-6.1.22/jetty/src/main/java"/>
 	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar" sourcepath="/Users/jthywiss/Projects/ExternalSources/jetty-6.1.22/util/src/main/java"/>
 	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
