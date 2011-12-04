@@ -81,4 +81,11 @@ class Logger(name: String) {
   final def fine(msg: => String): Unit = if (julLogger.isLoggable(Level.FINE)) julLogger.fine(msg)
   final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.finer(msg)
   final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) julLogger.finest(msg)
+
+  def logAllToStderr() {
+    julLogger.setLevel(Level.ALL)
+    val ch = new java.util.logging.ConsoleHandler()
+    ch.setLevel(Level.ALL)
+    julLogger.addHandler(ch)
+  }
 }

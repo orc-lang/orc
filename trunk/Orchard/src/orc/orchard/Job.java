@@ -26,7 +26,6 @@ import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.OrcOptions;
 import orc.ast.oil.nameless.Expression;
-import orc.error.OrcException;
 import orc.error.runtime.ExecutionException;
 import orc.lib.util.PromptCallback;
 import orc.orchard.errors.InvalidJobStateException;
@@ -173,7 +172,7 @@ public final class Job implements JobMBean {
 
 	private Date startDate;
 
-	public class JobEngine extends StandardOrcRuntime implements Runnable {
+	public class JobEngine extends StandardOrcRuntime {
 		private final StringBuffer printBuffer = new StringBuffer();
 		private final Expression expression;
 		private final OrcOptions config;
@@ -188,23 +187,15 @@ public final class Job implements JobMBean {
 			return Job.this;
 		}
 
-		/* (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
-		@Override
 		public void run() {
 			final JobEventActions jea = new JobEventActions();
 			try {
-				runSynchronous(expression, jea.asFunction(), config);
-			} catch (final InterruptedException e) {
-				Thread.currentThread().interrupt();
-			} catch (final OrcException e) {
+			    run(expression, jea.asFunction(), config);
+			//} catch (final InterruptedException e) {
+			//	Thread.currentThread().interrupt();
+			} catch (final Throwable e) {
 				jea.caught(e);
-			} finally {
 				jea.halted();
-				stop(); // kill threads and reclaim resources
-				Job.this.engine = null;
-				Job.this.worker = null;
 			}
 		}
 
@@ -242,7 +233,9 @@ public final class Job implements JobMBean {
 				if (printed.length() > 0) {
 					events.add(new PrintlnEvent(printed));
 				}
+				stop(); // kill threads and reclaim resources
 				events.close();
+				Job.this.engine = null;
 			}
 
 			/** 
@@ -288,14 +281,12 @@ public final class Job implements JobMBean {
 	private final EventBuffer events;
 	/** Tasks to run when the job finishes. */
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
-	/** Thread in which the main engine is run. */
-	private Thread worker;
 	private final String id;
 
 	protected Job(final String id, final Expression expression, final OrcOptions config) throws ExecutionException {
 		this.id = id;
 		this.events = new EventBuffer(10);
-		engine = new JobEngine(expression, config);
+		engine = new JobEngine(expression, config/*, "Orchard Job " + id*/);
 	}
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
@@ -317,11 +308,10 @@ public final class Job implements JobMBean {
 	 *             if the job was already started, or was aborted.
 	 */
 	public synchronized void start() throws InvalidJobStateException {
-		if (worker != null || events.isClosed()) {
+		if (engine == null || events.isClosed()) {
 			throw new InvalidJobStateException(getState());
 		}
-		worker = new Thread(engine, "Orchard Job " + id);
-		worker.start();
+		engine.run();
 	}
 
 	/**
@@ -363,9 +353,6 @@ public final class Job implements JobMBean {
 		if (engine != null) {
 			engine.stop();
 		}
-		if (worker != null) {
-			worker.interrupt();
-		}
 	}
 
 	/**
@@ -400,7 +387,7 @@ public final class Job implements JobMBean {
 	 */
 	@Override
 	public synchronized String getState() {
-		if (worker == null && !events.isClosed()) {
+		if (engine == null && !events.isClosed()) {
 			return "NEW";
 		} else if (events.isClosed()) {
 			return "DONE";
