@@ -24,6 +24,7 @@ import orc.lib.orchard.forms.FormSenderSite;
 
 @SuppressWarnings("serial")
 public class FormsServlet extends HttpServlet {
+
 	@Override
 	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		FormSenderSite.service(request, response);

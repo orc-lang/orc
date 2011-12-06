@@ -75,7 +75,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 				//FIXME:Report warnings
 			} else {
 				final String oilString = OrcXML.astToXml(result).toString();
-				System.err.println(oilString);
+				//System.err.println(oilString);
 				return oilString;
 			}
 		} catch (final IOException e) {

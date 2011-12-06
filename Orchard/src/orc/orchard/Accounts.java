@@ -23,6 +23,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.management.ObjectName;
 
@@ -33,6 +35,8 @@ import orc.orchard.jmx.JMXUtilities;
  * @author quark
  */
 public abstract class Accounts implements AccountsMBean {
+	protected static Logger logger = Logger.getLogger("orc.orchard");
+	
 	/** Cache of Accounts objects by URL */
 	private static Map<String, Accounts> urlAccounts = new HashMap<String, Accounts>();
 	static {
@@ -53,7 +57,7 @@ public abstract class Accounts implements AccountsMBean {
 			try {
 				out = new DbAccounts(url, DriverManager.getConnection(url));
 			} catch (final SQLException e) {
-				System.err.println(e.getMessage());
+				logger.log(Level.SEVERE, "Accounts database connection failed", e);
 				out = new GuestOnlyAccounts(url);
 			}
 			urlAccounts.put(url, out);
@@ -168,8 +172,7 @@ class DbAccounts extends Accounts {
 		} catch (final SQLException e) {
 			// FIXME: hack to support database connection errors,
 			// just return the guest account
-			System.err.println("SQL exception: " + e.toString());
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Failed to retrieve account for devKey \""+devKey+"\"", e);
 			return guest;
 		}
 	}
@@ -184,7 +187,7 @@ class DbAccounts extends Accounts {
 				if (!rs.next()) {
 					// If the account was not found, use 
 					// a special "guest" account.
-					System.out.println("Account '" + devKey + "' not found, using guest account.");
+					logger.warning("Account '" + devKey + "' not found, using guest account.");
 					return guest;
 				} else {
 					return getAccount(rs);

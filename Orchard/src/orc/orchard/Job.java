@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import orc.Handle;
 import orc.OrcEvent;
@@ -92,7 +94,7 @@ public final class Job implements JobMBean {
 		 */
 		public synchronized boolean add(final JobEvent value) {
 			while (bufferedSize >= bufferSize) {
-				System.out.println("Buffer full.");
+				logger.info("Job event buffer full; caller thread will block");
 				try {
 					blocked = true;
 					wait();
@@ -208,18 +210,11 @@ public final class Job implements JobMBean {
 			/** Send token errors to the event stream. */
 			@Override
 			public void caught(final Throwable e) {
-				System.err.println();
-				System.err.println("Problem: " + e);
 				if (e instanceof Positional) {
-					System.err.println("Source location: " + ((Positional) e).pos());
+					logger.log(Level.INFO, "Orc program exception at "+((Positional) e).pos(), e);
+				} else {
+					logger.log(Level.INFO, "Orc program exception", e);
 				}
-				e.printStackTrace();
-				final Throwable cause = e.getCause();
-				if (cause != null) {
-					System.err.println("Caused by:");
-					cause.printStackTrace();
-				}
-				System.err.println();
 
 				final TokenErrorEvent ee = new TokenErrorEvent(e);
 				events.add(ee);
@@ -251,17 +246,17 @@ public final class Job implements JobMBean {
 						promptID = nextPromptID++;
 						pendingPrompts.put(promptID, pe.callback());
 					}
-					System.out.println("Queueing prompt event with " + promptID + " " + pe.prompt());
+					logger.info("Queuing prompt event with " + promptID + " " + pe.prompt());
 					events.add(new PromptEvent(promptID, pe.prompt()));
 		        }
 		        else if (event instanceof orc.lib.web.BrowseEvent) {
 		        	orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent)event;
-		        	System.out.println("Queueing browse event with " + be.url());
+		        	logger.info("Queuing browse event with " + be.url());
 		        	events.add(new BrowseEvent(be.url()));
 		        }
 		        else if (event instanceof orc.lib.str.PrintEvent) {
 		        	orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent)event;
-		        	System.out.println("Queueing print event with " + pe.text());
+		        	logger.info("Queuing print event with " + pe.text());
 		        	events.add(new PrintlnEvent(pe.text()));
 		        }
 		        else {
@@ -282,6 +277,7 @@ public final class Job implements JobMBean {
 	/** Tasks to run when the job finishes. */
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 	private final String id;
+	protected static Logger logger = Logger.getLogger("orc.orchard");
 
 	protected Job(final String id, final Expression expression, final OrcOptions config) throws ExecutionException {
 		this.id = id;
@@ -330,9 +326,7 @@ public final class Job implements JobMBean {
 			try {
 				finisher.finished(this);
 			} catch (final RemoteException e) {
-				// FIXME: better way to handle this?
-				System.err.println("Caught remote exception " + e.toString());
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "Caught remote exception", e);
 			}
 		}
 	}

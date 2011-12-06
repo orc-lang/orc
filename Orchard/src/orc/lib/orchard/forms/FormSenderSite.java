@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,8 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class FormSenderSite extends SiteAdaptor {
+	protected static Logger logger = Logger.getLogger("orc.orchard.forms");
+
 	public static class FormReceiver {
 		private final LinkedBlockingQueue<Map<String, Object>> outbox = new LinkedBlockingQueue<Map<String, Object>>();
 		private final Form form;
@@ -106,11 +109,13 @@ public class FormSenderSite extends SiteAdaptor {
 
 		final String key = data.getParameter("k");
 		if (key == null) {
+			logger.info("Received form with missing key");
 			send(response, "The URL is missing the required parameter 'k'.");
 			return;
 		}
 		final FormReceiver f = (FormReceiver) AbstractExecutorService.globals.get(key);
 		if (f == null) {
+			logger.info("Received form with invalid (or obsolete) key "+key);
 			send(response, "The URL is no longer valid.");
 			return;
 		}
@@ -128,11 +133,13 @@ public class FormSenderSite extends SiteAdaptor {
 					// Restore the interrupted status
 					Thread.currentThread().interrupt();
 				}
+				logger.info("Processed valid form submission for key "+key);
 				send(response, "Thank you for your response.");
 				return;
 			}
 		}
 
+		logger.info("Rendering form for key "+key);
 		renderHeader(out);
 		if (!errors.isEmpty()) {
 			out.write("<ul>");
