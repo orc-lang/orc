@@ -41,6 +41,10 @@ import orc.orchard.events.Visitor;
 
 public class ExecutorService extends AbstractExecutorService {
 
+	protected ExecutorService() {
+		super();
+	}
+
 	public static void main(final String[] args) throws FileNotFoundException, IOException, QuotaException, InvalidProgramException, InvalidOilException, InvalidJobStateException, InvalidJobException, InterruptedException {
 		String program;
 		if (args.length > 0) {
@@ -49,7 +53,7 @@ public class ExecutorService extends AbstractExecutorService {
 			program = getStreamContent(System.in);
 		}
 		final ExecutorService executor = new ExecutorService();
-		executor.logger.setLevel(Level.OFF);
+		logger.setLevel(Level.OFF);
 		final String job = executor.compileAndSubmit("", program);
 		executor.startJob("", job);
 		List<JobEvent> events;

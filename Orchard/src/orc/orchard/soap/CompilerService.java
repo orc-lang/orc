@@ -44,8 +44,7 @@ public class CompilerService extends AbstractCompilerService {
 	 * Construct a service to run in an existing servlet context.
 	 */
 	public CompilerService() {
-		// FIXME: should we be trying to write to the servlet log in some way?
-		super(getDefaultLogger());
+		super();
 	}
 
 	CompilerService(final URI baseURI) {

@@ -104,7 +104,7 @@ public class ExecutorService extends AbstractExecutorService {
 	}
 
 	public ExecutorService() {
-		super(getDefaultLogger());
+		super();
 	}
 
 	/**

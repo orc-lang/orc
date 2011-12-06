@@ -34,15 +34,11 @@ import orc.script.OrcBindings;
  * @author quark
  */
 public abstract class AbstractCompilerService implements orc.orchard.api.CompilerServiceInterface {
-	protected Logger logger;
+	protected static Logger logger = Logger.getLogger("orc.orchard.compile");
 	private static StandardOrcCompiler compiler;
 
-	protected AbstractCompilerService(final Logger logger) {
-		this.logger = logger;
-	}
-
 	protected AbstractCompilerService() {
-		this(getDefaultLogger());
+		super();
 	}
 
 	private static List orchardIncludePath = new java.util.ArrayList<String>(0);
@@ -85,11 +81,6 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 		} catch (final IOException e) {
 			throw new InvalidProgramException("IO error: " + e.getMessage());
 		}
-	}
-
-	protected static Logger getDefaultLogger() {
-		final Logger out = Logger.getLogger(AbstractExecutorService.class.toString());
-		return out;
 	}
 
 	protected StandardOrcCompiler getCompiler() {
