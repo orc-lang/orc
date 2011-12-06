@@ -19,6 +19,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public class LoginServlet extends HttpServlet {
 	private Connection db = null;
+	protected static Logger logger = Logger.getLogger("orc.orchard.LoginServlet");
 
 	public void initIfNeeded() {
 		if (db == null) {
@@ -36,8 +39,7 @@ public class LoginServlet extends HttpServlet {
 					db = DriverManager.getConnection(accountsUrl);
 				}
 			} catch (final SQLException e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "Accounts database connection failed", e);
 			}
 		}
 	}
@@ -57,6 +59,7 @@ public class LoginServlet extends HttpServlet {
 				if (!result.next()) {
 					return null;
 				} else {
+					logger.info("LoginServlet: Login succeeded for "+username);
 					return result.getString("developer_key");
 				}
 			} finally {
@@ -81,7 +84,7 @@ public class LoginServlet extends HttpServlet {
 					return;
 				}
 			} catch (final SQLException e) {
-				e.printStackTrace();
+				logger.log(Level.SEVERE, "LoginServlet: Login failed for username "+ups[0], e);
 			}
 		}
 		response.setHeader("WWW-Authenticate", "Basic realm=\"orc.csres.utexas.edu\"");

@@ -16,6 +16,7 @@ package orc.orchard;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -30,6 +31,7 @@ import net.oauth.server.OAuthServlet;
 
 public class OrchardOAuthServlet extends HttpServlet {
 	public final static String MAILBOX = "orc.orchard.OrchardOAuthServlet.MAILBOX";
+	protected static Logger logger = Logger.getLogger("orc.orchard.OrchardOAuthServlet");
 
 	/**
 	 * Adds this accessor to the Orc engine globals for retrieval when authorization callback is received.
@@ -68,7 +70,7 @@ public class OrchardOAuthServlet extends HttpServlet {
 		}
 
 		if (!accessor.requestToken.equalsIgnoreCase(requestMessage.getParameter(OAuth.OAUTH_TOKEN))) {
-			System.err.println("OrchardOAuthServlet: token mismatch: received " + requestMessage.getParameter(OAuth.OAUTH_TOKEN) + ", but expected " + accessor.requestToken);
+			logger.severe("OrchardOAuthServlet: token mismatch: received " + requestMessage.getParameter(OAuth.OAUTH_TOKEN) + ", but expected " + accessor.requestToken);
 			throw new OAuthException("OrchardOAuthServlet: token mismatch");
 		}
 
@@ -81,7 +83,7 @@ public class OrchardOAuthServlet extends HttpServlet {
 		if (mbox == null) {
 			return;
 		}
-		System.out.println("OrchardOAuthServlet: approving " + accessor.requestToken);
+		logger.info("OrchardOAuthServlet: approving " + accessor.requestToken);
 		mbox.put(signal);
 	}
 

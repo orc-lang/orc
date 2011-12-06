@@ -14,6 +14,7 @@
 package orc.orchard;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 import javax.servlet.ServletException;
@@ -36,6 +37,8 @@ import orc.lib.orchard.MailListenerFactory.MailListener;
  */
 @SuppressWarnings("serial")
 public class MailListenerServlet extends HttpServlet {
+	protected static Logger logger = Logger.getLogger("orc.orchard.MailListenerServlet");
+
 	@Override
 	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		// initialize and check parameters
@@ -56,6 +59,8 @@ public class MailListenerServlet extends HttpServlet {
 		try {
 			if (!receiver.put(request.getInputStream())) {
 				throw new ServletException("Inbox is full");
+			} else {
+				logger.info("MailListenerServlet: Processed message for "+to);
 			}
 		} catch (final MessagingException e) {
 			throw new ServletException(e);
