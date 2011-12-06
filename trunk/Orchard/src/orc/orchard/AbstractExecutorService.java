@@ -41,19 +41,15 @@ import scala.xml.XML;
  * 
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
-	protected Logger logger;
+	protected static Logger logger = Logger.getLogger("orc.orchard.run");
 	public final static Globals<Job, Object> globals = new Globals<Job, Object>();
 
 	protected Accounts getAccounts() {
 		return Accounts.getAccounts(OrchardProperties.getProperty("orc.orchard.Accounts.url"));
 	}
 
-	protected AbstractExecutorService(final Logger logger) {
-		this.logger = logger;
-	}
-
 	protected AbstractExecutorService() {
-		this(getDefaultLogger());
+		super();
 	}
 
 	/**
@@ -90,13 +86,8 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 
 	@Override
 	public String compileAndSubmit(final String devKey, final String program) throws QuotaException, InvalidProgramException, InvalidOilException, RemoteException {
-		final CompilerService compiler = new CompilerService(logger);
+		final CompilerService compiler = new CompilerService();
 		return submit(devKey, compiler.compile(devKey, program));
-	}
-
-	protected static Logger getDefaultLogger() {
-		final Logger out = Logger.getLogger(AbstractExecutorService.class.toString());
-		return out;
 	}
 
 	protected Waiter getWaiter() {

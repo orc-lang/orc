@@ -13,18 +13,12 @@
 
 package orc.orchard.java;
 
-import java.util.logging.Logger;
-
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.errors.InvalidProgramException;
 
 public class CompilerService extends AbstractCompilerService {
 	public CompilerService() {
 		super();
-	}
-
-	public CompilerService(final Logger logger) {
-		super(logger);
 	}
 
 	public static void main(final String[] args) throws InvalidProgramException {

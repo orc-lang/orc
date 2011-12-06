@@ -19,22 +19,17 @@ import java.net.URISyntaxException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.logging.Logger;
 
 import orc.orchard.AbstractCompilerService;
 import orc.orchard.api.CompilerServiceInterface;
 
 public class CompilerService extends AbstractCompilerService implements CompilerServiceInterface {
-	public CompilerService(final URI baseURI, final Logger logger) throws RemoteException, MalformedURLException {
-		super(logger);
+	public CompilerService(final URI baseURI) throws RemoteException, MalformedURLException {
+		super();
 		logger.info("Binding to '" + baseURI + "'");
 		UnicastRemoteObject.exportObject(this, 0);
 		Naming.rebind(baseURI.toString(), this);
 		logger.info("Bound to '" + baseURI + "'");
-	}
-
-	public CompilerService(final URI baseURI) throws RemoteException, MalformedURLException {
-		this(baseURI, getDefaultLogger());
 	}
 
 	public static void main(final String[] args) {
