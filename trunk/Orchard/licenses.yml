@@ -135,9 +135,9 @@ notes: Used for web forms date widget.
 
 ---
 
-files: [web/jquery-1.2.6-min.js]
+files: [web/jquery-1.7.1.min.js]
 project: jQuery
-version: 1.2.6
+version: 1.7.1
 url: http://jquery.com
 license: MIT-jquery.txt
 phase: link
@@ -147,7 +147,7 @@ notes: Used for web/orc.js
 
 files: [web/codemirror/*]
 project: Codemirror
-version: 0.8
+version: 1.0
 url: http://marijn.haverbeke.nl/codemirror/
 license: BSD-codemirror.txt
 phase: extend
