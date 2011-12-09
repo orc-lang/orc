@@ -42,10 +42,8 @@ class Execution(
   def options = _options;
 
   def publish(t: Token, v: AnyRef) {
-    synchronized {
-      notifyOrc(PublishedEvent(v))
-      t.halt()
-    }
+    notifyOrc(PublishedEvent(v))
+    t.halt()
   }
 
   override def kill() = {
