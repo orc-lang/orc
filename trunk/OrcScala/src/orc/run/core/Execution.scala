@@ -41,7 +41,7 @@ class Execution(
 
   def options = _options;
 
-  def publish(t: Token, v: AnyRef) {
+  def publish(t: Token, v: AnyRef) = synchronized {
     notifyOrc(PublishedEvent(v))
     t.halt()
   }
