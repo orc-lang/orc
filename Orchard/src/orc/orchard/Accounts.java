@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -129,13 +129,6 @@ public abstract class Accounts implements AccountsMBean {
 	@Override
 	public synchronized Set<Integer> getAccountIDs() {
 		return accounts.keySet();
-	}
-
-	@Override
-	public synchronized void finishOldJobs() {
-		for (final Account a : accounts.values()) {
-			a.finishOldJobs();
-		}
 	}
 
 	@Override

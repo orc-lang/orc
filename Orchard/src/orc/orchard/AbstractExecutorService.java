@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
+import orc.error.loadtime.OilParsingException;
 import orc.orchard.api.ExecutorServiceInterface;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidJobStateException;
@@ -70,6 +71,8 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 		final Expression expr;
 		try {
 			expr = OrcXML.xmlToAst(XML.loadString(program));
+		} catch (final OilParsingException e) {
+			throw new InvalidOilException(e);
 		} catch (final MatchError e) {//FIXME:Any other exceptions?
 			throw new InvalidOilException(e);
 		}
@@ -101,9 +104,9 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 	}
 
 	@Override
-	public void haltJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
-		logger.info("haltJob(" + devKey + ", " + job + ")");
-		getAccounts().getAccount(devKey).getJob(job).halt();
+	public void cancelJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
+		logger.info("cancelJob(" + devKey + ", " + job + ")");
+		getAccounts().getAccount(devKey).getJob(job).cancel();
 	}
 
 	@Override

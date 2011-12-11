@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@
 
 executorService = (function () {
 	var n = 1;
-	var halt = false;
+	var cancel = false;
 	return {
 		compileAndSubmit: function (x, f) {
 			try {
@@ -35,7 +35,7 @@ executorService = (function () {
 			} catch (e) {}
 		},
 		jobEvents: function (_, f) {
-			if (halt) return f(null);
+			if (cancel) return f(null);
 			if (n == 1) {
 				n++;
 				return f({
@@ -101,8 +101,8 @@ executorService = (function () {
 		purgeJobEvents: function(_, f) {
 			if (f) f();
 		},
-		haltJob: function (_, f) {
-			halt = true;
+		cancelJob: function (_, f) {
+			cancel = true;
 			if (f) f();
 		},
 		finishJob: function (_, f) {

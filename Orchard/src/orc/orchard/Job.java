@@ -28,7 +28,6 @@ import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.OrcOptions;
 import orc.ast.oil.nameless.Expression;
-import orc.error.runtime.ExecutionException;
 import orc.lib.util.PromptCallback;
 import orc.orchard.errors.InvalidJobStateException;
 import orc.orchard.errors.InvalidPromptException;
@@ -97,9 +96,10 @@ public final class Job implements JobMBean {
 				logger.info("Job event buffer full; caller thread will block");
 				try {
 					blocked = true;
-					wait();
+					wait(); //FIXME: Wait until timeout, then terminate job
 					blocked = false;
 				} catch (final InterruptedException e) {
+					Thread.currentThread().interrupt();
 					return false;
 				}
 			}
@@ -197,8 +197,19 @@ public final class Job implements JobMBean {
 			//	Thread.currentThread().interrupt();
 			} catch (final Throwable e) {
 				jea.caught(e);
-				jea.halted();
+				stop();
 			}
+		}
+		
+		public void stop() {
+			// flush the buffer if anything is left
+			final String printed = printBuffer.toString();
+			if (printed.length() > 0) {
+				events.add(new PrintlnEvent(printed));
+			}
+			super.stop(); // kill threads and reclaim resources
+			events.close();
+			Job.this.engine = null;
 		}
 
 		class JobEventActions extends OrcEventAction {
@@ -220,17 +231,10 @@ public final class Job implements JobMBean {
 				events.add(ee);
 			}
 
-			/** Close the event stream when done running. */
+			/** Shut down the job engine when done running. */
 			@Override
 			public void halted() {
-				// flush the buffer if anything is left
-				final String printed = printBuffer.toString();
-				if (printed.length() > 0) {
-					events.add(new PrintlnEvent(printed));
-				}
-				stop(); // kill threads and reclaim resources
-				events.close();
-				Job.this.engine = null;
+				stop();
 			}
 
 			/** 
@@ -279,7 +283,7 @@ public final class Job implements JobMBean {
 	private final String id;
 	protected static Logger logger = Logger.getLogger("orc.orchard");
 
-	protected Job(final String id, final Expression expression, final OrcOptions config) throws ExecutionException {
+	protected Job(final String id, final Expression expression, final OrcOptions config) {
 		this.id = id;
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config, "Orchard Job " + id);
@@ -311,7 +315,7 @@ public final class Job implements JobMBean {
 	}
 
 	/**
-	 * Indicate that the client is done with the job. The job will be halted if
+	 * Indicate that the client is done with the job. The job will be canceled if
 	 * necessary.
 	 * 
 	 * <p>
@@ -321,7 +325,7 @@ public final class Job implements JobMBean {
 	 */
 	@Override
 	public synchronized void finish() {
-		halt();
+		cancel();
 		for (final FinishListener finisher : finishers) {
 			try {
 				finisher.finished(this);
@@ -339,11 +343,10 @@ public final class Job implements JobMBean {
 	}
 
 	/**
-	 * Halt the job safely, using the same termination semantics as the "pull"
-	 * combinator.
+	 * Cancel the job forcibly.
 	 */
 	@Override
-	public synchronized void halt() {
+	public synchronized void cancel() {
 		if (engine != null) {
 			engine.stop();
 		}

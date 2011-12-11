@@ -371,7 +371,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderError(response, code, exception) {
-        if (response && response.detail && response.detail.exception && response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException") {
+        if (response && response.detail && response.detail.exception && (response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException" || response.detail.exception["@class"] == "orc.orchard.errors.InvalidOilException")) {
             // Compile error, beautify if we grok format
             errmsg = response.faultstring;
             if (errmsg[0] == ':') {

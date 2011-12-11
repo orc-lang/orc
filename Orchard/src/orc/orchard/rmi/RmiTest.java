@@ -66,7 +66,7 @@ public class RmiTest {
 				--i;
 			}
 		}
-		executor.haltJob("", job);
+		executor.cancelJob("", job);
 		executor.finishJob("", job);
 
 		// Test the Prompt site
