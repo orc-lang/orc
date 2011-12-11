@@ -25,7 +25,6 @@ import javax.management.ObjectName;
 
 import orc.OrcOptions;
 import orc.ast.oil.nameless.Expression;
-import orc.error.runtime.ExecutionException;
 import orc.orchard.errors.InvalidJobException;
 import orc.orchard.errors.InvalidOilException;
 import orc.orchard.errors.QuotaException;
@@ -48,8 +47,9 @@ public abstract class Account implements AccountMBean {
 	// NB: right now these limits are hard-coded for all accounts,
 	// because otherwise it's too easy to write recursive programs
 	// which take down the server.
-	private int tokenPoolSize = 1024 * 1024;
 	private int stackSize = 1024 * 128;
+	private int tokenPoolSize = 1024 * 1024;
+	private int maxThreads = 6;
 
 	public Account() {
 	}
@@ -85,43 +85,49 @@ public abstract class Account implements AccountMBean {
 	}
 
 	public synchronized void addJob(final String id, final Expression expr) throws QuotaException, InvalidOilException {
-		final OrcOptions config = new OrcBindings(/*FIXME:From OrchardProperties*/);
+		final OrcOptions config = new OrcBindings(new java.util.HashMap<String,Object>(OrchardProperties.getMap()));
 		config.setRight("send mail", canSendMail);
 		config.setRight("import java", canImportJava);
-		config.maxTokens_$eq(tokenPoolSize);
 		config.stackSize_$eq(stackSize);
+		config.maxTokens_$eq(tokenPoolSize);
+		config.maxSiteThreads_$eq(maxThreads);
 
 		if (!canImportJava) {
 			final OilSecurityValidator validator = new OilSecurityValidator();
 			validator.validate(expr);
 			if (validator.hasProblems()) {
+				//FIXME:Report multiple messages in a less ugly manner -- maybe in a JobEvent style
 				final StringBuffer sb = new StringBuffer();
-				sb.append("OIL security violations:");
 				for (final OilSecurityValidator.SecurityProblem problem : validator.getProblems()) {
+					sb.append(problem.getMessageAndPositon());
 					sb.append("\n");
-					sb.append(problem);
 				}
+				sb.deleteCharAt(sb.length() - 1); // Remove trailing newline
 				throw new InvalidOilException(sb.toString());
 			}
 		}
 
-		finishOldJobs();
 		if (quota != null && jobs.size() >= quota) {
 			throw new QuotaException();
 		}
-		Job job;
-		try {
-			job = new Job(id, expr, config);
-		} catch (final ExecutionException e) {
-			throw new InvalidOilException(e);
-		}
+		final Job job = new Job(id, expr, config);
 		job.setStartDate(new Date());
 		jobs.put(id, job);
+		final OrchardTimer.Task jobTimeoutTask = new OrchardTimer.Task() {
+			@Override
+			public void run() {
+				job.finish();
+			}
+		};
+		if (lifespan != null) {
+			OrchardTimer.schedule(jobTimeoutTask, lifespan * 1000);
+		}
 		final ObjectName jmxid = JMXUtilities.newObjectName(job, id);
 		JMXUtilities.registerMBean(job, jmxid);
 		job.onFinish(new Job.FinishListener() {
 			@Override
 			public void finished(final Job job) {
+				jobTimeoutTask.cancel();
 				removeJob(id);
 				JMXUtilities.unregisterMBean(jmxid);
 			}
@@ -157,30 +163,6 @@ public abstract class Account implements AccountMBean {
 
 	@Override
 	public abstract boolean getIsGuest();
-
-	@Override
-	public synchronized void finishOldJobs() {
-		if (lifespan == null) {
-			return;
-		}
-		// find old jobs
-		final int lifespanmillis = lifespan * 1000;
-		final Date now = new Date();
-		final LinkedList<Job> old = new LinkedList<Job>();
-		for (final Job job : jobs.values()) {
-			final Date death = new Date(job.getStartDate().getTime() + lifespanmillis);
-			if (death.before(now)) {
-				// we can't finish the job now or it will cause
-				// a ConcurrentModificationException when it
-				// removes itself from the active jobs.
-				old.add(job);
-			}
-		}
-		// finish the old jobs we found
-		for (final Job job : old) {
-			job.finish();
-		}
-	}
 
 	@Override
 	public synchronized int getNumNewJobs() {
@@ -249,5 +231,13 @@ public abstract class Account implements AccountMBean {
 
 	public void setTokenPoolSize(final int tokenPoolSize) {
 		this.tokenPoolSize = tokenPoolSize;
+	}
+
+	public int getMaxThreads() {
+		return maxThreads;
+	}
+
+	public void setMaxThreads(final int maxThreads) {
+		this.maxThreads = maxThreads;
 	}
 }

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,6 +16,7 @@ package orc.orchard;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -43,6 +44,11 @@ public final class OrchardProperties {
 	}
 
 	private OrchardProperties() {
+	}
+
+	protected static Map getMap() {
+		initIfNeeded();
+		return (Map) props;
 	}
 
 	public static void setProperty(final String name, final String value) {

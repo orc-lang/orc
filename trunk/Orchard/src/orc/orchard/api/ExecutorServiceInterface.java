@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,7 +40,7 @@ import orc.orchard.events.JobEvent;
  * <li>Client calls jobEvents to get publications.
  * <li>Client calls purgeJobEvents to clear the publication buffer.
  * </ol>
- * <li>Client may call haltJob to force the job to end.
+ * <li>Client may call cancelJob to force the job to end.
  * <li>Job finishes.
  * <li>Client calls finishJob to clean up the job.
  * </ol>
@@ -117,7 +117,7 @@ public interface ExecutorServiceInterface extends Remote {
 	public void startJob(String devKey, String job) throws InvalidJobException, InvalidJobStateException, RemoteException;
 
 	/**
-	 * Indicate that the client is done with the job. The job will be halted if
+	 * Indicate that the client is done with the job. The job will be canceled if
 	 * necessary.
 	 * 
 	 * <p>
@@ -131,13 +131,12 @@ public interface ExecutorServiceInterface extends Remote {
 	public void finishJob(String devKey, String job) throws InvalidJobException, RemoteException;
 
 	/**
-	 * Halt the job safely, using the same termination semantics as the "pull"
-	 * combinator.
+	 * Cancel the job forcibly.
 	 * 
 	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
-	public void haltJob(String devKey, String job) throws InvalidJobException, RemoteException;
+	public void cancelJob(String devKey, String job) throws InvalidJobException, RemoteException;
 
 	/**
 	 * What is the job's state? Possible return values:

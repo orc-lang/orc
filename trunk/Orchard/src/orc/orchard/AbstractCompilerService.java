@@ -51,7 +51,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			throw new InvalidProgramException("Null program!");
 		}
 		try {
-			final OrcBindings options = new OrcBindings(/*FIXME:From OrchardProperties*/);
+			final OrcBindings options = new OrcBindings(new java.util.HashMap<String,Object>(OrchardProperties.getMap()));
 			// Disable file resources for includes
 			options.includePath_$eq(orchardIncludePath);
 			// Include sites specifically for orchard services

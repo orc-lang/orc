@@ -21,10 +21,9 @@ import java.util.Set;
 import orc.ast.AST;
 import orc.ast.oil.nameless.Constant;
 import orc.ast.oil.nameless.NamelessAST;
+import orc.error.OrcException;
 import scala.collection.JavaConversions;
-import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
-import scala.util.parsing.input.Positional;
 
 /**
  * Check an OIL expression for security violations.
@@ -158,59 +157,13 @@ public class OilSecurityValidator {
 		allowedClasses.add("scala.collection.mutable.WeakHashMap");
 	}
 
-	public static class SecurityProblem implements Positional {
-		//FIXME: Replace this with something that uses orc.error...
-		private final String message;
-		private Position position;
+	public static class SecurityProblem extends OrcException {
 
-		public SecurityProblem(final String message, final Position position) {
-			this.message = message;
-			this.position = position;
+		public SecurityProblem(final String message, final Position newpos) {
+			super(message);
+			setPosition(newpos);
 		}
 
-		public String getMessage() {
-			return message;
-		}
-
-		public Position getPosition() {
-			return position;
-		}
-
-		@Override
-		public String toString() {
-			if (position != null) {
-				return message + " at " + position;
-			} else {
-				return message;
-			}
-		}
-
-		/* (non-Javadoc)
-		 * @see scala.util.parsing.input.Positional#pos()
-		 */
-		@Override
-		public Position pos() {
-			return position;
-		}
-
-		/* (non-Javadoc)
-		 * @see scala.util.parsing.input.Positional#pos_$eq(scala.util.parsing.input.Position)
-		 */
-		@Override
-		public void pos_$eq(final Position newpos) {
-			position = newpos;
-		}
-
-		/* (non-Javadoc)
-		 * @see scala.util.parsing.input.Positional#setPos(scala.util.parsing.input.Position)
-		 */
-		@Override
-		public Positional setPos(final Position newpos) {
-			if (position == null || position instanceof NoPosition$) {
-				position = newpos;
-			}
-			return this;
-		}
 	}
 
 	public void validate(final NamelessAST astNode) {
@@ -222,8 +175,7 @@ public class OilSecurityValidator {
 					final String location = ((orc.values.sites.JavaProxy)value).javaClassName();
 					if (!allowedClasses.contains(location)) {
 						hasProblems = true;
-						// FIXME: once we have source location information, use it
-						problems.add(new SecurityProblem("Site URL '" + location + "' not" + " allowed.", null));
+						problems.add(new SecurityProblem("Access denied to Java class '" + location + "'.", node.pos()));
 					}
 				}
 			}
