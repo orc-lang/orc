@@ -111,7 +111,7 @@ public class OilSecurityValidator {
 		allowedClasses.add("org.joda.time.DateTime");
 		allowedClasses.add("org.joda.time.LocalDateTime");
 		allowedClasses.add("org.joda.time.LocalDate");
-		
+
 		// scala.collection
 		allowedClasses.add("scala.collection.BitSet");
 		allowedClasses.add("scala.collection.Map");
@@ -172,7 +172,7 @@ public class OilSecurityValidator {
 			if (child instanceof Constant) {
 				final Object value = ((Constant) child).value();
 				if (value instanceof orc.values.sites.JavaProxy) {
-					final String location = ((orc.values.sites.JavaProxy)value).javaClassName();
+					final String location = ((orc.values.sites.JavaProxy) value).javaClassName();
 					if (!allowedClasses.contains(location)) {
 						hasProblems = true;
 						problems.add(new SecurityProblem("Access denied to Java class '" + location + "'.", node.pos()));

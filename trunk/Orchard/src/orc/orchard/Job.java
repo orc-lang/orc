@@ -192,15 +192,15 @@ public final class Job implements JobMBean {
 		public void run() {
 			final JobEventActions jea = new JobEventActions();
 			try {
-			    run(expression, jea.asFunction(), config);
-			//} catch (final InterruptedException e) {
-			//	Thread.currentThread().interrupt();
+				run(expression, jea.asFunction(), config);
+				//} catch (final InterruptedException e) {
+				//	Thread.currentThread().interrupt();
 			} catch (final Throwable e) {
 				jea.caught(e);
 				stop();
 			}
 		}
-		
+
 		public void stop() {
 			// flush the buffer if anything is left
 			final String printed = printBuffer.toString();
@@ -222,7 +222,7 @@ public final class Job implements JobMBean {
 			@Override
 			public void caught(final Throwable e) {
 				if (e instanceof Positional) {
-					logger.log(Level.INFO, "Orc program exception at "+((Positional) e).pos(), e);
+					logger.log(Level.INFO, "Orc program exception at " + ((Positional) e).pos(), e);
 				} else {
 					logger.log(Level.INFO, "Orc program exception", e);
 				}
@@ -243,29 +243,26 @@ public final class Job implements JobMBean {
 			 */
 			@Override
 			public void other(final OrcEvent event) throws Exception {
-		        if (event instanceof orc.lib.util.PromptEvent) {
-		        	orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent)event;
-		        	int promptID;
+				if (event instanceof orc.lib.util.PromptEvent) {
+					final orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent) event;
+					final int promptID;
 					synchronized (pendingPrompts) {
 						promptID = nextPromptID++;
 						pendingPrompts.put(promptID, pe.callback());
 					}
 					logger.info("Queuing prompt event with " + promptID + " " + pe.prompt());
 					events.add(new PromptEvent(promptID, pe.prompt()));
-		        }
-		        else if (event instanceof orc.lib.web.BrowseEvent) {
-		        	orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent)event;
-		        	logger.info("Queuing browse event with " + be.url());
-		        	events.add(new BrowseEvent(be.url()));
-		        }
-		        else if (event instanceof orc.lib.str.PrintEvent) {
-		        	orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent)event;
-		        	logger.info("Queuing print event with " + pe.text());
-		        	events.add(new PrintlnEvent(pe.text()));
-		        }
-		        else {
-		        	super.other(event);
-		        }
+				} else if (event instanceof orc.lib.web.BrowseEvent) {
+					final orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent) event;
+					logger.info("Queuing browse event with " + be.url());
+					events.add(new BrowseEvent(be.url()));
+				} else if (event instanceof orc.lib.str.PrintEvent) {
+					final orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent) event;
+					logger.info("Queuing print event with " + pe.text());
+					events.add(new PrintlnEvent(pe.text()));
+				} else {
+					super.other(event);
+				}
 			}
 
 		}
@@ -291,7 +288,7 @@ public final class Job implements JobMBean {
 
 	public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
 		try {
-			return ((JobEngine)(((SiteCallHandle) callHandle).caller()).runtime()).getJob();
+			return ((JobEngine) ((SiteCallHandle) callHandle).caller().runtime()).getJob();
 		} catch (final ClassCastException e) {
 			throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
 		}

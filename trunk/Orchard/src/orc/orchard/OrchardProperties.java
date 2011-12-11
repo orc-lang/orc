@@ -48,7 +48,7 @@ public final class OrchardProperties {
 
 	protected static Map getMap() {
 		initIfNeeded();
-		return (Map) props;
+		return props;
 	}
 
 	public static void setProperty(final String name, final String value) {
