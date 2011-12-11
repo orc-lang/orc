@@ -55,35 +55,38 @@ public class OrchardTimer {
 			throw new IllegalArgumentException("Delay cannot be negative");
 		}
 		newTask.scheduledTime = System.currentTimeMillis() + delay_ms;
-		logger.fine("OrchardTimer.schedule: adding a task to run in "+delay_ms+" ms");
+		logger.fine("OrchardTimer.schedule: adding a task to run in " + delay_ms + " ms");
 		synchronized (taskQueue) {
 			taskQueue.add(newTask);
 			initThreadIfNeeded();
-			if (taskQueue.peek() == newTask)
+			if (taskQueue.peek() == newTask) {
 				synchronized (taskRunner) {
 					taskRunner.notifyAll();
 				}
+			}
 		}
 	}
 
-	public static void cancel(Task task) {
+	public static void cancel(final Task task) {
 		synchronized (taskQueue) {
 			final boolean wasHead = taskQueue.peek() == task;
 			taskQueue.remove(task);
-			if (wasHead)
+			if (wasHead) {
 				synchronized (taskRunner) {
 					taskRunner.notifyAll();
 				}
+			}
 		}
 	}
+
 	public abstract static class Task implements Runnable, Comparable<Task> {
 		protected long scheduledTime;
 
 		@Override
-		public int compareTo(Task that) {
-			return (this.scheduledTime < that.scheduledTime ? -1 : (this.scheduledTime==that.scheduledTime ? 0 : 1));
+		public int compareTo(final Task that) {
+			return this.scheduledTime < that.scheduledTime ? -1 : this.scheduledTime == that.scheduledTime ? 0 : 1;
 		}
-		
+
 		public void cancel() {
 			OrchardTimer.cancel(this);
 		}
@@ -103,11 +106,12 @@ public class OrchardTimer {
 				while (!taskQueue.isEmpty()) {
 					final long timeToFirst = taskQueue.element().scheduledTime - System.currentTimeMillis();
 					Task currTask = null;
-					logger.finest("OrchardTimerThread.run: waiting "+timeToFirst+" ms");
-					if (timeToFirst > 0)
+					logger.finest("OrchardTimerThread.run: waiting " + timeToFirst + " ms");
+					if (timeToFirst > 0) {
 						synchronized (this) {
 							wait(timeToFirst);
 						}
+					}
 					synchronized (taskQueue) {
 						if (taskQueue.element().scheduledTime <= System.currentTimeMillis()) {
 							currTask = taskQueue.remove();
@@ -118,9 +122,9 @@ public class OrchardTimer {
 						currTask.run();
 					}
 				}
-			} catch (NoSuchElementException e) {
+			} catch (final NoSuchElementException e) {
 				/* Queue has been emptied, just exit */
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				/* Set flag and exit */
 				Thread.currentThread().interrupt();
 			} finally {
@@ -133,6 +137,6 @@ public class OrchardTimer {
 				}
 			}
 		}
-		
+
 	}
 }

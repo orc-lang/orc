@@ -60,7 +60,7 @@ public class MailListenerServlet extends HttpServlet {
 			if (!receiver.put(request.getInputStream())) {
 				throw new ServletException("Inbox is full");
 			} else {
-				logger.info("MailListenerServlet: Processed message for "+to);
+				logger.info("MailListenerServlet: Processed message for " + to);
 			}
 		} catch (final MessagingException e) {
 			throw new ServletException(e);

@@ -36,7 +36,7 @@ import orc.orchard.jmx.JMXUtilities;
  */
 public abstract class Accounts implements AccountsMBean {
 	protected static Logger logger = Logger.getLogger("orc.orchard");
-	
+
 	/** Cache of Accounts objects by URL */
 	private static Map<String, Accounts> urlAccounts = new HashMap<String, Accounts>();
 	static {
@@ -165,7 +165,7 @@ class DbAccounts extends Accounts {
 		} catch (final SQLException e) {
 			// FIXME: hack to support database connection errors,
 			// just return the guest account
-			logger.log(Level.SEVERE, "Failed to retrieve account for devKey \""+devKey+"\"", e);
+			logger.log(Level.SEVERE, "Failed to retrieve account for devKey \"" + devKey + "\"", e);
 			return guest;
 		}
 	}

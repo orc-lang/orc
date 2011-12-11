@@ -59,7 +59,7 @@ public class LoginServlet extends HttpServlet {
 				if (!result.next()) {
 					return null;
 				} else {
-					logger.info("LoginServlet: Login succeeded for "+username);
+					logger.info("LoginServlet: Login succeeded for " + username);
 					return result.getString("developer_key");
 				}
 			} finally {
@@ -84,7 +84,7 @@ public class LoginServlet extends HttpServlet {
 					return;
 				}
 			} catch (final SQLException e) {
-				logger.log(Level.SEVERE, "LoginServlet: Login failed for username "+ups[0], e);
+				logger.log(Level.SEVERE, "LoginServlet: Login failed for username " + ups[0], e);
 			}
 		}
 		response.setHeader("WWW-Authenticate", "Basic realm=\"orc.csres.utexas.edu\"");

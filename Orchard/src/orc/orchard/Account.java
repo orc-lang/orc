@@ -85,7 +85,7 @@ public abstract class Account implements AccountMBean {
 	}
 
 	public synchronized void addJob(final String id, final Expression expr) throws QuotaException, InvalidOilException {
-		final OrcOptions config = new OrcBindings(new java.util.HashMap<String,Object>(OrchardProperties.getMap()));
+		final OrcOptions config = new OrcBindings(new java.util.HashMap<String, Object>(OrchardProperties.getMap()));
 		config.setRight("send mail", canSendMail);
 		config.setRight("import java", canImportJava);
 		config.stackSize_$eq(stackSize);
