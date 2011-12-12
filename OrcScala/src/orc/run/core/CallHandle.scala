@@ -44,6 +44,8 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def halt() { setState(CallSilent) }
   def !!(e: OrcException) { setState(CallRaisedException(e)) }
 
+  def hasRight(rightName: String) = caller.options.hasRight(rightName)
+  
   def notifyOrc(event: orc.OrcEvent) {
     synchronized {
       if (isLive) {

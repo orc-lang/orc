@@ -27,7 +27,7 @@ class RuntimeSupportException(name :String) extends
  * Access denied to an operation because the engine does not have a required right
  */
 class RightException(val rightName: String) extends
- TokenException("This engine does not have the right '" + rightName + "'")
+ TokenException("This execution does not have the right '" + rightName + "'")
 
 /**
  * 

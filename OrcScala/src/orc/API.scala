@@ -123,6 +123,8 @@ trait Handle {
   def publish(): Unit = { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
+
+  def hasRight(rightName: String): Boolean
   
   def isLive: Boolean
 }
