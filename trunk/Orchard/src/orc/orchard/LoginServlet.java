@@ -90,4 +90,13 @@ public class LoginServlet extends HttpServlet {
 		response.setHeader("WWW-Authenticate", "Basic realm=\"orc.csres.utexas.edu\"");
 		response.setStatus(401);
 	}
+
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#getServletInfo()
+	 */
+	@Override
+	public String getServletInfo() {
+		return "Copyright The University of Texas at Austin";
+	}
+
 }

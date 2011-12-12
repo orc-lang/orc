@@ -17,7 +17,6 @@ package orc.orchard;
 
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.logging.Logger;
 
 /**
@@ -27,6 +26,10 @@ import java.util.logging.Logger;
  * <p>
  * Note the timer thread is a daemon thread: If only daemon threads
  * are running in a JVM, it will exit.
+ * This means timer tasks might not be run if the JVM is exiting,
+ * or the task may be aborted as it is running.
+ * Therefore, this timer should <b>not</b> be used for tasks that modify
+ * the persistent state outside the JVM (file writes, for example).
  * <p>
  * Note the assumption about the callers' behavior; namely,
  * that callers do not add tasks as a result of the queue emptying
@@ -38,7 +41,7 @@ import java.util.logging.Logger;
  * @author jthywiss
  */
 public class OrchardTimer {
-	protected static final Queue<Task> taskQueue = new PriorityQueue<Task>();//FIXME:type
+	protected static final PriorityQueue<Task> taskQueue = new PriorityQueue<Task>();
 	protected static OrchardTimerThread taskRunner;
 	protected static Logger logger = Logger.getLogger("orc.orchard");
 

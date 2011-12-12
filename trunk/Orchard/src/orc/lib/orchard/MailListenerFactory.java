@@ -44,7 +44,7 @@ public class MailListenerFactory extends SiteAdaptor {
 	public static class MailListener {
 		private final Address address;
 		private final Mailer mailer;
-		// FIXME: should this allow multiple listeners?
+		// TODO: should this allow multiple listeners?
 		private final LinkedBlockingQueue<OrcMessage> inbox = new LinkedBlockingQueue<OrcMessage>();
 
 		public MailListener(final Job job, final Mailer mailer) throws AddressException {

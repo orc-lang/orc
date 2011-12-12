@@ -29,4 +29,13 @@ public class FormsServlet extends HttpServlet {
 	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 		FormSenderSite.service(request, response);
 	}
+
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#getServletInfo()
+	 */
+	@Override
+	public String getServletInfo() {
+		return "Copyright The University of Texas at Austin";
+	}
+
 }

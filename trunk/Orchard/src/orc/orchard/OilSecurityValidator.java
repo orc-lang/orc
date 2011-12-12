@@ -21,8 +21,11 @@ import java.util.Set;
 import orc.ast.AST;
 import orc.ast.oil.nameless.Constant;
 import orc.ast.oil.nameless.NamelessAST;
-import orc.error.OrcException;
+import orc.compile.parse.PositionWithFilename;
+import orc.error.compiletime.CompileLogger.Severity;
+import orc.orchard.errors.OrcProgramProblem;
 import scala.collection.JavaConversions;
+import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
 
 /**
@@ -157,15 +160,6 @@ public class OilSecurityValidator {
 		allowedClasses.add("scala.collection.mutable.WeakHashMap");
 	}
 
-	public static class SecurityProblem extends OrcException {
-
-		public SecurityProblem(final String message, final Position newpos) {
-			super(message);
-			setPosition(newpos);
-		}
-
-	}
-
 	public void validate(final NamelessAST astNode) {
 		for (final AST node : JavaConversions.asJavaIterable(astNode.subtrees())) {
 			final NamelessAST child = (NamelessAST) node;
@@ -175,11 +169,34 @@ public class OilSecurityValidator {
 					final String location = ((orc.values.sites.JavaProxy) value).javaClassName();
 					if (!allowedClasses.contains(location)) {
 						hasProblems = true;
-						problems.add(new SecurityProblem("Access denied to Java class '" + location + "'.", node.pos()));
+						problems.add(new SecurityProblem("Security: Access denied to Java class '" + location + "'.", node.pos()));
 					}
 				}
 			}
 			validate(child);
 		}
 	}
+
+	public static class SecurityProblem extends OrcProgramProblem {
+
+		protected SecurityProblem() {
+			super();
+		}
+
+		public SecurityProblem(final String message, final Position position) {
+			super();
+			this.severity = Severity.ERROR.ordinal();
+			this.message = message;
+			this.filename = position instanceof PositionWithFilename ? ((PositionWithFilename) position).filename() : "";
+			this.line = position.line();
+			this.column = position.column();
+			if (position != null && !(position instanceof NoPosition$)) {
+				this.longMessage = position.toString() + ": " + message;
+			} else {
+				this.longMessage = message;
+			}
+		}
+
+	}
+
 }

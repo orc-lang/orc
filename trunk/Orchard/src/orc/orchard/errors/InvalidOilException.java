@@ -13,12 +13,24 @@
 
 package orc.orchard.errors;
 
-public class InvalidOilException extends Exception {
-	public InvalidOilException(final String arg0) {
-		super(arg0);
+import java.util.List;
+
+public class InvalidOilException extends ExceptionWithProblems {
+
+	public InvalidOilException(final String message) {
+		super(message);
+	}
+
+	public InvalidOilException(final String message, final Throwable cause) {
+		super(message, cause);
 	}
 
 	public InvalidOilException(final Throwable cause) {
 		super(cause);
 	}
+
+	public InvalidOilException(final List<? extends OrcProgramProblem> problems) {
+		super(problems);
+	}
+
 }

@@ -16,44 +16,44 @@ span.whitespace {
 }
 
 span.keyword {
-	font-weight: bold;
-	color: #808;
+  font-weight: bold;
+  color: #808;
 }
 
 span.variable {
-	font-style: italic;
-	color: #008;
+  font-style: italic;
+  color: #008;
 }
 
 span.operator {
-	color: #000;
+  color: #000;
 }
 
 span.combinator {
-	font-weight: bold;
-	color: #F00;
+  font-weight: bold;
+  color: #F00;
 }
 
 span.comment {
-	color: #080;
+  color: #080;
 }
 
 span.literal {
-	color: #00F;
+  color: #00F;
 }
 
 span.pattern {
 }
 
 span.site {
-	font-style: italic;
-	color: #008;
+  font-style: italic;
+  color: #008;
 }
 
 .editbox {
-	font-family: monospace;
-	font-size: 14px;
-	margin: 0;
-	padding: 0;
-	background-color: white;
+  font-family: monospace;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+  background-color: white;
 }

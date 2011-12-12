@@ -372,31 +372,28 @@ function orcify(code, defaultConfig) {
 
 	function renderError(response, code, exception) {
         if (response && response.detail && response.detail.exception && (response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException" || response.detail.exception["@class"] == "orc.orchard.errors.InvalidOilException")) {
-            // Compile error, beautify if we grok format
-            errmsg = response.faultstring;
-            if (errmsg[0] == ':') {
-                colIndex = errmsg.indexOf(':', 1) + 1;
-                msgIndex = errmsg.indexOf(':', colIndex) + 1;
-                lineString = errmsg.substring(1,colIndex-1);
-                lineStart = parseInt(lineString);
-                if (lineString.split('-').length == 2) {
-                    lineEnd = parseInt(lineString.split('-')[1])
-                } else {
-                    lineEnd = lineStart;
+            var problems = response.detail[response.detail.exception["@class"].substring(response.detail.exception["@class"].lastIndexOf(".")+1)].problems
+            if (problems) {
+                problems = toArray(problems)
+                for (var i in problems) {
+                    var errmsg = ""
+                    if (problems[i].severity >= 5) errmsg += "Problem "
+                    if (problems[i].severity == 4) errmsg += "Warning "
+                    var filenamelength = 0
+                    if (problems[i].filename && problems[i].filename.length && problems[i].filename.length > 0) {
+                        errmsg += "in file "+problems[i].filename + " "
+                        filenamelength = problems[i].filename.length
+                    }
+                    errmsg += "near line "+problems[i].line+", column "+problems[i].column
+                    errmsg += problems[i].longMessage.substring(filenamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
+                    appendEventHtml('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
                 }
-                colString = errmsg.substring(colIndex,msgIndex-1);
-                colStart = parseInt(colString);
-                if (colString.split('-').length == 2) {
-                    colEnd = parseInt(colString.split('-')[1])
-                } else {
-                    colEnd = colStart;
+                if (!problems[i].filename || !problems[i].filename.length || problems[i].filename.length == 0) {
+                    codemirror.selectLines(codemirror.nthLine(problems[0].line), problems[0].column-1, codemirror.nthLine(problems[0].line), problems[0].column-1);
                 }
-                if (colIndex > 2 && msgIndex > 4) {
-                    errmsg = "Problem near line " + lineString + ", column " + colString + ": " + errmsg.substring(msgIndex,errmsg.length);
-                    codemirror.selectLines(codemirror.nthLine(lineStart), colStart-1, codemirror.nthLine(lineEnd), ((colStart==colEnd)?(colEnd-1):(colEnd)));
-                }
+            } else {
+                appendEventHtml('<div class="orc-error">' + escapeHtml(response.faultstring) + '</div>');
             }
-            appendEventHtml('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
         } else {
             // unwrap response if possible
             if (response) {

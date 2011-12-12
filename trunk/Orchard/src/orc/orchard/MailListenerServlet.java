@@ -66,4 +66,13 @@ public class MailListenerServlet extends HttpServlet {
 			throw new ServletException(e);
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#getServletInfo()
+	 */
+	@Override
+	public String getServletInfo() {
+		return "Copyright The University of Texas at Austin";
+	}
+
 }

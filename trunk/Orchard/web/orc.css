@@ -37,132 +37,150 @@ only the inner are applied to .orc-code, and only the outer are applied to
 
 /* Inner style: applies inside and around code area */
 .orc-code, .orc, .orc-snippet {
-	border: 1px solid #666;
-	margin: 0;
-	padding: 0;
-	overflow: auto;
-	font-family: monospace;
-	background-color: white;
-	/* this has no effect after codemirror has loaded */
-	font-size: 14px;
+  border: 1px solid #666;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  font-family: monospace;
+  background-color: white;
+  /* this has no effect after codemirror has loaded */
+  font-size: 14px;
 }
 
 /* Outer style: applies outside code area */
 .orc-wrapper, .orc, .orc-snippet {
-	margin-bottom: 1em;
-	background-color: white;
-	font-size: 14px;
+  margin-bottom: 1em;
+  background-color: white;
+  font-size: 14px;
 }
 
 .orc-prelude {
-	display: none;
+  display: none;
 }
 
 .orc-events {
-	border: 1px solid #666;
-	margin-top: -1px;
-	overflow: auto;
+  border: 1px solid #666;
+  margin-top: -1px;
+  overflow: auto;
 }
+
 .orc-controls {
-	text-align: right;
-	border: 1px solid #666;
-	background-color: #ddd;
-	margin-top: -1px;
-	height: 18px;
+  text-align: right;
+  border: 1px solid #666;
+  background-color: #ddd;
+  margin-top: -1px;
+  height: 18px;
 }
+
 .orc-prompts {
-	border: 1px solid #666;
-	border-bottom: 3px double #666;
-	margin-top: -1px;
-	overflow: auto;
+  border: 1px solid #666;
+  border-bottom: 3px double #666;
+  margin-top: -1px;
+  overflow: auto;
 }
+
 .orc-stop, .orc-close, .orc-run {
-	border: 1px outset;
-	background-color: white;
-	cursor: pointer;
-	font: bold 10px Verdana,sans-serif;
+  border: 1px outset;
+  background-color: white;
+  cursor: pointer;
+  font: bold 10px Verdana,sans-serif;
 }
+
 .orc-run {
-	background-color: #cfc;
+  background-color: #cfc;
 }
+
 .orc-stop {
-	background-color: #fcc;
+  background-color: #fcc;
 }
+
 .orc-publication, .orc-error, .orc-print, .orc-prompt {
-	border-bottom: 1px solid #ddd;
-	display: none;
+  border-bottom: 1px solid #ddd;
+  display: none;
 }
+
 .orc-publication {
-	font-family: monospace;
-	white-space: nowrap;
+  font-family: monospace;
+  white-space: nowrap;
 }
+
 .orc-error {
-	font-family: monospace;
-	font-weight: bold;
-	white-space: pre;
-	color: red;
+  font-family: monospace;
+  font-weight: bold;
+  white-space: pre;
+  color: red;
 }
+
 .orc-print {
-	/*color: gray;*/
+  /*color: gray;*/
 }
+
 .orc-prompt {
-	padding: 5px;
+  padding: 5px;
 }
+
 .orc-prompt p {
-	margin: 0;
-	margin-bottom: 5px;
+  margin: 0;
+  margin-bottom: 5px;
 }
+
 .orc-prompt-input {
-	padding-right: 46px;
-	position: relative;
+  padding-right: 46px;
+  position: relative;
 }
+
 .orc-prompt-input input {
-	border: 3px double #ddd;
-	width: 100%;
-	/* force font to scale with rest of interface */
-	font-size: 100%;
+  border: 3px double #ddd;
+  width: 100%;
+  /* force font to scale with rest of interface */
+  font-size: 100%;
 }
+
 .orc-prompt-input-close {
-	width: 16px;
-	height: 16px;
-	background-image: url("/orchard/images/close.gif");
-	background-repeat: no-repeat;
-	position: absolute;
-	right: 0px;
-	top: 2px;
-	cursor: pointer;
+  width: 16px;
+  height: 16px;
+  background-image: url("/orchard/images/close.gif");
+  background-repeat: no-repeat;
+  position: absolute;
+  right: 0px;
+  top: 2px;
+  cursor: pointer;
 }
+
 .orc-prompt-input-send {
-	width: 16px;
-	height: 16px;
-	background-image: url("/orchard/images/send.gif");
-	background-repeat: no-repeat;
-	position: absolute;
-	right: 20px;
-	top: 2px;
-	cursor: pointer;
+  width: 16px;
+  height: 16px;
+  background-image: url("/orchard/images/send.gif");
+  background-repeat: no-repeat;
+  position: absolute;
+  right: 20px;
+  top: 2px;
+  cursor: pointer;
 }
+
 .orc-loading {
-	width: 16px;
-	height: 16px;
-	background-image: url("/orchard/images/loading.gif");
-	background-repeat: no-repeat;
-	float: left;
+  width: 16px;
+  height: 16px;
+  background-image: url("/orchard/images/loading.gif");
+  background-repeat: no-repeat;
+  float: left;
 }
 
 /* IE-specific hacks */
 
 .orc-prompts {
-	_display: inline-block;
-	min-height: 0;
+  _display: inline-block;
+  min-height: 0;
 }
+
 .orc-events {
-	_width: 100%;
-	min-height: 0;
-	/* without this, the horizontal scrollbar covers the content */
-	_padding-bottom: 15px;
+  _width: 100%;
+  min-height: 0;
+  /* without this, the horizontal scrollbar covers the content */
+  _padding-bottom: 15px;
 }
+
 .orc-prompt-input {
-	_display: inline-block;
-	min-height: 0;
+  _display: inline-block;
+  min-height: 0;
 }

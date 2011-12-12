@@ -96,14 +96,7 @@ public abstract class Account implements AccountMBean {
 			final OilSecurityValidator validator = new OilSecurityValidator();
 			validator.validate(expr);
 			if (validator.hasProblems()) {
-				//FIXME:Report multiple messages in a less ugly manner -- maybe in a JobEvent style
-				final StringBuffer sb = new StringBuffer();
-				for (final OilSecurityValidator.SecurityProblem problem : validator.getProblems()) {
-					sb.append(problem.getMessageAndPositon());
-					sb.append("\n");
-				}
-				sb.deleteCharAt(sb.length() - 1); // Remove trailing newline
-				throw new InvalidOilException(sb.toString());
+				throw new InvalidOilException(validator.getProblems());
 			}
 		}
 
