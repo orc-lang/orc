@@ -32,7 +32,7 @@ public class OrchardCompileLogger implements CompileLogger {
 	 *
 	 * @author jthywiss
 	 */
-	public class CompileMessage {
+	public static class CompileMessage {
 
 		public final Severity severity;
 		public final int code;

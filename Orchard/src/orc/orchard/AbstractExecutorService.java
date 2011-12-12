@@ -73,7 +73,7 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 			expr = OrcXML.xmlToAst(XML.loadString(program));
 		} catch (final OilParsingException e) {
 			throw new InvalidOilException(e);
-		} catch (final MatchError e) {//FIXME:Any other exceptions?
+		} catch (final MatchError e) {
 			throw new InvalidOilException(e);
 		}
 		getAccounts().getAccount(devKey).addJob(id, expr);

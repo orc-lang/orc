@@ -79,8 +79,7 @@ public class FormSenderSite extends SiteAdaptor {
 	}
 
 	private static void renderHeader(final PrintWriter out) throws IOException {
-		// FIXME: remove this hard-coded URL
-		out.write("<html><head></head>" + "<link rel='stylesheet' type='text/css' href='orc-forms.css'/>" + "<body>");
+		out.write("<html><head></head>" + "<link rel='stylesheet' type='text/css' href='" + OrchardProperties.getProperty("orc.lib.orchard.forms.stylesheet") + "'/>" + "<body>");
 	}
 
 	private static void renderFooter(final PrintWriter out) throws IOException {
@@ -115,7 +114,7 @@ public class FormSenderSite extends SiteAdaptor {
 		}
 		final FormReceiver f = (FormReceiver) AbstractExecutorService.globals.get(key);
 		if (f == null) {
-			logger.info("Received form with invalid (or obsolete) key "+key);
+			logger.info("Received form with invalid (or obsolete) key " + key);
 			send(response, "The URL is no longer valid.");
 			return;
 		}
@@ -133,13 +132,13 @@ public class FormSenderSite extends SiteAdaptor {
 					// Restore the interrupted status
 					Thread.currentThread().interrupt();
 				}
-				logger.info("Processed valid form submission for key "+key);
+				logger.info("Processed valid form submission for key " + key);
 				send(response, "Thank you for your response.");
 				return;
 			}
 		}
 
-		logger.info("Rendering form for key "+key);
+		logger.info("Rendering form for key " + key);
 		renderHeader(out);
 		if (!errors.isEmpty()) {
 			out.write("<ul>");

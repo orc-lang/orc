@@ -37,16 +37,17 @@ public class OrchardOAuthServlet extends HttpServlet {
 	 * Adds this accessor to the Orc engine globals for retrieval when authorization callback is received.
 	 * This is not idempotent, only call this method once per auth request.
 	 * 
-	 * @param accessor Accessor to be autorized
+	 * @param accessor Accessor to be authorized
 	 * @param mbox Mailbox to be signaled when authorization is received
-	 * @param job Orchard job that will reveive the callback
+	 * @param job Orchard job that will receive the callback
 	 * @return Callback URL string
 	 * @throws IOException
 	 */
 	public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue mbox, final Job job) throws IOException {
 		accessor.setProperty(MAILBOX, mbox);
 		final String key = AbstractExecutorService.globals.add(job, accessor);
-		// FIXME: we should figure out the callback URL automatically from the servlet context
+		/* 'Twould be nice to figure out the callback URL automatically from
+		 * the servlet context, but not possible with the Servlet API. */
 		return OAuth.addParameters(accessor.consumer.callbackURL, "k", key);
 	}
 
@@ -115,4 +116,13 @@ public class OrchardOAuthServlet extends HttpServlet {
 		out.write("</html>\n");
 		out.close();
 	}
+
+	/* (non-Javadoc)
+	 * @see javax.servlet.GenericServlet#getServletInfo()
+	 */
+	@Override
+	public String getServletInfo() {
+		return "Copyright The University of Texas at Austin";
+	}
+
 }

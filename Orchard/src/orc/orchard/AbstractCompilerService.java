@@ -63,14 +63,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 				if (compileMsgs.isEmpty()) {
 					throw new InvalidProgramException("Compilation failed");
 				} else {
-					//FIXME:Report multiple messages in a less ugly manner -- maybe in a JobEvent style
-					final StringBuilder sb = new StringBuilder();
-					for (final CompileMessage msg : compileMsgs) {
-						sb.append(msg.longMessage());
-						sb.append("\n");
-					}
-					sb.deleteCharAt(sb.length() - 1); // Remove trailing newline
-					throw new InvalidProgramException(sb.toString());
+					throw new InvalidProgramException(compileMsgs);
 				}
 				//FIXME:Report warnings
 			} else {
