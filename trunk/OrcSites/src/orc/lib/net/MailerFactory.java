@@ -826,7 +826,7 @@ public class MailerFactory extends SiteAdaptor {
 
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
-		//FIXME:Implement:  caller.requireRight("send mail", true);
+		requireRight(caller, "send mail");
 		try {
 			caller.publish(new Mailer("/" + args.stringArg(0)));
 		} catch (final IOException e) {

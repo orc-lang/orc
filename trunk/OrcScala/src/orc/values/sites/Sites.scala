@@ -25,6 +25,7 @@ import orc.run.Logger
 import orc.types.Type
 import orc.types.Bot
 import orc.types.RecordType
+import orc.error.runtime.RightException
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
@@ -36,6 +37,12 @@ trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], h: Handle): Unit
   
   override def toOrcSyntax() = this.name
+  
+  def requireRight(h: Handle, rightName:String) {
+    if (!h.hasRight(rightName)) {
+      throw new RightException(rightName);
+    }
+  }
 }
 
 /* A site which provides type information. */
