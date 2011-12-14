@@ -61,6 +61,7 @@ object OrcValue {
 
 case object Signal extends OrcValue {
   override def toOrcSyntax() = "signal"
+  override val hashCode = super.hashCode()  // Only need to compute this once for an immutable object
 }
 
 case class Field(field: String) extends OrcValue {
