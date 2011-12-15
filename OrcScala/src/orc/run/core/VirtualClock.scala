@@ -48,11 +48,10 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
 
   private var readyCount: Int = 1
 
-  /*
-   * Take all minimum time elements from the waiter queue.
-   * Return Some tuple contaning the minimum time and a nonempty list of waiters on that time.
-   * If the queue is empty, return None instead.
-   */
+  /** Take all minimum time elements from the waiter queue.
+    * Return Some tuple contaning the minimum time and a nonempty list of waiters on that time.
+    * If the queue is empty, return None instead.
+    */
   private def dequeueMins(): Option[(Time, List[AwaitCallHandle])] = {
     waiterQueue.headOption match {
       case Some((_, minTime)) => {
@@ -81,6 +80,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
             rest foreach { _.publish(false.asInstanceOf[AnyRef]) }
           }
           case None => {}
+          case _ => throw new AssertionError("Virtual clock internal failure (dequeueMins return not matched)")
         }
       }
     }

@@ -72,6 +72,7 @@ object RecordMatcher extends PartialSite with TypedSite {
         matchedValues map { OrcValue.letLike }
       }
       case List(_, _*) => None
+      case _ => throw new AssertionError("Record match internal failure (RecordMatcher.evaluate match error on args list)")
     }
 
   def orcType() = new SimpleCallableType with StrictType {
@@ -86,6 +87,7 @@ object RecordMatcher extends PartialSite with TypedSite {
           letLike(matchedElements)
         }
         case List(t, _*) => throw new ArgumentTypecheckingException(0, RecordType(Nil.toMap), t)
+        case _ => throw new AssertionError("Record type checking internal failure (RecordMatcher.orcType.<new SimpleCallableType with StrictType>.call match error)")
       }
     }
   }
