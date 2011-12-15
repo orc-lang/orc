@@ -64,7 +64,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Call(target, gs) => {
         var expr = convert(target)
         for (g <- gs) {
-          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g) })
+          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g) ; case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)")})
         }
         expr
       }

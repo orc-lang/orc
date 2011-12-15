@@ -174,6 +174,7 @@ trait CustomParserCombinators {
       list match {
         case List(f ~ a) => f(_, a)
         case f ~ a :: xs => f(_, rightChainFold(xs)(a))
+        case _ => throw new AssertionError("Parser internal failure (chainr1.rightChainFold match error)")
       }
     }
     val markingQ = markingParser(q)
