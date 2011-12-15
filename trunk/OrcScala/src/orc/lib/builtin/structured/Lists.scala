@@ -16,10 +16,9 @@
 package orc.lib.builtin.structured
 
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.values.{OrcRecord, OrcTuple, Signal}
+import orc.values.{ OrcRecord, OrcTuple, Signal }
 import orc.values.sites._
 import orc.types._
-
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
@@ -40,13 +39,12 @@ object NilExtractor extends PartialSite1 with TypedSite {
   def orcType() = SimpleFunctionType(ListType(Top), SignalType)
 }
 
-
 object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor)
 object ConsConstructor extends TotalSite2 with TypedSite {
   override def name = "Cons"
   def eval(h: AnyRef, t: AnyRef) = {
     t match {
-      case tl : List[_] => h :: tl
+      case tl: List[_] => h :: tl
       case _ => throw new ArgumentTypeMismatchException(1, "List", if (t != null) t.getClass().toString() else "null")
     }
   }
@@ -59,14 +57,13 @@ object ConsExtractor extends PartialSite1 with TypedSite {
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {
-      case (v : AnyRef) :: vs => Some(OrcTuple(List(v, vs)))
+      case (v: AnyRef) :: vs => Some(OrcTuple(List(v, vs)))
       case _ => None
-  }
-  
+    }
+
   def orcType() = {
     val X = new TypeVariable()
     new FunctionType(List(X), List(ListType(X)), TupleType(List(X, ListType(X))))
   }
-  
-}
 
+}

@@ -20,16 +20,16 @@ object OptionMapExtension {
   // Adds an optionMap method to lists
   class ListWithOptionMap[A](xs: List[A]) {
     def optionMap[B](f: A => Option[B]): Option[List[B]] = {
-        def helperFunction(xs: List[A], ys: List[B]): Option[List[B]] = { 
-            xs match {
-              case Nil => Some(ys.reverse)
-              case x::xs => f(x) match {
-              case Some(y) => helperFunction(xs, y::ys)
-              case None => None
-            }
-          }	
+      def helperFunction(xs: List[A], ys: List[B]): Option[List[B]] = {
+        xs match {
+          case Nil => Some(ys.reverse)
+          case x :: xs => f(x) match {
+            case Some(y) => helperFunction(xs, y :: ys)
+            case None => None
+          }
         }
-        helperFunction(xs, Nil)
+      }
+      helperFunction(xs, Nil)
     }
   }
   implicit def addOptionMapToList[A](xs: List[A]) = new ListWithOptionMap(xs)

@@ -318,4 +318,3 @@ If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> 
 --}
 def sqrt(Number) :: Number
 def sqrt(n) = n ** 0.5
-

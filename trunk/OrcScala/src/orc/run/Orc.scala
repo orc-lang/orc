@@ -17,8 +17,8 @@ package orc.run
 
 import orc.ast.oil.nameless.Expression
 
-import orc.{OrcRuntime, OrcExecutionOptions, OrcEvent}
-import orc.run.core.{Token, Execution}
+import orc.{ OrcRuntime, OrcExecutionOptions, OrcEvent }
+import orc.run.core.{ Token, Execution }
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
 
@@ -36,11 +36,10 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
     stopScheduler()
   }
 
-  /**
-   * Add all needed event handlers to an execution.
-   * Traits which add support for more events will override this
-   * method and introduce more handlers.
-   */
+  /** Add all needed event handlers to an execution.
+    * Traits which add support for more events will override this
+    * method and introduce more handlers.
+    */
   def installHandlers(host: Execution) {}
 
 }

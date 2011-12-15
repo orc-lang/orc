@@ -24,17 +24,16 @@ import orc.error.OrcExceptionExtension._
 case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
-  returntype: Option[Type])
-  (implicit translator: Translator) extends orc.ast.AST {
+  returntype: Option[Type])(implicit translator: Translator) extends orc.ast.AST {
 
   import translator._
-  
+
   def unify[A](x: Option[A], y: Option[A], reportCollision: => Unit): Option[A] =
     (x, y) match {
       case (None, None) => None
       case (Some(x), None) => Some(x)
       case (None, Some(y)) => Some(y)
-      case (Some(x), Some(y)) => reportCollision ; Some(x)
+      case (Some(x), Some(y)) => reportCollision; Some(x)
     }
   def unifyList[A](x: Option[List[A]], y: Option[List[A]], reportCollision: => Unit): Option[List[A]] =
     (x, y) match {
@@ -42,7 +41,7 @@ case class AggregateDef(clauses: List[Clause],
       case (Some(x), None) => Some(x)
       case (None, Some(y)) => Some(y)
       case (Some(Nil), Some(Nil)) => Some(Nil) // Nils are allowed to unify
-      case (Some(x), Some(y)) => reportCollision ; Some(x)
+      case (Some(x), Some(y)) => reportCollision; Some(x)
     }
 
   def +(defn: DefDeclaration): AggregateDef =
@@ -50,7 +49,7 @@ case class AggregateDef(clauses: List[Clause],
       case Def(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
         val newclause = defn ->> Clause(newformals, maybeGuard, body)
-        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn)) 
+        val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
@@ -75,7 +74,7 @@ case class AggregateDef(clauses: List[Clause],
     AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
   }
 
-  def convert(x : named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
+  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)

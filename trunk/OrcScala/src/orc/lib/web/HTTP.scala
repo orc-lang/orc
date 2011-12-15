@@ -14,25 +14,24 @@
 //
 package orc.lib.web
 
-import orc.values.sites.{TotalSite, Site0, Site1}
+import orc.values.sites.{ TotalSite, Site0, Site1 }
 import orc.values.OrcRecord
 import orc.Handle
 import orc.error.runtime.SiteException
 
-import java.net.{URLConnection, URL, URLEncoder}
-import java.io.{OutputStreamWriter, InputStreamReader}
+import java.net.{ URLConnection, URL, URLEncoder }
+import java.io.{ OutputStreamWriter, InputStreamReader }
 import java.lang.StringBuilder
 import java.net.URL
 
 import scala.io.Source
 
 /**
- * 
- *
- * @author dkitchin, Blake
- */
+  *
+  * @author dkitchin, Blake
+  */
 object HTTP extends TotalSite {
-  
+
   def evaluate(args: List[AnyRef]): AnyRef = {
     args match {
       case List(s: String) => {
@@ -48,26 +47,25 @@ object HTTP extends TotalSite {
       case _ => throw new SiteException("Malformed arguments to HTTP. Arguments should be (String), (String, {..}), or (URL).")
     }
   }
-  
+
   def convertToQueryPairs(entries: Map[String, AnyRef]): String = {
-    val nameValuePairs = 
+    val nameValuePairs =
       for ((name, v) <- entries; value = v.toString()) yield {
         URLEncoder.encode(name, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
       }
     nameValuePairs reduceLeft { _ + "&" + _ }
   }
-  
+
   def createHTTPInstance(url: URL) = {
     new OrcRecord(List(
       ("get", HTTPGet(url)),
       ("post", HTTPPost(url)),
-      ("url", url.toString())
-    ))
+      ("url", url.toString())))
   }
-  
+
   case class HTTPGet(url: URL) extends Site0 {
     def call(h: Handle) {
-      val getAction = 
+      val getAction =
         new Runnable {
           def run() {
             val conn = url.openConnection
@@ -76,7 +74,7 @@ object HTTP extends TotalSite {
             conn.connect()
 
             val headerEncoding = conn.getContentEncoding()
-            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" } 
+            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" }
             val in = Source.fromInputStream(conn.getInputStream, encoding)
             val result = in.mkString
             in.close
@@ -86,7 +84,7 @@ object HTTP extends TotalSite {
       (new Thread(getAction)).start()
     }
   }
-  
+
   case class HTTPPost(url: URL) extends Site1 {
     def call(a: AnyRef, h: Handle) {
       val post = a.toString
@@ -98,13 +96,13 @@ object HTTP extends TotalSite {
             conn.setReadTimeout(5000)
             conn.setDoOutput(true)
             conn.connect()
-            
+
             val out = new OutputStreamWriter(conn.getOutputStream, "UTF-8")
             out.write(post)
             out.close
-      
+
             val headerEncoding = conn.getContentEncoding()
-            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" } 
+            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" }
             val in = Source.fromInputStream(conn.getInputStream, encoding)
             val result = in.mkString
             in.close

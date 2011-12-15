@@ -14,9 +14,8 @@
 //
 package orc.compile
 
-/**
- * Logger for the orc.compile subsystem
- *
- * @author jthywiss
- */
+/** Logger for the orc.compile subsystem
+  *
+  * @author jthywiss
+  */
 object Logger extends orc.util.Logger("orc.compile")

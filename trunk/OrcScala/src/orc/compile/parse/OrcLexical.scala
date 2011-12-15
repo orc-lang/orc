@@ -23,13 +23,12 @@ import scala.collection.mutable.HashSet
 
 import java.util.regex.Pattern
 
-/**
- * Lexical scanner (tokenizer) for Orc.  This extends and overrides
- * <code>scala.util.parsing.combinator.lexical.StdLexical</code>
- * with Orc's lexical definitions.
- *
- * @author jthywiss
- */
+/** Lexical scanner (tokenizer) for Orc.  This extends and overrides
+  * <code>scala.util.parsing.combinator.lexical.StdLexical</code>
+  * with Orc's lexical definitions.
+  *
+  * @author jthywiss
+  */
 class OrcLexical() extends StdLexical() with RegexParsers {
   override type Elem = Char
 
@@ -67,8 +66,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   override val reserved = new HashSet[String] ++ List(
     "as", "def", "else", "if", "import", "include",
     "lambda", "signal", "stop", "then", "type", "val",
-    "true", "false", "null", "_"
-    )
+    "true", "false", "null", "_")
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",
@@ -76,15 +74,13 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     "<", ">",
     "=", "<:", ":>", "<=", ">=", "/=",
     ":",
-    ".", "?", ":="
-    )
+    ".", "?", ":=")
 
   /** The set of delimiters (ordering does not matter) */
   override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
     "|", ";",
-    "::", ":!:"
-    ) ::: operators)
+    "::", ":!:") ::: operators)
 
   protected lazy val operRegex = {
     val o = new Array[String](operators.size)
@@ -118,36 +114,32 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   def multiLineCommentBody: Parser[Any] =
     """(?s).*?(?=((\{-)|(-\})))""".r ~
-      ( "-}"
-      | "{-" ~ multiLineCommentBody ~ multiLineCommentBody
-      )
+      ("-}"
+        | "{-" ~ multiLineCommentBody ~ multiLineCommentBody)
 
   override val whitespace: Parser[Any] =
-    rep( ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
-       | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
-       | "{-" ~ multiLineCommentBody
-       | '{' ~ '-' ~ err("unclosed comment")
-       )
+    rep(("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
+      | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
+      | "{-" ~ multiLineCommentBody
+      | '{' ~ '-' ~ err("unclosed comment"))
 
   val numberLit: Parser[String] =
     """([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?""".r
 
   val stringLit: Parser[String] =
-    '\"' ~> (( '\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
-             | ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r
-             )*) <~ '\"' ^^ { _.mkString }
+    '\"' ~> (('\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
+      | ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r)*) <~ '\"' ^^ { _.mkString }
 
   override val token: Parser[Token] = (whitespace?) ~>
-    ( identifier              ^^ { processIdent(_) }
-    | '_'                     ^^^  Keyword("_")
-    | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
-    | "(0-)"                  ^^^  Identifier("0-")
-    | numberLit               ^^ { numberToken(_) }
-    | stringLit               ^^ { StringLit(_) }
-    | '\"' ~> err("unclosed string literal")
-    | // Must be after other alternatives that a delim could be a prefix of
-      delimOperRegex          ^^ { Keyword(_) }
-    | EofCh                   ^^^  EOF
-    )
+    (identifier ^^ { processIdent(_) }
+      | '_' ^^^ Keyword("_")
+      | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
+      | "(0-)" ^^^ Identifier("0-")
+      | numberLit ^^ { numberToken(_) }
+      | stringLit ^^ { StringLit(_) }
+      | '\"' ~> err("unclosed string literal")
+      | // Must be after other alternatives that a delim could be a prefix of
+      delimOperRegex ^^ { Keyword(_) }
+      | EofCh ^^^ EOF)
 
 }

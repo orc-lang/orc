@@ -19,13 +19,11 @@ import orc.ast.ext.Expression
 import orc.ast.ext.InfixOperator
 import orc.ast.AST
 
-/**
- *
- * An assortment of extended parser combinators designed specifically
- * for the Orc parser.
- *
- * @author dkitchin
- */
+/** An assortment of extended parser combinators designed specifically
+  * for the Orc parser.
+  *
+  * @author dkitchin
+  */
 trait CustomParserCombinators {
 
   self: StandardTokenParsers =>
@@ -51,60 +49,60 @@ trait CustomParserCombinators {
 
   class Maps0(s: String) {
     def ->[A <: AST](a: () => A): Parser[A] = {
-        markLocation(keyword(s) ^^^ a())
+      markLocation(keyword(s) ^^^ a())
     }
     def ->[A <: AST](a: A): Parser[A] = {
-        markLocation(keyword(s) ^^^ a)
+      markLocation(keyword(s) ^^^ a)
     }
   }
   class Maps1[A](parser: Parser[A]) {
     def ->[X <: AST](f: A => X): Parser[X] = {
-        markLocation(parser ^^ f)
+      markLocation(parser ^^ f)
     }
   }
-  class Maps2[A,B](parser: Parser[A ~ B]) {
-    def ->[X <: AST](f: (A,B) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y => f(x,y) })
+  class Maps2[A, B](parser: Parser[A ~ B]) {
+    def ->[X <: AST](f: (A, B) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y => f(x, y) })
   }
-  class Maps3[A,B,C](parser: Parser[A ~ B ~ C]) {
-    def ->[X <: AST](f: (A,B,C) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z => f(x,y,z) })
+  class Maps3[A, B, C](parser: Parser[A ~ B ~ C]) {
+    def ->[X <: AST](f: (A, B, C) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y ~ z => f(x, y, z) })
   }
-  class Maps4[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]) {
-    def ->[X <: AST](f: (A,B,C,D) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ u => f(x,y,z,u) })
+  class Maps4[A, B, C, D](parser: Parser[A ~ B ~ C ~ D]) {
+    def ->[X <: AST](f: (A, B, C, D) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y ~ z ~ u => f(x, y, z, u) })
   }
-  class Maps5[A,B,C,D,E](parser: Parser[A ~ B ~ C ~ D ~ E]) {
-    def ->[X <: AST](f: (A,B,C,D,E) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v => f(x,y,z,u,v) })
+  class Maps5[A, B, C, D, E](parser: Parser[A ~ B ~ C ~ D ~ E]) {
+    def ->[X <: AST](f: (A, B, C, D, E) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v => f(x, y, z, u, v) })
   }
-  class Maps6[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]) {
-    def ->[X <: AST](f: (A,B,C,D,E,F) => X): Parser[X] =
-      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v ~ w => f(x,y,z,u,v,w) })
+  class Maps6[A, B, C, D, E, F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]) {
+    def ->[X <: AST](f: (A, B, C, D, E, F) => X): Parser[X] =
+      markLocation(parser ^^ { case x ~ y ~ z ~ u ~ v ~ w => f(x, y, z, u, v, w) })
   }
 
   implicit def CreateMaps0Parser(s: String): Maps0 = new Maps0(s)
   implicit def CreateMaps1Parser[A](parser: Parser[A]): Maps1[A] = new Maps1(parser)
-  implicit def CreateMaps2Parser[A,B](parser: Parser[A ~ B]): Maps2[A,B] =  new Maps2(parser)
-  implicit def CreateMaps3Parser[A,B,C](parser: Parser[A ~ B ~ C]): Maps3[A,B,C] = new Maps3(parser)
-  implicit def CreateMaps4Parser[A,B,C,D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A,B,C,D] = new Maps4(parser)
-  implicit def CreateMaps5Parser[A,B,C,D,E](parser: Parser[A ~ B ~ C ~ D ~ E]): Maps5[A,B,C,D,E] = new Maps5(parser)
-  implicit def CreateMaps6Parser[A,B,C,D,E,F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]): Maps6[A,B,C,D,E,F] = new Maps6(parser)
+  implicit def CreateMaps2Parser[A, B](parser: Parser[A ~ B]): Maps2[A, B] = new Maps2(parser)
+  implicit def CreateMaps3Parser[A, B, C](parser: Parser[A ~ B ~ C]): Maps3[A, B, C] = new Maps3(parser)
+  implicit def CreateMaps4Parser[A, B, C, D](parser: Parser[A ~ B ~ C ~ D]): Maps4[A, B, C, D] = new Maps4(parser)
+  implicit def CreateMaps5Parser[A, B, C, D, E](parser: Parser[A ~ B ~ C ~ D ~ E]): Maps5[A, B, C, D, E] = new Maps5(parser)
+  implicit def CreateMaps6Parser[A, B, C, D, E, F](parser: Parser[A ~ B ~ C ~ D ~ E ~ F]): Maps6[A, B, C, D, E, F] = new Maps6(parser)
 
   ////////
   // Extended apply combinator -?->
   ////////
 
-  class Maps1Optional2[A <: AST,B](parser: Parser[A ~ Option[B]]) {
+  class Maps1Optional2[A <: AST, B](parser: Parser[A ~ Option[B]]) {
 
-  def -?->(f: (A,B) => A): Parser[A] =
+    def -?->(f: (A, B) => A): Parser[A] =
       markLocation(parser ^^ {
         case x ~ None => x
-        case x ~ Some(y) => f(x,y)
+        case x ~ Some(y) => f(x, y)
       })
   }
 
-  implicit def CreateMaps1Optional2Parser[A <: AST,B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A,B] = new Maps1Optional2(parser)
+  implicit def CreateMaps1Optional2Parser[A <: AST, B](parser: Parser[A ~ Option[B]]): Maps1Optional2[A, B] = new Maps1Optional2(parser)
 
   ////////
   // Interleaving combinator
@@ -112,19 +110,18 @@ trait CustomParserCombinators {
 
   class InterleavingParser[A <: AST](parser: Parser[A]) {
     def leftInterleave[B](interparser: Parser[B]) =
-      (f: (A,B,A) => A) => {
-        def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( chainl1(markLocation(parser), interparser ^^ origami) )
+      (f: (A, B, A) => A) => {
+        def origami(b: B)(x: A, y: A): A = f(x, b, y)
+        markLocation(chainl1(markLocation(parser), interparser ^^ origami))
       }: Parser[A]
     def rightInterleave[B](interparser: Parser[B]) =
-      (f: (A,B,A) => A) => {
-        def origami(b: B)(x:A, y:A): A = f(x,b,y)
-        markLocation( chainr1(markLocation(parser), interparser ^^ origami) )
+      (f: (A, B, A) => A) => {
+        def origami(b: B)(x: A, y: A): A = f(x, b, y)
+        markLocation(chainr1(markLocation(parser), interparser ^^ origami))
       }: Parser[A]
   }
 
   implicit def CreateInterleavingParser[A <: AST](parser: Parser[A]): InterleavingParser[A] = new InterleavingParser(parser)
-
 
   ////////
   // Infixing combinator
@@ -149,8 +146,8 @@ trait CustomParserCombinators {
     }
 
     def nonAssociativeInfix(ops: List[String]): Parser[Expression] = {
-        parser ~ ((opsParser(ops) ~ parser)?) -?->
-          { (a,opb) => opb match { case op ~ b => InfixOperator(a,op,b) } }
+      parser ~ ((opsParser(ops) ~ parser)?) -?->
+        { (a, opb) => opb match { case op ~ b => InfixOperator(a, op, b) } }
     }
 
     // By default, fully associative operators are associated to the left.
@@ -166,20 +163,21 @@ trait CustomParserCombinators {
   override def chainl1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
     val markingQ = markingParser(q)
     p ~ rep(markingQ ~ p) ^^
-      { case x ~ xs =>
-          (xs foldLeft x) { (a,fb) => fb match { case f ~ b => f(a,b) } }
+      {
+        case x ~ xs =>
+          (xs foldLeft x) { (a, fb) => fb match { case f ~ b => f(a, b) } }
       }
   }
 
   def chainr1[T](p: => Parser[T], q: => Parser[(T, T) => T]): Parser[T] = {
     def rightChainFold(list: List[((T, T) => T) ~ T]): (T => T) = {
       list match {
-        case List(f ~ a) => f(_,a)
-        case f ~ a :: xs => f(_,rightChainFold(xs)(a))
+        case List(f ~ a) => f(_, a)
+        case f ~ a :: xs => f(_, rightChainFold(xs)(a))
       }
     }
     val markingQ = markingParser(q)
-    p ~ rep(markingQ ~ p) ^^ {case x ~ xs => if (xs.isEmpty) x else rightChainFold(xs)(x)}
+    p ~ rep(markingQ ~ p) ^^ { case x ~ xs => if (xs.isEmpty) x else rightChainFold(xs)(x) }
   }
 
   ////////
@@ -190,14 +188,14 @@ trait CustomParserCombinators {
     new Parser[(T, T) => T] {
       override def apply(i: Input) = {
         val position = i.pos
-        val result: ParseResult[(T,T) => T] = q.apply(i)
+        val result: ParseResult[(T, T) => T] = q.apply(i)
         result map
-          { (f: (T,T) => T) =>
+          { (f: (T, T) => T) =>
             { (a: T, b: T) =>
               {
-                val result = f(a,b)
+                val result = f(a, b)
                 result match {
-                  case ast : AST => ast.pos = position
+                  case ast: AST => ast.pos = position
                 }
                 result
               }

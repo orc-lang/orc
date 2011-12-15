@@ -115,4 +115,3 @@ val xattr =
   def fromattr(XMLElement(tag, attr, children)) =
     (XMLElement(tag, {. .}, children), attr)
   {. apply = toattr, unapply = fromattr .}
-

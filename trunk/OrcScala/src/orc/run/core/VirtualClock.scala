@@ -16,24 +16,21 @@ package orc.run.core
 
 import scala.collection.mutable
 
-import orc.{Schedulable, OrcRuntime}
-import orc.values.sites.{SpecificArity, Site}
+import orc.{ Schedulable, OrcRuntime }
+import orc.values.sites.{ SpecificArity, Site }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait VirtualClockOperation extends Site with SpecificArity
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
 
   override def toString() = "ach"
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
   extends Schedulable {

@@ -16,27 +16,25 @@ package orc.compile.optimize
 
 import orc.ast.oil.named._
 
-/**
- * Removes unused definitions from the OIL AST.
- *
- * This optimization is more useful if it occurs after FractionDefs.
- *
- * @author dkitchin
- */
+/** Removes unused definitions from the OIL AST.
+  *
+  * This optimization is more useful if it occurs after FractionDefs.
+  *
+  * @author dkitchin
+  */
 object RemoveUnusedDefs extends NamedASTTransform {
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
     case DeclareDefs(defs, body) => {
       val defnames = defs map { _.name }
       val newbody = transform(body, defnames ::: context, typecontext)
-      val defNamesSet: Set[BoundVar] = defs.toSet map ((a:Def) => a.name)
-      
+      val defNamesSet: Set[BoundVar] = defs.toSet map ((a: Def) => a.name)
+
       // If none of the defs are bound in the body,
       // just return the body.
       if (newbody.freevars intersect defNamesSet isEmpty) {
         newbody
-      } 
-      else {
+      } else {
         val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
         DeclareDefs(newdefs, newbody)
       }

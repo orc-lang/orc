@@ -14,9 +14,8 @@
 //
 package orc.run
 
-/**
- * Logger for the orc.run subsystem
- *
- * @author jthywiss
- */
+/** Logger for the orc.run subsystem
+  *
+  * @author jthywiss
+  */
 object Logger extends orc.util.Logger("orc.run")

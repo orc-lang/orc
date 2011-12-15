@@ -20,24 +20,22 @@ import java.io.File
 import scala.collection.JavaConversions._
 import orc.compile.parse.OrcInputContext
 import orc.error.OrcException
-import orc.error.compiletime.{CompilationException, CompileLogger}
+import orc.error.compiletime.{ CompilationException, CompileLogger }
 import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
 
-/**
- * The interface from a caller to the Orc compiler
- */
+/** The interface from a caller to the Orc compiler
+  */
 trait OrcCompilerProvides {
   @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
   def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
 }
 
-/**
- * The interface from the Orc compiler to its environment
- */
+/** The interface from the Orc compiler to its environment
+  */
 trait OrcCompilerRequires {
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext
@@ -45,28 +43,24 @@ trait OrcCompilerRequires {
   def loadClass(className: String): Class[_]
 }
 
-/** 
- * An Orc compiler
- */
+/** An Orc compiler
+  */
 trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
 
-/**
- * The interface from a caller to an Orc runtime
- */
+/** The interface from a caller to an Orc runtime
+  */
 trait OrcRuntimeProvides {
   @throws(classOf[ExecutionException])
   def run(e: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions): Unit
   def stop(): Unit
 }
 
-/**
- *  The interface from an Orc runtime to its environment
- */
+/** The interface from an Orc runtime to its environment
+  */
 trait OrcRuntimeRequires extends InvocationBehavior
 
-/** 
- * Define invocation behaviors for a runtime 
- */
+/** Define invocation behaviors for a runtime
+  */
 trait InvocationBehavior {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
   def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
@@ -79,14 +73,14 @@ trait Schedulable extends Runnable {
    * It is assumed by default that a schedulable unit might block.
    */
   val nonblocking: Boolean = false
-  
+
   /* 
    * This method is invoked when this schedulable unit
    * is put on the scheduler queue (not when it is executed).
    * It is run in the thread that made the enqueueing call. 
    */
   def onSchedule() {}
-  
+
   /*
    * This method is invoked when this schedulable unit 
    * has been run by the scheduler and has completed (successfully or not).
@@ -95,11 +89,10 @@ trait Schedulable extends Runnable {
   def onComplete() {}
 }
 
-/**
- * An Orc runtime 
- */
+/** An Orc runtime
+  */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
-  
+
   def startScheduler(options: OrcExecutionOptions): Unit
 
   def schedule(ts: List[Schedulable]): Unit
@@ -109,40 +102,37 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def schedule(t: Schedulable, u: Schedulable) { schedule(List(t, u)) }
 
   def stopScheduler(): Unit
-  
+
 }
 
-/**
- * The interface through which the environment response to site calls.
- */
+/** The interface through which the environment response to site calls.
+  */
 trait Handle {
-  
+
   def notifyOrc(event: OrcEvent): Unit
-  
+
   def publish(v: AnyRef): Unit
   def publish(): Unit = { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
 
   def hasRight(rightName: String): Boolean
-  
+
   def isLive: Boolean
 }
 
-/**
- * An event reported by an Orc execution
- */
+/** An event reported by an Orc execution
+  */
 trait OrcEvent
 
 case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedEvent extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
 
-/**
- * An action for a few major events reported by an Orc execution.
- * This is an alternative to receiving <code>OrcEvents</code> for a client
- * with simple needs, or for Java code that cannot create Scala functions.
- */
+/** An action for a few major events reported by an Orc execution.
+  * This is an alternative to receiving <code>OrcEvents</code> for a client
+  * with simple needs, or for Java code that cannot create Scala functions.
+  */
 class OrcEventAction {
   val asFunction: (OrcEvent => Unit) = _ match {
     case PublishedEvent(v) => published(v)
@@ -154,17 +144,15 @@ class OrcEventAction {
   def published(value: AnyRef) {}
   def caught(e: Throwable) {}
   def halted() {}
-  
+
   @throws(classOf[Exception])
   def other(event: OrcEvent) {}
 }
 
-
-/**
- * Options for Orc compilation and execution.
- *
- * @author jthywiss
- */
+/** Options for Orc compilation and execution.
+  *
+  * @author jthywiss
+  */
 trait OrcOptions extends OrcCompilationOptions with OrcExecutionOptions
 
 trait OrcCommonOptions {

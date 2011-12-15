@@ -14,16 +14,15 @@
 //
 package orc.values.sites
 
-import java.lang.reflect.{Constructor => JavaConstructor}
-import java.lang.reflect.{Method => JavaMethod}
+import java.lang.reflect.{ Constructor => JavaConstructor }
+import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
 
 /**
- * 
- *
- * @author jthywiss, dkitchin
- */
+  *
+  * @author jthywiss, dkitchin
+  */
 object OrcJavaCompatibility {
 
   /** Java to Orc value conversion */
@@ -38,7 +37,7 @@ object OrcJavaCompatibility {
     case s: java.lang.String => s
     case b: java.lang.Boolean => b
     case null => null
-    case v => v 
+    case v => v
   }
 
   /** Convenience method for <code>orc2java(orcValue, classOf[Object])</code> */
@@ -71,7 +70,7 @@ object OrcJavaCompatibility {
 
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
-  abstract class Invocable {def getParameterTypes(): Array[java.lang.Class[_]]; def isStatic: Boolean; def invoke(obj: Object, args: Array[Object]): Object}
+  abstract class Invocable { def getParameterTypes(): Array[java.lang.Class[_]]; def isStatic: Boolean; def invoke(obj: Object, args: Array[Object]): Object }
 
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
@@ -105,48 +104,49 @@ object OrcJavaCompatibility {
     //* If the member is a variable arity method with arity n, the arity of the method invocation is greater or equal to n-1.
     //* If the member is a fixed arity method with arity n, the arity of the method invocation is equal to n.
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
-    type JavaMethodOrCtor = java.lang.reflect.Member {def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean}
+    type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
     val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
     val ms: Array[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors().asInstanceOf[Array[JavaMethodOrCtor]] else targetClass.getMethods().asInstanceOf[Array[JavaMethodOrCtor]]
-    val potentiallyApplicableMethods = ms.filter({m => 
-        m.getName().equals(methodName) &&
+    val potentiallyApplicableMethods = ms.filter({ m =>
+      m.getName().equals(methodName) &&
         Modifier.isPublic(m.getModifiers()) &&
         // Modfier ABSTRACT is handled later.
         (m.getParameterTypes().size == argTypes.size ||
-         m.isVarArgs() && m.getParameterTypes().size-1 <= argTypes.size)})
-    Logger.finest(memberName+" potentiallyApplicableMethods="+potentiallyApplicableMethods.mkString("{", ", ", "}"))
+          m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
+    })
+    Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
       throw new NoSuchMethodException(methodName + " in " + targetClass.getName())
     }
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
-    val phase1Results = potentiallyApplicableMethods.filter( { m =>
+    val phase1Results = potentiallyApplicableMethods.filter({ m =>
       !m.isVarArgs() &&
-      m.getParameterTypes().corresponds(argTypes)({(fp, arg) => isApplicable(fp, arg, false)})
-    } )
-    Logger.finest(memberName+" phase1Results="+phase1Results.mkString("{", ", ", "}"))
+        m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, false) })
+    })
+    Logger.finest(memberName + " phase1Results=" + phase1Results.mkString("{", ", ", "}"))
     if (phase1Results.nonEmpty) {
       return Invocable(mostSpecificMethod(phase1Results.toList))
     }
-    
+
     //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
-    val phase2Results = potentiallyApplicableMethods.filter( { m =>
+    val phase2Results = potentiallyApplicableMethods.filter({ m =>
       !m.isVarArgs() &&
-      m.getParameterTypes().corresponds(argTypes)({(fp, arg) => isApplicable(fp, arg, true)})
-    } )
-    Logger.finest(memberName+" phase2Results="+phase2Results.mkString("{", ", ", "}"))
+        m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, true) })
+    })
+    Logger.finest(memberName + " phase2Results=" + phase2Results.mkString("{", ", ", "}"))
     if (phase2Results.nonEmpty) {
       return Invocable(mostSpecificMethod(phase2Results.toList))
     }
 
     //Phase 3: Identify Applicable Variable Arity Methods
     //FIXME:TODO: Implement var arg calls
-    
+
     // No match
     throw new orc.error.runtime.MethodTypeMismatchException(memberName, targetClass);
   }
 
-  /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */ 
+  /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */
   private def isApplicable(formalParamType: Class[_], actualArgType: Class[_], allowConversion: Boolean): Boolean = {
     // allowConversion refers to method invocation conversion (JLS §5.3), which is one of:
     // 0. identity conversion
@@ -182,7 +182,7 @@ object OrcJavaCompatibility {
   private val longRefClass = classOf[java.lang.Long]
   private val floatRefClass = classOf[java.lang.Float]
   private val doubleRefClass = classOf[java.lang.Double]
-  
+
   // Orc's numeric types
   val orcIntegralClass = classOf[BigInt]
   val orcFloatingPointClass = classOf[BigDecimal]
@@ -224,7 +224,7 @@ object OrcJavaCompatibility {
       case java.lang.Short.TYPE => toPrimType == java.lang.Integer.TYPE || toPrimType == java.lang.Long.TYPE || toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
       case java.lang.Character.TYPE => toPrimType == java.lang.Integer.TYPE || toPrimType == java.lang.Long.TYPE || toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
       case java.lang.Integer.TYPE => toPrimType == java.lang.Long.TYPE || toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
-      case java.lang.Long.TYPE => toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE 
+      case java.lang.Long.TYPE => toPrimType == java.lang.Float.TYPE || toPrimType == java.lang.Double.TYPE
       case java.lang.Float.TYPE => toPrimType == java.lang.Double.TYPE
       case _ => false
     })
@@ -242,7 +242,7 @@ object OrcJavaCompatibility {
       case java.lang.Byte.TYPE => orcIntegralClass.isAssignableFrom(fromType)
       case java.lang.Short.TYPE => orcIntegralClass.isAssignableFrom(fromType)
       case java.lang.Integer.TYPE => orcIntegralClass.isAssignableFrom(fromType)
-      case java.lang.Long.TYPE => orcIntegralClass.isAssignableFrom(fromType) 
+      case java.lang.Long.TYPE => orcIntegralClass.isAssignableFrom(fromType)
       case java.lang.Float.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
       case java.lang.Double.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
       case _ => false
@@ -250,13 +250,13 @@ object OrcJavaCompatibility {
   }
 
   /** Most specific method per JLS §15.12.2.5 */
-  private def mostSpecificMethod[M <: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int}](methods: List[M]): M = {
+  private def mostSpecificMethod[M <: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int }](methods: List[M]): M = {
     //FIXME:TODO: Implement var arg calls
-    val maximallySpecificMethods = 
-      methods.foldLeft(List[M]())({(prevMostSpecific: List[M], nextMethod: M) =>
+    val maximallySpecificMethods =
+      methods.foldLeft(List[M]())({ (prevMostSpecific: List[M], nextMethod: M) =>
         if (prevMostSpecific.isEmpty) {
           List(nextMethod)
-        } else { 
+        } else {
           if (isEqOrMoreSpecific(nextMethod, prevMostSpecific.head)) {
             if (isEqOrMoreSpecific(prevMostSpecific.head, nextMethod)) { // equally specific, add to list
               prevMostSpecific :+ nextMethod
@@ -268,13 +268,13 @@ object OrcJavaCompatibility {
           }
         }
       })
-    Logger.finest("maximallySpecificMethods="+maximallySpecificMethods.mkString("{", ", ", "}"))
+    Logger.finest("maximallySpecificMethods=" + maximallySpecificMethods.mkString("{", ", ", "}"))
     if (maximallySpecificMethods.length == 1) {
       return maximallySpecificMethods.head
     } else if (maximallySpecificMethods.length == 0) {
-      throw new java.lang.NoSuchMethodException()  //TODO: throw a MethodTypeMismatchException instead
+      throw new java.lang.NoSuchMethodException() //TODO: throw a MethodTypeMismatchException instead
     } else {
-      val concreteMethods = maximallySpecificMethods.filter({m => !Modifier.isAbstract(m.getModifiers())})
+      val concreteMethods = maximallySpecificMethods.filter({ m => !Modifier.isAbstract(m.getModifiers()) })
       concreteMethods.length match {
         case 1 => return concreteMethods.head
         case 0 => return maximallySpecificMethods.head //pick arbitrarily per JLS §15.12.2.5
@@ -282,26 +282,26 @@ object OrcJavaCompatibility {
       }
     }
   }
-  
+
   /** Left is more or equally specific than right (per JLS §15.12.2.5) */
-  private def isEqOrMoreSpecific(left: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
+  private def isEqOrMoreSpecific(left: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }, right: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }): Boolean = {
     if (isSameArgumentTypes(left, right)) {
-      left.getDeclaringClass().getClasses().contains(right.getDeclaringClass())  // An override is more specific than super
+      left.getDeclaringClass().getClasses().contains(right.getDeclaringClass()) // An override is more specific than super
     } else {
-      left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => isJavaSubtypeOf(l, r)})
+      left.getParameterTypes().corresponds(right.getParameterTypes())({ (l, r) => isJavaSubtypeOf(l, r) })
     }
   }
 
   /** Java subtyping per JLS §4.10 */
   private def isJavaSubtypeOf(left: java.lang.Class[_], right: java.lang.Class[_]): Boolean = {
     (left == right) || (right.isAssignableFrom(left)) || isPrimWidenable(left, right) ||
-    (left.isArray && right.isArray && isJavaSubtypeOf(left.getComponentType, right.getComponentType))
+      (left.isArray && right.isArray && isJavaSubtypeOf(left.getComponentType, right.getComponentType))
   }
 
   /** Same argument types per JLS §8.4.2 */
-  private def isSameArgumentTypes(left: {def getParameterTypes(): Array[java.lang.Class[_]]}, right: {def getParameterTypes(): Array[java.lang.Class[_]]}): Boolean = {
+  private def isSameArgumentTypes(left: { def getParameterTypes(): Array[java.lang.Class[_]] }, right: { def getParameterTypes(): Array[java.lang.Class[_]] }): Boolean = {
     left.getParameterTypes().length == right.getParameterTypes().length &&
-    left.getParameterTypes().corresponds(right.getParameterTypes())({(l,r) => r.isAssignableFrom(l) && l.isAssignableFrom(r)})
+      left.getParameterTypes().corresponds(right.getParameterTypes())({ (l, r) => r.isAssignableFrom(l) && l.isAssignableFrom(r) })
   }
-  
+
 }

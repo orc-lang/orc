@@ -27,14 +27,13 @@ import orc.ast.ext.TupleExpr
 import orc.values.OrcTuple
 import orc.types._
 
-
 object Read extends TotalSite with TypedSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
     val parsedValue = args match {
       case List(s: String) => {
         OrcLiteralParser(s) match {
           case r: OrcLiteralParser.SuccessT[_] => r.get.asInstanceOf[Expression]
-          case n: OrcLiteralParser.NoSuccess   => throw new ParsingException(n.msg+" when reading \""+s+"\"", n.next.pos)
+          case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg + " when reading \"" + s + "\"", n.next.pos)
         }
       }
       case List(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
@@ -46,9 +45,9 @@ object Read extends TotalSite with TypedSite {
     case Constant(v) => v
     case ListExpr(vs) => vs map convertToOrcValue
     case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
-    case mystery => throw new ParsingException("Don't know how to convert a "+(if (mystery != null) mystery.getClass().toString() else "null")+" to an Orc value", null)
+    case mystery => throw new ParsingException("Don't know how to convert a " + (if (mystery != null) mystery.getClass().toString() else "null") + " to an Orc value", null)
   }
-  
+
   def orcType(): Type = SimpleFunctionType(StringType, Top)
 
 }

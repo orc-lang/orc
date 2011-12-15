@@ -15,7 +15,7 @@
 
 package orc.lib.builtin.structured
 
-import orc.values.{OrcRecord, Signal}
+import orc.values.{ OrcRecord, Signal }
 import orc.values.sites._
 import orc.types._
 
@@ -39,7 +39,6 @@ object NoneExtractor extends PartialSite1 with TypedSite {
   def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
 }
 
-
 object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor)
 object SomeConstructor extends TotalSite1 with TypedSite {
   override def name = "Some"
@@ -53,7 +52,7 @@ object SomeExtractor extends PartialSite1 with TypedSite {
   override def name = "Some.unapply"
   def eval(arg: AnyRef) = {
     arg match {
-      case Some(v : AnyRef) => Some(v)
+      case Some(v: AnyRef) => Some(v)
       case None => None
       case _ => None
     }
@@ -61,6 +60,5 @@ object SomeExtractor extends PartialSite1 with TypedSite {
   def orcType() = {
     val X = new TypeVariable()
     new FunctionType(List(X), List(OptionType(X)), X)
-  } 
+  }
 }
-

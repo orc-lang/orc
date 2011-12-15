@@ -14,18 +14,14 @@
 //
 package orc.ast.oil.named
 
-/**
- * 
- *
- * @author dkitchin
- */
-trait NamedASTFunction
-{
+/** @author dkitchin
+  */
+trait NamedASTFunction {
   def apply(a: Argument): Argument
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Def): Def
-  
+
   def apply(ast: NamedAST): NamedAST = {
     ast match {
       case a: Argument => this(a)
@@ -34,7 +30,7 @@ trait NamedASTFunction
       case d: Def => this(d)
     }
   }
-  
+
   def andThen(g: NamedASTFunction): NamedASTFunction = {
     val f = this
     new NamedASTFunction {
@@ -47,38 +43,26 @@ trait NamedASTFunction
 
 }
 
-
-
-
-object EmptyFunction extends PartialFunction[Any,Nothing] {
-  def isDefinedAt(x : Any): Boolean = false
+object EmptyFunction extends PartialFunction[Any, Nothing] {
+  def isDefinedAt(x: Any): Boolean = false
   def apply(x: Any): Nothing = throw new AssertionError("EmptyFunction is undefined for all inputs.")
 }
 
-trait NamedASTTransform extends NamedASTFunction
-{ 
+trait NamedASTTransform extends NamedASTFunction {
   def apply(a: Argument): Argument = transform(a, Nil)
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Def): Def = transform(d, Nil, Nil)
-    
-  def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar])
-    : PartialFunction[Expression, Expression]
-    = EmptyFunction
-  
-  def onArgument(context: List[BoundVar])
-    : PartialFunction[Argument, Argument]
-    = EmptyFunction
-  
-  def onType(typecontext: List[BoundTypevar])
-    : PartialFunction[Type, Type]
-    = EmptyFunction
-  
-  def onDef(context: List[BoundVar], typecontext: List[BoundTypevar])
-    : PartialFunction[Def, Def]
-    = EmptyFunction
-  
-  def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) = 
+
+  def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
+
+  def onArgument(context: List[BoundVar]): PartialFunction[Argument, Argument] = EmptyFunction
+
+  def onType(typecontext: List[BoundTypevar]): PartialFunction[Type, Type] = EmptyFunction
+
+  def onDef(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Def, Def] = EmptyFunction
+
+  def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
@@ -90,26 +74,25 @@ trait NamedASTTransform extends NamedASTFunction
     val pf = onArgument(context)
     if (pf isDefinedAt a) { a -> pf } else a
   }
-  
+
   def transform(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): Expression = {
     val pf = onExpression(context, typecontext)
     if (pf isDefinedAt e) {
       e -> pf
-    }
-    else {
+    } else {
       val recurse = recurseWithContext(context, typecontext)
       e -> {
         case Stop() => Stop()
-        case a : Argument => recurse(a)
+        case a: Argument => recurse(a)
         case Call(target, args, typeargs) => {
           val newtarget = recurse(target)
           val newargs = args map { recurse(_) }
-          val newtypeargs = typeargs map { _ map { recurse(_) }}
+          val newtypeargs = typeargs map { _ map { recurse(_) } }
           Call(newtarget, newargs, newtypeargs)
         }
         case left || right => recurse(left) || recurse(right)
-        case left > x > right => recurse(left)  > x >  transform(right, x :: context, typecontext)
-        case left < x < right => transform(left, x :: context, typecontext)  < x <  recurse(right)
+        case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
+        case left < x < right => transform(left, x :: context, typecontext) < x < recurse(right)
         case left ow right => recurse(left) ow recurse(right)
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
@@ -124,31 +107,30 @@ trait NamedASTTransform extends NamedASTFunction
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
       }
-    }     
+    }
   }
 
   def transform(t: Type, typecontext: List[BoundTypevar]): Type = {
     val pf = onType(typecontext)
     if (pf isDefinedAt t) {
       t -> pf
-    }
-    else {
+    } else {
       def recurse(t: Type) = transform(t, typecontext)
       t -> {
         case Bot() => Bot()
         case Top() => Top()
         case ImportedType(cl) => ImportedType(cl)
         case ClassType(cl) => ClassType(cl)
-        case u : Typevar => u
+        case u: Typevar => u
         case TupleType(elements) => TupleType(elements map recurse)
         case RecordType(entries) => {
-           val newEntries = entries map { case (s,t) => (s, recurse(t)) }
-           RecordType(newEntries)
+          val newEntries = entries map { case (s, t) => (s, recurse(t)) }
+          RecordType(newEntries)
         }
         case TypeApplication(tycon, typeactuals) => {
           TypeApplication(recurse(tycon), typeactuals map recurse)
         }
-        case AssertedType(assertedType) => AssertedType( recurse(assertedType) )
+        case AssertedType(assertedType) => AssertedType(recurse(assertedType))
         case FunctionType(typeformals, argtypes, returntype) => {
           val newtypecontext = typeformals ::: typecontext
           val newargtypes = argtypes map { transform(_, newtypecontext) }
@@ -169,14 +151,12 @@ trait NamedASTTransform extends NamedASTFunction
       }
     }
   }
-        
 
   def transform(d: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): Def = {
     val pf = onDef(context, typecontext)
-    if (pf isDefinedAt d) { 
-      d -> pf 
-    } 
-    else {
+    if (pf isDefinedAt d) {
+      d -> pf
+    } else {
       d -> {
         case Def(name, formals, body, typeformals, argtypes, returntype) => {
           val newcontext = formals ::: context

@@ -14,24 +14,23 @@
 //
 package orc.error
 
-/**
- * Implicitly extend Orc exceptions with an additional method to set their location.
- * This is in Scala so that the exception's specific type can be maintained through the call.
- * Plus, this is a hook to add additional functionality to exceptions later. 
- *
- * @author dkitchin
- */
+/** Implicitly extend Orc exceptions with an additional method to set their location.
+  * This is in Scala so that the exception's specific type can be maintained through the call.
+  * Plus, this is a hook to add additional functionality to exceptions later.
+  *
+  * @author dkitchin
+  */
 object OrcExceptionExtension {
 
   implicit def extendOrcException[E <: OrcException](e: E): ExtendedOrcException[E] = ExtendedOrcException[E](e)
-  
+
 }
 
 case class ExtendedOrcException[E <: OrcException](e: E) {
-  
-  def at(ast : orc.ast.AST): E = {
+
+  def at(ast: orc.ast.AST): E = {
     e.setPosition(ast.pos);
     e
   }
-  
+
 }

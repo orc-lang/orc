@@ -18,45 +18,43 @@ import orc.error.compiletime.typing.TypeException
 import orc.error.compiletime.typing.OverloadedTypeException
 
 /**
- * 
- * Ad-hoc polymorphic callable types.
- * 
- * For simplicity and modularity of implementation, type inference 
- * and type meets and joins in the core type system will not generate 
- * or interact with overloaded types; they use the default meet and join.
- * 
- * Thus, explicit type annotations will sometimes be required where 
- * one might expect the type system to find a more informative result.
- * 
- * TODO: Refine these types to play nice with meets and joins; this may
- * require modifications to other types, especially FunctionType.
- * 
- * These types cannot be written by the programmer. They can only be
- * introduced by sites.
- *
- * @author dkitchin
- */
+  * Ad-hoc polymorphic callable types.
+  *
+  * For simplicity and modularity of implementation, type inference
+  * and type meets and joins in the core type system will not generate
+  * or interact with overloaded types; they use the default meet and join.
+  *
+  * Thus, explicit type annotations will sometimes be required where
+  * one might expect the type system to find a more informative result.
+  *
+  * TODO: Refine these types to play nice with meets and joins; this may
+  * require modifications to other types, especially FunctionType.
+  *
+  * These types cannot be written by the programmer. They can only be
+  * introduced by sites.
+  *
+  * @author dkitchin
+  */
 case class OverloadedType(alternatives: List[CallableType]) extends CallableType {
-  
+
   override def toString = alternatives.mkString("(", " /\\ ", ")")
-  
+
   override def <(that: Type): Boolean = {
     for (t <- alternatives) {
-      if (t < that) { 
-        return true 
+      if (t < that) {
+        return true
       }
     }
     // otherwise
     super.<(that)
   }
-  
+
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     var failure = new OverloadedTypeException()
     for (t <- alternatives) {
       try {
         return t.call(typeArgs, argTypes)
-      }
-      catch {
+      } catch {
         case e: TypeException => {
           failure = failure.addAlternative(t, e)
         }
@@ -65,5 +63,5 @@ case class OverloadedType(alternatives: List[CallableType]) extends CallableType
     // otherwise
     throw failure
   }
-  
+
 }

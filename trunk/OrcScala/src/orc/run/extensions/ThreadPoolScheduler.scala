@@ -27,12 +27,11 @@ import orc.Schedulable
 
 object Logger extends orc.util.Logger("orc.run.scheduler")
 
-/**
- * An Orc runtime engine extension which
- * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
- *
- * @author jthywiss
- */
+/** An Orc runtime engine extension which
+  * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
+  *
+  * @author jthywiss
+  */
 trait OrcWithThreadPoolScheduler extends Orc {
 
   private var executor: OrcRunner = null
@@ -51,7 +50,7 @@ trait OrcWithThreadPoolScheduler extends Orc {
     if (executor == null) {
       throw new IllegalStateException("Cannot schedule a task without an inited executor")
     }
-    t.onSchedule() 
+    t.onSchedule()
     executor.executeTask(t)
   }
 
@@ -78,14 +77,12 @@ trait OrcWithThreadPoolScheduler extends Orc {
   }
 }
 
-
-/**
- * Interface from Orc runtime engine to an executor service
- *
- * @author jthywiss
- */
+/** Interface from Orc runtime engine to an executor service
+  *
+  * @author jthywiss
+  */
 trait OrcRunner {
-  
+
   /** Begin executing submitted tasks */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
@@ -106,22 +103,20 @@ trait OrcRunner {
 
 }
 
-
-/**
- * A ThreadPoolExecutor that periodically resizes the worker thread pool
- * to ensure there is a minimum number of runnable threads.  I.e., as
- * threads are blocked by their task, new threads are added to serve
- * the work queue.
- *
- * @author jthywiss
- */
+/** A ThreadPoolExecutor that periodically resizes the worker thread pool
+  * to ensure there is a minimum number of runnable threads.  I.e., as
+  * threads are blocked by their task, new threads are added to serve
+  * the work queue.
+  *
+  * @author jthywiss
+  */
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-    //TODO: Make more of these params configurable
-    math.max(4, Runtime.getRuntime().availableProcessors * 2),
-    if (maxSiteThreads > 0) maxSiteThreads else 256,
-    2000L, TimeUnit.MILLISECONDS,
-    new LinkedBlockingQueue[Runnable],
-    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+  //TODO: Make more of these params configurable
+  math.max(4, Runtime.getRuntime().availableProcessors * 2),
+  if (maxSiteThreads > 0) maxSiteThreads else 256,
+  2000L, TimeUnit.MILLISECONDS,
+  new LinkedBlockingQueue[Runnable],
+  new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 
@@ -165,9 +160,9 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     //FIXME: Don't allow blocking tasks to consume all worker threads
     execute(task)
   }
-  
+
   override def afterExecute(r: Runnable, t: Throwable): Unit = {
-    super.afterExecute(r,t)
+    super.afterExecute(r, t)
     r match {
       case s: Schedulable => s.onComplete()
       case _ => {}
@@ -186,7 +181,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   def awaitTermination(timeoutMillis: Long) = {
     super.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)
   }
-  
+
   override protected def terminated() {
     super.terminated()
     val t = supervisorThread
@@ -194,7 +189,6 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
       t.interrupt()
     }
   }
-
 
   protected val CHECK_PERIOD = 10 /* milliseconds */
 
@@ -205,7 +199,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     val mainLockField = getClass.getSuperclass.getDeclaredField("mainLock")
     mainLockField.setAccessible(true)
     val mainLock = mainLockField.get(this).asInstanceOf[java.util.concurrent.locks.ReentrantLock]
-    val threadBuffer = new Array[Thread](getMaximumPoolSize+2)
+    val threadBuffer = new Array[Thread](getMaximumPoolSize + 2)
     var firstTime = 0L
     var lastTime = Long.MinValue
 
@@ -218,18 +212,20 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
 
             def ifElapsed(triggerTime: Long, action: => Unit) = {
               if (currTime >= triggerTime && triggerTime > lastTime) {
-                Logger.finest("At shutdown elapsed time "+currTime+" ms, firing action scheduled for "+triggerTime+" ms")
+                Logger.finest("At shutdown elapsed time " + currTime + " ms, firing action scheduled for " + triggerTime + " ms")
                 action
               }
             }
 
-                               // First, gently shut down
-            ifElapsed(     0L, { shutdown() })
-                               // After "a little while", we insist
-            ifElapsed(   120L, { shutdownNow() })
-                               // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
-            ifElapsed(303000L, { Logger.severe("Orc shutdown was unable to terminate "+getPoolSize()+" worker threads")
-                                 giveUp = true })
+            // First, gently shut down
+            ifElapsed(0L, { shutdown() })
+            // After "a little while", we insist
+            ifElapsed(120L, { shutdownNow() })
+            // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
+            ifElapsed(303000L, {
+              Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads")
+              giveUp = true
+            })
 
             lastTime = currTime
           }
@@ -250,7 +246,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
               val liveThreads = threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false))
               val workingThreads = getActiveCount // Number of Workers running a Task
               val supervisor = Thread.currentThread
-              val progressingThreadCount = liveThreads.count({t => t != supervisor && (t.getState == Thread.State.RUNNABLE || t.getState == Thread.State.BLOCKED || t.getState == Thread.State.NEW)})
+              val progressingThreadCount = liveThreads.count({ t => t != supervisor && (t.getState == Thread.State.RUNNABLE || t.getState == Thread.State.BLOCKED || t.getState == Thread.State.NEW) })
               val nonProgressingWorkingThreadCount = workingThreads - progressingThreadCount
 
               //Logger.finest("poolSize = " + getPoolSize)
@@ -264,7 +260,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
                 threadBuffer.update(i, null)
               }
 
-              setCorePoolSize(math.min(math.max(4, numCores*2 + nonProgressingWorkingThreadCount), getMaximumPoolSize))
+              setCorePoolSize(math.min(math.max(4, numCores * 2 + nonProgressingWorkingThreadCount), getMaximumPoolSize))
             } finally {
               mainLock.unlock()
             }
@@ -281,7 +277,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
         }
       }
     } catch {
-      case t => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in "+getClass.getCanonicalName+".run()", t); shutdownNow(); throw t }
+      case t => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in " + getClass.getCanonicalName + ".run()", t); shutdownNow(); throw t }
     } finally {
       try {
         if (!isTerminated) shutdownNow()
@@ -296,12 +292,12 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     Logger.exiting(getClass.getCanonicalName, "run")
   }
 
-  Logger.finer(getClass.getCanonicalName+": Constructed")
+  Logger.finer(getClass.getCanonicalName + ": Constructed")
   Logger.finest("corePoolSize = " + getCorePoolSize)
   Logger.finest("maximumPoolSize = " + getMaximumPoolSize)
 
   def logThreadExit() = {
-    Logger.finer(getClass.getCanonicalName+": Supervisor thread exit")
+    Logger.finer(getClass.getCanonicalName + ": Supervisor thread exit")
     Logger.finest("corePoolSize = " + getCorePoolSize)
     Logger.finest("maximumPoolSize = " + getMaximumPoolSize)
     Logger.finest("poolSize = " + getPoolSize)

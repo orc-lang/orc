@@ -16,45 +16,41 @@
 package orc.ast
 
 import orc.error.OrcException
-import scala.collection.mutable.{ArrayBuffer, Buffer}
-import scala.util.parsing.input.{NoPosition, Position, Positional}
+import scala.collection.mutable.{ ArrayBuffer, Buffer }
+import scala.util.parsing.input.{ NoPosition, Position, Positional }
 
 trait AST extends Positional {
-  
-  /**
-   * Metadata transfer.
-   */
-  def ->>[B <: AST](that : B): B = { 
+
+  /** Metadata transfer.
+    */
+  def ->>[B <: AST](that: B): B = {
     that.pushDownPosition(this.pos)
     transferOptionalVariableName(this, that)
-    that 
+    that
   }
-  
-  /**
-   * Metadata-preserving transform.
-   */
+
+  /** Metadata-preserving transform.
+    */
   def ->[B <: AST](f: this.type => B): B = {
     this ->> f(this)
   }
-  
-  /**
-   * Set source location at this node and propagate
-   * the change to any children without source locations.
-   */
-  def pushDownPosition(p : Position): Unit = {
+
+  /** Set source location at this node and propagate
+    * the change to any children without source locations.
+    */
+  def pushDownPosition(p: Position): Unit = {
     this.pos match {
       case NoPosition => {
         this.setPos(p)
         this.subtrees map { _.pushDownPosition(p) }
       }
-      case _ => {  }
+      case _ => {}
     }
   }
-  
-  /**
-   * If both AST nodes have an optional variable name,
-   * copy that name from this node to the other.
-   */
+
+  /** If both AST nodes have an optional variable name,
+    * copy that name from this node to the other.
+    */
   def transferOptionalVariableName(source: AST, target: AST) {
     (source, target) match {
       case (x: hasOptionalVariableName, y: hasOptionalVariableName) => {
@@ -62,13 +58,11 @@ trait AST extends Positional {
       }
       case _ => {}
     }
-    
-    
+
   }
-  
-  /**
-   * All AST node children of this node, as a single list
-   */
+
+  /** All AST node children of this node, as a single list
+    */
   def subtrees: Iterable[AST] = {
     def flattenAstNodes(x: Any, flatList: Buffer[AST]) {
       def isGood(y: Any): Boolean = y match {
@@ -111,11 +105,9 @@ trait AST extends Positional {
   def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
 }
 
-
 trait OrcSyntaxConvertible {
   def toOrcSyntax: String
 }
-
 
 trait hasOptionalVariableName extends AST {
   var optionalVariableName: Option[String] = None

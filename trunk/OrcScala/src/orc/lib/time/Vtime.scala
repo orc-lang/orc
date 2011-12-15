@@ -19,8 +19,7 @@ import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
 import orc.values.sites.Site0
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object Vtime extends Site0 with VirtualClockOperation {
   // Do not invoke directly.

@@ -17,20 +17,18 @@ package orc.lib.state.types
 import orc.types._
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 object SemaphoreType extends RecordType(
   "acquire" -> SimpleFunctionType(SignalType),
   "acquireD" -> SimpleFunctionType(SignalType),
   "release" -> SimpleFunctionType(SignalType),
   "snoop" -> SimpleFunctionType(SignalType),
-  "snoopD" -> SimpleFunctionType(SignalType)
-) {
- 
+  "snoopD" -> SimpleFunctionType(SignalType)) {
+
   override def toString = "Semaphore"
-  
+
   def getBuilder: Type = SimpleFunctionType(IntegerType, this)
- 
+
 }

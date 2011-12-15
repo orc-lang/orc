@@ -16,26 +16,25 @@
 package orc.util
 
 /**
- * 
- * Adds the partialMap method to Lists.
- * 
- * xs.partialMap(f) returns a new list where each element
- * x of xs is mapped to:
- * 
- * f(x) if x is in the domain of f
- * x otherwise.
- *
- * @author dkitchin
- */
+  * Adds the partialMap method to Lists.
+  *
+  * xs.partialMap(f) returns a new list where each element
+  * x of xs is mapped to:
+  *
+  * f(x) if x is in the domain of f
+  * x otherwise.
+  *
+  * @author dkitchin
+  */
 object PartialMapExtension {
 
   // Adds a partialMap method to lists
   class ListWithPartialMap[A](xs: List[A]) {
-    def partialMap(f: PartialFunction[A,A]): List[A] = {
-      xs map { elem: A => if ( f.isDefinedAt(elem) ) { f(elem) } else { elem } }
+    def partialMap(f: PartialFunction[A, A]): List[A] = {
+      xs map { elem: A => if (f.isDefinedAt(elem)) { f(elem) } else { elem } }
     }
   }
-  
+
   implicit def addPartialMapToList[A](xs: List[A]) = new ListWithPartialMap(xs)
 
 }

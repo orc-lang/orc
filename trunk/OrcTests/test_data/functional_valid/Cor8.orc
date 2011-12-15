@@ -7,6 +7,7 @@
 
 true && (true || false)
 
-{- OUTPUT
-- true
+{-
+OUTPUT:
+true
 -}

@@ -33,12 +33,11 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
 /**
- * 
- * XML elements. These sites are not namespace aware. Construction defaults
- * to the empty namespace, and matching discards namespace information.
- *
- * @author dkitchin
- */
+  * XML elements. These sites are not namespace aware. Construction defaults
+  * to the empty namespace, and matching discards namespace information.
+  *
+  * @author dkitchin
+  */
 
 /* Template for building values which act as constructor-extractor sites,
  * such as the Some site.
@@ -47,17 +46,16 @@ import orc.error.runtime.ArityMismatchException
 /* We use Scala's Node class as the underlying type of Orc XML trees */
 object XMLType extends JavaObjectType(classOf[scala.xml.Node])
 
-
 object XMLElementSite extends StructurePairSite(XMLElementConstructor, XMLElementExtractor)
 
 object XMLElementConstructor extends TotalSite3 with TypedSite {
 
   override def name = "XMLElement"
-  
+
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef = {
-    (x,y,z) match {
+    (x, y, z) match {
       case (tag: String, attr: OrcRecord, children: List[_]) => {
-        val metadata = attr.entries.foldRight[MetaData](Null) { case ((k,v),rest) => new UnprefixedAttribute(k, v.toString, rest) }
+        val metadata = attr.entries.foldRight[MetaData](Null) { case ((k, v), rest) => new UnprefixedAttribute(k, v.toString, rest) }
         val childNodes = for (c <- children) yield c.asInstanceOf[Node]
         new Elem(null, tag, metadata, TopScope, childNodes: _*)
       }
@@ -72,19 +70,18 @@ object XMLElementConstructor extends TotalSite3 with TypedSite {
       }
     }
   }
-  
-  def orcType() = 
+
+  def orcType() =
     SimpleFunctionType(
       List(StringType, EmptyRecordType, ListType(XMLType)),
-      XMLType
-    )
-  
+      XMLType)
+
 }
 
 object XMLElementExtractor extends PartialSite1 with TypedSite {
-  
+
   override def name = "XMLElement.unapply"
-  
+
   override def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
       case xml: Elem => {
@@ -96,95 +93,88 @@ object XMLElementExtractor extends PartialSite1 with TypedSite {
       case _ => None
     }
   }
-  
-  def orcType() = 
+
+  def orcType() =
     SimpleFunctionType(
       XMLType,
-      TupleType(List(StringType, EmptyRecordType, ListType(XMLType)))
-    )
-  
+      TupleType(List(StringType, EmptyRecordType, ListType(XMLType))))
+
 }
-  
 
 object XMLTextSite extends StructurePairSite(XMLTextConstructor, XMLTextExtractor)
 
 object XMLTextConstructor extends TotalSite1 with TypedSite {
 
   override def name = "XMLText"
-  
+
   def eval(x: AnyRef): AnyRef = {
     x match {
       case data: String => new Text(data)
       case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
-  
+
   def orcType() = SimpleFunctionType(StringType, XMLType)
- 
+
 }
-  
+
 object XMLTextExtractor extends PartialSite1 with TypedSite {
-  
+
   override def name = "XMLText.unapply"
-  
+
   override def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
       case xml: Text => Some(xml._data)
       case _ => None
     }
   }
-  
+
   def orcType() = SimpleFunctionType(XMLType, StringType)
 }
-  
-  
-
 
 object XMLCDataSite extends StructurePairSite(XMLCDataConstructor, XMLCDataExtractor)
 
 object XMLCDataConstructor extends TotalSite1 with TypedSite {
 
   override def name = "XMLCData"
-  
+
   def eval(x: AnyRef): AnyRef = {
     x match {
       case data: String => new PCData(data)
       case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
-  
+
   def orcType() = SimpleFunctionType(StringType, XMLType)
-  
+
 }
 
-
 object XMLCDataExtractor extends PartialSite1 with TypedSite {
-  
+
   override def name = "XMLCData.unapply"
-  
+
   override def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
       case xml: PCData => Some(xml._data)
       case _ => None
     }
   }
-  
+
   def orcType() = SimpleFunctionType(XMLType, StringType)
-  
+
 }
-  
-  
+
 object IsXMLSite extends PartialSite1 with TypedSite {
 
   override def name = "IsXML"
-  
+
   def eval(x: AnyRef): Option[AnyRef] = {
     x match {
-      case _ : Node => Some(x)
+      case _: Node => Some(x)
       case _ => None
     }
   }
-  
+
   def orcType() = SimpleFunctionType(Top, XMLType)
-  
+
 }

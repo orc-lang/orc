@@ -17,12 +17,11 @@ import orc.run.extensions.SwappableASTs
 import orc.run.Orc
 import orc.run.core.Token
 
-/**
- * Edit operation that is a relocation of a node within a tree.
- *
- * @author jthywiss
- */
-case class MoveNode[A <: AST, B <: AST](movingNode: A, movedNode: B, oldParent: A, newParent: B, position:Int) extends AstEditOperation {
+/** Edit operation that is a relocation of a node within a tree.
+  *
+  * @author jthywiss
+  */
+case class MoveNode[A <: AST, B <: AST](movingNode: A, movedNode: B, oldParent: A, newParent: B, position: Int) extends AstEditOperation {
 
   def tokenCracker(token: Token): Token = token.asInstanceOf[Token]
 
@@ -32,8 +31,8 @@ case class MoveNode[A <: AST, B <: AST](movingNode: A, movedNode: B, oldParent: 
 
   def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Token): Unit = {  }
+  def migrateClosures(token: Token): Unit = {}
 
-  def migrateFrameStack(token: Token): Unit = {  }
+  def migrateFrameStack(token: Token): Unit = {}
 
 }

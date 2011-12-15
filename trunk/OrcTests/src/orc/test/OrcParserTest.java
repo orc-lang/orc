@@ -52,6 +52,12 @@ public class OrcParserTest {
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
     final OrcBindings options = new OrcBindings();
     final StandardOrcCompiler envServices = new StandardOrcCompiler();
+    try {
+      Thread.sleep(10000L);
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     for (final File file : files) {
       if (file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar)) {
         continue; // Skip cases for invalid testing -- TODO:Look for a specific parse failure

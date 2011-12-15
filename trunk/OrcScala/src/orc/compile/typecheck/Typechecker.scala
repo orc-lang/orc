@@ -15,66 +15,61 @@
 
 package orc.compile.typecheck
 
-import orc.ast.oil.{named => syntactic}
-import orc.ast.oil.named.{Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda}
+import orc.ast.oil.{ named => syntactic }
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
-import orc.error.compiletime.{UnboundVariableException, UnboundTypeVariableException}
+import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException }
 import orc.util.OptionMapExtension._
-import orc.values.{Signal, Field}
+import orc.values.{ Signal, Field }
 import scala.math.BigInt
 import scala.math.BigDecimal
 import orc.values.sites.TypedSite
 import orc.compile.typecheck.ConstraintSet._
 import orc.compile.typecheck.Typeloader._
 
-/**
- * 
- * Typechecker for Orc expressions.
- * 
- * This typechecker implements a variation of the local type inference algorithm
- * described by Pierce and Turner in "Local Type Inference" (POPL '98). It extends
- * the algorithm with second-order types (thus the metatheory is based on F2sub),
- * but it does not yet implement bounded polymorphism.
- * 
- * Calls to the typechecker will return a new version of the given expression.
- * At present this transformation capability is used only to add inferred types
- * and type arguments to the AST. However, it could be used in the future to
- * perform type-directed transformations of the AST.
- * 
- * It is suggested that the AST undergo def fractioning before typechecking; otherwise
- * the detection of recursive functions will be oversensitive, and the typechecker
- * may fail to infer return types for some non-recursive functions.
- *
- * @author dkitchin
- */
+/** Typechecker for Orc expressions.
+  *
+  * This typechecker implements a variation of the local type inference algorithm
+  * described by Pierce and Turner in "Local Type Inference" (POPL '98). It extends
+  * the algorithm with second-order types (thus the metatheory is based on F2sub),
+  * but it does not yet implement bounded polymorphism.
+  *
+  * Calls to the typechecker will return a new version of the given expression.
+  * At present this transformation capability is used only to add inferred types
+  * and type arguments to the AST. However, it could be used in the future to
+  * perform type-directed transformations of the AST.
+  *
+  * It is suggested that the AST undergo def fractioning before typechecking; otherwise
+  * the detection of recursive functions will be oversensitive, and the typechecker
+  * may fail to infer return types for some non-recursive functions.
+  *
+  * @author dkitchin
+  */
 
 object Typechecker {
-  
+
   type Context = Map[syntactic.BoundVar, Type]
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
-  
+
   def apply(expr: Expression): (Expression, Type) = {
     typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
   }
-  
-  
-  
-  
+
   def typeSynthExpr(expr: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
     try {
-      val (newExpr, exprType) = 
+      val (newExpr, exprType) =
         expr match {
           case Stop() => (expr, Bot)
-          case Hole(_,_) => (expr, Bot)
+          case Hole(_, _) => (expr, Bot)
           case Constant(value) => (expr, typeValue(value))
           case x: syntactic.BoundVar => (x, context(x))
           case UnboundVar(name) => throw new UnboundVariableException(name)
           case FoldedCall(target, args, typeArgs) => {
             typeFoldedCall(target, args, typeArgs, None)
           }
-          case left || right  => {
+          case left || right => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)
             (newLeft || newRight, typeLeft join typeRight)
@@ -97,7 +92,7 @@ object Typechecker {
           case DeclareDefs(defs, body) => {
             val (newDefs, defBindings) = typeDefs(defs)
             val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
-            (DeclareDefs(newDefs, newBody), typeBody) 
+            (DeclareDefs(newDefs, newBody), typeBody)
           }
           case HasType(body, syntactic.AssertedType(t)) => {
             (expr, lift(t))
@@ -109,27 +104,23 @@ object Typechecker {
           }
           case DeclareType(u, t, body) => {
             val declaredType = liftEither(t)
-            val (newTypeContext, newTypeOperatorContext) = 
+            val (newTypeContext, newTypeOperatorContext) =
               declaredType match {
-                case Left(t) => (typeContext + ((u,t)), typeOperatorContext)
-                case Right(op) => (typeContext, typeOperatorContext + ((u,op)))
+                case Left(t) => (typeContext + ((u, t)), typeOperatorContext)
+                case Right(op) => (typeContext, typeOperatorContext + ((u, op)))
               }
-            val (newBody, typeBody) = typeSynthExpr(body)(context, newTypeContext, newTypeOperatorContext) 
+            val (newBody, typeBody) = typeSynthExpr(body)(context, newTypeContext, newTypeOperatorContext)
             (DeclareType(u, t, newBody), typeBody)
           }
         }
       (expr ->> newExpr, exprType)
-    }
-    catch {
+    } catch {
       case e: TypeException => {
         throw (e.setPosition(expr.pos))
       }
     }
   }
-  
-  
-  
-  
+
   def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
     try {
       expr -> {
@@ -180,10 +171,10 @@ object Typechecker {
         }
         case DeclareType(u, t, body) => {
           val declaredType = liftEither(t)
-          val (newTypeContext, newTypeOperatorContext) = 
+          val (newTypeContext, newTypeOperatorContext) =
             declaredType match {
-              case Left(t) => (typeContext + ((u,t)), typeOperatorContext)
-              case Right(op) => (typeContext, typeOperatorContext + ((u,op)))
+              case Left(t) => (typeContext + ((u, t)), typeOperatorContext)
+              case Right(op) => (typeContext, typeOperatorContext + ((u, op)))
             }
           val newBody = typeCheckExpr(body, T)(context, typeContext + ((u, lift(t))), typeOperatorContext)
           DeclareType(u, t, newBody)
@@ -194,65 +185,59 @@ object Typechecker {
           newExpr
         }
       }
-    }
-    catch {
+    } catch {
       case e: TypeException => {
         throw (e.setPosition(expr.pos))
       }
     }
   }
-  
-  
-  
 
   def typeDefs(defgroup: List[Def])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (List[Def], List[(syntactic.BoundVar, Type)]) = {
-    val defs = 
-      defgroup map { 
+    val defs =
+      defgroup map {
         // If argument types are missing, and there are no formals, infer an empty arg type list
-        case d@ Def(_, Nil, _, _, None, _) => d.copy(argtypes = Some(Nil))
+        case d @ Def(_, Nil, _, _, None, _) => d.copy(argtypes = Some(Nil))
         case d => d
       }
     defs match {
       // The return type is absent and we may be able to infer it.
-      case List(d@ Def(name, formals, body, typeFormals, Some(argTypes), None)) => {
+      case List(d @ Def(name, formals, body, typeFormals, Some(argTypes), None)) => {
         if (d.body.freevars contains d.name) {
           // We do not infer return types for recursive functions.
           val e = new UnspecifiedReturnTypeException()
           e.setPosition(d.pos)
           throw e
-        }
-        else {
-          val liftedTypeFormals = typeFormals map { u => new TypeVariable(u) }  
+        } else {
+          val liftedTypeFormals = typeFormals map { u => new TypeVariable(u) }
           val typeBindings = typeFormals zip liftedTypeFormals
-          
+
           val liftedArgTypes = argTypes map { lift(_)(typeContext ++ typeBindings, typeOperatorContext) }
-          
+
           val argBindings = formals zip liftedArgTypes
-          
-          
+
           // Note that the function itself is not bound in the context, since we know it is not recursive.
           val (newBody, liftedReturnType) = typeSynthExpr(body)(context ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
-          
+
           val newDef = d.copy(body = newBody, returntype = reify(liftedReturnType)(typeContext ++ typeBindings, typeOperatorContext))
           val liftedDefType = FunctionType(liftedTypeFormals, liftedArgTypes, liftedReturnType)
-          
-          (List(newDef), List( (name, liftedDefType) ))
+
+          (List(newDef), List((name, liftedDefType)))
         }
       }
       case ds => {
-        val defBindings: List[(syntactic.BoundVar, Type)] = 
+        val defBindings: List[(syntactic.BoundVar, Type)] =
           for (d <- ds) yield {
             d match {
               case Def(name, _, _, typeFormals, Some(argTypes), Some(returnType)) => {
                 val syntacticType = syntactic.FunctionType(typeFormals, argTypes, returnType)
                 (name, lift(syntacticType))
               }
-              case Def(_,_,_,_,None,_) => {
+              case Def(_, _, _, _, None, _) => {
                 val e = new UnspecifiedArgTypesException()
                 e.setPosition(d.pos)
                 throw e
               }
-              case Def(_,_,_,_,_,None) => {
+              case Def(_, _, _, _, _, None) => {
                 val e = new UnspecifiedReturnTypeException()
                 e.setPosition(d.pos)
                 throw e
@@ -263,22 +248,21 @@ object Typechecker {
         val newDefs = {
           for (d <- ds) yield {
             val FunctionType(liftedTypeFormals, liftedArgTypes, liftedReturnType) = defTypeMap(d.name)
-            
+
             val argBindings = d.formals zip liftedArgTypes
             val typeBindings = d.typeformals zip liftedTypeFormals
-            
+
             val newBody = typeCheckExpr(d.body, liftedReturnType)(context ++ defBindings ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
-            
+
             d.copy(body = newBody)
           }
         }
         (newDefs, defBindings)
       }
-      
+
     }
   }
-  
-  
+
   def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
     val (newTarget, targetType) = typeSynthExpr(target)
     val (newArgs, argTypes) = {
@@ -299,8 +283,8 @@ object Typechecker {
             val (arg, t) = pair
             val newArg = typeCheckExpr(arg, t)
             (newArg, t)
-          } 
-          ((args zip funArgTypes) map check).unzip 
+          }
+          ((args zip funArgTypes) map check).unzip
         }
         case _ => (args map typeSynthExpr).unzip
       }
@@ -308,23 +292,22 @@ object Typechecker {
     val (newTypeArgs, returnType) = typeCall(syntacticTypeArgs, targetType, argTypes, checkReturnType)
     (FoldedCall(newTarget, newArgs, newTypeArgs), returnType)
   }
-  
-  
+
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
-    
+
     // Special call cases
     targetType match {
       case Bot => {
-        return (syntacticTypeArgs, Bot) 
+        return (syntacticTypeArgs, Bot)
       }
-      case _ : StrictType if argTypes contains Bot => {
+      case _: StrictType if argTypes contains Bot => {
         return (syntacticTypeArgs, Bot)
       }
       case RecordType(entries) => {
         argTypes match {
-           /* If this is a field access, do nothing, and check the call as normal. */
-          case List(_ : FieldType) => {}
-          
+          /* If this is a field access, do nothing, and check the call as normal. */
+          case List(_: FieldType) => {}
+
           /* If this is not a field access, try to use an 'apply' member. */
           case _ => {
             if (entries contains "apply") {
@@ -338,8 +321,7 @@ object Typechecker {
         for (t <- alternatives) {
           try {
             return typeCall(syntacticTypeArgs, t, argTypes, checkReturnType)
-          }
-          catch {
+          } catch {
             case e: TypeException => {
               failure = failure.addAlternative(t, e)
             }
@@ -356,77 +338,77 @@ object Typechecker {
       }
       case _ => {}
     }
-    
+
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {
-      case Some(args) => {
-        val typeArgs = args map lift
-        val returnType = 
-          targetType match {
-            case FunctionType(funTypeFormals, funArgTypes, funReturnType) => {
-              if (funTypeFormals.size != typeArgs.size) {
-                throw new TypeArgumentArityException(funTypeFormals.size, typeArgs.size)
+        case Some(args) => {
+          val typeArgs = args map lift
+          val returnType =
+            targetType match {
+              case FunctionType(funTypeFormals, funArgTypes, funReturnType) => {
+                if (funTypeFormals.size != typeArgs.size) {
+                  throw new TypeArgumentArityException(funTypeFormals.size, typeArgs.size)
+                }
+                if (funArgTypes.size != argTypes.size) {
+                  throw new ArgumentArityException(funArgTypes.size, argTypes.size)
+                }
+                for ((s, u) <- argTypes zip funArgTypes) {
+                  val t = u.subst(typeArgs, funTypeFormals)
+                  s assertSubtype t
+                }
+                funReturnType subst (typeArgs, funTypeFormals)
               }
+              case ct: CallableType => {
+                ct.call(typeArgs, argTypes)
+              }
+              case _ => throw new UncallableTypeException(targetType)
+            }
+          (syntacticTypeArgs, returnType)
+        }
+        case None => {
+          targetType match {
+            case FunctionType(Nil, funArgTypes, funReturnType) => {
               if (funArgTypes.size != argTypes.size) {
                 throw new ArgumentArityException(funArgTypes.size, argTypes.size)
               }
-              for ((s,u) <- argTypes zip funArgTypes) {
-                val t = u.subst(typeArgs, funTypeFormals)
+              for ((s, t) <- argTypes zip funArgTypes) {
                 s assertSubtype t
               }
-              funReturnType subst (typeArgs, funTypeFormals)
+              (Some(Nil), funReturnType)
             }
-            case ct: CallableType => { 
-              ct.call(typeArgs, argTypes) 
+            case FunctionType(funTypeFormals, funArgTypes, funReturnType) => {
+              val X = funTypeFormals.toSet
+              val baseConstraints = new ConstraintSet(X)
+              val argConstraints =
+                for ((s, t) <- argTypes zip funArgTypes) yield {
+                  typeConstraints({ _ => false }, s, t)(X)
+                }
+              val sigma: Map[TypeVariable, Type] =
+                checkReturnType match {
+                  case Some(r) => {
+                    val returnConstraints = typeConstraints({ _ => false }, funReturnType, r)(X)
+                    val allConstraints = meetAll(argConstraints) meet returnConstraints meet baseConstraints
+                    allConstraints.anySubstitution
+                  }
+                  case None => {
+                    val allConstraints = meetAll(argConstraints) meet baseConstraints
+                    allConstraints.minimalSubstitution(funReturnType)
+                  }
+                }
+
+              val newReturnType = funReturnType subst sigma
+              val newTypeArgs = funTypeFormals map { sigma(_) }
+
+              val newSyntacticTypeArgs = newTypeArgs optionMap reify
+              (newSyntacticTypeArgs, newReturnType)
+            }
+            case ct: CallableType => {
+              val returnType = ct.call(Nil, argTypes)
+              (Some(Nil), returnType)
             }
             case _ => throw new UncallableTypeException(targetType)
           }
-        (syntacticTypeArgs, returnType)
-      }
-      case None => {
-        targetType match {
-          case FunctionType(Nil, funArgTypes, funReturnType) => {
-            if (funArgTypes.size != argTypes.size) {
-              throw new ArgumentArityException(funArgTypes.size, argTypes.size)
-            }
-            for ((s,t) <- argTypes zip funArgTypes) {
-              s assertSubtype t
-            }
-            (Some(Nil), funReturnType)
-          }
-          case FunctionType(funTypeFormals, funArgTypes, funReturnType) => {
-            val X = funTypeFormals.toSet
-            val baseConstraints = new ConstraintSet(X)
-            val argConstraints = 
-              for ( (s,t) <- argTypes zip funArgTypes) yield {
-                typeConstraints({ _ => false}, s, t)(X)
-              }
-            val sigma: Map[TypeVariable, Type] = 
-              checkReturnType match {
-                case Some(r) => {
-                  val returnConstraints = typeConstraints({ _ => false}, funReturnType, r)(X)
-                  val allConstraints = meetAll(argConstraints) meet returnConstraints meet baseConstraints
-                  allConstraints.anySubstitution
-                }
-                case None => {
-                  val allConstraints = meetAll(argConstraints) meet baseConstraints
-                  allConstraints.minimalSubstitution(funReturnType)
-                }
-              }
-            
-            val newReturnType = funReturnType subst sigma
-            val newTypeArgs = funTypeFormals map { sigma(_) }
-            
-            val newSyntacticTypeArgs = newTypeArgs optionMap reify  
-            (newSyntacticTypeArgs, newReturnType) 
-          }
-          case ct: CallableType => { 
-            val returnType = ct.call(Nil, argTypes)
-            (Some(Nil), returnType)
-          }
-          case _ => throw new UncallableTypeException(targetType)
         }
-      }
       }
     checkReturnType match {
       case Some(t) => finalReturnType assertSubtype t
@@ -435,33 +417,26 @@ object Typechecker {
     (finalSyntacticTypeArgs, finalReturnType)
   }
 
-  
-  
-  
-  
   def typeValue(value: AnyRef): Type = {
-    
-    if (value eq null) { return NullType } 
-    
+
+    if (value eq null) { return NullType }
+
     value match {
       case Signal => SignalType
-      case _ : java.lang.Boolean => BooleanType
-      case i : BigInt => IntegerConstantType(i)
-      case _ : BigDecimal => NumberType
-      case _ : String => StringType
+      case _: java.lang.Boolean => BooleanType
+      case i: BigInt => IntegerConstantType(i)
+      case _: BigDecimal => NumberType
+      case _: String => StringType
       case Field(f) => FieldType(f)
-      case s : TypedSite => s.orcType
+      case s: TypedSite => s.orcType
       case v => liftJavaType(v.getClass())
     }
   }
-  
-  
-  
-  /**
-   * Find constraints on the variables xs such that S <: T
-   * 
-   * We assume that the variables xs appear in at most one of S or T
-   */ 
+
+  /** Find constraints on the variables xs such that S <: T
+    *
+    * We assume that the variables xs appear in at most one of S or T
+    */
   def typeConstraints(V: TypeVariable => Boolean, below: Type, above: Type)(implicit xs: Set[TypeVariable]): ConstraintSet = {
     (below, above) match {
       case (_, Top) => NoConstraints
@@ -477,42 +452,38 @@ object Typechecker {
         val t = s promote V
         new ConstraintSet(t, y, Top)
       }
-      case (f: FunctionType, g: FunctionType) 
-      if (f sameShape g) => {
-        val (FunctionType(typeFormals, lowerArgTypes, lowerReturnType), 
-             FunctionType(          _, upperArgTypes, upperReturnType)) = f shareFormals g
+      case (f: FunctionType, g: FunctionType) if (f sameShape g) => {
+        val (FunctionType(typeFormals, lowerArgTypes, lowerReturnType),
+          FunctionType(_, upperArgTypes, upperReturnType)) = f shareFormals g
         def Vscope(x: TypeVariable) = {
-          ( !(typeFormals contains x) ) && ( V(x) )
-        } 
+          (!(typeFormals contains x)) && (V(x))
+        }
         val C =
-          for ( (s, t) <- upperArgTypes zip lowerArgTypes ) yield {
-            typeConstraints(Vscope, s, t) 
+          for ((s, t) <- upperArgTypes zip lowerArgTypes) yield {
+            typeConstraints(Vscope, s, t)
           }
         val D = {
           typeConstraints(Vscope, lowerReturnType, upperReturnType)
         }
         meetAll(C) meet D
       }
-      case (TupleType(elementsBelow), TupleType(elementsAbove)) 
-      if (elementsBelow.size == elementsAbove.size) => {
-        val C = 
-          for ( (s, t) <- elementsBelow zip elementsAbove) yield {
+      case (TupleType(elementsBelow), TupleType(elementsAbove)) if (elementsBelow.size == elementsAbove.size) => {
+        val C =
+          for ((s, t) <- elementsBelow zip elementsAbove) yield {
             typeConstraints(V, s, t)
           }
         meetAll(C)
       }
-      case (RecordType(entriesBelow), RecordType(entriesAbove)) 
-      if ((entriesAbove.keySet) subsetOf (entriesBelow.keySet)) => {
-        val C = 
+      case (RecordType(entriesBelow), RecordType(entriesAbove)) if ((entriesAbove.keySet) subsetOf (entriesBelow.keySet)) => {
+        val C =
           for (l <- entriesAbove.keys) yield {
             typeConstraints(V, entriesBelow(l), entriesAbove(l))
           }
         meetAll(C)
       }
-      case (TypeInstance(tycon, argsBelow), TypeInstance(tyconPrime, argsAbove))
-      if (tycon eq tyconPrime) => {
-        val C = 
-          for ( (v, (s, t)) <- tycon.variances zip (argsBelow zip argsAbove)) yield {
+      case (TypeInstance(tycon, argsBelow), TypeInstance(tyconPrime, argsAbove)) if (tycon eq tyconPrime) => {
+        val C =
+          for ((v, (s, t)) <- tycon.variances zip (argsBelow zip argsAbove)) yield {
             v match {
               case orc.types.Constant => NoConstraints
               case Covariant => typeConstraints(V, s, t)
@@ -531,13 +502,12 @@ object Typechecker {
           }
         meetAll(C)
       }
-      case (s,t) => {
+      case (s, t) => {
         s assertSubtype t
         NoConstraints
       }
-    
+
     }
   }
 
-  
 }

@@ -31,25 +31,22 @@ import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
 
-
-/**
- * Represents a configuration state for a compiler.
- */
+/** Represents a configuration state for a compiler.
+  */
 class CompilerOptions(val options: OrcCompilationOptions, val logger: CompileLogger) {
-  
+
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
     logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
   }
-  
+
 }
 
-/**
- * Represents one phase in a compiler.  It is defined as a function from
- * compiler options to a function from a phase's input to its output.
- * CompilerPhases can be composed with the >>> operator.
- *
- * @author jthywiss
- */
+/** Represents one phase in a compiler.  It is defined as a function from
+  * compiler options to a function from a phase's input to its output.
+  * CompilerPhases can be composed with the >>> operator.
+  *
+  * @author jthywiss
+  */
 trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   val phaseName: String
   def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] {
@@ -83,16 +80,15 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   }
 }
 
-/**
- * An instance of CoreOrcCompiler is a particular Orc compiler configuration, 
- * which is a particular Orc compiler implementation, in a JVM instance.
- * Note, however, that an CoreOrcCompiler instance is not specialized for
- * a single Orc program; in fact, multiple compilations of different programs,
- * with different options set, may be in progress concurrently within a
- * single CoreOrcCompiler instance.  
- *
- * @author jthywiss
- */
+/** An instance of CoreOrcCompiler is a particular Orc compiler configuration,
+  * which is a particular Orc compiler implementation, in a JVM instance.
+  * Note, however, that an CoreOrcCompiler instance is not specialized for
+  * a single Orc program; in fact, multiple compilations of different programs,
+  * with different options set, may be in progress concurrently within a
+  * single CoreOrcCompiler instance.
+  *
+  * @author jthywiss
+  */
 abstract class CoreOrcCompiler extends OrcCompiler {
 
   ////////
@@ -126,10 +122,10 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
   val translate = new CompilerPhase[CompilerOptions, orc.ast.ext.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "translate"
-    override def apply(co: CompilerOptions) = 
+    override def apply(co: CompilerOptions) =
       { ast =>
-          val translator = new Translator(co reportProblem _)
-          translator.translate(ast)
+        val translator = new Translator(co reportProblem _)
+        translator.translate(ast)
       }
   }
 
@@ -149,29 +145,28 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val fractionDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "fractionDefs"
     override def apply(co: CompilerOptions) = { FractionDefs(_) }
-      
+
   }
-  
+
   val removeUnusedDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "removeUnusedDefs"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedDefs(ast) }
   }
-  
+
   val removeUnusedTypes = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "removeUnusedTypes"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedTypes(ast) }
   }
-  
+
   val typeCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "typeCheck"
-    override def apply(co: CompilerOptions) = { ast => 
-      if (co.options.typecheck) {  
+    override def apply(co: CompilerOptions) = { ast =>
+      if (co.options.typecheck) {
         val (newAst, programType) = Typechecker(ast)
         val typeReport = "Program type checks as " + programType.toString
         co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
         newAst
-      }
-      else { 
+      } else {
         ast
       }
     }
@@ -179,15 +174,15 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
   val noUnguardedRecursion = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "noUnguardedRecursion"
-    override def apply(co: CompilerOptions) = 
+    override def apply(co: CompilerOptions) =
       { ast =>
-          def warn(e: orc.ast.oil.named.Expression) = {
-            co.reportProblem(UnguardedRecursionException() at e)
-          }
-          if (!co.options.disableRecursionCheck) {
-            ast.checkGuarded(warn)
-          }
-          ast 
+        def warn(e: orc.ast.oil.named.Expression) = {
+          co.reportProblem(UnguardedRecursionException() at e)
+        }
+        if (!co.options.disableRecursionCheck) {
+          ast.checkGuarded(warn)
+        }
+        ast
       }
   }
 
@@ -197,36 +192,34 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   }
 
   // Generate XML for the AST and echo it to console; useful for testing.
-  val outputOil = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] 
-  {
+  val outputOil = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] {
     val phaseName = "outputOil"
     override def apply(co: CompilerOptions) = { ast =>
-    
-      
-      if (co.options.echoOil) { 
+
+      if (co.options.echoOil) {
         val xml = OrcXML.astToXml(ast)
         val xmlnice = {
-          val pp = new scala.xml.PrettyPrinter(80,2)
+          val pp = new scala.xml.PrettyPrinter(80, 2)
           val xmlheader = """<?xml version="1.0" encoding="UTF-8" ?>""" + "\n"
           xmlheader + pp.format(xml)
         }
         println("Echoing OIL to console.")
         println("Caution: Echo on console will not accurately reproduce whitespace in string constants.")
         println()
-        println(xmlnice)   
+        println(xmlnice)
       }
-      
+
       co.options.oilOutputFile match {
         case Some(f) => {
           OrcXML.writeOilToStream(ast, new FileOutputStream(f))
         }
         case None => {}
       }
-      
+
       ast
     }
   }
-  
+
   ////////
   // Compose phases into a compiler
   ////////
@@ -240,7 +233,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      deBruijn.timePhase >>> 
+      deBruijn.timePhase >>>
       outputOil
 
   ////////
@@ -250,7 +243,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
     //Logger.config(options)
-    Logger.config("Begin compile "+options.filename)
+    Logger.config("Begin compile " + options.filename)
     compileLogger.beginProcessing(options.filename)
     try {
       val result = phases(new CompilerOptions(options, compileLogger))(source)
@@ -259,20 +252,18 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       case e: CompilationException =>
         compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
         null
-    }
-    finally {
+    } finally {
       compileLogger.endProcessing(options.filename)
-      Logger.config("End compile "+options.filename)
+      Logger.config("End compile " + options.filename)
     }
   }
 
 }
 
-/**
- * StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces. 
- *
- * @author jthywiss
- */
+/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces.
+  *
+  * @author jthywiss
+  */
 class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException])
   override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
@@ -302,18 +293,18 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
-    Logger.finer("openInclude "+includeFileName+", relative to "+Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName)+"("+baseIC.descr+")")
+    Logger.finer("openInclude " + includeFileName + ", relative to " + Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName) + "(" + baseIC.descr + ")")
 
     // If no include path, allow absolute HTTP and HTTPS includes
     if (options.includePath.isEmpty && (includeFileName.toLowerCase.startsWith("http://") || includeFileName.toLowerCase.startsWith("https://"))) {
       try {
         val newIC = new OrcNetInputContext(new URI(includeFileName))
-        Logger.finer("include "+includeFileName+" opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
+        Logger.finer("include " + includeFileName + " opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
         return newIC
       } catch {
-        case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax ("+e.getMessage+")");
-        case e: MalformedURLException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax ("+e.getMessage+")");
-        case e: IOException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; IO error ("+e.getMessage+")");
+        case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax (" + e.getMessage + ")");
+        case e: MalformedURLException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax (" + e.getMessage + ")");
+        case e: IOException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; IO error (" + e.getMessage + ")");
       }
     }
 
@@ -326,7 +317,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
         // them.  This seems a weak barrier, and in fact was broken.
         // We need an alternative way to control local file reads.
         val newIC = baseIC.newInputFromPath(incPath, includeFileName)
-        Logger.finer("include "+includeFileName+", found on include path entry "+incPath+", opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
+        Logger.finer("include " + includeFileName + ", found on include path entry " + incPath + ", opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
         return newIC
       } catch {
         case _: IOException => /* Ignore, must not be here */
@@ -336,13 +327,13 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
     // Try in the bundled include resources
     try {
       val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
-      Logger.finer("include "+includeFileName+", found in bundled resources, opened as "+Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName)+"("+newIC.descr+")")
+      Logger.finer("include " + includeFileName + ", found in bundled resources, opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
       return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */
     }
 
-    Logger.finer("include "+includeFileName+" not found")
+    Logger.finer("include " + includeFileName + " not found")
     throw new FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
   }
 }

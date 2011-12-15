@@ -14,9 +14,8 @@
 //
 package orc.script
 
-/**
- * Logger for the orc.script subsystem
- *
- * @author jthywiss
- */
+/** Logger for the orc.script subsystem
+  *
+  * @author jthywiss
+  */
 object Logger extends orc.util.Logger("orc.script")

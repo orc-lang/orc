@@ -34,32 +34,32 @@ import orc.run.extensions.InstanceEvent
 
 object MakeSite extends TotalSite1 with TypedSite {
   override def name = "MakeSite"
-  def eval(arg: AnyRef) = { 
+  def eval(arg: AnyRef) = {
     arg match {
       case c: Closure => new RunLikeSite(c)
       case _ => throw new ArgumentTypeMismatchException(0, "Closure", arg.getClass().getCanonicalName())
     }
   }
-  
+
   def orcType() = new UnaryCallableType {
-     def call(argType: Type): Type = {
-       argType match {
-         case f : FunctionType => f
-         case g => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
-       }
-     }
+    def call(argType: Type): Type = {
+      argType match {
+        case f: FunctionType => f
+        case g => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
+      }
+    }
   }
-  
+
 }
 
 // Standalone class execution
 
 class RunLikeSite(closure: Closure) extends UntypedSite {
-  
+
   override def name = "class " + Format.formatValue(closure)
-   
+
   def call(args: List[AnyRef], caller: Handle) {
     caller.notifyOrc(InstanceEvent(closure, args, caller))
   }
-  
+
 }

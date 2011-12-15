@@ -20,15 +20,14 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.StreamReader.EofCh
 import scala.util.parsing.input.CharSequenceReader
 
-import orc.values.sites.{TotalSite, UntypedSite}
+import orc.values.sites.{ TotalSite, UntypedSite }
 import orc.values.OrcRecord
-import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException, SiteException}
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
 
-/**
- * JSON reader, converting a JSON string to an Orc value.
- *
- * @author dkitchin
- */
+/** JSON reader, converting a JSON string to an Orc value.
+  *
+  * @author dkitchin
+  */
 class ReadJSON extends TotalSite with UntypedSite {
 
   def evaluate(args: List[AnyRef]): AnyRef = {
@@ -41,16 +40,15 @@ class ReadJSON extends TotalSite with UntypedSite {
 
 }
 
-/**
- * JSON lexical scanner.  Returns stream of StringLit, NumericLit, Keyword, and EOF.
- * 
- * See ECMA-262 section 15.12.1, The JSON Grammar, and RFC 4627.
- * 
- * (Portions derived from Scala's scala.util.parsing.json.Lexer.) 
- *
- * @author dkitchin
- * @author jthywiss
- */
+/** JSON lexical scanner.  Returns stream of StringLit, NumericLit, Keyword, and EOF.
+  *
+  * See ECMA-262 section 15.12.1, The JSON Grammar, and RFC 4627.
+  *
+  * (Portions derived from Scala's scala.util.parsing.json.Lexer.)
+  *
+  * @author dkitchin
+  * @author jthywiss
+  */
 object OrcJSONLexical extends StdLexical with RegexParsers {
 
   override type Elem = Char
@@ -67,8 +65,8 @@ object OrcJSONLexical extends StdLexical with RegexParsers {
 
   delimiters ++= List("{", "}", "[", "]", ":", ",")
 
-  override def processIdent(name: String) = 
-    if (reserved contains name) Keyword(name) else ErrorToken("Unrecognized JSON keyword `"+name+"'")
+  override def processIdent(name: String) =
+    if (reserved contains name) Keyword(name) else ErrorToken("Unrecognized JSON keyword `" + name + "'")
 
   def hexDigit = """[0123456789abcdefABCDEF]""".r
 
@@ -78,58 +76,54 @@ object OrcJSONLexical extends StdLexical with RegexParsers {
   }
 
   def escapeSeq: Parser[String] = (
-      '\\' ~ '\"' ^^^ "\""
+    '\\' ~ '\"' ^^^ "\""
     | '\\' ~ '\\' ^^^ "\\"
-    | '\\' ~ '/'  ^^^ "/"
-    | '\\' ~ 'b'  ^^^ "\b"
-    | '\\' ~ 'f'  ^^^ "\f"
-    | '\\' ~ 'n'  ^^^ "\n"
-    | '\\' ~ 'r'  ^^^ "\r"
-    | '\\' ~ 't'  ^^^ "\t"
-    | '\\' ~> 'u' ~> unicodeBlock
-  )
+    | '\\' ~ '/' ^^^ "/"
+    | '\\' ~ 'b' ^^^ "\b"
+    | '\\' ~ 'f' ^^^ "\f"
+    | '\\' ~ 'n' ^^^ "\n"
+    | '\\' ~ 'r' ^^^ "\r"
+    | '\\' ~ 't' ^^^ "\t"
+    | '\\' ~> 'u' ~> unicodeBlock)
 
   def stringChars = rep(escapeSeq | """[^\u0000-\u001f\\\"]+""".r)
 
   override def token: Parser[Token] = (
-      '\"' ~ stringChars ~ '\"'             ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
-    | identChar ~ rep( identChar | digit )  ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
+    '\"' ~ stringChars ~ '\"' ^^ { case '\"' ~ chars ~ '\"' => StringLit(chars mkString "") }
+    | identChar ~ rep(identChar | digit) ^^ { case first ~ rest => processIdent(first :: rest mkString "") }
     | """[-]?(([1-9][0-9]*)|0)([.][0-9]+)?([Ee][+-]?([0-9]+))?""".r ^^ { NumericLit(_) }
-    | EofCh                                 ^^^ EOF
-    | '\"' ~> failure("unclosed string literal")        
-    | delim                                             
-    | failure("illegal character")
-  )
+    | EofCh ^^^ EOF
+    | '\"' ~> failure("unclosed string literal")
+    | delim
+    | failure("illegal character"))
 
 }
 
-/**
- * Modified version of Scala's JSON parser, returning Orc values instead.
- * 
- * See ECMA-262 section 15.12.1, The JSON Grammar and RFC 4627.
- * 
- * @author dkitchin
- * @author Derek Chen-Becker <"java"+@+"chen-becker"+"."+"org">
- */
+/** Modified version of Scala's JSON parser, returning Orc values instead.
+  *
+  * See ECMA-262 section 15.12.1, The JSON Grammar and RFC 4627.
+  *
+  * @author dkitchin
+  * @author Derek Chen-Becker <"java"+@+"chen-becker"+"."+"org">
+  */
 object OrcJSONParser extends StdTokenParsers {
 
   type Tokens = OrcJSONLexical.type
   override val lexical = OrcJSONLexical
 
   // Define the grammar
-  def jsonText   = value
-  def jsonObj    = ("{" ~> repsep(objEntry, ",") <~ "}") ^^ { new OrcRecord(_) } 
-  def jsonArray  = "[" ~> repsep(value, ",") <~ "]"
-  def objEntry   = stringLit ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
+  def jsonText = value
+  def jsonObj = ("{" ~> repsep(objEntry, ",") <~ "}") ^^ { new OrcRecord(_) }
+  def jsonArray = "[" ~> repsep(value, ",") <~ "]"
+  def objEntry = stringLit ~ (":" ~> value) ^^ { case x ~ y => (x, y) }
   def value: Parser[AnyRef] = (
-      jsonObj 
-    | jsonArray 
-    | "true" ^^^ java.lang.Boolean.TRUE 
-    | "false" ^^^ java.lang.Boolean.FALSE 
+    jsonObj
+    | jsonArray
+    | "true" ^^^ java.lang.Boolean.TRUE
+    | "false" ^^^ java.lang.Boolean.FALSE
     | "null" ^^^ null
     | numericLit ^^ { BigDecimal(_) }
-    | stringLit
-  )
+    | stringLit)
 
   def parse(json: String): AnyRef = {
     phrase(jsonText)(new lexical.Scanner(new CharSequenceReader(json))) match {

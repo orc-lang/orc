@@ -20,7 +20,6 @@ import orc.error.NotYetImplementedException
 import orc.types.Variance._
 import orc.values.sites.OrcJavaCompatibility._
 
-
 /* Used for reference only. */
 trait TypeInterface {
   def join(that: Type): Type
@@ -30,36 +29,35 @@ trait TypeInterface {
 }
 
 trait Type extends TypeInterface with TypeListEnrichment {
- 
-  override def toString = this.getClass.toString 
-  
+
+  override def toString = this.getClass.toString
+
   /* Default join:
    * Return the maximum of the two types;
    * if they are unrelated, return Top.
    */
   def join(that: Type): Type = {
-    if (this < that) { that }  
-      else if (that < this) { this }
-        else { Top }
+    if (this < that) { that }
+    else if (that < this) { this }
+    else { Top }
   }
-  
+
   /* Default meet:
    * Return the minimum of the two types;
    * if they are unrelated, return Bot.
    */
   def meet(that: Type): Type = {
-    if (this < that) { this } 
-      else if (that < this) { that }
-        else { Bot }
+    if (this < that) { this }
+    else if (that < this) { that }
+    else { Bot }
   }
-  
+
   /* Default substitution:
    * Assume there are no free type variables or children, 
    * and return the type unchanged.
    */
   def subst(sigma: Map[TypeVariable, Type]): Type = { this }
-  
-  
+
   /* Default < relation:
    * For all T, 
    *     T < T
@@ -68,33 +66,32 @@ trait Type extends TypeInterface with TypeListEnrichment {
   def <(that: Type): Boolean = {
     (that eq this) || (that eq Top)
   }
-  
+
   /* Eliminate all variables X in this type for which V(X) is true.
    * Produce the least supertype of this type with such variables eliminated.
    * It is possible for elimination to fail if a variable occurs in
    * an invariant position (or in both covariant and contravariant positions), 
    * since neither Top nor Bot can be chosen in that case. 
    */
-  def elim(V: TypeVariable => Boolean)(implicit variance: Variance): Type = { 
-    this match {  
+  def elim(V: TypeVariable => Boolean)(implicit variance: Variance): Type = {
+    this match {
       case x: TypeVariable => {
-        if (V(x)) { 
+        if (V(x)) {
           variance match {
             case Covariant => Top
             case Contravariant => Bot
             case Invariant => throw new NoMinimalTypeException()
             case Constant => Top
           }
-        } 
-        else { 
-          this 
-        } 
+        } else {
+          this
+        }
       }
       case TupleType(elements) => TupleType(elements map { _ elim V })
       case RecordType(entries) => RecordType(entries mapValues { _ elim V })
       case FunctionType(typeFormals, argTypes, returnType) => {
         def Vscope(x: TypeVariable) = {
-          ( !(typeFormals contains x) ) && ( V(x) )
+          (!(typeFormals contains x)) && (V(x))
         }
         val newArgTypes = {
           val newVariance = Contravariant(variance)
@@ -104,7 +101,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
         FunctionType(typeFormals, newArgTypes, newReturnType)
       }
       case TypeInstance(tycon, args) => {
-        val newArgs = 
+        val newArgs =
           for ((v, t) <- tycon.variances zip args) yield {
             val newVariance = v(variance)
             t.elim(V)(newVariance)
@@ -114,7 +111,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
       case _ => this
     }
   }
-  
+
   /* Promotion is a special case of elimination */
   def promote(V: TypeVariable => Boolean): Type = {
     this.elim(V)(Covariant)
@@ -125,16 +122,16 @@ trait Type extends TypeInterface with TypeListEnrichment {
   }
   /* Eliminate _all_ free type variables */
   def clean: Type = {
-    this.elim({ _ => true})(Covariant)
+    this.elim({ _ => true })(Covariant)
   }
-    
+
   /* Find the variance of a given variable in this type */
   def varianceOf(x: TypeVariable): Variance = {
-    this match {  
+    this match {
       case `x` => Covariant
       case _: TypeVariable => Constant
       case TupleType(elements) => {
-        val variances = elements map { _ varianceOf x } 
+        val variances = elements map { _ varianceOf x }
         variances.combined
       }
       case RecordType(entries) => {
@@ -145,10 +142,10 @@ trait Type extends TypeInterface with TypeListEnrichment {
         assert(!(typeFormals contains x))
         val argVariances = argTypes map { _ varianceOf x } map { Contravariant(_) }
         val returnVariance = returnType varianceOf x
-        argVariances.combined & returnVariance 
+        argVariances.combined & returnVariance
       }
       case TypeInstance(tycon, args) => {
-        val variances = 
+        val variances =
           for ((v, t) <- tycon.variances zip args) yield {
             v(t varianceOf x)
           }
@@ -157,8 +154,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
       case _ => Constant
     }
   }
-  
-  
+
   /* Default equality:
    * S = T  iff  S < T and T < S
    * 
@@ -169,23 +165,22 @@ trait Type extends TypeInterface with TypeListEnrichment {
   def equals(that: Type): Boolean = {
     (this < that) && (that < this)
   }
-  
-  
+
   /* Convenience methods */
   def assertSubtype(that: Type) {
     if (!(this < that)) {
-      throw new SubtypeFailureException(that, this) 
+      throw new SubtypeFailureException(that, this)
     }
   }
   def subst(T: Type, X: TypeVariable): Type = subst(List(T), List(X))
-  def subst(T: List[Type], X: List[TypeVariable]): Type = {    
+  def subst(T: List[Type], X: List[TypeVariable]): Type = {
     val bindings = {
       assert(T.size == X.size)
       (X zip T).toMap
     }
     if (bindings.isEmpty) { this } else { subst(bindings) }
   }
-  
+
   def letLike(ts: List[Type]): Type = {
     ts match {
       case Nil => SignalType
@@ -193,9 +188,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
       case _ => TupleType(ts)
     }
   }
-  
-  
-  
+
 }
 
 trait TypeListEnrichment {
@@ -204,19 +197,19 @@ trait TypeListEnrichment {
 }
 
 class RichTypeList(types: List[Type]) {
-  
+
   def join(otherTypes: List[Type]): List[Type] = {
-    (types, otherTypes).zipped map { case (t,u) => t join u }
+    (types, otherTypes).zipped map { case (t, u) => t join u }
   }
-  
+
   def meet(otherTypes: List[Type]): List[Type] = {
-    (types, otherTypes).zipped map { case (t,u) => t meet u }
+    (types, otherTypes).zipped map { case (t, u) => t meet u }
   }
-  
+
   def <(otherTypes: List[Type]): Boolean = {
-    (types, otherTypes).zipped forall { case (t,u) => t < u }
+    (types, otherTypes).zipped forall { case (t, u) => t < u }
   }
-  
+
   def condense: Type = {
     types match {
       case Nil => SignalType
@@ -224,5 +217,5 @@ class RichTypeList(types: List[Type]) {
       case ts => TupleType(ts)
     }
   }
-  
+
 }

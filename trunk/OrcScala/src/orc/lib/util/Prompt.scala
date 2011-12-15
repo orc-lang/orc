@@ -24,13 +24,12 @@ import orc.Handle
 import orc.OrcEvent
 
 /**
- * 
- * Generic site for presenting the user with a prompt for input.
- * Different runtimes will present different prompts depending
- * on how they handle a PromptEvent.
- *
- * @author dkitchin
- */
+  * Generic site for presenting the user with a prompt for input.
+  * Different runtimes will present different prompts depending
+  * on how they handle a PromptEvent.
+  *
+  * @author dkitchin
+  */
 
 trait PromptCallback {
   def respondToPrompt(response: String)
@@ -53,7 +52,7 @@ object Prompt extends Site1 with TypedSite {
       case a => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
     }
   }
-  
+
   def orcType = SimpleFunctionType(StringType, StringType)
-  
+
 }

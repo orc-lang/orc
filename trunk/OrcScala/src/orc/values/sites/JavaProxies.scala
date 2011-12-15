@@ -17,7 +17,7 @@ package orc.values.sites
 import scala.collection.immutable.List
 import orc.Handle
 import orc.values.Signal
-import orc.values.{Field => OrcField}
+import orc.values.{ Field => OrcField }
 import orc.run.Logger
 import orc.error.NotYetImplementedException
 import orc.error.runtime.JavaException
@@ -25,23 +25,21 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.MalformedArrayAccessException
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.{Member => JavaMember}
-import java.lang.reflect.{Constructor => JavaConstructor}
-import java.lang.reflect.{Method => JavaMethod}
-import java.lang.reflect.{Field => JavaField}
+import java.lang.reflect.{ Member => JavaMember }
+import java.lang.reflect.{ Constructor => JavaConstructor }
+import java.lang.reflect.{ Method => JavaMethod }
+import java.lang.reflect.{ Field => JavaField }
 import java.lang.reflect.Modifier
 
 import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
 
-
-/**
- * Transforms an Orc site call to an appropriate Java invocation
- *
- * @author jthywiss
- */
+/** Transforms an Orc site call to an appropriate Java invocation
+  *
+  * @author jthywiss
+  */
 object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
-  
+
   /* Return true if the call was successfully dispatched.
    * Return false if the call could not be dispatched.
    */
@@ -62,8 +60,7 @@ object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
         if (proxy.hasMember("apply")) {
           h.publish(proxy.invoke(target, "apply", args))
           true
-        }
-        else {
+        } else {
           false
         }
       }
@@ -72,12 +69,10 @@ object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
   }
 }
 
-
-/**
- * Parent of all JavaProxy classes; provides a consistent invocation function.
- *
- * @author jthywiss
- */
+/** Parent of all JavaProxy classes; provides a consistent invocation function.
+  *
+  * @author jthywiss
+  */
 abstract class JavaProxy extends Site {
 
   def javaClass: Class[_]
@@ -87,23 +82,23 @@ abstract class JavaProxy extends Site {
   /** Does this class have a method or field of the given name? */
   def hasMember(memberName: String): Boolean =
     //TODO: Memoize!  This is expensive!
-    javaClass.getMethods().exists({_.getName().equals(memberName)}) ||
-        javaClass.getFields().exists({_.getName().equals(memberName)})
+    javaClass.getMethods().exists({ _.getName().equals(memberName) }) ||
+      javaClass.getFields().exists({ _.getName().equals(memberName) })
 
   /** Invoke a method on the given Java object of the given name with the given arguments */
   def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
     try {
       val method = try {
-          chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map {a => {if (a != null) a.getClass() else null}} )
-        } catch { // Fill in "blank" exceptions with more details
-          case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
-        }
+        chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs map { a => { if (a != null) a.getClass() else null } })
+      } catch { // Fill in "blank" exceptions with more details
+        case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
+      }
       val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
       if (theObject == null && !method.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
       }
-      Logger.finer("Invoking Java method "+classNameAndSignature(methodName, method.getParameterTypes.toList))
+      Logger.finer("Invoking Java method " + classNameAndSignature(methodName, method.getParameterTypes.toList))
       java2orc(method.invoke(theObject, convertedArgs))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
@@ -113,7 +108,7 @@ abstract class JavaProxy extends Site {
   }
 
   private def classNameAndSignature(methodName: String, argTypes: List[Class[_]]): String = {
-    javaClass.getCanonicalName()+"."+methodName+"("+argTypes.map(_.getCanonicalName()).mkString(", ")+")"
+    javaClass.getCanonicalName() + "." + methodName + "(" + argTypes.map(_.getCanonicalName()).mkString(", ") + ")"
   }
 
   private def classNameAndSignatureA(methodName: String, args: List[Object]): String = {
@@ -122,12 +117,10 @@ abstract class JavaProxy extends Site {
 
 }
 
-
-/**
- * Wrapper for a plain old Java class as an Orc site
- *
- * @author jthywiss
- */
+/** Wrapper for a plain old Java class as an Orc site
+  *
+  * @author jthywiss
+  */
 case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends JavaProxy with TypedSite {
   // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.  
 
@@ -139,41 +132,37 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
       case _ => h.publish(invoke(null, "<init>", args))
     }
   }
-  
+
   def orcType = liftJavaClassType(javaClass)
-  
+
 }
 
-
-/**
- * Wrapper for a plain old Java object.
- *
- * @author jthywiss
- */
+/** Wrapper for a plain old Java object.
+  *
+  * @author jthywiss
+  */
 case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSite {
 
   override def javaClass = theObject.getClass()
-  
+
   override lazy val name = javaClass.getName()
 
   override def call(args: List[AnyRef], h: Handle) {
     JavaCall(theObject, args, h)
   }
-  
+
   def orcType = liftJavaType(javaClass)
-  
+
 }
 
-
-/**
- * An Orc field lookup result from a Java object
- *
- * @author jthywiss
- */
+/** An Orc field lookup result from a Java object
+  *
+  * @author jthywiss
+  */
 case class JavaMemberProxy(val theObject: Object, val memberName: String) extends JavaProxy {
   // Could be a method or field.  We defer this decision until we are called.
 
-  override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+memberName+", "+theObject.toString()+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + memberName + ", " + theObject.toString() + ")"
 
   override def javaClass = theObject.getClass()
 
@@ -196,31 +185,27 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
   }
 }
 
-
-/**
- * An Orc field lookup result from a Java class
- *
- * @author jthywiss
- */
+/** An Orc field lookup result from a Java class
+  *
+  * @author jthywiss
+  */
 class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], memberName: String) extends JavaMemberProxy(null, memberName) {
 
   override def javaClass = declaringClass
 
-  override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+memberName+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + memberName + ")"
 
 }
 
-
-/**
- * A site that will dereference a Java object's field when called
- *
- * @author jthywiss
- */
+/** A site that will dereference a Java object's field when called
+  *
+  * @author jthywiss
+  */
 case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) extends JavaProxy {
 
   override def javaClass = javaField.getDeclaringClass()
 
-  override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + javaField.getName() + ", " + theObject + ")"
 
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -231,17 +216,15 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
 
 }
 
-
-/**
- * A site that will assign a value to a Java object's field when called
- *
- * @author jthywiss
- */
+/** A site that will assign a value to a Java object's field when called
+  *
+  * @author jthywiss
+  */
 case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) extends JavaProxy {
 
   override def javaClass = javaField.getDeclaringClass()
 
-  override lazy val name = this.getClass().getCanonicalName()+"("+javaClassName+"."+javaField.getName()+", "+theObject+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + javaField.getName() + ", " + theObject + ")"
 
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -255,15 +238,13 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
 
 }
 
-
-/**
- * A Java array access from Orc.  Retain the index, and respond to a read or write 
- *
- * @author jthywiss
- */
+/** A Java array access from Orc.  Retain the index, and respond to a read or write
+  *
+  * @author jthywiss
+  */
 case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends JavaProxy {
 
-  override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
   override def javaClass = theArray.getClass()
 
@@ -279,17 +260,15 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
   }
 }
 
-
-/**
- * A site that will dereference a Java array's component when called
- *
- * @author jthywiss
- */
+/** A site that will dereference a Java array's component when called
+  *
+  * @author jthywiss
+  */
 case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends JavaProxy {
 
   override def javaClass = theArray.getClass().getComponentType()
 
-  override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -300,17 +279,15 @@ case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends 
 
 }
 
-
-/**
- * A site that will assign a value to a Java array's component when called
- *
- * @author jthywiss
- */
+/** A site that will assign a value to a Java array's component when called
+  *
+  * @author jthywiss
+  */
 case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends JavaProxy {
 
   override def javaClass = theArray.getClass().getComponentType()
 
-  override lazy val name = this.getClass().getCanonicalName()+"(element "+index+" of "+theArray+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
   def call(args: List[AnyRef], h: Handle) {
     args match {
@@ -324,17 +301,15 @@ case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends
 
 }
 
-
-/**
- * A site that will dereference a Java array's component when called
- *
- * @author jthywiss
- */
+/** A site that will dereference a Java array's component when called
+  *
+  * @author jthywiss
+  */
 case class JavaArrayLengthPseudofield(val theArray: Array[Any]) extends JavaProxy {
 
   override def javaClass = theArray.getClass().getComponentType()
 
-  override lazy val name = this.getClass().getCanonicalName()+"("+theArray+")"
+  override lazy val name = this.getClass().getCanonicalName() + "(" + theArray + ")"
 
   def call(args: List[AnyRef], h: Handle) {
     args match {

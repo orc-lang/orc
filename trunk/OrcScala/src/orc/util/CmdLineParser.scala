@@ -17,21 +17,20 @@ package orc.util
 import java.io.File
 import java.util.NoSuchElementException
 
-/**
- * Parses command line arguments per POSIX and GNU command line syntax guidelines.
- * Mix this trait in and add XxxOprd and XxxOpt statements to your class holding
- * the resulting parsed values.  Call parseCmdLine after all the XxxOprd and XxxOpt
- * statements.
- * 
- * This CmdLineParser understands POSIX single-letter option names (-a -b -c) and GNU
- * long option names (--option-name=value).  It also handles the various option argument
- * syntax: -avalue -a value --long-name=value and -long-name value, it tries to
- * "do the right thing" in the ambiguous situation -abc (could mean -a -b -c or
- * -a bc or --abc), and it understands the -- option list terminator.
- * See POSIX XBD §12.1 and §12.2 and GNU libc §25.1.1.
- *
- * @author jthywiss
- */
+/** Parses command line arguments per POSIX and GNU command line syntax guidelines.
+  * Mix this trait in and add XxxOprd and XxxOpt statements to your class holding
+  * the resulting parsed values.  Call parseCmdLine after all the XxxOprd and XxxOpt
+  * statements.
+  *
+  * This CmdLineParser understands POSIX single-letter option names (-a -b -c) and GNU
+  * long option names (--option-name=value).  It also handles the various option argument
+  * syntax: -avalue -a value --long-name=value and -long-name value, it tries to
+  * "do the right thing" in the ambiguous situation -abc (could mean -a -b -c or
+  * -a bc or --abc), and it understands the -- option list terminator.
+  * See POSIX XBD §12.1 and §12.2 and GNU libc §25.1.1.
+  *
+  * @author jthywiss
+  */
 trait CmdLineParser {
 
   var recognizedOprds = scala.collection.mutable.Map.empty[Int, CmdLineOprd]
@@ -43,7 +42,7 @@ trait CmdLineParser {
   // Constructor
   ////////
 
-  UnitOpt(()=>false, ()=>printHelp, '?', "help", usage = "Give this help list")
+  UnitOpt(() => false, () => printHelp, '?', "help", usage = "Give this help list")
   protected def printHelp {
     def shortOptHelp(opt: CmdLineOpt) =
       if (opt.shortName != 0 && opt.shortName != ' ')
@@ -56,29 +55,29 @@ trait CmdLineParser {
       else
         ""
     val helpString = usageString +
-      (if (recognizedOpts.size == 0) "" 
-       else "\nOptions:\n" +
+      (if (recognizedOpts.size == 0) ""
+      else "\nOptions:\n" +
         (recognizedOpts.toList.sortBy(o => (o.longName, o.shortName)).map({ opt: CmdLineOpt =>
           //TODO: Aligned columns?
           "  " + shortOptHelp(opt) +
-          "  " + longOptHelp(opt) +
-          "  " + opt.usage
+            "  " + longOptHelp(opt) +
+            "  " + opt.usage
         })).mkString("\n"))
     throw new PrintVersionAndMessageException(helpString)
   }
 
-  UnitOpt(()=>false, ()=>printUsage, ' ', "usage", usage = "Give a short usage message")
+  UnitOpt(() => false, () => printUsage, ' ', "usage", usage = "Give a short usage message")
   protected def printUsage { throw new PrintVersionAndMessageException(usageString) }
 
-  UnitOpt(()=>false, ()=>printVersion, 'V', "version", usage = "Print program version")
+  UnitOpt(() => false, () => printVersion, 'V', "version", usage = "Print program version")
   protected def printVersion { throw new PrintVersionAndMessageException("") }
 
   def usageString =
     "usage: " +
-    (if (recognizedOpts.size > 0) "[options...]" else "") +
-    (for { i <- 0 until recognizedOprds.size } yield " "+recognizedOprds(i).argName).mkString(" ")
-    //"Try the --help option for more information." //TODO: In simple cases, show the usage here
-  
+      (if (recognizedOpts.size > 0) "[options...]" else "") +
+      (for { i <- 0 until recognizedOprds.size } yield " " + recognizedOprds(i).argName).mkString(" ")
+  //"Try the --help option for more information." //TODO: In simple cases, show the usage here
+
   ////////
   // Command line operand and option definitions
   ////////
@@ -92,7 +91,7 @@ trait CmdLineParser {
     if (recognizedOprds.contains(position)) throw new MultiplyDefinedCmdLineOprndError(position)
     recognizedOprds += ((position, this))
   }
-  
+
   abstract class CmdLineOpt(val shortName: Char, val longName: String, override val argName: String, override val usage: String, override val required: Boolean, override val hidden: Boolean) extends CmdLineOprdOpt(argName, usage, required, hidden) {
     if (shortName != ' ') {
       if (recognizedShortOpts.contains(shortName)) throw new MultiplyDefinedCmdLineOptError(shortName.toString)
@@ -143,9 +142,11 @@ trait CmdLineParser {
 
   case class FileOprd(val getter: Function0[File], val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def getValue: String = { getter() match {
-      case null => ""
-      case f => f.toString }
+    def getValue: String = {
+      getter() match {
+        case null => ""
+        case f => f.toString
+      }
     }
     def setValue(value: String) { if (value != null && !value.isEmpty) setter(new File(value)) }
   }
@@ -200,9 +201,11 @@ trait CmdLineParser {
 
   case class FileOpt(val getter: Function0[File], val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter() match {
-      case null => ""
-      case f => f.toString }
+    def getValue: String = {
+      getter() match {
+        case null => ""
+        case f => f.toString
+      }
     }
     def setValue(value: String) { if (value != null && !value.isEmpty) setter(new File(value)) }
   }
@@ -224,24 +227,24 @@ trait CmdLineParser {
     // Note: We don't attempt the GNU libc "abbreviate options to unique prefix" nonsense
     var maxReqOprdIndex = -1
     for ((_, oprd) <- recognizedOprds) {
-      val position = oprd.position      
-      if (position > 0 && !recognizedOprds.contains(position-1)) throw new MissingCmdLineOprdError(position)
-      if (position > 0 && oprd.required && !recognizedOprds(position-1).required) throw new InvalidRequiredCmdLineOprdError(position)
+      val position = oprd.position
+      if (position > 0 && !recognizedOprds.contains(position - 1)) throw new MissingCmdLineOprdError(position)
+      if (position > 0 && oprd.required && !recognizedOprds(position - 1).required) throw new InvalidRequiredCmdLineOprdError(position)
       if (oprd.required) maxReqOprdIndex = maxReqOprdIndex max position
     }
 
-    def before(str: String, sep: String) = { val i = str.indexOf(sep) ; if (i >= 0) str.take(i) else str }
-    def after(str: String, sep: String) = { val i = str.indexOf(sep) ; if (i >= 0) str.drop(i+1) else null }
+    def before(str: String, sep: String) = { val i = str.indexOf(sep); if (i >= 0) str.take(i) else str }
+    def after(str: String, sep: String) = { val i = str.indexOf(sep); if (i >= 0) str.drop(i + 1) else null }
     var currOprdIndex = 0
     var endOptions = false
     var gobbleNext: CmdLineOpt = null
     for (arg <- args) {
-           if (gobbleNext != null)                      { gobbleNext.setValue(arg); gobbleNext = null }
-      else if (endOptions)                              setCurrOprd(arg)
-      else if (arg.equals("--"))                        endOptions = true
-      else if (arg.startsWith("--"))                    setLongOpt(arg.drop(2)) //GNU-style long name (lower case, hyphenated) option
-      else if (arg.startsWith("-") && arg.length == 2)  setShortOpt(arg(1), null) //POSIX-style short name (one alphanum char) option
-      else if (!arg.startsWith("-"))                    setCurrOprd(arg)
+      if (gobbleNext != null) { gobbleNext.setValue(arg); gobbleNext = null }
+      else if (endOptions) setCurrOprd(arg)
+      else if (arg.equals("--")) endOptions = true
+      else if (arg.startsWith("--")) setLongOpt(arg.drop(2)) //GNU-style long name (lower case, hyphenated) option
+      else if (arg.startsWith("-") && arg.length == 2) setShortOpt(arg(1), null) //POSIX-style short name (one alphanum char) option
+      else if (!arg.startsWith("-")) setCurrOprd(arg)
       else { // Ambiguous: "-abc" could be POSIX "-a -b -c" or "-a bc" or GNU "--abc"
         if (recognizedShortOpts.contains(arg(1))) {
           if (recognizedShortOpts(arg(1)).isInstanceOf[UnitOpt]) {
@@ -251,17 +254,15 @@ trait CmdLineParser {
             // "-abc" treated as "-a bc"
             setShortOpt(arg(1), arg.drop(2))
           }
-        }
-        else if (recognizedLongOpts.contains(before(arg, "=").drop(1))) {
+        } else if (recognizedLongOpts.contains(before(arg, "=").drop(1))) {
           // "-abc" treated as "--abc"
           setLongOpt(arg.drop(1))
-        }
-        else throw new UnrecognizedCmdLineOptException(arg.drop(1), this)
+        } else throw new UnrecognizedCmdLineOptException(arg.drop(1), this)
       }
     }
     if (currOprdIndex <= maxReqOprdIndex) throw new MissingCmdLineOprdsException(recognizedOprds(currOprdIndex).argName, this)
     //TODO: Check all req'd opts are present
-    
+
     def setCurrOprd(arg: String) = {
       try {
         recognizedOprds(currOprdIndex).setValue(arg)
@@ -308,7 +309,7 @@ trait CmdLineParser {
         }
       }
     })) ++
-    (for { i <- 0 until recognizedOprds.size } yield recognizedOprds(i).getValue).toList).toArray
+      (for { i <- 0 until recognizedOprds.size } yield recognizedOprds(i).getValue).toList).toArray
   }
 
 }
@@ -317,22 +318,22 @@ trait CmdLineParser {
 // Error for mal-formed operand and option declarations
 ////////
 
-class MissingCmdLineOprdError(operandIndex: Int) extends Error("Command line operand number "+operandIndex+" not defined, but operand "+(operandIndex+1)+" is")
-class InvalidRequiredCmdLineOprdError(operandIndex: Int) extends Error("Command line operand number "+operandIndex+" marked required, but operand "+(operandIndex-1)+" is not")
-class MultiplyDefinedCmdLineOprndError(operandIndex: Int) extends Error("Command line operand number "+operandIndex+" multiply defined")
-class MultiplyDefinedCmdLineOptError(optName: String) extends Error("Command line option \""+optName+"\" multiply defined")
+class MissingCmdLineOprdError(operandIndex: Int) extends Error("Command line operand number " + operandIndex + " not defined, but operand " + (operandIndex + 1) + " is")
+class InvalidRequiredCmdLineOprdError(operandIndex: Int) extends Error("Command line operand number " + operandIndex + " marked required, but operand " + (operandIndex - 1) + " is not")
+class MultiplyDefinedCmdLineOprndError(operandIndex: Int) extends Error("Command line operand number " + operandIndex + " multiply defined")
+class MultiplyDefinedCmdLineOptError(optName: String) extends Error("Command line option \"" + optName + "\" multiply defined")
 
 ////////
 // Exceptions for command args that didn't parse
 ////////
 
-abstract class CmdLineUsageException(msg: String, p: CmdLineParser) extends IllegalArgumentException(msg+"\n"+p.usageString+"\nTry the --help option for more information.")
-class ExtraneousCmdLineOprdsException(val operand: String, p: CmdLineParser) extends CmdLineUsageException("extra operand -- '"+operand+"'", p)
-class MissingCmdLineOprdsException(val argName: String, p: CmdLineParser) extends CmdLineUsageException("missing "+argName+" operand", p)
-class UnrecognizedCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("invalid option -- "+optName, p)
-class MissingCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("missing option -- "+optName, p)
-class ExtraneousCmdLineOptArgException(val optName: String, optArg: String, p: CmdLineParser) extends CmdLineUsageException("option "+optName+" doesn't allow an argument", p)
-class MissingCmdLineOptArgException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("option requires an argument -- "+optName, p)
+abstract class CmdLineUsageException(msg: String, p: CmdLineParser) extends IllegalArgumentException(msg + "\n" + p.usageString + "\nTry the --help option for more information.")
+class ExtraneousCmdLineOprdsException(val operand: String, p: CmdLineParser) extends CmdLineUsageException("extra operand -- '" + operand + "'", p)
+class MissingCmdLineOprdsException(val argName: String, p: CmdLineParser) extends CmdLineUsageException("missing " + argName + " operand", p)
+class UnrecognizedCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("invalid option -- " + optName, p)
+class MissingCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("missing option -- " + optName, p)
+class ExtraneousCmdLineOptArgException(val optName: String, optArg: String, p: CmdLineParser) extends CmdLineUsageException("option " + optName + " doesn't allow an argument", p)
+class MissingCmdLineOptArgException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("option requires an argument -- " + optName, p)
 
 ////////
 // Exception for command args that requests immediate termination of program with usage/help/version info.

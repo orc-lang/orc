@@ -16,22 +16,18 @@ package orc.compile.optimize
 
 import orc.ast.oil.named._
 
-/**
- * 
- * Remove unused type declarations from the AST.
- * 
- * @author dkitchin
- */
+/** Remove unused type declarations from the AST.
+  *
+  * @author dkitchin
+  */
 object RemoveUnusedTypes extends NamedASTTransform {
-  
+
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
     case DeclareType(u, t, body) => {
       val newbody = transform(body, context, u :: typecontext)
-      if (newbody.freetypevars contains u)
-        { DeclareType(u, t, newbody) }
-      else
-        { newbody }
+      if (newbody.freetypevars contains u) { DeclareType(u, t, newbody) }
+      else { newbody }
     }
   }
-  
+
 }

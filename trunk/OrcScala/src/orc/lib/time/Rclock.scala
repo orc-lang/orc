@@ -19,13 +19,12 @@ import scala.math.BigInt.int2bigInt
 import orc.Handle
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.extensions.RwaitEvent
-import orc.types.{SimpleFunctionType, SignalType, RecordType, IntegerType}
-import orc.values.sites.{TypedSite, TotalSite0, Site1}
+import orc.types.{ SimpleFunctionType, SignalType, RecordType, IntegerType }
+import orc.values.sites.{ TypedSite, TotalSite0, Site1 }
 import orc.values.OrcRecord
 
 /**
- *
- */
+  */
 object Rclock extends TotalSite0 with TypedSite {
 
   def eval() = {
@@ -43,8 +42,7 @@ object Rclock extends TotalSite0 with TypedSite {
 }
 
 /**
- *
- */
+  */
 class Rtime(startTime: Long) extends TotalSite0 {
 
   def eval() = (System.currentTimeMillis() - startTime).asInstanceOf[AnyRef]
@@ -52,8 +50,7 @@ class Rtime(startTime: Long) extends TotalSite0 {
 }
 
 /**
- *
- */
+  */
 object Rwait extends Site1 {
 
   def call(a: AnyRef, h: Handle) {

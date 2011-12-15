@@ -14,41 +14,38 @@
 //
 package orc.progress
 
-/**
- * Long-running task progress monitoring interface.
- * Inspired by Eclipse's core.runtime.SubMonitor.
- *
- * @author quark, jthywiss
- */
+/** Long-running task progress monitoring interface.
+  * Inspired by Eclipse's core.runtime.SubMonitor.
+  *
+  * @author quark, jthywiss
+  */
 trait ProgressMonitor {
   type WorkQty = Int
   def setTaskName(name: String): Unit
   def setWorkRemaining(remainWorkQty: WorkQty): Unit
   def setIndeterminate(): Unit //Cleared by setWorkRemaining
-  
+
   def worked(completedWorkIncrement: WorkQty): Unit
   def newChild(delegatedWorkQty: WorkQty): ProgressMonitor
-  
+
   def isCanceled(): Boolean
   def setBlocked(reason: String): Unit
   def clearBlocked(): Unit
 }
 
+/** A ProgressMonitor that ignores all updates.
+  *
+  * @author jthywiss
+  */
+object NullProgressMonitor extends ProgressMonitor {
+  def setTaskName(name: String) {}
+  def setWorkRemaining(remainWorkQty: WorkQty) {}
+  def setIndeterminate() {}
 
-/**
- * A ProgressMonitor that ignores all updates.
- *
- * @author jthywiss
- */
-object NullProgressMonitor extends ProgressMonitor  {
-  def setTaskName(name: String) { }
-  def setWorkRemaining(remainWorkQty: WorkQty) { }
-  def setIndeterminate() { }
-  
-  def worked(completedWorkIncrement: WorkQty) { }
+  def worked(completedWorkIncrement: WorkQty) {}
   def newChild(delegatedWorkQty: WorkQty) = this
-  
+
   def isCanceled() = false
-  def setBlocked(reason: String) { }
-  def clearBlocked() { }
+  def setBlocked(reason: String) {}
+  def clearBlocked() {}
 }

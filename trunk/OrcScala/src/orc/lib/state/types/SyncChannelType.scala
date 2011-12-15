@@ -19,24 +19,22 @@ import orc.error.compiletime.typing._
 import orc.lib.builtin.structured.ListType
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 object SyncChannelType extends SimpleTypeConstructor("SyncChannel", Invariant) {
-  
+
   def getBuilder: Type = {
     val X = new TypeVariable()
-    FunctionType(List(X), Nil, this(X)) 
+    FunctionType(List(X), Nil, this(X))
   }
-  
-  override def instance(ts: List[Type]) = { 
+
+  override def instance(ts: List[Type]) = {
     val List(t) = ts
     new RecordType(
       "get" -> SimpleFunctionType(t),
-      "put" -> SimpleFunctionType(t, SignalType)
-    ) 
+      "put" -> SimpleFunctionType(t, SignalType))
   }
-   
+
 }

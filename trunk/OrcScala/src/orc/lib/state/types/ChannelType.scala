@@ -19,19 +19,18 @@ import orc.error.compiletime.typing._
 import orc.lib.builtin.structured.ListType
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 object ChannelType extends SimpleTypeConstructor("Channel", Invariant) {
-  
+
   def getBuilder: Type = {
     val X = new TypeVariable()
-    FunctionType(List(X), Nil, this(X)) 
+    FunctionType(List(X), Nil, this(X))
   }
-  
-  override def instance(ts: List[Type]) = { 
+
+  override def instance(ts: List[Type]) = {
     val List(t) = ts
     new RecordType(
       "get" -> SimpleFunctionType(t),
@@ -40,8 +39,7 @@ object ChannelType extends SimpleTypeConstructor("Channel", Invariant) {
       "close" -> SimpleFunctionType(SignalType),
       "closeD" -> SimpleFunctionType(SignalType),
       "isClosed" -> SimpleFunctionType(BooleanType),
-      "getAll" -> SimpleFunctionType(ListType(t))
-    ) 
+      "getAll" -> SimpleFunctionType(ListType(t)))
   }
-   
+
 }

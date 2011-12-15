@@ -17,19 +17,18 @@ package orc.types
 import orc.error.NotYetImplementedException
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.NoMatchingConstructorException
-import java.lang.{reflect => jvm}
+import java.lang.{ reflect => jvm }
 import orc.compile.typecheck.Typeloader._
 
 /**
- *
- * The type of a Java class, providing constructors and static members.
- *
- * @author dkitchin
- */
+  * The type of a Java class, providing constructors and static members.
+  *
+  * @author dkitchin
+  */
 case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType {
 
   override def toString = "(class " + Option(cl.getCanonicalName).getOrElse(cl.getName) + ")"
-  
+
   /* JVM class types do not yet have an implementation of join or meet.
    * Such an implementation would require a time-intensive traversal of
    * the Java class hierarchy. In some cases, it may not even be possible
@@ -39,17 +38,17 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
    * not affect the correctness of type checking, just the effectiveness
    * of inference.
    */
-  
+
   // def join ...
   // def meet ...
-  
-  override def <(that: Type): Boolean = { 
+
+  override def <(that: Type): Boolean = {
     that match {
       case JavaClassType(otherCl, _) => otherCl isAssignableFrom cl
       case _ => super.<(that)
     }
   }
-  
+
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     argTypes match {
       // Static member access
@@ -64,32 +63,29 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
         val formals = cl.getTypeParameters()
         if (formals.size != typeArgs.size) {
           throw new TypeArgumentArityException(formals.size, typeArgs.size)
-        }
-        else {
-          val newJavaContext = javaContext ++ (formals zip typeArgs) 
+        } else {
+          val newJavaContext = javaContext ++ (formals zip typeArgs)
           def valid(ctor: jvm.Constructor[_]): Boolean = {
             val ctorFormals = ctor.getGenericParameterTypes()
-            jvm.Modifier.isPublic(ctor.getModifiers()) && 
-            ctorFormals.size == argTypes.size && 
-            {
-              val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
-              (argTypes corresponds orcFormals) { _ < _ }
-            }
+            jvm.Modifier.isPublic(ctor.getModifiers()) &&
+              ctorFormals.size == argTypes.size &&
+              {
+                val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
+                (argTypes corresponds orcFormals) { _ < _ }
+              }
           }
           if (cl.getConstructors() exists valid) {
             if (formals.isEmpty) {
               liftJavaType(cl)
-            }
-            else {
+            } else {
               liftJavaTypeOperator(cl).operate(typeArgs)
             }
-          }
-          else {
+          } else {
             throw new NoMatchingConstructorException()
           }
         }
       }
-    } 
+    }
   }
-  
+
 }

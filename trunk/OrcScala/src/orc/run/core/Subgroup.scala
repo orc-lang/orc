@@ -14,10 +14,9 @@
 //
 package orc.run.core
 
-import orc.{OrcEvent, CaughtEvent}
+import orc.{ OrcEvent, CaughtEvent }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 abstract class Subgroup(parent: Group) extends Group {
 

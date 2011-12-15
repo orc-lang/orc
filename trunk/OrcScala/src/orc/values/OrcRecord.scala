@@ -23,21 +23,20 @@ import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 
 /**
- * 
- *
- * @author dkitchin
- */
-case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite {
-  
+  *
+  * @author dkitchin
+  */
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
+
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
   }
-  
+
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
-  
-  override def evaluate(args: List[AnyRef]) = 
+
+  override def evaluate(args: List[AnyRef]) =
     args match {
-      case List(Field(name)) => 
+      case List(Field(name)) =>
         entries.get(name) match {
           case Some(v) => Some(v)
           case None => throw new NoSuchMemberException(this, name)
@@ -45,20 +44,20 @@ case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite {
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
-  
+
   override def toOrcSyntax() = {
-    val formattedEntries = 
-      for ( (s,v) <- entries) yield { 
-        s + " = " + Format.formatValue(v) 
+    val formattedEntries =
+      for ((s, v) <- entries) yield {
+        s + " = " + Format.formatValue(v)
       }
-    val contents = 
+    val contents =
       formattedEntries.toList match {
         case Nil => ""
-        case l => l reduceRight { _ + ", " + _ } 
+        case l => l reduceRight { _ + ", " + _ }
       }
     "{. " + contents + " .}"
   }
-  
+
   /* Create a new record, extending this record with the bindings of the other record.
    * When there is overlap, the other record's bindings override this record.
    */
@@ -69,5 +68,5 @@ case class OrcRecord(entries: Map[String,AnyRef]) extends PartialSite {
 
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
-  
+
 }

@@ -18,17 +18,15 @@ package orc.values.sites
 import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
 
-
-/**
- * Services (such as name resolution) for use of plain old Java classes
- * as Orc sites.
- *
- * @author jthywiss
- */
+/** Services (such as name resolution) for use of plain old Java classes
+  * as Orc sites.
+  *
+  * @author jthywiss
+  */
 object JavaSiteForm extends SiteForm {
   @throws(classOf[SiteResolutionException])
   def resolve(name: String) = {
-    Logger.finer("Resolving Java class "+name)
+    Logger.finer("Resolving Java class " + name)
     try {
       new JavaClassProxy(loadClass(name).asInstanceOf[Class[_ <: java.lang.Object]])
     } catch {

@@ -15,17 +15,16 @@
 package orc.types
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 trait TypeOperator {
-  
+
   def apply(ts: Type*): Type = {
     operate(ts.toList)
   }
-    
+
   def operate(ts: List[Type]): Type
-  
+
   def <(that: TypeOperator) = (this eq that)
 }

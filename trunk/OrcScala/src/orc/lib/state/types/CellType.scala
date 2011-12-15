@@ -18,24 +18,22 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 object CellType extends SimpleTypeConstructor("Cell", Invariant) {
-  
+
   def getBuilder: Type = {
     val X = new TypeVariable()
     FunctionType(List(X), Nil, this(X))
   }
 
-  override def instance(ts: List[Type]) = { 
+  override def instance(ts: List[Type]) = {
     val List(t) = ts
     new RecordType(
       "read" -> SimpleFunctionType(t),
       "readD" -> SimpleFunctionType(t),
-      "write" -> SimpleFunctionType(t, SignalType)
-    ) 
+      "write" -> SimpleFunctionType(t, SignalType))
   }
 }

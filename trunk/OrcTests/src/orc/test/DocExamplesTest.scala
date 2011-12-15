@@ -20,11 +20,10 @@ import orc.script.OrcBindings
 import scala.xml.XML
 import scala.xml.Text
 
-/**
- * Test suite for examples extracted from documentation.
- *
- * @author dkitchin
- */
+/** Test suite for examples extracted from documentation.
+  *
+  * @author dkitchin
+  */
 object DocExamplesTest extends ExamplesTest {
 
   def suite(): Test = {

@@ -24,40 +24,39 @@ import orc.OrcEvent
 import orc.values.Format.formatValue
 
 /**
- * 
- * Display a value on the console or equivalent output device.
- *
- * @author dkitchin
- */
+  * Display a value on the console or equivalent output device.
+  *
+  * @author dkitchin
+  */
 
 case class PrintEvent(val text: String) extends OrcEvent
 
 abstract class PrintSite extends Site1 with TypedSite {
 
-  def formatToPrint(v: AnyRef): String = 
+  def formatToPrint(v: AnyRef): String =
     v match {
       case s: String => s
       case t => formatValue(t)
     }
-  
+
   def orcType = SimpleFunctionType(Top, SignalType)
-  
+
 }
 
 object Print extends PrintSite {
-  
+
   def call(a: AnyRef, h: Handle) = {
     h.notifyOrc(PrintEvent(formatToPrint(a)))
     h.publish()
   }
-  
+
 }
 
 object Println extends PrintSite {
-  
+
   def call(a: AnyRef, h: Handle) = {
     h.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
     h.publish()
   }
-  
+
 }

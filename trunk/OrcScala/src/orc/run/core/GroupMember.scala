@@ -14,10 +14,9 @@
 //
 package orc.run.core
 
-import orc.{Schedulable, OrcEvent}
+import orc.{ Schedulable, OrcEvent }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait GroupMember extends Schedulable {
   def kill(): Unit

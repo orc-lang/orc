@@ -18,23 +18,21 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 object CounterType extends RecordType(
   "inc" -> SimpleFunctionType(SignalType),
   "dec" -> SimpleFunctionType(SignalType),
   "onZero" -> SimpleFunctionType(SignalType),
-  "value" -> SimpleFunctionType(IntegerType)
-) {
- 
+  "value" -> SimpleFunctionType(IntegerType)) {
+
   override def toString = "Counter"
-  
+
   def getBuilder: Type = {
     val makeEmpty = SimpleFunctionType(this)
     val makeFull = SimpleFunctionType(IntegerType, this)
     OverloadedType(List(makeEmpty, makeFull))
   }
- 
+
 }

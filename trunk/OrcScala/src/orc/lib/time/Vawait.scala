@@ -19,8 +19,7 @@ import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
 import orc.values.sites.Site1
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object Vawait extends Site1 with VirtualClockOperation {
   // Do not invoke directly.

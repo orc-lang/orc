@@ -14,7 +14,7 @@
 //
 package orc.run.core
 
-import orc.{Schedulable, CaughtEvent}
+import orc.{ Schedulable, CaughtEvent }
 import orc.error.OrcException
 
 /** A call handle specific to site calls.

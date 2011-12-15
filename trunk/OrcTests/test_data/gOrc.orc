@@ -55,5 +55,3 @@ def gib(0) = stop
 def gib(times) = randToken() | gib(times - 1)
 
 popList() >> gib(totalTokens)
-
-

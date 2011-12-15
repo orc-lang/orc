@@ -14,16 +14,13 @@
 //
 package orc.ast.oil.named
 
-/**
- * 
- *
- * @author dkitchin
- */
+/** @author dkitchin
+  */
 trait Guarding {
-  self : Expression =>
-  
+  self: Expression =>
+
   def checkGuarded(unguardedRecursion: Expression => Unit) { checkGuarded(Nil, unguardedRecursion) }
-  
+
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
    */
@@ -31,10 +28,10 @@ trait Guarding {
     def check(e: Expression) = e.checkGuarded(context, unguardedRecursion)
     this match {
       case Stop() => true
-      case a : Argument => false
+      case a: Argument => false
       case Call(target, _, _) => {
         if (context contains target) {
-          unguardedRecursion(this) ; false
+          unguardedRecursion(this); false
         } else {
           /* This is a liberal approximation and will generate false negatives. 
            * Not all calls are truly guarding; only calls to sites or to guarded
@@ -42,7 +39,7 @@ trait Guarding {
            * is just a sanity check, not a safety guarantee, it seems appropriate
            * to incur false negatives to repress a proliferation of false positives.
            */
-          true 
+          true
         }
       }
       case left || right => {
@@ -51,7 +48,7 @@ trait Guarding {
         l && r
       }
       case left > x > right => {
-        val l = check(left) 
+        val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
@@ -61,7 +58,7 @@ trait Guarding {
         l && r
       }
       case left ow right => {
-        val l = check(left) 
+        val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
@@ -74,5 +71,5 @@ trait Guarding {
       case HasType(body, _) => check(body)
     }
   }
-  
+
 }
