@@ -20,23 +20,18 @@ import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 
 /**
- * 
- *
- * @author dkitchin
- */
+  * @author dkitchin
+  */
 object ClassForms {
 
-  /** 
-   * Helper functions for class conversion
-   */
+  /** Helper functions for class conversion
+    */
   def makeClassBody(body: ext.Expression,
-                      reportProblem: CompilationException with ContinuableSeverity => Unit
-                     ): ext.Expression = makeClassBody(body, Nil, reportProblem)
+    reportProblem: CompilationException with ContinuableSeverity => Unit): ext.Expression = makeClassBody(body, Nil, reportProblem)
 
-  def makeClassBody(body: ext.Expression, 
-                      defNames: List[String],
-                      reportProblem: CompilationException with ContinuableSeverity => Unit
-                     ): ext.Expression = {
+  def makeClassBody(body: ext.Expression,
+    defNames: List[String],
+    reportProblem: CompilationException with ContinuableSeverity => Unit): ext.Expression = {
     body match {
       case ext.Declare(decl: ext.DefDeclaration, e) => {
         return new ext.Declare(decl, makeClassBody(e, decl.name :: defNames, reportProblem))

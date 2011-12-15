@@ -21,14 +21,13 @@ import orc.error.OrcException
 import orc.error.runtime.JavaException
 
 /**
- * 
- *
- * @author dkitchin
- */
-trait SupportForSiteInvocation extends InvocationBehavior {  
+  *
+  * @author dkitchin
+  */
+trait SupportForSiteInvocation extends InvocationBehavior {
   override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
     v match {
-      case (s: Site) => 
+      case (s: Site) =>
         try {
           s.call(vs, h)
         } catch {
@@ -39,7 +38,7 @@ trait SupportForSiteInvocation extends InvocationBehavior {
       case _ => super.invoke(h, v, vs)
     }
   }
-  
+
   override def quiescentWhileInvoked(v: AnyRef): Boolean = {
     v match {
       case (s: Site) => s.quiescentWhileInvoked

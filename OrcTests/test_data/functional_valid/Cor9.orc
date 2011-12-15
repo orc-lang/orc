@@ -7,6 +7,7 @@
 
 "All your" + " base are" + " belong to us"
 
-{- OUTPUT
-- "All your base are belong to us"
+{-
+OUTPUT:
+"All your base are belong to us"
 -}

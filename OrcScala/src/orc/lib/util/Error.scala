@@ -23,11 +23,10 @@ import orc.types.Bot
 import orc.types.SimpleFunctionType
 import orc.types.StringType
 
-/**
- * The Error site throws an Orc runtime exception with a program supplied message.
- *
- * @author jthywiss
- */
+/** The Error site throws an Orc runtime exception with a program supplied message.
+  *
+  * @author jthywiss
+  */
 object Error extends TotalSite with TotalSite1 with TypedSite {
   def eval(x: AnyRef) = {
     x match {
@@ -35,6 +34,6 @@ object Error extends TotalSite with TotalSite1 with TypedSite {
       case _ => throw new ArgumentTypeMismatchException(0, "String", if (x != null) Option(x.getClass.getCanonicalName).getOrElse(x.getClass.getName) else "null")
     }
   }
-  
+
   def orcType = SimpleFunctionType(StringType, Bot)
 }

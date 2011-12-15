@@ -26,15 +26,13 @@ import orc.Handle
 import orc.OrcEvent
 import orc.error.runtime.ArgumentTypeMismatchException
 
-
 import java.net.URL
 
 /**
- * 
- * Open a new browser window or tab for the specified URL.
- *
- * @author dkitchin
- */
+  * Open a new browser window or tab for the specified URL.
+  *
+  * @author dkitchin
+  */
 
 case class BrowseEvent(val url: URL) extends OrcEvent
 
@@ -50,11 +48,10 @@ object Browse extends Site1 with TypedSite {
       case a => throw new ArgumentTypeMismatchException(0, "URL", if (a != null) a.getClass().toString() else "null")
     }
   }
-  
-  def orcType = 
+
+  def orcType =
     OverloadedType(List(
       SimpleFunctionType(StringType, SignalType),
-      SimpleFunctionType(JavaObjectType(classOf[URL]), SignalType)
-    ))
-  
+      SimpleFunctionType(JavaObjectType(classOf[URL]), SignalType)))
+
 }

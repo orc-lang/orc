@@ -22,17 +22,15 @@ import orc.ast.oil.nameless.Expression
 import orc.error.runtime.ExecutionException
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 trait SupportForSynchronousExecution extends OrcRuntime {
   protected var runSyncThread: Thread = null
 
-  /**
-   * Wait for execution to complete, rather than dispatching asynchronously.
-   * The continuation takes only values, not events.
-   */
+  /** Wait for execution to complete, rather than dispatching asynchronously.
+    * The continuation takes only values, not events.
+    */
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
   def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
@@ -44,7 +42,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
     def syncAction(event: OrcEvent): Unit = {
       event match {
         case HaltedEvent => { done.set({}) }
-        case _ => { }
+        case _ => {}
       }
       k(event)
     }

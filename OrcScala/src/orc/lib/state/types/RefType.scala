@@ -18,31 +18,29 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 object RefType extends SimpleTypeConstructor("Ref", Invariant) {
 
   def getBuilder: Type = {
-    
+
     val X = new TypeVariable()
     val makeEmpty = FunctionType(List(X), Nil, this(X))
-    
+
     val Y = new TypeVariable()
     val makeFull = FunctionType(List(Y), List(Y), this(Y))
-    
+
     OverloadedType(List(makeEmpty, makeFull))
   }
-  
-  override def instance(ts: List[Type]) = { 
+
+  override def instance(ts: List[Type]) = {
     val List(t) = ts
     new RecordType(
       "read" -> SimpleFunctionType(t),
       "readD" -> SimpleFunctionType(t),
-      "write" -> SimpleFunctionType(t, SignalType)
-    ) 
+      "write" -> SimpleFunctionType(t, SignalType))
   }
-  
+
 }

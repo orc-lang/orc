@@ -18,55 +18,53 @@ import scala.collection.immutable.HashMap
 import orc.error.compiletime.typing.NoSuchMemberException
 import orc.error.compiletime.typing.UncallableTypeException
 
-
-object EmptyRecordType extends RecordType(Map[String,Type]())
+object EmptyRecordType extends RecordType(Map[String, Type]())
 
 /**
- * 
- * Semantic type of records.
- *
- * @author dkitchin
- */
-case class RecordType(entries: Map[String,Type]) extends CallableType with StrictType {
+  * Semantic type of records.
+  *
+  * @author dkitchin
+  */
+case class RecordType(entries: Map[String, Type]) extends CallableType with StrictType {
 
   def this(entries: (String, Type)*) = {
     this(entries.toMap)
   }
-  
+
   override def call(typeArgs: List[Type], argTypes: List[Type]) = {
     argTypes match {
       case List(FieldType(f)) => entries.getOrElse(f, throw new NoSuchMemberException(this, f))
       case _ => {
         (entries get "apply") match {
-          case Some(c : CallableType) => c.call(typeArgs, argTypes)
+          case Some(c: CallableType) => c.call(typeArgs, argTypes)
           case _ => throw new UncallableTypeException(this)
         }
       }
     }
   }
-  
+
   override def toString = {
     val ks = entries.keys.toList
     val entryStrings = ks map { k => k + " :: " + entries(k) }
-    entryStrings.mkString("{. ",", "," .}")
+    entryStrings.mkString("{. ", ", ", " .}")
   }
-  
+
   override def join(that: Type): Type = {
-     that match {
-       case RecordType(otherEntries) => {
-         val joinKeySet = entries.keySet intersect otherEntries.keySet
-         val joinEntries =
-           for (k <- joinKeySet) yield {
-             val t = entries(k)
-             val u = otherEntries(k)
-             (k, t join u)
-           }
-         RecordType(HashMap.empty ++ joinEntries)
-       }
-       case _ => super.join(that)
-     }
-   }
-  
+    that match {
+      case RecordType(otherEntries) => {
+        val joinKeySet = entries.keySet intersect otherEntries.keySet
+        val joinEntries =
+          for (k <- joinKeySet) yield {
+            val t = entries(k)
+            val u = otherEntries(k)
+            (k, t join u)
+          }
+        RecordType(HashMap.empty ++ joinEntries)
+      }
+      case _ => super.join(that)
+    }
+  }
+
   override def meet(that: Type): Type = {
     that match {
       case RecordType(otherEntries) => {
@@ -82,24 +80,24 @@ case class RecordType(entries: Map[String,Type]) extends CallableType with Stric
       case _ => super.join(that)
     }
   }
-  
+
   override def <(that: Type): Boolean = {
     that match {
       case RecordType(otherEntries) => {
         val keys = entries.keySet
         val otherKeys = otherEntries.keySet
-        
+
         (otherKeys subsetOf keys) &&
-        (otherKeys forall { k => entries(k) < otherEntries(k) })
+          (otherKeys forall { k => entries(k) < otherEntries(k) })
       }
       case _ => super.<(that)
     }
   }
-  
+
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     RecordType(entries mapValues { _ subst sigma })
   }
-  
+
   /* Create a new record type, extending this record type with the bindings of the other record type.
    * When there is overlap, the other record type's bindings override this record type.
    */

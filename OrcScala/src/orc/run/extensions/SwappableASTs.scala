@@ -17,17 +17,15 @@ package orc.run.extensions
 import scala.collection.immutable.List
 
 import orc.OrcExecutionOptions
-import orc.ast.oil.nameless.{Expression, Def}
-import orc.run.core.{SequenceFrame, FunctionFrame, Execution, Closure}
+import orc.ast.oil.nameless.{ Expression, Def }
+import orc.run.core.{ SequenceFrame, FunctionFrame, Execution, Closure }
 import orc.run.Orc
 
-
-/**
- * Trait that mixes-in update access to Orc runtime engine objects that
- * hold references to OIL AST nodes.
- *
- * @author jthywiss
- */
+/** Trait that mixes-in update access to Orc runtime engine objects that
+  * hold references to OIL AST nodes.
+  *
+  * @author jthywiss
+  */
 trait SwappableASTs extends Orc {
 }
 

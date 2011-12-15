@@ -16,30 +16,27 @@ import orc.ast.AST
 import scala.collection.mutable.Map
 import scala.math.max
 
-/**
- * Given two ASTs, compute a matching, a sequence of pairs (oldNode, newNode)
- * where the two nodes are "equal" nodes in the given ASTs.
- *
- * @author jthywiss
- */
+/** Given two ASTs, compute a matching, a sequence of pairs (oldNode, newNode)
+  * where the two nodes are "equal" nodes in the given ASTs.
+  *
+  * @author jthywiss
+  */
 trait MatchAsts {
   def matchAsts(ast1: AST, ast2: AST): Seq[Tuple2[AST, AST]]
 }
 
-
-/**
- * Given two ASTs, compute a matching, a sequence of pairs (oldNode, newNode)
- * where the two nodes are "equal" nodes in the given ASTs.
- *
- * Implemented using the FastMatch algorithm in:
- *
- * Chawathe, S. S., Rajaraman, A., Garcia-Molina, H., and Widom, J. 1996.
- * Change detection in hierarchically structured information. In Proceedings
- * of the 1996 ACM SIGMOD International Conference on Management of Data
- * (Montreal, Quebec, Canada, 04–06 Jun 1996). ACM, 493–504.
- *
- * @author jthywiss
- */
+/** Given two ASTs, compute a matching, a sequence of pairs (oldNode, newNode)
+  * where the two nodes are "equal" nodes in the given ASTs.
+  *
+  * Implemented using the FastMatch algorithm in:
+  *
+  * Chawathe, S. S., Rajaraman, A., Garcia-Molina, H., and Widom, J. 1996.
+  * Change detection in hierarchically structured information. In Proceedings
+  * of the 1996 ACM SIGMOD International Conference on Management of Data
+  * (Montreal, Quebec, Canada, 04–06 Jun 1996). ACM, 493–504.
+  *
+  * @author jthywiss
+  */
 object FastMatchCRGMW96 extends MatchAsts {
 
   def matchAsts(ast1: AST, ast2: AST): Seq[Tuple2[AST, AST]] = {
@@ -50,9 +47,9 @@ object FastMatchCRGMW96 extends MatchAsts {
 
     /* Match leaves */
     {
-      val leaves1 = traverseLeavesInOrder(ast1, (_:AST).subtrees).toIndexedSeq
-      val leaves2 = traverseLeavesInOrder(ast2, (_:AST).subtrees).toIndexedSeq
-      matchChains(leaves1, leaves2, {(_:AST).equals(_:AST)}, matches)
+      val leaves1 = traverseLeavesInOrder(ast1, (_: AST).subtrees).toIndexedSeq
+      val leaves2 = traverseLeavesInOrder(ast2, (_: AST).subtrees).toIndexedSeq
+      matchChains(leaves1, leaves2, { (_: AST).equals(_: AST) }, matches)
     }
 
     /* Match interior nodes */
@@ -61,8 +58,8 @@ object FastMatchCRGMW96 extends MatchAsts {
       tabulateLeafDescendents(leafDescendents1, ast1)
       val leafDescendents2 = IdentityHashMap[AST, Seq[AST]]()
       tabulateLeafDescendents(leafDescendents2, ast2)
-      val interiorNodes1 = traverseInteriorNodesPreOrder(ast1, (_:AST).subtrees).toIndexedSeq
-      val interiorNodes2 = traverseInteriorNodesPreOrder(ast2, (_:AST).subtrees).toIndexedSeq
+      val interiorNodes1 = traverseInteriorNodesPreOrder(ast1, (_: AST).subtrees).toIndexedSeq
+      val interiorNodes2 = traverseInteriorNodesPreOrder(ast2, (_: AST).subtrees).toIndexedSeq
       matchChains(interiorNodes1, interiorNodes2, interiorNodeEqual(_: AST, _: AST, leafDescendents1, leafDescendents2, matches), matches)
     }
 
@@ -85,7 +82,7 @@ object FastMatchCRGMW96 extends MatchAsts {
       }
     }
   }
-  
+
   def tabulateLeafDescendents(table: Map[AST, Seq[AST]], node: AST): Iterable[AST] = {
     if (node == null || node.subtrees.isEmpty) {
       List(node)
@@ -100,7 +97,7 @@ object FastMatchCRGMW96 extends MatchAsts {
     if (node1.getClass != node2.getClass) {
       return false
     } else {
-      var remain = (max(leafDescendants1(node1).size, leafDescendants2(node2).size) * 0.4 /* param 't' */).toInt
+      var remain = (max(leafDescendants1(node1).size, leafDescendants2(node2).size) * 0.4 /* param 't' */ ).toInt
       for (d1 <- leafDescendants1(node1)) {
         if (matchOf1.isDefinedAt(d1) && leafDescendants2(node2).contains(matchOf1(d1))) { remain -= 1 }
         if (remain < 0) {
@@ -117,14 +114,14 @@ object FastMatchCRGMW96 extends MatchAsts {
     if (children == null || children.isEmpty) {
       List(node)
     } else {
-      children flatMap {traverseLeavesInOrder(_, childMap)}
+      children flatMap { traverseLeavesInOrder(_, childMap) }
     }
   }
 
   def traverseInteriorNodesPreOrder[A](node: A, childMap: A => TraversableOnce[A]): Traversable[A] = {
     val children = childMap(node).toSeq
     if (children != null && !children.isEmpty) {
-      node +: (children flatMap {traverseInteriorNodesPreOrder(_, childMap)})
+      node +: (children flatMap { traverseInteriorNodesPreOrder(_, childMap) })
     } else {
       Nil
     }

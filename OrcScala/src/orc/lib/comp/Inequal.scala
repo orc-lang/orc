@@ -21,9 +21,8 @@ import orc.values.sites.UntypedSite
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
 
-/**
- * Not equals comparison -- delegates to Scala's ==
- */
+/** Not equals comparison -- delegates to Scala's ==
+  */
 object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
   def evaluate(args: List[AnyRef]) =

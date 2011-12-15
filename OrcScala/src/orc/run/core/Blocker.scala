@@ -14,8 +14,7 @@
 //
 package orc.run.core
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait Blocker {
   /* 

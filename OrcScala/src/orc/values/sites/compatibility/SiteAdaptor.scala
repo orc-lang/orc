@@ -23,11 +23,10 @@ import orc.values.OrcTuple
 import orc.error.runtime.TokenException
 import orc.types.Type
 
-/**
- * Adapts old OrcJava sites to the new OrcScala site interface
- *
- * @author jthywiss
- */
+/** Adapts old OrcJava sites to the new OrcScala site interface
+  *
+  * @author jthywiss
+  */
 abstract class SiteAdaptor extends Site {
 
   def call(args: List[AnyRef], h: Handle) {
@@ -40,12 +39,11 @@ abstract class SiteAdaptor extends Site {
     callSite(new Args(jl), h)
   }
 
-  /**
-   * Must be implemented by subclasses to implement the site behavior
-   * @param args          list of argument values
-   * @param caller    where the result should be sent
-   */
-  @throws(classOf[TokenException]) 
+  /** Must be implemented by subclasses to implement the site behavior
+    * @param args          list of argument values
+    * @param caller    where the result should be sent
+    */
+  @throws(classOf[TokenException])
   def callSite(args: Args, h: Handle): Unit
 
 }

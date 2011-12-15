@@ -15,20 +15,17 @@
 package docgen
 
 /**
- *
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
-// Parent trait of parsed documentation items
+/** Parent trait of parsed documentation items */
 trait DocItem
 
-
-// A plain chunk of documentation text
+/** A plain chunk of documentation text */
 case class DocText(content: String) extends DocItem
 
-
-// Parent of declared code elements (sites and defs)
+/** Parent of declared code elements (sites and defs) */
 trait DocDecl extends DocItem {
 
   val name: String
@@ -38,24 +35,26 @@ trait DocDecl extends DocItem {
 
 }
 
-// @site
-// Structured documentation of a site or method
+/** @site
+  * Structured documentation of a site or method
+  */
 case class DocSite(name: String, typeDeclaration: String, body: List[DocItem]) extends DocDecl {
   val keyword = "site"
 }
 
-// @def
-// Documentation of a definition
+/** @def
+  * Documentation of a definition
+  */
 case class DocDefn(name: String, typeDeclaration: String, body: List[DocItem]) extends DocDecl {
   val keyword = "def"
 }
 
-
-// @implementation
-// Get the next chunk of code outside of a comment and use it as a code block here
+/** @implementation
+  * Get the next chunk of code outside of a comment and use it as a code block here
+  */
 case object DocImpl extends DocItem
 
-
-// Text in between document comment blocks. This is not processed directly
-// into XML, but is sometimes used to fill in a DocImpl
+/** Text in between document comment blocks. This is not processed directly
+  * into XML, but is sometimes used to fill in a DocImpl
+  */
 case class DocOutside(content: String) extends DocItem

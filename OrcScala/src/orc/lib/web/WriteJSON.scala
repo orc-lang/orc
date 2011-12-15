@@ -14,49 +14,48 @@
 //
 package orc.lib.web
 
-import orc.values.sites.{TotalSite1, UntypedSite}
+import orc.values.sites.{ TotalSite1, UntypedSite }
 import orc.values.OrcRecord
 import orc.error.NotYetImplementedException
 import orc.error.runtime.SiteException
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 object WriteJSON extends TotalSite1 with UntypedSite {
 
   def eval(a: AnyRef): AnyRef = {
     convertToJson(a)
   }
-  
+
   def convertToJson(a: Any): String = {
     if (a == null) { return "null" }
     a match {
-      case l : List[_] => l map convertToJson mkString("[",",","]")
+      case l: List[_] => l map convertToJson mkString ("[", ",", "]")
       case OrcRecord(elements) => {
         val newElements =
           for ((key, value) <- elements) yield {
-            "\"" + key + "\"" + ":" + convertToJson(value) 
+            "\"" + key + "\"" + ":" + convertToJson(value)
           }
-        newElements mkString ("{",",","}")
+        newElements mkString ("{", ",", "}")
       }
-      case b : java.lang.Boolean => if (b.booleanValue()) { "true" } else { "false" }
+      case b: java.lang.Boolean => if (b.booleanValue()) { "true" } else { "false" }
       case n: Number => n.toString()
       case s: String => "\"" + jsonEncodedString(s) + "\""
       case v => throw new SiteException("Value " + v + " has no JSON counterpart.")
     }
   }
- 
+
   def jsonEncodedString(s: String): String = {
     s.replace("\\", """\\""")
-     .replace("/", """\/""") 
-     .replace("\b", """\b""")
-     .replace("\f", """\f""")
-     .replace("\n", """\n""")
-     .replace("\r", """\r""")
-     .replace("\t", """\t""")
-     .replace("\"", "\\\"")
+      .replace("/", """\/""")
+      .replace("\b", """\b""")
+      .replace("\f", """\f""")
+      .replace("\n", """\n""")
+      .replace("\r", """\r""")
+      .replace("\t", """\t""")
+      .replace("\"", "\\\"")
   }
-  
+
 }

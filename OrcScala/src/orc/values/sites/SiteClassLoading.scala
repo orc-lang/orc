@@ -23,19 +23,16 @@ import java.net.URLClassLoader
 import orc.util.FirstNonNull
 import orc.compile.Logger
 
-
-/**
- * Provides a loadClass/getResource implementation that uses the Java class path,
- * plus the class path supplied to SiteClassLoading.initWithClassPath.
- *
- * @author jthywiss
- */
+/** Provides a loadClass/getResource implementation that uses the Java class path,
+  * plus the class path supplied to SiteClassLoading.initWithClassPath.
+  *
+  * @author jthywiss
+  */
 trait SiteClassLoading {
   @throws(classOf[ClassNotFoundException])
   def loadClass(name: String) = SiteClassLoading.classLoader.loadClass(name)
   def getResource(name: String) = SiteClassLoading.classLoader.getResource(name)
 }
-
 
 object SiteClassLoading {
   /*
@@ -56,10 +53,9 @@ object SiteClassLoading {
    */
 
   private var classLoader = FirstNonNull(
-      Thread.currentThread().getContextClassLoader(),
-      getClass().getClassLoader(),
-      ClassLoader.getSystemClassLoader()
-  )
+    Thread.currentThread().getContextClassLoader(),
+    getClass().getClassLoader(),
+    ClassLoader.getSystemClassLoader())
 
   private var initted = false
 
@@ -68,9 +64,9 @@ object SiteClassLoading {
   def initWithClassPathStrings(classPath: Array[String]) { initWithClassPathUrls(classPath.map(path2URL(_)).toArray) }
 
   def initWithClassPathUrls(classPath: Array[URL]) {
-    Logger.config("Initializing site & class loading with class path "+classPath.mkString(":"))
-    if (!initted) 
-      stackClassLoaderWithPath(classPath) 
+    Logger.config("Initializing site & class loading with class path " + classPath.mkString(":"))
+    if (!initted)
+      stackClassLoaderWithPath(classPath)
     else
       throw new IllegalStateException("Cannot double-init SiteClassLoading")
   }
@@ -82,7 +78,7 @@ object SiteClassLoading {
       canFile = canFile.getCanonicalFile
     } catch {
       case e: InterruptedException => throw e
-      case e: Exception => { }
+      case e: Exception => {}
     }
     canFile.toURI.toURL
   }

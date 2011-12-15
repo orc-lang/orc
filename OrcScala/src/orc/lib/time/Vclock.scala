@@ -20,8 +20,7 @@ import orc.values.sites.Site1
 
 import orc.Handle
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object Vclock extends Site1 with VirtualClockOperation {
   // Do not invoke directly.

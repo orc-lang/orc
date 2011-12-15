@@ -20,14 +20,13 @@ import orc.values.Format
 import orc.error.runtime.UncallableValueException
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   /* This replaces the default behavior because it does not call super */
   override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
-    val error = "You can't call the "+(if (v != null) v.getClass().toString() else "null")+" \" "+Format.formatValue(v)+" \""
+    val error = "You can't call the " + (if (v != null) v.getClass().toString() else "null") + " \" " + Format.formatValue(v) + " \""
     h !! new UncallableValueException(error)
   }
 }

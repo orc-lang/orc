@@ -45,7 +45,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def !!(e: OrcException) { setState(CallRaisedException(e)) }
 
   def hasRight(rightName: String) = caller.options.hasRight(rightName)
-  
+
   def notifyOrc(event: orc.OrcEvent) {
     synchronized {
       if (isLive) {
@@ -63,13 +63,13 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   }
 
   def check(t: Token) {
-    val callState = synchronized { state } 
+    val callState = synchronized { state }
     callState match {
-      case CallInProgress => { /*t.scheduledBy.printStackTrace();*/ throw new AssertionError("Spurious check of call handle. state="+this.state) }
+      case CallInProgress => { /*t.scheduledBy.printStackTrace();*/ throw new AssertionError("Spurious check of call handle. state=" + this.state) }
       case CallReturnedValue(v) => { t.publish(v) }
       case CallSilent => { t.halt() }
       case CallRaisedException(e) => { t !! e }
-      case CallWasKilled => { }
+      case CallWasKilled => {}
     }
   }
 

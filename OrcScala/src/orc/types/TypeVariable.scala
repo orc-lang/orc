@@ -15,26 +15,25 @@
 package orc.types
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 class TypeVariable(val optionalVariableName: Option[String] = None) extends Type {
-  
+
   def this(u: orc.ast.oil.named.BoundTypevar) = {
     this(u.optionalVariableName)
   }
-  
+
   def this(x: TypeVariable) = {
     this(x.optionalVariableName)
   }
-  
+
   override def toString = optionalVariableName getOrElse "_"
-  
+
   override def <(that: Type) = (this eq that) || (super.<(that))
-  
+
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     sigma.getOrElse(this, this)
   }
-  
+
 }

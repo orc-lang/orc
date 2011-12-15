@@ -18,15 +18,14 @@ package orc.values.sites
 import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
 
-/**
- * Services (such as name resolution) for normal Orc sites.
- *
- * @author jthywiss
- */
+/** Services (such as name resolution) for normal Orc sites.
+  *
+  * @author jthywiss
+  */
 object OrcSiteForm extends SiteForm {
   @throws(classOf[SiteResolutionException])
   def resolve(name: String): Site = {
-    Logger.finer("Resolving Orc site "+name)
+    Logger.finer("Resolving Orc site " + name)
     var loadedClass: java.lang.Class[_] = null
     try {
       loadedClass = loadClass(name)
@@ -45,13 +44,13 @@ object OrcSiteForm extends SiteForm {
       }
     } else {
       try { // Maybe it's a Scala object....
-        val loadedClassCompanion = loadClass(name+"$")
+        val loadedClassCompanion = loadClass(name + "$")
         return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Site]
       } catch {
         case e: InterruptedException => throw e
-        case _: Exception => { } //Ignore -- It's not a Scala object, then.
+        case _: Exception => {} //Ignore -- It's not a Scala object, then.
       }
-      throw new SiteResolutionException(loadedClass.getName,new ClassCastException(loadedClass.getClass.getName+" cannot be cast to "+classOf[Site].getName))
+      throw new SiteResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getClass.getName + " cannot be cast to " + classOf[Site].getName))
     }
   }
 }

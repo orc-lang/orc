@@ -14,12 +14,11 @@
 //
 package orc.util
 
-/**
- * Applied to a list of possibly null arguments, returns the
- * first non-null argument, or null if they are all null.
- *
- * @author jthywiss
- */
+/** Applied to a list of possibly null arguments, returns the
+  * first non-null argument, or null if they are all null.
+  *
+  * @author jthywiss
+  */
 object FirstNonNull {
   // When Scala ticket #237 <https://lampsvn.epfl.ch/trac/scala/ticket/237> is fixed
   // These can become just:

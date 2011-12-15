@@ -16,8 +16,7 @@ package orc.lib.time
 
 import orc.values.sites.TotalSite2
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object IntegerTimeOrder extends TotalSite2 {
 

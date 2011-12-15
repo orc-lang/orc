@@ -20,8 +20,7 @@ import scala.collection.TraversableLike
 import scala.collection.mutable.Builder
 import scala.collection.mutable.ListBuffer
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait Frame extends Traversable[Frame] {
   def apply(t: Token, v: AnyRef): Unit
@@ -37,11 +36,10 @@ case object EmptyFrame extends Frame {
 
 trait CompositeFrame extends Frame {
   val previous: Frame
-  def foreach[U](f: Frame => U) = { f(this) ; previous.foreach(f) }  
+  def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
   def apply(t: Token, v: AnyRef) {
@@ -51,8 +49,7 @@ case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
   }
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class SequenceFrame(private[run] var _node: Expression, val previous: Frame) extends CompositeFrame {
   def node = _node
@@ -64,8 +61,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
   }
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding], val previous: Frame) extends CompositeFrame {
   def callpoint = _callpoint
@@ -77,8 +73,7 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
   }
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: Frame) extends CompositeFrame {
   def k = _k
@@ -89,8 +84,7 @@ case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: F
   }
 }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class GroupFrame(val previous: Frame) extends CompositeFrame {
   def apply(t: Token, v: AnyRef) {

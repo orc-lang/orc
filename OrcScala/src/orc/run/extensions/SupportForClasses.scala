@@ -15,7 +15,7 @@
 package orc.run.extensions
 
 import orc.run.Orc
-import orc.ast.oil.nameless.{Expression, Call, Constant}
+import orc.ast.oil.nameless.{ Expression, Call, Constant }
 import orc.{ OrcExecutionOptions, OrcEvent, Handle }
 import orc.error.runtime.ExecutionException
 import orc.run.core.Subgroup
@@ -25,15 +25,14 @@ import orc.run.core.Closure
 import orc.run.core.Token
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 case class InstanceEvent(c: Closure, args: List[AnyRef], caller: Handle) extends OrcEvent
 
 trait SupportForClasses extends Orc {
- 
+
   override def installHandlers(host: Execution) {
     val thisHandler = {
       case InstanceEvent(closure, args, caller) => {
@@ -42,13 +41,12 @@ trait SupportForClasses extends Orc {
         val t = new Token(node, exec)
         schedule(t)
       }
-    } : PartialFunction[OrcEvent, Unit]
-    
+    }: PartialFunction[OrcEvent, Unit]
+
     host.installHandler(thisHandler)
     super.installHandlers(host)
   }
 
-  
   class ClassExecution(caller: Handle, host: Group) extends Subgroup(host) {
 
     var listener: Option[Handle] = Some(caller)

@@ -14,102 +14,93 @@
 //
 package orc.ast.oil.named
 
-
-/**
- *
- * Direct substitutions on named ASTs.
- *
- * @author dkitchin
- */
+/** Direct substitutions on named ASTs.
+  *
+  * @author dkitchin
+  */
 
 trait Substitution[X <: NamedAST] {
-  self : NamedAST =>
-    
-  def subst(a: Argument, x: Argument): X = Substitution(a,x)(this).asInstanceOf[X]
+  self: NamedAST =>
+
+  def subst(a: Argument, x: Argument): X = Substitution(a, x)(this).asInstanceOf[X]
   def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this).asInstanceOf[X]
-  
+
   def substAll(sublist: List[(Argument, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Argument, Argument]()
-    for ((a,s) <- sublist) {
+    for ((a, s) <- sublist) {
       val x = UnboundVar(s)
-      assert( !subs.contains(x) )
-      subs += ( (x,a) )
+      assert(!subs.contains(x))
+      subs += ((x, a))
     }
     Substitution.allArgs(subs)(this).asInstanceOf[X]
   }
-  
-  def subst(t: Type, u: Typevar): X = Substitution(t,u)(this).asInstanceOf[X]  
+
+  def subst(t: Type, u: Typevar): X = Substitution(t, u)(this).asInstanceOf[X]
   def subst(t: Typevar, s: String): X = Substitution(t, UnboundTypevar(s))(this).asInstanceOf[X]
   def substAllTypes(sublist: List[(Type, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Typevar, Type]()
-    for ((t,s) <- sublist) {
+    for ((t, s) <- sublist) {
       val u = UnboundTypevar(s)
-      assert( !subs.isDefinedAt(u) )
-      subs += ( (u,t) )
+      assert(!subs.isDefinedAt(u))
+      subs += ((u, t))
     }
     Substitution.allTypes(subs)(this).asInstanceOf[X]
   }
-  
-  
-  
+
 }
 
 object Substitution {
-  
+
   def apply(a: Argument, x: Argument) =
     new NamedASTTransform {
-      override def onArgument(context: List[BoundVar]) = { 
+      override def onArgument(context: List[BoundVar]) = {
         case `x` => a
-        case y : Argument => y
+        case y: Argument => y
       }
     }
-  
+
   def apply(t: Type, u: Typevar) =
     new NamedASTTransform {
-      override def onType(typecontext: List[BoundTypevar]) = { 
+      override def onType(typecontext: List[BoundTypevar]) = {
         case `u` => t
-        case w : Typevar => w
+        case w: Typevar => w
       }
     }
-  
+
   def allArgs(subs: scala.collection.Map[Argument, Argument]) =
     new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
-        case x : Var => {
-          if ( subs.isDefinedAt(x) ) { subs(x) } else { x } 		
+        case x: Var => {
+          if (subs.isDefinedAt(x)) { subs(x) } else { x }
         }
       }
     }
-  
+
   def allTypes(subs: scala.collection.Map[Typevar, Type]) =
     new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
-        case u : Typevar => {
-          if ( subs.isDefinedAt(u) ) { subs(u) } else { u }
+        case u: Typevar => {
+          if (subs.isDefinedAt(u)) { subs(u) } else { u }
         }
       }
-    }  
-  
+    }
+
 }
 
-
-
-
 trait ContextualSubstitution {
-  self : Expression =>
-    
+  self: Expression =>
+
   def subst(subContext: Map[String, Argument], subTypeContext: Map[String, Type]): Expression = {
-    val transform = 
+    val transform =
       new NamedASTTransform {
         override def onArgument(unusedContext: List[BoundVar]) = {
-          case x@ UnboundVar(s) => subContext.getOrElse(s, x)
+          case x @ UnboundVar(s) => subContext.getOrElse(s, x)
         }
         override def onType(unusedTypeContext: List[BoundTypevar]) = {
-          case x@ UnboundTypevar(s) => subTypeContext.getOrElse(s, x)
+          case x @ UnboundTypevar(s) => subTypeContext.getOrElse(s, x)
         }
       }
     transform(this)
   }
-  
-  
+
 }

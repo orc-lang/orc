@@ -17,21 +17,19 @@ package orc.types
 import orc.error.compiletime.typing.ArgumentTypecheckingException
 
 /**
- * 
- * The type of the record extension operation (+).
- *
- * @author dkitchin
- */
+  * The type of the record extension operation (+).
+  *
+  * @author dkitchin
+  */
 class RecordExtensorType extends BinaryCallableType with StrictType {
-  
+
   def call(t: Type, u: Type) = {
     (t, u) match {
-      case (rt : RecordType, ru : RecordType) => rt + ru 
+      case (rt: RecordType, ru: RecordType) => rt + ru
       case (RecordType(_), a) => throw new ArgumentTypecheckingException(1, EmptyRecordType, a)
       case (a, _) => throw new ArgumentTypecheckingException(0, EmptyRecordType, a)
     }
-    
+
   }
-    
 
 }

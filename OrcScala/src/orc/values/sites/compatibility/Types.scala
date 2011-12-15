@@ -20,12 +20,11 @@ import orc.lib.builtin.structured.OptionType
 import orc.compile.typecheck.Typeloader
 
 /**
- * 
- * Type-building interface for Java sites to build instances of
- * orc.types.Type
- *
- * @author dkitchin
- */
+  * Type-building interface for Java sites to build instances of
+  * orc.types.Type
+  *
+  * @author dkitchin
+  */
 object Types {
 
   def top = Top
@@ -35,34 +34,31 @@ object Types {
   def number = NumberType
   def integer = IntegerType
   def string = StringType
-  
-  
-  
+
   def java(C: Class[_]) = Typeloader.liftJavaType(C)
-  
+
   def list(t: Type) = ListType(t)
   def option(t: Type) = OptionType(t)
-  
+
   def function(r: Type) = FunctionType(Nil, Nil, r)
   def function(a: Type, r: Type) = FunctionType(Nil, List(a), r)
-  def function(a0: Type, a1: Type, r: Type) = FunctionType(Nil, List(a0,a1), r)
-    
-  def overload(t: CallableType, u: CallableType) = OverloadedType(List(t,u))
-  def overload(t: CallableType, u: CallableType, v: CallableType) = OverloadedType(List(t,u,v))
-  def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType) = OverloadedType(List(t,u,v,w))
-  def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType, x: CallableType) = OverloadedType(List(t,u,v,w,x))
+  def function(a0: Type, a1: Type, r: Type) = FunctionType(Nil, List(a0, a1), r)
+
+  def overload(t: CallableType, u: CallableType) = OverloadedType(List(t, u))
+  def overload(t: CallableType, u: CallableType, v: CallableType) = OverloadedType(List(t, u, v))
+  def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType) = OverloadedType(List(t, u, v, w))
+  def overload(t: CallableType, u: CallableType, v: CallableType, w: CallableType, x: CallableType) = OverloadedType(List(t, u, v, w, x))
   def overload(ot: OverloadedType, u: CallableType) = OverloadedType(u :: ot.alternatives)
-  
+
   val emptyRecord = RecordType(Nil.toMap)
-  
+
   def addField(baseType: RecordType, label: String, entryType: Type): RecordType = {
-    RecordType(baseType.entries + ( (label, entryType) ))
+    RecordType(baseType.entries + ((label, entryType)))
   }
-  
+
   // Creates a new record type with one entry, "apply", containing this callable type
   def dotSite(baseType: CallableType): RecordType = {
-    RecordType(List( ("apply", baseType) ).toMap)
+    RecordType(List(("apply", baseType)).toMap)
   }
-  
-  
+
 }

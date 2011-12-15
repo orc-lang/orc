@@ -27,34 +27,32 @@ import orc.types.SimpleFunctionType
 import orc.error.runtime.ArgumentTypeMismatchException
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 object IterableToStream extends TotalSite1 with TypedSite {
 
   def eval(arg: AnyRef) = {
     arg match {
-      case i : Iterable[_] => {
+      case i: Iterable[_] => {
         val iter = i.iterator()
         new PartialSite0 {
           def eval() =
-            if (iter.hasNext()) { 
-              Some(iter.next().asInstanceOf[AnyRef]) 
-            } 
-            else { 
-              None 
+            if (iter.hasNext()) {
+              Some(iter.next().asInstanceOf[AnyRef])
+            } else {
+              None
             }
         }
       }
       case a => throw new ArgumentTypeMismatchException(0, "Iterable", if (a != null) a.getClass().toString() else "null")
     }
   }
-  
+
   def orcType() = {
     val X = new TypeVariable()
     val Iterable = Typeloader.liftJavaTypeOperator(classOf[Iterable[_]])
     FunctionType(List(X), List(Iterable(X)), SimpleFunctionType(X))
   }
-  
+
 }

@@ -17,50 +17,48 @@ package orc.types
 import orc.error.compiletime.typing.ArgumentTypecheckingException
 
 /**
- * 
- * A tuple type.
- *
- * @author dkitchin
- */
+  * A tuple type.
+  *
+  * @author dkitchin
+  */
 case class TupleType(elements: List[Type]) extends UnaryCallableType with StrictType {
- 
-   assert(elements.size > 1)
-   
-   override def toString = elements.mkString("(", ", ", ")")
-  
-   override def join(that: Type): Type = {
-     that match {
-       case TupleType(otherElements) => TupleType(elements join otherElements)
-       case _ => super.join(that)
-     }
-   }
-  
+
+  assert(elements.size > 1)
+
+  override def toString = elements.mkString("(", ", ", ")")
+
+  override def join(that: Type): Type = {
+    that match {
+      case TupleType(otherElements) => TupleType(elements join otherElements)
+      case _ => super.join(that)
+    }
+  }
+
   override def meet(that: Type): Type = {
     that match {
       case TupleType(otherElements) => TupleType(elements meet otherElements)
       case _ => super.meet(that)
     }
   }
-  
+
   override def <(that: Type): Boolean = {
     that match {
       case TupleType(otherElements) => elements < otherElements
       case _ => super.<(that)
     }
-   }
-  
+  }
+
   override def subst(sigma: Map[TypeVariable, Type]): Type = {
     TupleType(elements map { _ subst sigma })
   }
-  
+
   override def call(argType: Type) = {
     argType match {
       case IntegerConstantType(i) => {
         val index = i.toInt
         if (index >= 0 && index < elements.size) {
           elements(i.toInt)
-        }
-        else {
+        } else {
           Bot
         }
       }
@@ -68,5 +66,5 @@ case class TupleType(elements: List[Type]) extends UnaryCallableType with Strict
       case t => throw new ArgumentTypecheckingException(0, IntegerType, t)
     }
   }
-  
+
 }

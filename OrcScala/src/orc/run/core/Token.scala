@@ -14,25 +14,24 @@
 //
 package orc.run.core
 
-import orc.{Schedulable, OrcRuntime, OrcEvent, CaughtEvent}
-import orc.ast.oil.nameless.{Variable, UnboundVariable, Stop, Sequence, Prune, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument}
-import orc.error.runtime.{TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException}
+import orc.{ Schedulable, OrcRuntime, OrcEvent, CaughtEvent }
+import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, Prune, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
+import orc.error.runtime.{ TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException }
 import orc.error.OrcException
-import orc.lib.time.{Vtime, Vclock, Vawait}
+import orc.lib.time.{ Vtime, Vclock, Vawait }
 import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
-import orc.values.{Signal, OrcRecord, Field}
+import orc.values.{ Signal, OrcRecord, Field }
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 class Token protected (
-    protected var node: Expression,
-    protected var stack: Frame = EmptyFrame,
-    protected var env: List[Binding] = Nil,
-    protected var group: Group,
-    protected var clock: Option[VirtualClock] = None,
-    protected var state: TokenState = Live)
+  protected var node: Expression,
+  protected var stack: Frame = EmptyFrame,
+  protected var env: List[Binding] = Nil,
+  protected var group: Group,
+  protected var clock: Option[VirtualClock] = None,
+  protected var state: TokenState = Live)
   extends GroupMember with Schedulable {
 
   var functionFramesPushed: Int = 0
@@ -51,12 +50,12 @@ class Token protected (
 
   /** Copy constructor with defaults */
   private def copy(
-      node: Expression = node,
-      stack: Frame = stack,
-      env: List[Binding] = env,
-      group: Group = group,
-      clock: Option[VirtualClock] = clock,
-      state: TokenState = state): Token = {
+    node: Expression = node,
+    stack: Frame = stack,
+    env: List[Binding] = env,
+    group: Group = group,
+    clock: Option[VirtualClock] = clock,
+    state: TokenState = state): Token = {
     new Token(node, stack, env, group, clock, state)
   }
 
@@ -104,7 +103,6 @@ class Token protected (
     * This method is asynchronous:
     * it may be called from a thread other than
     * the thread currently running this token.
-    *
     */
   def notifyOrc(event: OrcEvent) { group.notifyOrc(event) }
 
@@ -113,7 +111,6 @@ class Token protected (
     * This method is asynchronous:
     * it may be called from a thread other than
     * the thread currently running this token.
-    *
     */
   def kill() {
     def collapseState(victimState: TokenState) {
@@ -139,7 +136,6 @@ class Token protected (
     * This method is synchronous:
     * it must only be called from a thread that is currently
     * executing the run() method of this token.
-    *
     */
   def blockOn(blocker: Blocker) {
     state match {
@@ -155,7 +151,6 @@ class Token protected (
     * This method is synchronous:
     * it must only be called from a thread that is currently
     * executing the run() method of this token.
-    *
     */
   def unblock() {
     state match {
@@ -178,7 +173,6 @@ class Token protected (
     * This method is asynchronous:
     * it may be called from a thread other than
     * the thread currently running this token.
-    *
     */
   def suspend() {
     state match {
@@ -192,7 +186,6 @@ class Token protected (
     * This method is asynchronous:
     * it may be called from a thread other than
     * the thread currently running this token.
-    *
     */
   def resume() {
     state match {
@@ -212,7 +205,7 @@ class Token protected (
 
   def jump(context: List[Binding]) = { env = context; this }
 
-  protected def push(newStack: Frame) = { 
+  protected def push(newStack: Frame) = {
     if (newStack.isInstanceOf[FunctionFrame]) {
       functionFramesPushed = functionFramesPushed + 1
       if (options.stackSize > 0 && functionFramesPushed > options.stackSize) {
@@ -220,24 +213,22 @@ class Token protected (
       }
     }
     stack = newStack
-    this 
+    this
   }
-  
-  
+
   /** Remove the top frame of this token's stack.
     *
     * This method is synchronous:
     * it must only be called from a thread that is currently
     * executing the run() method of this token.
-    *
     */
-  def pop() = { 
+  def pop() = {
     if (stack.isInstanceOf[FunctionFrame]) {
       functionFramesPushed = functionFramesPushed - 1
     }
-    stack = stack.asInstanceOf[CompositeFrame].previous 
+    stack = stack.asInstanceOf[CompositeFrame].previous
   }
-  
+
   def getGroup(): Group = { group }
   def getNode(): Expression = { node }
   def getEnv(): List[Binding] = { env }
@@ -261,10 +252,10 @@ class Token protected (
   def bind(b: Binding) = {
     env = b :: env
     stack match {
-      case BindingFrame(n, previous) => { stack = BindingFrame(n+1, previous) }
+      case BindingFrame(n, previous) => { stack = BindingFrame(n + 1, previous) }
 
       /* Tail call optimization (part 1 of 2) */
-      case _ : FunctionFrame if (!options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
+      case _: FunctionFrame if (!options.disableTailCallOpt) => { /* Do not push a binding frame over a tail call.*/ }
 
       case _ => { push(BindingFrame(1, stack)) }
     }
@@ -441,8 +432,8 @@ class Token protected (
   }
 
   def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
-    testStack.length==4+offset && testStack(1+offset).getMethodName()=="runTask" ||
-    testStack(1+offset).getMethodName()=="eval" && testStack(2+offset).getMethodName()=="run" && stackOK(testStack, offset+2)
+    testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
+      testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()

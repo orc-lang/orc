@@ -26,12 +26,10 @@ import orc.OrcCompilationOptions
 import orc.OrcCompilerRequires
 import orc.ast.ext._
 
-
-/**
- * Mix-in for result types from Orc parsers
- *
- * @author jthywiss
- */
+/** Mix-in for result types from Orc parsers
+  *
+  * @author jthywiss
+  */
 trait OrcParserResultTypes[T] {
   type ResultType = T
   type ParseResult = OrcParsers#ParseResult[T]
@@ -39,22 +37,20 @@ trait OrcParserResultTypes[T] {
   type Success = OrcParsers#Success[T]
   type SuccessT[U] = OrcParsers#Success[U]
   type NoSuccess = OrcParsers#NoSuccess
-  type Error =  OrcParsers#Error
+  type Error = OrcParsers#Error
   type Failure = OrcParsers#Failure
 }
 
-
-/**
- * An Orc parser that analyzes a given string as an Orc literal value.
- * The result of applying this function is an Expression Extended AST,
- * in particular a Constant, ListValue, or TupleValue.
- *
- * @see orc.ast.ext.Expression
- * @see orc.ast.ext.Constant
- * @see orc.ast.ext.ListValue
- * @see orc.ast.ext.TupleValue
- * @author jthywiss
- */
+/** An Orc parser that analyzes a given string as an Orc literal value.
+  * The result of applying this function is an Expression Extended AST,
+  * in particular a Constant, ListValue, or TupleValue.
+  *
+  * @see orc.ast.ext.Expression
+  * @see orc.ast.ext.Constant
+  * @see orc.ast.ext.ListValue
+  * @see orc.ast.ext.TupleValue
+  * @author jthywiss
+  */
 object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(s: String): ParseResult = {
     val parsers = new OrcParsers(null, null, null)
@@ -63,13 +59,12 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
   }
 }
 
-/**
- * An Orc parser that analyzes a given input as an Orc program.
- * The result of applying this function is an Expression Extended AST
- * representing the whole program and included files.
- *
- * @author jthywiss
- */
+/** An Orc parser that analyzes a given input as an Orc program.
+  * The result of applying this function is an Expression Extended AST
+  * representing the whole program and included files.
+  *
+  * @author jthywiss
+  */
 object OrcProgramParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
     val parsers = new OrcParsers(ic, options, envServices)
@@ -78,13 +73,12 @@ object OrcProgramParser extends ((OrcInputContext, OrcCompilationOptions, OrcCom
   }
 }
 
-/**
- * An Orc parser that analyzes a given input as an Orc include file.
- * The result of applying this function is an Include Extended AST
- * representing the include and sub-included files.
- *
- * @author jthywiss
- */
+/** An Orc parser that analyzes a given input as an Orc include file.
+  * The result of applying this function is an Include Extended AST
+  * representing the include and sub-included files.
+  *
+  * @author jthywiss
+  */
 object OrcIncludeParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
   def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
     val newParsers = new OrcParsers(ic, options, envServices)
@@ -94,25 +88,22 @@ object OrcIncludeParser extends ((OrcInputContext, OrcCompilationOptions, OrcCom
   }
 }
 
-
-/**
- * This is a container for the various Parsers that embody the Orc grammar
- * productions, and some parsing helper methods.
- * <p>
- * A fresh OrcParsers instance is needed for every parse.
- * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
- *
- * @author dkitchin, amshali, srosario, jthywiss
- */
+/** This is a container for the various Parsers that embody the Orc grammar
+  * productions, and some parsing helper methods.
+  * <p>
+  * A fresh OrcParsers instance is needed for every parse.
+  * (Limitation of scala.util.parsing.combinator.Parsers -- current parsing state kept in fields.)
+  *
+  * @author dkitchin, amshali, srosario, jthywiss
+  */
 class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires)
-extends StandardTokenParsers
-with CustomParserCombinators
-{
-  import lexical.{Keyword, Identifier, FloatingPointLit}
+  extends StandardTokenParsers
+  with CustomParserCombinators {
+  import lexical.{ Keyword, Identifier, FloatingPointLit }
 
   override val lexical = new OrcLexical()
 
-/*---------------------------------------------------------
+  /*---------------------------------------------------------
   For reference, here are Orc's operators sorted
   and grouped in order of decreasing precedence.
 
@@ -175,7 +166,7 @@ with CustomParserCombinators
                  [lowest precedence]
   ----------------------------------------------------*/
 
-/*
+  /*
  * Here are the productions of the Orc grammar,
  * given in the following order:
  *
@@ -195,23 +186,21 @@ with CustomParserCombinators
     elem("number", _.isInstanceOf[FloatingPointLit]) ^^ (_.chars)
 
   val parseValue: Parser[AnyRef] = (
-      "true" ^^^ java.lang.Boolean.TRUE
+    "true" ^^^ java.lang.Boolean.TRUE
     | "false" ^^^ java.lang.Boolean.FALSE
     | "signal" ^^^ orc.values.Signal
     | stringLit
     | numericLit ^^ { BigInt(_) }
     | floatLit ^^ { BigDecimal(_) }
-    | "null" ^^^ null
-  )
+    | "null" ^^^ null)
 
   val parseConstantListTuple: Parser[Expression] = (
-      "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
+    "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
     | parseValue -> Constant
     | "(" ~> parseConstantListTuple <~ ")"
     | ListOf(parseConstantListTuple) -> ListExpr
-    | TupleOf(parseConstantListTuple) -> TupleExpr
-  )
+    | TupleOf(parseConstantListTuple) -> TupleExpr)
 
   val parseSiteLocation = stringLit
 
@@ -220,46 +209,41 @@ with CustomParserCombinators
   ////////
 
   val parseBaseExpressionTail: Parser[Option[List[Expression]]] = (
-      "," ~> CommaSeparated1(parseExpression) <~ ")" ^^ {Some(_)}
-    | ")" ^^^ None
-  )
+    "," ~> CommaSeparated1(parseExpression) <~ ")" ^^ { Some(_) }
+    | ")" ^^^ None)
 
   val parseBaseExpression = (
-      parseValue -> Constant
+    parseValue -> Constant
     | ident -> Variable
     | "stop" -> Stop
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
-          { (e: Expression, es: List[Expression]) => TupleExpr(e::es) }
-    | failExpecting("expression")
-  )
+    { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
+    | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (
-      "." ~> ident -> FieldAccess
+    "." ~> ident -> FieldAccess
     | "?" -> Dereference
-    | (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args
-  )
+    | (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args)
 
   val parseCallExpression: Parser[Expression] = (
-    parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call
-  )
+    parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
 
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
-      "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
+    "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
     | ("-" | "~") ~ parseCallExpression -> PrefixOperator
-    | parseCallExpression
-  )
+    | parseCallExpression)
 
-  val parseExpnExpr          = parseUnaryExpr      rightAssociativeInfix  List("**")
-  val parseMultExpr          = parseExpnExpr       leftAssociativeInfix  List("*", "/", "%")
-  val parseAdditionalExpr    = parseMultExpr       leftAssociativeInfix  List("-", "+")
-  val parseConsExpr          = parseAdditionalExpr rightAssociativeInfix List(":")
-  val parseRelationalExpr    = parseConsExpr       nonAssociativeInfix   List("<:", ":>", "<=", ">=", "=", "/=")
-  val parseLogicalExpr       = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
-  val parseInfixOpExpression = parseLogicalExpr    nonAssociativeInfix   List(":=")
+  val parseExpnExpr = parseUnaryExpr rightAssociativeInfix List("**")
+  val parseMultExpr = parseExpnExpr leftAssociativeInfix List("*", "/", "%")
+  val parseAdditionalExpr = parseMultExpr leftAssociativeInfix List("-", "+")
+  val parseConsExpr = parseAdditionalExpr rightAssociativeInfix List(":")
+  val parseRelationalExpr = parseConsExpr nonAssociativeInfix List("<:", ":>", "<=", ">=", "=", "/=")
+  val parseLogicalExpr = parseRelationalExpr fullyAssociativeInfix List("||", "&&")
+  val parseInfixOpExpression = parseLogicalExpr nonAssociativeInfix List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
   val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
@@ -277,67 +261,61 @@ with CustomParserCombinators
     rep1sep(parsePruningExpression, ";") -> { _ reduceLeft Otherwise }
 
   val parseAscription = (
-      ("::" ~ parseType)
+    ("::" ~ parseType)
     | (":!:" ~ parseType)
-    | failUnexpectedIn("expression")
-  )
+    | failUnexpectedIn("expression"))
 
   val parseReturnType = "::" ~> parseType
 
   val parseGuard = "if" ~> "(" ~> parseExpression <~ ")"
 
   def parseExpression: Parser[Expression] = (
-      parseOtherwiseExpression ~ (parseAscription?) -?->
-      { (_,_) match
-        {
-          case (e, "::" ~ t) => TypeAscription(e,t)
-          case (e, ":!:" ~ t) => TypeAssertion(e,t)
-        }
+    parseOtherwiseExpression ~ (parseAscription?) -?->
+    {
+      (_, _) match {
+        case (e, "::" ~ t) => TypeAscription(e, t)
+        case (e, ":!:" ~ t) => TypeAssertion(e, t)
       }
-    | parseDeclaration ~ (parseExpression | failExpecting("after declaration, expression") ) -> Declare
+    }
+    | parseDeclaration ~ (parseExpression | failExpecting("after declaration, expression")) -> Declare
     | ("if" ~> parseExpression)
-      ~ ("then" ~> parseExpression)
-      ~ ("else" ~> parseExpression)
-      -> Conditional
+    ~ ("then" ~> parseExpression)
+    ~ ("else" ~> parseExpression)
+    -> Conditional
     | "lambda" ~> (ListOf(parseTypeVariable)?)
-      ~ (TupleOf(parsePattern))
-      ~ (parseReturnType?)
-      ~ (parseGuard?)
-      ~ ("=" ~> parseExpression)
-      -> Lambda
-    | failExpecting("expression")
-  )
+    ~ (TupleOf(parsePattern))
+    ~ (parseReturnType?)
+    ~ (parseGuard?)
+    ~ ("=" ~> parseExpression)
+    -> Lambda
+    | failExpecting("expression"))
 
   ////////
   // Patterns
   ////////
 
   val parseBasePatternTail: Parser[Option[List[Pattern]]] = (
-      "," ~> CommaSeparated(parsePattern) <~ ")" ^^ {Some(_)}
-    | ")" ^^^ None
-  )
+    "," ~> CommaSeparated(parsePattern) <~ ")" ^^ { Some(_) }
+    | ")" ^^^ None)
 
   val parseBasePattern = (
-      parseValue -> ConstantPattern
+    parseValue -> ConstantPattern
     | "_" -> Wildcard
     | ident ~ TupleOf(parsePattern) -> CallPattern
     | ident -> VariablePattern
     | ("(" ~> parsePattern ~ parseBasePatternTail) -?->
-        { (p: Pattern, ps: List[Pattern]) => TuplePattern(p::ps) }
+    { (p: Pattern, ps: List[Pattern]) => TuplePattern(p :: ps) }
     | ListOf(parsePattern) -> ListPattern
     | RecordOf("=", parsePattern) -> RecordPattern
-    | failExpecting("pattern")
-  )
+    | failExpecting("pattern"))
 
   val parseConsPattern = rep1sep(parseBasePattern, ":") -> (_ reduceRight ConsPattern)
 
   val parseAsPattern = (
-    parseConsPattern ~ (("as" ~> ident)?) -?-> AsPattern
-  )
+    parseConsPattern ~ (("as" ~> ident)?) -?-> AsPattern)
 
   val parseTypedPattern = (
-    parseAsPattern ~ (("::" ~> parseType)?) -?-> TypedPattern
-  )
+    parseAsPattern ~ (("::" ~> parseType)?) -?-> TypedPattern)
 
   val parsePattern: Parser[Pattern] = parseTypedPattern
 
@@ -348,49 +326,44 @@ with CustomParserCombinators
   val parseTypeVariable: Parser[String] = ident
 
   val parseTypeTail: Parser[Option[List[Type]]] = (
-      "," ~> CommaSeparated1(parseType) <~ ")" ^^ {Some(_)}
-    | ")" ^^^ None
-  )
+    "," ~> CommaSeparated1(parseType) <~ ")" ^^ { Some(_) }
+    | ")" ^^^ None)
 
   val parseType: Parser[Type] = (
-      parseTypeVariable ~ (ListOf(parseType)?) ->
-      { (_,_) match
-        {
-          case (id, None) => TypeVariable(id)
-          case (id, Some(ts)) => TypeApplication(id, ts)
-        }
+    parseTypeVariable ~ (ListOf(parseType)?) ->
+    {
+      (_, _) match {
+        case (id, None) => TypeVariable(id)
+        case (id, Some(ts)) => TypeApplication(id, ts)
       }
+    }
     | ("(" ~> parseType ~ parseTypeTail) -?->
-        { (t: Type, ts: List[Type]) => TupleType(t::ts) }
+    { (t: Type, ts: List[Type]) => TupleType(t :: ts) }
     | TupleOf(parseType) -> TupleType
     | RecordOf("::", parseType) -> RecordType
-    | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ {_.getOrElse(Nil)}) ~ (TupleOf(parseType)) ~ parseReturnType -> LambdaType
-    | failExpecting("type")
-  )
+    | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ { _.getOrElse(Nil) }) ~ (TupleOf(parseType)) ~ parseReturnType -> LambdaType
+    | failExpecting("type"))
 
   val parseConstructor: Parser[Constructor] = (
-      ident ~ TupleOf(parseType ^^ (Some(_))) -> Constructor
-    | ident ~ TupleOf("_" ^^^ None) -> Constructor
-  )
+    ident ~ TupleOf(parseType ^^ (Some(_))) -> Constructor
+    | ident ~ TupleOf("_" ^^^ None) -> Constructor)
 
   ////////
   // Declarations
   ////////
 
   val parseDefCore = (
-    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression)
-  )
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
   val parseDefDeclaration: Parser[DefDeclaration] = (
-      parseDefCore -> Def
+    parseDefCore -> Def
 
     | (Identifier("class") ~> parseDefCore) -> DefClass
 
-    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig
-  )
+    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
 
   val parseDeclaration: Parser[Declaration] = (
-      ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
+    ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
 
     | "def" ~> parseDefDeclaration
 
@@ -403,23 +376,22 @@ with CustomParserCombinators
     | "import" ~> "type" ~> ident ~ ("=" ~> parseSiteLocation) -> TypeImport
 
     | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
-        -> ((x,ys,t) => Datatype(x, ys getOrElse Nil, t))
+    -> ((x, ys, t) => Datatype(x, ys getOrElse Nil, t))
 
     | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
-        -> ((x,ys,t) => TypeAlias(x, ys getOrElse Nil, t))
+    -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))
 
-    | failExpecting("declaration (val, def, type, etc.)")
-  )
+    | failExpecting("declaration (val, def, type, etc.)"))
 
   def performInclude(includeName: String): Parser[Include] = {
     val newInputContext = try {
-        envServices.openInclude(includeName, inputContext, options)
-      } catch {
-        case e: IOException => return err(e.toString)
-      }
+      envServices.openInclude(includeName, inputContext, options)
+    } catch {
+      case e: IOException => return err(e.toString)
+    }
     OrcIncludeParser(newInputContext, options, envServices) match {
       case r: OrcIncludeParser.SuccessT[_] => success(r.get)
-      case n: OrcIncludeParser.NoSuccess   => Parser{ in => Error(n.msg, new Input{ def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
+      case n: OrcIncludeParser.NoSuccess => Parser { in => Error(n.msg, new Input { def first = null; def rest = this; def pos = n.next.pos; def atEnd = true }) }
     }
   }
 
@@ -447,9 +419,9 @@ with CustomParserCombinators
 
   def ListOf[T](P: => Parser[T]): Parser[List[T]] = "[" ~> CommaSeparated(P) <~ "]"
 
-  def RecordOf[T](separator: String, P: => Parser[T]): Parser[List[(String,T)]] = {
-    def parseEntry: Parser[(String,T)] = {
-      (ident <~ separator) ~ P ^^ { case x ~ e => (x,e) }
+  def RecordOf[T](separator: String, P: => Parser[T]): Parser[List[(String, T)]] = {
+    def parseEntry: Parser[(String, T)] = {
+      (ident <~ separator) ~ P ^^ { case x ~ e => (x, e) }
     }
     "{." ~> CommaSeparated(parseEntry) <~ ".}"
   }
@@ -462,13 +434,15 @@ with CustomParserCombinators
     case in => "" + e + " expected, but " + in + " found"
   })
 
-  def failExpecting(symbolName: String) = Parser { in => in.first match {
+  def failExpecting(symbolName: String) = Parser { in =>
+    in.first match {
       case et: lexical.ErrorToken => Failure(et.chars.stripPrefix("*** error: "), in)
       case t => Failure(symbolName + " expected, but " + t + " found", in)
     }
   }
 
-  def failUnexpectedIn(symbolName: String) = Parser { in => in.first match {
+  def failUnexpectedIn(symbolName: String) = Parser { in =>
+    in.first match {
       case et: lexical.ErrorToken => Failure(et.chars.stripPrefix("*** error: "), in)
       case t => Failure("while parsing " + symbolName + ", found unexpected " + t, in)
     }

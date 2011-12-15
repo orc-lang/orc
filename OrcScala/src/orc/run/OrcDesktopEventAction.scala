@@ -1,5 +1,5 @@
 //
-// OrcDesktopEventAction.scala -- Scala class/trait/object OrcDesktopEventAction
+// OrcDesktopEventAction.scala -- Scala class OrcDesktopEventAction and trait OrcDesktopActions
 // Project OrcScala
 //
 // $Id$
@@ -22,10 +22,9 @@ import orc.lib.str.PrintEvent
 import orc.lib.web.BrowseEvent
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 
 class OrcDesktopEventAction extends OrcEventAction with OrcDesktopActions
 
@@ -42,8 +41,7 @@ trait OrcDesktopActions extends OrcEventAction {
         val response = SwingBasedPrompt.runPromptDialog("Orc", prompt)
         if (response != null) {
           callback.respondToPrompt(response)
-        }
-        else {
+        } else {
           callback.cancelPrompt()
         }
       }
@@ -53,6 +51,5 @@ trait OrcDesktopActions extends OrcEventAction {
       case e => super.other(e)
     }
   }
-  
-  
+
 }

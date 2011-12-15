@@ -15,21 +15,18 @@
 
 package orc.values.sites
 
-
-/**
- * Trait of classes capable of resolving site names, such as {@link SiteForm}s.
- *
- * @author jthywiss
- */
+/** Trait of classes capable of resolving site names, such as {@link SiteForm}s.
+  *
+  * @author jthywiss
+  */
 trait SiteResolver {
   def resolve(name: String): Site
 }
 
-/**
- * Supertype of forms of sites, such as Orc site, Java site, Web
- * service site, etc.
- *
- * @author jthywiss
- */
+/** Supertype of forms of sites, such as Orc site, Java site, Web
+  * service site, etc.
+  *
+  * @author jthywiss
+  */
 trait SiteForm extends SiteResolver with SiteClassLoading
 //subclasses are OrcSiteForm, JavaSiteForm, WebServiceSiteForm, etc.

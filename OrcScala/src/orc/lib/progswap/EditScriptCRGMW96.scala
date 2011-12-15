@@ -13,34 +13,32 @@
 package orc.lib.progswap
 
 import orc.ast.AST
-import scala.collection.mutable.{ArrayBuffer, HashMap, Map}
+import scala.collection.mutable.{ ArrayBuffer, HashMap, Map }
 import scala.collection.mutable.MapLike
 import scala.collection.generic.MutableMapFactory
 import scala.collection.generic.CanBuildFrom
 import scala.collection.mutable.Buffer
 
-/**
- * Create an edit script describing the operations necessary to
- * modify a given AST into another given AST.
- *
- * Implemented using the EditScript algorithm in:
- *
- * Chawathe, S. S., Rajaraman, A., Garcia-Molina, H., and Widom, J. 1996.
- * Change detection in hierarchically structured information. In Proceedings
- * of the 1996 ACM SIGMOD International Conference on Management of Data
- * (Montreal, Quebec, Canada, 04–06 Jun 1996). ACM, 493–504.
- *
- * @author jthywiss
- */
+/** Create an edit script describing the operations necessary to
+  * modify a given AST into another given AST.
+  *
+  * Implemented using the EditScript algorithm in:
+  *
+  * Chawathe, S. S., Rajaraman, A., Garcia-Molina, H., and Widom, J. 1996.
+  * Change detection in hierarchically structured information. In Proceedings
+  * of the 1996 ACM SIGMOD International Conference on Management of Data
+  * (Montreal, Quebec, Canada, 04–06 Jun 1996). ACM, 493–504.
+  *
+  * @author jthywiss
+  */
 object EditScriptCRGMW96 {
-  /**
-   * Create an AstEditScript describing the operations necessary to
-   * modify <code>oldOilAst</code> into <code>newOilAst</code>.
-   *
-   * @param oldOilAst
-   * @param newOilAst
-   * @return the computed AstEditScript
-   */
+  /** Create an AstEditScript describing the operations necessary to
+    * modify <code>oldOilAst</code> into <code>newOilAst</code>.
+    *
+    * @param oldOilAst
+    * @param newOilAst
+    * @return the computed AstEditScript
+    */
   def computeEditScript[A <: AST, B <: AST](oldOilAst: A, newOilAst: B, matching: Seq[(A, B)]): AstEditScript = {
 
     /* Old -> new and new -> old partial maps */
@@ -72,7 +70,7 @@ object EditScriptCRGMW96 {
     def findPos(newNode: B): Int = {
       val siblingsNew = childrenNew(parentNew(newNode))
       var previousInOrderSibling = siblingsNew.head
-      val iter = siblingsNew.view.filter({inOrder.contains(_)}).iterator
+      val iter = siblingsNew.view.filter({ inOrder.contains(_) }).iterator
       while (iter.hasNext && (previousInOrderSibling ne newNode)) {
         previousInOrderSibling = iter.next
       }
@@ -122,7 +120,7 @@ object EditScriptCRGMW96 {
       val childrenNewNode = childrenNew(newNode)
       val s1 = childrenOldNode.filter({ n: A => matchOldNew.isDefinedAt(n) && childrenNewNode.exists(_ == matchOldNew(n)) }).toIndexedSeq
       val s2 = childrenNewNode.filter({ n: B => matchNewOld.isDefinedAt(n) && childrenOldNode.exists(_ == matchNewOld(n)) }).toIndexedSeq
-      val p = LCSMyers86.lcs(s1, s2, {matchOldNew(_: A) eq (_: B)})
+      val p = LCSMyers86.lcs(s1, s2, { matchOldNew(_: A) eq (_: B) })
       p._1.foreach(inOrder.add(_))
       p._2.foreach(inOrder.add(_))
       for (oldChild <- s1 if !inOrder.contains(oldChild)) {
@@ -154,7 +152,7 @@ object EditScriptCRGMW96 {
   //TODO: Rewrite these as lazy.
   def traversePostOrder[A](node: A, childMap: A => Traversable[A]): Traversable[A] = {
     val children = childMap(node).toSeq
-    (children flatMap {traversePostOrder(_, childMap)}) :+ node
+    (children flatMap { traversePostOrder(_, childMap) }) :+ node
   }
 
   def traverseBreadthFirst[A](root: A, childMap: A => TraversableOnce[A]): Traversable[A] = {
@@ -173,45 +171,39 @@ object EditScriptCRGMW96 {
 
 }
 
-
-/**
- * A mutable map from keys of type A to values of type B.
- * Keys are compared for equality using reference equality (<code>AnyRef.eq</code>),
- * in contrast to other Map classes, which use semantic equality (<code>Any.==</code>).
- * Analogously, identity hash codes are used for hashing.
- *
- * @author jthywiss
- */
+/** A mutable map from keys of type A to values of type B.
+  * Keys are compared for equality using reference equality (<code>AnyRef.eq</code>),
+  * in contrast to other Map classes, which use semantic equality (<code>Any.==</code>).
+  * Analogously, identity hash codes are used for hashing.
+  *
+  * @author jthywiss
+  */
 class IdentityHashMap[A, B] extends HashMap[A, B]
-   with MapLike[A, B, IdentityHashMap[A, B]] {
+  with MapLike[A, B, IdentityHashMap[A, B]] {
   override def empty: IdentityHashMap[A, B] = new IdentityHashMap[A, B]()
   override protected def elemHashCode(key: A) = System.identityHashCode(key)
   override protected def elemEquals(key1: A, key2: A): Boolean = key1.asInstanceOf[AnyRef] eq key2.asInstanceOf[AnyRef]
   override def par = throw new UnsupportedOperationException("IdentityHashMap.par not implemented")
 }
 
-
-/**
- * Provides provides a set of operations to create IdentityHashMap values.
- *
- * @author jthywiss
- */
+/** Provides provides a set of operations to create IdentityHashMap values.
+  *
+  * @author jthywiss
+  */
 object IdentityHashMap extends MutableMapFactory[IdentityHashMap] {
   implicit def canBuildFrom[A, B]: CanBuildFrom[Coll, (A, B), IdentityHashMap[A, B]] = new MapCanBuildFrom[A, B]
   override def empty[A, B]: IdentityHashMap[A, B] = new IdentityHashMap[A, B]()
 }
 
-
-/**
- * A mutable set of values of type A.
- * Values are compared for equality using reference equality (<code>AnyRef.eq</code>),
- * in contrast to other Set classes, which use semantic equality (<code>Any.==</code>).
- * Analogously, identity hash codes are used for hashing.
- *
- * [Minimal implementation, only <code>add</code> and <code>contains</code> methods.]
- *
- * @author jthywiss
- */
+/** A mutable set of values of type A.
+  * Values are compared for equality using reference equality (<code>AnyRef.eq</code>),
+  * in contrast to other Set classes, which use semantic equality (<code>Any.==</code>).
+  * Analogously, identity hash codes are used for hashing.
+  *
+  * [Minimal implementation, only <code>add</code> and <code>contains</code> methods.]
+  *
+  * @author jthywiss
+  */
 class IdentityHashSet[A] {
   val map = IdentityHashMap[A, A]()
   def add(elem: A): Boolean = {

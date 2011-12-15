@@ -20,7 +20,7 @@ object NumberType extends Type { override def toString = "Number" }
 
 object IntegerType extends Type {
   override def toString = "Integer"
-  
+
   override def <(that: Type): Boolean = {
     that match {
       case `IntegerType` => true
@@ -34,7 +34,7 @@ object IntegerType extends Type {
 case class IntegerConstantType(i: scala.math.BigInt) extends Type {
 
   override def toString = IntegerType.toString
-  
+
   override def join(that: Type): Type = {
     that match {
       case IntegerConstantType(j) if (i equals j) => this
@@ -43,7 +43,7 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
       case _ => IntegerType join that
     }
   }
-  
+
   override def meet(that: Type): Type = {
     that match {
       case IntegerConstantType(j) if (i equals j) => this
@@ -52,7 +52,7 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
       case _ => Bot
     }
   }
-  
+
   override def <(that: Type): Boolean = {
     that match {
       case IntegerConstantType(j) if (i equals j) => true
@@ -66,7 +66,7 @@ case class IntegerConstantType(i: scala.math.BigInt) extends Type {
 case class FieldType(f: String) extends Type {
 
   override def toString = "." + f
-  
+
   override def <(that: Type): Boolean = {
     that match {
       case FieldType(`f`) => true
@@ -75,16 +75,15 @@ case class FieldType(f: String) extends Type {
   }
 }
 
-
 object StringType extends JavaObjectType(classOf[java.lang.String])
 object BooleanType extends JavaObjectType(classOf[java.lang.Boolean])
 
 object NullType extends Type {
-  
+
   override def toString = "Null"
-    
+
   override def <(that: Type): Boolean = {
     that.isInstanceOf[JavaObjectType] || super.<(that)
   }
-  
+
 }

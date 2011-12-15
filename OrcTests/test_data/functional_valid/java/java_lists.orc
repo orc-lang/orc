@@ -11,4 +11,3 @@ iterableToList[Integer](l)
 OUTPUT:PERMUTABLE
 [1, 2, 3]
 -}
-

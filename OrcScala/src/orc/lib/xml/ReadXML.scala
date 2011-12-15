@@ -23,21 +23,18 @@ import org.xml.sax.SAXException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.SiteException
 
-
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 class ReadXML extends TotalSite1 with TypedSite {
-  
+
   def eval(arg: AnyRef): AnyRef = {
     arg match {
       case s: String => {
         try {
           XML.loadString(s)
-        }
-        catch {
+        } catch {
           case e: SAXException => {
             throw new SiteException("XML parsing failed: " + e.getMessage)
           }
@@ -47,7 +44,7 @@ class ReadXML extends TotalSite1 with TypedSite {
       case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
-  
+
   def orcType() = SimpleFunctionType(StringType, XMLType)
-  
+
 }

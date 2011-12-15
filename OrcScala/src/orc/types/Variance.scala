@@ -15,11 +15,10 @@
 package orc.types
 
 /**
- * 
- * Variances of type variables and type constructor arguments.
- *
- * @author dkitchin
- */
+  * Variances of type variables and type constructor arguments.
+  *
+  * @author dkitchin
+  */
 trait Variance {
   def apply(that: Variance): Variance
   def &(that: Variance): Variance
@@ -27,14 +26,14 @@ trait Variance {
 
 object Variance {
 
-  class RichVarianceList(variances: List[Variance]) {  
+  class RichVarianceList(variances: List[Variance]) {
     lazy val combined = {
-      variances.foldLeft(Constant: Variance)({ (u: Variance, v: Variance) => u & v})
+      variances.foldLeft(Constant: Variance)({ (u: Variance, v: Variance) => u & v })
     }
   }
-  
+
   implicit def enrichVarianceList(variances: List[Variance]): RichVarianceList = new RichVarianceList(variances)
-  
+
 }
 
 case object Covariant extends Variance {

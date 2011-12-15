@@ -21,7 +21,7 @@ import orc.lib.builtin._
 import orc.lib.builtin.structured._
 import orc.ast.oil._
 import orc.ast.ext
-import orc.values.{Signal, Field}
+import orc.values.{ Signal, Field }
 import orc.values.sites.Site
 
 object PrimitiveForms {
@@ -44,12 +44,12 @@ object PrimitiveForms {
   val callNone = nullaryBuiltinCall(NoneConstructor) _
   val callIsNone = unaryBuiltinCall(NoneExtractor) _
   val callTupleArityChecker = binaryBuiltinCall(TupleArityChecker) _
-  
+
   def callRecordMatcher(a: Argument, shape: List[String]) = {
     val shapeArgs = shape map { s: String => Constant(Field(s)) }
     Call(Constant(RecordMatcher), a :: shapeArgs, None)
   }
-  
+
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
     val getExtractor = Call(constructor, List(Constant(Field("unapply"))), None)
@@ -86,26 +86,23 @@ object PrimitiveForms {
       for (ext.Constructor(name, types) <- constructors) yield {
         val cname = Constant(name)
         val carity = Constant(BigInt(types.size))
-        makeTuple(List(cname, carity)) 
+        makeTuple(List(cname, carity))
       }
-    val typeParameter = 
+    val typeParameter =
       if (variantArity > 0) {
         TypeApplication(declaredVariant, List.fill(variantArity)(Top()))
-      }
-      else {
+      } else {
         declaredVariant
       }
     unfold(datatypePairs, { Call(datatypeSite, _, Some(List(typeParameter))) })
   }
 
-
-  
   def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ( (callIft(b) >> trueBranch)  ||  (callIff(b) >> falseBranch) )  < b <  test
+    ((callIft(b) >> trueBranch) || (callIff(b) >> falseBranch)) < b < test
   }
-  
+
   /*
    * Return a composite expression with the following behavior:
    * 
@@ -117,18 +114,16 @@ object PrimitiveForms {
    */
   def makeMatch(source: Expression, x: BoundVar, target: Expression, fail: Expression) = {
     fail match {
-      case Stop() => source  > x >  target
+      case Stop() => source > x > target
       case _ => {
         val y = new BoundVar()
         val z = new BoundVar()
-        ( 
-            (  source  > z >  callSome(z)  )  ow  ( callNone() )
-        ) > y >
-        ( 
-            ( callIsSome(y)  > x >  target )  ||  ( callIsNone(y) >> fail )
-        )
+        (
+          (source > z > callSome(z)) ow (callNone())) > y >
+          (
+            (callIsSome(y) > x > target) || (callIsNone(y) >> fail))
       }
     }
   }
-	  
+
 }

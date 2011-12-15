@@ -15,17 +15,16 @@
 package orc.types
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 case object Bot extends CallableType {
-  
+
   override def toString = "Bot"
   override def join(that: Type): Type = that
   override def meet(that: Type): Type = this
   override def <(that: Type) = true
-  
+
   def call(typeArgs: List[Type], argTypes: List[Type]) = Bot
 
 }

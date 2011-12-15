@@ -20,25 +20,24 @@ import orc.Handle
 import orc.values.sites.JavaCall
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 trait SupportForJavaObjectInvocation extends InvocationBehavior {
-  
-  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { 
+
+  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
     v match {
-      case v : OrcValue => super.invoke(h, v, vs)
+      case v: OrcValue => super.invoke(h, v, vs)
       case _ => {
         val successful = JavaCall(v, vs, h)
         if (!successful) { super.invoke(h, v, vs) }
       }
     }
   }
-  
+
   override def quiescentWhileInvoked(v: AnyRef): Boolean = {
     v match {
-      case v : OrcValue => super.quiescentWhileInvoked(v)
+      case v: OrcValue => super.quiescentWhileInvoked(v)
       case _ => false
     }
   }

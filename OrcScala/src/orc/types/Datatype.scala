@@ -23,4 +23,4 @@ trait Datatype {
 }
 
 class MonomorphicDatatype extends Type with Datatype
-class PolymorphicDatatype(val variances: List[Variance]) extends TypeConstructor with Datatype 
+class PolymorphicDatatype(val variances: List[Variance]) extends TypeConstructor with Datatype

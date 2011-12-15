@@ -15,7 +15,7 @@
 package orc.lib.progswap
 
 import orc.ast.AST
-import orc.ast.oil.nameless.{Def, Expression, NamelessAST}
+import orc.ast.oil.nameless.{ Def, Expression, NamelessAST }
 import orc.run.extensions.SwappableASTs
 import orc.run.Orc
 import orc.run.core.BoundValue
@@ -25,11 +25,10 @@ import orc.run.core.Binding
 import orc.run.core.FunctionFrame
 import orc.run.core.SequenceFrame
 
-/**
- * Edit operation that is a to-one mapping of an AST node. 
- *
- * @author jthywiss
- */
+/** Edit operation that is a to-one mapping of an AST node.
+  *
+  * @author jthywiss
+  */
 case class ReplaceNode[A <: AST, B <: AST](oldNode: A, newNode: B) extends AstEditOperation {
   def tokenCracker(token: Token): Token = token.asInstanceOf[Token]
 
@@ -60,30 +59,30 @@ case class ReplaceNode[A <: AST, B <: AST](oldNode: A, newNode: B) extends AstEd
               SwappableASTs.setClosureDef(c, c.defs map { d => if (d == oldNode) newNode.asInstanceOf[Def] else d })
               // Filter recursive bindings
               val cEnv = c.lexicalContext filterNot {
-                  case bv2: BoundValue => {
-                    bv2.v match {
-                      case c2: Closure => completedClosures.contains(c2)
-                    }
+                case bv2: BoundValue => {
+                  bv2.v match {
+                    case c2: Closure => completedClosures.contains(c2)
                   }
-                  case _ => false
+                }
+                case _ => false
               }
               migrateClosures(cEnv, /*c ::*/ completedClosures)
             }
-            case _ => { }
+            case _ => {}
           }
         }
-        case _ => { }
+        case _ => {}
       }
   }
 
   def migrateFrameStack(token: Token) {
-    Console.err.println(">>ReplaceNode.migrateFrameStack("+token+")")
+    Console.err.println(">>ReplaceNode.migrateFrameStack(" + token + ")")
     for (frame <- tokenCracker(token).getStack()) {
-      Console.err.println("  "+frame)
+      Console.err.println("  " + frame)
       frame match {
         case sf: SequenceFrame if (sf.node == oldNode) => SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression])
         case ff: FunctionFrame if (ff.callpoint == oldNode) => SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression])
-        case _ => { }
+        case _ => {}
       }
     }
   }

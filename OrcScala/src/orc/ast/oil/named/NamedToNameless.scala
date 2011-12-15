@@ -16,11 +16,8 @@ package orc.ast.oil.named
 
 import orc.ast.oil.nameless
 
-/**
- * 
- *
- * @author dkitchin
- */
+/** @author dkitchin
+  */
 // Conversions from named to nameless representations
 trait NamedToNameless {
 
@@ -30,11 +27,11 @@ trait NamedToNameless {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     e -> {
       case Stop() => nameless.Stop()
-      case a : Argument => namedToNameless(a, context)      
+      case a: Argument => namedToNameless(a, context)
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))
-      case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x::context, typecontext))
-      case left < x < right => nameless.Prune(namedToNameless(left, x::context, typecontext), toExp(right))
+      case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
+      case left < x < right => nameless.Prune(namedToNameless(left, x :: context, typecontext), toExp(right))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
@@ -43,7 +40,7 @@ trait NamedToNameless {
         val bodycontext = defnames.reverse ::: context
         val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
         val newbody = namedToNameless(body, bodycontext, typecontext)
-        val openvars = 
+        val openvars =
           opennames map { x =>
             val i = context indexOf x
             assert(i >= 0)
@@ -52,9 +49,9 @@ trait NamedToNameless {
         nameless.DeclareDefs(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
-        val newTypeContext = x::typecontext
+        val newTypeContext = x :: typecontext
         /* A type may be defined recursively, so its name is in scope for its own definition */
-        val newt = namedToNameless(t, newTypeContext) 
+        val newt = namedToNameless(t, newTypeContext)
         val newbody = namedToNameless(body, context, newTypeContext)
         nameless.DeclareType(newt, newbody)
       }
@@ -65,27 +62,26 @@ trait NamedToNameless {
         nameless.Hole(newHoleContext, newHoleTypeContext)
       }
     }
-  } 
+  }
 
   def namedToNameless(a: Argument, context: List[BoundVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(v)
       case (x: BoundVar) => {
         var i = context indexOf x
-        assert(i >= 0) 
-        nameless.Variable(i) 
+        assert(i >= 0)
+        nameless.Variable(i)
       }
-      case UnboundVar(s) => nameless.UnboundVariable(s) 
+      case UnboundVar(s) => nameless.UnboundVariable(s)
     }
   }
-
 
   def namedToNameless(t: Type, typecontext: List[BoundTypevar]): nameless.Type = {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
       case u: BoundTypevar => {
         var i = typecontext indexOf u
-        assert(i >= 0) 
+        assert(i >= 0)
         nameless.TypeVar(i)
       }
       case Top() => nameless.Top()
@@ -98,14 +94,14 @@ trait NamedToNameless {
       }
       case TupleType(elements) => nameless.TupleType(elements map toType)
       case RecordType(entries) => {
-        val newEntries = entries map { case (s,t) => (s, toType(t)) }
+        val newEntries = entries map { case (s, t) => (s, toType(t)) }
         nameless.RecordType(newEntries)
       }
       case TypeApplication(tycon, typeactuals) => {
         val i = typecontext indexOf tycon
-        assert(i >= 0) 
+        assert(i >= 0)
         nameless.TypeApplication(i, typeactuals map toType)
-      } 
+      }
       case AssertedType(assertedType) => nameless.AssertedType(toType(assertedType))
       case TypeAbstraction(typeformals, t) => {
         val newTypeContext = typeformals ::: typecontext
@@ -123,20 +119,20 @@ trait NamedToNameless {
         nameless.VariantType(typeformals.size, newVariants)
       }
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
-    } 
-  } 
+    }
+  }
 
   def namedToNameless(defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Def = {
     defn -> {
       case Def(_, formals, body, typeformals, argtypes, returntype) => {
         val newContext = formals.reverse ::: context
-        val newTypeContext = typeformals ::: typecontext 
+        val newTypeContext = typeformals ::: typecontext
         val newbody = namedToNameless(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { _ map { namedToNameless(_, newTypeContext) } }
         val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
         nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
       }
-    } 
+    }
   }
 
 }

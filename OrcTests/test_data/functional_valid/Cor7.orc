@@ -7,6 +7,7 @@
 
 (7 >= 2 + 4)
 
-{- OUTPUT
-- true
+{-
+OUTPUT:
+true
 -}

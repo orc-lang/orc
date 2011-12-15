@@ -33,15 +33,13 @@ import orc.OrcEvent
 import orc.OrcEventAction
 import orc.lib.str.PrintEvent
 import orc.values.Format
-import orc.error.OrcException 
+import orc.error.OrcException
 
-
-/**
- * A test harness for the standard Orc compiler and runtime
- * engine, as exposed through the JSR-223 interface.
- *
- * @author jthywiss
- */
+/** A test harness for the standard Orc compiler and runtime
+  * engine, as exposed through the JSR-223 interface.
+  *
+  * @author jthywiss
+  */
 object OrcForTesting {
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
@@ -69,16 +67,16 @@ object OrcForTesting {
       val output = new StringBuilder()
       val eventActions = new OrcEventAction() {
         override def published(value: AnyRef) {
-          output.append(Format.formatValue(value)+"\n")
+          output.append(Format.formatValue(value) + "\n")
           println(Format.formatValue(value))
           Console.out.flush()
         }
         override def caught(e: Throwable) {
           val name = Option(e.getClass.getCanonicalName).getOrElse(e.getClass.getName)
-          val msg = "Error: "+name+": "+e.getMessage()
+          val msg = "Error: " + name + ": " + e.getMessage()
           println(msg)
           Console.out.flush()
-          output.append(msg+"\n") 
+          output.append(msg + "\n")
         }
         override def other(event: OrcEvent) {
           event match {
@@ -90,7 +88,7 @@ object OrcForTesting {
             case e => super.other(e)
           }
         }
-        
+
       }
 
       // run the engine with a fixed timeout
@@ -119,12 +117,12 @@ object OrcForTesting {
       Console.err.flush();
     }
   }
-  
+
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
   def compileAndRun(filename: String, timeout: Long, bindings: OrcBindings = new OrcBindings()): String = {
-      run(compile(filename, bindings), timeout)
+    run(compile(filename, bindings), timeout)
   }
 }

@@ -16,11 +16,10 @@ import orc.ast.AST
 import orc.run.Orc
 import orc.run.core.Token
 
-/**
- * Edit operation that is an addition of a new node to a tree.
- *
- * @author jthywiss
- */
+/** Edit operation that is an addition of a new node to a tree.
+  *
+  * @author jthywiss
+  */
 case class InsertNode[A <: AST, B <: AST](newNode: B, oldParent: A, newParent: B, position: Int) extends AstEditOperation {
 
   def isTokenAffected(token: Token): Boolean = { false }
@@ -29,8 +28,8 @@ case class InsertNode[A <: AST, B <: AST](newNode: B, oldParent: A, newParent: B
 
   def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Token): Unit = {  }
+  def migrateClosures(token: Token): Unit = {}
 
-  def migrateFrameStack(token: Token): Unit = {  }
+  def migrateFrameStack(token: Token): Unit = {}
 
 }

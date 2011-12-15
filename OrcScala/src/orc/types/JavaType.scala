@@ -14,42 +14,41 @@
 //
 package orc.types
 
-import java.lang.{reflect => jvm}
+import java.lang.{ reflect => jvm }
 import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.NoSuchMemberException
 
 /**
- * 
- *
- * @author dkitchin
- */
+  *
+  * @author dkitchin
+  */
 trait JavaType {
-  self: Type => 
+  self: Type =>
 
   val cl: Class[_]
-  
+
   def findField(name: String, isStatic: Boolean): Option[jvm.Field] = {
-    cl.getFields().toList find 
-      { f => 
-          f.getName().equals(name) &&
+    cl.getFields().toList find
+      { f =>
+        f.getName().equals(name) &&
           jvm.Modifier.isPublic(f.getModifiers()) &&
           (jvm.Modifier.isStatic(f.getModifiers()) == isStatic)
       }
   }
-  
+
   def findMethods(name: String, isStatic: Boolean): List[jvm.Method] = {
-    cl.getMethods().toList filter 
+    cl.getMethods().toList filter
       { m =>
-          m.getName().equals(name) &&
+        m.getName().equals(name) &&
           jvm.Modifier.isPublic(m.getModifiers()) &&
           (jvm.Modifier.isStatic(m.getModifiers()) == isStatic) &&
           !m.isVarArgs()
       }
   }
-  
+
   def typeOfMember(name: String, isStatic: Boolean, javaContext: Map[jvm.TypeVariable[_], Type]): Type = {
     findMethods(name, isStatic) match {
-    // No matching methods; maybe it's a field?
+      // No matching methods; maybe it's a field?
       case Nil => {
         findField(name, isStatic) match {
           case Some(f) => liftJavaField(f, javaContext)
@@ -63,11 +62,11 @@ trait JavaType {
        * FIXME: Will we need to pick the most specific method at the call point?
        *        We definitely can't pick it here; we don't know the call args yet.
        *        If so, creating an overloaded type here is the wrong solution.
-       */ 
+       */
       case ms => {
         OverloadedType(ms map { liftJavaMethod(_, javaContext) })
       }
     }
   }
-  
+
 }

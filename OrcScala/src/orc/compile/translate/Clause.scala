@@ -23,24 +23,18 @@ import scala.collection.immutable._
 import orc.error.compiletime._
 
 case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: Expression) extends orc.ast.AST {
-	
+
   val arity = formals.size
-	
-  /**
-   * 
-   * Convert a clause into a cascading match; if the clause patterns match,
-   * execute the body, otherwise execute the fallthrough expression.
-   * 
-   * The supplied args are the formal parameters of the overall function.
-   * 
-   */
-  def convert(args: List[named.BoundVar], 
-              fallthrough: named.Expression) 
-             (implicit 
-              context: Map[String, named.Argument], 
-              typecontext: Map[String, named.Type],
-              translator: Translator
-             ): named.Expression = {		
+
+  /** Convert a clause into a cascading match; if the clause patterns match,
+    * execute the body, otherwise execute the fallthrough expression.
+    *
+    * The supplied args are the formal parameters of the overall function.
+    */
+  def convert(args: List[named.BoundVar],
+    fallthrough: named.Expression)(implicit context: Map[String, named.Argument],
+      typecontext: Map[String, named.Type],
+      translator: Translator): named.Expression = {
 
     import translator._
 
@@ -48,33 +42,32 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
     def extendConversion(f: Conversion) {
       targetConversion = targetConversion andThen f
     }
-    
+
     val targetContext: scala.collection.mutable.Map[String, named.Argument] = new scala.collection.mutable.HashMap()
     def extendContext(dcontext: Map[String, named.Argument]) {
       for ((name, y) <- dcontext) {
         /* Ensure that patterns are linear even across multiple arguments of a clause */
         if (targetContext contains name) {
           reportProblem(NonlinearPatternException(name) at this)
-        }
-        else {
+        } else {
           targetContext += { (name, y) }
         }
       }
     }
-    
+
     /* Convert this expression with respect to the current targetContext,
      * using the current targetConversion. 
      */
     def convertInContext(e: Expression): named.Expression = {
-      targetConversion( translator.convert(e)(context ++ targetContext, typecontext) )  
+      targetConversion(translator.convert(e)(context ++ targetContext, typecontext))
     }
 
-    val (strictPairs, nonstrictPairs) = { 
-      val zipped: List[(Pattern, named.BoundVar)] = formals zip args 
-      zipped partition { case (p,_) => p.isStrict }
+    val (strictPairs, nonstrictPairs) = {
+      val zipped: List[(Pattern, named.BoundVar)] = formals zip args
+      zipped partition { case (p, _) => p.isStrict }
     }
 
-    for ((p,x) <- nonstrictPairs) {
+    for ((p, x) <- nonstrictPairs) {
       val (_, dcontext, target) = convertPattern(p, x)
       extendConversion(target)
       extendContext(dcontext)
@@ -89,35 +82,35 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
           case Some(guard) => {
             // If there are no strict patterns, then we just branch on the guard.
             val newGuard = guard -> convertInContext
-            extendConversion( { makeConditional(newGuard, _, fallthrough) } )
+            extendConversion({ makeConditional(newGuard, _, fallthrough) })
           }
-          case None => { 
+          case None => {
             /*
              * If there are no strict patterns and there is no guard,
              * then the clause is unconditional. If there are any
              * subsequent clauses, they are redundant.
              */
             fallthrough match {
-              case named.Stop() => {  }
+              case named.Stop() => {}
               case _ => { reportProblem(RedundantMatch() at fallthrough) }
             }
           }
         }
       }
-        
+
       /* 
        * There is at least one strict pattern.
        */
       case _ => {
-        
+
         val x = new named.BoundVar()
-        
-        val (newSource, dcontext, target) = 
+
+        val (newSource, dcontext, target) =
           strictPairs match {
-            case (strictPattern, strictArg)::Nil => {
+            case (strictPattern, strictArg) :: Nil => {
               val (source, dcontext, target) = convertPattern(strictPattern, x)
               val newSource = source(strictArg)
-              (newSource, dcontext, target) 
+              (newSource, dcontext, target)
             }
             /* If there is more than one strict pattern,
              * we treat it as a single tuple pattern containing those patterns.
@@ -129,40 +122,38 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
               (newSource, dcontext, target)
             }
           }
-        
+
         extendContext(dcontext)
         extendConversion(target)
-        
-        val guardedSource = 
+
+        val guardedSource =
           maybeGuard match {
             case Some(guard) => {
               val g = new named.BoundVar()
               val b = new named.BoundVar()
-              val newGuard = convertInContext(guard).subst(g,x)
-              newSource  > g >  ( callIft(b)  < b <  newGuard )  >>  g
+              val newGuard = convertInContext(guard).subst(g, x)
+              newSource > g > (callIft(b) < b < newGuard) >> g
             }
             case None => newSource
           }
-        
+
         extendConversion({ makeMatch(guardedSource, x, _, fallthrough) })
       }
     }
-        
+
     /* Finally, construct the new expression */
     this ->> convertInContext(body)
   }
-  
 
 }
 
 object Clause {
 
-  /**
-   * If these clauses all have the same arity, return that arity.
-   * Otherwise, throw an exception.
-   * 
-   * The list of clauses is assumed to be nonempty.
-   */
+  /** If these clauses all have the same arity, return that arity.
+    * Otherwise, throw an exception.
+    *
+    * The list of clauses is assumed to be nonempty.
+    */
   def commonArity(clauses: List[Clause]): Int = {
     val first :: rest = clauses
 
@@ -172,29 +163,25 @@ object Clause {
     }
   }
 
-  /**
-   * Convert a list of clauses to a single expression
-   * which linearly matches those clauses.
-   * 
-   * Also return the list of arguments against which the
-   * converted body expression performs this match.
-   * 
-   * The list of clauses is assumed to be nonempty.
-   */
-  def convertClauses(clauses: List[Clause])
-                    (implicit
-                     context: Map[String, named.Argument], 
-                     typecontext: Map[String, named.Type],
-                     translator: Translator
-                    ): (List[named.BoundVar], named.Expression) = {		
-	val arity = commonArity(clauses)
-	val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
+  /** Convert a list of clauses to a single expression
+    * which linearly matches those clauses.
+    *
+    * Also return the list of arguments against which the
+    * converted body expression performs this match.
+    *
+    * The list of clauses is assumed to be nonempty.
+    */
+  def convertClauses(clauses: List[Clause])(implicit context: Map[String, named.Argument],
+    typecontext: Map[String, named.Type],
+    translator: Translator): (List[named.BoundVar], named.Expression) = {
+    val arity = commonArity(clauses)
+    val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
 
-	val nil: named.Expression = named.Stop()
-	def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
-	val body = clauses.foldRight(nil)(cons)
+    val nil: named.Expression = named.Stop()
+    def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
+    val body = clauses.foldRight(nil)(cons)
 
-	(args, body)
+    (args, body)
   }
-	
+
 }

@@ -73,7 +73,7 @@ trait Group extends GroupMember {
 
   def add(m: GroupMember) {
     synchronized {
-      assert(!members.contains(m), "Double Group.add of "+m)
+      assert(!members.contains(m), "Double Group.add of " + m)
       members += m
     }
     m match {

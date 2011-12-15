@@ -16,11 +16,10 @@ package orc.types
 
 import orc.error.compiletime.typing._
 
-/**
- * A callable type.
- * 
- * @author dkitchin
- */
+/** A callable type.
+  *
+  * @author dkitchin
+  */
 trait CallableType extends Type {
   def call(typeArgs: List[Type], argTypes: List[Type]): Type
 }
@@ -31,46 +30,44 @@ trait CallableType extends Type {
  */
 trait StrictType extends CallableType
 
-
 /* Use case: no type arguments */
 trait SimpleCallableType extends CallableType {
-  
+
   def call(argTypes: List[Type]): Type
-  
+
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     typeArgs match {
       case Nil => call(argTypes)
       case _ => throw new TypeArgumentArityException(0, typeArgs.size)
     }
   }
-  
-}
 
+}
 
 /* Use case: no type arguments, one argument */
 trait UnaryCallableType extends SimpleCallableType {
-  
+
   def call(argType: Type): Type
-  
+
   def call(argTypes: List[Type]) = {
     argTypes match {
       case List(t) => call(t)
       case _ => throw new ArgumentArityException(1, argTypes.size)
     }
   }
-  
+
 }
 
 /* Use case: no type arguments, two arguments */
 trait BinaryCallableType extends SimpleCallableType {
-  
+
   def call(t: Type, u: Type): Type
-  
+
   def call(argTypes: List[Type]) = {
     argTypes match {
-      case List(t,u) => call(t,u)
+      case List(t, u) => call(t, u)
       case _ => throw new ArgumentArityException(2, argTypes.size)
     }
   }
-  
+
 }

@@ -20,9 +20,8 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.SimpleFunctionType
 import orc.types.BooleanType
 
-/**
- * Logical negation site
- */
+/** Logical negation site
+  */
 object Not extends TotalSite with TypedSite {
   override def name = "Not"
   def evaluate(args: List[AnyRef]) =

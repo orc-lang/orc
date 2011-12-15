@@ -14,27 +14,24 @@
 //
 package orc.ast.oil.named
 
-/**
- * 
- *
- * @author dkitchin
- */
+/** @author dkitchin
+  */
 
-trait hasVars 
-extends hasFreeVars 
-with hasFreeTypeVars
-with hasUnboundVars
-with hasUnboundTypeVars { self : NamedAST => }
+trait hasVars
+  extends hasFreeVars
+  with hasFreeTypeVars
+  with hasUnboundVars
+  with hasUnboundTypeVars { self: NamedAST => }
 
 trait hasFreeVars {
-  self : NamedAST =>
-  
+  self: NamedAST =>
+
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val freevars: Set[BoundVar] = {
     val varset = new scala.collection.mutable.HashSet[BoundVar]()
     val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
-        case x : BoundVar => (if (context contains x) { } else { varset += x }) ; x
+        case x: BoundVar => (if (context contains x) {} else { varset += x }); x
       }
     }
     collect(this)
@@ -44,14 +41,14 @@ trait hasFreeVars {
 }
 
 trait hasFreeTypeVars {
-  self : NamedAST =>
-  
+  self: NamedAST =>
+
   /* Note: As is evident from the type, UnboundTypevars are not included in this set */
   lazy val freetypevars: Set[BoundTypevar] = {
     val varset = new scala.collection.mutable.HashSet[BoundTypevar]()
     val collect = new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
-        case u: BoundTypevar => if (typecontext contains u) {} else { varset += u } ; u
+        case u: BoundTypevar => if (typecontext contains u) {} else { varset += u }; u
       }
     }
     collect(this)
@@ -61,14 +58,14 @@ trait hasFreeTypeVars {
 }
 
 trait hasUnboundVars {
-  self : NamedAST =>
-  
+  self: NamedAST =>
+
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val unboundvars: Set[UnboundVar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundVar]()
     val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
-        case x : UnboundVar => varset += x ; x
+        case x: UnboundVar => varset += x; x
       }
     }
     collect(this)
@@ -77,14 +74,14 @@ trait hasUnboundVars {
 }
 
 trait hasUnboundTypeVars {
-  self : NamedAST =>
-  
+  self: NamedAST =>
+
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val unboundtypevars: Set[UnboundTypevar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundTypevar]()
     val collect = new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
-        case u: UnboundTypevar => varset += u ; u
+        case u: UnboundTypevar => varset += u; u
       }
     }
     collect(this)

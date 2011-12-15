@@ -25,27 +25,23 @@ import orc.error.OrcException
 import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
 import orc.lib.builtin
-import orc.values.{Signal, Field}
-import orc.values.sites.{JavaSiteForm, OrcSiteForm}
+import orc.values.{ Signal, Field }
+import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 import scala.collection.mutable
 import scala.collection.immutable._
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 
-  /**
-   *  Translate an extended AST to a named OIL AST.
-   *
-   */
+  /** Translate an extended AST to a named OIL AST.
+    */
   def translate(extendedAST: ext.Expression): named.Expression = {
     val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
     val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
     convert(extendedAST)(rootContext, rootTypeContext)
   }
 
-  /**
-   *  Convert an extended AST expression to a named OIL expression.
-   *
-   */
+  /** Convert an extended AST expression to a named OIL expression.
+    */
   def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
     e -> {
       case ext.Stop() => Stop()
@@ -161,7 +157,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareType(u, ImportedType(classname), newbody)
       }
 
-      case ext.Declare(decl@ext.TypeAlias(name, typeformals, t), body) => {
+      case ext.Declare(decl @ ext.TypeAlias(name, typeformals, t), body) => {
         val u = new BoundTypevar(Some(name))
         val newtype =
           typeformals match {
@@ -176,7 +172,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareType(u, newtype, newbody)
       }
 
-      case ext.Declare(decl@ext.Datatype(name, typeformals, constructors), body) => {
+      case ext.Declare(decl @ ext.Datatype(name, typeformals, constructors), body) => {
         val d = new BoundTypevar(Some(name))
         val variantType = {
           val selfVar = new BoundTypevar(Some(name))
@@ -230,14 +226,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
   }
 
-  /**
-   *  Convert a list of extended AST def declarations to:
-   *
-   *        a list of named OIL definitions
-   *  and
-   *        a mapping from their string names to their new bound names
-   *
-   */
+  /** Convert a list of extended AST def declarations to:
+    *
+    *      a list of named OIL definitions
+    * and
+    *      a mapping from their string names to their new bound names
+    */
   def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
 
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
@@ -256,10 +250,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     (newdefs.toList, namesMap)
   }
 
-  /**
-   *  Convert an extended AST type to a named OIL type.
-   *
-   */
+  /** Convert an extended AST type to a named OIL type.
+    */
   def convertType(t: ext.Type)(implicit typecontext: Map[String, Type]): named.Type = {
     t -> {
       case ext.TypeVariable(name) => typecontext(name)
@@ -281,13 +273,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
   }
 
-  /**
-   * Convert a list of type formal names to:
-   *
-   *     A list of bound type formal variables
-   * and
-   *     A context mapping those names to those vars
-   */
+  /** Convert a list of type formal names to:
+    *
+    *   A list of bound type formal variables
+    * and
+    *   A context mapping those names to those vars
+    */
   def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
     var newTypeFormals: List[BoundTypevar] = Nil
     var formalsMap = new HashMap[String, BoundTypevar]()
@@ -303,19 +294,17 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     (newTypeFormals, formalsMap)
   }
 
-  /**
-   *  Convert an extended AST pattern to:
-   *
-   *        A filtering conversion for the source expression
-   *  and
-   *        A binding conversion for the target expression,
-   *        parameterized on the variable carrying the result
-   *
-   */
 
   type Conversion = Expression => Expression
   val id: Conversion = { e => e }
 
+  /** Convert an extended AST pattern to:
+    *
+    *      A filtering conversion for the source expression
+    * and
+    *      A binding conversion for the target expression,
+    *      parameterized on the variable carrying the result
+    */
   def convertPattern(p: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
 
     var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
@@ -327,7 +316,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         bindingMap += { (name, x) }
       }
     }
-    
+
     def unravel(p: ext.Pattern, focus: BoundVar): (Conversion) = {
       p match {
         case ext.Wildcard() => {
@@ -443,7 +432,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           for ((name, `r`) <- bindingMap) {
             dcontext = dcontext + { (name, y) }
           }
-          targetConversion = targetConversion compose { makeNth(bridge, i)  > y >  _ }
+          targetConversion = targetConversion compose { makeNth(bridge, i) > y > _ }
         }
 
         (sourceConversion, dcontext, targetConversion)

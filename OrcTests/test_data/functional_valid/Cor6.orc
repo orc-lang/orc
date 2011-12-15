@@ -7,7 +7,7 @@
 
 23 = 20 + 3
 
-{- OUTPUT
-- true
-- false
+{-
+OUTPUT:
+true
 -}
