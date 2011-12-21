@@ -30,4 +30,5 @@ public abstract class OrcProgramProblem {
 	public int line;
 	public int column;
 	public String longMessage;
+	public String orcWikiHelpPageName;
 }

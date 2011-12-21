@@ -79,7 +79,7 @@ only the inner are applied to .orc-code, and only the outer are applied to
   overflow: auto;
 }
 
-.orc-stop, .orc-close, .orc-run {
+.orc-stop, .orc-close, .orc-run, .orc-error-help {
   border: 1px outset;
   background-color: white;
   cursor: pointer;
@@ -92,6 +92,15 @@ only the inner are applied to .orc-code, and only the outer are applied to
 
 .orc-stop {
   background-color: #fcc;
+}
+
+.orc-error-help {
+  float: right;
+  color: #fff;
+  background-color: #06c;
+  margin: 4px;
+  text-decoration: none;
+  cursor: help;
 }
 
 .orc-publication, .orc-error, .orc-print, .orc-prompt {
