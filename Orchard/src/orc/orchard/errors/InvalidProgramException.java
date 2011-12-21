@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import orc.compile.parse.PositionWithFilename;
+import orc.error.compiletime.CompilationException;
 import orc.orchard.OrchardCompileLogger.CompileMessage;
 
 public class InvalidProgramException extends InvalidOilException {
@@ -52,6 +53,7 @@ public class InvalidProgramException extends InvalidOilException {
 			this.line = compileMsg.position.line();
 			this.column = compileMsg.position.column();
 			this.longMessage = compileMsg.longMessage();
+			this.orcWikiHelpPageName = compileMsg.exception instanceof CompilationException ? compileMsg.exception.getClass().getSimpleName() : null;
 		}
 
 	}

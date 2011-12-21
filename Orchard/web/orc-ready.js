@@ -370,23 +370,34 @@ function orcify(code, defaultConfig) {
 		});
 	}
 
+    var orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page="
+
 	function renderError(response, code, exception) {
         if (response && response.detail && response.detail.exception && (response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException" || response.detail.exception["@class"] == "orc.orchard.errors.InvalidOilException")) {
-            var problems = response.detail[response.detail.exception["@class"].substring(response.detail.exception["@class"].lastIndexOf(".")+1)].problems
+            var problems = response.detail[response.detail.exception["@class"].substring(response.detail.exception["@class"].lastIndexOf(".")+1)].problems;
             if (problems) {
-                problems = toArray(problems)
+                problems = toArray(problems);
                 for (var i in problems) {
-                    var errmsg = ""
-                    if (problems[i].severity >= 5) errmsg += "Problem "
-                    if (problems[i].severity == 4) errmsg += "Warning "
-                    var filenamelength = 0
+                    var errmsg = "";
+                    if (problems[i].severity >= 5) errmsg += "Problem ";
+                    if (problems[i].severity == 4) errmsg += "Warning ";
+                    var filenamelength = 0;
                     if (problems[i].filename && problems[i].filename.length && problems[i].filename.length > 0) {
-                        errmsg += "in file "+problems[i].filename + " "
-                        filenamelength = problems[i].filename.length
+                        errmsg += "in file "+problems[i].filename + " ";
+                        filenamelength = problems[i].filename.length;
                     }
-                    errmsg += "near line "+problems[i].line+", column "+problems[i].column
+                    errmsg += "near line "+problems[i].line+", column "+problems[i].column;
                     errmsg += problems[i].longMessage.substring(filenamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
-                    appendEventHtml('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
+                    var $eventMessage = $('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
+                    if (problems[i].orcWikiHelpPageName && problems[i].orcWikiHelpPageName.length && problems[i].orcWikiHelpPageName.length > 0) {
+                        $helpLink = $('<button class="orc-error-help" title="Orc wiki: ' + problems[i].orcWikiHelpPageName + '">&nbsp;?&nbsp;</button>')
+                            .click(function() {
+                                window.open(orcWikiUri + problems[i].orcWikiHelpPageName, problems[i].orcWikiHelpPageName, "width=875,height=750,scrollbars=yes");
+                            })
+                            .mousedown(nobubble);
+                        $eventMessage.prepend($helpLink);
+                    }
+                    appendEventHtml($eventMessage);
                 }
                 if (!problems[i].filename || !problems[i].filename.length || problems[i].filename.length == 0) {
                     codemirror.selectLines(codemirror.nthLine(problems[0].line), problems[0].column-1, codemirror.nthLine(problems[0].line), problems[0].column-1);
