@@ -45,6 +45,17 @@ function withExecutor(f) {
 }
 
 /**
+ * Opens a new browser window.
+ */
+function browse(url) {
+	if (!open(url)) {
+		if (currentWidget) currentWidget.stopOrc();
+		alert("This Orc program needs to open a browser window.\n\n"+
+			"Please disable any popup blockers and run the program again.");
+	}
+}
+
+/**
  * Our current JSON serializer unwraps arrays with one element.  This function
  * re-wraps such values so we can treat them consistently as arrays.
  */
@@ -55,23 +66,15 @@ function toArray(object) {
 }
 
 function escapeHtml(v) {
-	v = v.replace(/&/g, '&amp;');
-	v = v.replace(/</g, '&lt;');
-	v = v.replace(/>/g, '&gt;');
-	v = v.replace(/'/g, '&#39;');
-	v = v.replace(/"/g, '&quot;');
-	return v;
-}
-
-/**
- * Opens a new browser window.
- */
-function browse(url) {
-	if (!open(url)) {
-		if (currentWidget) currentWidget.stopOrc();
-		alert("This Orc program needs to open a browser window.\n\n"+
-			"Please disable any popup blockers and run the program again.");
-	}
+	return v
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/'/g, '&#39;')
+        .replace(/"/g, '&quot;')
+        .replace(/ /g, '&nbsp;')
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
+        .replace(/\n/g, '<br >\n');
 }
 
 /**
@@ -321,7 +324,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderPrintln(p) {
-		appendEventHtml('<div class="orc-print">' + escapeHtml(p.line).replace(/\n/g, '<br />\n') + '</div>');
+		appendEventHtml('<div class="orc-print">' + escapeHtml(p.line) + '</div>');
 	}
 
 	function prompt(message, onSubmit) {
@@ -348,7 +351,7 @@ function orcify(code, defaultConfig) {
 			hide(onSubmit);
 		}
 		var $prompt = $('<div class="orc-prompt">'+
-			'<p>'+escapeHtml(message).replace(/\n/g, '<br />\n')+'</p>'+
+			'<p>'+escapeHtml(message)+'</p>'+
 			'<div class="orc-prompt-input"><input type="text" value="" />'+
 				'<div class="orc-prompt-input-send" />'+
 				'<div class="orc-prompt-input-close" /></div>'+
