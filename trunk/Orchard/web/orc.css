@@ -116,8 +116,8 @@ only the inner are applied to .orc-code, and only the outer are applied to
 .orc-error {
   font-family: monospace;
   font-weight: bold;
-  white-space: pre;
   color: red;
+  white-space: nowrap;
 }
 
 .orc-print {

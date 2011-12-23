@@ -74,7 +74,7 @@ function escapeHtml(v) {
         .replace(/"/g, '&quot;')
         .replace(/ /g, '&nbsp;')
         .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
-        .replace(/\n/g, '<br >\n');
+        .replace(/\n/g, '<br />\n');
 }
 
 /**
@@ -308,7 +308,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderTokenError(p) {
-		appendEventHtml('<pre class="orc-error">'
+		appendEventHtml('<div class="orc-error">'
 			+ escapeHtml(p.message)
 			+ (p.location && p.location.file
 				? ' at '
@@ -316,7 +316,7 @@ function orcify(code, defaultConfig) {
 					+ ':' + p.location.line
 					+ ':' + p.location.column
 				: '')
-			+ '</pre>');
+			+ '</div>');
 	}
 
 	function renderPublication(p) {
@@ -393,7 +393,7 @@ function orcify(code, defaultConfig) {
                     }
                     errmsg += "near line "+problems[i].line+", column "+problems[i].column;
                     errmsg += problems[i].longMessage.substring(filenamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
-                    var $eventMessage = $('<pre class="orc-error">' + escapeHtml(errmsg) + '</pre>');
+                    var $eventMessage = $('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
                     if (problems[i].orcWikiHelpPageName && problems[i].orcWikiHelpPageName.length && problems[i].orcWikiHelpPageName.length > 0) {
                         $helpLink = $('<button class="orc-error-help" title="Orc wiki: ' + problems[i].orcWikiHelpPageName + '">&nbsp;?&nbsp;</button>')
                             .click(function() {
@@ -408,7 +408,7 @@ function orcify(code, defaultConfig) {
                     codemirror.selectLines(codemirror.nthLine(problems[0].line), problems[0].column-1, codemirror.nthLine(problems[0].line), problems[0].column-1);
                 }
             } else {
-                appendEventHtml('<pre class="orc-error">' + escapeHtml(response.faultstring) + '</pre>');
+                appendEventHtml('<div class="orc-error">' + escapeHtml(response.faultstring) + '</div>');
             }
         } else {
             // unwrap response if possible
