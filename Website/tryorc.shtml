@@ -1,10 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
 <!--
 To play with this in your browser without running an Orchard server,
 load it as tryorc.shtml?mock
 -->
-<head>
 <title>Orc Demo</title>
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css"/>
 <link rel="stylesheet" type="text/css" href="jquery.treeview.css"/>
@@ -17,6 +19,11 @@ load it as tryorc.shtml?mock
 <h1>Examples</h1>
 <p>Click an example to load it.</p>
 <ul id="menu" class="filetree">
+
+<!--
+  -  IMPORTANT:  Make updates to both tryorc.shtml and demo.shtml
+  -->
+
 <li><span class="folder">Tutorial</span><ul>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/sites.orc">Site Calls</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/tutorial/par.orc">Parallel</a></span></li>
@@ -36,11 +43,13 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/tally.orc">Tally</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/dice.orc">Dice</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/walk.orc">Random Walk</a></span></li>
+	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/path.orc">Shortest Path</a></span></li> -->
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/search.orc">Web Search</a></span></li>
+	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/chat.orc">Google Talk</a></span></li> -->
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
 	</ul></li>
-<li class="closed"><span class="folder">Big Demos</span><ul>
+<li class="closed"><span class="folder">Large Demos</span><ul>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
@@ -63,13 +72,12 @@ load it as tryorc.shtml?mock
 <p>
 Enter an Orc program in the text box below and then click the <b>run</b>
 button.  You may also load an example from the left panel, and then modify or
-run it. See <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a> for
-tips and keyboard shortcuts.
+run it. See the <cite><a onclick="window.open('documentation/html/userguide/userguide.html','_blank');return false;">User Guide <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon"></a></cite> for more about Orc. Click <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP</a> for editor keyboard shortcuts.
 </p>
 </div>
 <div>
 <small>
-<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP!</a></b>
+<b style="float: right"><a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP</a></b>
 Font size:
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeUp()">bigger</a> /
 <a href="#" style="cursor: pointer" onclick="document.getElementById('orc').orcFontSizeDown()">smaller</a>
@@ -80,7 +88,7 @@ Font size:
 <textarea id="orc" spellcheck="false" class="orc" style="height: 300px">
 </textarea>
 </td></tr></table>
-<script src="/orchard/orc.js" type="text/javascript"></script>
+<script type="text/javascript" src="/orchard/orc.js"></script>
 <script type="text/javascript">
 if (Orc.query.k) {
 	$("#restricted_demos").show();
