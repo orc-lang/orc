@@ -177,7 +177,7 @@ function readString(source, setState, _) {
 		if (ch == '"') {
 			setState(readToken);
 			break;
-		} else if (ch == '\\') {
+		} else if (ch == '\\' && !source.endOfLine()) {
 			source.next();
 		}
 	}

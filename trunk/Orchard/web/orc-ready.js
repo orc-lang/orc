@@ -57,7 +57,9 @@ function toArray(object) {
 function escapeHtml(v) {
 	v = v.replace(/&/g, '&amp;');
 	v = v.replace(/</g, '&lt;');
-	// FIXME: escape other special characters
+	v = v.replace(/>/g, '&gt;');
+	v = v.replace(/'/g, '&#39;');
+	v = v.replace(/"/g, '&quot;');
 	return v;
 }
 
@@ -82,14 +84,14 @@ function jsonToHtml(v) {
 		case 'number':
 			return v+'';
 		case 'string':
-			return '"' + escapeHtml(v)
+			return escapeHtml('"' + v
 					.replace(/\\/g, '\\\\')
 					.replace(/"/g, '\\"')
 					.replace(/\f/g, '\\f')
 					.replace(/\n/g, '\\n')
 					.replace(/\r/g, '\\r')
 					.replace(/\t/g, '\\t')
-				+ '"';
+				+ '"');
 		case 'object':
 			if (v == null) return 'null';
 			if (v.constructor == Array) {
@@ -303,7 +305,7 @@ function orcify(code, defaultConfig) {
 	}
 
 	function renderTokenError(p) {
-		appendEventHtml('<div class="orc-error">'
+		appendEventHtml('<pre class="orc-error">'
 			+ escapeHtml(p.message)
 			+ (p.location && p.location.file
 				? ' at '
@@ -311,7 +313,7 @@ function orcify(code, defaultConfig) {
 					+ ':' + p.location.line
 					+ ':' + p.location.column
 				: '')
-			+ '</div>');
+			+ '</pre>');
 	}
 
 	function renderPublication(p) {
@@ -388,7 +390,7 @@ function orcify(code, defaultConfig) {
                     }
                     errmsg += "near line "+problems[i].line+", column "+problems[i].column;
                     errmsg += problems[i].longMessage.substring(filenamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
-                    var $eventMessage = $('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
+                    var $eventMessage = $('<pre class="orc-error">' + escapeHtml(errmsg) + '</pre>');
                     if (problems[i].orcWikiHelpPageName && problems[i].orcWikiHelpPageName.length && problems[i].orcWikiHelpPageName.length > 0) {
                         $helpLink = $('<button class="orc-error-help" title="Orc wiki: ' + problems[i].orcWikiHelpPageName + '">&nbsp;?&nbsp;</button>')
                             .click(function() {
@@ -403,7 +405,7 @@ function orcify(code, defaultConfig) {
                     codemirror.selectLines(codemirror.nthLine(problems[0].line), problems[0].column-1, codemirror.nthLine(problems[0].line), problems[0].column-1);
                 }
             } else {
-                appendEventHtml('<div class="orc-error">' + escapeHtml(response.faultstring) + '</div>');
+                appendEventHtml('<pre class="orc-error">' + escapeHtml(response.faultstring) + '</pre>');
             }
         } else {
             // unwrap response if possible
