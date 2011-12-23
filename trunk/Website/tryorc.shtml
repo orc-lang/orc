@@ -72,7 +72,7 @@ load it as tryorc.shtml?mock
 <p>
 Enter an Orc program in the text box below and then click the <b>run</b>
 button.  You may also load an example from the left panel, and then modify or
-run it. See the <cite><a onclick="window.open('documentation/html/userguide/userguide.html','_blank');return false;">User Guide <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon"></a></cite> for more about Orc. Click <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP</a> for editor keyboard shortcuts.
+run it. See the <cite><a href="#" onclick="window.open('documentation/html/userguide/userguide.html','_blank');return false;">User Guide <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a></cite> for more about Orc. Click <a href="#" onclick="document.getElementById('orc').displayOrcHelp()">HELP</a> for editor keyboard shortcuts.
 </p>
 </div>
 <div>
