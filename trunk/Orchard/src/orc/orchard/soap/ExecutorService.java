@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -115,9 +115,9 @@ public class ExecutorService extends AbstractExecutorService {
 	 */
 	ExecutorService(final URI baseURI) {
 		this();
-		logger.info("Binding to '" + baseURI + "'");
+		logger.fine("Orchard executor Web service: Publishing endpoint at '" + baseURI + "'");
 		Endpoint.publish(baseURI.toString(), this);
-		logger.info("Bound to '" + baseURI + "'");
+		logger.config("Orchard executor Web service: Published endpoint at '" + baseURI + "'");
 	}
 
 	public static void main(final String[] args) {

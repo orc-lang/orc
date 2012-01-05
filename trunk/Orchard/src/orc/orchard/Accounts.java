@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -57,7 +57,7 @@ public abstract class Accounts implements AccountsMBean {
 			try {
 				out = new DbAccounts(url, DriverManager.getConnection(url));
 			} catch (final SQLException e) {
-				logger.log(Level.SEVERE, "Accounts database connection failed", e);
+				logger.log(Level.SEVERE, "Orchard accounts database connection failed", e);
 				out = new GuestOnlyAccounts(url);
 			}
 			urlAccounts.put(url, out);
@@ -165,7 +165,7 @@ class DbAccounts extends Accounts {
 		} catch (final SQLException e) {
 			// FIXME: hack to support database connection errors,
 			// just return the guest account
-			logger.log(Level.SEVERE, "Failed to retrieve account for devKey \"" + devKey + "\"", e);
+			logger.log(Level.SEVERE, "Orchard accounts: Failed to retrieve account for devKey \"" + devKey + "\"", e);
 			return guest;
 		}
 	}
@@ -180,7 +180,7 @@ class DbAccounts extends Accounts {
 				if (!rs.next()) {
 					// If the account was not found, use 
 					// a special "guest" account.
-					logger.warning("Account '" + devKey + "' not found, using guest account.");
+					logger.warning("Orchard accounts: Account '" + devKey + "' not found, using guest account.");
 					return guest;
 				} else {
 					return getAccount(rs);
@@ -197,6 +197,7 @@ class DbAccounts extends Accounts {
 	public boolean changeDeveloperKey(final String username) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET developer_key = ?::uuid" + " WHERE username = ?");
+			logger.info("Orchard accounts: Changing developer key for username \"" + username + "\"");
 			try {
 				sql.setString(1, java.util.UUID.randomUUID().toString());
 				sql.setString(2, username);
@@ -214,6 +215,7 @@ class DbAccounts extends Accounts {
 	public boolean changePassword(final String username, final String password) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("UPDATE account" + " SET salt = ?, password_md5 = md5(?)" + " WHERE username = ?");
+			logger.info("Orchard accounts: Changing password for username \"" + username + "\"");
 			try {
 				final String salt = generateSalt();
 				sql.setString(1, salt);
@@ -243,6 +245,7 @@ class DbAccounts extends Accounts {
 		} catch (final SQLException e) {
 			throw new AssertionError(e);
 		}
+		logger.info("Orchard accounts: Creating account: type " + accountTypeID + ", username \"" + username + "\", email \"" + email + "\"");
 		try {
 			final String salt = generateSalt();
 			sql.setInt(1, accountTypeID);
@@ -268,6 +271,7 @@ class DbAccounts extends Accounts {
 	public boolean dropAccount(final String username) {
 		try {
 			final PreparedStatement sql = db.prepareStatement("DELETE FROM account WHERE username = ?");
+			logger.info("Orchard accounts: Deleting account for username \"" + username + "\"");
 			try {
 				sql.setString(1, username);
 				sql.execute();

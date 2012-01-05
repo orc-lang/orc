@@ -17,6 +17,8 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.mortbay.jetty.Connector;
 import org.mortbay.jetty.Handler;
@@ -39,6 +41,12 @@ public class OrchardDemo {
 	}
 
 	public static void main(final String args[]) throws Exception {
+		final Logger orchardLogger = Logger.getLogger("orc.orchard");
+		orchardLogger.setLevel(Level.FINER);
+		final java.util.logging.ConsoleHandler handler = new java.util.logging.ConsoleHandler();
+		handler.setLevel(Level.FINER);
+		orchardLogger.addHandler(handler);
+
 		int PORT;
 		if (args.length == 0) {
 			PORT = 8080;

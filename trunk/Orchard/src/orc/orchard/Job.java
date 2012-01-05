@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -93,7 +93,7 @@ public final class Job implements JobMBean {
 		 */
 		public synchronized boolean add(final JobEvent value) {
 			while (bufferedSize >= bufferSize) {
-				logger.info("Job event buffer full; caller thread will block");
+				logger.finest("Orchard Job event buffer full; caller thread will block");
 				try {
 					blocked = true;
 					wait(); //FIXME: Wait until timeout, then terminate job
@@ -222,9 +222,9 @@ public final class Job implements JobMBean {
 			@Override
 			public void caught(final Throwable e) {
 				if (e instanceof Positional) {
-					logger.log(Level.INFO, "Orc program exception at " + ((Positional) e).pos(), e);
+					logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program exception at " + ((Positional) e).pos(), e);
 				} else {
-					logger.log(Level.INFO, "Orc program exception", e);
+					logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program exception", e);
 				}
 
 				final TokenErrorEvent ee = new TokenErrorEvent(e);
@@ -250,15 +250,15 @@ public final class Job implements JobMBean {
 						promptID = nextPromptID++;
 						pendingPrompts.put(promptID, pe.callback());
 					}
-					logger.info("Queuing prompt event with " + promptID + " " + pe.prompt());
+					logger.finer("Orchard job \"" + id + "\": Queuing prompt event with " + promptID + " " + pe.prompt());
 					events.add(new PromptEvent(promptID, pe.prompt()));
 				} else if (event instanceof orc.lib.web.BrowseEvent) {
 					final orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent) event;
-					logger.info("Queuing browse event with " + be.url());
+					logger.finer("Orchard job \"" + id + "\": Queuing browse event with " + be.url());
 					events.add(new BrowseEvent(be.url()));
 				} else if (event instanceof orc.lib.str.PrintEvent) {
 					final orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent) event;
-					logger.info("Queuing print event with " + pe.text());
+					logger.finer("Orchard job \"" + id + "\": Queuing print event with " + pe.text());
 					events.add(new PrintlnEvent(pe.text()));
 				} else {
 					super.other(event);
@@ -282,6 +282,7 @@ public final class Job implements JobMBean {
 
 	protected Job(final String id, final Expression expression, final OrcOptions config) {
 		this.id = id;
+		logger.fine("Orchard job \"" + id + "\": Created");
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config, "Orchard Job " + id);
 	}
@@ -327,7 +328,7 @@ public final class Job implements JobMBean {
 			try {
 				finisher.finished(this);
 			} catch (final RemoteException e) {
-				logger.log(Level.SEVERE, "Caught remote exception", e);
+				logger.log(Level.SEVERE, "Orchard job \"" + id + "\": Caught remote exception", e);
 			}
 		}
 	}
@@ -344,6 +345,7 @@ public final class Job implements JobMBean {
 	 */
 	@Override
 	public synchronized void cancel() {
+		logger.fine("Orchard job \"" + id + "\": Finished/canceled");
 		if (engine != null) {
 			engine.stop();
 		}

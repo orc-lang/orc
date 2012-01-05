@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -108,13 +108,13 @@ public class FormSenderSite extends SiteAdaptor {
 
 		final String key = data.getParameter("k");
 		if (key == null) {
-			logger.info("Received form with missing key");
+			logger.fine("Orchard FormSenderSite: Received form with missing key");
 			send(response, "The URL is missing the required parameter 'k'.");
 			return;
 		}
 		final FormReceiver f = (FormReceiver) AbstractExecutorService.globals.get(key);
 		if (f == null) {
-			logger.info("Received form with invalid (or obsolete) key " + key);
+			logger.fine("Orchard FormSenderSite: Received form with invalid (or obsolete) key " + key);
 			send(response, "The URL is no longer valid.");
 			return;
 		}
@@ -132,13 +132,13 @@ public class FormSenderSite extends SiteAdaptor {
 					// Restore the interrupted status
 					Thread.currentThread().interrupt();
 				}
-				logger.info("Processed valid form submission for key " + key);
+				logger.fine("Orchard FormSenderSite: Processed valid form submission for key " + key);
 				send(response, "Thank you for your response.");
 				return;
 			}
 		}
 
-		logger.info("Rendering form for key " + key);
+		logger.fine("Orchard FormSenderSite: Rendering form for key " + key);
 		renderHeader(out);
 		if (!errors.isEmpty()) {
 			out.write("<ul>");

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -66,8 +66,8 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 
 	@Override
 	public String submit(final String devKey, final String program) throws QuotaException, InvalidOilException, RemoteException {
-		logger.info("submit(" + devKey + ", ...)");
 		final String id = createJobID();
+		logger.finer("Orchard executor: submit(" + devKey + ", ...) => " + id);
 		final Expression expr;
 		try {
 			expr = OrcXML.xmlToAst(XML.loadString(program));
@@ -77,13 +77,12 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 			throw new InvalidOilException(e);
 		}
 		getAccounts().getAccount(devKey).addJob(id, expr);
-		logger.info("submit(" + devKey + ", ...) => " + id);
 		return id;
 	}
 
 	@Override
 	public Set<String> jobs(final String devKey) {
-		logger.info("jobs(" + devKey + ")");
+		logger.finer("Orchard executor: jobs(" + devKey + ")");
 		return getAccounts().getAccount(devKey).getJobIDs();
 	}
 
@@ -99,49 +98,49 @@ public abstract class AbstractExecutorService implements ExecutorServiceInterfac
 
 	@Override
 	public void finishJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
-		logger.info("finishJob(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: finishJob(" + devKey + ", " + job + ")");
 		getAccounts().getAccount(devKey).getJob(job).finish();
 	}
 
 	@Override
 	public void cancelJob(final String devKey, final String job) throws RemoteException, InvalidJobException {
-		logger.info("cancelJob(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: cancelJob(" + devKey + ", " + job + ")");
 		getAccounts().getAccount(devKey).getJob(job).cancel();
 	}
 
 	@Override
 	public List<JobEvent> jobEvents(final String devKey, final String job) throws RemoteException, InterruptedException, InvalidJobException {
-		logger.info("jobEvents(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: jobEvents(" + devKey + ", " + job + ")");
 		return getAccounts().getAccount(devKey).getJob(job).getEvents(getWaiter());
 	}
 
 	@Override
 	public String jobState(final String devKey, final String job) throws RemoteException, InvalidJobException {
-		logger.info("jobState(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: jobState(" + devKey + ", " + job + ")");
 		return getAccounts().getAccount(devKey).getJob(job).getState();
 	}
 
 	@Override
 	public void purgeJobEvents(final String devKey, final String job) throws RemoteException, InvalidJobException {
-		logger.info("purgeJobEvents(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: purgeJobEvents(" + devKey + ", " + job + ")");
 		getAccounts().getAccount(devKey).getJob(job).purgeEvents();
 	}
 
 	@Override
 	public void startJob(final String devKey, final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
-		logger.info("startJob(" + devKey + ", " + job + ")");
+		logger.finer("Orchard executor: startJob(" + devKey + ", " + job + ")");
 		getAccounts().getAccount(devKey).getJob(job).start();
 	}
 
 	@Override
 	public void respondToPrompt(final String devKey, final String job, final int promptID, final String response) throws InvalidPromptException, RemoteException, InvalidJobException {
-		logger.info("respondToPrompt(" + devKey + ", " + job + "," + promptID + ", ...)");
+		logger.finer("Orchard executor: respondToPrompt(" + devKey + ", " + job + "," + promptID + ", ...)");
 		getAccounts().getAccount(devKey).getJob(job).respondToPrompt(promptID, response);
 	}
 
 	@Override
 	public void cancelPrompt(final String devKey, final String job, final int promptID) throws InvalidJobException, InvalidPromptException, RemoteException {
-		logger.info("cancelPrompt(" + devKey + ", " + job + "," + promptID + ")");
+		logger.finer("Orchard executor: cancelPrompt(" + devKey + ", " + job + "," + promptID + ")");
 		getAccounts().getAccount(devKey).getJob(job).cancelPrompt(promptID);
 	}
 }
