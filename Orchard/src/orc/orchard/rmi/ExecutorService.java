@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -26,10 +26,10 @@ import orc.orchard.api.ExecutorServiceInterface;
 public class ExecutorService extends AbstractExecutorService implements ExecutorServiceInterface {
 	public ExecutorService(final URI baseURI) throws RemoteException, MalformedURLException {
 		super();
-		logger.info("Binding to '" + baseURI + "'");
+		logger.fine("Orchard executor RMI server: Binding to '" + baseURI + "'");
 		UnicastRemoteObject.exportObject(this, 0);
 		Naming.rebind(baseURI.toString(), this);
-		logger.info("Bound to '" + baseURI + "'");
+		logger.config("Orchard executor RMI server: Bound to '" + baseURI + "'");
 	}
 
 	public static void main(final String[] args) {
