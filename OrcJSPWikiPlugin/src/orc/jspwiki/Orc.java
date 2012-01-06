@@ -1,3 +1,16 @@
+//
+// Orc.java -- Java class Orc, a plugin for JSPWiki
+// Project OrcWikiPlugin
+//
+// $Id$
+//
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.jspwiki;
 
 import java.util.Map;
@@ -32,7 +45,8 @@ import com.ecyrd.jspwiki.plugin.WikiPlugin;
  */
 public class Orc implements WikiPlugin {
 	private final static String HAS_ORC = "orc.jspwiki.HAS_ORC";
-	public String execute(WikiContext ctx, Map props) throws PluginException {
+	@Override
+	public String execute(final WikiContext ctx, final Map props) throws PluginException {
 		String baseURL = (String)props.get("baseURL");
 		if (baseURL == null) baseURL = "/orchard/";
 		StringBuilder out = new StringBuilder();
