@@ -4,6 +4,6 @@
       <author>Adrian Quark</author>
       <alias>orc</alias>
       <minVersion>2.4</minVersion>
-      <maxVersion>2.6</maxVersion>
+      <maxVersion>2.8</maxVersion>
    </plugin>
 </modules>
