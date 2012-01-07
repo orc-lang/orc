@@ -16,7 +16,9 @@
 package orc.jspwiki;
 
 import java.security.Principal;
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -87,6 +89,8 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 	 * @author jthywiss
 	 */
 	protected static class WorkflowEmailNotifierWatcher extends WikiBackgroundThread {
+
+		protected static DateFormat dateTimeFormatter = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzz");
 
 		protected Set<Integer> notifiedWfIds = new HashSet<Integer>();
 
@@ -191,7 +195,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 			content.append("\nWork item requested by: ");
 			content.append(workItem.getOwner());
 			content.append("\nWork item received: ");
-			content.append(workItem.getStartTime());
+			content.append(dateTimeFormatter.format(workItem.getStartTime()));
 			content.append("\nWork item assigned to: ");
 			content.append(workItem.getActor().getName());
 			content.append(" (");
@@ -207,9 +211,9 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 					content.append(currFact.getValue());
 				}
 			}
-			content.append("\n\nTo act on this item, go to URL: ");
+			content.append("\n\nTo act on this item, go to the wiki at URL: ");
 			content.append(getEngine().getBaseURL());
-			content.append("Login.jsp?redirect=Workflow\n");
+			content.append(" , log in, and select Workflow from the \"More\" menu.\n");
 
 			try {
 				MailUtil.sendMessage(getEngine(), mailToString.toString(), subject.toString(), content.toString());
