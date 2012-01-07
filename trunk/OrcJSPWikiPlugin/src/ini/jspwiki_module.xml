@@ -6,4 +6,9 @@
       <minVersion>2.4</minVersion>
       <maxVersion>2.8</maxVersion>
    </plugin>
+   <plugin class="orc.jspwiki.WorkflowEmailNotifier">
+      <author>John Thywissen</author>
+      <minVersion>2.6</minVersion>
+      <maxVersion>2.8</maxVersion>
+   </plugin>
 </modules>
