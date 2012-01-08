@@ -103,7 +103,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 		 */
 		public WorkflowEmailNotifierWatcher(final WikiEngine engine) {
 			super(engine, TextUtil.getIntegerProperty(engine.getWikiProperties(), PROP_WORKFLOW_NOTIFIER_INTERVAL, DEFAULT_WORKFLOW_NOTIFIER_INTERVAL) /* seconds */);
-			/*Thread.*/setName("WorkflowEmailNotifier");
+			/*Thread.*/setName("WorkflowEmailNotifier for " + engine.getApplicationName());
 		}
 
 		/* (non-Javadoc)
@@ -186,7 +186,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 
 			// Build content
 			final StringBuilder content = new StringBuilder();
-			subject.append(getEngine().getApplicationName());
+			content.append(getEngine().getApplicationName());
 			content.append(" <");
 			content.append(getEngine().getBaseURL());
 			content.append("> has a new workflow item for your action.\n");
@@ -197,7 +197,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 			content.append("\nWork item description: ");
 			content.append(workItemTitle);
 			content.append("\nWork item requested by: ");
-			content.append(workItem.getOwner());
+			content.append(workItem.getOwner().getName());
 			content.append("\nWork item received: ");
 			content.append(dateTimeFormatter.format(workItem.getStartTime()));
 			content.append("\nWork item assigned to: ");
@@ -215,7 +215,9 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 					content.append(currFact.getValue());
 				}
 			}
-			content.append("\n\nTo act on this item, go to the wiki at URL: ");
+			content.append("\n\nTo act on this item, go to ");
+			content.append(getEngine().getApplicationName());
+			content.append(" at URL: ");
 			content.append(getEngine().getBaseURL());
 			content.append(" , log in, and select Workflow from the \"More\" menu.\n");
 
