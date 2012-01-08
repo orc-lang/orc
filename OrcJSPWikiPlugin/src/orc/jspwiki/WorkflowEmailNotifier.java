@@ -148,7 +148,9 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 		 */
 		@Override
 		public void shutdownTask() throws Exception {
-			notifiedWfIds.clear();
+			synchronized (notifiedWfIds) {
+				notifiedWfIds.clear();
+			}
 			super.shutdownTask();
 		}
 
@@ -174,18 +176,20 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 
 			final Step workItem = wfProcInst.getCurrentStep();
 			final Decision wiDecision = workItem instanceof Decision ? (Decision) workItem : null;
-			final String workItemTitle = formatLocalizedMsg(workItem.getMessageKey(), workItem.getMessageArguments());
+			final String workItemTitle = StripHtml.stripXhtml(formatLocalizedMsg(workItem.getMessageKey(), workItem.getMessageArguments()));
 
 			// Compute subject line
 			final StringBuilder subject = new StringBuilder();
-			subject.append("Wiki work item: ");
+			subject.append(getEngine().getApplicationName());
+			subject.append(": ");
 			subject.append(workItemTitle);
 
 			// Build content
 			final StringBuilder content = new StringBuilder();
-			content.append("The wiki at URL: ");
+			subject.append(getEngine().getApplicationName());
+			content.append(" <");
 			content.append(getEngine().getBaseURL());
-			content.append(" has a new workflow item for your action.\n");
+			content.append("> has a new workflow item for your action.\n");
 			if (wiDecision != null) {
 				content.append("\nWork item ID: ");
 				content.append(wiDecision.getId());
@@ -265,7 +269,9 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 				case WorkflowEvent.RUNNING:
 				case WorkflowEvent.COMPLETED:
 					final Workflow wfProcInst = ((WorkflowEvent) event).getWorkflow();
-					notifiedWfIds.remove(wfProcInst.getId());
+					synchronized (notifiedWfIds) {
+						notifiedWfIds.remove(wfProcInst.getId());
+					}
 					break;
 				default:
 					break;
