@@ -59,11 +59,15 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			final List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
 			final CompileLogger cl = new OrchardCompileLogger(compileMsgs);
 			final orc.ast.oil.nameless.Expression result = getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
-			if (cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
+			if (result == null || cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
 				if (compileMsgs.isEmpty()) {
-					throw new InvalidProgramException("Compilation failed");
+					final InvalidProgramException e = new InvalidProgramException("Compilation failed");
+					logger.throwing(getClass().getCanonicalName(), "compile", e);
+					throw e;
 				} else {
-					throw new InvalidProgramException(compileMsgs);
+					final InvalidProgramException e = new InvalidProgramException(compileMsgs);
+					logger.throwing(getClass().getCanonicalName(), "compile", e);
+					throw e;
 				}
 				//FIXME:Report warnings
 			} else {
@@ -72,7 +76,9 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 				return oilString;
 			}
 		} catch (final IOException e) {
-			throw new InvalidProgramException("IO error: " + e.getMessage());
+			final InvalidProgramException ipe = new InvalidProgramException("I/O error: " + e.getMessage());
+			logger.throwing(getClass().getCanonicalName(), "compile", ipe);
+			throw ipe;
 		}
 	}
 
