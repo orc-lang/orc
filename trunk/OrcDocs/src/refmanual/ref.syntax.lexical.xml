@@ -74,7 +74,7 @@
 						This match is greedy &#x2014; for example, ** is matched in preference to two * operators, if possible.) 
 					</para>
 					<para>
-						<code>+ - * / % ** &amp;&amp; || ~ &lt; &gt;  = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
+						<code>+ - * / % ** &amp;&amp; || ~ = &lt;: :&gt; &lt;= &gt;= /= : . ? :=</code>
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.tokens.delimiters">
@@ -83,7 +83,7 @@
 						An Orc delimiter is a character sequence that matches one of the following.
 					</para>
 					<para>
-						<code>( ) [ ] {. .} , | ; :: :!: </code>
+						<code>( ) [ ] {. .} , # &lt; &gt; | ; :: :!: </code>
 					</para>
 				</section>
 				<section xml:id="ref.syntax.lexical.tokens.literals">

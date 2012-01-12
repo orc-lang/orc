@@ -57,14 +57,8 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		/** An Orc keyword */
 		KEYWORD, // We've checked against keyword list
 		/** An operator that isn't a combinator.
-		 * Note for "<" and ">", we guess based on whitespace around the token.
-		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
-		 * for anything critical. */
 		OPERATOR,
 		/** An Orc combinator.
-		 * Note for "<" and ">", we guess based on whitespace around the token.
-		 * This could be wrong, so don't rely on the OPERATOR / COMBINATOR distinction
-		 * for anything critical. */
 		COMBINATOR,
 		/** Parenthesis, square brackets, or curly braces */
 		BRACKET,
@@ -256,7 +250,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			// BRACKET,
 			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{.", TokenType.BRACKET), new TokenRecord(".}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
 			// SEPERATOR,
-			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), new TokenRecord("!", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("#", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 			// COMMENT_ENDLINE,
 			new TokenRecord("--", TokenType.COMMENT_ENDLINE), //$NON-NLS-1$
 			// COMMENT_MULTILINE,

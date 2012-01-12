@@ -40,7 +40,6 @@ var ops2 = {
 
 // 1-character symbolic tokens
 var ops1 = {
-"{": readOperator,
 "<": readCombinator,
 ">": readCombinator,
 "|": readCombinator,
@@ -49,7 +48,6 @@ var ops1 = {
 "-": readOperator,
 "/": readOperator,
 ";": readCombinator,
-'}': readOperator,
 ',': readOperator,
 '!': readOperator,
 '=': readOperator,
@@ -58,6 +56,7 @@ var ops1 = {
 '.': readOperator,
 '[': readOperator,
 ']': readOperator,
+'#': readOperator,
 '~': readOperator,
 '+': readOperator,
 '*': readOperator,
