@@ -363,23 +363,27 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
 
   val parseDeclaration: Parser[Declaration] = (
-    ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
+    (
 
-    | "def" ~> parseDefDeclaration
+      ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
+  
+      | "def" ~> parseDefDeclaration
+  
+      | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
+  
+      | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
+  
+      | ("include" ~> stringLit).into(performInclude)
+  
+      | "import" ~> "type" ~> ident ~ ("=" ~> parseSiteLocation) -> TypeImport
+  
+      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
+      -> ((x, ys, t) => Datatype(x, ys getOrElse Nil, t))
+  
+      | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
+      -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))
 
-    | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
-
-    | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
-
-    | ("include" ~> stringLit).into(performInclude)
-
-    | "import" ~> "type" ~> ident ~ ("=" ~> parseSiteLocation) -> TypeImport
-
-    | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
-    -> ((x, ys, t) => Datatype(x, ys getOrElse Nil, t))
-
-    | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
-    -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))
+    )  <~ ("#"?) /* Optional declaration terminator # */
 
     | failExpecting("declaration (val, def, type, etc.)"))
 

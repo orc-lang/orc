@@ -71,7 +71,6 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   val operators = List(
     "+", "-", "*", "/", "%", "**",
     "&&", "||", "~",
-    "<", ">",
     "=", "<:", ":>", "<=", ">=", "/=",
     ":",
     ".", "?", ":=")
@@ -79,7 +78,8 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   /** The set of delimiters (ordering does not matter) */
   override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
-    "|", ";",
+    "<", ">", "|", ";",
+    "#",
     "::", ":!:") ::: operators)
 
   protected lazy val operRegex = {

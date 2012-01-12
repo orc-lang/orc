@@ -189,14 +189,14 @@
 		<production xml:id="ebnf.declaration">
 		  <lhs><link linkend="ref.declarations">Declaration</link></lhs>
 		  <rhs>
-		    <nonterminal def="#ebnf.declaration.val">DeclareVal</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.def">DeclareDefinition</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.defclass">DeclareDefclass</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.signature">DeclareSignature</nonterminal>
-			  <sbr/>&#x2759; <nonterminal def="#ebnf.declaration.site">DeclareSite</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.class">DeclareClass</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.include">DeclareInclude</nonterminal>
-				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.type">DeclareType</nonterminal>
+		    <nonterminal def="#ebnf.declaration.val">DeclareVal</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.def">DeclareDefinition</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.defclass">DeclareDefclass</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.signature">DeclareSignature</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.site">DeclareSite</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.class">DeclareClass</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.include">DeclareInclude</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
+				<sbr/>&#x2759; <nonterminal def="#ebnf.declaration.type">DeclareType</nonterminal> <code>#</code><emphasis role="bold">?</emphasis>
 		  </rhs>
 		</production>
 		
