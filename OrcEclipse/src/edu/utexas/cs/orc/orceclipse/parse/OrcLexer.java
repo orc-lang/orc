@@ -56,9 +56,9 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		IDENTIFIER, // We've checked against keyword list
 		/** An Orc keyword */
 		KEYWORD, // We've checked against keyword list
-		/** An operator that isn't a combinator.
+		/** An operator that isn't a combinator. */
 		OPERATOR,
-		/** An Orc combinator.
+		/** An Orc combinator. */
 		COMBINATOR,
 		/** Parenthesis, square brackets, or curly braces */
 		BRACKET,
