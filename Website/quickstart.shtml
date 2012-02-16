@@ -14,6 +14,9 @@ instructions assume version 3.6.2, but other versions should behave similarly.</
 	project manually</a> with the client of your choice.
 </li>
 <li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.9.1.</li>
+<li>A Subversion distribution that includes the <code>svnversion</code> command.  UNIX, Linux, 
+Mac OS X, and most other OSes include this as part of their base platform.  Some OSes, notably Windows,
+require one to install a <a href="http://subversion.apache.org/packages.html">Subversion client</a>.</li>
 </ol>
 
 <h2>Check out Orc</h2>
