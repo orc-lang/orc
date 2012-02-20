@@ -63,7 +63,7 @@ available in Orc such as real time (<code>Rtime</code>) rewritable storage
 locations (<code>Ref</code> and FIFO channels (<code>Channel</code>) are also
 invoked.</p>
 
-<pre class="orc">
+<pre class="orc-snippet">
 def bestQoS(comparer, publisher) = head(sortBy(comparer, publisher))
 
 def class InterQueryTime()=
