@@ -20,7 +20,7 @@
 		<div class="header-background">
 			<div class="header">
 				<div class="title">
-					<h1><img src="indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
+					<h1><img src="../indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
 				</div>
 
 				<div class="navigation">
@@ -45,7 +45,7 @@
 
 <p>This page is supplemental material to:
 A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen,"QoS-Aware Management of Monotonic Service Orchestrations,"
-Submitted to <cite>IEEE Transactions in Software Engineering</cite>, 2012.</p>
+Submitted to <span class="venue">IEEE Transactions in Software Engineering</span>, 2012.</p>
 
 <ul>
 <li><a href="#SLADeclaration">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
@@ -164,7 +164,7 @@ Println("Order "+n+" created") &gt;&gt; SalesOrder | Rwait(Random(100)) &gt;&gt;
 
 simulateOrders(1) &gt;SalesOrder&gt; TravelAgent(SalesOrder,50) &gt;GenerateInvoice&gt;
 Println("Invoice for order "+SalesOrder.ordernumber?+" presented at time "+simElapsedTime.time()) &gt;&gt;stop
-</pre&gt;
+</pre>
 
 <a id="TravelAgentWeaved"></a><h2>TravelAgentWeaved.orc <small>(<a href="#top">top</a>)</small></h2>
 
