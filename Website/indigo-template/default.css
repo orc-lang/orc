@@ -22,7 +22,7 @@ a:hover {
 	color: #C60;
 }
 body {
-	background: #0094D6 url(/template/img/bg.gif) repeat-x;
+	background: #0094D6 url(img/bg.gif) repeat-x;
 	color: #466;
 	font: normal 11pt "Helvetica","Nimbus Sans L","Arial",sans-serif;
 	margin: 0;
@@ -48,7 +48,7 @@ h1 {
 	margin-bottom: 4px;
 }
 cite {
-	background: url(/template/img/quote.gif) no-repeat;
+	background: url(img/quote.gif) no-repeat;
 	color: #666;
 	display: block;
 	padding-left: 28px;
@@ -60,11 +60,11 @@ cite {
 
 /* structure */
 .header-background {
-	background: #0094D6 url(/template/img/bg.gif) repeat-x;
+	background: #0094D6 url(img/bg.gif) repeat-x;
 }
 
 .header {
-	background: url(/template/img/topleft.gif) no-repeat;
+	background: url(img/topleft.gif) no-repeat;
 	height: 92px;
 }
 
@@ -108,7 +108,7 @@ cite {
 
 /* main */
 .main {
-	background: url(/template/img/bgmain.gif) no-repeat;
+	background: url(img/bgmain.gif) no-repeat;
 	padding: 12px 12px 0 52px;
 	clear: both;
 }
@@ -139,7 +139,7 @@ cite {
 }
 .sidenav li a:hover {
 	color: #111;
-	background: url(/template/img/nav_li.gif) no-repeat;
+	background: url(img/nav_li.gif) no-repeat;
 }
 
 /* content */
@@ -148,7 +148,7 @@ cite {
 	margin-bottom: 6px;
 }
 .content ul li {
-	list-style: url(/template/img/li.gif);
+	list-style: url(img/li.gif);
 	margin-left: 18px;
 }
 
@@ -165,7 +165,7 @@ cite {
 
 /* footer */
 .footer {
-	background: #0094D6 url(/template/img/bgfooter.gif) repeat-x;
+	background: #0094D6 url(img/bgfooter.gif) repeat-x;
 	color: #C1DEF0;
 	line-height: 40px;
 	text-align: center;
@@ -190,11 +190,11 @@ small, .small {font: normal 10px Verdana,sans-serif;}
 	float: left;
 	width: 24%;
 	padding-top: 150px;
-	background: url(/template/img/logo.gif) no-repeat top left;
+	background: url(img/logo.gif) no-repeat top left;
 }
 
 .container {
-	background: #fff url(/template/img/bg.gif) repeat-x;
+	background: #fff url(img/bg.gif) repeat-x;
 	padding-bottom: 30px;
 }
 
