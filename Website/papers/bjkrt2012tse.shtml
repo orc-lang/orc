@@ -136,8 +136,8 @@ def TravelAgent(SalesOrder,Budget) =
   true else compareCost(x, y)
 
   def GenerateOrder(SalesOrder,Budget) = Dictionary() &gt;GenerateInvoice&gt; GenerateInvoice.TravelAgent :=
-  SalesOrder.ordernumber? &gt;&gt; GenerateInvoice.acceptedTime := simElapsedTime.time() &gt;&gt; Println("Order
-  "+GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?) &gt;&gt;
+  SalesOrder.ordernumber? &gt;&gt; GenerateInvoice.acceptedTime := simElapsedTime.time() &gt;&gt; Println("Order "
+  +GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?) &gt;&gt;
   (GenerateInvoice,Budget)
 
   def AirlineCompany(GenerateInvoice) = bestQ(compareCost, defer(inquireCost,AirlineList)) &gt;q&gt;
@@ -231,8 +231,8 @@ def TravelAgent(SalesOrder,Budget,ResponseTime,Cost) =
   def compareCost(x, y) = x.cost? &lt;= y.cost?
   def compareCategory(x, y) = if x.category?="Economy" then false else if y.category?="Economy" then  true else compareCost(x, y)
   def GenerateOrder(SalesOrder,Budget) = (Dictionary() &gt;GenerateInvoice&gt; GenerateInvoice.TravelAgent :=
-  SalesOrder.ordernumber? &gt;&gt; GenerateInvoice.acceptedTime := simElaspedTime.time() &gt;&gt; Println("Order
-  "+GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?) &gt;&gt;
+  SalesOrder.ordernumber? &gt;&gt; GenerateInvoice.acceptedTime := simElaspedTime.time() &gt;&gt; Println("Order "
+  +GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?) &gt;&gt;
   (GenerateInvoice,Budget), Rclock().time()) &gt;((GenerateInvoice,Budget),d)&gt;
   ((GenerateInvoice,Budget),ResponseTime().QoS(GenerateOrder,d))
    def AirlineCompany(GenerateInvoice,Cost) = (bestQ(compareCost, defer(inquireCost,AirlineList)) &gt;q&gt;
