@@ -85,7 +85,8 @@ def class ResponseTime() =
 
 def class Cost() =
    def QoS(sitex,c)=
-      val s = Ref([])      s? &gt;x&gt; QoSOplus(x,[]) &gt;q&gt; s:= q &gt;&gt; Dictionary() &gt;sitex&gt; sitex.Cost := s
+      val s = Ref([])
+      s? &gt;x&gt; QoSOplus(x,[]) &gt;q&gt; s:= q &gt;&gt; Dictionary() &gt;sitex&gt; sitex.Cost := s
    def QoSOplus(c1,c2) =
       def Oplus([],[]) = []
       def Oplus(x:xs,y:ys) = (x+y):Oplus(xs,ys)
@@ -172,18 +173,45 @@ Println("Invoice for order "+SalesOrder.ordernumber?+" presented at time "+simEl
 matching is used extensively to assign and propagate QoS values.</p>
 
 <pre class="orc">
-{- TravelAgentWeaved.orc -- Orc program TravelAgentWeaved
- -
- - This file is supplemental material to:
- - A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware
- - Management of Monotonic  Service Orchestrations," IEEE Trans. Softw. Eng. 2012.
- -
- - The Orc language is available at URL: http://orc.csres.utexas.edu/
- -}
+def bestQoS(comparer, publisher) = head(sortBy(comparer, publisher))
 
---include the SLA Declaration sites
+def class InterQueryTime()=
+   def QoS(sitex) =
+      val s = {. r = Ref(0), c = Channel() .}		
+      val curTime = Rtime()
+      s.r? &gt;p&gt; (s.c.put(curTime-p) | s.r:=(curTime)) &gt;&gt; Dictionary() &gt;sitex&gt;      sitex.InterQueryTime := s &gt;&gt; stop
+   def QoSCompare(it1,it2) = it1 &gt;= it2
+   def QoSCompete(it1,it2) = bestQoS(QoSCompare,[it1,it2])
+   stop
 
-include "SLADeclaration.orc"
+def class ResponseTime() =
+   def QoS(sitex,d) = Rtime()-d &gt;q&gt; q
+   def QoSOplus(rt1,rt2) = rt1+rt2
+   def QoSCompare(rt1,rt2) = rt1 &lt;= rt2
+   def QoSCompete(rt1,rt2) = bestQoS(QoSCompare,[rt1,rt2])
+   def QoSVee(rt1,rt2) = max(rt1,rt2)
+   stop
+
+def class Cost() =
+   def QoS(sitex,c)=
+      val s = Ref([])
+      s? &gt;x&gt; QoSOplus(x,[]) &gt;q&gt; s:= q &gt;&gt; Dictionary() &gt;sitex&gt; sitex.Cost := s
+   def QoSOplus(c1,c2) =
+      def Oplus([],[]) = []
+      def Oplus(x:xs,y:ys) = (x+y):Oplus(xs,ys)
+      Oplus(c1,c2)
+   def QoSCompare(c1,c2) =
+      def Compare([],[]) = true
+      def Compare(x:xs,y:ys) = (x &lt;= y) && Compare(xs,ys)
+      Compare(c1,c2)
+   def QoSCompete(c1,c2) = bestQoS(QoSCompare,[c1,c2])	                                   	
+   def QoSVee(c1,c2) =
+      def Vee([],[]) = []
+      def Vee(x:xs,y:ys) = max(x,y):Vee(xs,ys)
+      Vee(c1,c2)
+   stop
+{- EXAMPLE -}
+--include "SLADeclaration.orc"
 
 val AirlineList = ["Airline 1", "Airline 2"]
 val HotelList = ["Hotel A", "Hotel B"]
