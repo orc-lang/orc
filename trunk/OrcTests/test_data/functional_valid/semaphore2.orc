@@ -1,8 +1,6 @@
 {- semaphore2.orc
  - 
- - Ensure that negative valued semaphores can't be created,
- - and that attempting to create one causes Semaphore to
- - halt silently.
+ - Ensure that negative-valued semaphores can't be created.
  - 
  - Created by dkitchin on Feb 20, 2012
  -}
@@ -11,5 +9,6 @@ Semaphore(-1) >> false ; true
 
 {-
 OUTPUT:
+Error: orc.error.runtime.JavaException: java.lang.IllegalArgumentException: Semaphore requires a non-negative argument
 true
 -}
