@@ -118,7 +118,7 @@ def class Cost() =
 values, references to which are accessed using <code>.</code> access. Values
 held by references are obtained using <code>x?</code> (equivalent to
 <code>x.read()</code>) and set using <code>x:=y</code> (equivalent to
-<code>x.write(y)</code>.</p>
+<code>x.write(y)</code>).</p>
 
 <pre class="orc">
 val AirlineList = ["Airline 1", "Airline 2"]
