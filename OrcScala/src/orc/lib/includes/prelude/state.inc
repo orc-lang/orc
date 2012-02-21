@@ -144,8 +144,7 @@ def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 {--
 @site Semaphore(Integer) :: Semaphore
-Return a semaphore with the given initial value. 
-If the argument is negative, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+Return a semaphore with the given initial value, which must be non-negative.
 The semaphore maintains the invariant that its value is always non-negative.
 
 An example using a semaphore as a lock for a critical section:
