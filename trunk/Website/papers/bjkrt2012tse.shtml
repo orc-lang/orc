@@ -44,8 +44,8 @@
 <h1>QoS-Aware Management of Monotonic Service Orchestrations</h1>
 
 <p>This page is supplemental material to:
-A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware Management of Monotonic Service Orchestrations, "
-Submitted to <span class="venue">IEEE Transactions in Software Engineering</span>, 2012.</p>
+A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware Management of Monotonic Service Orchestrations,"
+Submitted to <span class="venue"><a href="http://www.computer.org/tse">IEEE Transactions on Software Engineering</a></span>, 2012.</p>
 
 <ul>
 <li><a href="#SLADeclaration">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
