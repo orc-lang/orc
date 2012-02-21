@@ -23,14 +23,14 @@ import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
-import orc.values.sites.compatibility.PartialSite;
+import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
  * @authors quark, dkitchin
  */
 @SuppressWarnings("hiding")
-public class Semaphore extends PartialSite implements TypedSite {
+public class Semaphore extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
@@ -39,7 +39,7 @@ public class Semaphore extends PartialSite implements TypedSite {
 	    return new SemaphoreInstance(initialValue);
 	  }
 	  else {
-	    return null;
+	    throw new IllegalArgumentException("Semaphore requires a non-negative argument");
 	  }
 	}
 
