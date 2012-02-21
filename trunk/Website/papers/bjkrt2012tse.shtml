@@ -327,27 +327,27 @@ def TravelAgent(SalesOrder, Budget, ResponseTime, Cost) =
   def notifyFail(SalesOrder, reason) =
     Println("Order "+SalesOrder.id?+" failed: "+reason) &gt;&gt; stop
 
-  GenerateOrder(SalesOrder, Budget)  &gt;((GenerateInvoice, Budget), RT)&gt;
-  timeout(
-    ( AirlineCompany(GenerateInvoice, Cost)  &gt;(q, RT1)&gt;
-      (q, ResponseTime().QoSOplus(RT, RT1))  &gt;(q, RT)&gt;
-      HotelBooking(GenerateInvoice, Cost)  &gt;(q, RT2)&gt;
-      (q, ResponseTime().QoSOplus(RT, RT2))  &gt;(q, RT)&gt;
-      CheckBudget(GenerateInvoice, Budget, Cost))  &gt;(r, RT3)&gt;
-      (r, ResponseTime().QoSOplus(RT, RT3))  &gt;(r, RT)&gt;
-      RTimer := RT  &gt;&gt;
-    r, 2000, SalesOrder) &gt;Some(r)&gt;
+    GenerateOrder(SalesOrder, Budget)  &gt;((GenerateInvoice, Budget), RT)&gt;
+    timeout(
+      ( AirlineCompany(GenerateInvoice, Cost)  &gt;(q, RT1)&gt;
+        (q, ResponseTime().QoSOplus(RT, RT1))  &gt;(q, RT)&gt;
+        HotelBooking(GenerateInvoice, Cost)  &gt;(q, RT2)&gt;
+        (q, ResponseTime().QoSOplus(RT, RT2))  &gt;(q, RT)&gt;
+        CheckBudget(GenerateInvoice, Budget, Cost))  &gt;(r, RT3)&gt;
+        (r, ResponseTime().QoSOplus(RT, RT3))  &gt;(r, RT)&gt;
+        RTimer := RT  &gt;&gt;
+      r, 2000, SalesOrder)  &gt;Some(r)&gt;
     (GenerateInvoice, ResponseTime().QoSCompete(RTimer?, 2000))  &gt;(GenerateInvoice, RT)&gt;
     (GenerateInvoice, RT)
   | InterQueryTime().QoS(TravelAgent)
 
 --Simulation
 def simulateOrders(n) =
-  Dictionary()  &gt;SalesOrder&gt;
-  SalesOrder.ordernumber:= n  &gt;&gt;
-  Println("Order "+n+" created")  &gt;&gt;
-  SalesOrder | Rwait(Random(100))  &gt;&gt;
-  simulateOrders(n+1)
+    Dictionary()  &gt;SalesOrder&gt;
+    SalesOrder.ordernumber:= n  &gt;&gt;
+    Println("Order "+n+" created")  &gt;&gt;
+    SalesOrder
+  | Rwait(Random(100))  &gt;&gt; simulateOrders(n+1)
 
 simulateOrders(1)  &gt;SalesOrder&gt;
 TravelAgent(SalesOrder, 50, ResponseTime, Cost)  &gt;GenerateInvoice&gt;
@@ -358,6 +358,7 @@ stop
 			</div>
 		</div>
 	</div>
+<!--
 	<div class="right">
 		<div class="sidenav">
 			<form action="search.shtml" id="cse-search-box">
@@ -410,6 +411,7 @@ stop
 	</div>
 	<div class="clearer"><span></span></div>
 </div>
+-->
 
 <div class="footer">
  
