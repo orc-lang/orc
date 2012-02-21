@@ -23,18 +23,24 @@ import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
-import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
- * @author quark
+ * @authors quark, dkitchin
  */
 @SuppressWarnings("hiding")
-public class Semaphore extends EvalSite implements TypedSite {
+public class Semaphore extends PartialSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-		return new SemaphoreInstance(args.intArg(0));
+	  int initialValue = args.intArg(0);	
+	  if (initialValue >= 0) {
+	    return new SemaphoreInstance(initialValue);
+	  }
+	  else {
+	    return null;
+	  }
 	}
 
 	@Override
@@ -46,8 +52,11 @@ public class Semaphore extends EvalSite implements TypedSite {
 
 		protected final Queue<Handle> waiters = new LinkedList<Handle>();
 		protected final Queue<Handle> snoopers = new LinkedList<Handle>();
+		
+		/* Invariant: n >= 0 */
 		protected int n;
 
+		/* Precondition: n >= 0 */
 		SemaphoreInstance(final int n) {
 			this.n = n;
 		}
