@@ -121,7 +121,15 @@ case class CallPattern(name: String, args: List[Pattern]) extends StrictPattern 
 case class ConsPattern(head: Pattern, tail: Pattern) extends StrictPattern { override def toOrcSyntax = "(" + head.toOrcSyntax + ":" + tail.toOrcSyntax + ")" }
 case class RecordPattern(elements: List[(String, Pattern)]) extends StrictPattern { override def toOrcSyntax = elements.map({ case (f, p) => f + " = " + p.toOrcSyntax }).mkString("{. ", ", ", " .}") }
 
+//SecurityType pattern
+//ST
+case class SecurityTypePattern(name: String, parents: List[String], children: List[String]) extends StrictPattern { 
+    override def toOrcSyntax = "@ST (" +name + ") (" + parents.mkString + ") (" + children.mkString + ")" 
+}
+		
+
 case class AsPattern(p: Pattern, name: String) extends Pattern {
+  
   val isStrict = p.isStrict
   override def toOrcSyntax = p.toOrcSyntax + " as " + name
 }

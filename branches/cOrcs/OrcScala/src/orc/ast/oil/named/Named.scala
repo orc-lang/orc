@@ -162,6 +162,9 @@ case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
 
+//ST
+case class SecurityType(name: String, parents: List[String], children:List[String]) extends Type
+
 trait Typevar extends Type with hasOptionalVariableName
 case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
