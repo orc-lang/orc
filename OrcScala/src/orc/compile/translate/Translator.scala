@@ -48,6 +48,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Constant(c) => Constant(c)
       case ext.Variable(x) => context(x)
       case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
+      //ST
+      case ext.SecurityType(e,p,c) => SecurityType(e,p,c)
       case ext.ListExpr(es) => unfold(es map convert, makeList)
       case ext.RecordExpr(es) => {
         val seen = new scala.collection.mutable.HashSet[String]()

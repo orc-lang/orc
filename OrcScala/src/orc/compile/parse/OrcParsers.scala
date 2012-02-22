@@ -298,8 +298,11 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     "," ~> CommaSeparated(parsePattern) <~ ")" ^^ { Some(_) }
     | ")" ^^^ None)
 
+//? How do persistant names? like when I create a security level, I guess they're just Strings?
+//? How do Strings?    
   val parseBasePattern = (
     parseValue -> ConstantPattern
+    | "@ST" -> {(n: String, ps: List[String], cs: List[String]) => SecurityTypePattern(n, ps, cs)}
     | "_" -> Wildcard
     | ident ~ TupleOf(parsePattern) -> CallPattern
     | ident -> VariablePattern
@@ -341,6 +344,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     { (t: Type, ts: List[Type]) => TupleType(t :: ts) }
     | TupleOf(parseType) -> TupleType
     | RecordOf("::", parseType) -> RecordType
+//ST    
+    | "@ST" + (n: String, p: List[Type], c:List[Type]) -> SecurityType
     | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ { _.getOrElse(Nil) }) ~ (TupleOf(parseType)) ~ parseReturnType -> LambdaType
     | failExpecting("type"))
 

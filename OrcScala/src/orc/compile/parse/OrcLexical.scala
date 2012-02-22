@@ -66,7 +66,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   override val reserved = new HashSet[String] ++ List(
     "as", "def", "else", "if", "import", "include",
     "lambda", "signal", "stop", "then", "type", "val",
-    "true", "false", "null", "_")
+    "true", "false", "null", "@ST", "_") /**_ST added **/
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",
@@ -132,6 +132,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   override val token: Parser[Token] = (whitespace?) ~>
     (identifier ^^ { processIdent(_) }
+      | "@ST" ^^^ Keyword("@ST")//Security Type added as a token. not sure of this is the right order
       | '_' ^^^ Keyword("_")
       | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
       | "(0-)" ^^^ Identifier("0-")
