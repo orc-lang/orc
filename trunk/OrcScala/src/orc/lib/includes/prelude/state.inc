@@ -210,7 +210,7 @@ import type Semaphore = "orc.lib.state.types.SemaphoreType"
 
 {--
 @site Channel[A]() :: Channel[A]
-Create a new asyncrhonous FIFO channel of unlimited size. A channel supports
+Create a new asynchronous FIFO channel of unlimited size. A channel supports
 get, put and close operations.
 
 A channel may be either empty or non-empty, and either open or closed.  When
