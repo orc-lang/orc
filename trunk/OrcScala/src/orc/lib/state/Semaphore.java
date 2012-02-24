@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SemaphoreType;
 import orc.types.Type;
@@ -34,13 +35,19 @@ public class Semaphore extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-	  int initialValue = args.intArg(0);	
+	  int initialValue = args.intArg(0);
+	  
+	  if (args.size() != 1) {
+	    throw new ArityMismatchException(1, args.size());
+	  }
+	  
 	  if (initialValue >= 0) {
 	    return new SemaphoreInstance(initialValue);
 	  }
 	  else {
 	    throw new IllegalArgumentException("Semaphore requires a non-negative argument");
 	  }
+	  
 	}
 
 	@Override

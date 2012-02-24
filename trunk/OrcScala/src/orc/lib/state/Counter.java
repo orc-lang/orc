@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CounterType;
 import orc.types.Type;
@@ -36,6 +37,12 @@ public class Counter extends EvalSite implements TypedSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final int init = args.size() == 0 ? 0 : args.intArg(0);
+		
+		if (args.size() > 1) { 
+		  // technically of arity 0 or 1
+		  throw new ArityMismatchException(1, args.size()); 
+		}
+		
 		return new DotSite() {
 			protected int count = init;
 			protected final LinkedList<Handle> waiters = new LinkedList<Handle>();

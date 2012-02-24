@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CellType;
 import orc.types.Type;
@@ -39,8 +40,13 @@ public class Cell extends EvalSite implements TypedSite {
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
-	public Object evaluate(final Args args) {
-		return new CellInstance();
+	public Object evaluate(final Args args) throws TokenException {
+	  if (args.size() == 0) {	
+	    return new CellInstance();
+	  }
+	  else {
+	    throw new ArityMismatchException(0, args.size());
+	  }
 	}
 
 	@Override
