@@ -16,6 +16,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
 import orc.types.Type;
@@ -36,8 +37,13 @@ public class Channel extends EvalSite implements TypedSite {
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
 	 */
 	@Override
-	public Object evaluate(final Args args) {
-		return new ChannelInstance();
+	public Object evaluate(final Args args) throws TokenException {
+		if (args.size() == 0) {
+		  return new ChannelInstance();
+	    }
+	    else {
+	      throw new ArityMismatchException(0, args.size());
+	    }
 	}
 
 	@Override

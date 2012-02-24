@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 
 import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedChannelType;
 import orc.types.Type;
@@ -41,7 +42,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-		return new ChannelInstance(args.intArg(0));
+	  
+	  if (args.size() == 1) {
+	    return new ChannelInstance(args.intArg(0));
+	  }
+	  else {
+	    throw new ArityMismatchException(1, args.size());
+	  }
 	}
 
 	@Override
