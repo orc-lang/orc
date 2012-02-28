@@ -52,6 +52,9 @@ case class Declare(declaration: Declaration, body: Expression) extends Expressio
 case class TypeAscription(e: Expression, t: Type) extends Expression
 case class TypeAssertion(e: Expression, t: Type) extends Expression
 
+//Expression (1+2)@A
+case class SecurityLevelExpression(e: Expression, level: String) extends Expression
+
 // An internal representation for the body of a 'def class'
 case class DefClassBody(body: Expression) extends Expression
 
@@ -99,6 +102,13 @@ case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype:
 case class TypeImport(name: String, classname: String) extends TypeDeclaration
 case class Datatype(name: String, typeformals: List[String] = Nil, constructors: List[Constructor]) extends TypeDeclaration
 
+//SecurityLevelDeclaration
+//For DeclSL in parser
+//sealed: class can't be referenced outside of file
+//ident is parser that gives String
+sealed case class SecurityLevelDeclaration(name: String, parents: List[String], children: List[String]) extends NamedDeclaration
+
+
 case class Constructor(name: String, types: List[Option[Type]]) extends AST
 
 sealed abstract class Pattern extends AST with OrcSyntaxConvertible {
@@ -123,9 +133,10 @@ case class RecordPattern(elements: List[(String, Pattern)]) extends StrictPatter
 
 //SecurityType pattern
 //ST
-case class SecurityTypePattern(name: String, parents: List[String], children: List[String]) extends StrictPattern { 
-    override def toOrcSyntax = "@ST (" +name + ") (" + parents.mkString + ") (" + children.mkString + ")" 
-}
+case class SecurityLevelPattern(p: Pattern, name: String) extends Pattern {   
+  val isStrict = p.isStrict
+  override def toOrcSyntax = p.toOrcSyntax + " @" + name
+  }
 		
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {

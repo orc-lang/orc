@@ -259,17 +259,13 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
 
   val parseOtherwiseExpression =
     rep1sep(parsePruningExpression, ";") -> { _ reduceLeft Otherwise }
-
+    
   val parseAscription = (
     ("::" ~ parseType)
     | (":!:" ~ parseType)
     | failUnexpectedIn("expression"))
 
-  val parseReturnType = "::" ~> parseType
-
-  val parseGuard = "if" ~> "(" ~> parseExpression <~ ")"
-
-  def parseExpression: Parser[Expression] = (
+  val parseTypedExpression =  
     parseOtherwiseExpression ~ (parseAscription?) -?->
     {
       (_, _) match {
@@ -277,6 +273,19 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
         case (e, ":!:" ~ t) => TypeAssertion(e, t)
       }
     }
+   
+    //more general parsing with Expressions
+    //EX: (1+2)@A
+  val parseSecurityLevelExpression = 
+   parseTypedExpression ~ "@" ~> parseSecurityLevel -> SecurityLevelExpression
+    
+    
+  val parseReturnType = "::" ~> parseType
+
+  val parseGuard = "if" ~> "(" ~> parseExpression <~ ")"
+
+  def parseExpression: Parser[Expression] = (
+    parseSecurityLevelExpression
     | parseDeclaration ~ (parseExpression | failExpecting("after declaration, expression")) -> Declare
     | ("if" ~> parseExpression)
     ~ ("then" ~> parseExpression)
@@ -302,7 +311,6 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
 //? How do Strings?    
   val parseBasePattern = (
     parseValue -> ConstantPattern
-    | "@ST" -> {(n: String, ps: List[String], cs: List[String]) => SecurityTypePattern(n, ps, cs)}
     | "_" -> Wildcard
     | ident ~ TupleOf(parsePattern) -> CallPattern
     | ident -> VariablePattern
@@ -320,8 +328,19 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
   val parseTypedPattern = (
     parseAsPattern ~ (("::" ~> parseType)?) -?-> TypedPattern)
 
-  val parsePattern: Parser[Pattern] = parseTypedPattern
+    //parsed pattern SL is attached to pattern (Ex: var x)
+    //sends to extended as SecurityLevelPattern
+    //if not a security pattern looks at parseTypedPattern
+    //~ gets the pattern before
+  val parseSecurityLevelPattern = (
+    parseTypedPattern ~ (("@" ~> parseSecurityLevel)?) -?-> SecurityLevelPattern)  
+    
+  val parsePattern: Parser[Pattern] = parseSecurityLevelPattern
 
+  
+  //Security Level
+  val parseSecurityLevel: Parser[String] = ident
+  
   ////////
   // Types
   ////////
@@ -344,8 +363,6 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     { (t: Type, ts: List[Type]) => TupleType(t :: ts) }
     | TupleOf(parseType) -> TupleType
     | RecordOf("::", parseType) -> RecordType
-//ST    
-    | "@ST" + (n: String, p: List[Type], c:List[Type]) -> SecurityType
     | "lambda" ~> ((ListOf(parseTypeVariable)?) ^^ { _.getOrElse(Nil) }) ~ (TupleOf(parseType)) ~ parseReturnType -> LambdaType
     | failExpecting("type"))
 
@@ -385,6 +402,11 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
 
     | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
     -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))
+    
+    //ident = name of SL
+    //ListOf gives square braces
+    //DeclSL A [B,C] []
+    | "DeclSL"  ~> ident ~ (ListOf(ident)) ~ (ListOf(ident)) -> SecurityLevelDeclaration
 
     | failExpecting("declaration (val, def, type, etc.)"))
 

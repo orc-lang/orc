@@ -16,6 +16,7 @@ package orc.types
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
 
+//put into SecurityLevel
 class Level
 {
   var myName = "LEVEL"
@@ -37,7 +38,8 @@ class NamedLevel(name: String, p: List[Level], c: List[Level]) extends Level
   *
   * @author dkitchin
   */
-case class SecurityType(name: String, p: List[String], c: List[String]) extends UnaryCallableType with StrictType 
+//refactor
+case class SecurityType()
 {
   var bottomSecurityType = new NamedLevel("BOTTOM",List(),List())
   var topSecurityType = new NamedLevel("TOP",List(),List())
@@ -244,7 +246,7 @@ case class SecurityType(name: String, p: List[String], c: List[String]) extends 
      * 
      * if this returns bottomSecurityType, then we know that the name was not found.
      */
-    def findByName(name : String) : Level = 
+    def findByName(name : String) : SecurityLevel = 
     {
         for(child <- topSecurityType.children)
         {
@@ -266,7 +268,7 @@ case class SecurityType(name: String, p: List[String], c: List[String]) extends 
      * transitive closure.
      * The typechecker should handle the rest of the typechecking for integrity as well.
      */
-    def interpretParseST(name: String, parents: List[String], children: List[String]): Level =
+    def interpretParseST(name: String, parents: List[String], children: List[String]): SecurityLevel =
     {
       var currentLevel : Level= findByName(name)
       var createdParent : Level = null;
