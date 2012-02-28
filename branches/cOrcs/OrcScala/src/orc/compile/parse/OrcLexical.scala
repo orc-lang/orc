@@ -66,7 +66,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   override val reserved = new HashSet[String] ++ List(
     "as", "def", "else", "if", "import", "include",
     "lambda", "signal", "stop", "then", "type", "val",
-    "true", "false", "null", "@ST", "_") /**_ST added **/
+    "true", "false", "null", "DeclSL", "_") /**_ST added **/
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",
@@ -80,7 +80,8 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
     "|", ";",
-    "::", ":!:") ::: operators)
+    "::", ":!:","@" ) ::: operators)
+    
 
   protected lazy val operRegex = {
     val o = new Array[String](operators.size)
@@ -130,9 +131,9 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     '\"' ~> (('\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
       | ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r)*) <~ '\"' ^^ { _.mkString }
 
+    //special cases for delimiters
   override val token: Parser[Token] = (whitespace?) ~>
     (identifier ^^ { processIdent(_) }
-      | "@ST" ^^^ Keyword("@ST")//Security Type added as a token. not sure of this is the right order
       | '_' ^^^ Keyword("_")
       | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
       | "(0-)" ^^^ Identifier("0-")
