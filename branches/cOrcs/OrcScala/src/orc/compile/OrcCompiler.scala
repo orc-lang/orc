@@ -30,6 +30,8 @@ import orc.values.sites.SiteClassLoading
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
+import orc.compile.securityAnalysis.securityChecker
+import orc.compile.securityAnalysis.SecurityLevel
 
 /** Represents a configuration state for a compiler.
   */
@@ -47,6 +49,10 @@ class CompilerOptions(val options: OrcCompilationOptions, val logger: CompileLog
   *
   * @author jthywiss
   */
+/*
+ * O -- type of options
+ * A, B -- type of ast of input and output respectively
+ */
 trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   val phaseName: String
   def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] {
@@ -60,6 +66,8 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       }
     }
   }
+  
+  //tells how long phase ran
   def timePhase: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] {
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
@@ -94,7 +102,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   ////////
   // Definition of the phases of the compiler
   ////////
-
+//parser phase
   val parse = new CompilerPhase[CompilerOptions, OrcInputContext, orc.ast.ext.Expression] {
     val phaseName = "parse"
     @throws(classOf[IOException])
@@ -172,6 +180,22 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
+  /**
+   * SecurityLevel Analysis Phase
+   */
+  val securityLevelCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+    val phaseName = "securityLevelCheck"
+    override def apply(co: CompilerOptions) = { ast =>
+     
+        val securityLevel:SecurityLevel = securityChecker.securityCheck(ast, new SecurityLevel)//ast is named.Expresion
+        val typeReport = "Program security level checks as " + securityLevel.toString
+        //compiler records messages in a list, caller supplies implemenation to display to user
+        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, ast.pos, ast)
+        ast//return original ast
+      
+    }
+  }  
+  
   val noUnguardedRecursion = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) =
@@ -230,6 +254,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
+      securityLevelCheck.timePhase >>>  //timePhase keeps statistics
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       noUnguardedRecursion.timePhase >>>

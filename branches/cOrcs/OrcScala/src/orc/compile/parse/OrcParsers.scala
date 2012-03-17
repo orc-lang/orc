@@ -273,12 +273,16 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
         case (e, ":!:" ~ t) => TypeAssertion(e, t)
       }
     }
-   
-    //more general parsing with Expressions
-    //EX: (1+2)@A
+   /**
+   *   parseSecurityLevelExpression
+   *   WHAT: more general parsing of SecurityLevels with Expressions
+   *   WHY: Named.scala does not take in patterns, and converts patterns to expressions
+   *   so to attach a SecurityLevel to a pattern, we must attach it to an expr
+   *   EX: (1+2)@A
+   */
   val parseSecurityLevelExpression = 
-   parseTypedExpression ~ "@" ~> parseSecurityLevel -> SecurityLevelExpression
-    
+   parseTypedExpression ~ (("@" ~> parseSecurityLevel)?) -?-> SecurityLevelExpression
+     //parseTypedExpression ~ "@" ~> parseSecurityLevel -> SecurityLevelExpression
     
   val parseReturnType = "::" ~> parseType
 

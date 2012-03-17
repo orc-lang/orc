@@ -131,6 +131,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringListOpt(() => classPath, classPath = _, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 
   UnitOpt(() => typecheck, () => typecheck = true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
+//parse command line option SL
+  UnitOpt(() => securityCheck, () => securityCheck = true, ' ', "securityCheck", usage = "Enable securityCheck, which is disabled by default.")
 
   UnitOpt(() => disableRecursionCheck, () => disableRecursionCheck = true, ' ', "no-recursion-warn", usage = "Disable unguarded recursion check.")
 
