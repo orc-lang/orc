@@ -46,6 +46,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def additionalIncludes_=(newVal: java.util.List[String]) = putPathList("orc.additionalIncludes", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
+  def securityCheck: Boolean = getBoolean("orc.securityCheck", false)//SL analysis option 
+  def securityCheck_=(newVal: Boolean) = putBoolean("orc.securityCheck", newVal)//SL analysis option
   def disableRecursionCheck: Boolean = getBoolean("orc.disableRecursionCheck", false)
   def disableRecursionCheck_=(newVal: Boolean) = putBoolean("orc.disableRecursionCheck", newVal)
   def echoOil: Boolean = getBoolean("orc.echoOil", false)

@@ -61,12 +61,16 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   // Lists used by the token parsers, along with supporting functions
   ////////
 
-  /** The set of reserved identifiers: these will be returned as `Keyword's */
+  /** The set of reserved identifiers: these will be returned as `Keyword's   
+   WHAT THESE ARE: "reserved" Keywords are used for declarations (Ex: def) when we are creating variables,SecurityLevels, etc, for later use  
+   */ 
   // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
+  // Note: DeclSL is short for DeclareSecurityLevel. This is for when we create/edit security levels. (this can be done locally too)
+  // Ex: DeclSL A (B) () -- Declares a new/edits SL A with parents B (top level is implicit), and no children (bottom level is implicit)
   override val reserved = new HashSet[String] ++ List(
     "as", "def", "else", "if", "import", "include",
     "lambda", "signal", "stop", "then", "type", "val",
-    "true", "false", "null", "DeclSL", "_") /**_ST added **/
+    "true", "false", "null", "DeclSL", "_")
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",
@@ -76,7 +80,13 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     ":",
     ".", "?", ":=")
 
-  /** The set of delimiters (ordering does not matter) */
+  /** The set of delimiters (ordering does not matter) 
+   * WHAT THESE ARE: Delimiters are used for attaching patterns (ex: variables) or expressions 
+   * to Types, SecurityLevels, etc
+   */
+   // Note: Use of "@":
+   //    Summary: this is for when we want to attach an already created SL to a variable or expression
+   //     Ex: (var x:: Int @A)-- This attaches SL A to var x which is an integer
   override val delimiters /* and operators */ = new HashSet[String] ++ (List(
     "(", ")", "[", "]", "{.", ".}", ",",
     "|", ";",

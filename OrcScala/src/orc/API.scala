@@ -173,6 +173,8 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def additionalIncludes_=(newVal: java.util.List[String])
   def typecheck: Boolean
   def typecheck_=(newVal: Boolean)
+  def securityCheck: Boolean//SL getter
+  def securityCheck_=(newVal: Boolean)//SL setter
   def disableRecursionCheck: Boolean
   def disableRecursionCheck_=(newVal: Boolean)
   def echoOil: Boolean

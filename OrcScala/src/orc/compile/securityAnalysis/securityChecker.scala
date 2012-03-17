@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.compile.typecheck
+package orc.compile.securityAnalysis
 
 import orc.ast.oil.{ named => syntactic }
 import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
@@ -29,11 +29,12 @@ import orc.compile.typecheck.ConstraintSet._
 import orc.compile.typecheck.Typeloader._
 
 
+
 /**
  * "TypeChecker" AKA SecurityAnalysis for SecurityLevels
  * Step called by compiler
  */
-object securityChecker {
+object securityChecker{
   
   //expr encompasses hasSecurityLevel
   //don't need patterns
@@ -42,12 +43,14 @@ object securityChecker {
   {
     expr match{
      case  Stop() =>  lattice.findByName("BOTTOM")//do nothing 
-     case  Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-      case Parallel(left: Expression, right: Expression) => {
+    //  Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+      case left || right => {
         val leftSL = securityCheck(left,lattice)
         val rightSL = securityCheck(right,lattice)
         //find closest parent or top if no parent (JOIN)?
+        lattice.findByName("BOTTOM")
       }
+      /*
       case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
         with hasOptionalVariableName { transferOptionalVariableName(x, this) }
       case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
@@ -65,6 +68,7 @@ object securityChecker {
       case HasSecurityLevel(body: Expression, level: String) => lattice.findByName(level)
       case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
         def apply(e: Expression): Expression = e.subst(context, typecontext) 
+        */
     }
   }
 }
