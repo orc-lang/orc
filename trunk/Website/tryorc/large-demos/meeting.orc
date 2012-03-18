@@ -14,7 +14,8 @@ include "forms.inc"
 -- Configuration
 
 -- The range of possible dates (Year, Month, Day), with an exclusive upper bound
-val span = Interval(LocalDate(2008, 9, 29), LocalDate(2008, 10, 4))
+val today = LocalDate()
+val span = Interval(today, today.plusDays(7))
 val format = DateTimeFormat.forStyle("SS")
 -- Number of responses required to schedule the meeting
 val quorum = 2
