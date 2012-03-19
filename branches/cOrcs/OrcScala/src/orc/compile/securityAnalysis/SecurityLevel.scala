@@ -1,8 +1,8 @@
 //
-// SecurityType.scala -- Scala class SecurityType
+// SecurityLevel.scala -- Scala class SecurityLevel
 // Project OrcScala
 //
-// $Id: SecurityType.scala 2933 2011-11-27 09:27 laurenyew $
+// $Id: SecurityLevel.scala 2933 2011-11-27 09:27 laurenyew $
 //
 // Created by laurenyew on Nov 20, 2010.
 //
@@ -12,55 +12,37 @@
 // the LICENSE file found in the project's top-SecurityType directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.types
+package orc.compile.securityAnalysis
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
 
-//put into SecurityLevel
-class Level
-{
-  var myName = "LEVEL"
-  var parents : List[Level] = List()
-  var children : List[Level] = List() 
-}
-
-class NamedLevel(name: String, p: List[Level], c: List[Level]) extends Level
-{
-  this.myName = name;
-  this.parents = p
-  this.children = c
-}
 /**
-  * A security type.
+  * A security Level.
   * The parser attaches this type to a variable along with other types
   * Parser also helps build Security Type graph
   * Values: name, parents list, children list
   *
-  * @author dkitchin
+  * @author laurenyew
   */
 //refactor
-case class SecurityType()
+case class SecurityLevel
 {
-  var bottomSecurityType = new NamedLevel("BOTTOM",List(),List())
-  var topSecurityType = new NamedLevel("TOP",List(),List())
+  var myName = ""
+  var parents : List[SecurityLevel] = List()
+  var children : List[SecurityLevel] = List() 
   
+  var bottomSecurityType = new SecurityLevel()
+    bottomSecurityType.myName = "BOTTOM"
+  var topSecurityType = new SecurityLevel()
+    topSecurityType.myName = "TOP"
+      
   /**
    * Transitive closure for each SecurityType
    * does a search down tree (graph) for all children/parents
    */
-  def transClosure(me: Level) 
+  def transClosure(me: SecurityLevel) 
   {  
-    //print out initial children and parents (direct)
- /*   Console.print("SecurityType " + me.myName + " initial children: ")
-    for(child <- me.children)
-      Console.print(child.myName + ",")
-      
-    Console.print("\nSecurityType " + me.myName + " initial parents: ")
-    for(parent <- me.parents)
-      Console.print(parent.myName + ",")
-      Console.println()
- */   
-    
+ 
       //get all of the children possible
       me.children = childTransClosure(me,List())
       me.children = me.children ::: List(bottomSecurityType)//we always have bottomSecurityType as a child
@@ -96,19 +78,13 @@ case class SecurityType()
   
   //returns a list of all possible children (added on to tempList)
   //depth first search
-  def childTransClosure(me: Level, listOfChildren: List[Level]): List[Level] =
+  def childTransClosure(me: SecurityLevel, listOfChildren: List[SecurityLevel]): List[SecurityLevel] =
   {
     //We first get the transClosure for all of the children
-    //Console.println("ME: " + me.myName)
-    var addChildren : List[Level] = listOfChildren//added to list
+    var addChildren : List[SecurityLevel] = listOfChildren//added to list
     
       for(child <- me.children)
       {
-    /*    Console.print("Children so far: ")
-        for(child2 <-addChildren)
-          Console.print(child2.myName + " ")
-        Console.println()
-     */   
         if((!child.equals(bottomSecurityType))//we stop at bottom SecurityType
             &&(!child.equals(topSecurityType)))//and we don't want to redo TOP
         {
@@ -124,19 +100,14 @@ case class SecurityType()
   }
   //get all possible parents
     //depth first search
-  def parentTransClosure(me: Level, listOfParents: List[Level]): List[Level] =
+  def parentTransClosure(me: SecurityLevel, listOfParents: List[SecurityLevel]): List[SecurityLevel] =
   {
     //We first get the transClosure for all of the parents
     //Console.println("ME: " + me.myName)
-    var addParents : List[Level] = listOfParents//added to list
+    var addParents : List[SecurityLevel] = listOfParents//added to list
     
       for(parent <- me.parents)
       {
-    /*    Console.print("Parents so far: ")
-        for(parent2 <-addParents)
-          Console.print(parent2.myName + " ")
-        Console.println()
-     */   
         if((!parent.equals(bottomSecurityType))//we stop at bottom SecurityType
             &&(!parent.equals(topSecurityType)))//and we don't want to redo TOP
         {
@@ -155,10 +126,13 @@ case class SecurityType()
    * Creates a SecurityType as an instance/object of the trait class
    * not sure if I want to make this a trait but we'll try it as an object
    */
-  def createSecurityType(name : String, p: List[Level], c : List[Level]) : Level =
+  def createSecurityType(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
   {
    // Console.println("Creating SecurityType " + name)
-    var temp = new NamedLevel(name, p, c)
+    var temp = new SecurityLevel()
+    temp.myName = name
+    temp.parents = p
+    temp.children = c
     
     //if the children list is empty, insert bottomSecurityType and connect (direct connection)
     //if the parent list is empty, insert topSecurityType and connect (direct connection)
@@ -173,24 +147,18 @@ case class SecurityType()
       bottomSecurityType.parents = bottomSecurityType.parents ::: List(temp)
     }
     //need to let my parents/children know that I am attaching to them
-   // Console.print("My parents: ")
     for(parent <- temp.parents)
     {
-     //  Console.print(parent.myName + ",")
       if(!parent.children.contains(temp))
         parent.children = parent.children ::: List(temp)
     } 
-    //  Console.print("\nMyChildren: ")
-     for(child <- temp.children)
+    for(child <- temp.children)
     {
-    //   Console.print(child.myName + ",")
        if(!child.parents.contains(temp))
        child.parents = child.parents ::: List(temp)
     } 
-   // Console.println()
      
     //Every node has bottom as one of its children and top as one of its parents
-    
     if(!temp.children.contains(bottomSecurityType)){
       temp.children = temp.children ::: List(bottomSecurityType)
     }
@@ -211,18 +179,8 @@ case class SecurityType()
    * Where n is some integer
    * based on matrix
    */
-  def SecurityTypeDiff(subj : Level, obj : Level) : Integer = 
+  def SecurityTypeDiff(subj : SecurityLevel, obj : SecurityLevel) : Integer = 
   {
-   /* Console.println("Subj: " + subj.myName + " Obj: " + obj.myName)
-    Console.print(subj.myName + "'s Children: ")
-    for(child <- subj.children)
-      Console.print(child.myName + " " )
-    
-      Console.print("\n" + subj.myName + "'s Parents: ")
-    for(parent <- subj.parents)
-      Console.print(parent.myName + " ")
-      Console.println()
-    */
     if(subj.children.contains(obj))
         return 2
     if(subj.parents.contains(obj))
@@ -270,15 +228,15 @@ case class SecurityType()
      */
     def interpretParseST(name: String, parents: List[String], children: List[String]): SecurityLevel =
     {
-      var currentLevel : Level= findByName(name)
-      var createdParent : Level = null;
-        var createdChild : Level = null;
+      var currentLevel : SecurityLevel= findByName(name)
+      var createdParent : SecurityLevel = null;
+        var createdChild : SecurityLevel = null;
       //if this is true then the securityType has not yet been created
         if((currentLevel == bottomSecurityType) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
             currentLevel = createSecurityType(name, List(), List())
         }
       
-          //go thru parents and add in new parents (creating if necessary)
+        //go thru parents and add in new parents (creating if necessary)
         for(p <- parents)
         {
           if(findinLevel(currentLevel.parents,p) != 1)//haven't found the level so need to create it
@@ -313,7 +271,7 @@ case class SecurityType()
      * find lookForLevel name in currentLevel's List
      * return 1 if found, -1 otherwise
      */
-    def findinLevel (currentLevelList : List[Level], lookForLevel : String) : Integer =
+    def findinLevel (currentLevelList : List[SecurityLevel], lookForLevel : String) : Integer =
     {
       for(temp <- currentLevelList)
       {
@@ -338,10 +296,10 @@ case class SecurityType()
           transClosure(child)
     }
     
-  override def toString = "Security Type " + name
+  override def toString = "Security Type " + this.myName
 
 /**
- * When I do the typechecker, I will do the override.
+ * When I do the typechecker, I will do the overrides.
  */
 
 }
