@@ -25,7 +25,9 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
   * @author laurenyew
   */
 //refactor
-case class SecurityLevel
+//something with persistant shouldnt be a case class (var)
+//case class is for matching functionality
+class SecurityLevel
 {
   var myName = ""
   var parents : List[SecurityLevel] = List()
@@ -179,7 +181,7 @@ case class SecurityLevel
    * Where n is some integer
    * based on matrix
    */
-  def SecurityTypeDiff(subj : SecurityLevel, obj : SecurityLevel) : Integer = 
+  def SecurityTypeDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
   {
     if(subj.children.contains(obj))
         return 2
@@ -271,7 +273,7 @@ case class SecurityLevel
      * find lookForLevel name in currentLevel's List
      * return 1 if found, -1 otherwise
      */
-    def findinLevel (currentLevelList : List[SecurityLevel], lookForLevel : String) : Integer =
+    def findinLevel (currentLevelList : List[SecurityLevel], lookForLevel : String) : Int =
     {
       for(temp <- currentLevelList)
       {
