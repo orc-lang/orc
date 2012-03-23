@@ -27,7 +27,6 @@ import scala.math.BigDecimal
 import orc.values.sites.TypedSite
 import orc.compile.typecheck.ConstraintSet._
 import orc.compile.typecheck.Typeloader._
-import orc.types._
 
 /** Typechecker for Orc expressions.
   *
