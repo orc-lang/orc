@@ -1,5 +1,3 @@
--- KenKen Solver
---
 -- Input a number like 2243 under the appropriate operation.
 -- It is read as "decompose 224 into 3 cells under that operation".
 -- To add a list of values [2,7,9] that appear in n lines, write [n,2,7,9]
