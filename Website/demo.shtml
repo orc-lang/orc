@@ -48,12 +48,16 @@ load it as tryorc.shtml?mock
 	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/chat.orc">Google Talk</a></span></li> -->
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/hotbits.orc">Hotbits</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Large Demos</span><ul>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li>
+  <li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
+
+<!-- These demos are inoperative until the Google OAuth interface is updated: -->	
+<!--	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li> -->
+<!--	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li> -->
+
 	</ul></li>
 <li class="closed"><span class="folder">Restricted</span>
 	<ul>
@@ -62,6 +66,7 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email.orc">Send Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spam.orc">Spam</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/kenken.orc">KenKen Solver</a></span></li>
 	</ul></li>
 </ul>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
