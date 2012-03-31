@@ -41,6 +41,7 @@ object securityChecker{
   //just do cases over expressions
   def securityCheck(expr: Expression, lattice: SecurityLevel): SecurityLevel =
   {
+    lattice.initializeGraph()//initialize the graph of Security Levels
     expr match{
      case  Stop() =>  lattice.findByName("BOTTOM")//do nothing 
     //  Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
