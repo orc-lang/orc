@@ -15,7 +15,7 @@
 package orc.compile.securityAnalysis
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
-
+      
 /**
   * A security Level.
   * The parser attaches this type to a variable along with other types
@@ -32,11 +32,8 @@ class SecurityLevel
   var myName = ""
   var parents : List[SecurityLevel] = List()
   var children : List[SecurityLevel] = List() 
-  
-  var bottomSecurityType = new SecurityLevel()
-    bottomSecurityType.myName = "BOTTOM"
-  var topSecurityType = new SecurityLevel()
-    topSecurityType.myName = "TOP"
+  var bottomSecurityLevel = interpretParseSL("BOTTOM", List(),List())
+  var topSecurityLevel = interpretParseSL("TOP", List(),List())
       
   /**
    * Transitive closure for each SecurityType
@@ -46,12 +43,12 @@ class SecurityLevel
   {  
  
       //get all of the children possible
-      me.children = childTransClosure(me,List())
-      me.children = me.children ::: List(bottomSecurityType)//we always have bottomSecurityType as a child
+      me.children = childTransClosure(me,me.children)
+      me.children = me.children ::: List(bottomSecurityLevel)//we always have bottomSecurityType as a child
       
      //get all of the parents possible
-      me.parents = parentTransClosure(me, List())
-      me.parents = me.parents ::: List(topSecurityType)//we always have topSecurityType as a child
+      me.parents = parentTransClosure(me, me.parents)
+      me.parents = me.parents ::: List(topSecurityLevel)//we always have topSecurityType as a child
      
       //There should be no duplicates in the lists
       //check the lists
@@ -87,8 +84,8 @@ class SecurityLevel
     
       for(child <- me.children)
       {
-        if((!child.equals(bottomSecurityType))//we stop at bottom SecurityType
-            &&(!child.equals(topSecurityType)))//and we don't want to redo TOP
+        if((!child.equals(bottomSecurityLevel))//we stop at bottom SecurityType
+            &&(!child.equals(topSecurityLevel)))//and we don't want to redo TOP
         {
           if(!addChildren.contains(child))//prevents cycles because doesn't add children who it already saw
           {
@@ -110,8 +107,8 @@ class SecurityLevel
     
       for(parent <- me.parents)
       {
-        if((!parent.equals(bottomSecurityType))//we stop at bottom SecurityType
-            &&(!parent.equals(topSecurityType)))//and we don't want to redo TOP
+        if((!parent.equals(bottomSecurityLevel))//we stop at bottom SecurityType
+            &&(!parent.equals(topSecurityLevel)))//and we don't want to redo TOP
         {
           if(!addParents.contains(parent))//prevents cycles because doesn't add children who it already saw
           {
@@ -128,25 +125,26 @@ class SecurityLevel
    * Creates a SecurityType as an instance/object of the trait class
    * not sure if I want to make this a trait but we'll try it as an object
    */
-  def createSecurityType(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
+  def createSecurityLevel(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
   {
    // Console.println("Creating SecurityType " + name)
-    var temp = new SecurityLevel()
-    temp.myName = name
-    temp.parents = p
-    temp.children = c
+    //make sure havent already created happens in interpretST
+    var temp : SecurityLevel= new SecurityLevel()
+      temp.myName = name
+      temp.parents = p
+      temp.children = c
     
     //if the children list is empty, insert bottomSecurityType and connect (direct connection)
     //if the parent list is empty, insert topSecurityType and connect (direct connection)
     if(temp.parents.isEmpty)
     {
-      temp.parents = List(topSecurityType)
-      topSecurityType.children = topSecurityType.children ::: List(temp)
+      temp.parents = List(topSecurityLevel)
+      topSecurityLevel.children = topSecurityLevel.children ::: List(temp)
     }
     if(temp.children.isEmpty)
     {
-      temp.children = List(bottomSecurityType)
-      bottomSecurityType.parents = bottomSecurityType.parents ::: List(temp)
+      temp.children = List(bottomSecurityLevel)
+      bottomSecurityLevel.parents = bottomSecurityLevel.parents ::: List(temp)
     }
     //need to let my parents/children know that I am attaching to them
     for(parent <- temp.parents)
@@ -161,11 +159,11 @@ class SecurityLevel
     } 
      
     //Every node has bottom as one of its children and top as one of its parents
-    if(!temp.children.contains(bottomSecurityType)){
-      temp.children = temp.children ::: List(bottomSecurityType)
+    if(!temp.children.contains(bottomSecurityLevel)){
+      temp.children = temp.children ::: List(bottomSecurityLevel)
     }
-    if(!temp.parents.contains(topSecurityType)){
-        temp.parents = temp.parents ::: List(topSecurityType)
+    if(!temp.parents.contains(topSecurityLevel)){
+        temp.parents = temp.parents ::: List(topSecurityLevel)
     }
     
     return temp
@@ -173,15 +171,15 @@ class SecurityLevel
   }
   
   /**
-   * SecurityTypeDiff
-   * Function that will return the difference of SecurityTypes (-1,0,1)
+   * SecurityLevelDiff
+   * Function that will return the difference of SecurityLevels (-1,0,1)
    * 1 means that the subj has obj as one of its parents
    * 2 means that subj has obj as one of its children
    * 0 means that subj and obj are siblings
    * Where n is some integer
    * based on matrix
    */
-  def SecurityTypeDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
+  def SecurityLevelDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
   {
     if(subj.children.contains(obj))
         return 2
@@ -193,10 +191,10 @@ class SecurityLevel
     //need to initialize top and bottom SecurityType of graph
     def initializeGraph()
     {
-        topSecurityType.parents = List(topSecurityType)//topSecurityType's parent should be itself
-        topSecurityType.children = List(bottomSecurityType)
-        bottomSecurityType.children= List(bottomSecurityType)//bottomSecurityType should have itself as the bottomSecurityType
-        bottomSecurityType.parents = List(topSecurityType)
+        topSecurityLevel.parents = List(topSecurityLevel)//topSecurityType's parent should be itself
+        topSecurityLevel.children = List(bottomSecurityLevel)
+        bottomSecurityLevel.children= List(bottomSecurityLevel)//bottomSecurityType should have itself as the bottomSecurityType
+        bottomSecurityLevel.parents = List(topSecurityLevel)
     }
   
     /**
@@ -208,13 +206,13 @@ class SecurityLevel
      */
     def findByName(name : String) : SecurityLevel = 
     {
-        for(child <- topSecurityType.children)
+        for(child <- topSecurityLevel.children)
         {
           if(child.myName.equalsIgnoreCase(name))
             return child
         }
         
-        return bottomSecurityType
+        return bottomSecurityLevel
     }
     
     /**
@@ -228,14 +226,14 @@ class SecurityLevel
      * transitive closure.
      * The typechecker should handle the rest of the typechecking for integrity as well.
      */
-    def interpretParseST(name: String, parents: List[String], children: List[String]): SecurityLevel =
+    def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
     {
       var currentLevel : SecurityLevel= findByName(name)
       var createdParent : SecurityLevel = null;
         var createdChild : SecurityLevel = null;
       //if this is true then the securityType has not yet been created
-        if((currentLevel == bottomSecurityType) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
-            currentLevel = createSecurityType(name, List(), List())
+        if((currentLevel == bottomSecurityLevel) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
+            currentLevel = createSecurityLevel(name, List(), List())
         }
       
         //go thru parents and add in new parents (creating if necessary)
@@ -244,7 +242,7 @@ class SecurityLevel
           if(findinLevel(currentLevel.parents,p) != 1)//haven't found the level so need to create it
           {
             //we dont know what the parent is yet, so we just make its name, we can add its connections later
-            createdParent = createSecurityType(p,List(),List())
+            createdParent = createSecurityLevel(p,List(),List())
             currentLevel.parents ::: List(createdParent)//add that created parent to the list
           }
         }
@@ -255,7 +253,7 @@ class SecurityLevel
           if(findinLevel(currentLevel.children,c) != 1)//haven't found the level so need to create it
           {
             //we dont know what the parent is yet, so we just make its name, we can add its connections later
-            createdChild = createSecurityType(c,List(),List())
+            createdChild = createSecurityLevel(c,List(),List())
             currentLevel.children ::: List(createdChild)//add that created parent to the list
           }
         }
@@ -292,9 +290,9 @@ class SecurityLevel
     def makeGraph()
     {
       //do transitive closure for full graph
-        transClosure(topSecurityType)//do the transitive closure for the topLevel
+        transClosure(topSecurityLevel)//do the transitive closure for the topLevel
         //do the transitive closure for all of my children (should be every node in the graph)
-        for(child <- topSecurityType.children)
+        for(child <- topSecurityLevel.children)
           transClosure(child)
     }
     
