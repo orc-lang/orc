@@ -74,8 +74,10 @@ case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 //DeclSL
-case class DeclareSecurityLevel(name: String, parents: List[String], children: List[String]) extends Expression
+case class DeclareSecurityLevel(name: String, parents: List[String], children: List[String], body: Expression) extends Expression
+
 case class HasType(body: Expression, expectedType: Type) extends Expression
+
 //more generalized pattern -> Expression
 //so we write a HasSecurityLevel for expression to get pattern
 //Ex: for @A
@@ -167,7 +169,6 @@ case class TypeAbstraction(typeformals: List[BoundTypevar], t: Type) extends Typ
 case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
-
 
 trait Typevar extends Type with hasOptionalVariableName
 case class UnboundTypevar(name: String) extends Typevar {
