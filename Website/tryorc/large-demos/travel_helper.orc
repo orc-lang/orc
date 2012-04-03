@@ -82,10 +82,11 @@ def poll(interval, put) =
     loop()
   ------------- goal expression for poll() ----------------
   import class GoogleCalendar = "orc.lib.net.GoogleCalendar"
+  import class OAuth = "net.oauth.OAuth"
   val oauth = OAuthProvider("orc/orchard/orchard.properties")
   sendUniqueTrips()
   | Println("Authenticating...") >>
-    GoogleCalendar.authenticate(oauth, "google") >calendar>
+    GoogleCalendar(oauth, oauth.authenticate("google", "scope", "http://www.google.com/calendar/feeds/"), "google") >calendar>
     calendar.getDefaultTimeZone() >tz>
     metronome(interval) >>
     Println("Polling...") >>

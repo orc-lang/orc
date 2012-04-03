@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,7 +20,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import orc.error.runtime.ArgumentTypeMismatchException;
@@ -86,8 +85,7 @@ public class GoogleCalendar extends EvalSite {
 		 * Authenticate with Google using OAuth.
 		 * Also creates a calendar as a side effect.
 		 */
-		public void authenticate() throws Exception {
-			final OAuthAccessor accessor = provider.authenticate(consumer, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
+		public void authenticate(final OAuthAccessor accessor) throws Exception {
 			service.setAuthSubToken(accessor.accessToken, provider.getPrivateKey(consumer));
 
 			// Create the calendar we'll post events to

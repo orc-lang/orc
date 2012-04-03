@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import net.oauth.OAuth;
 import net.oauth.OAuthAccessor;
 import orc.oauth.OAuthProvider;
 
@@ -48,19 +47,9 @@ public class GoogleCalendar {
 
 	CalendarService service;
 
-	private GoogleCalendar(final CalendarService service) {
-		this.service = service;
-	}
-
-	/**
-	 * Return a new authenticated Google calendar.
-	 * This cannot be a constructor because constructors are not pausable.
-	 */
-	public static GoogleCalendar authenticate(final OAuthProvider provider, final String consumer) throws Exception {
-		final OAuthAccessor accessor = provider.authenticate(consumer, OAuth.newList("scope", "http://www.google.com/calendar/feeds/"));
-		final CalendarService service = new CalendarService("orc-csres-utexas-edu");
+	public GoogleCalendar(final OAuthProvider provider, OAuthAccessor accessor, final String consumer) throws Exception {
+		service = new CalendarService("orc-csres-utexas-edu");
 		service.setAuthSubToken(accessor.accessToken, provider.getPrivateKey(consumer));
-		return new GoogleCalendar(service);
 	}
 
 	public CalendarEventFeed getEvents(final DateTime start, final DateTime end) throws IOException, ServiceException {

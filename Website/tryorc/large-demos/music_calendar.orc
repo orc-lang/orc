@@ -37,6 +37,7 @@ include "net.inc"
 -- imports
 import site MySpace = "orc.lib.music_calendar.MySpace"
 import site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
+import site OAuth = "net.oauth.OAuth"
 
 -- declarations
 val oauth = OAuthProvider("orc/orchard/orchard.properties")
@@ -48,7 +49,7 @@ def phrases() =
 
 -- execution
 Println("Authenticating...") >>
-GoogleCalendar.authenticate() >>
+GoogleCalendar.authenticate(oauth.authenticate("google", "scope", "http://www.google.com/calendar/feeds/")) >>
 phrases() >phrase>
 Google(phrase) >pages>
 each(pages) >page>
