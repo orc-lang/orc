@@ -53,11 +53,8 @@ load it as tryorc.shtml?mock
 <li class="closed"><span class="folder">Large Demos</span><ul>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
-
-<!-- These demos are inoperative until the Google OAuth interface is updated: -->	
-<!--	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li> -->
-<!--	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li> -->
-
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music_calendar.orc">Music Calendar</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel_helper.orc">Travel Assistant</a></span></li>
 	</ul></li>
 <li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</span>
 	<ul>
