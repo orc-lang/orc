@@ -37,7 +37,7 @@ include "net.inc"
 -- imports
 import site MySpace = "orc.lib.music_calendar.MySpace"
 import site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
-import site OAuth = "net.oauth.OAuth"
+import class OAuth = "net.oauth.OAuth"
 
 -- declarations
 val oauth = OAuthProvider("orc/orchard/orchard.properties")
