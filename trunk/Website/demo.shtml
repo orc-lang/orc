@@ -64,6 +64,7 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spam.orc">Spam</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/kenken.orc">KenKen Helper</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/restricted/new_music_calendar.orc">New Music Calendar</a></span></li>
 	</ul></li>
 </ul>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
