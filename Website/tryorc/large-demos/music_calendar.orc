@@ -32,32 +32,85 @@ Calendar.  This demo is intended only for those
 with a sense of adventure.
 -}
 
-include "net.inc"
-
 -- imports
-import site MySpace = "orc.lib.music_calendar.MySpace"
 import site GoogleCalendarFactory = "orc.lib.music_calendar.GoogleCalendar"
-import class OAuth = "net.oauth.OAuth"
+import site OAuthProvider = "orc.lib.orchard.OAuthProviderSite"
+import site KeyedHTTP = "orc.lib.net.KeyedHTTP"
 
 -- declarations
 val oauth = OAuthProvider("orc/orchard/orchard.properties")
-val Google = GoogleSearchFactory("orc/orchard/orchard.properties")
 val GoogleCalendar = GoogleCalendarFactory(oauth, "google")
-def phrases() =
-    "site:www.myspace.com 'Austin, TX' 'Band Members'"
-  | "site:www.myspace.com 'Austin, Texas' 'Band Members'"
+val SongKickHTTP = KeyedHTTP("orc/orchard/orchard.properties", "songkick")
 
+{- Use the SongKick Web API to look up shows -}
+def findShows(city, numberOfShows) =
+  
+  {- Given a city name, find the corresponding metro area ID -}
+  def lookupMetro(city) =
+    val base = "http://api.songkick.com/api/3.0/search/locations.xml"
+	   val query = {. query = city .}
+	   val response = SongKickHTTP(base,query).get() 
+    ReadXML(response) 
+      >xml("resultsPage",xml("results", xml("location", m)))>
+    m 
+      >XMLElement("metroArea", {. id = n .}, _)>
+    n
+    
+		{- Given a metro ID, publish the first n events in that metro area -}
+		def metroShows(metroID, n) =
+		  val base = "http://api.songkick.com/api/3.0/metro_areas/" + metroID + "/calendar.xml"
+		  val query = {. per_page = n .}
+		  val response = SongKickHTTP(base, query).get()
+		  ReadXML(response) 
+		    >xml("resultsPage",xml("results", m))>
+		  m 
+		    >XMLElement("event", _, _)>
+		  m
+		
+		{- 
+		  Extract an xs:datetime or xs:date, depending on which is available. 
+		  Halt if argument is silent.  
+		-}
+		def extractDT(info) =
+		  info.datetime >dt> Iff(dt.isEmpty()) >> 
+      dt.substring(0, dt.length() - 2)
+      + ":"
+      + dt.substring(dt.length() - 2)
+    ;
+    info.date >d> Iff(d.isEmpty()) >> d
+		  
+		val metroID = 
+		  lookupMetro(city) 
+		  ; Println("Couldn't find a metro area corresponding to " + city) >> stop    
+  
+  metroShows(metroID, numberOfShows) >event>
+  (
+  val xattr(_, {. displayName = title .}) = event
+  val xattr(_, {. uri = uri .}) = event
+  val xml(_, XMLElement("location", {. city = city .}, _)) = event
+  val xml(_, XMLElement("venue", {. displayName = venue .}, _)) = event
+  val xml(_, XMLElement("start", startInfo, _)) = event
+  val xml(_, XMLElement("end", endInfo, _)) = event
+  {.
+    title = title,
+    content = uri,
+    location = venue + (" in " + city ; ""),
+    startTime = extractDT(startInfo),
+    endTime = extractDT(endInfo) ; ""
+  .}
+  )
+  
 -- execution
 Println("Authenticating...") >>
 GoogleCalendar.authenticate(oauth.authenticate("google", "scope", "http://www.google.com/calendar/feeds/")) >>
-phrases() >phrase>
-Google(phrase) >pages>
-each(pages) >page>
-each(page()) >result>
-Println("Scraping " + result.url) >>
-MySpace.scrapeMusicShows(result.url) >musicShows>
-each(musicShows) >musicShow>
-Ift(musicShow.getCity().toLowerCase().contains("austin")) >>
-GoogleCalendar.addMusicShow(musicShow) >>
+findShows(Prompt("Search in city: "), 10) >show> 
+GoogleCalendar.addEventToCalendar(
+  show.title, 
+  show.content, 
+  show.location, 
+  show.startTime, 
+  show.endTime) >>
+Println("Added show to calendar: " + show.title) >>
 stop
 ; "DONE"
+
