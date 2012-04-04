@@ -16,9 +16,6 @@ package orc.lib.music_calendar;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
@@ -125,32 +122,22 @@ public class GoogleCalendar extends EvalSite {
 			return service.insert(ownCalendarsURL, calendar);
 		}
 
-		/** Add a music show record. */
-		public void addMusicShow(final MusicShow show) throws Exception {
+		/**
+		 * Actually add an event to a calendar. BLOCKING.
+		 */
+		public void addEventToCalendar(final String eventTitle, final String eventContent, final String location, final String startDT, final String endDT) throws ServiceException, IOException, OAuthException {
+			
 			synchronized (this) {
 				if (!authenticated) {
 					throw new OAuthException("Not authenticated.");
 				}
 			}
-			final Calendar startDate = new GregorianCalendar();
-			startDate.setTime(show.getDate());
-
-			final Calendar endDate = new GregorianCalendar();
-			endDate.setTime(show.getDate());
-			endDate.add(Calendar.MINUTE, 90);
-
-			final String location = String.format("%s, %s, %s", show.getLocation(), show.getCity(), show.getState());
-
-			addEventToCalendar(show.getTitle(), show.getTitle(), location, startDate, endDate);
-		}
-
-		/**
-		 * Actually add an event to a calendar. BLOCKING.
-		 */
-		private void addEventToCalendar(final String eventTitle, final String eventContent, final String location, final Calendar startDate, final Calendar endDate) throws ServiceException, IOException {
+			
 			final When eventTimes = new When();
-			eventTimes.setStartTime(new DateTime(startDate.getTime(), TimeZone.getDefault()));
-			eventTimes.setEndTime(new DateTime(endDate.getTime(), TimeZone.getDefault()));
+			eventTimes.setStartTime(DateTime.parseDateTimeChoice(startDT));
+			if (!endDT.isEmpty()) {
+				eventTimes.setEndTime(DateTime.parseDateTimeChoice(endDT));
+			}
 
 			final Where where = new Where();
 			where.setValueString(location);
