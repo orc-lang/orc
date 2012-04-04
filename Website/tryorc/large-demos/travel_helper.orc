@@ -75,7 +75,7 @@ def poll(interval, put) =
     val seen = Set()
     def loop() =
       val trip = trips.get()
-      val key = trip.toString()
+      val key = "" + trip
       if seen.contains(key)
       then loop()
       else seen.add(key) >> put(trip) >> loop()
@@ -95,7 +95,7 @@ def poll(interval, put) =
     -- get events for that day
     calendar.getEvents(start, start.plusDays(1)) >feed>
     -- add each trip to the buffer
-    each(feed.getEntries()) >entry>
+    each(iterableToList(feed.getEntries())) >entry>
     extractLocation(entry.getTitle().getPlainText()) >location>
     DateTime(entry.getTimes().get(0).getStartTime().toString()) >time>
     trips.put(Trip(time, location)) >>
