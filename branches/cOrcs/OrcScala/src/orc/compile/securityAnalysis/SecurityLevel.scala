@@ -24,16 +24,19 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
   *
   * @author laurenyew
   */
-//refactor
-//something with persistant shouldnt be a case class (var)
-//case class is for matching functionality
+object SecurityLevel
+{
+    val bottom = new SecurityLevel()
+      bottom.myName = "BOTTOM"
+    val top = new SecurityLevel()
+      top.myName = "TOP"
+}
 class SecurityLevel
 {
   var myName = ""
   var parents : List[SecurityLevel] = List()
   var children : List[SecurityLevel] = List() 
-  var bottomSecurityLevel = interpretParseSL("BOTTOM", List(),List())
-  var topSecurityLevel = interpretParseSL("TOP", List(),List())
+
       
   /**
    * Transitive closure for each SecurityType
@@ -44,11 +47,11 @@ class SecurityLevel
  
       //get all of the children possible
       me.children = childTransClosure(me,me.children)
-      me.children = me.children ::: List(bottomSecurityLevel)//we always have bottomSecurityType as a child
+      me.children = me.children ::: List(SecurityLevel.bottom)//we always have bottomSecurityType as a child
       
      //get all of the parents possible
       me.parents = parentTransClosure(me, me.parents)
-      me.parents = me.parents ::: List(topSecurityLevel)//we always have topSecurityType as a child
+      me.parents = me.parents ::: List(SecurityLevel.top)//we always have topSecurityType as a child
      
       //There should be no duplicates in the lists
       //check the lists
@@ -84,8 +87,8 @@ class SecurityLevel
     
       for(child <- me.children)
       {
-        if((!child.equals(bottomSecurityLevel))//we stop at bottom SecurityType
-            &&(!child.equals(topSecurityLevel)))//and we don't want to redo TOP
+        if((!child.equals(SecurityLevel.bottom))//we stop at bottom SecurityType
+            &&(!child.equals(SecurityLevel.top)))//and we don't want to redo TOP
         {
           if(!addChildren.contains(child))//prevents cycles because doesn't add children who it already saw
           {
@@ -107,8 +110,8 @@ class SecurityLevel
     
       for(parent <- me.parents)
       {
-        if((!parent.equals(bottomSecurityLevel))//we stop at bottom SecurityType
-            &&(!parent.equals(topSecurityLevel)))//and we don't want to redo TOP
+        if((!parent.equals(SecurityLevel.bottom))//we stop at bottom SecurityType
+            &&(!parent.equals(SecurityLevel.top)))//and we don't want to redo TOP
         {
           if(!addParents.contains(parent))//prevents cycles because doesn't add children who it already saw
           {
@@ -138,13 +141,13 @@ class SecurityLevel
     //if the parent list is empty, insert topSecurityType and connect (direct connection)
     if(temp.parents.isEmpty)
     {
-      temp.parents = List(topSecurityLevel)
-      topSecurityLevel.children = topSecurityLevel.children ::: List(temp)
+      temp.parents = List(SecurityLevel.top)
+      SecurityLevel.top.children = SecurityLevel.top.children ::: List(temp)
     }
     if(temp.children.isEmpty)
     {
-      temp.children = List(bottomSecurityLevel)
-      bottomSecurityLevel.parents = bottomSecurityLevel.parents ::: List(temp)
+      temp.children = List(SecurityLevel.bottom)
+      SecurityLevel.bottom.parents = SecurityLevel.bottom.parents ::: List(temp)
     }
     //need to let my parents/children know that I am attaching to them
     for(parent <- temp.parents)
@@ -159,11 +162,11 @@ class SecurityLevel
     } 
      
     //Every node has bottom as one of its children and top as one of its parents
-    if(!temp.children.contains(bottomSecurityLevel)){
-      temp.children = temp.children ::: List(bottomSecurityLevel)
+    if(!temp.children.contains(SecurityLevel.bottom)){
+      temp.children = temp.children ::: List(SecurityLevel.bottom)
     }
-    if(!temp.parents.contains(topSecurityLevel)){
-        temp.parents = temp.parents ::: List(topSecurityLevel)
+    if(!temp.parents.contains(SecurityLevel.top)){
+        temp.parents = temp.parents ::: List(SecurityLevel.top)
     }
     
     return temp
@@ -191,10 +194,10 @@ class SecurityLevel
     //need to initialize top and bottom SecurityType of graph
     def initializeGraph()
     {
-        topSecurityLevel.parents = List(topSecurityLevel)//topSecurityType's parent should be itself
-        topSecurityLevel.children = List(bottomSecurityLevel)
-        bottomSecurityLevel.children= List(bottomSecurityLevel)//bottomSecurityType should have itself as the bottomSecurityType
-        bottomSecurityLevel.parents = List(topSecurityLevel)
+        SecurityLevel.top.parents = List(SecurityLevel.top)//topSecurityType's parent should be itself
+        SecurityLevel.top.children = List(SecurityLevel.bottom)
+        SecurityLevel.bottom.children= List(SecurityLevel.bottom)//bottomSecurityType should have itself as the bottomSecurityType
+        SecurityLevel.bottom.parents = List(SecurityLevel.top)
     }
   
     /**
@@ -206,13 +209,13 @@ class SecurityLevel
      */
     def findByName(name : String) : SecurityLevel = 
     {
-        for(child <- topSecurityLevel.children)
+        for(child <- SecurityLevel.top.children)
         {
           if(child.myName.equalsIgnoreCase(name))
             return child
         }
         
-        return bottomSecurityLevel
+        return SecurityLevel.bottom
     }
     
     /**
@@ -232,7 +235,7 @@ class SecurityLevel
       var createdParent : SecurityLevel = null;
         var createdChild : SecurityLevel = null;
       //if this is true then the securityType has not yet been created
-        if((currentLevel == bottomSecurityLevel) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
+        if((currentLevel == SecurityLevel.bottom) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
             currentLevel = createSecurityLevel(name, List(), List())
         }
       
@@ -290,9 +293,9 @@ class SecurityLevel
     def makeGraph()
     {
       //do transitive closure for full graph
-        transClosure(topSecurityLevel)//do the transitive closure for the topLevel
+        transClosure(SecurityLevel.top)//do the transitive closure for the topLevel
         //do the transitive closure for all of my children (should be every node in the graph)
-        for(child <- topSecurityLevel.children)
+        for(child <- SecurityLevel.top.children)
           transClosure(child)
     }
     
