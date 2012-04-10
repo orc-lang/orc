@@ -125,17 +125,21 @@ Language</a><br />
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/Secure-Information-Flow-Orc.pdf">Secure Information Flow in the Orc Concurrent Programming Language</a><br />
+	John A. Thywissen<br />
+	The University of Texas at Austin, C S 380S Theory and Practice of Secure Systems, Dec 2009</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
 	Adrian Quark<br />
-	The University of Texas at Austin, Department of Computer Sciences, Spring 2009</li>
+	The University of Texas at Austin, Department of Computer Sciences, May 2009</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/coonske_sp08.pdf">Transactional Orc</a><br />
 	Katherine E. Coons<br />
-	CS 395T Computation Orchestration, Spring 2008</li>
+	The University of Texas at Austin, C S 395T Computation Orchestration, May 2008</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/quark_sp08.pdf">Distributed Orc</a><br />
 	Adrian Quark<br />
-	CS 395T Computation Orchestration, Spring 2008</li>
+	The University of Texas at Austin, C S 395T Computation Orchestration, May 2008</li>
 </ul>
 
 <a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
