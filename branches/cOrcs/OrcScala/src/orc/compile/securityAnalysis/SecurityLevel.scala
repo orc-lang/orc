@@ -34,8 +34,12 @@ object SecurityLevel
 class SecurityLevel
 {
   var myName = ""
-  var parents : List[SecurityLevel] = List()
-  var children : List[SecurityLevel] = List() 
+  //"all" is used for the transitive closures
+  //"immediate" is for traversing the tree, for instance to find closest shared parent/child
+  var allParents : List[SecurityLevel] = List()
+  var immediateParents : List[SecurityLevel] = List()
+  var allChildren : List[SecurityLevel] = List() 
+  var immediateChildren : List[SecurityLevel] = List()
 
       
   /**
@@ -46,29 +50,29 @@ class SecurityLevel
   {  
  
       //get all of the children possible
-      me.children = childTransClosure(me,me.children)
-      me.children = me.children ::: List(SecurityLevel.bottom)//we always have bottomSecurityType as a child
+      me.allChildren = childTransClosure(me,me.allChildren)
+      me.allChildren = me.allChildren ::: List(SecurityLevel.bottom)//we always have bottomSecurityType as a child
       
      //get all of the parents possible
-      me.parents = parentTransClosure(me, me.parents)
-      me.parents = me.parents ::: List(SecurityLevel.top)//we always have topSecurityType as a child
+      me.allParents = parentTransClosure(me, me.allParents)
+      me.allParents = me.allParents ::: List(SecurityLevel.top)//we always have topSecurityType as a child
      
       //There should be no duplicates in the lists
       //check the lists
       Console.print("Children of SecurityType " + me.myName +": [")
-      for(child <- me.children)
+      for(child <- me.allChildren)
         Console.print(child.myName + "," )
     
       Console.print("]\n Parents of SecurityType " + me.myName + ": [")
-      for(parent <- me.parents)
+      for(parent <- me.allParents)
         Console.print(parent.myName + ",")
         
       Console.print("]\n")
       
       //check for cycles: if there is a cycle, one of the children will also be a parent
-      for(child <- me.children)
+      for(child <- me.allChildren)
       {
-        if(me.parents.contains(child))
+        if(me.allParents.contains(child))
         {
           Console.println("Problem child " + child.myName + " cycle in SecurityType " + me.myName)
           throw new Exception("Possible cycle for SecurityType " + child.myName)
@@ -85,7 +89,7 @@ class SecurityLevel
     //We first get the transClosure for all of the children
     var addChildren : List[SecurityLevel] = listOfChildren//added to list
     
-      for(child <- me.children)
+      for(child <- me.allChildren)
       {
         if((!child.equals(SecurityLevel.bottom))//we stop at bottom SecurityType
             &&(!child.equals(SecurityLevel.top)))//and we don't want to redo TOP
@@ -108,7 +112,7 @@ class SecurityLevel
     //Console.println("ME: " + me.myName)
     var addParents : List[SecurityLevel] = listOfParents//added to list
     
-      for(parent <- me.parents)
+      for(parent <- me.allParents)
       {
         if((!parent.equals(SecurityLevel.bottom))//we stop at bottom SecurityType
             &&(!parent.equals(SecurityLevel.top)))//and we don't want to redo TOP
@@ -134,39 +138,50 @@ class SecurityLevel
     //make sure havent already created happens in interpretST
     var temp : SecurityLevel= new SecurityLevel()
       temp.myName = name
-      temp.parents = p
-      temp.children = c
+      temp.allParents = p
+      temp.allChildren = c
+      temp.immediateParents = p
+      temp.immediateChildren = c
     
     //if the children list is empty, insert bottomSecurityType and connect (direct connection)
     //if the parent list is empty, insert topSecurityType and connect (direct connection)
-    if(temp.parents.isEmpty)
+    if(temp.immediateParents.isEmpty)
     {
-      temp.parents = List(SecurityLevel.top)
-      SecurityLevel.top.children = SecurityLevel.top.children ::: List(temp)
+      temp.immediateParents = List(SecurityLevel.top)
+      SecurityLevel.top.immediateChildren = SecurityLevel.top.immediateChildren ::: List(temp)
     }
-    if(temp.children.isEmpty)
+    if(temp.immediateChildren.isEmpty)
     {
-      temp.children = List(SecurityLevel.bottom)
-      SecurityLevel.bottom.parents = SecurityLevel.bottom.parents ::: List(temp)
+      temp.allChildren = List(SecurityLevel.bottom)
+      SecurityLevel.bottom.immediateParents = SecurityLevel.bottom.immediateParents ::: List(temp)
     }
     //need to let my parents/children know that I am attaching to them
-    for(parent <- temp.parents)
+    //since this is a creation, we can just add
+    for(parent <- temp.immediateParents)
     {
-      if(!parent.children.contains(temp))
-        parent.children = parent.children ::: List(temp)
+      if(!parent.immediateChildren.contains(temp)){
+        parent.immediateChildren = parent.immediateChildren ::: List(temp)
+      }
+      if(!parent.allChildren.contains(temp))
+        parent.allChildren = parent.allChildren ::: List(temp)
     } 
-    for(child <- temp.children)
+    for(child <- temp.immediateChildren)
     {
-       if(!child.parents.contains(temp))
-       child.parents = child.parents ::: List(temp)
+       if(!child.immediateParents.contains(temp))
+         child.immediateParents = child.immediateParents ::: List(temp)
+       if(!child.allParents.contains(temp))
+         child.allParents = child.allParents ::: List(temp)
     } 
      
     //Every node has bottom as one of its children and top as one of its parents
-    if(!temp.children.contains(SecurityLevel.bottom)){
-      temp.children = temp.children ::: List(SecurityLevel.bottom)
+    //in allChildren/allParents
+    if(!temp.allChildren.contains(SecurityLevel.bottom)){
+      temp.allChildren = temp.allChildren ::: List(SecurityLevel.bottom)
+      SecurityLevel.bottom.allChildren = SecurityLevel.bottom.allChildren ::: List(temp)
     }
-    if(!temp.parents.contains(SecurityLevel.top)){
-        temp.parents = temp.parents ::: List(SecurityLevel.top)
+    if(!temp.allParents.contains(SecurityLevel.top)){
+        temp.allParents = temp.allParents ::: List(SecurityLevel.top)
+        SecurityLevel.top.allParents = SecurityLevel.top.allParents ::: List(temp)
     }
     
     return temp
@@ -184,9 +199,9 @@ class SecurityLevel
    */
   def SecurityLevelDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
   {
-    if(subj.children.contains(obj))
+    if(subj.allChildren.contains(obj))
         return 2
-    if(subj.parents.contains(obj))
+    if(subj.allParents.contains(obj))
         return 1   
     return 0;//we are siblings
   }
@@ -194,10 +209,10 @@ class SecurityLevel
     //need to initialize top and bottom SecurityType of graph
     def initializeGraph()
     {
-        SecurityLevel.top.parents = List(SecurityLevel.top)//topSecurityType's parent should be itself
-        SecurityLevel.top.children = List(SecurityLevel.bottom)
-        SecurityLevel.bottom.children= List(SecurityLevel.bottom)//bottomSecurityType should have itself as the bottomSecurityType
-        SecurityLevel.bottom.parents = List(SecurityLevel.top)
+        SecurityLevel.top.allParents = List(SecurityLevel.top)//topSecurityType's parent should be itself
+        SecurityLevel.top.allChildren = List(SecurityLevel.bottom)
+        SecurityLevel.bottom.allChildren= List(SecurityLevel.bottom)//bottomSecurityType should have itself as the bottomSecurityType
+        SecurityLevel.bottom.allParents = List(SecurityLevel.top)
     }
   
     /**
@@ -209,7 +224,7 @@ class SecurityLevel
      */
     def findByName(name : String) : SecurityLevel = 
     {
-        for(child <- SecurityLevel.top.children)
+        for(child <- SecurityLevel.top.allChildren)
         {
           if(child.myName.equalsIgnoreCase(name))
             return child
@@ -232,8 +247,8 @@ class SecurityLevel
     def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
     {
       var currentLevel : SecurityLevel= findByName(name)
-      var createdParent : SecurityLevel = null;
-        var createdChild : SecurityLevel = null;
+      var foundParent : SecurityLevel = null;
+        var foundChild : SecurityLevel = null;
       //if this is true then the securityType has not yet been created
         if((currentLevel == SecurityLevel.bottom) && (!currentLevel.myName.equalsIgnoreCase("BOTTOM"))){
             currentLevel = createSecurityLevel(name, List(), List())
@@ -242,22 +257,38 @@ class SecurityLevel
         //go thru parents and add in new parents (creating if necessary)
         for(p <- parents)
         {
-          if(findinLevel(currentLevel.parents,p) != 1)//haven't found the level so need to create it
+          foundParent = findByName(p)
+          
+          //level doesn't yet exist in the lattice, so create it
+          if(foundParent == SecurityLevel.bottom && !p.equals("BOTTOM")){
+            foundParent = createSecurityLevel(p,List(),List()) 
+          }
+          
+          if(findinLevel(SecurityLevel.bottom.allParents,p) != 1)//haven't found the level in my immediate connections
           {
-            //we dont know what the parent is yet, so we just make its name, we can add its connections later
-            createdParent = createSecurityLevel(p,List(),List())
-            currentLevel.parents ::: List(createdParent)//add that created parent to the list
+            foundParent.immediateChildren = foundParent.immediateChildren ::: List(currentLevel)
+            foundParent.allChildren = foundParent.allChildren ::: List(currentLevel)
+            currentLevel.immediateParents = currentLevel.immediateParents ::: List(foundParent)
+            currentLevel.allParents = currentLevel.allParents ::: List(foundParent)//add that created parent to the list
           }
         }
         
-        //go thru children and add children if necessary (create as needed)
+        //go thru children and add in new children (creating if necessary)
         for(c <- children)
         {
-          if(findinLevel(currentLevel.children,c) != 1)//haven't found the level so need to create it
+          foundChild = findByName(c)
+          
+          //level doesn't yet exist in the lattice, so create it
+          if(foundChild == SecurityLevel.bottom && !c.equals("BOTTOM")){
+            foundChild = createSecurityLevel(c,List(),List()) 
+          }
+          
+          if(findinLevel(SecurityLevel.bottom.allParents,c) != 1)//haven't found the level in my immediate connections
           {
-            //we dont know what the parent is yet, so we just make its name, we can add its connections later
-            createdChild = createSecurityLevel(c,List(),List())
-            currentLevel.children ::: List(createdChild)//add that created parent to the list
+            foundChild.immediateParents = foundChild.immediateParents ::: List(currentLevel)
+            foundChild.allParents = foundChild.allParents ::: List(currentLevel)
+            currentLevel.immediateChildren = currentLevel.immediateChildren ::: List(foundChild)
+            currentLevel.allChildren = currentLevel.allChildren ::: List(foundChild)
           }
         }
         
@@ -278,7 +309,7 @@ class SecurityLevel
     {
       for(temp <- currentLevelList)
       {
-        if(temp.myName.equalsIgnoreCase(lookForLevel))
+        if(temp.myName.equals(lookForLevel))
         {
           return 1
         }
@@ -295,8 +326,37 @@ class SecurityLevel
       //do transitive closure for full graph
         transClosure(SecurityLevel.top)//do the transitive closure for the topLevel
         //do the transitive closure for all of my children (should be every node in the graph)
-        for(child <- SecurityLevel.top.children)
+        for(child <- SecurityLevel.top.allChildren)
           transClosure(child)
+    }
+    
+    /**
+     * Find the closest shared child (can be one of the inputs or bottomLevel
+     */
+    def findClosestChild( leftSL: SecurityLevel, rightSL: SecurityLevel) : SecurityLevel =
+    {
+      //first check if either is the child of the other (that would mean that they are the closest)
+      
+        if(leftSL.allChildren.contains(rightSL)) rightSL
+        if(rightSL.allChildren.contains(leftSL)) leftSL
+        
+      /*
+       * no we know they are not ancestors, so they must be siblings, so I need to do a join of their
+       * allChildren to get which children they share. To find their closest from there, I go down the 
+       * immediateChildren to find which one is closest (Breadth first search?)
+       */
+        var sharedChildren : List[SecurityLevel] = List()
+        
+        //create the shared Children list
+        for(child <- leftSL.allChildren)
+          if(rightSL.allChildren.contains(child))
+            sharedChildren = sharedChildren ::: List(child)
+      
+        //now go thru immediate children until find the closest match
+        //TODO: figure out a way to go thru and find the closest shared child
+         
+        SecurityLevel.bottom
+        
     }
     
   override def toString = "Security Type " + this.myName

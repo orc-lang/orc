@@ -30,6 +30,9 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Prune(left, x, right) => List(left, x, right)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
+    //*need to add something? looks like its adding lists or nil...
+   // case DeclareSecurityLevel(name, parents, children, expr) =>  Nil
+    
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {

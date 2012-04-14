@@ -33,8 +33,13 @@ import orc.compile.typecheck.Typeloader._
 /**
  * "TypeChecker" AKA SecurityAnalysis for SecurityLevels
  * Step called by compiler
+ * This is for INTEGRITY static type checking
+ * (Confidentiality static type checking is the opposite of integrity)
+ * Possible future proj: add option to switch between checking for integrity and for confidentiality
  */
 object securityChecker{
+  
+  
   
   //expr encompasses hasSecurityLevel
   //don't need patterns
@@ -42,34 +47,57 @@ object securityChecker{
   def securityCheck(expr: Expression, lattice: SecurityLevel): SecurityLevel =
   {
     lattice.initializeGraph()//initialize the graph of Security Levels
-    expr match{
-     case  Stop() =>  lattice.findByName("BOTTOM")//do nothing 
-    //  Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-      case left || right => {
-        val leftSL = securityCheck(left,lattice)
-        val rightSL = securityCheck(right,lattice)
-        //find closest parent or top if no parent (JOIN)?
-        lattice.findByName("BOTTOM")
-      }
-      /*
-      case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
-        with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-      case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
-        with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-      case class Otherwise(left: Expression, right: Expression) extends Expression
-      case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
-      case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
-        with hasOptionalVariableName { transferOptionalVariableName(name, this) }
-      //DeclSL
-      case DeclareSecurityLevel(name: String, parents: List[String], children: List[String]) => lattice.interpretParseST(name,parents,children)
-      case class HasType(body: Expression, expectedType: Type) extends Expression
-      //more generalized pattern -> Expression
-      //so we write a HasSecurityLevel for expression to get pattern
-      //Ex: for @A
-      case HasSecurityLevel(body: Expression, level: String) => lattice.findByName(level)
-      case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
-        def apply(e: Expression): Expression = e.subst(context, typecontext) 
+    try{
+      expr match{
+       case  Stop() =>  SecurityLevel.bottom//do nothing 
+       /*
+        case  SecurityLevelDeclaration(name, parents, children, body) =>
+         {
+           lattice.interpretParseSL(name, parents, children)//will return the security level declared
+         }
+         case HasSecurityLevel(body, level) =>
+         {
+           findByName(level) //finds the security level in lattice and returns, propagativing then with the variable?
+           //may need to make a list of the variables? hope not
+         } 
+       */
+       /**
+        * OR: outputs the union of the two inputs, so the security should be the 
+        * closest common child of both security levels
+        * Why: when the user looks at 2 items, one of high integrity vs one of low integrity
+        * the information value of the total goes down (since we don't want to move up bad info)
         */
+       case left || right => 
+         {
+            val leftSL = securityCheck(left,lattice)
+            val rightSL = securityCheck(right,lattice)
+           
+           lattice.findClosestChild(leftSL,rightSL)
+         }
+       
+       case Constant(value) => lattice //no effect on security level
+       case x: syntactic.BoundVar => {
+        //need to get the SL on the bound variable 
+         lattice //hopefully it is the propagaed security level, otherwise this will make it bottom level
+       }
+       case left ow right => {//... not sure what ow is. Need to look up
+         val leftSL = securityCheck(left,lattice)
+          val rightSL = securityCheck(right,lattice)
+         
+         lattice.findClosestChild(leftSL,rightSL)
+       
+       }
+       
+       
+       
+       case _ => lattice//if the target isn't found, evaluate as ok, send thru the current security level
+       
+      }
+    }
+    catch{//throw the exception if there is one
+      case e: Exception => {
+        throw e
+      }
     }
   }
 }
