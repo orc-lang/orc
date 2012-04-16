@@ -23,6 +23,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 
+  //looks for the AST that are children of this node
   override val subtrees: Iterable[NamedAST] = this match {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
@@ -30,8 +31,9 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Prune(left, x, right) => List(left, x, right)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
-    //*need to add something? looks like its adding lists or nil...
-   // case DeclareSecurityLevel(name, parents, children, expr) =>  Nil
+    //no AST children
+    case DeclareSecurityLevel(name, parents, children, expr) => Nil
+    case HasSecurityLevel(body, level) => Nil
     
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)

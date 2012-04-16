@@ -186,11 +186,15 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val securityLevelCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "securityLevelCheck"
     override def apply(co: CompilerOptions) = { ast =>
-     
+       if(co.options.securityCheck){
+        //initialize the lattice
+        SecurityLevel.initializeGraph()
+        
         val securityLevel:SecurityLevel = securityChecker.securityCheck(ast, SecurityLevel.bottom)//ast is named.Expresion
         val typeReport = "Program security level checks as " + securityLevel.toString
         //compiler records messages in a list, caller supplies implemenation to display to user
         co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, ast.pos, ast)
+       }
         ast//return original ast
       
     }
