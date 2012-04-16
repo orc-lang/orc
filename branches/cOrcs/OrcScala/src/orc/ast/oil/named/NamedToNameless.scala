@@ -56,6 +56,9 @@ trait NamedToNameless {
         nameless.DeclareType(newt, newbody)
       }
       case HasType(body, expectedType) => nameless.HasType(toExp(body), toType(expectedType))
+      //transform DeclSecurityLevel to nameless. We just make the body nameless?
+      case DeclareSecurityLevel(name,parents,children,body) => toExp(body)
+      case HasSecurityLevel(body, level) => toExp(body)
       case Hole(holeContext, holeTypeContext) => {
         val newHoleContext = holeContext mapValues { namedToNameless(_, context) }
         val newHoleTypeContext = holeTypeContext mapValues { namedToNameless(_, typecontext) }

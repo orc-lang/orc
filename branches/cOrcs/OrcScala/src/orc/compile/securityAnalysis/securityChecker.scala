@@ -16,7 +16,8 @@
 package orc.compile.securityAnalysis
 
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
+//have to add in named expressions that I am importing
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda , DeclareSecurityLevel, HasSecurityLevel}
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException }
@@ -31,6 +32,7 @@ import orc.compile.typecheck.Typeloader._
 
 
 /**
+ * @author laurenyew
  * "TypeChecker" AKA SecurityAnalysis for SecurityLevels
  * Step called by compiler
  * This is for INTEGRITY static type checking
@@ -39,28 +41,38 @@ import orc.compile.typecheck.Typeloader._
  */
 object securityChecker{
   
+  /**
+   * Map function between Security Levels and their variables.
+   */
   
+  /**
+   * find the securityLevel associated with the expression in the map
+   */
+  def context(expr: Expression) : SecurityLevel = 
+  {
+    SecurityLevel.bottom
+  }
   
   //expr encompasses hasSecurityLevel
   //don't need patterns
   //just do cases over expressions
   def securityCheck(expr: Expression, lattice: SecurityLevel): SecurityLevel =
   {
-    lattice.initializeGraph()//initialize the graph of Security Levels
+    
     try{
       expr match{
        case  Stop() =>  SecurityLevel.bottom//do nothing 
-       /*
-        case  SecurityLevelDeclaration(name, parents, children, body) =>
-         {
-           lattice.interpretParseSL(name, parents, children)//will return the security level declared
-         }
-         case HasSecurityLevel(body, level) =>
-         {
-           findByName(level) //finds the security level in lattice and returns, propagativing then with the variable?
-           //may need to make a list of the variables? hope not
-         } 
-       */
+       
+       case  DeclareSecurityLevel(name, parents, children, body) =>
+       {
+           SecurityLevel.interpretParseSL(name, parents, children)//will return the security level declared
+       }
+        
+       case HasSecurityLevel(body, level) =>
+       {
+           SecurityLevel.findByName(level) //finds the security level in lattice and adds variable to the map
+       } 
+       
        /**
         * OR: outputs the union of the two inputs, so the security should be the 
         * closest common child of both security levels
@@ -72,7 +84,7 @@ object securityChecker{
             val leftSL = securityCheck(left,lattice)
             val rightSL = securityCheck(right,lattice)
            
-           lattice.findClosestChild(leftSL,rightSL)
+           SecurityLevel.meet(leftSL,rightSL)
          }
        
        case Constant(value) => lattice //no effect on security level
@@ -80,14 +92,21 @@ object securityChecker{
         //need to get the SL on the bound variable 
          lattice //hopefully it is the propagaed security level, otherwise this will make it bottom level
        }
-       case left ow right => {//... not sure what ow is. Need to look up
+       case left ow right => {//Otherwise
          val leftSL = securityCheck(left,lattice)
           val rightSL = securityCheck(right,lattice)
-         
-         lattice.findClosestChild(leftSL,rightSL)
-       
+         SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
        }
-       
+       case left > x > right => {//left goes to x then goes to right
+             val leftSL = securityCheck(left,lattice)
+             val rightSL = securityCheck(right,lattice)
+             SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
+       }
+       case left < x < right => {
+           val leftSL = securityCheck(left,lattice)
+             val rightSL = securityCheck(right,lattice)
+             SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
+       }
        
        
        case _ => lattice//if the target isn't found, evaluate as ok, send thru the current security level
