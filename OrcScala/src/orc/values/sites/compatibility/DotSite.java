@@ -19,6 +19,7 @@ import java.util.TreeMap;
 import orc.Handle;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
+import orc.error.runtime.NoSuchMemberException;
 
 /**
  * Dot-accessible sites should extend this class and declare their Orc-available
@@ -60,7 +61,7 @@ public abstract class DotSite extends SiteAdaptor {
 		if (m != null) {
 			t.publish(object2value(m));
 		} else {
-			throw new NoSuchMethodError(f + " in " + name());
+			throw new NoSuchMemberException(this, f);
 		}
 	}
 
