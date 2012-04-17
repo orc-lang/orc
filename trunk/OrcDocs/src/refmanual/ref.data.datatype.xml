@@ -158,7 +158,7 @@ InnerNode(LeafNode(1), InnerNode(LeafNode(2), LeafNode(3)))
    Leaf nodes carry values of type T
 -}
 
-type Node[T] = LeafNode(T) | InnerNode(Node, Node)
+type Node[T] = LeafNode(T) | InnerNode(Node[T], Node[T])
 
 {- Constructing a simple tree
       /\
