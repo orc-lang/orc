@@ -43,7 +43,7 @@ trait OrcParserResultTypes[T] {
 
 /** An Orc parser that analyzes a given string as an Orc literal value.
   * The result of applying this function is an Expression Extended AST,
-  * in particular a Constant, ListValue, or TupleValue.
+  * in particular a Constant, ListValue, TupleValue, or RecordValue.
   *
   * @see orc.ast.ext.Expression
   * @see orc.ast.ext.Constant
@@ -55,7 +55,7 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
   def apply(s: String): ParseResult = {
     val parsers = new OrcParsers(null, null, null)
     val tokens = new parsers.lexical.Scanner(s)
-    parsers.phrase(parsers.parseConstantListTuple)(tokens)
+    parsers.phrase(parsers.parserForReadSite)(tokens)
   }
 }
 
@@ -194,13 +194,14 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     | floatLit ^^ { BigDecimal(_) }
     | "null" ^^^ null)
 
-  val parseConstantListTuple: Parser[Expression] = (
+  val parserForReadSite: Parser[Expression] = (
     "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
     | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
     | parseValue -> Constant
-    | "(" ~> parseConstantListTuple <~ ")"
-    | ListOf(parseConstantListTuple) -> ListExpr
-    | TupleOf(parseConstantListTuple) -> TupleExpr)
+    | "(" ~> parserForReadSite <~ ")"
+    | ListOf(parserForReadSite) -> ListExpr
+    | TupleOf(parserForReadSite) -> TupleExpr
+    | RecordOf("=", parserForReadSite) -> RecordExpr)
 
   val parseSiteLocation = stringLit
 

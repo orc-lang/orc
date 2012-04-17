@@ -37,6 +37,8 @@ object Format {
       case null => "null"
       case l: List[_] => "[" + formatSequence(l) + "]"
       case s: String => if (escapeStrings) { unparseString(s) } else s
+      case Some(v) => "Some(" + formatValue(v) + ")"
+      case None => "None()"
       case orcv: OrcValue => orcv.toOrcSyntax()
       case other => other.toString()
     }
