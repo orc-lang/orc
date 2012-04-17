@@ -157,7 +157,7 @@ public class PublicationEvent extends JobEvent {
 		} else if (value instanceof scala.Some) {
 			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).x()) + ")");
 		} else if (value instanceof scala.None) {
-			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "None");
+			return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "None()");
 		} else if (value instanceof scala.collection.immutable.List) {
 			return new ListMarshalProxy((scala.collection.immutable.List) value);
 		} else {

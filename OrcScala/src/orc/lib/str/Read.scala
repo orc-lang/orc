@@ -24,7 +24,9 @@ import orc.ast.ext.Expression
 import orc.ast.ext.Constant
 import orc.ast.ext.ListExpr
 import orc.ast.ext.TupleExpr
+import orc.ast.ext.RecordExpr
 import orc.values.OrcTuple
+import orc.values.OrcRecord
 import orc.types._
 
 object Read extends TotalSite with TypedSite {
@@ -45,6 +47,7 @@ object Read extends TotalSite with TypedSite {
     case Constant(v) => v
     case ListExpr(vs) => vs map convertToOrcValue
     case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
+    case RecordExpr(vs) => OrcRecord((vs.toMap) mapValues convertToOrcValue)
     case mystery => throw new ParsingException("Don't know how to convert a " + (if (mystery != null) mystery.getClass().toString() else "null") + " to an Orc value", null)
   }
 
