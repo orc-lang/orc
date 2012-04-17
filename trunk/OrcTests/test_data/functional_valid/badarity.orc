@@ -6,6 +6,8 @@
  - Created by dkitchin on Feb 23, 2012
  -}
 
+(
+
 Channel(0) >> "Channel arity checking is faulty." 
 ;
 Cell(0) >> "Cell arity checking is faulty."
@@ -18,6 +20,8 @@ Semaphore(0,1) >> "Semaphore arity checking is faulty."
 ;
 Counter(0,1) >> "Counter arity checking is faulty."
  
+) :!: Bot
+
 {- 
 OUTPUT:
 Error: orc.error.runtime.ArityMismatchException: Arity mismatch, expected 0 arguments, got 1 arguments.
