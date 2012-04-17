@@ -495,7 +495,21 @@ def arrayToList(a) =
   def walk(0,acc) = acc
   def walk(i,acc) = walk(i-1, a(i-1)? : acc)
   walk(a.length?, [])
-  
+
+{--
+@def listToArray[A](List[A]) :: Array[A]
+Given an Orc <link linkend="ref.data.list">list</link>, create an array whose elements are exactly
+the contents of the list, in the same order. The size of the array is exactly the list length.
+
+@implementation
+--}
+def listToArray[A](List[A]) :: Array[A]
+def listToArray(list) =
+  val array = Array[A](length(list))
+  def copy(List[A], Integer) :: Bot 
+  def copy(x:xs, i) = (array(i) := x) >> copy(xs, i+1)
+  copy(list, 0) ; array  
+
 
 {--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
