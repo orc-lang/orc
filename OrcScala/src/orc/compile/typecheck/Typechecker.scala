@@ -94,6 +94,7 @@ object Typechecker {
             val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
             (DeclareDefs(newDefs, newBody), typeBody)
           }
+          //checks if the body has the correct type
           case HasType(body, syntactic.AssertedType(t)) => {
             (expr, lift(t))
           }
@@ -121,6 +122,8 @@ object Typechecker {
     }
   }
 
+  //T is the type that is expected
+  //implicit means that the context is there but is not shown
   def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
     try {
       expr -> {
@@ -143,6 +146,7 @@ object Typechecker {
         }
         case left > x > right => {
           val (newLeft, typeLeft) = typeSynthExpr(left)
+          //call self again (recursively adding in new context on right)
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
         }
