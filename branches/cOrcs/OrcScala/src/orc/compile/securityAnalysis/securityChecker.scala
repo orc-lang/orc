@@ -15,9 +15,9 @@
 
 package orc.compile.securityAnalysis
 
+
 import orc.ast.oil.{ named => syntactic }
-//have to add in named expressions that I am importing
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda , DeclareSecurityLevel, HasSecurityLevel}
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda , DeclareSecurityLevel, HasSecurityLevel }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException }
@@ -44,13 +44,18 @@ object securityChecker{
   /**
    * Map function between Security Levels and their variables.
    */
+  var SLMap = Map[syntactic.BoundVar,SecurityLevel]()
   
+  def addMapping(v : syntactic.BoundVar, level: SecurityLevel)
+  {
+    SLMap += ((v , level))//add the key value
+  }
   /**
    * find the securityLevel associated with the expression in the map
    */
-  def context(expr: Expression) : SecurityLevel = 
+  def context(v : syntactic.BoundVar) : SecurityLevel = 
   {
-    SecurityLevel.bottom
+    SLMap(v)//returns the value associated with v
   }
   
   //expr encompasses hasSecurityLevel
@@ -70,8 +75,11 @@ object securityChecker{
         
        case HasSecurityLevel(body, level) =>
        {
-           SecurityLevel.findByName(level) //finds the security level in lattice and adds variable to the map
+           val addLevel = SecurityLevel.findByName(level) //finds the security level in lattice and adds variable to the map  
+           addLevel    
        } 
+       
+
        
        /**
         * OR: outputs the union of the two inputs, so the security should be the 

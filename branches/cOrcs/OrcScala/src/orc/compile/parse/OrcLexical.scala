@@ -67,11 +67,13 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
   // Note: DeclSL is short for DeclareSecurityLevel. This is for when we create/edit security levels. (this can be done locally too)
   // Ex: DeclSL A (B) () -- Declares a new/edits SL A with parents B (top level is implicit), and no children (bottom level is implicit)
+  
   override val reserved = new HashSet[String] ++ List(
     "as", "def", "else", "if", "import", "include",
     "lambda", "signal", "stop", "then", "type", "val",
     "true", "false", "null", "DeclSL", "_")
 
+      
   val operators = List(
     "+", "-", "*", "/", "%", "**",
     "&&", "||", "~",

@@ -50,6 +50,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.TupleExpr(es) => unfold(es map convert, makeTuple)
       //SL Expression to Named. convert from extended expr to named expr
       case ext.SecurityLevelExpression(e,l) => HasSecurityLevel(convert(e),l)
+      
+      
       case ext.ListExpr(es) => unfold(es map convert, makeList)
       case ext.RecordExpr(es) => {
         val seen = new scala.collection.mutable.HashSet[String]()
@@ -164,6 +166,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ext.SecurityLevelDeclaration(name,parents,children), body) => {
          DeclareSecurityLevel(name,parents,children, convert(body))
       }
+      
+      
+      
 
       case ext.Declare(decl @ ext.TypeAlias(name, typeformals, t), body) => {
         val u = new BoundTypevar(Some(name))
@@ -401,6 +406,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           val ascribe: Conversion = { HasSecurityLevel(_, l) }
           ascribe compose unravel(p, focus)
         }
+        
         
         case ext.TypedPattern(p, t) => {
           val T = convertType(t)

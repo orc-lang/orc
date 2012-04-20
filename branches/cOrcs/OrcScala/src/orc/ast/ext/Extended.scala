@@ -137,7 +137,8 @@ case class SecurityLevelPattern(p: Pattern, name: String) extends Pattern {
   val isStrict = p.isStrict
   override def toOrcSyntax = p.toOrcSyntax + " @" + name
   }
-		
+
+
 
 case class AsPattern(p: Pattern, name: String) extends Pattern {
   

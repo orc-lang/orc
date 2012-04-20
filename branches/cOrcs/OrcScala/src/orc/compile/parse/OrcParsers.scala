@@ -282,8 +282,7 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
    */
   val parseSecurityLevelExpression = 
    parseTypedExpression ~ (("@" ~> parseSecurityLevel)?) -?-> SecurityLevelExpression
-     //parseTypedExpression ~ "@" ~> parseSecurityLevel -> SecurityLevelExpression
-    
+
   val parseReturnType = "::" ~> parseType
 
   val parseGuard = "if" ~> "(" ~> parseExpression <~ ")"
@@ -340,8 +339,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     parseTypedPattern ~ (("@" ~> parseSecurityLevel)?) -?-> SecurityLevelPattern)  
     
   val parsePattern: Parser[Pattern] = parseSecurityLevelPattern
-
   
+
   //Security Level
   val parseSecurityLevel: Parser[String] = ident
   
@@ -411,7 +410,8 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     //ListOf gives square braces
     //DeclSL A [B,C] []
     | "DeclSL"  ~> ident ~ (ListOf(ident)) ~ (ListOf(ident)) -> SecurityLevelDeclaration
-
+    
+    
     | failExpecting("declaration (val, def, type, etc.)"))
 
   def performInclude(includeName: String): Parser[Include] = {
