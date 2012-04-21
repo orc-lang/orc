@@ -41,90 +41,148 @@ import orc.compile.typecheck.Typeloader._
  */
 object securityChecker{
   
-  /**
-   * Map function between Security Levels and their variables.
-   */
-  var SLMap = Map[syntactic.BoundVar,SecurityLevel]()
-  
-  def addMapping(v : syntactic.BoundVar, level: SecurityLevel)
-  {
-    SLMap += ((v , level))//add the key value
+ type Context = Map[syntactic.BoundVar, SecurityLevel]
+ 
+ def apply(expr: Expression): (Expression, SecurityLevel) = {
+    slSynthExpr(expr)(Map.empty)
   }
-  /**
-   * find the securityLevel associated with the expression in the map
-   */
-  def context(v : syntactic.BoundVar) : SecurityLevel = 
-  {
-    SLMap(v)//returns the value associated with v
+ 
+ /**
+  * synthesis the security level for a given expression
+  */
+  def slSynthExpr(expr: Expression)(implicit context: Context): (Expression, SecurityLevel) = {
+    try {
+      val (newExpr, exprSL) =
+        expr match {
+          case Stop() => (expr, null)
+          case Hole(_, _) => (expr, null)
+          case Constant(value) => (expr, null)
+          case x: syntactic.BoundVar => (x, context(x))//we now have the expr key and the contextSL value
+          case UnboundVar(name) => throw new UnboundVariableException(name)
+          //This is when a site calls on arguments,
+          //wee need to see if the target should be able to call
+          case FoldedCall(target, args, typeArgs) => {
+            slFoldedCall(target, args,typeArgs)
+          }
+          case left || right => {
+            val (newLeft, slLeft) = slSynthExpr(left)
+            val (newRight, slRight) = slSynthExpr(right)
+            (newLeft || newRight, SecurityLevel.meet(slLeft,slRight))
+          }
+          case left ow right => {
+            val (newLeft, slLeft) = slSynthExpr(left)
+            val (newRight, slRight) = slSynthExpr(right)
+            (newLeft ow newRight, SecurityLevel.meet(slLeft,slRight))
+          }
+          case left > x > right => {
+            val (newLeft, slLeft) = slSynthExpr(left)
+            val (newRight, slRight) = slSynthExpr(right)(context + ((x, slLeft)))
+            (newLeft > x > newRight, slRight)
+          }
+          case left < x < right => {
+            val (newRight, slRight) = slSynthExpr(right)
+            val (newLeft, slLeft) = slSynthExpr(left)(context + ((x, slRight)))
+            (newLeft < x < newRight, slLeft)
+          }
+          /**
+           * checks if the body has the correct security Level
+           * if an exception is not thrown (the expectedSL checks out)
+           * then adds the SL successfully
+           */
+          case HasSecurityLevel(body, level) => {
+            val expectedSL = SecurityLevel.findByName(level)
+            val newBody = slCheckExpr(body, expectedSL)
+            (HasSecurityLevel(newBody, level), expectedSL)
+          }
+          //create security level
+          case DeclareSecurityLevel(name, parents, children, body) => {
+            //add the security level
+            val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
+            val (newBody, bodySL) = slSynthExpr(body)(context)
+            (DeclareSecurityLevel(name,parents,children, newBody), declaredSecurityLevel)
+          }
+          case expr => (expr, null)//unless a SL is specified, we just use null
+        }
+      (expr ->> newExpr, exprSL)
+    } 
+    
   }
   
   //expr encompasses hasSecurityLevel
   //don't need patterns
   //just do cases over expressions
-  def securityCheck(expr: Expression, lattice: SecurityLevel): SecurityLevel =
-  {
-    
-    try{
-      expr match{
-       case  Stop() =>  SecurityLevel.bottom//do nothing 
-       
-       case  DeclareSecurityLevel(name, parents, children, body) =>
-       {
-           SecurityLevel.interpretParseSL(name, parents, children)//will return the security level declared
-       }
-        
-       case HasSecurityLevel(body, level) =>
-       {
-           val addLevel = SecurityLevel.findByName(level) //finds the security level in lattice and adds variable to the map  
-           addLevel    
-       } 
-       
+  def slCheckExpr(expr: Expression, lattice: SecurityLevel)(implicit context: Context) : Expression = {
+     try {
+      expr -> {
+        /* FoldedCall must be checked before prune, since it
+         * may contain some number of enclosing prunings.
+         */
+        case FoldedCall(target, args, typeArgs) => {
+          val (e, _) = slFoldedCall(target, args, typeArgs)
+          e
+        }
+        case left || right => {
+          val newLeft = slCheckExpr(left, lattice)
+          val newRight = slCheckExpr(right, lattice)
+          newLeft || newRight
+        }
+        case left ow right => {
+          val newLeft = slCheckExpr(left, lattice)
+          val newRight = slCheckExpr(right, lattice)
+          newLeft ow newRight
+        }
+        case left > x > right => {
+          val (newLeft, slLeft) = slSynthExpr(left)
+          //call self again (recursively adding in new context on right)
+          val newRight = slCheckExpr(right, lattice)(context + ((x, slLeft)))
+          newLeft > x > newRight
+        }
+        case left < x < right => {
+          val (newRight, slRight) = slSynthExpr(right)
+          val newLeft = slCheckExpr(left, lattice)(context + ((x, slRight)))
+          newLeft < x < newRight
+        }
+        case DeclareSecurityLevel(name, parents, children, body) => {
+           //add the security level
+            val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
+            val (newBody, bodySL) = slSynthExpr(body)(context)
+            DeclareSecurityLevel(name,parents,children, newBody)
+        }
+        case _ => {
+          val (newExpr, exprSL) = slSynthExpr(expr)
+          if(exprSL != null)//we only check for when SL are used
+          {
+            //check that the exprSL is equal to the expected SL (lattice)
+            //if it isn't then we throw an exception
+            if(!(exprSL eq lattice))
+              throw new Exception("SECURITY ERROR: Expression: " + newExpr + "\nSecurityLevel: " + 
+                    exprSL + "does not " +
+              		"equal the expected security level: " + lattice)
+          }
+          newExpr
+        }
+      }
+    } 
+}
 
-       
-       /**
-        * OR: outputs the union of the two inputs, so the security should be the 
-        * closest common child of both security levels
-        * Why: when the user looks at 2 items, one of high integrity vs one of low integrity
-        * the information value of the total goes down (since we don't want to move up bad info)
-        */
-       case left || right => 
-         {
-            val leftSL = securityCheck(left,lattice)
-            val rightSL = securityCheck(right,lattice)
-           
-           SecurityLevel.meet(leftSL,rightSL)
-         }
-       
-       case Constant(value) => lattice //no effect on security level
-       case x: syntactic.BoundVar => {
-        //need to get the SL on the bound variable 
-         lattice //hopefully it is the propagaed security level, otherwise this will make it bottom level
-       }
-       case left ow right => {//Otherwise
-         val leftSL = securityCheck(left,lattice)
-          val rightSL = securityCheck(right,lattice)
-         SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
-       }
-       case left > x > right => {//left goes to x then goes to right
-             val leftSL = securityCheck(left,lattice)
-             val rightSL = securityCheck(right,lattice)
-             SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
-       }
-       case left < x < right => {
-           val leftSL = securityCheck(left,lattice)
-             val rightSL = securityCheck(right,lattice)
-             SecurityLevel.meet(leftSL,rightSL)//you need to have the security to write left and right (in case of otherwise)
-       }
-       
-       
-       case _ => lattice//if the target isn't found, evaluate as ok, send thru the current security level
-       
-      }
+
+/**
+ * Check for calls to sites
+ */
+def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]])(implicit context: Context): (Expression, SecurityLevel) = {
+    val (site, siteSl) = slSynthExpr(target)//site targetSL
+    
+    val (newArgs, argSls) = (args map slSynthExpr).unzip //get the sl for each of the arguments
+    
+    //for each argument, we must check that the site can write to them (integrity)
+    //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
+    for(argLevel <- argSls)
+    {
+      if(!SecurityLevel.canWrite(siteSl,argLevel))//checks is siteSL can write to argLevel
+        throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
+        		" write to argument of level " + argLevel + ".")
     }
-    catch{//throw the exception if there is one
-      case e: Exception => {
-        throw e
-      }
-    }
+    
+    (FoldedCall(site, newArgs, syntacticTypeArgs), siteSl)//return SL of a call is the security level published
   }
 }
