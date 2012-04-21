@@ -190,10 +190,14 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         //initialize the lattice
         SecurityLevel.initializeGraph()
         
-        val securityLevel:SecurityLevel = securityChecker.securityCheck(ast, SecurityLevel.bottom)//ast is named.Expresion
-        val typeReport = "Program security level checks as " + securityLevel.toString
+        val (newAst, programSL) = securityChecker(ast)//ast is named.Expresion
+        var slReport = ""
+        if(programSL != null)
+          slReport = "Program security level checks as " + programSL.toString
+        else
+          slReport = "There are no security levels in the program"
         //compiler records messages in a list, caller supplies implemenation to display to user
-        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, ast.pos, ast)
+        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, slReport, newAst.pos, newAst)
        }
         ast//return original ast
       

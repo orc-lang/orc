@@ -350,7 +350,19 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           
       }
       
-    
+    /**
+     * checks on whether or not siteSl can write to argSl without causing an integrity error
+     * the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
+     * if the site is not a child (transitive closure) of the argument, return false (can't be a sibling since 
+     * we shouldn't be able to write to other categories)  
+     */
+    def canWrite(siteSl : SecurityLevel, argSl : SecurityLevel) : Boolean = {
+      
+      if(argSl.allChildren.contains(siteSl))
+          true
+      else
+          false
+    }
   }
 
   class SecurityLevel
