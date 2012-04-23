@@ -51,6 +51,7 @@ object securityChecker{
   * synthesis the security level for a given expression
   */
   def slSynthExpr(expr: Expression)(implicit context: Context): (Expression, SecurityLevel) = {
+    
     try {
       val (newExpr, exprSL) =
         expr match {
@@ -84,27 +85,50 @@ object securityChecker{
             val (newLeft, slLeft) = slSynthExpr(left)(context + ((x, slRight)))
             (newLeft < x < newRight, slLeft)
           }
+          case DeclareDefs(defs, body) => {
+            val (newBody, bodySl) = slSynthExpr(body)(context)
+            (DeclareDefs(defs, newBody), bodySl)
+          }
+          //checks if the body has the correct type
+          case HasType(body, syntactic.AssertedType(t)) => {
+            val (newBody, bodySl) = slSynthExpr(body)
+            (expr, bodySl)
+          }
+          case HasType(body, t) => {
+            val (newBody, bodySl) = slSynthExpr(body)
+            (HasType(body, t), bodySl)
+          }
+          case DeclareType(u, t, body) => {
+            val (newBody, bodySl) = slSynthExpr(body)
+            (DeclareType(u, t, body), bodySl)
+          }
           /**
            * checks if the body has the correct security Level
            * if an exception is not thrown (the expectedSL checks out)
            * then adds the SL successfully
            */
           case HasSecurityLevel(body, level) => {
+            System.out.println("hasSecuirtyLevel Synth")
             val expectedSL = SecurityLevel.findByName(level)
             val newBody = slCheckExpr(body, expectedSL)
             (HasSecurityLevel(newBody, level), expectedSL)
           }
           //create security level
           case DeclareSecurityLevel(name, parents, children, body) => {
+            System.out.println("DeclareSecurityLevel synth")
             //add the security level
             val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
             val (newBody, bodySL) = slSynthExpr(body)(context)
             (DeclareSecurityLevel(name,parents,children, newBody), declaredSecurityLevel)
           }
-          case expr => (expr, null)//unless a SL is specified, we just use null
+          
         }
       (expr ->> newExpr, exprSL)
-    } 
+    }catch {
+      case e: TypeException => {
+        throw (e.setPosition(expr.pos))
+      } 
+      }
     
   }
   
@@ -144,12 +168,14 @@ object securityChecker{
         }
         case DeclareSecurityLevel(name, parents, children, body) => {
            //add the security level
+          System.out.println("declareSecurityLevel Check")
             val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
             val (newBody, bodySL) = slSynthExpr(body)(context)
             DeclareSecurityLevel(name,parents,children, newBody)
         }
         case _ => {
           val (newExpr, exprSL) = slSynthExpr(expr)
+          System.out.println("check Expr _ SL: " + exprSL)
           if(exprSL != null)//we only check for when SL are used
           {
             //check that the exprSL is equal to the expected SL (lattice)
@@ -162,7 +188,11 @@ object securityChecker{
           newExpr
         }
       }
-    } 
+    } catch {
+      case e: TypeException => {
+        throw (e.setPosition(expr.pos))
+      }
+    }
 }
 
 
