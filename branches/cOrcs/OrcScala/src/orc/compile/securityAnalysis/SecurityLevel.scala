@@ -358,10 +358,20 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def canWrite(siteSl : SecurityLevel, argSl : SecurityLevel) : Boolean = {
       
-      if(argSl.allChildren.contains(siteSl))
-          true
+      if(siteSl == null || argSl == null)
+      {
+          if(siteSl == null) true //if the site is null it can write to any info w/ security (integrity)
+          //this means that argSl is null and siteSl isn't so we cant write info with security to something with none
+          else false 
+      }
       else
-          false
+      {
+        if(argSl.allChildren.contains(siteSl))
+            true
+        else
+            false
+    
+      }
     }
   }
 
