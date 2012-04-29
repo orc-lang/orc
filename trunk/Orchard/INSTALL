@@ -85,6 +85,18 @@ Note: The J2SE6 module is found in Jetty's contrib directory. Do not
       We've also included a subset of Jetty and its J2SE6 module in the
       ZIP archive.
 
+Logging, for Jetty:  Orc and Orchard use java.util.logging, and Jetty
+has its own org.mortbay.log interface. In our production environment,
+we pass the JVM arguments (via JAVA_OPTIONS in /etc/default/jetty6):
+-Djava.util.logging.config.file=/usr/share/jetty6/etc/logging.properties
+-Dorg.mortbay.log.class=orc.SyslogishJettyLogger
+The logging.properties file referenced above sets up a ConsoleHandler
+with our custom SyslogishFormatter, rather than Java's SimpleFormatter.
+Note that these custom classes must be on the classpath before the
+java.util.logging.LogManager.class and org.mortbay.log.Log classes are
+initialized.  Fortunately, the Jetty start.jar code does not reference
+either of these classes, so you can use the standard Jetty classloading
+features, shuch as putting classfiles or JARs under jetty.home/lib/ext.
 
 --
 [$Id$]

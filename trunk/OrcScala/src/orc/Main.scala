@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 20, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -94,13 +94,34 @@ object Main {
   lazy val orcCopyright: String = "(c) " + copyrightYear + " " + versionProperties.getProperty("orc.vendor")
   lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year")
 
+  // Must keep a reference to this logger, or it'll get GC-ed and the level reset
+  lazy val orcLogger = java.util.logging.Logger.getLogger("orc")
+
   def setupLogging(options: OrcOptions) {
-    val orcLogger = java.util.logging.Logger.getLogger("orc")
     val logLevel = java.util.logging.Level.parse(options.logLevel)
     orcLogger.setLevel(logLevel)
-    val logHandler = new java.util.logging.ConsoleHandler() //FIXME:Allow other handlers, or none...
-    logHandler.setLevel(logLevel)
-    orcLogger.addHandler(logHandler)
+    val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
+    testOrcLogRecord.setLoggerName(orcLogger.getName())
+    def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
+      for (handler <- checkLogger.getHandlers()) {
+            if (handler.isLoggable(testLogRecord))
+              return true
+      }
+      if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
+        return willLog(checkLogger.getParent(), testLogRecord) 
+      } else {
+        return false
+      }
+    }
+    if (!willLog(orcLogger, testOrcLogRecord)) {
+      /* Only add handler if no existing handler (here or in parents) is at our logging level */
+      val logHandler = new java.util.logging.ConsoleHandler()
+      logHandler.setLevel(logLevel)
+      orcLogger.addHandler(logHandler)
+      orcLogger.warning("No log handler found for 'orc' "+logLevel+" log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
+    }
+    orcLogger.config(orcImplName + " " + orcVersion)
+    orcLogger.config("Orc logging level: " + logLevel)
     //TODO: orcLogger.config(options.printAllTheOptions...)
   }
 
