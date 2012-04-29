@@ -70,14 +70,29 @@ trait OrcWithThreadPoolScheduler extends Orc {
     Logger.entering(getClass().getCanonicalName(), "stopScheduler")
     executorLock synchronized {
       if (executor != null) {
-        executor.shutdownRunner()
-        executor = null
+        executor.shutdownRunner(
+            { () => executorLock synchronized { executor = ShutdownScheduler} }, 
+            { () => executorLock synchronized { executor = null } })
       }
     }
+  }
+
+  object ShutdownScheduler extends OrcRunner {
+    def startupRunner() = 
+      throw new IllegalStateException("Cannot start a shutting down scheduler")
+
+    def executeTask(task: Schedulable) = 
+      { /* Silently discard task */ }
+
+    def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit) =
+      Logger.finer("Ignoring stop of scheduler while it was already shutting down")
   }
 }
 
 /** Interface from Orc runtime engine to an executor service
+  *
+  * This essentially is a simplified subset of scala.concurrent.FutureTaskRunner
+  * or java.util.concurrent.ExecutorService.
   *
   * @author jthywiss
   */
@@ -93,13 +108,10 @@ trait OrcRunner {
   @throws(classOf[SecurityException])
   def executeTask(task: Schedulable): Unit
 
-  /** Orderly shutdown; let running & enqueued tasks complete */
+  /** Orderly shutdown, wait, then force shutdown */
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def shutdownRunner(): Unit
-
-  @throws(classOf[InterruptedException])
-  def awaitTermination(timeoutMillis: Long): Boolean
+  def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit): Unit
 
 }
 
@@ -138,6 +150,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   setThreadFactory(OrcWorkerThreadFactory)
 
   @scala.volatile private var supervisorThread: Thread = null
+  @scala.volatile private var onShutdownStart: () => Unit = { () => }
+  @scala.volatile private var onShutdownFinish: () => Unit = { () => }
 
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
@@ -171,10 +185,15 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
 
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def shutdownRunner() {
+  def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit) {
     val t = supervisorThread
     if (t != null) {
+      this.onShutdownStart = onShutdownStart
+      this.onShutdownFinish = onShutdownFinish
       t.interrupt()
+    } else {
+      onShutdownStart()
+      onShutdownFinish()
     }
   }
 
@@ -218,7 +237,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             }
 
             // First, gently shut down
-            ifElapsed(0L, { shutdown() })
+            ifElapsed(0L, { onShutdownStart(); shutdown() })
             // After "a little while", we insist
             ifElapsed(120L, { shutdownNow() })
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
@@ -281,6 +300,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     } finally {
       try {
         if (!isTerminated) shutdownNow()
+        onShutdownFinish()
       } catch {
         case _ => /* Do nothing */
       }

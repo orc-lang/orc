@@ -233,7 +233,8 @@ public final class Job implements JobMBean {
 
 			/** Shut down the job engine when done running. */
 			@Override
-			public void halted() {
+			public void haltedOrKilled() {
+				logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program halted or killed");
 				stop();
 			}
 
