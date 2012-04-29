@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@ package orc;
 
 import java.awt.Desktop;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,28 +36,21 @@ import org.mortbay.jetty.webapp.WebAppContext;
  * @author quark
  */
 public class OrchardDemo {
-	private static void printUsage() {
-		System.err.println("Usage: ... [<port number>]");
-		System.exit(1);
-	}
+	private static Logger orchardLogger;
 
 	public static void main(final String args[]) throws Exception {
-		final Logger orchardLogger = Logger.getLogger("orc.orchard");
-		orchardLogger.setLevel(Level.FINER);
-		final java.util.logging.ConsoleHandler handler = new java.util.logging.ConsoleHandler();
-		handler.setLevel(Level.FINER);
-		orchardLogger.addHandler(handler);
+		setupLogging();
 
-		int PORT;
+		int port;
 		if (args.length == 0) {
-			PORT = 8080;
+			port = 8080;
 		} else if (args.length == 1) {
-			if (args[0].equals("--help") || args[0].equals("-help")) {
+			if (args[0].equals("--help") || args[0].equals("-help") || args[0].equals("-?")) {
 				printUsage();
 				return;
 			} else {
 				try {
-					PORT = Integer.valueOf(args[0]);
+					port = Integer.valueOf(args[0]);
 				} catch (final NumberFormatException _) {
 					printUsage();
 					return;
@@ -69,12 +63,36 @@ public class OrchardDemo {
 
 		// System.setProperty("DEBUG", "true");
 
+		startJetty(port);
+
+		Desktop.getDesktop().browse(new URI("http://localhost:" + port + "/demo.shtml"));
+	}
+
+	protected static void printUsage() {
+		System.err.println("Usage: ... [<port number>]");
+		System.exit(1);
+	}
+
+	protected static void setupLogging() throws SecurityException {
+		// Consistent syslog-ish logging format for JUL and Jetty
+		for (final java.util.logging.Handler handler : Logger.getLogger("").getHandlers()) {
+			if (handler instanceof java.util.logging.ConsoleHandler) {
+				handler.setLevel(Level.ALL);
+				handler.setFormatter(new SyslogishFormatter());
+			}
+		}
+		orchardLogger = Logger.getLogger("orc.orchard");
+		orchardLogger.setLevel(Level.FINER);
+		org.mortbay.log.Log.setLog(new SyslogishJettyLogger());
+	}
+
+	protected static void startJetty(final int port) throws URISyntaxException, Exception {
 		final Server server = new Server();
 		JettyHttpServerProvider.setServer(server);
 
 		final Connector connector = new SelectChannelConnector();
 		connector.setHost("localhost");
-		connector.setPort(PORT);
+		connector.setPort(port);
 		server.addConnector(connector);
 
 		final ContextHandlerCollection contexts = new ContextHandlerCollection();
@@ -88,8 +106,8 @@ public class OrchardDemo {
 
 		// set reasonable defaults for a demo
 		final Map<String, String> orchardInitParms = webappContext.getInitParams() != null ? webappContext.getInitParams() : new HashMap<String, String>();
-		orchardInitParms.put("orc.lib.orchard.forms.url", "http://localhost:" + PORT + "/orchard/FormsServlet");
-		orchardInitParms.put("orc.orchard.publishAddress", "http://localhost:" + PORT + "/orchard");
+		orchardInitParms.put("orc.lib.orchard.forms.url", "http://localhost:" + port + "/orchard/FormsServlet");
+		orchardInitParms.put("orc.orchard.publishAddress", "http://localhost:" + port + "/orchard");
 		orchardInitParms.put("orc.orchard.Accounts.url", "");
 		orchardInitParms.put("orc.orchard.GuestAccount.canImportJava", "true");
 		webappContext.setInitParams(orchardInitParms);
@@ -98,7 +116,5 @@ public class OrchardDemo {
 
 		server.setStopAtShutdown(true);
 		server.start();
-
-		Desktop.getDesktop().browse(new URI("http://localhost:" + PORT + "/demo.shtml"));
 	}
 }

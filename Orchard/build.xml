@@ -5,7 +5,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -33,6 +33,7 @@
 		<fileset dir="${basedir}">
 			<include name="lib/*.jar"/>
 			<include name="lib/jaxws-json.jar"/>
+			<include name="lib/orchard-logging.jar"/>
 			<!-- only used in demo jar -->
 			<exclude name="lib/jetty-*.jar"/>
 			<exclude name="lib/servlet-api*.jar"/>
@@ -183,6 +184,7 @@
 			<classes dir="build/classes">
 				<exclude name="orc/Orchard.class"/>
 				<exclude name="orc/OrchardDemo.class"/>
+				<exclude name="orc/Syslogish*"/>
 				<exclude name="org/jvnet/**"/>
 				<exclude name="META-INF/**"/>
 			</classes>
@@ -197,9 +199,20 @@
 	</target>
 
 	<!-- ================================= 
+          target: orchard-logging              
+         ================================= -->
+	<target name="orchard-logging" description="Build orchard-logging JAR">
+		<jar destfile="lib/orchard-logging.jar" whenmanifestonly="fail" duplicate="fail" index="true">
+			<fileset dir="build/classes">
+				<include name="orc/Syslogish*"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<!-- ================================= 
           target: demo-jar              
          ================================= -->
-	<target name="demo-jar" depends="war" description="Build the demo JAR">
+	<target name="demo-jar" depends="war,orchard-logging" description="Build the demo JAR">
 		<war destfile="build/demo-root.war" duplicate="fail">
 			<fileset dir="${orc.location.Website}">
 				<include name="demo.shtml"/>
@@ -345,6 +358,7 @@
 		<delete file="lib/orc-${orc.version}.jar"/>
 		<delete file="lib/orc-sites-${orc.version}.jar"/>
 		<delete file="lib/jaxws-json.jar"/>
+		<delete file="lib/orchard-logging.jar"/>
 		<delete dir="build" followsymlinks="false" includeemptydirs="true"/>
 	</target>
 
