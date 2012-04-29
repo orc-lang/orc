@@ -126,7 +126,7 @@ trait Handle {
 trait OrcEvent
 
 case class PublishedEvent(value: AnyRef) extends OrcEvent
-case object HaltedEvent extends OrcEvent
+case object HaltedOrKilledEvent extends OrcEvent
 case class CaughtEvent(e: Throwable) extends OrcEvent
 
 /** An action for a few major events reported by an Orc execution.
@@ -137,13 +137,13 @@ class OrcEventAction {
   val asFunction: (OrcEvent => Unit) = _ match {
     case PublishedEvent(v) => published(v)
     case CaughtEvent(e) => caught(e)
-    case HaltedEvent => halted()
+    case HaltedOrKilledEvent => haltedOrKilled()
     case event => other(event)
   }
 
   def published(value: AnyRef) {}
   def caught(e: Throwable) {}
-  def halted() {}
+  def haltedOrKilled() {}
 
   @throws(classOf[Exception])
   def other(event: OrcEvent) {}

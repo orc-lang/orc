@@ -16,7 +16,7 @@ package orc.run.core
 
 import java.util.logging.Level
 
-import orc.{ PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedEvent, CaughtEvent }
+import orc.{ PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedOrKilledEvent, CaughtEvent }
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
@@ -48,11 +48,11 @@ class Execution(
 
   override def kill() = {
     super.kill()
-    notifyOrc(HaltedEvent)
+    notifyOrc(HaltedOrKilledEvent)
   }
 
   def onHalt() {
-    notifyOrc(HaltedEvent)
+    notifyOrc(HaltedOrKilledEvent)
   }
 
   def run() = { assert(false, "Execution scheduled") }
