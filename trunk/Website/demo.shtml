@@ -44,7 +44,6 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/dice.orc">Dice</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/walk.orc">Random Walk</a></span></li>
 	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/path.orc">Shortest Path</a></span></li> -->
-	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/search.orc">Web Search</a></span></li>
 	<!-- <li><span class="file"><a class="demo-link" href="tryorc/small-demos/chat.orc">Google Talk</a></span></li> -->
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
