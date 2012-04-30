@@ -1,6 +1,6 @@
 {- Parser4.orc
  - 
- - Torture test for the Orc parser
+ - Torture test for the Orc compiler
  -
  - MISSPELLED SITE NAME
  - 

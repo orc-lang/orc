@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -52,15 +52,10 @@ public class OrcParserTest {
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
     final OrcBindings options = new OrcBindings();
     final StandardOrcCompiler envServices = new StandardOrcCompiler();
-    try {
-      Thread.sleep(10000L);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
     for (final File file : files) {
-      if (file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar)) {
-        continue; // Skip cases for invalid testing -- TODO:Look for a specific parse failure
+      if (file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar) &&
+          !file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar+"parse_fail"+File.separatorChar)) {
+        continue; // Only run cases for parser invalid testing
       }
       suite.addTest(new TestCase(file.toString()) {
         @Override
@@ -68,7 +63,11 @@ public class OrcParserTest {
           OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
           options.filename_$eq(file.toString());
           Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, options, envServices);
-          assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
+          if (!file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar)) {
+            assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
+          } else {
+            assertTrue("Parsing did not identify error: "+pr.toString(), !pr.successful());
+          }
         }
       });
     }

@@ -1,6 +1,6 @@
 {- Parser26.orc
  - 
- - Torture test for the Orc parser
+ - Torture test for the Orc compiler
  -
  - ARITY MISMATCH
  - 
