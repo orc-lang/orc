@@ -1,3 +1,5 @@
+{- kenken.orc -}
+
 -- Input a number like 2243 under the appropriate operation.
 -- It is read as "decompose 224 into 3 cells under that operation".
 -- To add a list of values [2,7,9] that appear in n lines, write [n,2,7,9]
@@ -45,17 +47,17 @@ def sum11(h,p,v) = parts(1,1,h,p,v)
 def sum01(h,p,v) = parts(0,1,h,p,v) 
 
 def sizePrompt() =
-	Prompt("Welcome to KENKEN helper. What is the board size?")  >r> Read(r) >board>
-	(if (board <: 6 || board :> 9) 
-	  then Println("Board size must be between 6 and 9") >> sizePrompt()
-	  else board)
+	    Prompt("Welcome to KENKEN helper. What is the board size?")  >r> Read(r) >board>
+	    (if (board <: 6 || board :> 9) 
+	      then Println("Board size must be between 6 and 9") >> sizePrompt()
+	      else board)
 
 def main() =
-	sizePrompt() >board>
-	(  interface("outline * " ,prod0,board)
-	 | interface("inline * "  ,prod1,board)
-	 | interface("inline + "  ,sum11,board)
-	 | interface("outline + " ,sum01,board)
-	)
+	    sizePrompt() >board>
+	    (  interface("outline * " ,prod0,board)
+	     | interface("inline * "  ,prod1,board)
+	     | interface("inline + "  ,sum11,board)
+	     | interface("outline + " ,sum01,board)
+	    )
 
 main()

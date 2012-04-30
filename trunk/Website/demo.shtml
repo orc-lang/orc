@@ -49,6 +49,9 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/forms.orc">Web Forms</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/airline1.orc">Airline Agent</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/hotbits.orc">Hotbits</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/stopwatch.orc">Stopwatch</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/response_time_game.orc">Response Time Game</a></span></li>
+	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/kenken.orc">KenKen Helper</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Large Demos</span><ul>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
@@ -63,7 +66,6 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email.orc">Send Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spam.orc">Spam</a></span></li>
-	<li><span class="file"><a class="demo-link" href="tryorc/restricted/kenken.orc">KenKen Helper</a></span></li>
 	</ul></li>
 </ul>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
