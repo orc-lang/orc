@@ -103,7 +103,7 @@ def findShows(city, numberOfShows) =
 -- execution
 Println("Authenticating...") >>
 GoogleCalendar.authenticate(oauth.authenticate("google", "scope", "http://www.google.com/calendar/feeds/")) >>
-findShows(Prompt("Search in city: "), 10) >show> 
+findShows(Prompt("Search in city: "), 50) >show> 
 GoogleCalendar.addEventToCalendar(
   show.title, 
   show.content, 
