@@ -68,7 +68,7 @@ def writer(lock :: RW) =
 
 val rw = RW()
 
-signal >>
+#
 ( upto(1000) >> reader(rw) >> stop 
 | upto(1000) >> writer(rw) >> stop)
 ; Println("Final value: "+(v?)) >> stop

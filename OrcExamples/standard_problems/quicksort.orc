@@ -44,7 +44,7 @@ def partition(p, l, r) =
 
    {- Goal Expression for partition(p, l, r)
       Below, lr and rl run in parallel. -}
-   signal >>
+   #
    (lr(l), rl(r)) >(l', r')>
 
    ( Ift(l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)

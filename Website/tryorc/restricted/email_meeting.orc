@@ -72,7 +72,7 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
       (if span.isEmpty()
       then Error("Empty date range. Please try again.")
       else span)
-    signal >> (data.get("fromName")+" <"+data.get("fromEmail")+">",
+    # (data.get("fromName")+" <"+data.get("fromEmail")+">",
      data.get("meetingTopic"), data.get("duration"),
      span, invitees,
      data.get("quorum"), data.get("timeLimit"),

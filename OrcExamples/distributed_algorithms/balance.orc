@@ -32,7 +32,7 @@ def compute(n) = lambda(x) = Println("Site " + n) >> x*x
 
 
 
-signal >>
+#
 ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
 -- FIXME: Replace the Rwait here with some type of Buffer.awaitEmpty function
   ; Rwait(15) >> out.close() >> stop )

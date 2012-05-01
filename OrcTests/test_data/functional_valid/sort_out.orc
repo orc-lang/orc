@@ -14,7 +14,7 @@ def sort(input, comparator) =
   def sort_Channel() :: Signal
   def sort_Channel() = (b.get() >x> (l := sort_aux(x, l?))  >> sort_Channel() >> stop); signal
  
-  signal >> (input() >x> b.put(x)  >> stop; b.close()>>stop) | sort_Channel() >> l?
+  # (input() >x> b.put(x)  >> stop; b.close()>>stop) | sort_Channel() >> l?
 
 
 sort(lambda()=( (1,(2,3)) | (4,true) | (5,[6,7]) | (8,signal) ) >(x,_)> x, 

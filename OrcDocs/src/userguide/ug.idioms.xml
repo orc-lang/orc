@@ -570,7 +570,7 @@ two <code>val</code> declarations, and then form a tuple of their results, this 
 <programlisting language="orc">
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
-   signal >> (x,y)
+   # (x,y)
 </programlisting>
 </para>
 
@@ -1092,7 +1092,7 @@ publications.
 
 <programlisting language="orc"><![CDATA[
 val r = Cell()
-signal >>
+#
    (]]><emphasis role="bold">F</emphasis><![CDATA[ <x< c.read()) | (]]><emphasis role="bold">G</emphasis><![CDATA[ >x> c.write(x))
 ]]>
 </programlisting>

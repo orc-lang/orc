@@ -321,7 +321,7 @@ def (||)(x,y) = x + ", or " + y
 def (~)(x) = "not " + x
 def (?)(r) = r + ", that is the question."
 
-signal >> ("To be" || ~ "to be")?
+# ("To be" || ~ "to be")?
 
 {-
 OUTPUT:

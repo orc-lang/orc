@@ -31,7 +31,7 @@ def dfs(i) =
   scan(conn(i)?)
 
 -- Goal expression. First specify the graph structure.
-signal >>
+#
 ( conn(0) := [1,2,3,4]
 , conn(1) := [0,5]
 , conn(2) := [0,4]
