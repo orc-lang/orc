@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,13 +16,16 @@
 package edu.utexas.cs.orc.orceclipse.project;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
+import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.build.OrcNature;
 
 /**
@@ -63,6 +66,14 @@ public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
 	 */
 	@Override
 	public void run(final IAction action) {
+		try {
+			if (fProject.getNature("org.eclipse.jdt.core.javanature") != null) { //$NON-NLS-1$
+				MessageDialog.openError(null, Messages.EnableOrcNature_AlreadyJavaErrorTitle, Messages.EnableOrcNature_AlreadJavaErrorMessage);
+				return;
+			}
+		} catch (CoreException e) {
+			// This is OK, it means we don't have javanature
+		}
 		new OrcNature().addToProject(fProject);
 	}
 
