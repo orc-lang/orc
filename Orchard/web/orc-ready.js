@@ -121,6 +121,7 @@ function jsonToHtml(v) {
  */
 function publicationToHtml(v) {
 	if (v == null) return jsonToHtml(null);
+	if (v["@xsi.nil"]) return jsonToHtml(null);
 	switch (v["@xsi.type"]) {
 		// XSD types
 		case 'xs:string': return jsonToHtml(v.$);
