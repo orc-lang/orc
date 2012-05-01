@@ -173,7 +173,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 	protected static void initDefaultPrefs() {
 		// We don't want to use a preferences.ini / preferences.properties file for default preferences,
 		// but instead get them from the OrcOptions class's defaults. Activator gives us the opportunity to set the defaults here.
-		final IEclipsePreferences defaultPrefs = new DefaultScope().getNode(Activator.getInstance().getLanguageID());
+		final IEclipsePreferences defaultPrefs = DefaultScope.INSTANCE.getNode(Activator.getInstance().getLanguageID());
 		defaultPrefs.put(LOG_LEVEL_ATTR_NAME, LOG_LEVEL_DEFAULT);
 		defaultPrefs.putBoolean(PRELUDE_ATTR_NAME, PRELUDE_DEFAULT);
 		defaultPrefs.put(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT);

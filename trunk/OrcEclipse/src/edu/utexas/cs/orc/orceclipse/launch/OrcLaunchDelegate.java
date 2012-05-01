@@ -105,7 +105,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		if (monitorNN == null) {
 			monitorNN = new NullProgressMonitor();
 		}
-		monitorNN.beginTask(MessageFormat.format("{0}...", new String[] { configuration.getName() }), 2); //$NON-NLS-1$
+		monitorNN.beginTask(MessageFormat.format("{0}...", new Object[] { configuration.getName() }), 2); //$NON-NLS-1$
 		// check for cancellation
 		if (monitorNN.isCanceled()) {
 			return;
