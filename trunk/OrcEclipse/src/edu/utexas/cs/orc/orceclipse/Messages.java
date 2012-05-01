@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Sep 8, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,6 +25,8 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "edu.utexas.cs.orc.orceclipse.messages"; //$NON-NLS-1$
 	public static String Activator_InternalError;
+	public static String EnableOrcNature_AlreadJavaErrorMessage;
+	public static String EnableOrcNature_AlreadyJavaErrorTitle;
 	public static String NewOrcFileWizardPage_Descrption;
 	public static String NewOrcFileWizardPage_Title;
 	public static String OrcBuilder_BuildingOrcFile;
