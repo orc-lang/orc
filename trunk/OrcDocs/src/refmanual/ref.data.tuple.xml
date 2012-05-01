@@ -80,7 +80,7 @@ is a tuple type, written <code>(</code><replaceable>T<subscript>0</subscript></r
 
 val squares = [(1,1), (2,4), (3,9), (4,16)]
 
-signal >> ( map(fst,squares) , map(snd,squares) ) 
+# ( map(fst,squares) , map(snd,squares) ) 
 
 {-
 OUTPUT:

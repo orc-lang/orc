@@ -258,9 +258,9 @@ Orc imposes the following syntactic constraint:
 <para><emphasis>An expression that follows a declaration begins with an alphanumeric symbol</emphasis></para>
 	
 <para>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
-write it as <code>signal >> (x,y)</code>. Similarly, write <code>signal >> -3</code>, in case <code>-3</code> is
+write it as <code># (x,y)</code>. Similarly, write <code># -3</code>, in case <code>-3</code> is
 the goal expression in the above example.  Note that there are many solutions to this problem; for example
-using <code>stop | (x,y)</code> is also valid.</para>
+using <code>signal >> (x,y)</code> or <code>stop | (x,y)</code> is also valid.</para>
 
 </section>
 	

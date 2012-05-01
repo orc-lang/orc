@@ -459,7 +459,7 @@ def quicksort(a) =
     def lr(i) = if i <: t && a(i)? <= p then lr(i+1) else i
     def rl(i) = if a(i)? :> p then rl(i-1) else i
 
-    signal >>
+    #
       (lr(s), rl(t)) >(s', t')>
       ( Ift (s' + 1 <: t') >> swap(s', t') >> part(p, s'+1, t'-1)
       | Ift (s' + 1 = t') >> swap(s', t') >> s'

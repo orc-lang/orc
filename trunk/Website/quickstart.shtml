@@ -6,7 +6,7 @@
 <ol>
 <li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
 <li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>
-<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.3 or later. These
+<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.5 or later. These
 instructions assume version 3.6.2, but other versions should behave similarly.</li>
 <li><a href="http://www.eclipse.org/subversive/">Subversive</a>. You may also use
 	<a href="http://subclipse.tigris.org">Subclipse</a>, or

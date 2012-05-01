@@ -16,7 +16,7 @@ val c =
 -- a predictable sequence
 val pubs = Channel[Integer]()
 
-signal >>
+#
 (
   pubs.put(a(0)) >> stop
   ; pubs.put(a(1)) >> stop

@@ -13,7 +13,7 @@ def findCube(i, x) if (i*i*i :> x) = stop {- unneeded, but helps improve readabi
 
 val cubeOf = {. unapply = lambda (x :: Integer) = findCube(0,x) .}
 
-signal >> (63|64|65) >cubeOf(i)> i
+# (63|64|65) >cubeOf(i)> i
 
 {-
 OUTPUT:
