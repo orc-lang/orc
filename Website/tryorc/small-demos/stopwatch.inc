@@ -1,4 +1,6 @@
-{- stopwatch.orc -- Orc program which simulates a stopwatch
+{- stopwatch.inc -- Orc include file stopwatch.inc
+ -
+ - $Id$
  -
  - Created by misra on Mar 15, 2010 4:10:00 PM
  -}
@@ -70,18 +72,3 @@ def class Stopwatch() =
   def isrunning() = running?
 
   stop
-
-{- Test
-   The output is the time it takes to do a single search. Currently, only
-   the Google search engine is supported. Replace the arguments in the
-   call to test to search for a different string or to compute the running
-   time of other sites, such as test(Rwait,100).
--}
-
-val sw = Stopwatch()
-def test(s,v) =
-  sw.reset() >>
-  sw.start() >> s(v) >> sw.halt()
-
-test(Google,"Edsger W. Dijkstra") >t>
-("time taken = " + t)

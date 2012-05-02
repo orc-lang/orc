@@ -1,10 +1,9 @@
 {- response_time_game.orc
- - 
+ -
  - Created by misra on Jul 9, 2010 10:33:45 AM
  -}
 
-include "http://userweb.cs.utexas.edu/users/misra/temporaryFiles.dir/StopWatch.inc"
-
+include "http://orc.csres.utexas.edu/tryorc/small-demos/stopwatch.inc"
 val sw = Stopwatch()
 
 val (id,dd) = (3000,100)
@@ -15,40 +14,28 @@ def rand_seq() = Random(10) |  Rwait(dd) >> rand_seq()
 
 def game() =
 {- game() conducts one game and returns a pair (b,w).
-   b is true iff user responds only after v is printed; 
-   then the response time is w 
+  b is true iff user responds only after v is printed;
+  then the response time is w
 -}
+
   val v = Random(10) -- v is a random digit for one game
 
-  val (b,w) = 
-    sw.reset() >> Rwait(id) >> rand_seq() >x> Println(x) >>
+  val (b,w) =
+      Rwait(id) >> rand_seq() >x> Println(x) >>
       Ift(x = v) >> sw.start() >> stop
-
-  | Prompt("Press ENTER/OK for "+v) >> 
+    | Prompt("Press ENTER for SEED "+v) >>
       sw.isrunning() >b> sw.halt() >w> (b,w)
 
-  Let(b,w)
+  {- Goal Expression of Game -}
+  if b then
+  ("Response time = " +w)
+  else ("You jumped the gun.")
 
-def games() =
-{- games() conducts a session consisting of, possibly, multiple games. 
-   For each properly concluded game, it displays the response time.
-   For a game that is prematurely concluded, it terminates the entire session.
-   The only way to terminate a session is by hitting ENTER asap, or by
-   terminating the run from Eclipse.
--}
-  game() >(b,w)> 
-    (if b then
-      (Println("Response time = " +w) >> games())
-      else (Println("Game Over") >> stop))
-
-games()
-
-{- Notes:
-   rand_seq() resembles a Metronome.
-
-   Definition of game() ensures that any user input causes termination of
-     rand_seq() since it is a Orc function
-
-   If rand_seq() generates multiple values equal to v, sw.start() will be called
-   for each of them. But, beyond the first call, sw.start() has no effect.
--}
+{- Goal Expression of the program -}
+Println("This game measures your response time.") >>
+Println("You will be shown a decimal digit, the SEED, for a few seconds.") >>
+Println("Then you will see a stream of digits.") >>
+Println("Press ENTER as soon as you see the SEED in this stream.") >>
+Println("Your response time is the time you took to press ENTER after the SEED was first published.") >>
+Prompt("Ready to go? Press ENTER to start the game") >>
+game()
