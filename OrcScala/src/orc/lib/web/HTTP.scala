@@ -63,6 +63,19 @@ object HTTP extends TotalSite {
       ("url", url.toString())))
   }
 
+  private def charEncodingFromContentType(contentType: java.lang.String): java.lang.String = {
+    //TODO: Don't break if quoted parameter values are used (see RFC 2045 section 5.1)
+    val contentTypeParams = contentType.split(";").map(_.trim()).toList.tail
+    val charsetValues = List("ISO-8859-1") /* default per RFC 2616 section 3.7.1 */ ++ (
+      for (param <- contentTypeParams if param.toLowerCase().startsWith("charset="))
+        yield param.substring(8)
+      )
+    charsetValues.last
+  }
+
+  lazy val userAgent = "Orc/" + orc.Main.versionProperties.getProperty("orc.version") +
+      " Java/" + java.lang.System.getProperty("java.version")
+
   case class HTTPGet(url: URL) extends Site0 {
     def call(h: Handle) {
       val getAction =
@@ -71,15 +84,18 @@ object HTTP extends TotalSite {
             val conn = url.openConnection
             conn.setConnectTimeout(10000)
             conn.setReadTimeout(5000)
+            conn.setRequestProperty("User-Agent", userAgent)
             conn.connect()
 
-            val headerEncoding = conn.getContentEncoding()
-            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" }
-            val in = Source.fromInputStream(conn.getInputStream, encoding)
+            val contentType = conn.getContentType()
+            //TODO: Confirm our assumption that the content is a character stream
+            val charEncoding = charEncodingFromContentType(contentType)
+            val in = Source.fromInputStream(conn.getInputStream, charEncoding)
             val result = in.mkString
             in.close
             h.publish(result)
           }
+          
         }
       (new Thread(getAction)).start()
     }
@@ -95,15 +111,19 @@ object HTTP extends TotalSite {
             conn.setConnectTimeout(10000)
             conn.setReadTimeout(5000)
             conn.setDoOutput(true)
+            conn.setRequestProperty("User-Agent", userAgent)
+            //FIXME: Set POSTed data's Content-Type correctly
+            conn.setRequestProperty("Content-Type", "text/plain; charset=UTF-8")
             conn.connect()
 
             val out = new OutputStreamWriter(conn.getOutputStream, "UTF-8")
             out.write(post)
             out.close
 
-            val headerEncoding = conn.getContentEncoding()
-            val encoding = if (headerEncoding != null) { headerEncoding } else { "UTF-8" }
-            val in = Source.fromInputStream(conn.getInputStream, encoding)
+            val contentType = conn.getContentType()
+            //TODO: Confirm our assumption that the content is a character stream
+            val charEncoding = charEncodingFromContentType(contentType)
+            val in = Source.fromInputStream(conn.getInputStream, charEncoding)
             val result = in.mkString
             in.close
             h.publish(result)
