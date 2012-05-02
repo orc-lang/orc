@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Mar 3, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,7 +14,7 @@
 //
 package orc.lib.web
 
-import orc.values.sites.{ TotalSite, Site0, Site1 }
+import orc.values.sites.{ TotalSite, Site0, Site1, Site2 }
 import orc.values.OrcRecord
 import orc.Handle
 import orc.error.runtime.SiteException
@@ -26,7 +26,7 @@ import java.net.URL
 
 import scala.io.Source
 
-/**
+/** The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
   *
   * @author dkitchin, Blake
   */
@@ -67,7 +67,7 @@ object HTTP extends TotalSite {
     //TODO: Don't break if quoted parameter values are used (see RFC 2045 section 5.1)
     val contentTypeParams = contentType.split(";").map(_.trim()).toList.tail
     val charsetValues = List("ISO-8859-1") /* default per RFC 2616 section 3.7.1 */ ++ (
-      for (param <- contentTypeParams if param.toLowerCase().startsWith("charset="))
+      for (param <- contentTypeParams if param.toLowerCase.startsWith("charset="))
         yield param.substring(8)
       )
     charsetValues.last
@@ -95,15 +95,19 @@ object HTTP extends TotalSite {
             in.close
             h.publish(result)
           }
-          
         }
       (new Thread(getAction)).start()
     }
   }
 
-  case class HTTPPost(url: URL) extends Site1 {
-    def call(a: AnyRef, h: Handle) {
+  case class HTTPPost(url: URL) extends Site2 {
+    def call(a: AnyRef, b: AnyRef, h: Handle) {
       val post = a.toString
+      val postContentType = b.toString +
+          (if (b.toString.toLowerCase.contains("charset="))
+            ""
+          else
+            "; charset=UTF-8")
       val postAction =
         new Runnable {
           def run() {
@@ -112,11 +116,10 @@ object HTTP extends TotalSite {
             conn.setReadTimeout(5000)
             conn.setDoOutput(true)
             conn.setRequestProperty("User-Agent", userAgent)
-            //FIXME: Set POSTed data's Content-Type correctly
-            conn.setRequestProperty("Content-Type", "text/plain; charset=UTF-8")
+            conn.setRequestProperty("Content-Type", postContentType)
             conn.connect()
 
-            val out = new OutputStreamWriter(conn.getOutputStream, "UTF-8")
+            val out = new OutputStreamWriter(conn.getOutputStream, charEncodingFromContentType(postContentType))
             out.write(post)
             out.close
 

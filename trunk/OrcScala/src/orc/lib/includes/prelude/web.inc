@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -44,10 +44,11 @@ Performs a GET request on the URL used to create this HTTP site.
 The payload is empty. 
 The response is published as a single <link linkend="ref.data.string">string</link>.
 
-@method http.post(String) :: String
+@method http.post(String, String) :: String
 
 Performs a POST request on the URL used to create this HTTP site. 
-The string argument is used as a UTF-16 encoded payload.
+The first string argument is used as the payload of the POST request.
+The second string argument is used as the request's Content-Type header value.
 The response is published as a single string.
 
 @method http.url :: String
