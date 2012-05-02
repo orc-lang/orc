@@ -22,7 +22,7 @@ The implementation uses the call-back mechanism used in the
 Readers-Writers solution.
 -}
 include "../synchronization/BoundedChannel.inc"
-include "../clock_time/StopWatch.inc"
+include "../clock_time/stopwatch.inc"
 
 def class Sequencer(n) = 
  val bb = BChannel(n)  -- waiting customers' semaphores
