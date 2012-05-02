@@ -26,7 +26,6 @@ import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 import net.oauth.OAuth.Parameter;
 import orc.Handle;
-import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;
@@ -48,9 +47,6 @@ public class GuiOAuthProvider extends OAuthProvider {
 			@Override
 			public void callSite(final Args args, final Handle caller) throws TokenException {
 				try {
-					if (args.size() != 2) {
-						throw new ArityMismatchException(2, args.size());
-					}
 					final String consumer = args.stringArg(0);
 					final List<OAuth.Parameter> request = OAuth.newList();
 			        for (int p = 1; p + 1 < args.size(); p += 2) {
