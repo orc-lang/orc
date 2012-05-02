@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -31,6 +31,12 @@ public class Exponent extends EvalSite implements TypedSite {
 	private static final class MyOperator implements NumericBinaryOperator<Number> {
 		@Override
 		public Number apply(final BigInteger a, final BigInteger b) {
+            if (a.signum() == 0)
+                return (b.signum() == 0 ? BigInteger.ONE : a);
+            if (a.equals(BigInteger.ONE))
+                return a;
+            if (b.bitLength() >= Integer.SIZE)
+                throw new ArithmeticException("Exponent out of range");
 			return a.pow(b.intValue());
 		}
 
@@ -44,7 +50,6 @@ public class Exponent extends EvalSite implements TypedSite {
 				// This _can_ lose precision.
 				return Double.valueOf(java.lang.Math.pow(a.doubleValue(), b.doubleValue()));
 			}
-
 		}
 
 		@Override
