@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -47,7 +47,8 @@ The <code>HTTP</code> site publishes a site (call it <replaceable>H</replaceable
 <replaceable>H</replaceable><code>.get()</code> performs a <code>GET</code> request on the URL used to create <replaceable>H</replaceable>. 
 </para></listitem>
 <listitem><para>
-<replaceable>H</replaceable><code>.post(</code><replaceable>P</replaceable><code>)</code> performs a <code>POST</code> request with payload <replaceable>P</replaceable> on the URL used to create <replaceable>H</replaceable>. 
+<replaceable>H</replaceable><code>.post(</code><replaceable>P</replaceable><code>,</code><replaceable>T</replaceable><code>)</code> performs a <code>POST</code> request with payload <replaceable>P</replaceable> on the URL used to create <replaceable>H</replaceable>. 
+The request's <code>Content-Type</code> header is set to <replaceable>T</replaceable>. 
 </para></listitem>
 </itemizedlist>
 </para>
