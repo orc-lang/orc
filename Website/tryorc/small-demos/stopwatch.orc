@@ -78,6 +78,9 @@ def class Stopwatch() =
    time of other sites, such as test(Rwait,100).
 -}
 
+include "net.inc"
+val Google = GoogleSearchFactory("orc/orchard/orchard.properties")
+
 val sw = Stopwatch()
 def test(s,v) =
   sw.reset() >>
