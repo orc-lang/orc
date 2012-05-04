@@ -13,6 +13,7 @@
 
 package orc.orchard;
 
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -241,7 +242,17 @@ class DbAccounts extends Accounts {
 	private String generateSalt() {
 		final byte[] bytes = new byte[16];
 		random.nextBytes(bytes);
-		return new String(bytes);
+		/* Restrict the bytes to graphic characters in ISO 8859-1 */
+		for (int i = 0; i < bytes.length; i++) {
+			boolean ok = false;
+			while (!ok) {
+				ok = ((bytes[i] & 0x7f) >= 0x20) &&
+						(bytes[i] != 0x7f);
+				if (!ok)
+					bytes[i] = (byte)random.nextInt(256);
+			}
+		}
+		return new String(bytes, Charset.forName("ISO-8859-1"));
 	}
 
 	@Override
