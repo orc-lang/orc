@@ -290,7 +290,7 @@ public final class Job implements JobMBean {
 	protected Job(final String id, final Expression expression, final OrcOptions config, final Account owner) {
 		this.id = id;
 		this.owner = owner;
-		logger.fine("Orchard job \"" + id + "\": Created");
+		logger.fine("Orchard job \"" + id + "\": Created, user = " + getOwner());
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config, "Orchard Job " + id);
 	}
