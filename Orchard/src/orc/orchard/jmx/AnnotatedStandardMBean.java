@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,6 +17,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.NotCompliantMBeanException;
@@ -88,6 +90,32 @@ public class AnnotatedStandardMBean extends StandardMBean {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	protected String getDescription(final MBeanInfo info) {
+		String descr = info.getDescription();
+		final JMXDescription d = getMBeanInterface().getAnnotation(JMXDescription.class);
+		if (d != null) {
+			descr = d.value();
+		}
+		return descr;
+	}
+
+	private static final String[] emptyParmList = new String[0];
+
+	@Override
+	protected String getDescription(final MBeanAttributeInfo info) {
+		String descr = info.getDescription();
+		final String getterName = (info.isIs() ? "is" : "get") + info.getName();
+		final Method m = findMethod(getMBeanInterface(), getterName, emptyParmList);
+		if (m != null) {
+			final JMXDescription d = m.getAnnotation(JMXDescription.class);
+			if (d != null) {
+				descr = d.value();
+			}
+		}
+		return descr;
 	}
 
 	@Override

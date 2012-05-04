@@ -153,6 +153,10 @@ public final class Job implements JobMBean {
 			waiters.resumeAll();
 		}
 
+		public synchronized int size() {
+			return bufferedSize;
+		}
+
 		public synchronized int getTotalNumEvents() {
 			return sequence;
 		}
@@ -173,6 +177,7 @@ public final class Job implements JobMBean {
 	}
 
 	private Date startDate;
+	private Date endDate;
 
 	public class JobEngine extends StandardOrcRuntime {
 		private final StringBuffer printBuffer = new StringBuffer();
@@ -279,10 +284,12 @@ public final class Job implements JobMBean {
 	/** Tasks to run when the job finishes. */
 	private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
 	private final String id;
+	private final Account owner;
 	protected static Logger logger = Logger.getLogger("orc.orchard");
 
-	protected Job(final String id, final Expression expression, final OrcOptions config) {
+	protected Job(final String id, final Expression expression, final OrcOptions config, final Account owner) {
 		this.id = id;
+		this.owner = owner;
 		logger.fine("Orchard job \"" + id + "\": Created");
 		this.events = new EventBuffer(10);
 		engine = new JobEngine(expression, config, "Orchard Job " + id);
@@ -346,6 +353,7 @@ public final class Job implements JobMBean {
 	 */
 	@Override
 	public synchronized void cancel() {
+		endDate = new Date();
 		logger.fine("Orchard job \"" + id + "\": Finished/canceled");
 		if (engine != null) {
 			engine.stop();
@@ -401,7 +409,20 @@ public final class Job implements JobMBean {
 
 	@Override
 	public Date getStartDate() {
-		return (Date) startDate.clone();
+		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	@Override
+	public String getRunningTime() {
+		final long elapsed = (events.isClosed() ? endDate.getTime() : System.currentTimeMillis()) - startDate.getTime();
+		return	elapsed / 86400000 + " d " + 
+				elapsed / 3600000 % 24 + " hr " + 
+				elapsed / 60000 % 60 + " min " + 
+				elapsed / 1000 % 60 + " s"; 
 	}
 
 	/**
@@ -431,7 +452,31 @@ public final class Job implements JobMBean {
 	}
 
 	@Override
+	public String getOwner() {
+		return owner.getUsername();
+	}
+
+	@Override
 	public int getTotalNumEvents() {
 		return events.getTotalNumEvents();
 	}
+
+	@Override
+	public int getNumBufferedEvents() {
+		return events.size();
+	}
+
+	@Override
+	public int getNumPendingPrompts() {
+		return pendingPrompts.size();
+	}
+
+	@Override
+	public int getTokenCount() {
+		if (engine.roots().size() != 1 || engine.roots().head().get().isEmpty()) {
+			return -1;
+		}
+		return engine.roots().head().get().get().tokenCount().get();
+	}
+
 }
