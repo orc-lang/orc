@@ -78,12 +78,19 @@ public abstract class Accounts implements AccountsMBean {
 
 	private class CachedAccount extends Account {
 		private final int account_id;
+		private final String username;
 		public ObjectName jmxid;
 
-		public CachedAccount(final int account_id) {
+		public CachedAccount(final int account_id, final String username) {
 			this.account_id = account_id;
+			this.username = username;
 			this.jmxid = JMXUtilities.newObjectName(this, url + "/" + Integer.toString(account_id));
 			JMXUtilities.registerMBean(this, jmxid);
+		}
+
+		@Override
+		public String getUsername() {
+			return username;
 		}
 
 		@Override
@@ -109,7 +116,7 @@ public abstract class Accounts implements AccountsMBean {
 		if (accounts.containsKey(account_id)) {
 			out = accounts.get(account_id);
 		} else {
-			out = new CachedAccount(account_id);
+			out = new CachedAccount(account_id, rs.getString("username"));
 			accounts.put(account_id, out);
 			out.setQuota((Integer) rs.getObject("quota"));
 			out.setLifespan((Integer) rs.getObject("lifespan"));

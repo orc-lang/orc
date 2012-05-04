@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -103,7 +103,7 @@ public abstract class Account implements AccountMBean {
 		if (quota != null && jobs.size() >= quota) {
 			throw new QuotaException();
 		}
-		final Job job = new Job(id, expr, config);
+		final Job job = new Job(id, expr, config, this);
 		job.setStartDate(new Date());
 		jobs.put(id, job);
 		final OrchardTimer.Task jobTimeoutTask = new OrchardTimer.Task() {
@@ -151,6 +151,8 @@ public abstract class Account implements AccountMBean {
 			onNoMoreJobs();
 		}
 	}
+
+	public abstract String getUsername();
 
 	protected abstract void onNoMoreJobs();
 

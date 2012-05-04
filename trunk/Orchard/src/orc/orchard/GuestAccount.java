@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,6 +27,11 @@ public class GuestAccount extends Account {
 		setStackSize(OrchardProperties.getInteger("orc.orchard.GuestAccount.stackSize", getStackSize()));
 		setTokenPoolSize(OrchardProperties.getInteger("orc.orchard.GuestAccount.tokenPoolSize", getTokenPoolSize()));
 		setMaxThreads(OrchardProperties.getInteger("orc.orchard.GuestAccount.maxThreads", getMaxThreads()));
+	}
+
+	@Override
+	public String getUsername() {
+		return "(guest)";
 	}
 
 	@Override
