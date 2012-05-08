@@ -68,6 +68,7 @@ load it as tryorc.shtml?mock
 	</ul></li>
 <li id="login"><span class="file"><a href="https://orc.csres.utexas.edu/orchard/LoginServlet">Restricted Login</a></span></li>
 </ul>
+<p class="notice">Activity on this Web site may be monitored or logged.</p>
 </td><td valign="top" style="padding: 0 10px 0 10px" id="main">
 <div id="header">
 <h1>Try Orc!</h1>
