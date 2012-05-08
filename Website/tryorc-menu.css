@@ -43,6 +43,11 @@ h1 {
 .file a {
 	cursor: pointer;
 }
+.notice {
+    font: italic 10px Verdana,sans-serif;
+	color: #555;
+    margin-top: 1.5em;
+}
 /* I don't like the link highlighting */
 #menu a {
 	color: #466;
