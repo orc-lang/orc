@@ -30,7 +30,8 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
         bottom.myName = "BOTTOM"
       val top = new SecurityLevel()
         top.myName = "TOP"
-          
+      val default = new SecurityLevel()    
+        default.myName = "DEFAULT"
       /**
      * need to initialize top and bottom SecurityLevel of graph
      */
@@ -40,6 +41,14 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           SecurityLevel.top.allChildren = List(SecurityLevel.bottom)
           SecurityLevel.bottom.allChildren= List(SecurityLevel.bottom)//bottomSecurityLevel should have itself as the bottomSecurityLevel
           SecurityLevel.bottom.allParents = List(SecurityLevel.top)
+          SecurityLevel.default.allParents = List(SecurityLevel.top)
+          SecurityLevel.default.allChildren = List(SecurityLevel.bottom)
+          
+          //set up default's immmediate parents/children
+          SecurityLevel.default.immediateParents = List(SecurityLevel.top)
+          SecurityLevel.default.immediateChildren = List(SecurityLevel.bottom)
+          SecurityLevel.top.immediateChildren = List(SecurityLevel.default)
+          SecurityLevel.bottom.immediateParents = List(SecurityLevel.default)
       }
     
     
@@ -358,19 +367,27 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def canWrite(siteSl : SecurityLevel, argSl : SecurityLevel) : Boolean = {
       
-      if(siteSl == null || argSl == null)
+      if(argSl eq siteSl) //can write if we are the same security level
       {
-          if(siteSl == null) true //if the site is null it can write to any info w/ security (integrity)
-          //this means that argSl is null and siteSl isn't so we cant write info with security to something with none
-          else false 
+        true
       }
-      else
-      {
-        if(argSl.allChildren.contains(siteSl))
-            true
+      else{
+        //we aren't the same security level      
+        if(siteSl == null || argSl == null)
+        {
+            if(siteSl == null) true //if the site is null it can write to any info w/ security (integrity)
+            //this means that argSl is null and siteSl isn't so we cant write info with security to something with none
+            else false 
+        }
         else
-            false
-    
+        {
+          //can write if the object is of higher security
+          if(argSl.allChildren.contains(siteSl))
+              true
+          else
+              false
+      
+        }
       }
     }
   }

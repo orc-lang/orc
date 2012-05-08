@@ -58,7 +58,17 @@ object securityChecker{
           case Stop() => (expr, null)
           case Hole(_, _) => (expr, null)
           case Constant(value) => (expr, null)
-          case x: syntactic.BoundVar => (x, context(x))//we now have the expr key and the contextSL value
+          case x: syntactic.BoundVar => {
+            var level : SecurityLevel = null
+            try{
+              level = context(x)//we now have the expr key and the contextSL value
+            }
+            catch{
+              case e: java.util.NoSuchElementException => {level = null} //if no value mapped then send null
+            }
+             (x, level)//if value worked send it thru
+          
+          }
           case UnboundVar(name) => throw new UnboundVariableException(name)
           //This is when a site calls on arguments,
           //wee need to see if the target should be able to call
@@ -208,7 +218,8 @@ def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: 
     //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
     for(argLevel <- argSls)
     {
-      if(!SecurityLevel.canWrite(siteSl,argLevel))//checks is siteSL can write to argLevel
+      
+      if(SecurityLevel.canWrite(siteSl,argLevel) == false)//checks is siteSL can write to argLevel
         throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
         		" write to argument of level " + argLevel + ".")
     }
