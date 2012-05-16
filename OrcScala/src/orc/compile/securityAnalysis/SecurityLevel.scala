@@ -18,7 +18,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       
 /**
   * A security Level.
-  * The parser attaches this type to a variable along with other types
+  * The parser attaches this level to a variable
   * Parser also helps build Security Type graph
   * Values: name, parents list, children list
   *
@@ -30,8 +30,6 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
         bottom.myName = "BOTTOM"
       val top = new SecurityLevel()
         top.myName = "TOP"
-      val default = new SecurityLevel()    
-        default.myName = "DEFAULT"
       /**
      * need to initialize top and bottom SecurityLevel of graph
      */
@@ -41,14 +39,6 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           SecurityLevel.top.allChildren = List(SecurityLevel.bottom)
           SecurityLevel.bottom.allChildren= List(SecurityLevel.bottom)//bottomSecurityLevel should have itself as the bottomSecurityLevel
           SecurityLevel.bottom.allParents = List(SecurityLevel.top)
-          SecurityLevel.default.allParents = List(SecurityLevel.top)
-          SecurityLevel.default.allChildren = List(SecurityLevel.bottom)
-          
-          //set up default's immmediate parents/children
-          SecurityLevel.default.immediateParents = List(SecurityLevel.top)
-          SecurityLevel.default.immediateChildren = List(SecurityLevel.bottom)
-          SecurityLevel.top.immediateChildren = List(SecurityLevel.default)
-          SecurityLevel.bottom.immediateParents = List(SecurityLevel.default)
       }
     
     
@@ -59,17 +49,16 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        * 
        * Note: 
        * it is possible for a security type to be given twice,
-       * if so, we need to find the security type and add in any changes and redo the 
+       * if so, we need to find the security level and add in any changes and redo the 
        * transitive closure.
        * The typechecker should handle the rest of the typechecking for integrity as well.
        */
       def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
       {
         var currentLevel : SecurityLevel= findByName(name)
-        var foundParent : SecurityLevel = null
-        var foundChild : SecurityLevel = null
+        var temp : SecurityLevel = null
           
-        //if this is true then the securityLevel has not yet been created
+          //create the level if not already made
           if((currentLevel == SecurityLevel.bottom) && (!name.equals("BOTTOM"))){
             currentLevel = createSecurityLevel(name, List(), List())
           }
@@ -77,42 +66,38 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           //go thru parents and add in new parents (creating if necessary)
           for(p <- parents)
           {
-            foundParent = findByName(p)
+            temp = findByName(p)
             
-            //level doesn't yet exist in the lattice, so create it
-            if(foundParent == SecurityLevel.bottom && !p.equals("BOTTOM")){
-              foundParent = createSecurityLevel(p,List(),List()) 
+            //if level doesn't yet exist in the lattice create it
+            if(temp == null){
+              temp = createSecurityLevel(p,List(),List()) 
             }
             
-            if(findinLevel(SecurityLevel.bottom.allParents,p) != 1)//haven't found the level in my immediate connections
+            if(findinLevel(currentLevel.immediateChildren,p) != 1)//haven't found the level in my immediate connections
             {
-              foundParent.immediateChildren = foundParent.immediateChildren ::: List(currentLevel)
-              foundParent.allChildren = foundParent.allChildren ::: List(currentLevel)
-              currentLevel.immediateParents = currentLevel.immediateParents ::: List(foundParent)
-              currentLevel.allParents = currentLevel.allParents ::: List(foundParent)//add that created parent to the list
+              temp.immediateChildren = temp.immediateChildren ::: List(currentLevel)
+              currentLevel.immediateParents = currentLevel.immediateParents ::: List(temp)
             }
           }
           
           //go thru children and add in new children (creating if necessary)
           for(c <- children)
           {
-            foundChild = findByName(c)
+             temp = findByName(c)
             
-            //level doesn't yet exist in the lattice, so create it
-            if(foundChild == SecurityLevel.bottom && !c.equals("BOTTOM")){
-              foundChild = createSecurityLevel(c,List(),List()) 
+            //if level doesn't yet exist in the lattice create it
+            if(temp == null){
+              temp = createSecurityLevel(c,List(),List()) 
             }
             
-            if(findinLevel(SecurityLevel.bottom.allParents,c) != 1)//haven't found the level in my immediate connections
+            if(findinLevel(currentLevel.immediateParents,c) != 1)//haven't found the level in my immediate connections
             {
-              foundChild.immediateParents = foundChild.immediateParents ::: List(currentLevel)
-              foundChild.allParents = foundChild.allParents ::: List(currentLevel)
-              currentLevel.immediateChildren = currentLevel.immediateChildren ::: List(foundChild)
-              currentLevel.allChildren = currentLevel.allChildren ::: List(foundChild)
+              temp.immediateParents = temp.immediateParents ::: List(currentLevel)
+              currentLevel.immediateChildren = currentLevel.immediateChildren ::: List(temp)
             }
           }
           
-           //makeGraph()//need to redo transitive closure so can get graph
+          makeGraph()//need to redo transitive closure so can get graph
           return currentLevel  
       }
   
@@ -123,56 +108,31 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def createSecurityLevel(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
     {
-     // Console.println("Creating SecurityLevel " + name)
       //make sure havent already created happens in interpretST
       var temp : SecurityLevel= new SecurityLevel()
         temp.myName = name
-        temp.allParents = p
-        temp.allChildren = c
         temp.immediateParents = p
         temp.immediateChildren = c
-      
-      //if the children list is empty, insert bottomSecurityLevel and connect (direct connection)
-      //if the parent list is empty, insert topSecurityLevel and connect (direct connection)
-      if(temp.immediateParents.isEmpty)
-      {
-        temp.immediateParents = List(SecurityLevel.top)
-        SecurityLevel.top.immediateChildren = SecurityLevel.top.immediateChildren ::: List(temp)
-      }
-      if(temp.immediateChildren.isEmpty)
-      {
+
+      //add yourself to allparents/allchildren for top and bottom (necessary for trans closure
+        temp.allParents = List(SecurityLevel.top)
+        SecurityLevel.top.allChildren = SecurityLevel.top.allChildren ::: List(temp)
         temp.allChildren = List(SecurityLevel.bottom)
-        SecurityLevel.bottom.immediateParents = SecurityLevel.bottom.immediateParents ::: List(temp)
-      }
-      //need to let my parents/children know that I am attaching to them
+        SecurityLevel.bottom.allParents = SecurityLevel.bottom.allParents ::: List(temp)
+      
+      //need to let my immediate parents/children know that I am attaching to them
       //since this is a creation, we can just add
       for(parent <- temp.immediateParents)
       {
-        if(!parent.immediateChildren.contains(temp)){
           parent.immediateChildren = parent.immediateChildren ::: List(temp)
-        }
-        if(!parent.allChildren.contains(temp))
           parent.allChildren = parent.allChildren ::: List(temp)
       } 
       for(child <- temp.immediateChildren)
       {
-         if(!child.immediateParents.contains(temp))
            child.immediateParents = child.immediateParents ::: List(temp)
-         if(!child.allParents.contains(temp))
            child.allParents = child.allParents ::: List(temp)
       } 
        
-      //Every node has bottom as one of its children and top as one of its parents
-      //in allChildren/allParents
-      if(!temp.allChildren.contains(SecurityLevel.bottom)){
-        temp.allChildren = temp.allChildren ::: List(SecurityLevel.bottom)
-        SecurityLevel.bottom.allChildren = SecurityLevel.bottom.allChildren ::: List(temp)
-      }
-      if(!temp.allParents.contains(SecurityLevel.top)){
-          temp.allParents = temp.allParents ::: List(SecurityLevel.top)
-          SecurityLevel.top.allParents = SecurityLevel.top.allParents ::: List(temp)
-      }
-      
       return temp
      
     }
@@ -199,20 +159,22 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
    
         //get all of the children possible
         me.allChildren = childTransClosure(me,me.allChildren)
-        me.allChildren = me.allChildren ::: List(SecurityLevel.bottom)//we always have bottomSecurityLevel as a child
+        if(!me.allChildren.contains(SecurityLevel.bottom))
+          me.allChildren = me.allChildren ::: List(SecurityLevel.bottom)//we always have bottomSecurityLevel as a child
         
        //get all of the parents possible
         me.allParents = parentTransClosure(me, me.allParents)
-        me.allParents = me.allParents ::: List(SecurityLevel.top)//we always have topSecurityLevel as a child
+        if(!me.allParents.contains(SecurityLevel.top))
+          me.allParents = me.allParents ::: List(SecurityLevel.top)//we always have topSecurityLevel as a child
         
-        //check for cycles: if there is a cycle, one of the children will also be a parent
-        for(child <- me.allChildren)
+        //check for duplicates/cycles: there is a cycle there will be a duplicate child and parent (duplicates are bad anyways)
+        val allConnections : List[SecurityLevel] = me.allParents ::: me.allChildren
+        val noDuplicates : List[SecurityLevel] = allConnections.distinct
+        
+        if(allConnections.size != noDuplicates.size)
         {
-          if(me.allParents.contains(child))
-          {
-            Console.println("Problem child " + child.myName + " cycle in SecurityLevel " + me.myName)
-            throw new Exception("Possible cycle for SecurityLevel " + child.myName)
-          }
+            Console.println("Problem in securityLevel " + me.myName + " Possible Cycle.")
+            throw new Exception("Possible cycle for SecurityLevel " + me.myName)
         }
         
       
@@ -227,6 +189,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       //We first get the transClosure for all of the children
       var addChildren : List[SecurityLevel] = listOfChildren//added to list
       
+        //go thru all children and recursively add all children underneath it.
         for(child <- me.allChildren)
         {
           if((!child.equals(SecurityLevel.bottom))//we stop at bottom SecurityLevel
@@ -250,10 +213,10 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       def parentTransClosure(me: SecurityLevel, listOfParents: List[SecurityLevel]): List[SecurityLevel] =
       {
         //We first get the transClosure for all of the parents
-        //Console.println("ME: " + me.myName)
         var addParents : List[SecurityLevel] = listOfParents//added to list
         
-          for(parent <- me.allParents)
+        //we recursively go thru all parents
+        for(parent <- me.allParents)
           {
             if((!parent.equals(SecurityLevel.bottom))//we stop at bottom SecurityLevel
                 &&(!parent.equals(SecurityLevel.top)))//and we don't want to redo TOP
@@ -278,7 +241,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      * Where n is some integer
      * based on matrix
      */
-      def SecurityLevelDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
+      def securityLevelDiff(subj : SecurityLevel, obj : SecurityLevel) : Int = 
       {
         if(subj.allChildren.contains(obj))
             return 2
@@ -304,7 +267,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
               return child
           }
           
-          return SecurityLevel.bottom
+          return null
       }
       
       
@@ -336,15 +299,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       def meet( leftSL: SecurityLevel, rightSL: SecurityLevel) : SecurityLevel =
       {
         //first check if either is the child of the other (that would mean that they are the closest)
-        
-          if(leftSL.allChildren.contains(rightSL)) rightSL
-          if(rightSL.allChildren.contains(leftSL)) leftSL
           
-        /*
-         * no we know they are not ancestors, so they must be siblings, so I need to do a join of their
-         * allChildren to get which children they share. To find their closest from there, I go down the 
-         * immediateChildren to find which one is closest (Breadth first search?)
-         */
+          val diff = securityLevelDiff(leftSL,rightSL)
+          if(diff == 1) return leftSL
+          else if(diff == 2) return rightSL
+          else//security levels are siblings so we need their meet
+          {//to find the meet, we do the breadth first search down leftSL's immediate children links on all children for rightSL
+        
           var sharedChildren : List[SecurityLevel] = List()
           
           //create the shared Children list
@@ -352,12 +313,34 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
             if(rightSL.allChildren.contains(child))
               sharedChildren = sharedChildren ::: List(child)
         
-          //now go thru immediate children until find the closest match
-          //TODO: figure out a way to go thru and find the closest shared child
-           
-          SecurityLevel.bottom
-          
+          //now go thru immediate children until find the closest match (BFS)
+          return levelBFS(leftSL,sharedChildren)
+         }
       }
+    
+    /**
+     * Breadth First Search thru levels
+     * Takes subj (treats as root of tree)
+     * goes through the "tree" thru immediateChildren and checks each node with checklist to see
+     * if they are there. If found, returns that security level. Otherwise returns null  
+     */
+    def levelBFS(subj: SecurityLevel, checkList: List[SecurityLevel]) : SecurityLevel = 
+    {
+      if(subj.immediateChildren.contains(SecurityLevel.bottom)) return SecurityLevel.bottom
+      
+        for(checkLevel <- checkList)
+        {
+          if(subj.immediateChildren.contains(checkLevel))
+            return checkLevel
+        }
+        
+        for(child <- subj.allChildren)
+        {
+          return levelBFS(child,checkList)
+        }
+        
+        return null
+    }
       
     /**
      * checks on whether or not siteSl can write to argSl without causing an integrity error
@@ -402,6 +385,6 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
     var allChildren : List[SecurityLevel] = List() 
     var immediateChildren : List[SecurityLevel] = List()
   
-        override def toString = "Security Type " + this.myName
+        override def toString = "Security Level " + this.myName
   
   }
