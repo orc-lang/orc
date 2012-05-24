@@ -21,6 +21,9 @@ object testSecurityLevel {
     //TOP and BOTTOM are already created
     SecurityLevel.initializeGraph() // initialize the graph
     SecurityLevel.interpretParseSL("A",List(),List())
+    SecurityLevel.interpretParseSL("A2",List(),List())
+    SecurityLevel.interpretParseSL("A2",List("A"),List())
+    SecurityLevel.interpretParseSL("B",List("TOP"),List())
     
   }
   
@@ -30,6 +33,7 @@ object testSecurityLevel {
    *  
    */
   def printLattice() {
+    Console.println("PRINTING CURRENT LATTICE --> ")
       printLevel(SecurityLevel.top)
     for(level <- SecurityLevel.top.allChildren)
       printLevel(level)

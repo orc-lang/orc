@@ -56,10 +56,16 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
       {
         var currentLevel : SecurityLevel= findByName(name)
+        
+        if(currentLevel == null)
+          Console.println("Creating new SL: " + name)
+        else
+          Console.println("Editing SL: " + name)
+        
         var temp : SecurityLevel = null
           
           //create the level if not already made
-          if((currentLevel == SecurityLevel.bottom) && (!name.equals("BOTTOM"))){
+          if(currentLevel == null){
             currentLevel = createSecurityLevel(name, List(), List())
           }
         
@@ -67,13 +73,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           for(p <- parents)
           {
             temp = findByName(p)
-            
+           
             //if level doesn't yet exist in the lattice create it
             if(temp == null){
               temp = createSecurityLevel(p,List(),List()) 
             }
             
-            if(findinLevel(currentLevel.immediateChildren,p) != 1)//haven't found the level in my immediate connections
+            if(findinLevel(currentLevel.immediateParents,temp) != 1)//haven't found the level in my immediate connections
             {
               temp.immediateChildren = temp.immediateChildren ::: List(currentLevel)
               currentLevel.immediateParents = currentLevel.immediateParents ::: List(temp)
@@ -90,8 +96,9 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
               temp = createSecurityLevel(c,List(),List()) 
             }
             
-            if(findinLevel(currentLevel.immediateParents,c) != 1)//haven't found the level in my immediate connections
+            if(findinLevel(currentLevel.immediateChildren,temp) != 1)//haven't found the level in my immediate connections
             {
+              
               temp.immediateParents = temp.immediateParents ::: List(currentLevel)
               currentLevel.immediateChildren = currentLevel.immediateChildren ::: List(temp)
             }
@@ -125,11 +132,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       for(parent <- temp.immediateParents)
       {
           parent.immediateChildren = parent.immediateChildren ::: List(temp)
-          parent.allChildren = parent.allChildren ::: List(temp)
+          if(!parent.allChildren.contains(temp))//we may add immediate link to an already transitive link
+            parent.allChildren = parent.allChildren ::: List(temp)
       } 
       for(child <- temp.immediateChildren)
       {
            child.immediateParents = child.immediateParents ::: List(temp)
+          if(!child.allParents.contains(temp))//we may add immediate link to an already transitive link
            child.allParents = child.allParents ::: List(temp)
       } 
        
@@ -199,7 +208,6 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
             {
                 addChildren = addChildren ::: List(child)//add child to the list
                 addChildren = addChildren ::: childTransClosure(child,addChildren)//go thru that child's children too
-                addChildren = addChildren.distinct//get rid of duplicates
             }
           }
         }
@@ -225,7 +233,6 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
               {
                   addParents = addParents ::: List(parent)//add child to the list
                   addParents = addParents ::: parentTransClosure(parent,addParents)//go thru that child's children too
-                  addParents = addParents.distinct//get rid of duplicates
               }
             }
           }
@@ -261,12 +268,15 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        */
       def findByName(name : String) : SecurityLevel = 
       {
+        if(SecurityLevel.top.myName.equals(name))
+          return SecurityLevel.top
+        else{  
           for(child <- SecurityLevel.top.allChildren)
           {
-            if(child.myName.equalsIgnoreCase(name))
+            if(child.myName.equals(name))
               return child
           }
-          
+        }
           return null
       }
       
@@ -277,16 +287,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        * find lookForLevel name in currentLevel's List
        * return 1 if found, -1 otherwise
        */
-      def findinLevel (currentLevelList : List[SecurityLevel], lookForLevel : String) : Int =
+      def findinLevel (currentLevelList : List[SecurityLevel], lookForLevel : SecurityLevel) : Int =
       {
-        for(temp <- currentLevelList)
+        for (temp : SecurityLevel <- currentLevelList)
         {
-          if(temp.myName.equals(lookForLevel))
-          {
+          if(temp.myName.equals(lookForLevel.myName))
             return 1
-          }
         }
-        //haven't found level
         return -1
       }
       
