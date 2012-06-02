@@ -21,9 +21,15 @@ object testSecurityLevel {
     //TOP and BOTTOM are already created
     SecurityLevel.initializeGraph() // initialize the graph
     SecurityLevel.interpretParseSL("A",List(),List())
-    SecurityLevel.interpretParseSL("A2",List(),List())
-    SecurityLevel.interpretParseSL("A2",List("A"),List())
-    SecurityLevel.interpretParseSL("B",List("TOP"),List())
+    SecurityLevel.interpretParseSL("G",List(),List())
+    SecurityLevel.interpretParseSL("G",List("A"),List())//test editing already created
+    SecurityLevel.interpretParseSL("B",List("TOP"),List())//test adding already created lvl as link
+    SecurityLevel.interpretParseSL("C",List("TOP"),List("BOTTOM"))
+    SecurityLevel.interpretParseSL("D",List("A","B"),List("F"))//test creating new link
+    SecurityLevel.interpretParseSL("D",List(),List("E"))//test editing created and adding new link
+    SecurityLevel.interpretParseSL("G",List("E"),List())
+    SecurityLevel.interpretParseSL("C",List("TOP","TOP"),List())//try adding duplicates
+   // SecurityLevel.interpretParseSL("X",List("X"),List())//if try to set a pointer to yourself, throws an exception
     
   }
   
