@@ -15,7 +15,7 @@
 package orc.compile.securityAnalysis
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
-      
+     
 /**
   * A security Level.
   * The parser attaches this level to a variable
@@ -56,12 +56,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
       {
         var currentLevel : SecurityLevel= findByName(name)
-        
+         
         if(currentLevel == null)
-          Console.println("Creating new SL: " + name)
+          Console.println("SL " + name + " cannot be found by findByName.")
         else
           Console.println("Editing SL: " + name)
         
+          
         var temp : SecurityLevel = null
           
           //create the level if not already made
@@ -72,11 +73,12 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           //go thru parents and add in new parents (creating if necessary)
           for(p <- parents)
           {
+            if(p.equals(name)) throw new Exception("Cannot create a security level with a self-pointer")
             temp = findByName(p)
            
             //if level doesn't yet exist in the lattice create it
             if(temp == null){
-              temp = createSecurityLevel(p,List(),List()) 
+              temp = createSecurityLevel(p,List(),List(currentLevel)) 
             }
             
             if(findinLevel(currentLevel.immediateParents,temp) != 1)//haven't found the level in my immediate connections
@@ -89,11 +91,12 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           //go thru children and add in new children (creating if necessary)
           for(c <- children)
           {
+            if(c.equals(name)) throw new Exception("Cannot create a security level with a self-pointer")
              temp = findByName(c)
             
             //if level doesn't yet exist in the lattice create it
             if(temp == null){
-              temp = createSecurityLevel(c,List(),List()) 
+              temp = createSecurityLevel(c,List(currentLevel),List()) 
             }
             
             if(findinLevel(currentLevel.immediateChildren,temp) != 1)//haven't found the level in my immediate connections
@@ -115,25 +118,33 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def createSecurityLevel(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
     {
+      Console.println("Creating new SL: " + name)
+      
       //make sure havent already created happens in interpretST
       var temp : SecurityLevel= new SecurityLevel()
         temp.myName = name
         temp.immediateParents = p
         temp.immediateChildren = c
+        temp.allParents = p
+        temp.allChildren = c
 
       //add yourself to allparents/allchildren for top and bottom (necessary for trans closure
-        temp.allParents = List(SecurityLevel.top)
-        SecurityLevel.top.allChildren = SecurityLevel.top.allChildren ::: List(temp)
-        temp.allChildren = List(SecurityLevel.bottom)
-        SecurityLevel.bottom.allParents = SecurityLevel.bottom.allParents ::: List(temp)
-      
+        if(!p.contains(SecurityLevel.top))
+        {
+          temp.allParents = List(SecurityLevel.top)
+          SecurityLevel.top.allChildren = SecurityLevel.top.allChildren ::: List(temp)
+        }
+        if(!c.contains(SecurityLevel.bottom)){
+          temp.allChildren = List(SecurityLevel.bottom)
+          SecurityLevel.bottom.allParents = SecurityLevel.bottom.allParents ::: List(temp)
+        }
       //need to let my immediate parents/children know that I am attaching to them
       //since this is a creation, we can just add
       for(parent <- temp.immediateParents)
       {
           parent.immediateChildren = parent.immediateChildren ::: List(temp)
           if(!parent.allChildren.contains(temp))//we may add immediate link to an already transitive link
-            parent.allChildren = parent.allChildren ::: List(temp)
+           parent.allChildren = parent.allChildren ::: List(temp)
       } 
       for(child <- temp.immediateChildren)
       {
@@ -165,25 +176,23 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def transClosure(me: SecurityLevel) 
     {  
-   
         //get all of the children possible
         me.allChildren = childTransClosure(me,me.allChildren)
         if(!me.allChildren.contains(SecurityLevel.bottom))
-          me.allChildren = me.allChildren ::: List(SecurityLevel.bottom)//we always have bottomSecurityLevel as a child
+          me.allChildren = me.allChildren ::: List(SecurityLevel.bottom)
         
        //get all of the parents possible
         me.allParents = parentTransClosure(me, me.allParents)
         if(!me.allParents.contains(SecurityLevel.top))
-          me.allParents = me.allParents ::: List(SecurityLevel.top)//we always have topSecurityLevel as a child
-        
+          me.allParents = me.allParents ::: List(SecurityLevel.top)
         //check for duplicates/cycles: there is a cycle there will be a duplicate child and parent (duplicates are bad anyways)
         val allConnections : List[SecurityLevel] = me.allParents ::: me.allChildren
         val noDuplicates : List[SecurityLevel] = allConnections.distinct
         
         if(allConnections.size != noDuplicates.size)
         {
-            Console.println("Problem in securityLevel " + me.myName + " Possible Cycle.")
-            throw new Exception("Possible cycle for SecurityLevel " + me.myName)
+            Console.println("\n\nProblem in securityLevel " + me.myName + " Possible Cycle.\n")
+           // throw new Exception("Possible cycle for SecurityLevel " + me.myName)
         }
         
       
@@ -198,18 +207,13 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       //We first get the transClosure for all of the children
       var addChildren : List[SecurityLevel] = listOfChildren//added to list
       
-        //go thru all children and recursively add all children underneath it.
-        for(child <- me.allChildren)
+      //go thru all children and recursively add all children immediately underneath it.
+        for(child <- me.immediateChildren)
         {
-          if((!child.equals(SecurityLevel.bottom))//we stop at bottom SecurityLevel
-              &&(!child.equals(SecurityLevel.top)))//and we don't want to redo TOP
-          {
-            if(!addChildren.contains(child))//prevents cycles because doesn't add children who it already saw
-            {
                 addChildren = addChildren ::: List(child)//add child to the list
-                addChildren = addChildren ::: childTransClosure(child,addChildren)//go thru that child's children too
-            }
-          }
+                addChildren = childTransClosure(child,addChildren)//go thru that child's children too
+                //get rid of duplicates caused by child and grandchild being the same
+                addChildren = addChildren.distinct
         }
       return addChildren
     }
@@ -224,16 +228,15 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
         var addParents : List[SecurityLevel] = listOfParents//added to list
         
         //we recursively go thru all parents
-        for(parent <- me.allParents)
+        for(parent <- me.immediateParents)
           {
             if((!parent.equals(SecurityLevel.bottom))//we stop at bottom SecurityLevel
                 &&(!parent.equals(SecurityLevel.top)))//and we don't want to redo TOP
             {
-              if(!addParents.contains(parent))//prevents cycles because doesn't add children who it already saw
-              {
                   addParents = addParents ::: List(parent)//add child to the list
-                  addParents = addParents ::: parentTransClosure(parent,addParents)//go thru that child's children too
-              }
+                  addParents =  parentTransClosure(parent,addParents)//go thru that child's children too
+                  //prevent duplicates just by going down and having same parent and grandparent
+                  addParents = addParents.distinct
             }
           }
         return addParents
