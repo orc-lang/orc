@@ -37,11 +37,20 @@ function parseQuery() {
 	return out;
 }
 
+docCookies = {
+    getItem: function (sKey) {
+        if (!sKey || !this.hasItem(sKey)) { return null; }
+        return unescape(document.cookie.replace(new RegExp("(?:^|.*;\\s*)" + escape(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*((?:[^;](?!;))*[^;]?).*"), "$1"));
+    },
+    hasItem: function (sKey) { return (new RegExp("(?:^|;\\s*)" + escape(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie); }
+};
+
+
 var query = parseQuery();
 var mock = query.mock;
 //mock = true;
 var baseUrl = mock ? mock : "/orchard/";
-var devKey = query.k ? query.k : "";
+var devKey = docCookies.hasItem("OrchardDevKey") ? docCookies.getItem("OrchardDevKey") : "";
 
 // load our dependencies
 document.write("<script src='", baseUrl, "jquery-1.7.1.min.js'><\/script>");

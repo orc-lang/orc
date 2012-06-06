@@ -95,7 +95,7 @@ Font size:
 </td></tr></table>
 <script type="text/javascript" src="/orchard/orc.js"></script>
 <script type="text/javascript">
-if (devKey.length > 0) {
+if (document.cookie.indexOf("OrchardDevKey=") >= 0) { /* Test is spoofable, but not critical */
 	$("#restricted_demos").show();
 	$("#login").hide();
 }

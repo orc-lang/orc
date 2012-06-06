@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,6 +73,17 @@ public class LoginServlet extends HttpServlet {
 
 	@Override
 	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+		if (!request.isSecure()) {
+			logger.log(Level.WARNING, "LoginServlet: Login request over insecure channel, redirecting");
+	        final StringBuffer url = new StringBuffer();
+            url.append("https://");
+            url.append(request.getServerName());
+            /* NOTE: The port number is dropped here, because there is no mapping
+             * for non-port 80 to a HTTPS port.  All redirects are to port 443. */
+            url.append(request.getRequestURI());
+			response.sendRedirect(response.encodeRedirectURL(url.toString()));
+			return;
+		}
 		final String auth = request.getHeader("Authorization");
 		if (auth != null) {
 			final String up64 = auth.substring(6);
@@ -79,14 +91,23 @@ public class LoginServlet extends HttpServlet {
 			final String[] ups = up.split(":", 2);
 			try {
 				final String devKey = getDevKey(ups[0], ups[1]);
-				if (devKey != null) {
-					response.sendRedirect(response.encodeRedirectURL("/tryorc.shtml?k=" + devKey));
+				if (devKey != null && !devKey.isEmpty()) {
+					/*FIXME: Vulnerable to XSRF and god knows what else. */
+					Cookie keyCookie = new Cookie("OrchardDevKey", devKey);
+					keyCookie.setMaxAge(-1); /* session cookie */
+					keyCookie.setPath("/"); /* This is a violation of the RFCs, but works in practice */
+					keyCookie.setSecure(true);
+					response.addCookie(keyCookie);
+					response.sendRedirect(response.encodeRedirectURL("/tryorc.shtml"));
 					return;
+				} else {
+					logger.log(Level.SEVERE, "LoginServlet: SECURITY: Login failed for claimed username " + ups[0]);
 				}
 			} catch (final SQLException e) {
-				logger.log(Level.SEVERE, "LoginServlet: Login failed for username " + ups[0], e);
+				logger.log(Level.SEVERE, "LoginServlet: Thrown during login attempt: username=" + ups[0], e);
 			}
 		}
+		/* Since basic auth can't be logged out, users should remember to quit browser. */
 		response.setHeader("WWW-Authenticate", "Basic realm=\"orc.csres.utexas.edu\"");
 		response.setStatus(401);
 	}
