@@ -220,6 +220,7 @@ public final class Job implements JobMBean {
 		class JobEventActions extends OrcEventAction {
 			@Override
 			public void published(final Object v) {
+				logger.finer("Orchard job \"" + id + "\": Queuing publication event with " + v);
 				events.add(new PublicationEvent(v));
 			}
 
