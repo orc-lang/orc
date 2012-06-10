@@ -308,23 +308,28 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        */
       def meet( leftSL: SecurityLevel, rightSL: SecurityLevel) : SecurityLevel =
       {
-        //first check if either is the child of the other (that would mean that they are the closest)
-          
+          if(leftSL == null) return rightSL
+          if(rightSL == null) return leftSL
+        
+          //check if they are the same level
+          if(leftSL.myName.equals(rightSL.myName)) return leftSL
+          //check if either is the child of the other (that would mean that they are the closest)
           val diff = securityLevelDiff(leftSL,rightSL)
           if(diff == 1) return leftSL
           else if(diff == 2) return rightSL
           else//security levels are siblings so we need their meet
           {//to find the meet, we do the breadth first search down leftSL's immediate children links on all children for rightSL
         
-          var sharedChildren : List[SecurityLevel] = List()
+            var sharedChildren : List[SecurityLevel] = List()
+            
+            //create the shared Children list
+            for(child <- leftSL.immediateChildren)
+              if(rightSL.immediateChildren.contains(child))
+                sharedChildren = sharedChildren ::: List(child)
           
-          //create the shared Children list
-          for(child <- leftSL.allChildren)
-            if(rightSL.allChildren.contains(child))
-              sharedChildren = sharedChildren ::: List(child)
-        
-          //now go thru immediate children until find the closest match (BFS)
-          return levelBFS(leftSL,sharedChildren)
+            //now go thru immediate children until find the closest match (BFS)
+            return levelBFS(leftSL,sharedChildren)
+          
          }
       }
     
@@ -336,7 +341,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def levelBFS(subj: SecurityLevel, checkList: List[SecurityLevel]) : SecurityLevel = 
     {
-      if(subj.immediateChildren.contains(SecurityLevel.bottom)) return SecurityLevel.bottom
+      if(subj.immediateChildren.isEmpty) return SecurityLevel.bottom
       
         for(checkLevel <- checkList)
         {
@@ -349,7 +354,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           return levelBFS(child,checkList)
         }
         
-        return null
+        return SecurityLevel.bottom
     }
       
     /**

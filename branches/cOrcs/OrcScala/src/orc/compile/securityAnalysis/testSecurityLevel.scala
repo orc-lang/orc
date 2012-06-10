@@ -9,7 +9,9 @@ object testSecurityLevel {
   def main(args: Array[String]) = {
     Console.println("Testing SecurityLevel.scala");
     createLattice()
-    printLattice()
+    //printLattice()
+    testMeet()
+    testWrite()
   }
   
   /**
@@ -31,6 +33,69 @@ object testSecurityLevel {
     SecurityLevel.interpretParseSL("C",List("TOP","TOP"),List())//try adding duplicates
    // SecurityLevel.interpretParseSL("X",List("X"),List())//if try to set a pointer to yourself, throws an exception
     
+  }
+  
+  /**
+   * tests writing.
+   * parent cannot write to child
+   * child can write to parent
+   * siblings cannot write to eachother
+   * you can write to yourself.
+   * 
+   * Works correctly
+   */
+  def testWrite()
+  {
+    Console.println("Testing the Write --> ")
+    val A = SecurityLevel.findByName("A")
+    val B = SecurityLevel.findByName("B")
+    val C = SecurityLevel.findByName("C")
+    val D = SecurityLevel.findByName("D")
+    val E = SecurityLevel.findByName("E")
+    val F = SecurityLevel.findByName("F")
+    val G = SecurityLevel.findByName("G")
+  
+    printWrite(B,B) // TRUE --> Can write to self
+    printWrite(A,F) // FALSE --> Can't write from parent to child
+    printWrite(E,B) // True --> Can write to a grandparent
+    printWrite(A,C) // FALSE --> siblings can't write to eachother
+    
+    
+  }
+  
+  def printWrite(level1 : SecurityLevel, level2 : SecurityLevel)
+  {
+    val answer = SecurityLevel.canWrite(level1,level2)
+    
+    Console.println("Can you write info from " + level1.myName + " to " 
+        + level2.myName + "? " + answer)
+  }
+  /**
+   * tests the meet. Makes sure that it is working correctly.
+   * So far it is working correctly
+   */
+  def testMeet()
+  {
+    Console.println("Testing the Meet --> ")
+    val A = SecurityLevel.findByName("A")
+    val B = SecurityLevel.findByName("B")
+    val C = SecurityLevel.findByName("C")
+    val D = SecurityLevel.findByName("D")
+    val E = SecurityLevel.findByName("E")
+    val F = SecurityLevel.findByName("F")
+    val G = SecurityLevel.findByName("G")
+    
+    printMeet(A,B)//D --> tests siblings with a shared immediate 
+    printMeet(A,C)//BOTTOM --> tests siblings with no shared immediate
+    printMeet(D,D)//D --> tests meet on same
+    printMeet(D,E)//E --> tests child, parent
+    printMeet(F,B)//F --tests grandchild, grandparent 
+  }
+  
+  def printMeet(level1 : SecurityLevel, level2 : SecurityLevel)
+  {
+    val meetLvl = SecurityLevel.meet(level1,level2)
+    Console.println("Meet of " + level1.myName + " and " + level2.myName + " = " + meetLvl.myName)
   }
   
   /**
