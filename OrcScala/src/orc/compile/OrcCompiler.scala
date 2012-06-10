@@ -196,8 +196,11 @@ abstract class CoreOrcCompiler extends OrcCompiler {
           slReport = "Program security level checks as " + programSL.toString
         else
           slReport = "There are no security levels in the program"
+            
+        Console.println(slReport)    
         //compiler records messages in a list, caller supplies implemenation to display to user
-        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, slReport, newAst.pos, newAst)
+        /**co.logger.recordMessage(CompileLogger.Severity.INFO, 0, slReport, newAst.pos, newAst)
+        */ 
        }
         ast//return original ast
       

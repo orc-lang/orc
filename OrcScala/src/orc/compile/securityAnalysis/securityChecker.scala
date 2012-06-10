@@ -88,12 +88,12 @@ object securityChecker{
           case left > x > right => {
             val (newLeft, slLeft) = slSynthExpr(left)
             val (newRight, slRight) = slSynthExpr(right)(context + ((x, slLeft)))
-            (newLeft > x > newRight, slRight)
+            (newLeft > x > newRight, SecurityLevel.meet(slLeft,slRight))
           }
           case left < x < right => {
             val (newRight, slRight) = slSynthExpr(right)
             val (newLeft, slLeft) = slSynthExpr(left)(context + ((x, slRight)))
-            (newLeft < x < newRight, slLeft)
+            (newLeft < x < newRight, SecurityLevel.meet(slLeft,slRight))
           }
           case DeclareDefs(defs, body) => {
             val (newBody, bodySl) = slSynthExpr(body)(context)
@@ -118,14 +118,14 @@ object securityChecker{
            * then adds the SL successfully
            */
           case HasSecurityLevel(body, level) => {
-            System.out.println("hasSecuirtyLevel Synth")
+           // System.out.println("hasSecurityLevel synth")
             val expectedSL = SecurityLevel.findByName(level)
             val newBody = slCheckExpr(body, expectedSL)
             (HasSecurityLevel(newBody, level), expectedSL)
           }
           //create security level
           case DeclareSecurityLevel(name, parents, children, body) => {
-            System.out.println("DeclareSecurityLevel synth")
+          //  System.out.println("DeclareSecurityLevel synth")
             //add the security level
             val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
             val (newBody, bodySL) = slSynthExpr(body)(context)
@@ -178,14 +178,14 @@ object securityChecker{
         }
         case DeclareSecurityLevel(name, parents, children, body) => {
            //add the security level
-          System.out.println("declareSecurityLevel Check")
+        //  System.out.println("declareSecurityLevel Check")
             val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
             val (newBody, bodySL) = slSynthExpr(body)(context)
             DeclareSecurityLevel(name,parents,children, newBody)
         }
         case _ => {
           val (newExpr, exprSL) = slSynthExpr(expr)
-          System.out.println("check Expr _ SL: " + exprSL)
+        //  System.out.println("check Expr _ SL: " + exprSL)
           if(exprSL != null)//we only check for when SL are used
           {
             //check that the exprSL is equal to the expected SL (lattice)
@@ -211,8 +211,9 @@ object securityChecker{
  */
 def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]])(implicit context: Context): (Expression, SecurityLevel) = {
     val (site, siteSl) = slSynthExpr(target)//site targetSL
-    
+    var newSiteSl = siteSl
     val (newArgs, argSls) = (args map slSynthExpr).unzip //get the sl for each of the arguments
+    
     
     //for each argument, we must check that the site can write to them (integrity)
     //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
@@ -220,10 +221,17 @@ def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: 
     {
       
       if(SecurityLevel.canWrite(siteSl,argLevel) == false)//checks is siteSL can write to argLevel
-        throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
+      {  throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
         		" write to argument of level " + argLevel + ".")
+      }
+      else//if you can write to the siteSl, you may have moved down the results' integrity
+      {
+        newSiteSl = SecurityLevel.meet(newSiteSl,argLevel)
+      }
     }
     
-    (FoldedCall(site, newArgs, syntacticTypeArgs), siteSl)//return SL of a call is the security level published
+    
+    
+    (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl)//return SL of a call is the security level published
   }
 }
