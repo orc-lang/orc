@@ -308,6 +308,8 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        */
       def meet( leftSL: SecurityLevel, rightSL: SecurityLevel) : SecurityLevel =
       {
+        
+        Console.println("MEET: " + leftSL + " and " + rightSL)
           if(leftSL == null) return rightSL
           if(rightSL == null) return leftSL
         
