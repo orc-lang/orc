@@ -96,6 +96,13 @@ class PrettyPrint {
           }
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
+      case HasSecurityLevel(body, level) => {
+        "HasSL " + level + " body: %%" + body + "%%"
+      }
+      case DeclareSecurityLevel(name, parents, children, body) =>
+        {
+          "DeclSL " + name + " p(" + parents + ") c(" + children + ") body: %%" + body + "%%"
+        }
       case _ => "???"
     }
 

@@ -15,9 +15,8 @@
 
 package orc.compile.securityAnalysis
 
-
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda , DeclareSecurityLevel, HasSecurityLevel }
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda, DeclareSecurityLevel, HasSecurityLevel }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException }
@@ -29,29 +28,25 @@ import orc.values.sites.TypedSite
 import orc.compile.typecheck.ConstraintSet._
 import orc.compile.typecheck.Typeloader._
 
+/** @author laurenyew
+  * "TypeChecker" AKA SecurityAnalysis for SecurityLevels
+  * Step called by compiler
+  * This is for INTEGRITY static type checking
+  * (Confidentiality static type checking is the opposite of integrity)
+  * Possible future proj: add option to switch between checking for integrity and for confidentiality
+  */
+object securityChecker {
 
+  type Context = Map[syntactic.BoundVar, SecurityLevel]
 
-/**
- * @author laurenyew
- * "TypeChecker" AKA SecurityAnalysis for SecurityLevels
- * Step called by compiler
- * This is for INTEGRITY static type checking
- * (Confidentiality static type checking is the opposite of integrity)
- * Possible future proj: add option to switch between checking for integrity and for confidentiality
- */
-object securityChecker{
-  
- type Context = Map[syntactic.BoundVar, SecurityLevel]
- 
- def apply(expr: Expression): (Expression, SecurityLevel) = {
+  def apply(expr: Expression): (Expression, SecurityLevel) = {
     slSynthExpr(expr)(Map.empty)
   }
- 
- /**
-  * synthesis the security level for a given expression
-  */
+
+  /** synthesis the security level for a given expression
+    */
   def slSynthExpr(expr: Expression)(implicit context: Context): (Expression, SecurityLevel) = {
-    
+  //  Console.println("EXPR: " + expr + "\nCONTEXT " + context)
     try {
       val (newExpr, exprSL) =
         expr match {
@@ -59,41 +54,44 @@ object securityChecker{
           case Hole(_, _) => (expr, null)
           case Constant(value) => (expr, null)
           case x: syntactic.BoundVar => {
-            var level : SecurityLevel = null
-            try{
-              level = context(x)//we now have the expr key and the contextSL value
+            var level: SecurityLevel = null
+            try {
+              level = context(x) //we now have the expr key and the contextSL value
+            } catch {
+              case e: java.util.NoSuchElementException => { level = null } //if no value mapped then send null
             }
-            catch{
-              case e: java.util.NoSuchElementException => {level = null} //if no value mapped then send null
-            }
-             (x, level)//if value worked send it thru
-          
+            (x, level) //if value worked send it thru
+
           }
           case UnboundVar(name) => throw new UnboundVariableException(name)
           //This is when a site calls on arguments,
           //wee need to see if the target should be able to call
           case FoldedCall(target, args, typeArgs) => {
-            slFoldedCall(target, args,typeArgs)
+            slFoldedCall(target, args, typeArgs)
           }
           case left || right => {
             val (newLeft, slLeft) = slSynthExpr(left)
             val (newRight, slRight) = slSynthExpr(right)
-            (newLeft || newRight, SecurityLevel.meet(slLeft,slRight))
+  //          Console.println("MEET for EXPR: " + newLeft + " || " + newRight)
+            (newLeft || newRight, SecurityLevel.meet(slLeft, slRight))
           }
           case left ow right => {
             val (newLeft, slLeft) = slSynthExpr(left)
             val (newRight, slRight) = slSynthExpr(right)
-            (newLeft ow newRight, SecurityLevel.meet(slLeft,slRight))
+     //       Console.println("MEET for EXPR: " + newLeft + " ow " + newRight)
+            (newLeft ow newRight, SecurityLevel.meet(slLeft, slRight))
           }
           case left > x > right => {
             val (newLeft, slLeft) = slSynthExpr(left)
             val (newRight, slRight) = slSynthExpr(right)(context + ((x, slLeft)))
-            (newLeft > x > newRight, SecurityLevel.meet(slLeft,slRight))
+     //       Console.println("MEET for EXPR: " + newLeft + " >x> " + newRight)
+            (newLeft > x > newRight, slRight)
           }
           case left < x < right => {
             val (newRight, slRight) = slSynthExpr(right)
             val (newLeft, slLeft) = slSynthExpr(left)(context + ((x, slRight)))
-            (newLeft < x < newRight, SecurityLevel.meet(slLeft,slRight))
+   //         Console.println("MEET for EXPR: " + newLeft + " <x< " + newRight)
+            (newLeft < x < newRight, slLeft)
           }
           case DeclareDefs(defs, body) => {
             val (newBody, bodySl) = slSynthExpr(body)(context)
@@ -112,41 +110,42 @@ object securityChecker{
             val (newBody, bodySl) = slSynthExpr(body)
             (DeclareType(u, t, body), bodySl)
           }
-          /**
-           * checks if the body has the correct security Level
-           * if an exception is not thrown (the expectedSL checks out)
-           * then adds the SL successfully
-           */
+          /** checks if the body has the correct security Level
+            * if an exception is not thrown (the expectedSL checks out)
+            * then adds the SL successfully
+            */
           case HasSecurityLevel(body, level) => {
-           // System.out.println("hasSecurityLevel synth")
+            // System.out.println("hasSecurityLevel synth")
             val expectedSL = SecurityLevel.findByName(level)
             val newBody = slCheckExpr(body, expectedSL)
             (HasSecurityLevel(newBody, level), expectedSL)
           }
           //create security level
           case DeclareSecurityLevel(name, parents, children, body) => {
-          //  System.out.println("DeclareSecurityLevel synth")
+            //  System.out.println("DeclareSecurityLevel synth")
             //add the security level
-            val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
+            val declaredSecurityLevel = SecurityLevel.interpretParseSL(name, parents, children)
             val (newBody, bodySL) = slSynthExpr(body)(context)
-            (DeclareSecurityLevel(name,parents,children, newBody), declaredSecurityLevel)
+            (DeclareSecurityLevel(name, parents, children, newBody), bodySL)
           }
-          
+
         }
       (expr ->> newExpr, exprSL)
-    }catch {
+     // Console.println("EXPR_AFTER: " + newExpr +"\nSL: " + exprSL + "\nCONTEXT_AFTER " + context + "\n")
+      (newExpr, exprSL)
+    } catch {
       case e: TypeException => {
         throw (e.setPosition(expr.pos))
-      } 
       }
-    
+    }
+
   }
-  
+
   //expr encompasses hasSecurityLevel
   //don't need patterns
   //just do cases over expressions
-  def slCheckExpr(expr: Expression, lattice: SecurityLevel)(implicit context: Context) : Expression = {
-     try {
+  def slCheckExpr(expr: Expression, lattice: SecurityLevel)(implicit context: Context): Expression = {
+    try {
       expr -> {
         /* FoldedCall must be checked before prune, since it
          * may contain some number of enclosing prunings.
@@ -177,23 +176,23 @@ object securityChecker{
           newLeft < x < newRight
         }
         case DeclareSecurityLevel(name, parents, children, body) => {
-           //add the security level
-        //  System.out.println("declareSecurityLevel Check")
-            val declaredSecurityLevel = SecurityLevel.interpretParseSL(name,parents,children)
-            val (newBody, bodySL) = slSynthExpr(body)(context)
-            DeclareSecurityLevel(name,parents,children, newBody)
+          //add the security level
+          //  System.out.println("declareSecurityLevel Check")
+          val declaredSecurityLevel = SecurityLevel.interpretParseSL(name, parents, children)
+          val (newBody, bodySL) = slSynthExpr(body)(context)
+          DeclareSecurityLevel(name, parents, children, newBody)
         }
         case _ => {
           val (newExpr, exprSL) = slSynthExpr(expr)
-        //  System.out.println("check Expr _ SL: " + exprSL)
-          if(exprSL != null)//we only check for when SL are used
+          //  System.out.println("check Expr _ SL: " + exprSL)
+          if (exprSL != null) //we only check for when SL are used
           {
             //check that the exprSL is equal to the expected SL (lattice)
             //if it isn't then we throw an exception
-            if(!(exprSL eq lattice))
-              throw new Exception("SECURITY ERROR: Expression: " + newExpr + "\nSecurityLevel: " + 
-                    exprSL + "does not " +
-              		"equal the expected security level: " + lattice)
+            if (!(exprSL eq lattice))
+              throw new Exception("SECURITY ERROR: Expression: " + newExpr + "\nSecurityLevel: " +
+                exprSL + "does not " +
+                "equal the expected security level: " + lattice)
           }
           newExpr
         }
@@ -203,35 +202,30 @@ object securityChecker{
         throw (e.setPosition(expr.pos))
       }
     }
-}
+  }
 
-
-/**
- * Check for calls to sites
- */
-def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]])(implicit context: Context): (Expression, SecurityLevel) = {
-    val (site, siteSl) = slSynthExpr(target)//site targetSL
+  /** Check for calls to sites
+    */
+  def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]])(implicit context: Context): (Expression, SecurityLevel) = {
+    val (site, siteSl) = slSynthExpr(target) //site targetSL
     var newSiteSl = siteSl
     val (newArgs, argSls) = (args map slSynthExpr).unzip //get the sl for each of the arguments
-    
-    
+
     //for each argument, we must check that the site can write to them (integrity)
     //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
-    for(argLevel <- argSls)
-    {
-      
-      if(SecurityLevel.canWrite(siteSl,argLevel) == false)//checks is siteSL can write to argLevel
-      {  throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
-        		" write to argument of level " + argLevel + ".")
-      }
-      else//if you can write to the siteSl, you may have moved down the results' integrity
+    for (argLevel <- argSls) {
+
+      if (SecurityLevel.canWrite(siteSl, argLevel) == false) //checks is siteSL can write to argLevel
       {
-        newSiteSl = SecurityLevel.meet(newSiteSl,argLevel)
+        throw new Exception("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
+          " write to argument of level " + argLevel + ".")
+      } else //if you can write to the siteSl, you may have moved down the results' integrity
+      {
+   //     Console.println("MEET for EXPR: " + site + " (" + argLevel + ")")
+        newSiteSl = SecurityLevel.meet(newSiteSl, argLevel)
       }
     }
-    
-    
-    
-    (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl)//return SL of a call is the security level published
+
+    (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl) //return SL of a call is the security level published
   }
 }
