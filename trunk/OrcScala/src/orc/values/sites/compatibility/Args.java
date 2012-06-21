@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -64,7 +64,7 @@ public class Args implements Serializable {
 		if (v instanceof Field) {
 			return ((Field) v).field();
 		} else {
-			throw new ArgumentTypeMismatchException(0, "message", (v != null ? v.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(0, "message", v != null ? v.getClass().toString() : "null");
 		}
 	}
 
@@ -100,17 +100,18 @@ public class Args implements Serializable {
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
-	 * @throws InsufficientArgsException 
+	 * @throws InsufficientArgsException
 	 */
 	public int intArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
-			throw new ArgumentTypeMismatchException(n, "int", "null");
+			throw new ArgumentTypeMismatchException(n, "32-bit signed integer", "null");
 		}
 		try {
+
 			return ((Number) a).intValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "int", (a != null ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "32-bit signed integer", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
@@ -120,17 +121,17 @@ public class Args implements Serializable {
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
-	 * @throws InsufficientArgsException 
+	 * @throws InsufficientArgsException
 	 */
 	public long longArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
 		if (a == null) {
-			throw new ArgumentTypeMismatchException(n, "long", "null");
+			throw new ArgumentTypeMismatchException(n, "64-bit signed integer", "null");
 		}
 		try {
 			return ((Number) a).longValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "long", (a != null ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "64-bit signed integer", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
@@ -138,7 +139,7 @@ public class Args implements Serializable {
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
-	 * @throws InsufficientArgsException 
+	 * @throws InsufficientArgsException
 	 */
 	public Number numberArg(final int n) throws ArgumentTypeMismatchException, InsufficientArgsException {
 		final Object a = getArg(n);
@@ -148,7 +149,7 @@ public class Args implements Serializable {
 		try {
 			return (Number) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "Number", (a != null ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "Number", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
@@ -168,7 +169,7 @@ public class Args implements Serializable {
 		try {
 			return ((Boolean) a).booleanValue();
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "boolean", (a != null ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "boolean", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
@@ -190,7 +191,7 @@ public class Args implements Serializable {
 		try {
 			return (String) a;
 		} catch (final ClassCastException e) {
-			throw new ArgumentTypeMismatchException(n, "String", (a != null ? a.getClass().toString() : "null"));
+			throw new ArgumentTypeMismatchException(n, "String", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
