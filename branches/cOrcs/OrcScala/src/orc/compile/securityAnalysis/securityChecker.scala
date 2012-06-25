@@ -67,7 +67,9 @@ object securityChecker {
           //This is when a site calls on arguments,
           //wee need to see if the target should be able to call
           case FoldedCall(target, args, typeArgs) => {
-            slFoldedCall(target, args, typeArgs)
+            val (result, resultSL) = slFoldedCall(target, args, typeArgs)
+            //Console.println("FINAL result: " + resultSL)
+            (FoldedCall(target,args,typeArgs), resultSL)
           }
           case left || right => {
             val (newLeft, slLeft) = slSynthExpr(left)
@@ -75,7 +77,7 @@ object securityChecker {
   //          Console.println("MEET for EXPR: " + newLeft + " || " + newRight)
             (newLeft || newRight, SecurityLevel.meet(slLeft, slRight))
           }
-          case left ow right => {
+          case left ow right => {// the syntax for this is (left ; right)
             val (newLeft, slLeft) = slSynthExpr(left)
             val (newRight, slRight) = slSynthExpr(right)
      //       Console.println("MEET for EXPR: " + newLeft + " ow " + newRight)
@@ -221,11 +223,11 @@ object securityChecker {
           " write to argument of level " + argLevel + ".")
       } else //if you can write to the siteSl, you may have moved down the results' integrity
       {
-   //     Console.println("MEET for EXPR: " + site + " (" + argLevel + ")")
+        Console.println("MEET for EXPR: " + site + " (" + argLevel + ")")
         newSiteSl = SecurityLevel.meet(newSiteSl, argLevel)
       }
     }
-
+    //Console.println("FINAL SL: " + newSiteSl)
     (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl) //return SL of a call is the security level published
   }
 }
