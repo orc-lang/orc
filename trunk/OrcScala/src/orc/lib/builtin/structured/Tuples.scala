@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on March 31, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -48,7 +48,7 @@ object TupleArityChecker extends PartialSite2 with TypedSite {
           None
         }
       case (_: OrcTuple, a) => throw new ArgumentTypeMismatchException(1, "Integer", if (a != null) a.getClass().toString() else "null")
-      case (a, _) => throw new ArgumentTypeMismatchException(0, "Tuple", if (a != null) a.getClass().toString() else "null")
+      case (a, _) => None // Not a Tuple
     }
 
   def orcType() = new BinaryCallableType with StrictType {
