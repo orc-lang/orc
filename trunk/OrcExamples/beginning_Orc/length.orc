@@ -1,6 +1,11 @@
-{--
+{- length.orc
+
+EXERCISE:
+
 Write a function which, given a list, returns
 the number of elements in the list.
+
+SOLUTION:
 --}
 
 def length(List[Top]) :: Integer

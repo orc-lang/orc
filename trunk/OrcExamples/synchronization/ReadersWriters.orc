@@ -5,7 +5,8 @@
  - Created by misra on Mar 30, 2010 2:25:16 PM
  -}
  
-{-A RelaxedChannel implements the explicit channel in a more compact
+{-
+A RelaxedChannel implements the explicit channel in a more compact
 fashion. It supports the put and get operations as before. But, unlike
 a FIFO channel it only guarantees that every entry is eventually
 removed. 

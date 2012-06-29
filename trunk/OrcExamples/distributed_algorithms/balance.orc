@@ -1,4 +1,7 @@
-{--
+{- balance.orc
+
+EXERCISE:
+
 Write a function which takes an input channel (in),
 an output channel (out), and a list of sites (ps)
 as arguments.  The function must repeatedly read an
@@ -7,6 +10,8 @@ with the value (using each site in the list in turn),
 and write the result to out.  The order values are
 written to the output channel must correspond to the
 order values were received on the input channel.
+
+SOLUTION:
 --}
 
 type inType = Number

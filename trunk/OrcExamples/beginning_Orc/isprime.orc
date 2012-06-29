@@ -1,3 +1,6 @@
+{- isprime.orc -- Orc program that tests if a number is prime
+ -}
+
 def isPrime(Number) :: Boolean
 def isPrime(n) =
   def primeat(Integer) :: Boolean

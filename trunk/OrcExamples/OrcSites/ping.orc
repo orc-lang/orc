@@ -1,3 +1,6 @@
+{- ping.orc -- Orc program that 'ping's the local host every 5 seconds
+ -}
+
 include "net.inc"
 
 -- Ping a server and return

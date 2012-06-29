@@ -1,3 +1,6 @@
+{- xmpp.orc -- Orc program demonstrating ELIZA over XMPP (Google Talk)
+ -}
+
 include "fun.inc"
 include "net.inc"
 

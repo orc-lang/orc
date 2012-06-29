@@ -1,3 +1,6 @@
+{- date.orc -- Orc program that formats a date-time
+ -}
+
 include "date.inc"
 
 val short = DateTimeFormat.forStyle("SS")

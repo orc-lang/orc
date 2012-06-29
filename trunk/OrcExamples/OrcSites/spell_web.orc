@@ -1,3 +1,6 @@
+{- spell_web.orc -- Orc program that fetches the Jabberwocky poem, then spell checks it using Google's spell service
+ -}
+
 include "net.inc"
 
 import class InputStreamReader = "java.io.InputStreamReader"

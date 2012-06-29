@@ -1,8 +1,8 @@
-{-
-Dining Philosophers animation.
-Originally by Joseph Cooper,
-minor modifications by Adrian Quark.
--}
+{- philosopher.orc -- Orc program: Animated Dining Philosophers
+ -
+ - Originally by Joseph Cooper,
+ - minor modifications by Adrian Quark.
+ -}
 
 import class Canvas = "orc.lib.simanim.Philosopher"
 

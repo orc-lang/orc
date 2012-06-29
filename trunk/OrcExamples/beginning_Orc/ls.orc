@@ -1,4 +1,7 @@
-{--
+{- ls.orc
+
+EXERCISE:
+
 You are given the site <code>ls(x)</code> which returns
 a list of file names found in the directory named
 by the path <code>x</code>, or an empty list if <code>x</code> is
@@ -12,7 +15,7 @@ Write a function <code>find(x)</code> which returns a list
 of all paths in the directory tree starting at the
 given path. E.g. <code>find("/")</code> might return
 <code>["/", "/usr/", "/usr/bin/", "/usr/bin/ls"]</code>.
---}
+-}
 
 {--
 Example ls function which lists
@@ -28,6 +31,9 @@ def ls("/usr/") = ["local/", "bin/", "lib/"]
 def ls("/usr/bin/") = ["ls", "sh", "find"]
 def ls(_) = []
 
+{-
+SOLUTION:
+-}
 -------- main program ------
 
 {-

@@ -1,4 +1,5 @@
-{-
+{- quicksort.orc -- Orc program implemting Quicksort
+
 The original quicksort algorithm (Hoare, C. A. R.
 "Partition: Algorithm 63," "Quicksort: Algorithm 64,"
 and "Find: Algorithm 65." Comm. ACM 4(7), 321-322, 1961),
@@ -21,54 +22,54 @@ def swapRefs(x, y) = x? >z> x := y? >> y := z
 def quicksort[X](Array[X]) :: Signal
 def quicksort(a) =
 
---------------  Partition Procedure --------------
-{- Given that l <= r, so that a(l).. a(r) is a non-empty array
-    segment, which includes both a(l) and a(r).
-       partition(p, l, r) permutes the elements of the array segment,
-    and returns index r', l <= r' <= r, such that:
-      for every i, l <= i < r', a(i)? <= p,
-      for every i, r' < i <= r, a(i)? >  p.
-    Note: Either of the partitioned segments may be empty. -}
+  --------------  Partition Procedure --------------
+  {- Given that l <= r, so that a(l).. a(r) is a non-empty array
+      segment, which includes both a(l) and a(r).
+         partition(p, l, r) permutes the elements of the array segment,
+      and returns index r', l <= r' <= r, such that:
+        for every i, l <= i < r', a(i)? <= p,
+        for every i, r' < i <= r, a(i)? >  p.
+      Note: Either of the partitioned segments may be empty. -}
 
-def partition(X, Integer, Integer) :: Integer
-def partition(p, l, r) =
-   ------ Helper functions ------
-   {-   lr(i) returns the smallest j, i >= j <= r, such that a(i)? > p,
-      rl(i) returns the largest  j, j < i, such that a(i)? <= p. -}
+  def partition(X, Integer, Integer) :: Integer
+  def partition(p, l, r) =
+    ------ Helper functions ------
+    {-   lr(i) returns the smallest j, i >= j <= r, such that a(i)? > p,
+         rl(i) returns the largest  j, j < i, such that a(i)? <= p. -}
 
-   def lr(Integer) :: Integer
-   def rl(Integer) :: Integer
-   def lr(i) = if i <: r && a(i)? <= p then lr(i+1) else i
-   def rl(i) = if a(i)? :> p then rl(i-1) else i
-   ------ End of Helper functions ------
+    def lr(Integer) :: Integer
+    def rl(Integer) :: Integer
+    def lr(i) = if i <: r && a(i)? <= p then lr(i+1) else i
+    def rl(i) = if a(i)? :> p then rl(i-1) else i
+    ------ End of Helper functions ------
 
-   {- Goal Expression for partition(p, l, r)
-      Below, lr and rl run in parallel. -}
-   #
-   (lr(l), rl(r)) >(l', r')>
+    {- Goal Expression for partition(p, l, r)
+       Below, lr and rl run in parallel. -}
+    #
+    (lr(l), rl(r)) >(l', r')>
 
-   ( Ift(l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
-   | Ift(l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
-   | Ift(l' + 1 :> r') >> r'
-   )
---------------  End of Partition Procedure --------------
+    ( Ift(l' + 1 <: r') >> swapRefs(a(l'), a(r')) >> partition(p, l'+1, r'-1)
+    | Ift(l' + 1 = r') >> swapRefs(a(l'), a(r')) >> l'
+    | Ift(l' + 1 :> r') >> r'
+    )
+  --------------  End of Partition Procedure --------------
 
---------------  Sort an array segment -------------
-{- sort(l, r) sorts the segment a(l).. a(r) -}
-def sort(Integer, Integer) :: Signal
-def sort(l, r) =
-   if l >= r then signal
-   else
-     {- partition and then sort recursively -}
-     partition(a(l)?, l+1, r) >m>
-     swapRefs(a(m), a(l)) >>
-     {- Below, the two partitions are sorted in parallel -}
-     (sort(l, m-1), sort(m+1, r)) >>
-     signal
--------------- End of Sort an array segment -------------
+  --------------  Sort an array segment -------------
+  {- sort(l, r) sorts the segment a(l).. a(r) -}
+  def sort(Integer, Integer) :: Signal
+  def sort(l, r) =
+    if l >= r then signal
+    else
+      {- partition and then sort recursively -}
+      partition(a(l)?, l+1, r) >m>
+      swapRefs(a(m), a(l)) >>
+      {- Below, the two partitions are sorted in parallel -}
+      (sort(l, m-1), sort(m+1, r)) >>
+      signal
+  -------------- End of Sort an array segment -------------
 
-{- Goal Expression for quicksort(a) -}
-sort(0, a.length?-1)
+  {- Goal Expression for quicksort(a) -}
+  sort(0, a.length?-1)
 
 --------------  Test Routines -------------
 {- sorted(xs) returns true if non-empty list xs is sorted.

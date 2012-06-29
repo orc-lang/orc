@@ -1,8 +1,9 @@
-{-
-The "hygenic solution to the diners problem",
-described in "The Drinking Philosophers Problem", by
-K. M. Chandy and J. Misra.
--}
+{- misra_philosopher.orc
+ -
+ - The "hygenic solution to the diners problem", described in
+ - K. M. Chandy and J. Misra. 1984. The drinking philosophers problem. 
+ - ACM Trans. Program. Lang. Syst. 6, 4 (October 1984), 632-646.
+ -}
 
 -- Use a Scala set implementation.
 -- Operations on this set are _not_ synchronized.

@@ -1,3 +1,6 @@
+{- countdown.orc -- Orc program that counts down seconds
+ -}
+
 def Countdown(Integer) :: Integer
 def Countdown(i) = Ift(i :> 0) >>
 				   ( i

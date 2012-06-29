@@ -1,7 +1,12 @@
-{--
+{- firstn.orc
+
+EXERCISE:
+
 Write a function which, given a number (n) and a channel (c),
 returns a list of the first n values received from c.
---}
+
+SOLUTION:
+-}
 
 def firstN[A](Integer, Channel[A]) :: List[A]
 def firstN(0, c) = []

@@ -1,4 +1,7 @@
-{--
+{- monitor.orc
+
+EXERCISE:
+
 Write a program with two functions: dec and wait.
 These functions share a state which is a natural number
 (n), initially = 5.  When <code>dec()</code> is called,
@@ -8,6 +11,8 @@ without using <code>Ref</code>.
 
 Hint: create a single process running in the background which
 manages the shared state.
+
+SOLUTION:
 --}
 
 type Callback = lambda() :: Signal

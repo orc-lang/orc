@@ -1,3 +1,6 @@
+{- randomized_byzantine.orc -- Orc program with a randomized solution to Byzantine agreement
+ -}
+
 import class Map = "scala.collection.mutable.HashMap"
 
 -- number of bad processes

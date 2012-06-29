@@ -1,7 +1,10 @@
-{--
+{- record_factory.orc -- Orc program demonstrating records of methods
+ -}
+
+{-
 Factory method; returns a new counter object initially at value 0. Calling inc
 increments the value, dec decrements it, and read returns it.
---}
+-}
 def Counter() =
   -- value of the counter
   val n = Ref[Integer](0)
@@ -15,9 +18,9 @@ def Counter() =
 
   -- Return a record of synchronized methods
   {. 
-     inc = synchronized(lock, inc),
-     dec = synchronized(lock, dec),
-     read = synchronized(lock, read) 
+    inc = synchronized(lock, inc),
+    dec = synchronized(lock, dec),
+    read = synchronized(lock, read) 
   .}
 
 -- Example of using the counter

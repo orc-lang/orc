@@ -1,4 +1,5 @@
-{-
+{- dfs.orc -- Orc program: Perform a depth-first search of a graph
+
 This is the depth first search algorithm for a connected undirected
 graph. The graph structure is embedded in an immutable array conn; conn(i), 0<= i<
 N, is the list of neighbors of i. The output of the algorithm is the
