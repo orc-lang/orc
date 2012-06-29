@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Mar 29, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -125,7 +125,7 @@ trait OrcRunner {
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
   //TODO: Make more of these params configurable
   math.max(4, Runtime.getRuntime().availableProcessors * 2),
-  if (maxSiteThreads > 0) maxSiteThreads else 256,
+  if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
   2000L, TimeUnit.MILLISECONDS,
   new LinkedBlockingQueue[Runnable],
   new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
