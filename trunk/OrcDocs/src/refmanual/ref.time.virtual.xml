@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.time.virtual.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Syntax: Lexical Specifications -->
+	<section xml:id="ref.time.virtual" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+		<title>Virtual Time</title>
+		<para>
+			Virtual time provides the ability to order events in an Orc execution.
+			As an expression is executed, the Orc runtime tracks the "current" virtual time.
+			A <code>Vawait</code> site call waits for a particular point in time.
+			Through use of <code>Vawait</code>, one can set up temporal dependencies among Orc expressions.
+		</para>
+		<para>
+			Simulations in Orc can make use of virtual time to simulate time passage without the unproductive delays caused by real time waits.
+			Certain algorithms can be succinctly expressed using virtual time.  (See the shortest path example.)
+		</para>
+		<para>
+			An Orc virtual clock is defined by three things:
+			<itemizedlist>
+			<listitem><para>A set of point of time (for example, the integers)</para></listitem>
+			<listitem><para>Equality and total ordering relations over this set (for example, = and &lt;)</para></listitem>
+			<listitem><para>Optionally, a parent clock</para></listitem>
+			</itemizedlist> 
+		</para>
+		<section xml:id="ref.time.virtual.Vclock">
+			<title>Vclock</title>
+			<para>
+				Vclock....
+			</para>
+		</section>
+		<section xml:id="ref.time.virtual.Vawait">
+			<title>Vawait</title>
+			<para>
+				Vawait....
+			</para>
+		</section>
+		<section xml:id="ref.time.virtual.Vtime">
+			<title>Vtime</title>
+			<para>
+				Vtime....
+			</para>
+		</section>
+
+		<section xml:id="ref.time.virtual.examples">
+			<title>Examples</title>
+
+			<example xml:id="ref.time.virtual.examples.xxxxx">
+				<title>Xxxx xxxx xxxxx</title>
+				<programlisting language="orc-demo"><![CDATA[
+{- Example.... -}
+
+Println("Example")
+
+{-
+OUTPUT:
+Example
+signal
+-}
+]]></programlisting>
+			</example>
+
+		</section>
+		<section xml:id="ref.time.virtual.links">
+			<title>Related Links</title>
+			<itemizedlist>
+				<title>Related Reference Topics</title>
+				<listitem><para><link linkend="ref.stdlib.time">Standard Library: Time</link></para></listitem>
+				<listitem><para><link linkend="ref.stdlib.time.Vclock"><code>Vclock</code> site</link></para></listitem>
+				<listitem><para><link linkend="ref.stdlib.time.Vawait"><code>Vawait</code> site</link></para></listitem>
+				<listitem><para><link linkend="ref.stdlib.time.Vtime"><code>Vtime</code> site</link></para></listitem>
+			</itemizedlist>
+			<itemizedlist>
+				<title>Related Tutorial Sections</title>
+				<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.timeout">Xxxxxx</olink></para></listitem>
+			</itemizedlist>
+		</section>
+
+	</section>

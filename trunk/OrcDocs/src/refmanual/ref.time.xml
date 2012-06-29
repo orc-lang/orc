@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -26,7 +26,11 @@ services which take time to respond. However, Orc can also explicitly
 wait for some amount of time, using the special site <code>Rwait</code>. 
 </para>
 
+<para>
+Virtual time....
+</para>
+
 <xi:include href="ref.time.real.xml"/>
-<!-- <xi:include href="ref.time.virtual.xml"/> -->
+<xi:include href="ref.time.virtual.xml"/>
 
 </chapter>
