@@ -70,6 +70,34 @@ def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())
 Virtual time.
 -}
 
+{--
+@site Vclock(TotalSite) :: Signal
+
+Create a new virtual clock instance, using the supplied site as a time value comparator.
+--}
 import site Vclock = "orc.lib.time.Vclock"
+
+{--
+@site Vawait[A](A) :: Boolean
+
+Wait until the current virtual time is equal to the given value.
+If the current time is presently the given value, return <code>false</code> immediately.
+If the given value is in the future, wait for it, and return <code>true</code>.
+If the given value is in the past, halt silently.
+If no virtual time has been established, initialize to the given value and return <code>true</code>.
+
+The type <code>A</code> of the parameter is determined by the type accepted by the time value
+comparator supplied to the <code>Vclock</code> call that created the current virtual clock.
+--}
 import site Vawait = "orc.lib.time.Vawait"
+
+{--
+@site Vtime[A]() :: A
+
+Return the current virtual time.
+If none has been established, then halt silently.
+
+The type <code>A</code> of the return value is determined by the type accepted by the time value
+comparator supplied to the <code>Vclock</code> call that created the current virtual clock.
+--}
 import site Vtime = "orc.lib.time.Vtime"
