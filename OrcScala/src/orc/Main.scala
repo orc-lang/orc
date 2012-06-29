@@ -171,5 +171,5 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   IntOpt(() => maxTokens, maxTokens = _, ' ', "max-tokens", usage = "Terminate the program if more than this many tokens to be created. Default=infinity.")
 
-  IntOpt(() => maxSiteThreads, maxSiteThreads = _, ' ', "max-site-threads", usage = "Terminate the program if more than this many site calls are outstanding simultaneously. Default=infinity.")
+  IntOpt(() => maxSiteThreads, maxSiteThreads = _, ' ', "max-site-threads", usage = "Limit the number of simultaneously outstanding site calls to this number. Default=infinity.")
 }

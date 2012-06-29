@@ -44,7 +44,7 @@ public abstract class Account implements AccountMBean {
 	private Integer lifespan = null;
 	private boolean canSendMail = false;
 	private boolean canImportJava = false;
-	// NB: right now these limits are hard-coded for all accounts,
+	//TODO: right now these limits are hard-coded for all accounts,
 	// because otherwise it's too easy to write recursive programs
 	// which take down the server.
 	private int stackSize = 1024 * 128;
