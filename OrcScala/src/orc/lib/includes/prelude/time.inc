@@ -74,6 +74,10 @@ Virtual time.
 @site Vclock(TotalSite) :: Signal
 
 Create a new virtual clock instance, using the supplied site as a time value comparator.
+
+The time value comparator site's type should be <code>(A, A) :: Integer</code>, where <code>A</code> is the
+type of time values.  The returned integer should be <code>-1</code>, <code>0</code>, or <code>1</code>, depending on
+whether argument one is less then, equal to, or greater than argument two, respectively.
 --}
 import site Vclock = "orc.lib.time.Vclock"
 
@@ -101,3 +105,11 @@ The type <code>A</code> of the return value is determined by the type accepted b
 comparator supplied to the <code>Vclock</code> call that created the current virtual clock.
 --}
 import site Vtime = "orc.lib.time.Vtime"
+
+{--
+@site IntegerTimeOrder(Integer, Integer) :: Integer
+
+A time value comparator for integer time values.
+Pass this site to <code>Vclock</code> to create an integer virtual time scale.
+--}
+import site IntegerTimeOrder = "orc.lib.time.IntegerTimeOrder"
