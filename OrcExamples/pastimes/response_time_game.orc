@@ -15,10 +15,10 @@ val (id,dd) = (3000,100)
 def rand_seq() = Random(10) |  Rwait(dd) >> rand_seq()
 
 def game() =
-{- game() conducts one game and returns a pair (b,w).
-  b is true iff user responds only after v is printed;
-  then the response time is w
--}
+  {- game() conducts one game and returns a pair (b,w).
+     b is true iff user responds only after v is printed;
+     then the response time is w
+  -}
 
   val v = Random(10) -- v is a random digit for one game
 
@@ -30,7 +30,7 @@ def game() =
 
   {- Goal Expression of Game -}
   if b then
-  ("Response time = " +w)
+    ("Response time = " +w)
   else ("You jumped the gun.")
 
 {- Goal Expression of the program -}

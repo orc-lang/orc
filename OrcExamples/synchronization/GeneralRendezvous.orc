@@ -50,8 +50,8 @@ def class Rendezvous(n,f) =
   val b = Table(n,Channel)
 
   def go(i,v) = 
-   val c = Cell()
-   b(i).put((v,c)) >> c.read()
+    val c = Cell()
+    b(i).put((v,c)) >> c.read()
 
   def collect(vcl,0) = vcl
   def collect((vl,cl),i) =  -- collect i more items
@@ -81,14 +81,15 @@ manager()
 -}
 
 def avg([a,b,c])  = 
- val av = (a+b+c)/3
- [av,av,av]
+  val av = (a+b+c)/3
+  [av,av,av]
 
 val rg3 = Rendezvous(3,avg).go
-   rg3(0,0) >x> ("0 gets " + x) 
-|  rg3(1,1) >x> ("1 gets " + x) 
-|  rg3(2,5) >x> ("2 gets " + x) 
-|  rg3(2,2) >x> ("2 gets " + x) 
+
+  rg3(0,0) >x> ("0 gets " + x) 
+| rg3(1,1) >x> ("1 gets " + x) 
+| rg3(2,5) >x> ("2 gets " + x) 
+| rg3(2,2) >x> ("2 gets " + x) 
 
 {-
 The following implementation does not use callback mechanism. But, it
@@ -117,10 +118,10 @@ def class Rendezvous(n,f) =
   def initsem(i) = sem(i-1).release() >> initsem(i-1)
 
   def go(i,v) = 
-   sem(i).acquire() >> 
-   b(i).put(v) >> c(i).get() >w> 
-   sem(i).release() >> 
-   w
+    sem(i).acquire() >> 
+    b(i).put(v) >> c(i).get() >w> 
+    sem(i).release() >> 
+    w
 
   def collect(vl,0) = vl
   def collect(vl,i) = b(n-i).get() >v> collect(v:vl,i-1)
@@ -129,8 +130,7 @@ def class Rendezvous(n,f) =
   def distribute(v:vl,i) = c(n-i).put(v) >> distribute(vl,i-1)
 
   def manager() = 
-   collect([],n) >vl> distribute(f(vl),n) >> manager()
+    collect([],n) >vl> distribute(f(vl),n) >> manager()
 
 initsem(n) >> manager()
 -}
-

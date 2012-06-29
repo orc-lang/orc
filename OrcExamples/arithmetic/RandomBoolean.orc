@@ -13,22 +13,23 @@
      afer some random time at most t
      with a random boolean.
    
-  It has just one method, main(). Ithandles one call at a time.
+  It has just one method, main(). It handles one call at a time.
 -}
 
 def class RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(f,t) =  
-   Ift(URandom() <: f) >>  s.acquire() >>
-   Random(t) >w> Rwait(w) >>
-   (Random(2) = 1) >v>
-   s.release() >> 
-   (w,v)
+    Ift(URandom() <: f) >>  s.acquire() >>
+    Random(t) >w> Rwait(w) >>
+    (Random(2) = 1) >v>
+    s.release() >> 
+    (w,v)
 
-stop
+  stop
 
 val rb = RandomBool().main
 val (_,x) = rb(0.5,3000) 
 val (_,y) = rb(1,3000)
 val z = Ift(x) >> true | Ift(y) >> true | x||y
- z
+
+z

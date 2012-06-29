@@ -1,8 +1,13 @@
-{--
+{- firstnpub.orc
+
+EXERCISE:
+
 Write a program which calls a definition f, which
 may publish multiple values. Publish the first 5
 values published by <code>f()</code>, and then
 terminate the call to f.
+
+SOLUTION:
 --}
 
 {- Publish first n values received on c, then release s -}

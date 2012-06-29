@@ -20,44 +20,44 @@
 -}
 
 
-  type Bounds = (Integer, Integer)
-  type Matrix[A] = 
-  {. 
-    item :: lambda (List[Integer]) :: Ref[A] 
-  .}
+type Bounds = (Integer, Integer)
+type Matrix[A] = 
+{. 
+  item :: lambda (List[Integer]) :: Ref[A] 
+.}
 
 
-  def Matrix[A](List[Bounds]) :: Matrix[A]
-  
-  def class Matrix([]) = 
-    val Mat = Array[A](1)
-    def item(List[Integer]) :: Ref[A] 
-    def item([]) = Mat(0)
-    stop
+def Matrix[A](List[Bounds]) :: Matrix[A]
 
-  def class Matrix(xs) =
-     
-    {- size of a matrix given a list of bounds, one per dimension -}
-    def size(List[Bounds]) :: Integer
-    def size([]) = 1
-    def size((l,h):ys) = (h-l+1)*size(ys)
+def class Matrix([]) = 
+  val Mat = Array[A](1)
+  def item(List[Integer]) :: Ref[A] 
+  def item([]) = Mat(0)
+  stop
 
-    {- index(acc,xs,is) has
-        acc: an integer
-        xs: a list of bounds
-        is: a list of indices
-       It computes acc+j, where j is the linear index of the 
-       element at index is.
-    -}
-    def index(Integer, List[Bounds], List[Integer]) :: Integer
-    def index(acc,[],[]) = acc
-    def index(acc,(l,h):ys,i:is) = index(acc*(h-l+1)+(i-l),ys,is)
+def class Matrix(xs) =
+ 
+  {- size of a matrix given a list of bounds, one per dimension -}
+  def size(List[Bounds]) :: Integer
+  def size([]) = 1
+  def size((l,h):ys) = (h-l+1)*size(ys)
 
-    val Mat = Array[A](size(xs))
-    def item(List[Integer]) :: Ref[A] 
-    def item(is) = Mat(index(0,xs,is))
-      
-    stop
+  {- index(acc,xs,is) has
+      acc: an integer
+      xs: a list of bounds
+      is: a list of indices
+     It computes acc+j, where j is the linear index of the 
+     element at index is.
+  -}
+  def index(Integer, List[Bounds], List[Integer]) :: Integer
+  def index(acc,[],[]) = acc
+  def index(acc,(l,h):ys,i:is) = index(acc*(h-l+1)+(i-l),ys,is)
+
+  val Mat = Array[A](size(xs))
+  def item(List[Integer]) :: Ref[A] 
+  def item(is) = Mat(index(0,xs,is))
+
+  stop
 
 val B = Matrix[Integer]([]).item
 val A = Matrix[Integer]([(-2,0),(-1,3),(-1,3)]).item

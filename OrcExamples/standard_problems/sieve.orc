@@ -1,4 +1,5 @@
-{--
+{- x.orc -- Orc program implementing Eratosthenes's sieve
+
 Eratosthenes's Sieve is an algorithm for finding prime numbers.
 In an imperative setting, it works as follows:
 
@@ -21,7 +22,7 @@ Implement a parallel version of this algorithm using these facts.
 Note: you can compute the "floored" square root of a number like this:
 
 Floor(sqrt(n))
---}
+-}
 
 import class Set = "scala.collection.mutable.HashSet"
 

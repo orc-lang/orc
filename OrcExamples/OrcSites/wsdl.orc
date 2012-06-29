@@ -1,3 +1,6 @@
+{- wsdl.orc -- Orc program: Connect to an integer-to-Roman-number Web service
+ -}
+
 import site Webservice = "orc.lib.net.Webservice"
 {-
 Find documentation of this service at:

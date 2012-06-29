@@ -1,6 +1,7 @@
-{-
-MVM: This function does a matrix vector multiplication.
--}
+{- mvm.orc -- Orc program: Matrix vector multiplication
+ - 
+ - Created by amshali on Sep 3, 2009
+ -}
 
 def dotproduct(List[Number], List[Number]) :: Number
 def dotproduct([], []) = 0
@@ -25,4 +26,3 @@ mvm(A, V)
 OUTPUT:
 [-2547, 1433, 1354, 2821]
 -}
-

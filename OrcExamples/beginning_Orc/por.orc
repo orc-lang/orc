@@ -1,9 +1,14 @@
-{--
+{- por.orc
+
+EXERCISE:
+
 Write a function which accepts a list of sites which
 return natural numbers and calls each site in
 parallel. If any site returns a value less than 100,
 immediately return that value. Otherwise, return the
 minimum value returned by any site.
+
+SOLUTION:
 --}
 
 def f(List[lambda() :: Number]) :: Number

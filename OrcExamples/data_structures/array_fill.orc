@@ -1,3 +1,6 @@
+{- array_fill.orc -- Orc program demonstrating ways to prefill arrays
+ -}
+
 -- Three different ways to prefill arrays:
 -- An immutable array with the value equal to the index
 val a = Table[Integer](3, Let)

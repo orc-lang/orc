@@ -28,7 +28,7 @@ def class BarrierSync(n) =
   def manager() = 
     repeat(n,in.acquire) >> repeat(n,out.release) >> manager()
 
-manager()
+  manager()
 
      
 val barrier = BarrierSync(3).go

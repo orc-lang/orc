@@ -19,7 +19,7 @@ We would like to encapsulate the lock.
 def class Servercall[A]() =
   val lock = Semaphore(1)
   def main(v :: A) = 
-   lock.acquire() >> Server(v) >w> lock.release() >> w
+    lock.acquire() >> Server(v) >w> lock.release() >> w
 stop
 
 {- Typical call

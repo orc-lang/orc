@@ -1,3 +1,6 @@
+{- spell.orc -- Orc program that spell checks words using Google's spell service
+ -}
+
 include "net.inc"
 include "ui.inc"
 

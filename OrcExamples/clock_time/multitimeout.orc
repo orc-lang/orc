@@ -1,12 +1,19 @@
-{--
+{- multitimeout.orc
+
+EXERCISE:
+
 Write a program which calls a definition f, which
 may publish multiple values. Publish all of the
 values published by {{f()}} within 100ms, and
 then terminate the call to f.
---}
+-}
 
 {- Example f -}
 def f() = upto(10) >n> Rwait(n*20) >> n
+
+{-
+SOLUTION:
+-}
 
 {- Main program -}
 val c = Channel[Integer]()

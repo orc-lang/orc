@@ -1,3 +1,6 @@
+{- rw.orc -- Orc program solution for the readers-writers problem
+ -}
+
 type RW =
   {.
     read_start   :: lambda() :: Signal,
@@ -76,5 +79,3 @@ val rw = RW()
 OUTPUT:
 Final value: 1000
 -}
-
-

@@ -1,8 +1,13 @@
-{--
+{- quorum.orc
+
+EXERCISE:
+
 Write a function which, given a number (n) and a
 list of sites, calls every site in the list in
 parallel and returns a list of the first n responses.
 The order of items in the returned list is unimportant.
+
+SOLUTION::
 --}
 
 {- Get the first n items from channel c -}

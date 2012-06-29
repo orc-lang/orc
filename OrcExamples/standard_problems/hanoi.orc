@@ -1,4 +1,7 @@
-{--
+{- hanoi.orc
+
+EXERCISE:
+
 Write a function to solve the
 <ulink url="http://en.wikipedia.org/wiki/Tower_of_Hanoi">Towers of Hanoi</ulink>
 problem. There are three pegs, numbered 0..2;
@@ -10,6 +13,8 @@ peg number, destination peg number), e.g. <code>(0,1)</code>.
 Since the point of this exercise is to practice Orc,
 not solve puzzles, feel free to use the algorithm
 given in Wikipedia.
+
+SOLUTION:
 --}
 
 {--

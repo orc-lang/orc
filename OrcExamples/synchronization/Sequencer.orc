@@ -1,9 +1,10 @@
-{-  
+{- Sequencer.orc
+ - 
  - Created by misra on Mar 25, 2010 4:16:29 PM
 -}
 
 {- 
-Sequencer simulates ordering of a set of requestors of a service
+Sequencer simulates ordering of a set of requesters of a service
 (customer).  It has two methods: incr() and register().
 
 A customer requests service by calling register(); this call responds
@@ -33,7 +34,7 @@ def class Sequencer(n) =
  def register() = 
       sem.get() >s> bb.put(s) >> s.acquire() >> sem.put(s)
 
-  {- allocate n sempahores in the pool at start. -}
+  {- allocate n semaphores in the pool at start. -}
   upto(n) >> 
   (val s = Semaphore(0)
    sem.put(s))

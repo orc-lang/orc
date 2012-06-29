@@ -1,4 +1,7 @@
-{- Kitchin's 8-queens -}
+{- 8_queens.orc -- Orc program that solves the 8 queens chessboard puzzle
+ - 
+ - Created by dkitchin
+ -}
 
 {- The position of a queen on the chessboard is a coordinate pair -}
 type Queen = (Integer,Integer)

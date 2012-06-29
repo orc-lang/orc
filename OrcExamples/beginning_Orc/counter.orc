@@ -1,4 +1,7 @@
-{--
+{- counter.orc
+
+EXERCISE:
+
 Write a program with three functions: inc, dec, and read.
 Each of these functions modifies a shared state which is
 a natural number (n), initially = 0.  When inc is called,
@@ -9,6 +12,8 @@ functions must act atomically, so that the expression
 counter state unchanged after it completes.
 
 Hint: use a semaphore to control access to the shared state.
+
+SOLUTION:
 --}
 
 val n = Ref[Integer](0)

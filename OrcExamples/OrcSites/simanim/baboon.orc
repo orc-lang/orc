@@ -1,3 +1,6 @@
+{- baboon.orc -- Orc program: Monkey Cross animated simulation
+ -}
+
 import class canvas = "orc.lib.simanim.MonkeyCross"
 val sideLock = Channel()
 val disp = canvas(10)
@@ -202,6 +205,3 @@ disp.open() >>
 < leftQ    < Channel()
 < rightQ   < Channel()
 )
-
-
-  

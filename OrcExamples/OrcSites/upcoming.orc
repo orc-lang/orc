@@ -1,3 +1,6 @@
+{- upcoming.orc -- Orc program that fetches "band" events for tomorrow listed by upcoming.com
+ -}
+
 {-
 In order to run this demo, you must have:
 1. an upcoming.yahoo.com developer account

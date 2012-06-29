@@ -1,4 +1,7 @@
-{--
+{- auction.orc
+
+EXERCISE:
+
 Write a function which conducts an auction given
 a list of "bidder" sites and a starting bid. An
 auction consists of a number of bidding rounds
@@ -11,7 +14,9 @@ the next round. If no callers return a bid within
 5 seconds, the auction (and round) ends. Your
 function should return the value of the winning
 bid.
---}
+
+SOLUTION:
+-}
 
 type Bid = Number
 

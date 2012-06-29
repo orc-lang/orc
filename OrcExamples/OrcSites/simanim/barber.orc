@@ -1,3 +1,6 @@
+{- barber.orc -- Orc program: Barber shop animated simulation
+ -}
+
 import class canvas = "orc.lib.simanim.BarberShop"
 {----------------------------------------------------------------
 	Non-blocking channel.  Sets up a 'try' functionality that returns
@@ -333,4 +336,3 @@ def realTime() =
 
 --(10|20|30|40|50|60|15|25|35)
  --spurtSource(500,2200,1,6,1,64,1,5,100,400)
- 

@@ -1,3 +1,6 @@
+{- music_calendar.orc -- Orc program that finds bands playing in Austin in the next few days
+ -}
+
 {-
 In order to run this demo, you must have:
 1. a google OAuth developer account:
@@ -19,7 +22,7 @@ This program will:
 1. Ask you for temporary permission to update your
    Google Calendar
 2. Search MySpace for bands performing in Austin TX
-3. Find perormances by those bands
+3. Find performances by those bands
 4. Add those performances to your Google Calendar
    under the calendar "Orc Music Calendar"
 

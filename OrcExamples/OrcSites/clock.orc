@@ -1,3 +1,6 @@
+{- clock.orc -- Orc program: Time a delay
+ -}
+
 include "date.inc"
 
 def clock() =   
