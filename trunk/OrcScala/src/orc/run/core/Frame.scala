@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -37,6 +37,7 @@ case object EmptyFrame extends Frame {
 trait CompositeFrame extends Frame {
   val previous: Frame
   def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
+  override def toString = stringPrefix + "(...)"
 }
 
 /** @author dkitchin
