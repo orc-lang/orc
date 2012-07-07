@@ -1,4 +1,4 @@
-{- x.orc -- Orc program implementing Eratosthenes's sieve
+{- sieve.orc -- Orc program implementing Eratosthenes's sieve
 
 Eratosthenes's Sieve is an algorithm for finding prime numbers.
 In an imperative setting, it works as follows:
