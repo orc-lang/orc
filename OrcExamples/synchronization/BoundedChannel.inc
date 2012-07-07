@@ -1,6 +1,6 @@
 {- BoundedChannel.inc
  - 
- - $Id$
+ - $Id: BoundedChannel.inc 3078 2012-06-29 16:32:44Z jthywissen $
  - 
  - Created by misra on Mar 11, 2010 8:57:43 PM
  -}
