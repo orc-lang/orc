@@ -67,8 +67,10 @@ public class OilSecurityValidator {
 		allowedClasses.add("java.util.ArrayList");
 		allowedClasses.add("java.util.Arrays");
 		allowedClasses.add("java.util.BitSet");
+		allowedClasses.add("java.util.Calendar");
 		allowedClasses.add("java.util.Collections");
 		allowedClasses.add("java.util.Currency");
+		allowedClasses.add("java.util.GregorianCalendar");
 		allowedClasses.add("java.util.HashMap");
 		allowedClasses.add("java.util.HashSet");
 		allowedClasses.add("java.util.Hashtable");
