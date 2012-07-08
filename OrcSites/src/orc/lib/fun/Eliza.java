@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,11 +17,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import orc.Handle;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
-import orc.values.sites.compatibility.PartialSite;
 
 public class Eliza extends EvalSite {
 	@Override
@@ -42,15 +44,31 @@ public class Eliza extends EvalSite {
 		} catch (final IOException e) {
 			throw new ElizaException("Error reading script '" + script + "': " + e.toString());
 		}
-		return new PartialSite() {
+		return new DotSite() {
 			@Override
-			public Object evaluate(final Args args) throws TokenException {
+			protected void addMembers() {
+				addMember("finished", new EvalSite() {
+					@Override
+					public Object evaluate(final Args args) throws TokenException {
+						if (args.size() != 0) { 
+							throw new ArityMismatchException(1, args.size()); 
+						}
+						return eliza.finished();
+					}
+				});
+			}
+
+			@Override
+			protected void defaultTo(final Args args, final Handle token) throws TokenException {
+				if (args.size() != 1) { 
+					throw new ArityMismatchException(1, args.size()); 
+				}
 				synchronized (eliza) {
 					if (eliza.finished()) {
-						return null;
+						token.halt();
 					}
 					try {
-						return eliza.processInput(args.stringArg(0));
+						token.publish(eliza.processInput(args.stringArg(0)));
 					} catch (final IOException e) {
 						throw new ElizaException("Error processing script: " + e.toString());
 					}
