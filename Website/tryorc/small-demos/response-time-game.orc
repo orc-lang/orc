@@ -24,7 +24,7 @@ def game() =
       Rwait(id) >> rand_seq() >x> Println(x) >>
       Ift(x = v) >> sw.start() >> stop
     | Prompt("Press ENTER for SEED "+v) >>
-      sw.isrunning() >b> sw.halt() >w> (b,w)
+      sw.isrunning() >b> sw.pause() >w> (b,w)
 
   {- Goal Expression of Game -}
   if b then
