@@ -1,19 +1,21 @@
 {- Stopwatch.inc -- Orc include file stopwatch.inc
- -
+ - 
  - $Id$
- -
+ - 
  - Created by misra on Mar 15, 2010 4:10:00 PM
  -}
 
 {- supports four methods:
-    start, stop and reset, isrunning
+    start, pause and reset, isrunning
 
 Only the operations causing a state change are shown below. Other
 operations do not cause a state change.
 
    In initial state, start transits to running.
-   In running state, reset/stop transits to stopped.
-   In stopped state, either
+   In running state, either
+     pause can be executed, transits to paused, or
+     reset can be executed, transits to initial.
+   In paused state, either
      start can be executed, transits to running, or
      reset can be executed, transits to initial.
 
@@ -21,54 +23,59 @@ operations do not cause a state change.
 
                            start
                     |<--------------------|
-            start   |      stop           |
---->initial ----> running ----> stopped --|
-      |              |                    |
-      |<-----------------------------------
-                       reset
+            start   |     pause           |
+--->initial ----> running ----> paused ---+
+      |                |                  |
+      |<---------------+-------------------
+                 reset
 
 
-The state diagram can be minimized to two states: running, stopped. State stopped
-comprises the previous initial and stopped. The first state is stopped.
+The state diagram can be minimized to two states: running, paused. State paused 
+comprises the previous initial and paused. The first state is paused.
 The transitions are:
- reset/stop always leaves the state in stopped.
+ reset/pause always leaves the state in paused.
  start always leaves the state in running.
 
 A call to reset returns a signal.
 A call to start returns a signal.
-A call to stop returns the current value on the stopwatch.
+A call to pause returns the current value on the stopwatch.
 A call to isrunning returns a boolean, true iff it is running.
 
 The state is encoded by a boolean, running.
-timeshown is the time showing on the face of the stopwatch when the
-last call to stop was made. Initially, timeshown = 0 and also
+lastpause is the time showing on the face of the stopwatch when the
+last call to pause was made. Initially, lastpause = 0 and also
 after each call to reset.
 
 laststart is the time at which the last call to start was made.
 -}
 
 def class Stopwatch() =
-  val clk        = Rclock()
-  val timeshown  = Ref(0)
-  val laststart  = Ref(0)
-  val running    = Ref(false)
+
+  val (laststart, lastpause) = (Ref(0), Ref(0))
+  val running = Ref(false)
+  val sem = Semaphore(1)
+
+  def start() = 
+    sem.acquire() >>  
+    ( if running? then signal
+      else (running := true >> laststart := Rtime()) 
+    ) >>
+    sem.release()
+
+  def pause() =
+    sem.acquire() >>  
+    ( if running? then
+        lastpause := lastpause? + Rtime() - laststart? >>
+        running := false 
+      else signal
+    ) >>
+    sem.release() >> lastpause?
 
   def reset() =
-    running := false >> timeshown := 0
+    sem.acquire() >>  
+    running := false >> lastpause := 0 >>
+    sem.release()
 
-  def start() = -- record the clock value just before the end of this routine
-    if (running?)
-      then signal
-      else (running := true >> laststart := clk.time() )
-
-  def halt() = -- record the clock value as soon as this routine is entered
-    clk.time() >c>
-    (if (running?)
-     then (running := false >>
-           timeshown? + c - laststart? >v>  timeshown := v  >>
-           v)
-     else timeshown?)
-
-  def isrunning() = running?
+  def isrunning() = running? -- single atomic step
 
   stop
