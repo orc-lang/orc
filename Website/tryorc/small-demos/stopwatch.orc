@@ -93,7 +93,7 @@ val Google = GoogleSearchFactory("orc/orchard/orchard.properties")
 val sw = Stopwatch()
 def test(s,v) =
   sw.reset() >>
-  sw.start() >> s(v) >> sw.halt()
+  sw.start() >> s(v) >> sw.pause()
 
 test(Google,"Edsger W. Dijkstra") >t>
 ("time taken = " + t)
