@@ -907,7 +907,7 @@ is published.
 <programlisting language="orc">
 val x = <emphasis role="bold">F</emphasis>
 val y = <emphasis role="bold">G</emphasis>
-Let( y | Rwait(1000) >> x )
+Let( x | Rwait(1000) >> y )
 </programlisting>
 
 </para>
