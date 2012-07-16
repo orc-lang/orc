@@ -18,6 +18,7 @@
 
 def class RandomBool() =
   val s = Semaphore(1) -- to allow only one call to execute.
+  def main(Number, Integer) :: (Integer, Boolean) 
   def main(f,t) =  
     Ift(URandom() <: f) >>  s.acquire() >>
     Random(t) >w> Rwait(w) >>
