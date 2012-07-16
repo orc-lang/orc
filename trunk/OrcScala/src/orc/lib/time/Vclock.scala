@@ -16,14 +16,23 @@ package orc.lib.time
 
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
-import orc.values.sites.Site1
-
 import orc.Handle
+import orc.types.{ FunctionType, SignalType, StrictType, Top }
+import orc.values.sites.{ Site1, TypedSite }
 
 /** @author dkitchin
   */
-object Vclock extends Site1 with VirtualClockOperation {
+object Vclock extends Site1 with VirtualClockOperation with TypedSite {
   // Do not invoke directly.
   def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vclock")) }
+
   override val quiescentWhileInvoked: Boolean = false
+
+  lazy val orcType = {
+    //val A = new TypeVariable()
+    //val comparatorType = new FunctionType(List(A), List(A, A), IntegerType) with StrictType
+    //new FunctionType(Nil, List(comparatorType), SignalType) with StrictType
+    /*TODO: This typing is a placeholder */
+    new FunctionType(Nil, List(Top), SignalType) with StrictType
+  }
 }

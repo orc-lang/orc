@@ -5,7 +5,7 @@
  - Created by quark
  -}
 
-def Vwait(t :: Integer) = Vawait(t + Vtime())
+def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
 
 def simulate(n :: String) =
   val x = Rwait(100)

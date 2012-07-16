@@ -5,10 +5,12 @@
  - Created by amshali
  -}
 
+def VtimeI() = (Vtime() :!: Integer)
+
 Vclock(IntegerTimeOrder) >> Vawait(0) >>
-( Rwait(500) >> Vawait(2) >> Vtime() >x> Println("500:"+x) >> stop
-| Println("test") >> Vtime()
-| Rwait(1000) >> Vawait(3)  >> Vtime() >x> Println("1000:"+x) >> stop
+( Rwait(500) >> Vawait(2) >> VtimeI() >x> Println("500:"+x) >> stop
+| Println("test") >> VtimeI()
+| Rwait(1000) >> Vawait(3)  >> VtimeI() >x> Println("1000:"+x) >> stop
 )
 
 {-

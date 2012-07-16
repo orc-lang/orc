@@ -27,7 +27,7 @@ trait VirtualClockOperation extends Site with SpecificArity
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
 
-  override def toString() = "ach"
+  override def toString() = "AwaitCallHandle"
 }
 
 /** @author dkitchin
@@ -88,7 +88,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
 
   def setQuiescent() {
     synchronized {
-      assert(readyCount > 0)
+      assert(readyCount > 0, "Virtual clock internal failure: setQuiescent when readyCount <= 0")
       readyCount -= 1
       if (readyCount == 0) {
         parent foreach { _.setQuiescent() }
@@ -109,7 +109,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
   def await(caller: Token, t: Time) {
     val h = new AwaitCallHandle(caller)
     val timeOrder = synchronized {
-      assert(readyCount > 0)
+      assert(readyCount > 0, "Virtual clock internal failure: await when readyCount <= 0")
       val order = currentTime map { ordering(t, _) } getOrElse 1
       if (order == 1) { waiterQueue += ((h, t)) }
       order

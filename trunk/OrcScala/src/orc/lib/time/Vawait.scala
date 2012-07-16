@@ -17,14 +17,20 @@ package orc.lib.time
 import orc.Handle
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
-import orc.values.sites.Site1
+import orc.types.{ BooleanType, FunctionType, StrictType, TypeVariable }
+import orc.values.sites.{ Site1, TypedSite }
 
 /** @author dkitchin
   */
-object Vawait extends Site1 with VirtualClockOperation {
+object Vawait extends Site1 with VirtualClockOperation with TypedSite {
   // Do not invoke directly.
   def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }
 
   // Will become quiescent if enqueued
   override val quiescentWhileInvoked: Boolean = false
+
+  lazy val orcType = {
+    val A = new TypeVariable()
+    new FunctionType(List(A), List(A), BooleanType) with StrictType
+  }
 }
