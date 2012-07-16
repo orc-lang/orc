@@ -14,11 +14,12 @@
 //
 package orc.lib.time
 
-import orc.values.sites.TotalSite2
+import orc.types.{ FunctionType, IntegerType, StrictType }
+import orc.values.sites.{ TotalSite2, TypedSite }
 
 /** @author dkitchin
   */
-object IntegerTimeOrder extends TotalSite2 {
+object IntegerTimeOrder extends TotalSite2 with TypedSite {
 
   def eval(x: AnyRef, y: AnyRef): AnyRef = {
     // TODO: use more conventional dynamic typing
@@ -26,5 +27,7 @@ object IntegerTimeOrder extends TotalSite2 {
     val j = y.asInstanceOf[BigInt]
     (i compare j).asInstanceOf[AnyRef]
   }
+
+  lazy val orcType = new FunctionType(Nil, List(IntegerType, IntegerType), IntegerType) with StrictType
 
 }

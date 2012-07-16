@@ -17,12 +17,18 @@ package orc.lib.time
 import orc.Handle
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
-import orc.values.sites.Site0
+import orc.types.{ FunctionType, StrictType, Top }
+import orc.values.sites.{ Site0, TypedSite }
 
 /** @author dkitchin
   */
-object Vtime extends Site0 with VirtualClockOperation {
+object Vtime extends Site0 with VirtualClockOperation with TypedSite {
   // Do not invoke directly.
   def call(h: Handle) { h !! (new RuntimeSupportException("Vtime")) }
+
   override val quiescentWhileInvoked: Boolean = false
+
+  lazy val orcType = {
+    new FunctionType(Nil, Nil, Top) with StrictType
+  }
 }

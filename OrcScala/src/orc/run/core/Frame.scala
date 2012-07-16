@@ -60,6 +60,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
     t.move(node)
     t.schedule()
   }
+  override def toString = stringPrefix + "(" + node + ")"
 }
 
 /** @author dkitchin
@@ -72,6 +73,7 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
     t.move(callpoint)
     previous(t, v)
   }
+  override def toString = stringPrefix + "(" + callpoint + ")"
 }
 
 /** @author dkitchin
