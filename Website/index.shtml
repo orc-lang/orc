@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" --> 
 
 <h2>Orc is ...</h2>
 
@@ -118,4 +118,4 @@ function hideDemo(selector) {
 //]]>
 </script>
 
-<!--#include virtual="template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" --> 

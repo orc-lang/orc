@@ -116,8 +116,8 @@ The conversions applied are the following:
 <listitem><para>Orc <link linkend="ref.data.numeric">numbers</link> are converted to Java <code language="java">Float</code> or <code language="java">Double</code>, as needed.</para></listitem>
 <listitem><para>Java <code language="java">Byte</code>, <code language="java">Short</code>, <code language="java">Integer</code>, and <code language="java">Long</code> are converted to Orc integers.</para></listitem>
 <listitem><para>Java <code language="java">Float</code> and <code language="java">Double</code> are converted to Orc numbers.</para></listitem>
-<listitem><para>Java primitive values are boxed and unboxed as needed, per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle> §5.1.7 and §5.1.8.</para></listitem>
-<listitem><para>Java widening primitive conversions are applied as needed, per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.2">The Java Language Specification</citetitle> §5.1.2.</para></listitem>
+<listitem><para>Java primitive values are boxed and unboxed as needed, per <citetitle pubwork="book" xlink:href="http://docs.oracle.com/javase/specs/jls/se5.0/html/conversions.html#5.1.7">The Java Language Specification</citetitle> §5.1.7 and §5.1.8.</para></listitem>
+<listitem><para>Java widening primitive conversions are applied as needed, per <citetitle pubwork="book" xlink:href="http://docs.oracle.com/javase/specs/jls/se5.0/html/conversions.html#5.1.2">The Java Language Specification</citetitle> §5.1.2.</para></listitem>
 </itemizedlist>
 Note that Orc integers and numbers represent a larger range of values than the standard Java numeric types.
 If an integer conversion is applied to an out-of-range value, the result is the least significant bits of the out-of-range value.
@@ -133,7 +133,7 @@ If a floating-point conversion is applied to an out-of-range value, the result i
 
 <para>
 Orc invokes a Java method or constructor by closely approximating the Java method
-invocation rules specified in <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/expressions.html#15.12">The Java Language Specification</citetitle> §15.12.
+invocation rules specified in <citetitle pubwork="book" xlink:href="http://docs.oracle.com/javase/specs/jls/se5.0/html/expressions.html#15.12">The Java Language Specification</citetitle> §15.12.
 This is only an approximation, because Orc performs Java compile-time steps at
 run time using Java's reflection facilities, and therefore has a different
 view of the types of values than the Java compiler.

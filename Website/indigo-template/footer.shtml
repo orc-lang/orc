@@ -3,7 +3,7 @@
 	</div>
 	<div class="right">
 		<div class="sidenav">
-			<!--#include virtual="../sidebar.shtml" -->
+			<!--#include virtual="/sidebar.shtml" -->
 		</div>
 	</div>
 	<div class="clearer"><span></span></div>
@@ -15,7 +15,7 @@ Design by <a href="http://templates.arcsin.se/">Arcsin Web Templates</a>.
 Activity on this Web site may be monitored or logged.
 </div>
 
-<script type="text/javascript" src="obfuscated-email.js"></script>
+<script type="text/javascript" src="/obfuscated-email.js"></script>
 </body>
 
 </html>

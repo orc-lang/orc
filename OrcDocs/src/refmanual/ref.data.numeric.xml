@@ -97,7 +97,7 @@ method expects a specific numeric type, an Orc integer will be
 converted to a <code language="java">java.lang.Byte</code>, <code language="java">java.lang.Short</code>,
 <code language="java">java.lang.Integer</code>, <code language="java">java.lang.Long</code>,
 <code language="java">java.lang.Float</code>, or <code language="java">java.lang.Double</code>, as appropriate.
-These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
+These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://docs.oracle.com/javase/specs/jls/se5.0/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
 </para>
 
 <para>
@@ -106,7 +106,7 @@ from Java code as <code language="java">java.math.BigDecimal</code>, or if the c
 method expects a specific numeric type, an Orc number will be
 converted to a <code language="java">java.lang.Float</code> or 
 <code language="java">java.lang.Double</code>, as appropriate.
-These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://java.sun.com/docs/books/jls/third_edition/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
+These values are boxed and unboxed per <citetitle pubwork="book" xlink:href="http://docs.oracle.com/javase/specs/jls/se5.0/html/conversions.html#5.1.7">The Java Language Specification</citetitle>.
 </para>
 
 </section>

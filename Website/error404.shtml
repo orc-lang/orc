@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" -->
+<!--#include virtual="/template/header.shtml" -->
 
 <h2>Not Found</h2>
 
@@ -20,4 +20,4 @@
 <li>Search for the information you are seeking using the Search box on the upper-right part of this page.</li>
 </ul>
 
-<!--#include virtual="template/footer.shtml" -->
+<!--#include virtual="/template/footer.shtml" -->

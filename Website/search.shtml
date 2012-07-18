@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" -->
+<!--#include virtual="/template/header.shtml" -->
 <style type="text/css">
 .right {
 	display: none;
@@ -16,4 +16,4 @@
   var googleSearchPath = "/cse";
 </script>
 <script type="text/javascript" src="https://www.google.com/afsonline/show_afs_search.js"></script>
-<!--#include virtual="template/footer.shtml" -->
+<!--#include virtual="/template/footer.shtml" -->
