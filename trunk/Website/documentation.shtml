@@ -1,25 +1,25 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" --> 
 
 <h1>Documentation</h1>
 <ul>
   <li><a href="tutorial.shtml">Orc in 15 Minutes</a>: tutorial and introduction to the language.</li>
   <li>User Guide
     <ul>
-      <li><a href="documentation/html/userguide/index.html" onclick="window.open(this.href,'_blank');return false;">Browse by section</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
-      <li><a href="documentation/html/userguide/userguide.html" onclick="window.open(this.href,'_blank');return false;">Everything in one page</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
-      <li><a href="documentation/pdf/userguide/userguide.pdf">Printable version</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (PDF)</li>
+      <li><a href="documentation/html/userguide/index.html" onclick="window.open(this.href,'_blank');return false;">Browse by section</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
+      <li><a href="documentation/html/userguide/userguide.html" onclick="window.open(this.href,'_blank');return false;">Everything in one page</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
+      <li><a href="documentation/pdf/userguide/userguide.pdf">Printable version</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (PDF)</li>
     </ul>
   </li>
   <li>Reference Manual
     <ul>
-      <li><a href="documentation/html/refmanual/index.html" onclick="window.open(this.href,'_blank');return false;">Browse by section</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
-      <li><a href="documentation/html/refmanual/refmanual.html" onclick="window.open(this.href,'_blank');return false;">Everything in one page</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
-      <li><a href="documentation/pdf/refmanual/refmanual.pdf">Printable version</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (PDF)</li>
+      <li><a href="documentation/html/refmanual/index.html" onclick="window.open(this.href,'_blank');return false;">Browse by section</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
+      <li><a href="documentation/html/refmanual/refmanual.html" onclick="window.open(this.href,'_blank');return false;">Everything in one page</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (HTML)</li>
+      <li><a href="documentation/pdf/refmanual/refmanual.pdf">Printable version</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /> (PDF)</li>
     </ul>
   </li>
   <li><a href="documentation/OrcReferenceCard.pdf">Orc Reference Card</a>, a handy one-sheet summary of the language for quick reference.</li>
   <li><a href="wiki">Wiki</a>: community-supported documentation.</li>
-  <li><a href="wiki/Wiki.jsp?page=FAQ" onclick="window.open(this.href,'_blank');return false;">FAQ</a> <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></li>
+  <li><a href="wiki/Wiki.jsp?page=FAQ" onclick="window.open(this.href,'_blank');return false;">FAQ</a> <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></li>
   <li><a href="quickstart.shtml">Developer's Quick Start</a>: instructions for checking out the Orc source code.</li>
 <!--  <li><a href="/javadoc/STABLE/index.html" onclick="window.open(this.href,'_blank');return false;">Javadoc</a>: for developers interested in implementing Orc sites in Java, or extending the Orc implementation.</li> -->	
 </ul>
@@ -40,4 +40,4 @@ Search the Orc documentation directly:
 
       
 
-<!--#include virtual="template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" --> 

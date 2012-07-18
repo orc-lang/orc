@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" -->
+<!--#include virtual="/template/header.shtml" -->
 
 <a name="top" id="top"></a><h1>Publications</h1>
 
@@ -174,4 +174,4 @@ Language</a><br />
 
 
 
-<!--#include virtual="template/footer.shtml" -->
+<!--#include virtual="/template/footer.shtml" -->

@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" --> 
 
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
@@ -320,4 +320,4 @@ href="documentation.shtml">Documentation</a> page for further
 guidance.  When you are ready, <a href="tryorc.shtml">play with Orc</a>
 yourself.</p>
 
-<!--#include virtual="template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" --> 

@@ -1,14 +1,14 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" --> 
 
 <h2>Community Resources</h2>
 <ul>
-	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="/wiki/Wiki.jsp?page=News">News</a></li>
 	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a>
 	<br /><form action="http://groups.google.com/group/orc-lang/boxsubscribe">
 		<div>Email: <input type="text" name="email" />
 		<input type="submit" name="sub" value="Subscribe" /></div>
 	</form></li>
-	<li><a href="wiki">Wiki</a></li>
+	<li><a href="/wiki">Wiki</a></li>
 	<li><a href="http://code.google.com/p/orc/issues/list">Issue Tracker</a> (for bug reports)</li>
 	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
 </ul>
@@ -30,11 +30,11 @@
 	<li><a href="http://www.cs.utexas.edu/~amshali/">Amin Shali</a></li>
 	<li>Sidney Rosario</li>
 	<li>Andrew Matsuoka</li>
-	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=AdrianQuark">Adrian Quark</a></li>
+	<li><a href="/wiki/Wiki.jsp?page=AdrianQuark">Adrian Quark</a></li>
 	<li><a href="http://www.cs.utexas.edu/~iwehrman/">Ian Wehrman</a></li>
 	<li>Thomas Finsterbusch</li>
 	<li>Evan Powell</li>
 	<li>Kristi Morton</li>
 </ul>
 
-<!--#include virtual="template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" --> 

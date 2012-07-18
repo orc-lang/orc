@@ -7,10 +7,10 @@
 <meta name="description" content="description"/>
 <meta name="keywords" content="keywords"/> 
 <meta name="author" content="author"/> 
-<link rel="stylesheet" type="text/css" href="template/default.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="/template/default.css" media="screen"/>
 <link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen" />
 <link rel="stylesheet" type="text/css" href="/orc-misc.css" media="screen" />
-<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
 <title>Orc Language</title>
 </head>
 
@@ -21,11 +21,11 @@
 		<div class="header-background">
 			<div class="header">
 				<div class="title">
-					<h1><img src="indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
+					<h1><img src="/indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
 				</div>
 
 				<div class="navigation">
-					<!--#include virtual="../navigation.shtml" -->
+					<!--#include virtual="/navigation.shtml" -->
 					<div class="clearer"><span></span></div>
 				</div>
 			</div>

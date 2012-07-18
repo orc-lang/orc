@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" --> 
 
 <h1>Quick Start to Developing the Orc Language Toolset</h1>
 
@@ -64,4 +64,4 @@ your <tt>OrcScala</tt> project.</p>
 <li>Go to <b>Run -&gt; Run ...</b>, select <b>Orc</b>, and click <b>Run</b> (after doing this once, you can use the dropdown menu of the "run" icon in the toolbar as a shortcut).</li>
 </ol>
 
-<!--#include virtual="template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" --> 

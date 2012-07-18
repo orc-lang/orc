@@ -1,4 +1,4 @@
-<!--#include virtual="template/header.shtml" -->
+<!--#include virtual="/template/header.shtml" -->
 
         <h2>License</h2>
 <p>
@@ -37,4 +37,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <p>Return to <a href="download.shtml">Download</a>.</p>
 
-<!--#include virtual="template/footer.shtml" -->
+<!--#include virtual="/template/footer.shtml" -->
