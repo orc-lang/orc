@@ -31,4 +31,8 @@
 	<welcome-file-list>
 		<welcome-file>index.shtml</welcome-file>
 	</welcome-file-list>
+	<error-page>
+		<error-code>404</error-code>
+		<location>/error404.shtml</location>
+	</error-page>
 </web-app>
