@@ -166,7 +166,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ext.SecurityLevelDeclaration(name,parents,children), body) => {
          DeclareSecurityLevel(name,parents,children, convert(body))
       }
-      
+
       
       
 

@@ -54,15 +54,19 @@ case class AggregateDef(clauses: List[Clause],
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
       }
+      
       case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
       }
+    
+      
       case DefSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
         AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
       }
+
     }
 
   def +(lambda: Lambda): AggregateDef = {
@@ -124,6 +128,7 @@ object AggregateDef {
   def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None)
 
   def apply(defn: DefDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
+  
   def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }

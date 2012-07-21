@@ -71,6 +71,7 @@ trait Guarding {
       case HasType(body, _) => check(body)
       //security level check(body). This is doing a recursive check on the body
       case DeclareSecurityLevel(name,parents,children,body) => check(body)
+
       case HasSecurityLevel(body,level) => check(body)
     }
   }

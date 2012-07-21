@@ -41,6 +41,10 @@ sealed abstract class NamelessAST extends AST {
     case Def(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
+    case DefSL(_, _, body, argtypes, returntype) => {
+      body :: (argtypes.toList.flatten ::: returntype.toList)
+    }
+  
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
@@ -182,3 +186,17 @@ sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTyp
   }
 
 }
+
+sealed case class DefSL(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST
+  with hasFreeVars
+  with hasOptionalVariableName {
+  /* Get the free vars of the body, then bind the arguments */
+  lazy val freevars: Set[Int] = shift(body.freevars, arity)
+
+  def subst(ctx: List[Option[AnyRef]]): DefSL = {
+    val newctx = (for (_ <- List.range(0, arity)) yield None).toList ::: ctx
+    DefSL(typeFormalArity, arity, body.subst(newctx), argTypes, returnType)
+  }
+
+}
+

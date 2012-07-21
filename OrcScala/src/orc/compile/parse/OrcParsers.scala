@@ -380,14 +380,18 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
   val parseDefCore = (
     ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
+  val parseDefCoreSL = (
+    ident ~ ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
+
   val parseDefDeclaration: Parser[DefDeclaration] = (
     parseDefCore -> Def
 
+    //site call
     | (Identifier("class") ~> parseDefCore) -> DefClass
-
+    
     | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
-
-  val parseDeclaration: Parser[Declaration] = (
+    
+    val parseDeclaration: Parser[Declaration] = (
     ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
 
     | "def" ~> parseDefDeclaration
