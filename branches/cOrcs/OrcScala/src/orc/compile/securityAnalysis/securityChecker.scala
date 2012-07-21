@@ -117,7 +117,7 @@ object securityChecker {
             * then adds the SL successfully
             */
           case HasSecurityLevel(body, level) => {
-            // System.out.println("hasSecurityLevel synth")
+            System.out.println("hasSecurityLevel synth BODY: " + body + " LEVEL: " + level)
             val expectedSL = SecurityLevel.findByName(level)
             val newBody = slCheckExpr(body, expectedSL)
             (HasSecurityLevel(newBody, level), expectedSL)
@@ -209,7 +209,10 @@ object securityChecker {
   /** Check for calls to sites
     */
   def slFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]])(implicit context: Context): (Expression, SecurityLevel) = {
+    
     val (site, siteSl) = slSynthExpr(target) //site targetSL
+    
+    Console.println("TARGET: " + target + " SITE: " + site + " siteSL: " + siteSl)
     var newSiteSl = siteSl
     val (newArgs, argSls) = (args map slSynthExpr).unzip //get the sl for each of the arguments
 

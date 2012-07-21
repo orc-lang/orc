@@ -109,7 +109,7 @@ trait NamedASTTransform extends NamedASTFunction {
         
         //recurse on the body's type. We dont have types for Security Level
         case DeclareSecurityLevel(name, parents, children, body) => DeclareSecurityLevel(name,parents,children, recurse(body))
-        case HasSecurityLevel(body, level) => HasSecurityLevel(recurse(body), level)
+         case HasSecurityLevel(body, level) => HasSecurityLevel(recurse(body), level)
       }
     }
   }
@@ -173,5 +173,7 @@ trait NamedASTTransform extends NamedASTFunction {
       }
     }
   }
+  
+ 
 
 }

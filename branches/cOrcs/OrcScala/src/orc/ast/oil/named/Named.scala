@@ -40,6 +40,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
+   
+   
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
@@ -158,6 +160,8 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
     this ->> Def(name, formals, body, typeformals, argtypes, returntype)
   }
 }
+
+
 
 sealed abstract class Type
   extends NamedAST
