@@ -191,10 +191,10 @@ object securityChecker {
           {
             //check that the exprSL is equal to the expected SL (lattice)
             //if it isn't then we throw an exception
-            if (!(exprSL eq lattice))
+            if (!(SecurityLevel.canWrite(lattice, exprSL)))
               throw new Exception("SECURITY ERROR: Expression: " + newExpr + "\nSecurityLevel: " +
-                exprSL + "does not " +
-                "equal the expected security level: " + lattice)
+                exprSL + " is not " +
+                " allowed to be written to security level " + lattice + ". INTEGRITY ERROR")
           }
           newExpr
         }
