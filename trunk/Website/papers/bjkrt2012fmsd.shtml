@@ -300,15 +300,15 @@ def TravelAgent(salesOrder, budget, ResponseTime, Cost) =
   def quoteAirfare(bookingRequest, Cost) =
     ( bestQ(compareCost, defer(inquireCost, airlineList))  &gt;q&gt;
       bookingRequest.airQuote := q  &gt;&gt;
-      Cost().QoS(AirlineCompany, [q]), Rclock().time()
+      Cost().QoS(quoteAirfare, [q]), Rclock().time()
     )  &gt;(q, d)&gt;
-    (q, ResponseTime().QoS(AirlineCompany, d))
+    (q, ResponseTime().QoS(quoteAirfare, d))
   def quoteHotel(bookingRequest, Cost) =
     ( bestQ(compareCategory, defer(inquireCategory, hotelList))  &gt;q&gt;
       bookingRequest.hotelQuote := q  &gt;&gt;
-      Cost().QoS(AirlineCompany, [q]), Rclock().time()
+      Cost().QoS(quoteHotel, [q]), Rclock().time()
     ) &gt;(q, d)&gt;
-    (q, ResponseTime().QoS(HotelBooking, d))
+    (q, ResponseTime().QoS(quoteHotel, d))
   def checkBudget(bookingRequest, budget, Cost) =
     ( if (bookingRequest.airQuote?.cost? + bookingRequest.hotelQuote?.cost? &lt;: budget)
       then bookingRequest
@@ -322,7 +322,7 @@ def TravelAgent(salesOrder, budget, ResponseTime, Cost) =
       Cost().QoSCompete(v, budget)  &gt;&gt;
       r, Rclock().time()
     ) &gt;(r, d)&gt;
-    (r, ResponseTime().QoS(CheckBudget, d))
+    (r, ResponseTime().QoS(checkBudget, d))
   def timeout(x, t, salesOrder) =
     Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(salesOrder, "Timeout") &gt;&gt; None()))
   def notifyFail(salesOrder, reason) =
