@@ -185,10 +185,11 @@ def TravelAgent(SalesOrder, Budget) =
       AirlineCompany(GenerateInvoice)  &gt;&gt;
       HotelBooking(GenerateInvoice)  &gt;&gt;
       CheckBudget(GenerateInvoice, Budget)),
-    2000, SalesOrder)  &gt;Some(GenerateInvoice)&gt
+    2000, SalesOrder)  &gt;Some(GenerateInvoice)&gt;
   GenerateInvoice
 
 --Simulation
+def simulateOrders(50) = stop  -- Stop after simulating 50 orders
 def simulateOrders(n) =
   Dictionary()  &gt;SalesOrder&gt;
   SalesOrder.ordernumber := n  &gt;&gt;
@@ -342,6 +343,7 @@ def TravelAgent(SalesOrder, Budget, ResponseTime, Cost) =
   | InterQueryTime().QoS(TravelAgent)
 
 --Simulation
+def simulateOrders(50) = stop  -- Stop after simulating 50 orders
 def simulateOrders(n) =
     Dictionary()  &gt;SalesOrder&gt;
     SalesOrder.ordernumber:= n  &gt;&gt;
