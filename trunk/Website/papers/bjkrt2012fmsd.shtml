@@ -121,85 +121,85 @@ held by references are obtained using <code>x?</code> (equivalent to
 <code>x.write(y)</code>).</p>
 
 <pre class="orc">
-val AirlineList = ["Airline 1", "Airline 2"]
-val HotelList = ["Hotel A", "Hotel B"]
+val airlineList = ["Airline 1", "Airline 2"]
+val hotelList = ["Hotel A", "Hotel B"]
 
 --BestQoS and simulation utilities
 def bestQ(comparer, publisher) =  head(sortBy(comparer, collect(publisher)))
 def cat() = if (Random(1) = 1) then "Economy" else "Premium"
-val simElapsedTime = Rclock()
+val simElapsedClock = Rclock()
 
 --Simulation definition
-def TravelAgent(SalesOrder, Budget) =
+def TravelAgent(salesOrder, budget) =
 
-  def inquireCost(List) =
-    each(List)  &gt;sup&gt;
-    Dictionary()  &gt;ProductDetails&gt;
-    ProductDetails.Company := sup  &gt;&gt;
-    ProductDetails.cost := Random(100)  &gt;&gt;
-    ProductDetails
-  def inquireCategory(List) =
-    each(List)  &gt;sup&gt;
-    Dictionary()  &gt;ProductDetails&gt;
-    ProductDetails.Company := sup  &gt;&gt;
-    ProductDetails.cost := Random(100)  &gt;&gt;
-    ProductDetails.category := cat()  &gt;&gt;
-    ProductDetails
+  def inquireCost(list) =
+    each(list)  &gt;sup&gt;
+    Dictionary()  &gt;productDetails&gt;
+    productDetails.company := sup  &gt;&gt;
+    productDetails.cost := Random(100)  &gt;&gt;
+    productDetails
+  def inquireCategory(list) =
+    each(list)  &gt;sup&gt;
+    Dictionary()  &gt;productDetails&gt;
+    productDetails.company := sup  &gt;&gt;
+    productDetails.cost := Random(100)  &gt;&gt;
+    productDetails.category := cat()  &gt;&gt;
+    productDetails
 
   def compareCost(x, y) = x.cost? &lt;= y.cost?
   def compareCategory(x, y) =
-    if x.category ?= "Economy" then false
-    else if y.category ?= "Economy" then true
+    if x.category? = "Economy" then false
+    else if y.category? = "Economy" then true
     else compareCost(x, y)
 
-  def GenerateOrder(SalesOrder, Budget) =
-    Dictionary()  &gt;GenerateInvoice&gt;
-    GenerateInvoice.TravelAgent := SalesOrder.ordernumber?  &gt;&gt;
-    GenerateInvoice.acceptedTime := simElapsedTime.time()  &gt;&gt;
-    Println("Order "+GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?)  &gt;&gt;
-    (GenerateInvoice, Budget)
+  def acceptOrder(salesOrder, budget) =
+    Dictionary()  &gt;bookingRequest&gt;
+    bookingRequest.orderNumber := salesOrder.ordernumber?  &gt;&gt;
+    bookingRequest.acceptedTime := simElapsedClock.time()  &gt;&gt;
+    Println("Order "+bookingRequest.orderNumber?+" accepted at time "+bookingRequest.acceptedTime?)  &gt;&gt;
+    (bookingRequest, budget)
 
-  def AirlineCompany(GenerateInvoice) =
-    bestQ(compareCost, defer(inquireCost, AirlineList))  &gt;q&gt;
-    GenerateInvoice.AirQuote := q
-  def HotelBooking(GenerateInvoice) =
-    bestQ(compareCategory, defer(inquireCategory, HotelList))  &gt;q&gt;
-    GenerateInvoice.HotelQuote := q
+  def quoteAirfare(bookingRequest) =
+    bestQ(compareCost, defer(inquireCost, airlineList))  &gt;q&gt;
+    bookingRequest.airQuote := q
+  def quoteHotel(bookingRequest) =
+    bestQ(compareCategory, defer(inquireCategory, hotelList))  &gt;q&gt;
+    bookingRequest.hotelQuote := q
 
-  def CheckBudget(GenerateInvoice, Budget) =
-    if (GenerateInvoice.AirQuote?.cost? + GenerateInvoice.HotelQuote?.cost? &lt;: Budget)
-    then GenerateInvoice
+  def checkBudget(bookingRequest, budget) =
+    if (bookingRequest.airQuote?.cost? + bookingRequest.hotelQuote?.cost? &lt;: budget)
+    then bookingRequest
     else (
-      Println("Resubmit Order "+GenerateInvoice.TravelAgent?)  &gt;&gt;
-      Dictionary()  &gt;SalesOrder&gt;
-      SalesOrder.ordernumber := GenerateInvoice.TravelAgent? &gt;&gt;
-      (SalesOrder, GenerateOrder(SalesOrder, Budget)))
+      Println("Resubmit Order "+bookingRequest.orderNumber?)  &gt;&gt;
+      Dictionary()  &gt;salesOrder&gt;
+      salesOrder.ordernumber := bookingRequest.orderNumber? &gt;&gt;
+      (salesOrder, acceptOrder(salesOrder, budget)))
 
-  def timeout(x, t, SalesOrder) = 
-    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(SalesOrder, "Timeout") &gt;&gt; None()))
-  def notifyFail(SalesOrder, reason) =
-    Println("Order "+SalesOrder.id?+" failed: "+reason) &gt;&gt; stop
+  def timeout(x, t, salesOrder) = 
+    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(salesOrder, "Timeout") &gt;&gt; None()))
+  def notifyFail(salesOrder, reason) =
+    Println("Order "+salesOrder.orderNumber?+" failed: "+reason) &gt;&gt; stop
 
   timeout(
-    ( GenerateOrder(SalesOrder, Budget)  &gt;(GenerateInvoice, Budget)&gt;
-      AirlineCompany(GenerateInvoice)  &gt;&gt;
-      HotelBooking(GenerateInvoice)  &gt;&gt;
-      CheckBudget(GenerateInvoice, Budget)),
-    2000, SalesOrder)  &gt;Some(GenerateInvoice)&gt;
-  GenerateInvoice
+    ( acceptOrder(salesOrder, budget)  &gt;(bookingRequest, budget)&gt;
+      quoteAirfare(bookingRequest)  &gt;&gt;
+      quoteHotel(bookingRequest)  &gt;&gt;
+      checkBudget(bookingRequest, budget)),
+    2000, salesOrder)  &gt;Some(bookingRequest)&gt;
+  bookingRequest
 
 --Simulation
 def simulateOrders(50) = stop  -- Stop after simulating 50 orders
 def simulateOrders(n) =
-  Dictionary()  &gt;SalesOrder&gt;
-  SalesOrder.ordernumber := n  &gt;&gt;
+  Dictionary()  &gt;salesOrder&gt;
+  salesOrder.ordernumber := n  &gt;&gt;
   Println("Order "+n+" created")  &gt;&gt;
-  SalesOrder | Rwait(Random(100))  &gt;&gt;
+  salesOrder | Rwait(Random(100))  &gt;&gt;
   simulateOrders(n+1)
 
-simulateOrders(1)  &gt;SalesOrder&gt; 
-TravelAgent(SalesOrder, 50)  &gt;GenerateInvoice&gt;
-Println("Invoice for order "+SalesOrder.ordernumber?+" presented at time "+simElapsedTime.time())  &gt;&gt;
+simulateOrders(1)  &gt;salesOrder&gt; 
+TravelAgent(salesOrder, 50)  &gt;bookingRequest&gt;
+Println("Invoice for order "+salesOrder.ordernumber?+" presented at time "+simElapsedClock.time())  &gt;&gt;
 stop
 </pre>
 
@@ -257,103 +257,103 @@ def class Cost() =
 {- EXAMPLE -}
 --include "SLADeclaration.orc"
 
-val AirlineList = ["Airline 1", "Airline 2"]
-val HotelList = ["Hotel A", "Hotel B"]
+val airlineList = ["Airline 1", "Airline 2"]
+val hotelList = ["Hotel A", "Hotel B"]
 
 --BestQoS and simulation utilities
 def bestQ(comparer, publisher) = head(sortBy(comparer, collect(publisher)))
 def cat() = if (Random(1) = 1) then "Economy" else "Premium"
 val simElaspedTime = Rclock()
-val RTimer = Ref(0)
+val respTime = Ref(0)
 
 --Simulation definition
-def TravelAgent(SalesOrder, Budget, ResponseTime, Cost) =
+def TravelAgent(salesOrder, budget, ResponseTime, Cost) =
 
-  def inquireCost(List) =
-    each(List)  &gt;sup&gt;
-    Dictionary()  &gt;ProductDetails&gt;
-    ProductDetails.Company := sup  &gt;&gt;
-    ProductDetails.cost := Random(100)  &gt;&gt;
-    ProductDetails
-  def inquireCategory(List) =
-    each(List)  &gt;sup&gt;
-    Dictionary()  &gt;ProductDetails&gt;
-    ProductDetails.Company := sup  &gt;&gt;
-    ProductDetails.cost := Random(100)  &gt;&gt;
-    ProductDetails.category := cat()  &gt;&gt;
-    ProductDetails
+  def inquireCost(list) =
+    each(list)  &gt;sup&gt;
+    Dictionary()  &gt;productDetails&gt;
+    productDetails.company := sup  &gt;&gt;
+    productDetails.cost := Random(100)  &gt;&gt;
+    productDetails
+  def inquireCategory(list) =
+    each(list)  &gt;sup&gt;
+    Dictionary()  &gt;productDetails&gt;
+    productDetails.company := sup  &gt;&gt;
+    productDetails.cost := Random(100)  &gt;&gt;
+    productDetails.category := cat()  &gt;&gt;
+    productDetails
 
   def compareCost(x, y) = x.cost? &lt;= y.cost?
   def compareCategory(x, y) =
-    if x.category ?= "Economy" then false
-    else if y.category ?= "Economy" then true
+    if x.category? = "Economy" then false
+    else if y.category? = "Economy" then true
     else compareCost(x, y)
 
-  def GenerateOrder(SalesOrder, Budget) =
-    ( Dictionary()  &gt;GenerateInvoice&gt;
-      GenerateInvoice.TravelAgent := SalesOrder.ordernumber?  &gt;&gt;
-      GenerateInvoice.acceptedTime := simElaspedTime.time()  &gt;&gt;
-      Println("Order "+GenerateInvoice.TravelAgent?+" accepted at time "+GenerateInvoice.acceptedTime?)  &gt;&gt;
-      (GenerateInvoice, Budget), Rclock().time()
-    )  &gt;((GenerateInvoice, Budget), d)&gt;
-    ((GenerateInvoice, Budget), ResponseTime().QoS(GenerateOrder, d))
-  def AirlineCompany(GenerateInvoice, Cost) =
-    ( bestQ(compareCost, defer(inquireCost, AirlineList))  &gt;q&gt;
-      GenerateInvoice.AirQuote := q  &gt;&gt;
+  def acceptOrder(salesOrder, budget) =
+    ( Dictionary()  &gt;bookingRequest&gt;
+      bookingRequest.orderNumber := salesOrder.ordernumber?  &gt;&gt;
+      bookingRequest.acceptedTime := simElaspedTime.time()  &gt;&gt;
+      Println("Order "+bookingRequest.orderNumber?+" accepted at time "+bookingRequest.acceptedTime?)  &gt;&gt;
+      (bookingRequest, budget), Rclock().time()
+    )  &gt;((bookingRequest, budget), d)&gt;
+    ((bookingRequest, budget), ResponseTime().QoS(acceptOrder, d))
+  def quoteAirfare(bookingRequest, Cost) =
+    ( bestQ(compareCost, defer(inquireCost, airlineList))  &gt;q&gt;
+      bookingRequest.airQuote := q  &gt;&gt;
       Cost().QoS(AirlineCompany, [q]), Rclock().time()
     )  &gt;(q, d)&gt;
     (q, ResponseTime().QoS(AirlineCompany, d))
-  def HotelBooking(GenerateInvoice, Cost) =
-    ( bestQ(compareCategory, defer(inquireCategory, HotelList))  &gt;q&gt;
-      GenerateInvoice.HotelQuote := q  &gt;&gt;
+  def quoteHotel(bookingRequest, Cost) =
+    ( bestQ(compareCategory, defer(inquireCategory, hotelList))  &gt;q&gt;
+      bookingRequest.hotelQuote := q  &gt;&gt;
       Cost().QoS(AirlineCompany, [q]), Rclock().time()
     ) &gt;(q, d)&gt;
     (q, ResponseTime().QoS(HotelBooking, d))
-  def CheckBudget(GenerateInvoice, Budget, Cost) =
-    ( if (GenerateInvoice.AirQuote?.cost? + GenerateInvoice.HotelQuote?.cost? &lt;: Budget)
-      then GenerateInvoice
+  def checkBudget(bookingRequest, budget, Cost) =
+    ( if (bookingRequest.airQuote?.cost? + bookingRequest.hotelQuote?.cost? &lt;: budget)
+      then bookingRequest
       else (
-        Println("Resubmit Order "+GenerateInvoice.TravelAgent?+" with bigger budget")  &gt;&gt;
-        Dictionary()  &gt;SalesOrder&gt;
-        SalesOrder.ordernumber := GenerateInvoice.TravelAgent?  &gt;&gt;
-        (SalesOrder, GenerateOrder(SalesOrder, Budget))
+        Println("Resubmit Order "+bookingRequest.orderNumber?+" with bigger budget")  &gt;&gt;
+        Dictionary()  &gt;salesOrder&gt;
+        salesOrder.ordernumber := bookingRequest.orderNumber?  &gt;&gt;
+        (salesOrder, acceptOrder(salesOrder, budget))
       )  &gt;r&gt;
-      Cost().QoSOplus(GenerateInvoice.AirQuote?, GenerateInvoice.HotelQuote?)  &gt;v&gt;
-      Cost().QoSCompete(v, Budget)  &gt;&gt;
+      Cost().QoSOplus(bookingRequest.airQuote?, bookingRequest.hotelQuote?)  &gt;v&gt;
+      Cost().QoSCompete(v, budget)  &gt;&gt;
       r, Rclock().time()
     ) &gt;(r, d)&gt;
     (r, ResponseTime().QoS(CheckBudget, d))
-  def timeout(x, t, SalesOrder) =
-    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(SalesOrder, "Timeout") &gt;&gt; None()))
-  def notifyFail(SalesOrder, reason) =
-    Println("Order "+SalesOrder.id?+" failed: "+reason) &gt;&gt; stop
+  def timeout(x, t, salesOrder) =
+    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(salesOrder, "Timeout") &gt;&gt; None()))
+  def notifyFail(salesOrder, reason) =
+    Println("Order "+salesOrder.orderNumber?+" failed: "+reason) &gt;&gt; stop
 
-    GenerateOrder(SalesOrder, Budget)  &gt;((GenerateInvoice, Budget), RT)&gt;
+    acceptOrder(salesOrder, budget)  &gt;((bookingRequest, budget), RT)&gt;
     timeout(
-      ( AirlineCompany(GenerateInvoice, Cost)  &gt;(q, RT1)&gt;
+      ( quoteAirfare(bookingRequest, Cost)  &gt;(q, RT1)&gt;
         (q, ResponseTime().QoSOplus(RT, RT1))  &gt;(q, RT)&gt;
-        HotelBooking(GenerateInvoice, Cost)  &gt;(q, RT2)&gt;
+        quoteHotel(bookingRequest, Cost)  &gt;(q, RT2)&gt;
         (q, ResponseTime().QoSOplus(RT, RT2))  &gt;(q, RT)&gt;
-        CheckBudget(GenerateInvoice, Budget, Cost))  &gt;(r, RT3)&gt;
+        checkBudget(bookingRequest, budget, Cost))  &gt;(r, RT3)&gt;
         (r, ResponseTime().QoSOplus(RT, RT3))  &gt;(r, RT)&gt;
-        RTimer := RT  &gt;&gt;
-      r, 2000, SalesOrder)  &gt;Some(r)&gt;
-    (GenerateInvoice, ResponseTime().QoSCompete(RTimer?, 2000))  &gt;(GenerateInvoice, RT)&gt;
-    (GenerateInvoice, RT)
+        respTime := RT  &gt;&gt;
+      r, 2000, salesOrder)  &gt;Some(r)&gt;
+    (bookingRequest, ResponseTime().QoSCompete(respTime?, 2000))  &gt;(bookingRequest, RT)&gt;
+    (bookingRequest, RT)
   | InterQueryTime().QoS(TravelAgent)
 
 --Simulation
 def simulateOrders(50) = stop  -- Stop after simulating 50 orders
 def simulateOrders(n) =
-    Dictionary()  &gt;SalesOrder&gt;
-    SalesOrder.ordernumber:= n  &gt;&gt;
+    Dictionary()  &gt;salesOrder&gt;
+    salesOrder.ordernumber:= n  &gt;&gt;
     Println("Order "+n+" created")  &gt;&gt;
-    SalesOrder
+    salesOrder
   | Rwait(Random(100))  &gt;&gt; simulateOrders(n+1)
 
-simulateOrders(1)  &gt;SalesOrder&gt;
-TravelAgent(SalesOrder, 50, ResponseTime, Cost)  &gt;GenerateInvoice&gt;
-Println("Invoice for order "+SalesOrder.ordernumber?+" presented at time "+simElaspedTime.time())  &gt;&gt;
+simulateOrders(1)  &gt;salesOrder&gt;
+TravelAgent(salesOrder, 50, ResponseTime, Cost)  &gt;bookingRequest&gt;
+Println("Invoice for order "+salesOrder.ordernumber?+" presented at time "+simElaspedTime.time())  &gt;&gt;
 stop
 </pre>
 
