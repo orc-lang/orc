@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -233,7 +233,7 @@ Write-once cells are very useful for concurrent programming, and they are often 
 than rewritable reference cells, since the value cannot be changed once it has been
 written. The use of write-once cells for concurrent programming is not a new idea;
 they have been studied extensively in the context of the 
-<link xlink:href="http://en.wikipedia.org/wiki/Oz_programming_language">Oz programming language</link>.
+<link xlink:href="https://en.wikipedia.org/wiki/Oz_programming_language">Oz programming language</link>.
 </para>
 
 </section>

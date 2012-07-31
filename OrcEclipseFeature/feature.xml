@@ -16,7 +16,7 @@
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 
-   <description url="http://orc.csres.utexas.edu/">
+   <description url="https://orc.csres.utexas.edu/">
       The Orc programming language plug-in for the Eclipse IDE (Integrated
 Development Environment). Provides editing, parsing, building, and execution services for the Orc programming language in Eclipse. Orc is a structured concurrent programming language.
    </description>
@@ -60,7 +60,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
    </license>
 
    <url>
-      <update label="Orc programming language" url="http://orc.csres.utexas.edu/eclipse_updates/"/>
+      <update label="Orc programming language" url="https://orc.csres.utexas.edu/eclipse_updates/"/>
       <discovery label="IMP update site" url="http://download.eclipse.org/technology/imp/updates/"/>
    </url>
 

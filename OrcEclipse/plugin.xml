@@ -16,7 +16,7 @@
    <extension
          point="org.eclipse.imp.runtime.languageDescription">
       <language
-            url="http://orc.csres.utexas.edu/"
+            url="https://orc.csres.utexas.edu/"
             icon="icons/orc_file_obj.gif"
             extensions="orc,inc"
             description="A language for distributed and concurrent programming from The University of Texas at Austin."

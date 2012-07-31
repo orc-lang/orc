@@ -50,7 +50,7 @@ The JAR can be used as a Java library with which you can develop your own
 Orc sites.  Simply place orc-2.0.2.jar and its dependencies on your project's
 classpath.
 
-Refer to the Javadoc at http://orc.csres.utexas.edu/javadoc/STABLE for
+Refer to the Javadoc at https://orc.csres.utexas.edu/javadoc/STABLE for
 more information on Orc's Java API.
 
 

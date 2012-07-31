@@ -8,7 +8,7 @@ described recursively.
 
 The program implements a binary search tree which stores a set of
 values. See Wikipedia entry
-http://en.wikipedia.org/wiki/Binary_search_tree
+https://en.wikipedia.org/wiki/Binary_search_tree
 for a description of binary search tree.
 
 The following interface is supported:

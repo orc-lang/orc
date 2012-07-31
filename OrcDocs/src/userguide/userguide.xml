@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -34,7 +34,7 @@ management, and web service orchestration. Orc provides constructs to
 orchestrate the concurrent invocation of services while managing
 time-outs, priorities, and failures of services or communication.  To
 learn more about Orc and run your own Orc programs, visit the Web site:
-<link xlink:href="http://orc.csres.utexas.edu/"><code>http://orc.csres.utexas.edu/</code></link>.
+<link xlink:href="https://orc.csres.utexas.edu/"><code>https://orc.csres.utexas.edu/</code></link>.
 </para>
 
 <para>
