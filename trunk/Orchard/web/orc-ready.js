@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -376,7 +376,7 @@ function orcify(code, defaultConfig) {
 		});
 	}
 
-    var orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page="
+    var orcWikiUri = "https://orc.csres.utexas.edu/wiki/Wiki.jsp?page="
 
 	function renderError(response, code, exception) {
         if (response && response.detail && response.detail.exception && (response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException" || response.detail.exception["@class"] == "orc.orchard.errors.InvalidOilException")) {

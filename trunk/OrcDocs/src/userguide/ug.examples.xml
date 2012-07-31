@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -19,7 +19,7 @@
 <para>
 In this section we show a few larger Orc programs to demonstrate programming techniques. 
 There are many more such examples available at the Orc Web site, on the
-<link xlink:href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
+<link xlink:href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab">community wiki</link>.
 </para>
 
 <section xml:id="ug.examples.dining"><title>Dining Philosophers</title>
@@ -278,7 +278,7 @@ OUTPUT:EXAMPLE
 
 <para>
 Our implementation is based on the <link
-xlink:href="http://en.wikipedia.org/wiki/Actor_model">actor model</link> of
+xlink:href="https://en.wikipedia.org/wiki/Actor_model">actor model</link> of
 concurrency.  An actor is a state machine which reacts to messages.  On
 receiving a message, an actor can send asynchronous messages to other actors,
 change its state, or create new actors.  Each actor is single-threaded and
@@ -296,7 +296,7 @@ message, the actor gets the next item from the mailbox.  The internal states of
 the actor are represented by functions: while an actor's thread of execution is
 evaluating a function, it is considered to be in the corresponding state.
 Because Orc implements <link
-xlink:href="http://en.wikipedia.org/wiki/Tail_call">tail-call optimization</link>,
+xlink:href="https://en.wikipedia.org/wiki/Tail_call">tail-call optimization</link>,
 state transitions can be encoded as function calls without running out of stack
 space.
 </para>
@@ -326,7 +326,7 @@ fork, it knows who sent it and therefore which fork was received.
 
 <para>
 Here we present an Orc solution to the <link
-xlink:href="http://en.wikipedia.org/wiki/Readers-writers_problem">readers-writers
+xlink:href="https://en.wikipedia.org/wiki/Readers-writers_problem">readers-writers
 problem</link>.  Briefly, the readers-writers problem involves concurrent
 access to a mutable resource.  Multiple readers can access the resource
 concurrently, but writers must have exclusive access.  When readers and writers
@@ -595,7 +595,7 @@ This program may be extended to add more sophisticated features, such as a
 quorum (to select a meeting as soon as some subset of invitees responds) or
 timeouts (to remind invitees if they don't respond in a timely manner).  These
 modifications are local and do not affect the overall structure of the program.
-For complete details, see <link xlink:href="http://orc.csres.utexas.edu/tryorc.shtml">examples on our Web site</link>.
+For complete details, see <link xlink:href="https://orc.csres.utexas.edu/tryorc.shtml">examples on our Web site</link>.
 </para>
 </section>
 

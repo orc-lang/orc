@@ -49,14 +49,14 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
       + " an e-mail with the chosen meeting time.\n\n{{URL}}\n\n"
       + "Thank you, and if you have any questions, contact {{FROM}}"
       + " for more information.\n"
-      + "\n\n--\nPowered by Orc -- http://orc.csres.utexas.edu/")),
+      + "\n\n--\nPowered by Orc -- https://orc.csres.utexas.edu/")),
     Mandatory(Textarea("notificationTemplate", "Notification Message",
       "Greetings {{NAME}},\n\n"
       + "Regarding the \"{{TOPIC}}\" meeting:\n"
       + "The chosen time slot is: {{START_TIME}} to {{END_TIME}}\n\n"
       + "Thank you, and if you have any questions, contact {{FROM}}"
       + " for more information.\n"
-      + "\n\n--\nPowered by Orc -- http://orc.csres.utexas.edu/")),
+      + "\n\n--\nPowered by Orc -- https://orc.csres.utexas.edu/")),
     Button("submit", "Submit") ])
   >data> (
     val inviteesText =

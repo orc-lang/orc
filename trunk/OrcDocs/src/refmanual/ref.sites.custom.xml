@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -97,7 +97,7 @@ Orc provides a number of convenience mix-in traits for site implementors:
 </para>
 
 <para>
-For a detailed description of the Orc-site interface, refer to the <link xlink:href="http://orc.csres.utexas.edu/javadoc/STABLE/index.html">Orc implementation Javadoc</link>.
+For a detailed description of the Orc-site interface, refer to the <link xlink:href="https://orc.csres.utexas.edu/javadoc/STABLE/index.html">Orc implementation Javadoc</link>.
 </para>
 
 </section>

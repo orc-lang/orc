@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Dec 13, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -47,7 +47,7 @@ import edu.utexas.cs.orc.orceclipse.Activator;
 public class OrcHoverUtils {
 
 	private static final Pattern orcWikiLinkPattern = Pattern.compile("\\[\\[OrcWiki\\:([A-Za-z0-9_\\-\\#\\%]+)\\]\\]"); //$NON-NLS-1$
-	private static final String orcWikiUri = "http://orc.csres.utexas.edu/wiki/Wiki.jsp?page="; //$NON-NLS-1$
+	private static final String orcWikiUri = "https://orc.csres.utexas.edu/wiki/Wiki.jsp?page="; //$NON-NLS-1$
 
 	static IInformationControlCreator sharedInformationControlCreator;
 

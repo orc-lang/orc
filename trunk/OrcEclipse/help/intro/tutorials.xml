@@ -18,7 +18,7 @@
 			</link>
 			<link
 					label="Orc in 15 Minutes"
-					url="http://org.eclipse.ui.intro/openBrowser?url=http://orc.csres.utexas.edu/tutorial.shtml"
+					url="http://org.eclipse.ui.intro/openBrowser?url=https://orc.csres.utexas.edu/tutorial.shtml"
 					id="orcIntroLink"
 					style-id="content-link">
 				<text>Learn the basic concepts of Orc through a series of interactive examples.</text>

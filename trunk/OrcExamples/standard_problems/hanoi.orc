@@ -3,7 +3,7 @@
 EXERCISE:
 
 Write a function to solve the
-<ulink url="http://en.wikipedia.org/wiki/Tower_of_Hanoi">Towers of Hanoi</ulink>
+<ulink url="https://en.wikipedia.org/wiki/Tower_of_Hanoi">Towers of Hanoi</ulink>
 problem. There are three pegs, numbered 0..2;
 disks are to be moved from peg 0 to peg 2. Your
 function should take as its argument the number
@@ -19,7 +19,7 @@ SOLUTION:
 
 {--
 Algorithm as described in
-http://en.wikipedia.org/wiki/Tower_of_Hanoi
+https://en.wikipedia.org/wiki/Tower_of_Hanoi
 --}
 
 type Move = (Integer,Integer)
