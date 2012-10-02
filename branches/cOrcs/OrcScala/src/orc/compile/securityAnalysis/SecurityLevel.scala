@@ -15,7 +15,8 @@
 package orc.compile.securityAnalysis
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
-     
+import orc.error.compiletime.typing._
+
 /**
   * A security Level.
   * The parser attaches this level to a variable
@@ -56,12 +57,12 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
       def interpretParseSL(name: String, parents: List[String], children: List[String]): SecurityLevel =
       {
         var currentLevel : SecurityLevel= findByName(name)
-         
-        if(currentLevel == null)
-          Console.println("SL " + name + " cannot be found by findByName.")
-        else
-          Console.println("Editing SL: " + name)
-        
+        if(securityChecker.verbose){ 
+          if(currentLevel == null)
+            Console.println("SL " + name + " cannot be found by findByName.")
+            else
+              Console.println("Editing SL: " + name)
+        }
           
         var temp : SecurityLevel = null
           
@@ -73,7 +74,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           //go thru parents and add in new parents (creating if necessary)
           for(p <- parents)
           {
-            if(p.equals(name)) throw new Exception("Cannot create a security level with a self-pointer")
+            if(p.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
             temp = findByName(p)
            
             //if level doesn't yet exist in the lattice create it
@@ -91,7 +92,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           //go thru children and add in new children (creating if necessary)
           for(c <- children)
           {
-            if(c.equals(name)) throw new Exception("Cannot create a security level with a self-pointer")
+            if(c.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
              temp = findByName(c)
             
             //if level doesn't yet exist in the lattice create it
@@ -118,8 +119,9 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
      */
     def createSecurityLevel(name : String, p: List[SecurityLevel], c : List[SecurityLevel]) : SecurityLevel =
     {
-      Console.println("Creating new SL: " + name)
-      
+      if(securityChecker.verbose){
+        Console.println("Creating new SL: " + name)
+      }
       //make sure havent already created happens in interpretST
       var temp : SecurityLevel= new SecurityLevel()
         temp.myName = name
@@ -187,12 +189,15 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
           me.allParents = me.allParents ::: List(SecurityLevel.top)
         //check for duplicates/cycles: there is a cycle there will be a duplicate child and parent (duplicates are bad anyways)
         val allConnections : List[SecurityLevel] = me.allParents ::: me.allChildren
+        
         val noDuplicates : List[SecurityLevel] = allConnections.distinct
         
         if(allConnections.size != noDuplicates.size)
         {
+           if(securityChecker.verbose){
             Console.println("\n\nProblem in securityLevel " + me.myName + " Possible Cycle.\n")
-           // throw new Exception("Possible cycle for SecurityLevel " + me.myName)
+           }
+           throw new SecurityException("Possible cycle for SecurityLevel " + me.myName, new Exception())
         }
         
       
@@ -308,8 +313,9 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
        */
       def meet( leftSL: SecurityLevel, rightSL: SecurityLevel) : SecurityLevel =
       {
-        
+        if(securityChecker.verbose){
         Console.println("MEET: " + leftSL + " and " + rightSL)
+        }
           if(leftSL == null) return rightSL
           if(rightSL == null) return leftSL
         

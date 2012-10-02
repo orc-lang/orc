@@ -9,7 +9,7 @@ object testSecurityLevel {
   def main(args: Array[String]) = {
     Console.println("Testing SecurityLevel.scala");
     createLattice()
-    //printLattice()
+    printLattice()
     testMeet()
     testWrite()
   }

@@ -193,9 +193,9 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         val (newAst, programSL) = securityChecker(ast)//ast is named.Expresion
         var slReport = ""
         if(programSL != null)
-          slReport = "Program security level checks as " + programSL.toString
+          slReport = "Program output security level checks as " + programSL.toString
         else
-          slReport = "There are no security levels in the program"
+          slReport = "There are no security levels in the output"
             
         Console.println(slReport)    
         //compiler records messages in a list, caller supplies implemenation to display to user
