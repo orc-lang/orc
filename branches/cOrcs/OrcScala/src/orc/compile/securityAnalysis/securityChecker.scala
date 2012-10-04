@@ -38,7 +38,7 @@ import orc.compile.typecheck.Typeloader._
   */
 object securityChecker {
 
-  val verbose = false
+  val verbose = true
   type Context = Map[syntactic.BoundVar, SecurityLevel]
 
   def apply(expr: Expression): (Expression, SecurityLevel) = {
@@ -118,6 +118,9 @@ object securityChecker {
             }
             val expectedSL = SecurityLevel.findByName(level)
             val newBody = slCheckExpr(body, expectedSL)
+            
+            
+            
             (HasSecurityLevel(newBody, level), expectedSL)
           }
           //create security level
@@ -149,7 +152,16 @@ object securityChecker {
          * may contain some number of enclosing prunings.
          */
         case FoldedCall(target, args, typeArgs) => {
-          val (e, _) = slFoldedCall(target, args, typeArgs)
+          val (e, foldedSL) = slFoldedCall(target, args, typeArgs)
+          if (foldedSL != null) //we only check for when SL are used
+          {
+            //check that the foldedSL is equal to the expected SL (lattice) or can be written to
+            //if it isn't then we throw an exception
+            if (!(SecurityLevel.canWrite(lattice, foldedSL)))
+              throw new SecurityException("SECURITY ERROR: Expression: " + e + "\nSecurityLevel: " +
+                foldedSL + " is not " +
+                " allowed to be written to security level " + lattice + ". INTEGRITY ERROR", new Exception())
+          }
           e
         }
         case left || right => {
@@ -181,6 +193,7 @@ object securityChecker {
         }
         case _ => {
           val (newExpr, exprSL) = slSynthExpr(expr)
+          if(verbose){Console.println("EXPR: " + newExpr + " ; LEVEL: " + exprSL)}
           if (exprSL != null) //we only check for when SL are used
           {
             //check that the exprSL is equal to the expected SL (lattice)
@@ -211,6 +224,10 @@ object securityChecker {
     var newSiteSl = siteSl
     val (newArgs, argSls) = (args map slSynthExpr).unzip //get the sl for each of the arguments
 
+    if(verbose){
+      for (argSL <- argSls) Console.println("Site argument SLs: " + argSL)
+    }
+    
     //for each argument, we must check that the site can write to them (integrity)
     //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
     for (argLevel <- argSls) {
@@ -221,13 +238,15 @@ object securityChecker {
           " write to argument of level " + argLevel + ".", new Exception())
       } else //if you can write to the siteSl, you may have moved down the results' integrity
       {
-        if(verbose){
-          Console.println("MEET for EXPR: " + site + " (" + argLevel + ")")
-        }
+        
         newSiteSl = SecurityLevel.meet(newSiteSl, argLevel)
+        if(verbose){
+          Console.println("MEET for EXPR: " + site + " (" + argLevel + ") = " + newSiteSl)
+        }
+        
       }
     }
-    //Console.println("FINAL SL: " + newSiteSl)
+    if(verbose){Console.println("FINAL SL: " + newSiteSl)}
     (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl) //return SL of a call is the security level published
   }
 }
