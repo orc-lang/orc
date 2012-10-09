@@ -38,7 +38,7 @@ import orc.compile.typecheck.Typeloader._
   */
 object securityChecker {
 
-  val verbose = true
+  val verbose = false
   type Context = Map[syntactic.BoundVar, SecurityLevel]
 
   def apply(expr: Expression): (Expression, SecurityLevel) = {
@@ -117,6 +117,8 @@ object securityChecker {
               System.out.println("hasSecurityLevel synth BODY: " + body + " LEVEL: " + level)
             }
             val expectedSL = SecurityLevel.findByName(level)
+            if(expectedSL == null)
+              throw new SecurityException("Attached SL: " + level + " does not exist in the lattice", new Exception())
             val newBody = slCheckExpr(body, expectedSL)
             
             
@@ -231,21 +233,17 @@ object securityChecker {
     //for each argument, we must check that the site can write to them (integrity)
     //so, the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
     for (argLevel <- argSls) {
-
-      if (SecurityLevel.canWrite(siteSl, argLevel) == false) //checks is siteSL can write to argLevel
-      {
-        throw new SecurityException("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
-          " write to argument of level " + argLevel + ".", new Exception())
-      } else //if you can write to the siteSl, you may have moved down the results' integrity
-      {
-        
-        newSiteSl = SecurityLevel.meet(newSiteSl, argLevel)
-        if(verbose){
+          newSiteSl = SecurityLevel.meet(newSiteSl, argLevel)
+          if(verbose){
           Console.println("MEET for EXPR: " + site + " (" + argLevel + ") = " + newSiteSl)
         }
-        
-      }
     }
+      if (SecurityLevel.canWrite(newSiteSl, newSiteSl) == false) //checks is siteSL can write to argLevel
+      {
+        throw new SecurityException("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
+          " write to argument of level " + newSiteSl + ".", new Exception())
+      } 
+    
     if(verbose){Console.println("FINAL SL: " + newSiteSl)}
     (FoldedCall(site, newArgs, syntacticTypeArgs), newSiteSl) //return SL of a call is the security level published
   }
