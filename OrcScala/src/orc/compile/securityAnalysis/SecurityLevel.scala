@@ -59,9 +59,11 @@ import orc.error.compiletime.typing._
         var currentLevel : SecurityLevel= findByName(name)
         if(securityChecker.verbose){ 
           if(currentLevel == null)
-            Console.println("SL " + name + " cannot be found by findByName.")
+            if(securityChecker.verbose)
+              Console.println("SL " + name + " cannot be found by findByName.")
             else
-              Console.println("Editing SL: " + name)
+              if(securityChecker.verbose)
+                Console.println("Editing SL: " + name)
         }
           
         var temp : SecurityLevel = null
@@ -366,34 +368,29 @@ import orc.error.compiletime.typing._
     }
       
     /**
-     * checks on whether or not siteSl can write to argSl without causing an integrity error
-     * the site must have lower sL than the arguments (shouldn't be able to write high level info to lower level things)
-     * if the site is not a child (transitive closure) of the argument, return false (can't be a sibling since 
+     * checks on whether or not levelA can write to levelB without causing an integrity error
+     * the levelA must have lower or equal level to levelB (shouldn't be able to write low level info to high level things)
+     * if the levelA is not a child (transitive closure) of levelB, return false (can't be a sibling since 
      * we shouldn't be able to write to other categories)  
      */
-    def canWrite(siteSl : SecurityLevel, argSl : SecurityLevel) : Boolean = {
+    def canWrite(levelA : SecurityLevel, levelB : SecurityLevel) : Boolean = {
       
-      if(argSl eq siteSl) //can write if we are the same security level
+      if(levelA eq levelB) //can write if we are the same security level
       {
         true
       }
       else{
         //we aren't the same security level      
-        if(siteSl == null || argSl == null)
-        {
-            if(siteSl == null) true //if the site is null it can write to any info w/ security (integrity)
-            //this means that argSl is null and siteSl isn't so we cant write info with security to something with none
-            else false 
-        }
-        else
-        {
-          //can write if the object is of higher security
-          if(argSl.allChildren.contains(siteSl))
+        if(levelB == null) true //if levelA is null it can write to any info w/ security or no security (integrity)
+        if(levelA == null) false //this means that levelA is null and levelB isn't so we cant write info 
+                                  //without security and claim then it has a higher security level
+        //here both sitsSl and argSl are not null. Thus, can write if the object is of higher security
+        if(levelB.allChildren.contains(levelA))
               true
-          else
+        else
               false
       
-        }
+        
       }
     }
   }
