@@ -53,7 +53,7 @@ object securityChecker {
         expr match {
           case Stop() => (expr, null)
           case Hole(_, _) => (expr, null)
-          case Constant(value) => (expr, null)
+          case Constant(value) => (expr, SecurityLevel.top)
           case x: syntactic.BoundVar => {
             var level: SecurityLevel = null
             try {
@@ -157,12 +157,12 @@ object securityChecker {
           val (e, foldedSL) = slFoldedCall(target, args, typeArgs)
           if (foldedSL != null) //we only check for when SL are used
           {
-            //check that the foldedSL is equal to the expected SL (lattice) or can be written to
+            //check that the foldedSL is equal to the expected SL (lattice) or can be written to by expected SL
             //if it isn't then we throw an exception
-            if (!(SecurityLevel.canWrite(lattice, foldedSL)))
+            if (!(SecurityLevel.canWrite(foldedSL, lattice)))
               throw new SecurityException("SECURITY ERROR: Expression: " + e + "\nSecurityLevel: " +
                 foldedSL + " is not " +
-                " allowed to be written to security level " + lattice + ". INTEGRITY ERROR", new Exception())
+                " allowed to be written to by security level " + lattice + ". INTEGRITY ERROR", new Exception())
           }
           e
         }
@@ -200,10 +200,10 @@ object securityChecker {
           {
             //check that the exprSL is equal to the expected SL (lattice)
             //if it isn't then we throw an exception
-            if (!(SecurityLevel.canWrite(lattice, exprSL)))
+            if (!(SecurityLevel.canWrite(exprSL, lattice)))
               throw new SecurityException("SECURITY ERROR: Expression: " + newExpr + "\nSecurityLevel: " +
-                exprSL + " is not " +
-                " allowed to be written to security level " + lattice + ". INTEGRITY ERROR", new Exception())
+                lattice + " is not " +
+                " allowed to be written to by security level " + exprSL + ". INTEGRITY ERROR", new Exception())
           }
           newExpr
         }
@@ -238,7 +238,7 @@ object securityChecker {
           Console.println("MEET for EXPR: " + site + " (" + argLevel + ") = " + newSiteSl)
         }
     }
-      if (SecurityLevel.canWrite(newSiteSl, newSiteSl) == false) //checks is siteSL can write to argLevel
+      if (SecurityLevel.canWrite(siteSl, newSiteSl) == false) //checks is siteSL can write to argLevel
       {
         throw new SecurityException("SECURITY ERROR: Site (" + site + ") of level " + siteSl + " cannot" +
           " write to argument of level " + newSiteSl + ".", new Exception())
