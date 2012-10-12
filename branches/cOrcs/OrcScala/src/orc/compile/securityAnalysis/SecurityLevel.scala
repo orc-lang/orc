@@ -369,26 +369,26 @@ import orc.error.compiletime.typing._
       
     /**
      * checks on whether or not levelA can write to levelB without causing an integrity error
-     * the levelA must have lower or equal level to levelB (shouldn't be able to write low level info to high level things)
-     * if the levelA is not a child (transitive closure) of levelB, return false (can't be a sibling since 
+     * the levelA must have higher or equal level to levelB (shouldn't be able to write low level info to high level things)
+     * if the levelB is not a child (transitive closure) of levelA, return false (can't be a sibling since 
      * we shouldn't be able to write to other categories)  
      */
     def canWrite(levelA : SecurityLevel, levelB : SecurityLevel) : Boolean = {
       
       if(levelA eq levelB) //can write if we are the same security level
       {
-        true
+        return true
       }
       else{
         //we aren't the same security level      
-        if(levelB == null) true //if levelA is null it can write to any info w/ security or no security (integrity)
-        if(levelA == null) false //this means that levelA is null and levelB isn't so we cant write info 
+        if(levelB == null) return true //if levelA is null it can write to any info w/ security or no security (integrity)
+        if(levelA == null) return false //this means that levelA is null and levelB isn't so we cant write info 
                                   //without security and claim then it has a higher security level
-        //here both sitsSl and argSl are not null. Thus, can write if the object is of higher security
-        if(levelB.allChildren.contains(levelA))
-              true
+        //here both levelA and levelB are not null. Thus, can write if the object is of lower security
+        if(levelA.allChildren.contains(levelB))
+              return true
         else
-              false
+              return false
       
         
       }
