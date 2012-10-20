@@ -135,7 +135,7 @@ while(
 @implementation
 --}
 def while[A](lambda (A) :: Boolean, lambda (A) :: A) :: lambda(A) :: A
-def while(p,f) = 
+def while(p,f) =
   def loop(A) :: A
   def loop(x) = Ift(p(x)) >> ( x | loop(f(x)) )
   loop
@@ -210,7 +210,7 @@ the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
 def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
 def seqMap(f, []) = signal
 def seqMap(f, x:xs) = f(x) >> seqMap(f, xs)
- 
+
 {--
 @def join[A](List[lambda () :: A]) :: Signal
 Call a list of functions in parallel and <link linkend="ref.concepts.publish">publish</link>
@@ -224,7 +224,7 @@ the expression <code>(f(), g(), h()) >> signal</code>
 def join[A](List[lambda () :: A]) :: Signal
 def join([]) = signal
 def join(p:ps) = (p(), join(ps)) >> signal
- 
+
 {--
 @def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
 Apply a function to a list in parallel and <link linkend="ref.concepts.publish">publish</link>
@@ -281,7 +281,7 @@ def por(p:ps) =
     val b2 = por(ps)
     Ift(b1) >> true | Ift(b2) >> true | (b1 || b2)
   )
-  
+
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
 Parallel and. Execute a list of boolean functions in parallel, <link linkend="ref.concepts.publish">publishing</link>
@@ -298,7 +298,7 @@ def pand(p:ps) =
     val b2 = pand(ps)
     Iff(b1) >> false | Iff(b2) >> false | (b1 && b2)
   )
- 
+
 {--
 @def collect[A](lambda () :: A) :: List[A]
 Run a function, collecting all publications in a list.

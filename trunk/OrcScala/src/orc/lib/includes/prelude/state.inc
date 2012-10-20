@@ -185,7 +185,7 @@ If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.h
 
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, allow the oldest such call
 to return.  Otherwise, increment the value of the semaphore.  This may
-increment the value beyond that with which the semaphore was constructed.  
+increment the value beyond that with which the semaphore was constructed.
 
 @method semaphore.snoop() :: Signal
 
@@ -488,7 +488,7 @@ natural number and <code>f</code> a total function over natural numbers,
 creates and returns a partial, pre-computed version of <code>f</code>
 restricted to the range (0, <code>n</code>-1). <code>Table</code> does
 not return a value until all calls to <code>f</code> have completed.
-Consequently, if <code>f</code> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to 
+Consequently, if <code>f</code> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link> on any call, the call to
 <code>Table</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
 The user may also think of the call as returning an immutable array whose
@@ -568,8 +568,8 @@ import type Counter = "orc.lib.state.types.CounterType"
 {--
 @site Dictionary() :: Dictionary
 Create a new dictionary (a mutable map from field names to values), initially
-empty.  The first time a field of the dictionary is accessed (using a <link linkend="ref.expressions.dot">dot access</link>), 
-the dictionary creates and returns a new empty 
+empty.  The first time a field of the dictionary is accessed (using a <link linkend="ref.expressions.dot">dot access</link>),
+the dictionary creates and returns a new empty
 <link linkend="ref.stdlib.state.Ref">Ref</link> which will also be returned on
 subsequent accesses of the same field. A dictionary differs from a record in that
 it is both mutable and dynamically extensible.

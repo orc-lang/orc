@@ -19,7 +19,7 @@ XML manipulation.
 import type XML = "orc.lib.xml.XMLType"
 
 {--
-@site ReadXML(String) :: XML  
+@site ReadXML(String) :: XML
 
 Parses a <link linkend="ref.data.string">string</link> representation of XML into a structured form
 that Orc can manipulate.
@@ -34,10 +34,10 @@ Serializes Orc's representation of XML to a <link linkend="ref.data.string">stri
 import site WriteXML = "orc.lib.xml.WriteXML"
 
 {--
-@site XMLElement(String, {. .}, List[XML]) :: XML  
+@site XMLElement(String, {. .}, List[XML]) :: XML
 
 Creates an XML element node with the given tag, attributes,
-and children. 
+and children.
 This site may also be used for <link linkend="ref.patterns.call">matching</link>.
 --}
 import site XMLElement = "orc.lib.xml.XMLElementSite"
@@ -45,7 +45,7 @@ import site XMLElement = "orc.lib.xml.XMLElementSite"
 {--
 @site XMLText(String) :: XML
 
-Creates an XML text node with the given contents. 
+Creates an XML text node with the given contents.
 Encoding may occur.
 This site may also be used for <link linkend="ref.patterns.call">matching</link>.
 --}
@@ -80,22 +80,22 @@ match on the <link linkend="ref.data.list">list</link> of children.
 
 @implementation
 --}
-val xml = 
+val xml =
   def toxml(String, List[Top]) :: XML
-  def toxml(tag, children) = 
+  def toxml(tag, children) =
     def liftChild(Top) :: XML
     def liftChild(x) = IsXML(x) ; XMLText("" + x)
     XMLElement(tag, {. .}, map(liftChild, children))
   def fromxml(XML) :: Top
-  def fromxml(XMLElement(tag,attr,children)) = 
-    each(children) >c> 
+  def fromxml(XMLElement(tag,attr,children)) =
+    each(children) >c>
       ( c >XMLElement(_,_,_)> (tag,c)
       | c >XMLText(s)> (tag,s)
       | c >XMLCData(s)> (tag,s) )
   def fromxml(XMLText(s)) = s
   def fromxml(XMLCData(s)) = s
   {. apply = toxml, unapply = fromxml .}
-  
+
 {--
 @def xattr(XML, {. .}) :: XML
 
@@ -105,10 +105,10 @@ If there is a conflict, the new attributes override the old ones.
 May also be used for <link linkend="ref.patterns.call">matching</link>.
 
 @implementation
---}  
+--}
 val xattr =
   def toattr(XML, {. .}) :: XML
-  def toattr(XMLElement(tag, attr, children), moreattr) = 
+  def toattr(XMLElement(tag, attr, children), moreattr) =
     XMLElement(tag, attr + moreattr, children)
 
   def fromattr(XML) :: (XML, {. .})
