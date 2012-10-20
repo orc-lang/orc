@@ -18,8 +18,8 @@ Metalanguage operations.
 {--
 @site MakeSite[A](A) :: A
 
-This site promotes an Orc <link linkend="ref.data.closure">closure</link> to a site; 
-when the site is called, the closure is executed on those arguments. 
+This site promotes an Orc <link linkend="ref.data.closure">closure</link> to a site;
+when the site is called, the closure is executed on those arguments.
 This execution behaves like a site call; in particular, the following four properties hold:
 
 <itemizedlist>

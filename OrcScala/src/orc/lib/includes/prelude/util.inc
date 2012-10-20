@@ -56,8 +56,8 @@ Example:
 -- Publishes the user's name
 Prompt("What is your name?")]]></programlisting>
 
-The user response is always taken to be a string. Thus, integer 
-3 as a response will be treated as "3". To convert the response 
+The user response is always taken to be a string. Thus, integer
+3 as a response will be treated as "3". To convert the response
 to its appropriate data type, use the library function
 <link linkend="ref.stdlib.text.Read"><code>Read</code></link>:
 
@@ -117,10 +117,10 @@ def upto(high) = for(0, high)
 import class Iterable = "java.lang.Iterable"
 
 {--
-@site IterableToStream[A](Iterable[A]) :: lambda () :: A 
+@site IterableToStream[A](Iterable[A]) :: lambda () :: A
 
 Converts a Java object implementing the Iterable interface
-into an Orc stream backed by the object's iterator. 
+into an Orc stream backed by the object's iterator.
 When the site is called, if the iterator has items remaining,
 the next item is returned. If the iterator has no items
 remaining, the call <link linkend="ref.concepts.states.halt">halts</link>.
@@ -129,28 +129,28 @@ import site IterableToStream = "orc.lib.util.IterableToStream"
 
 {--
 @def iterableToList[A](Iterable[A]) :: List[A]
-Given a Java object implementing the Iterable interface, 
+Given a Java object implementing the Iterable interface,
 create an Orc <link linkend="ref.data.list">list</link> whose elements are the values produced by
-the object's iterator, in the same order. 
+the object's iterator, in the same order.
 
 @implementation
 --}
 def iterableToList[A](Iterable[A]) :: List[A]
-def iterableToList(iterable) = 
+def iterableToList(iterable) =
   val s = IterableToStream[A](iterable)
   def walk(List[A]) :: List[A]
-  def walk(l) = s():l >m> walk(m) ; reverse(l) 
-  walk([]) 
+  def walk(l) = s():l >m> walk(m) ; reverse(l)
+  walk([])
 
 {--
 @def arrayToList[A](Array[A]) :: List[A]
 Given an array, create an Orc <link linkend="ref.data.list">list</link> whose elements are exactly
-the contents of the array, in the same order. 
+the contents of the array, in the same order.
 
 @implementation
 --}
 def arrayToList[A](Array[A]) :: List[A]
-def arrayToList(a) = 
+def arrayToList(a) =
   def walk(Integer, List[A]) :: List[A]
   def walk(0,acc) = acc
   def walk(i,acc) = walk(i-1, a(i-1)? : acc)
@@ -166,9 +166,9 @@ the contents of the list, in the same order. The size of the array is exactly th
 def listToArray[A](List[A]) :: Array[A]
 def listToArray(list) =
   val array = Array[A](length(list))
-  def copy(List[A], Integer) :: Bot 
+  def copy(List[A], Integer) :: Bot
   def copy(x:xs, i) = (array(i) := x) >> copy(xs, i+1)
-  copy(list, 0) ; array  
+  copy(list, 0) ; array
 
 {--
 @def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
@@ -208,8 +208,8 @@ def sliceArray(orig, from, until) =
   val size = until - from
   val a = Array[A](size)
   def copy(i :: Integer) :: Bot =
-    Ift(i <: size) >> 
-    a(i) := orig(from + i)? >> 
+    Ift(i <: size) >>
+    a(i) := orig(from + i)? >>
     copy(i+1)
   copy(0) ; a
 
@@ -264,7 +264,7 @@ def synchronized[A](Semaphore, lambda () :: A) :: lambda() :: A
 def synchronized(s,f) = lambda() = withLock(s, f)
 
 {--
-@def def class InvokeExecutable(command :: List[String])
+@site InvokeExecutable(command :: List[String])
 
 Run an executable file in the host OS, with input/output addressable from
 Orc.
@@ -406,18 +406,18 @@ Send a termination signal (for example, SIGTERM) to the process running the
 executable.  If the process has completed, then this method has no effect.
 
 --}
- 
-import class ProcessBuilder = "java.lang.ProcessBuilder"
-import class Reader = "java.io.Reader"
-import class InputStreamReader = "java.io.InputStreamReader"
-import class Writer = "java.io.Writer"
-import class OutputStreamWriter = "java.io.OutputStreamWriter"
-import class JavaConversions = "scala.collection.JavaConversions"
-import class JavaCharacter = "java.lang.Character"
-import class JavaString = "java.lang.String"
-import class JavaList = "java.util.List"
 
 def class InvokeExecutable(command :: List[String]) =
+  	import class ProcessBuilder = "java.lang.ProcessBuilder"
+	  import class Reader = "java.io.Reader"
+	  import class InputStreamReader = "java.io.InputStreamReader"
+	  import class Writer = "java.io.Writer"
+	  import class OutputStreamWriter = "java.io.OutputStreamWriter"
+	  import class JavaConversions = "scala.collection.JavaConversions"
+	  import class JavaCharacter = "java.lang.Character"
+	  import class JavaString = "java.lang.String"
+	  import class JavaList = "java.util.List"
+	
   -- Note: Inheriting current processes's working directory and environment.
   val p = ProcessBuilder(JavaConversions.asJavaList(command)).start()
   -- FIXME: Orc typechecker problems here
@@ -430,6 +430,7 @@ def class InvokeExecutable(command :: List[String]) =
   val execErrChan = Channel[String]()
   val execErrReader = InputStreamReader(p.getErrorStream())
   val execErrEOF = Cell[Signal]()
+
   def writeIn(s :: String) = execInChan.put(s)
   def closeIn() = execInChan.closeD()
   def readOut() = execOutChan.get()

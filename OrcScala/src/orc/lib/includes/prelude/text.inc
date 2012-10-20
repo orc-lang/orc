@@ -22,7 +22,7 @@ Operations on strings.
 be invoked on any string literal or any variable bound to a string.
 
 The methods documented here are only a subset of those available in the Java
-implementation. In practice, strings in the Java implementation support all 
+implementation. In practice, strings in the Java implementation support all
 methods provided by Java's <code>String</code> class.
 
 @method string.length() :: Integer
@@ -140,7 +140,7 @@ and concatenate the results.
 def unlines(List[String]) :: String
 def unlines(line:lines) = line + "\n" + unlines(lines)
 def unlines([]) = ""
-  
+
 {--
 @def words(String) :: List[String]
 Split a string into words, which are sequences of non-whitespace characters separated by whitespace.

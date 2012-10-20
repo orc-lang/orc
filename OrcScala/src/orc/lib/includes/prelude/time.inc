@@ -50,7 +50,7 @@ val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
 
 {--
 @def metronome(Integer) :: Signal
-Publish a <link linkend="ref.data.signal">signal</link> at regular intervals, indefinitely. 
+Publish a <link linkend="ref.data.signal">signal</link> at regular intervals, indefinitely.
 The period is given by the argument, in milliseconds.
 --}
 def metronome(Integer) :: Signal

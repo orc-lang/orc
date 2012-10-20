@@ -95,7 +95,7 @@ import site Iff = "orc.lib.builtin.Iff"
 {--
 @site Error(String) :: Bot
 
-<od:sitepropset>   
+<od:sitepropset>
    <od:siteprop propname="definite"/>
 </od:sitepropset>
 

@@ -18,7 +18,7 @@ Many of these functions are similar to those in the Haskell prelude, but
 operate on the elements of a <link linkend="ref.data.list">list</link> in parallel.
 --}
 
-{-- 
+{--
 @def each[A](List[A]) :: A
 <link linkend="ref.concepts.publish">Publish</link> every value in a <link linkend="ref.data.list">list</link>, simultaneously.
 
@@ -46,11 +46,11 @@ def map(f,h:t) = f(h):map(f,t)
 @implementation
 --}
 def reverse[A](List[A]) :: List[A]
-def reverse(l) = 
-  def tailrev(List[A], List[A]) :: List[A] 
+def reverse(l) =
+  def tailrev(List[A], List[A]) :: List[A]
   def tailrev([],x) = x
   def tailrev(h:t,x) = tailrev(t,h:x)
-  tailrev(l,[]) 
+  tailrev(l,[])
 
 {--
 @def filter[A](lambda (A) :: Boolean, List[A]) :: List[A]
@@ -175,7 +175,7 @@ foldr((+), 0, [1,2,3])]]></programlisting>
 --}
 def foldr[A,B](lambda (A, B) :: B, B, List[A]) :: B
 def foldr(f,z,xs) = foldl(flip(f),z,reverse(xs))
-  
+
 {--
 @def foldr1[A](lambda (A, A) :: A, List[A]) :: A
 A special case of <code>foldr</code> which uses the last element of the <link linkend="ref.data.list">list</link> as the
@@ -190,7 +190,7 @@ def foldr1(f,xs) = foldl1(flip(f),reverse(xs))
 @def afold[A](lambda (A, A) :: A, List[A]) :: A
 Reduce a non-empty <link linkend="ref.data.list">list</link> using the given associative binary operation.
 This function reduces independent subexpressions in parallel; the
-calls exhibit a balanced tree structure, so the number of sequential 
+calls exhibit a balanced tree structure, so the number of sequential
 reductions performed is O(log n).  For expensive reductions, this
 is much more efficient than <code>foldl</code> or <code>foldr</code>.
 
@@ -213,7 +213,7 @@ Reduce a non-empty <link linkend="ref.data.list">list</link> using the given ass
 This function opportunistically reduces independent subexpressions in parallel, so the number of
 sequential reductions performed is as small as possible.  For expensive reductions, this
 is much more efficient than <code>foldl</code> or <code>foldr</code>. In cases
-where the reduction does not always take the same amount of time to complete, it 
+where the reduction does not always take the same amount of time to complete, it
 is also more efficient than <code>afold</code>.
 
 @implementation
@@ -229,9 +229,9 @@ def cfold(f, L) =
     c.put(f(x,y)) >> stop | work(i+1, rest)
   def work(i, [x]) = c.put(x) >> stop | work(i+1, [])
   def work(i, []) =
-    if (i <: 2) then c.get() 
+    if (i <: 2) then c.get()
     else c.get() >x> c.get() >y>
-         ( c.put(f(x,y)) >> stop | work(i-1,[]) ) 
+         ( c.put(f(x,y)) >> stop | work(i-1,[]) )
   work(0, L)
 
 
@@ -322,7 +322,7 @@ def member(item, []) = false
 def member(item, h:t) =
   if item = h then true
   else member(item, t)
-  
+
 {--
 @def merge[A](List[A], List[A]) :: List[A]
 Merge two sorted <link linkend="ref.data.list">lists</link>.
@@ -379,7 +379,7 @@ def sortBy(lt, xs) =
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
- 
+
 {--
 @def mergeUnique[A](List[A], List[A]) :: List[A]
 Merge two sorted <link linkend="ref.data.list">lists</link>, discarding duplicates.
@@ -444,7 +444,7 @@ def sortUniqueBy(eq, lt, xs) =
   mergeUniqueBy(eq, lt,
     sortUniqueBy(eq, lt, front),
     sortUniqueBy(eq, lt, back))
-  
+
 {--
 @def group[A,B](List[(A,B)]) :: List[(A,List[B])]
 Given a <link linkend="ref.data.list">list</link> of <link linkend="ref.data.tuple">pairs</link>, group together the second
@@ -479,7 +479,7 @@ def groupBy(eq, (k,v):kvs) =
     if eq(k2,k) then helper(k, v:vs, kvs)
     else (k,vs):helper(k2, [v], kvs)
   helper(k,[v], kvs)
- 
+
 {--
 @def rangeBy(Number, Number, Number) :: List[Number]
 <code>rangeBy(low, high, skip)</code> returns a sorted <link linkend="ref.data.list">list</link> of
@@ -493,7 +493,7 @@ def rangeBy(low, high, skip) =
   if low <: high
   then low:rangeBy(low+skip, high, skip)
   else []
- 
+
 {--
 @def range(Number, Number) :: List[Number]
 Generate a <link linkend="ref.data.list">list</link> of numbers in the given half-open range.
@@ -520,7 +520,7 @@ def any(p, x:xs) =
     val b2 = any(p, xs)
     Ift(b1) >> true | Ift(b2) >> true | (b1 || b2)
   )
-  
+
 {--
 @def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
 <link linkend="ref.concepts.publish">Publish</link> true if all of the elements of the <link linkend="ref.data.list">list</link> match the predicate, and false otherwise.
