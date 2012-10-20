@@ -106,7 +106,10 @@ object OrcJavaCompatibility {
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
     type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
     val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
-    val ms: Array[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors().asInstanceOf[Array[JavaMethodOrCtor]] else targetClass.getMethods().asInstanceOf[Array[JavaMethodOrCtor]]
+    var leastPublicClass = targetClass
+    while (!Modifier.isPublic(leastPublicClass.getModifiers())) leastPublicClass = leastPublicClass.getSuperclass()
+    Logger.finest(targetClass.getName() + "'s least public class="+leastPublicClass)
+    val ms: Array[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors().asInstanceOf[Array[JavaMethodOrCtor]] else leastPublicClass.getMethods().asInstanceOf[Array[JavaMethodOrCtor]]
     val potentiallyApplicableMethods = ms.filter({ m =>
       m.getName().equals(methodName) &&
         Modifier.isPublic(m.getModifiers()) &&
