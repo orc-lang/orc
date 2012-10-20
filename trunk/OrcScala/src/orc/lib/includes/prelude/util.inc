@@ -266,34 +266,138 @@ def synchronized(s,f) = lambda() = withLock(s, f)
 {--
 @def def class InvokeExecutable(command :: List[String])
 
-Run an executable command in the host OS, with input/output addressable from
+Run an executable file in the host OS, with input/output addressable from
 Orc.
+
+The executable file is invoked in a new OS process, and is passed the command
+arguments given to <code>InvokeExecutable</code>.  The process is created with
+an input character stream, to which the Orc program can send strings.  The
+process is also created with two output character strings, one for conventional
+output and one for error/diagnostic output, from which the Orc program can
+read.  Upon process termination, the Orc program can read the exit status
+value.
+
+Stream segment
 
 Assumptions:
 <ul>
 <li>The supplied "command" string refers to an executable file that is
-understandable by the OS hosting the JVM.</li>
+understandable by the OS hosting the Orc runtime engine.</li>
 <li>Input and output to the executable program are character strings encoded
 in the host OS's default character encoding.</li>
 </ul>
 
 @method invokeexecutable.writeIn(String) :: Signal
 
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Send the given string to the process's standard input stream. If the process
+has completed, <link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
+
+@method invokeexecutable.closeIn(String) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+Close the process's standard input stream.
+
 @method invokeexecutable.readOut() :: String
+
+Receive a "chunk" of available characters from the process's standard output
+stream.  The chunk size is not specified.  If there is no output available
+from the process, wait for some.  If there is no output available and the
+process has closed its output stream,
+<link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
 
 @method invokeexecutable.readOutD() :: String
 
+Receive a "chunk" of available characters from the process's standard output
+stream.  The chunk size is not specified.  If there is no output available
+from the process,
+<link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
 @method invokeexecutable.readOutAll() :: String
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+If the process is running, wait for it to complete; then, receive all remaining
+standard output stream contents from the process as a single string. If
+there is no further output, <link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
 
 @method invokeexecutable.readErr() :: String
 
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+Receive a "chunk" of available characters from the process's standard error
+(diagnostic) stream.  The chunk size is not specified.  If there is no output
+available from the process, wait for some.  If there is no output available
+and the process has closed its output stream,
+<link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
+
 @method invokeexecutable.readErrD() :: String
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Receive a "chunk" of available characters from the process's standard error
+(diagnostic) stream.  The chunk size is not specified.  If there is no output
+available from the process,
+<link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
 
 @method invokeexecutable.readErrAll() :: String
 
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+If the process is running, wait for it to complete; then, in any case, receive
+all remaining standard error (diagnostic) output from the process as a single
+string. If there is no further output,
+<link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.
+
 @method invokeexecutable.exitValue() :: Integer
 
-@method invokeexecutable.kill() :: Signal
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+Returns the exit status byte from the process running the executable.  If the
+process has not completed, <link linkend="ref.concepts.states.halt">halt</link>
+<link linkend="ref.concepts.silent">silently</link>.  Conventionally, a zero
+exit status value indicates a successful termination.
+
+@method invokeexecutable.terminate() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+Send a termination signal (for example, SIGTERM) to the process running the
+executable.  If the process has completed, then this method has no effect.
 
 --}
  
@@ -321,6 +425,7 @@ def class InvokeExecutable(command :: List[String]) =
   val execErrReader = InputStreamReader(p.getErrorStream())
   val execErrEOF = Cell[Signal]()
   def writeIn(s :: String) = execInChan.put(s)
+  def closeIn() = execInChan.closeD()
   def readOut() = execOutChan.get()
   def readOutD() = execOutChan.getD()
   def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
@@ -328,7 +433,7 @@ def class InvokeExecutable(command :: List[String]) =
   def readErrD() = execErrChan.getD()
   def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
   def exitValue() = p.exitValue()
-  def kill() = p.destroy()
+  def terminate() = p.destroy()
   val buff1 = Array[JavaCharacter](8192, "char")
   val buff2 = Array[JavaCharacter](8192, "char")
   def copyToChan(javaReader :: Reader, buff :: Array[JavaCharacter], orcChan :: Channel[String]) :: Bot  =
@@ -338,10 +443,10 @@ def class InvokeExecutable(command :: List[String]) =
       {- charsRead < 0 means EOF, so we will halt silently -}
     )
   def copyFromChan(orcChan :: Channel[String], javaWriter :: Writer) :: Bot =
-    javaWriter.write(orcChan.get()) >> copyFromChan(orcChan, javaWriter) #
+    javaWriter.write(orcChan.get()) >> javaWriter.flush() >> copyFromChan(orcChan, javaWriter) #
 
-  ( p.waitFor() >> execInChan.closeD() >> execInWriter.close() 
-  | (copyFromChan(execInChan, execInWriter))
+  ( p.waitFor() >> closeIn() >> {-discard unwritten input-} execInChan.getAll()
+  | (copyFromChan(execInChan, execInWriter) ; (execInChan.closeD() >> execInChan.getAll() | execInWriter.close()))
   | (copyToChan(execOutReader, buff1, execOutChan) ; execOutChan.closeD() >> execOutEOF.write(signal) >> execOutReader.close())
   | (copyToChan(execErrReader, buff2, execErrChan) ; execErrChan.closeD() >> execErrEOF.write(signal) >> execErrReader.close())
   )
