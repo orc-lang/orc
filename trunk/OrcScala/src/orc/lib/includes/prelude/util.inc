@@ -277,7 +277,13 @@ output and one for error/diagnostic output, from which the Orc program can
 read.  Upon process termination, the Orc program can read the exit status
 value.
 
-Stream segment
+Output streams from the process can be read while the process is running.  The
+"chunk" of the stream that is returned from any one read operation is of an
+unspecified length, because of buffer sizes and operation granularity between
+the sender and receiver.  Callers may need to reassemble output segments prior
+to further processing.  If this is inconvenient, there are "read all" methods
+that wait for process termination, and then return the output as a single
+character string.
 
 Assumptions:
 <ul>
