@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -184,8 +184,7 @@ a(0)? | a(1)? | a(2)?]]></programlisting>
 
 @implementation
 --}
-def fillArray[A](Array[A], lambda (Integer) :: A)
-  :: Array[A]
+def fillArray[A](Array[A], lambda (Integer) :: A) :: Array[A]
 def fillArray(a, f) =
   val n = a.length?
   def fill(Integer, lambda(Integer) :: A) :: Bot
@@ -263,3 +262,86 @@ on the lock. Similar to Java's synchronized keyword.
 
 def synchronized[A](Semaphore, lambda () :: A) :: lambda() :: A
 def synchronized(s,f) = lambda() = withLock(s, f)
+
+{--
+@def def class InvokeExecutable(command :: List[String])
+
+Run an executable command in the host OS, with input/output addressable from
+Orc.
+
+Assumptions:
+<ul>
+<li>The supplied "command" string refers to an executable file that is
+understandable by the OS hosting the JVM.</li>
+<li>Input and output to the executable program are character strings encoded
+in the host OS's default character encoding.</li>
+</ul>
+
+@method invokeexecutable.writeIn(String) :: Signal
+
+@method invokeexecutable.readOut() :: String
+
+@method invokeexecutable.readOutD() :: String
+
+@method invokeexecutable.readOutAll() :: String
+
+@method invokeexecutable.readErr() :: String
+
+@method invokeexecutable.readErrD() :: String
+
+@method invokeexecutable.readErrAll() :: String
+
+@method invokeexecutable.exitValue() :: Integer
+
+@method invokeexecutable.kill() :: Signal
+
+--}
+ 
+import class ProcessBuilder = "java.lang.ProcessBuilder"
+import class Reader = "java.io.Reader"
+import class InputStreamReader = "java.io.InputStreamReader"
+import class Writer = "java.io.Writer"
+import class OutputStreamWriter = "java.io.OutputStreamWriter"
+import class JavaConversions = "scala.collection.JavaConversions"
+import class JavaCharacter = "java.lang.Character"
+import class JavaString = "java.lang.String"
+import class JavaList = "java.util.List"
+
+def class InvokeExecutable(command :: List[String]) =
+  -- Note: Inheriting current processes's working directory and environment.
+  val p = ProcessBuilder(JavaConversions.asJavaList(command)).start()
+  -- FIXME: Orc typechecker problems here
+
+  val execInChan = Channel[String]()
+  val execInWriter = OutputStreamWriter(p.getOutputStream())
+  val execOutChan = Channel[String]()
+  val execOutReader = InputStreamReader(p.getInputStream())
+  val execOutEOF = Cell[Signal]()
+  val execErrChan = Channel[String]()
+  val execErrReader = InputStreamReader(p.getErrorStream())
+  val execErrEOF = Cell[Signal]()
+  def writeIn(s :: String) = execInChan.put(s)
+  def readOut() = execOutChan.get()
+  def readOutD() = execOutChan.getD()
+  def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def readErr() = execErrChan.get()
+  def readErrD() = execErrChan.getD()
+  def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def exitValue() = p.exitValue()
+  def kill() = p.destroy()
+  val buff1 = Array[JavaCharacter](8192, "char")
+  val buff2 = Array[JavaCharacter](8192, "char")
+  def copyToChan(javaReader :: Reader, buff :: Array[JavaCharacter], orcChan :: Channel[String]) :: Bot  =
+    javaReader.read(buff)  >charsRead>
+    ( Ift(charsRead :> 0) >> orcChan.put(JavaString(buff, 0, charsRead)) >> copyToChan(javaReader, buff, orcChan)
+    | Ift(charsRead = 0) >> {- not expected, busy wait -} Rwait(1) >> copyToChan(javaReader, buff, orcChan)
+      {- charsRead < 0 means EOF, so we will halt silently -}
+    )
+  def copyFromChan(orcChan :: Channel[String], javaWriter :: Writer) :: Bot =
+    javaWriter.write(orcChan.get()) >> copyFromChan(orcChan, javaWriter) #
+
+  ( p.waitFor() >> execInChan.closeD() >> execInWriter.close() 
+  | (copyFromChan(execInChan, execInWriter))
+  | (copyToChan(execOutReader, buff1, execOutChan) ; execOutChan.closeD() >> execOutEOF.write(signal) >> execOutReader.close())
+  | (copyToChan(execErrReader, buff2, execErrChan) ; execErrChan.closeD() >> execErrEOF.write(signal) >> execErrReader.close())
+  )
