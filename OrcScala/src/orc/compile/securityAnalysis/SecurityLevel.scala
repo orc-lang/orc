@@ -73,9 +73,11 @@ import orc.error.compiletime.typing._
             currentLevel = createSecurityLevel(name, List(), List())
           }
         
+          
           //go thru parents and add in new parents (creating if necessary)
           for(p <- parents)
           {
+            
             if(p.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
             temp = findByName(p)
            
@@ -93,7 +95,8 @@ import orc.error.compiletime.typing._
           
           //go thru children and add in new children (creating if necessary)
           for(c <- children)
-          {
+          { 
+            
             if(c.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
              temp = findByName(c)
             
@@ -109,6 +112,30 @@ import orc.error.compiletime.typing._
               currentLevel.immediateChildren = currentLevel.immediateChildren ::: List(temp)
             }
           }
+          
+        //check for adding cycles
+        //check for duplicates/cycles: there is a cycle there will be a duplicate child and parent (duplicates are bad anyways)
+        var allConnections : List[SecurityLevel] = currentLevel.allParents ::: currentLevel.immediateChildren
+        var allConnections2 : List[SecurityLevel] = currentLevel.immediateParents ::: currentLevel.allChildren
+        
+        var noDuplicates : List[SecurityLevel] = allConnections.distinct
+        var noDuplicates2 : List[SecurityLevel] = allConnections2.distinct
+        
+         if(!securityChecker.verbose && currentLevel.myName.equals("C"))
+        {
+           Console.println("level " + currentLevel + " allConnections: " + allConnections + allConnections.size);
+           Console.println("level " + currentLevel + " distinct: " + noDuplicates+ noDuplicates.size);
+        }
+        
+        if(allConnections.size != noDuplicates.size || allConnections2.size != noDuplicates2.size)
+        {
+           if(securityChecker.verbose){
+            Console.println("\n\nProblem in securityLevel " + currentLevel.myName + " Possible Cycle.\n")
+           }
+           throw new SecurityException("Possible cycle for SecurityLevel " + currentLevel.myName, new Exception())
+        }
+        
+          
           
           makeGraph()//need to redo transitive closure so can get graph
           return currentLevel  
@@ -189,19 +216,8 @@ import orc.error.compiletime.typing._
         me.allParents = parentTransClosure(me, me.allParents)
         if(!me.allParents.contains(SecurityLevel.top))
           me.allParents = me.allParents ::: List(SecurityLevel.top)
-        //check for duplicates/cycles: there is a cycle there will be a duplicate child and parent (duplicates are bad anyways)
-        val allConnections : List[SecurityLevel] = me.allParents ::: me.allChildren
-        
-        val noDuplicates : List[SecurityLevel] = allConnections.distinct
-        
-        if(allConnections.size != noDuplicates.size)
-        {
-           if(securityChecker.verbose){
-            Console.println("\n\nProblem in securityLevel " + me.myName + " Possible Cycle.\n")
-           }
-           throw new SecurityException("Possible cycle for SecurityLevel " + me.myName, new Exception())
-        }
-        
+       
+   
       
     }
     
@@ -217,10 +233,14 @@ import orc.error.compiletime.typing._
       //go thru all children and recursively add all children immediately underneath it.
         for(child <- me.immediateChildren)
         {
+          if((!child.equals(SecurityLevel.bottom))//we stop at bottom SecurityLevel
+                &&(!child.equals(SecurityLevel.top)))//and we don't want to redo TOP
+            {
                 addChildren = addChildren ::: List(child)//add child to the list
                 addChildren = childTransClosure(child,addChildren)//go thru that child's children too
                 //get rid of duplicates caused by child and grandchild being the same
                 addChildren = addChildren.distinct
+            }
         }
       return addChildren
     }
