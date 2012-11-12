@@ -77,8 +77,8 @@ import orc.error.compiletime.typing._
           //go thru parents and add in new parents (creating if necessary)
           for(p <- parents)
           {
-            
-            if(p.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
+            //OK to have a self pointer? Shouldn't do anything.
+            //if(p.equals(name)) throw new SecurityException("Cannot create a security level with a self-pointer", new Exception())
             temp = findByName(p)
            
             //if level doesn't yet exist in the lattice create it
