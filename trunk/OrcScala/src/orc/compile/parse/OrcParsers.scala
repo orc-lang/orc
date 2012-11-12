@@ -24,6 +24,7 @@ import java.io.IOException
 import orc.ast.AST
 import orc.OrcCompilationOptions
 import orc.OrcCompilerRequires
+import orc.ast.ext.ConsPattern
 import orc.ast.ext._
 
 /** Mix-in for result types from Orc parsers
@@ -300,7 +301,9 @@ class OrcParsers(inputContext: OrcInputContext, options: OrcCompilationOptions, 
     | ")" ^^^ None)
 
   val parseBasePattern = (
-    parseValue -> ConstantPattern
+      "-" ~> numericLit -> { s => ConstantPattern(-BigInt(s)) }
+    | "-" ~> floatLit -> { s => ConstantPattern(-BigDecimal(s)) }
+    | parseValue -> ConstantPattern
     | "_" -> Wildcard
     | ident ~ TupleOf(parsePattern) -> CallPattern
     | ident -> VariablePattern
