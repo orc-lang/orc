@@ -374,11 +374,11 @@ Sort a <link linkend="ref.data.list">list</link> using the given less-than relat
 def sortBy[A](lambda (A,A) :: Boolean, List[A]) :: List[A]
 def sortBy(lt, []) = []
 def sortBy(lt, [x]) = [x]
-def sortBy(lt, xs) =
+def sortBy(lt, xs) = xs >> (
   val half = Floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
-  mergeBy(lt, sortBy(lt, front), sortBy(lt, back))
+  mergeBy(lt, sortBy(lt, front), sortBy(lt, back)))
 
 {--
 @def mergeUnique[A](List[A], List[A]) :: List[A]
@@ -437,13 +437,13 @@ def sortUniqueBy[A](lambda (A,A) :: Boolean,
   :: List[A]
 def sortUniqueBy(eq, lt, []) = []
 def sortUniqueBy(eq, lt, [x]) = [x]
-def sortUniqueBy(eq, lt, xs) =
+def sortUniqueBy(eq, lt, xs) = xs >> (
   val half = Floor(length(xs)/2)
   val front = take(half, xs)
   val back = drop(half, xs)
   mergeUniqueBy(eq, lt,
     sortUniqueBy(eq, lt, front),
-    sortUniqueBy(eq, lt, back))
+    sortUniqueBy(eq, lt, back)))
 
 {--
 @def group[A,B](List[(A,B)]) :: List[(A,List[B])]
