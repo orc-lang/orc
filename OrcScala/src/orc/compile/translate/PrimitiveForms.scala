@@ -103,6 +103,12 @@ object PrimitiveForms {
     ((callIft(b) >> trueBranch) || (callIff(b) >> falseBranch)) < b < test
   }
 
+  def makeConditionalFalseOnHalt(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
+    val b = new BoundVar()
+    val nb = new BoundVar()
+    ((callIft(b) >> trueBranch) < b < test) ow falseBranch
+  }
+
   /*
    * Return a composite expression with the following behavior:
    * 
