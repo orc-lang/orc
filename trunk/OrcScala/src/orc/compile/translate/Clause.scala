@@ -82,7 +82,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
           case Some(guard) => {
             // If there are no strict patterns, then we just branch on the guard.
             val newGuard = guard -> convertInContext
-            extendConversion({ makeConditional(newGuard, _, fallthrough) })
+            extendConversion({ makeConditionalFalseOnHalt(newGuard, _, fallthrough) })
           }
           case None => {
             /*
