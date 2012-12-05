@@ -19,7 +19,8 @@ import orc.ast.oil.{ named => syntactic }
 import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
-import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException }
+import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }
+import orc.error.OrcExceptionExtension._
 import orc.util.OptionMapExtension._
 import orc.values.{ Signal, Field }
 import scala.math.BigInt
@@ -48,12 +49,18 @@ import orc.compile.typecheck.Typeloader._
   */
 
 object Typechecker {
-
+  
   type Context = Map[syntactic.BoundVar, Type]
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
+  
+}
 
-  def apply(expr: Expression): (Expression, Type) = {
+class Typechecker(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
+
+  import orc.compile.typecheck.Typechecker._
+
+  def typecheck(expr: Expression): (Expression, Type) = {
     typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
   }
 
@@ -67,7 +74,7 @@ object Typechecker {
           case x: syntactic.BoundVar => (x, context(x))
           case UnboundVar(name) => throw new UnboundVariableException(name)
           case FoldedCall(target, args, typeArgs) => {
-            typeFoldedCall(target, args, typeArgs, None)
+            typeFoldedCall(target, args, typeArgs, None, expr)
           }
           case left || right => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
@@ -128,7 +135,7 @@ object Typechecker {
          * may contain some number of enclosing prunings.
          */
         case FoldedCall(target, args, typeArgs) => {
-          val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T))
+          val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T), expr)
           e
         }
         case left || right => {
@@ -263,7 +270,7 @@ object Typechecker {
     }
   }
 
-  def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
+  def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
     val (newTarget, targetType) = typeSynthExpr(target)
     val (newArgs, argTypes) = {
       targetType match {
@@ -289,11 +296,11 @@ object Typechecker {
         case _ => (args map typeSynthExpr).unzip
       }
     }
-    val (newTypeArgs, returnType) = typeCall(syntacticTypeArgs, targetType, argTypes, checkReturnType)
+    val (newTypeArgs, returnType) = typeCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
     (FoldedCall(newTarget, newArgs, newTypeArgs), returnType)
   }
 
-  def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
+  def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
 
     // Special call cases
     targetType match {
@@ -311,7 +318,7 @@ object Typechecker {
           /* If this is not a field access, try to use an 'apply' member. */
           case _ => {
             if (entries contains "apply") {
-              return typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType)
+              return typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType, callPoint)
             }
           }
         }
@@ -320,10 +327,10 @@ object Typechecker {
         var failure = new OverloadedTypeException()
         for (t <- alternatives) {
           try {
-            return typeCall(syntacticTypeArgs, t, argTypes, checkReturnType)
+            return typeCall(syntacticTypeArgs, t, argTypes, checkReturnType, callPoint)
           } catch {
-            case e: TypeException => {
-              failure = failure.addAlternative(t, e)
+            case te: TypeException => {
+              failure = failure.addAlternative(t, te)
             }
           }
         }
@@ -331,10 +338,10 @@ object Typechecker {
         throw failure
       }
       case `IntegerType` | IntegerConstantType(_) => {
-        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigInteger]), argTypes, checkReturnType)
+        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigInteger]), argTypes, checkReturnType, callPoint)
       }
       case `NumberType` => {
-        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigDecimal]), argTypes, checkReturnType)
+        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigDecimal]), argTypes, checkReturnType, callPoint)
       }
       case _ => {}
     }
@@ -377,6 +384,9 @@ object Typechecker {
               (Some(Nil), funReturnType)
             }
             case FunctionType(funTypeFormals, funArgTypes, funReturnType) => {
+              if (funArgTypes.size != argTypes.size) {
+                throw new ArgumentArityException(funArgTypes.size, argTypes.size)
+              }
               val X = funTypeFormals.toSet
               val baseConstraints = new ConstraintSet(X)
               val argConstraints =
@@ -391,8 +401,13 @@ object Typechecker {
                     allConstraints.anySubstitution
                   }
                   case None => {
+                    /* Emit a warning if an invariant type constructor cannot find a minimal type, and must make a guess. */
+                    def warnNoMinimal(guess: Type) { 
+                      reportProblem((new NoMinimalTypeWarning(guess)) at callPoint) 
+                    }
+                    
                     val allConstraints = meetAll(argConstraints) meet baseConstraints
-                    allConstraints.minimalSubstitution(funReturnType)
+                    allConstraints.minimalSubstitution(funReturnType, warnNoMinimal)
                   }
                 }
 
@@ -419,17 +434,20 @@ object Typechecker {
 
   def typeValue(value: AnyRef): Type = {
 
-    if (value eq null) { return NullType }
-
-    value match {
-      case Signal => SignalType
-      case _: java.lang.Boolean => BooleanType
-      case i: BigInt => IntegerConstantType(i)
-      case _: BigDecimal => NumberType
-      case _: String => StringType
-      case Field(f) => FieldType(f)
-      case s: TypedSite => s.orcType
-      case v => liftJavaType(v.getClass())
+    if (value eq null) { 
+      NullType 
+    }
+    else {
+      value match {
+        case Signal => SignalType
+        case _: java.lang.Boolean => BooleanType
+        case i: BigInt => IntegerConstantType(i)
+        case _: BigDecimal => NumberType
+        case _: String => StringType
+        case Field(f) => FieldType(f)
+        case s: TypedSite => s.orcType
+        case v => liftJavaType(v.getClass())
+      }
     }
   }
 
@@ -509,5 +527,5 @@ object Typechecker {
 
     }
   }
-
+  
 }

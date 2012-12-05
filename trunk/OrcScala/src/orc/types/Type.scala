@@ -80,7 +80,7 @@ trait Type extends TypeInterface with TypeListEnrichment {
           variance match {
             case Covariant => Top
             case Contravariant => Bot
-            case Invariant => throw new NoMinimalTypeException()
+            case Invariant => throw new OverconstrainedTypeVariableException()
             case Constant => Top
           }
         } else {

@@ -156,6 +156,23 @@ def arrayToList(a) =
   def walk(i,acc) = walk(i-1, a(i-1)? : acc)
   walk(a.length?, [])
 
+
+import class JavaList = "java.util.List"
+import class JavaLinkedList = "java.util.LinkedList"
+{--
+@def listToJavaList[A](List[A]) :: JavaList[A]
+Given an Orc <link linkend="ref.data.list">list</link>,
+create a java.util.List with the same elements.
+
+@implementation
+--}
+def listToJavaList[A](List[A]) :: JavaList[A]
+def listToJavaList(list) =
+  val javalist = JavaLinkedList[A]()
+  def copy(List[A]) :: Bot
+  def copy(x:xs) = javalist.add(x) >> copy(xs)
+  copy(list) ; javalist
+
 {--
 @def listToArray[A](List[A]) :: Array[A]
 Given an Orc <link linkend="ref.data.list">list</link>, create an array whose elements are exactly
@@ -407,20 +424,18 @@ executable.  If the process has completed, then this method has no effect.
 
 --}
 
+
 def class InvokeExecutable(command :: List[String]) =
   	import class ProcessBuilder = "java.lang.ProcessBuilder"
 	  import class Reader = "java.io.Reader"
 	  import class InputStreamReader = "java.io.InputStreamReader"
 	  import class Writer = "java.io.Writer"
 	  import class OutputStreamWriter = "java.io.OutputStreamWriter"
-	  import class JavaConversions = "scala.collection.JavaConversions"
 	  import class JavaCharacter = "java.lang.Character"
 	  import class JavaString = "java.lang.String"
-	  import class JavaList = "java.util.List"
 	
   -- Note: Inheriting current processes's working directory and environment.
-  val p = ProcessBuilder(JavaConversions.asJavaList(command)).start()
-  -- FIXME: Orc typechecker problems here
+  val p = ProcessBuilder(listToJavaList[String](command)).start()
 
   val execInChan = Channel[String]()
   val execInWriter = OutputStreamWriter(p.getOutputStream())
