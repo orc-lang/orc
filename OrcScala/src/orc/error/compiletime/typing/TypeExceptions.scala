@@ -60,7 +60,7 @@ class FirstOrderTypeExpectedException(val nonFirstOrderType: String) extends Typ
 
 class SecondOrderTypeExpectedException(val nonSecondOrderType: String) extends TypeException("Kinding error: expected a type operator, found " + nonSecondOrderType + " instead.") with SeverityError
 
-class NoMinimalTypeException() extends TypeException("Inference failed; could not find a minimal type. Please add explicit type information.") with SeverityError
+class NoMinimalTypeWarning(val bestGuess: Type) extends TypeException("Could not infer a type argument; no minimal type found. Used " + bestGuess.toString() + " as a best guess. Please add explicit type arguments.") with SeverityWarning
 
 class OverconstrainedTypeVariableException() extends TypeException("A type argument is overconstrained; inference failed. Please add explicit type arguments. There may also be an underlying type error.") with SeverityError
 

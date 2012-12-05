@@ -111,18 +111,22 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
 /* Use cases */
 object SimpleFunctionType {
 
+  /* () -> T */
   def apply(returnType: Type) = {
     FunctionType(Nil, Nil, returnType)
   }
 
+  /* T -> T */
   def apply(argType: Type, returnType: Type) = {
     FunctionType(Nil, List(argType), returnType)
   }
 
+  /* (T,T) -> T */
   def apply(argType1: Type, argType2: Type, returnType: Type) = {
     FunctionType(Nil, List(argType1, argType2), returnType)
   }
 
+  /* (T, ..., T) -> T */
   def apply(argTypes: List[Type], returnType: Type) = {
     FunctionType(Nil, argTypes, returnType)
   }

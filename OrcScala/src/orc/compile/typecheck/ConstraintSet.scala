@@ -58,9 +58,12 @@ class ConstraintSet(val bounds: List[(TypeVariable, (Type, Type))]) {
   }
 
   /* Find the minimal substitution of the type variables
-     * from this constraint set into the given type R.
-     */
-  def minimalSubstitution(R: Type): Map[TypeVariable, Type] = {
+   * from this constraint set into the given type R.
+   * 
+   * If there is no minimal type, invoke warnNoMinimal
+   * to emit a warning and report the type that was guessed.
+   */
+  def minimalSubstitution(R: Type, warnNoMinimal: Type => Unit): Map[TypeVariable, Type] = {
     val vars = constraints.keys
     val subs =
       for (x <- vars) yield {
@@ -70,7 +73,18 @@ class ConstraintSet(val bounds: List[(TypeVariable, (Type, Type))]) {
           case Invariant => {
             val S = this lowerBoundOn x
             val T = this upperBoundOn x
-            if (S equals T) { (x, S) } else { throw new NoMinimalTypeException() }
+            if (S equals T) { 
+              (x, S)  
+            } 
+            else {
+              val bestGuess = 
+                S match { 
+                  case Bot => T 
+                  case _ => S 
+                }
+              warnNoMinimal(bestGuess)
+              (x, bestGuess)
+            }
           }
         }
       }

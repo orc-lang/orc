@@ -124,7 +124,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
-        val translator = new Translator(co reportProblem _)
+        val translator = new Translator(co.reportProblem)
         translator.translate(ast)
       }
   }
@@ -162,7 +162,8 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "typeCheck"
     override def apply(co: CompilerOptions) = { ast =>
       if (co.options.typecheck) {
-        val (newAst, programType) = Typechecker(ast)
+        val typechecker = new Typechecker(co.reportProblem)
+        val (newAst, programType) = typechecker.typecheck(ast)
         val typeReport = "Program type checks as " + programType.toString
         co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
         newAst
