@@ -305,47 +305,65 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     // Special call cases
     targetType match {
       case Bot => {
-        return (syntacticTypeArgs, Bot)
+        (syntacticTypeArgs, Bot)
       }
       case _: StrictType if argTypes contains Bot => {
-        return (syntacticTypeArgs, Bot)
+        (syntacticTypeArgs, Bot)
       }
       case RecordType(entries) => {
         argTypes match {
-          /* If this is a field access, do nothing, and check the call as normal. */
-          case List(_: FieldType) => {}
-
+          /* If this is a field access, check the call as normal. */
+          case List(_: FieldType) => {
+            typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
+          }
           /* If this is not a field access, try to use an 'apply' member. */
           case _ => {
             if (entries contains "apply") {
-              return typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType, callPoint)
+              typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType, callPoint)
+            }
+            else {
+              typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
             }
           }
         }
       }
       case OverloadedType(alternatives) => {
         var failure = new OverloadedTypeException()
-        for (t <- alternatives) {
-          try {
-            return typeCall(syntacticTypeArgs, t, argTypes, checkReturnType, callPoint)
-          } catch {
-            case te: TypeException => {
-              failure = failure.addAlternative(t, te)
+        def tryAlternatives(alts: List[Type]): (Option[List[syntactic.Type]], Type) =
+          alts match {
+            case t::rest => {
+              try {
+                typeCall(syntacticTypeArgs, t, argTypes, checkReturnType, callPoint)
+              } 
+              catch {
+                case te: TypeException => {
+                  failure = failure.addAlternative(t, te)
+                  tryAlternatives(rest)
+                }
+              }
             }
+            case Nil => {
+              throw failure
+            } 
           }
-        }
-        // otherwise
-        throw failure
+        tryAlternatives(alternatives)
       }
       case `IntegerType` | IntegerConstantType(_) => {
-        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigInteger]), argTypes, checkReturnType, callPoint)
+        typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigInteger]), argTypes, checkReturnType, callPoint)
       }
       case `NumberType` => {
-        return typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigDecimal]), argTypes, checkReturnType, callPoint)
+        typeCall(syntacticTypeArgs, JavaObjectType(classOf[java.math.BigDecimal]), argTypes, checkReturnType, callPoint)
       }
-      case _ => {}
+      case _ => {
+        typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
+      }
     }
 
+    
+  }
+  
+  def typeCoreCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
+    
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {
         case Some(args) => {
@@ -425,11 +443,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
         }
       }
+    
     checkReturnType match {
       case Some(t) => finalReturnType assertSubtype t
       case None => {}
     }
+    
     (finalSyntacticTypeArgs, finalReturnType)
+    
   }
 
   def typeValue(value: AnyRef): Type = {
