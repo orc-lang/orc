@@ -24,6 +24,8 @@ import orc.error.compiletime.UnboundTypeVariableException
 import orc.util.OptionMapExtension._
 import java.lang.{ reflect => jvm }
 
+import scala.collection.immutable.HashMap
+
 import orc.lib.state.types.ArrayType
 import orc.lib.state.types.RefType
 
@@ -352,14 +354,16 @@ object Typeloader extends SiteClassLoading with TypeListEnrichment {
         }
       }
       case RecordType(entries) => {
-        val newEntries =
-          entries mapValues {
-            reify(_) match {
-              case Some(u) => u
-              case None => return None
+        var newEntries: Option[Map[String, syntactic.Type]] = Some(HashMap.empty)
+        for ((k, t) <- entries) {
+          if (!newEntries.isEmpty) {
+            reify(t) match {
+              case Some(u) => newEntries = newEntries map {_ + ((k,u))}
+              case None => newEntries = None
             }
           }
-        Some(syntactic.RecordType(newEntries))
+        }
+        newEntries map { syntactic.RecordType(_) }
       }
       case FunctionType(typeFormals, argTypes, returnType) => {
         val syntacticTypeFormals = typeFormals map { u => new syntactic.BoundTypevar(u.optionalVariableName) }
