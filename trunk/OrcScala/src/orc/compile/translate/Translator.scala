@@ -305,19 +305,19 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     *      A binding conversion for the target expression,
     *      parameterized on the variable carrying the result
     */
-  def convertPattern(p: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
+  def convertPattern(pat: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
 
     var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
 
     def bind(name: String, x: BoundVar) {
       if (bindingMap contains name) {
-        reportProblem(NonlinearPatternException(name) at p)
+        reportProblem(NonlinearPatternException(name) at pat)
       } else {
         bindingMap += { (name, x) }
       }
     }
 
-    def unravel(p: ext.Pattern, focus: BoundVar): (Conversion) = {
+    def unravel(p: ext.Pattern, focus: BoundVar)(implicit withinAsPattern: Boolean): Conversion = {
       p match {
         case ext.Wildcard() => {
           id
@@ -377,12 +377,18 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         case ext.CallPattern(name, args) => {
           val y = new BoundVar()
           val p = ext.TuplePattern(args)
-          val C = context(name);
+          val C = context(name)
+          
+          if (withinAsPattern) {
+            println(pat.pos)
+            reportProblem(CallPatternWithinAsPattern() at pat)
+          }
+          
           { makeUnapply(C, focus) > y > _ } compose unravel(p, y)
         }
         case ext.AsPattern(p, name) => {
           bind(name, focus)
-          unravel(p, focus)
+          unravel(p, focus)(true)
         }
         case ext.TypedPattern(p, t) => {
           val T = convertType(t)
@@ -393,7 +399,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
 
     val sourceVar = new BoundVar()
-    val filterInto = unravel(p, sourceVar)
+    val filterInto = unravel(pat, sourceVar)(false)
 
     bindingMap.values.toList.distinct match {
 
