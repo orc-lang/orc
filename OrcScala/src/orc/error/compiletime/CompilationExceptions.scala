@@ -68,6 +68,13 @@ case class NonlinearPatternException(val repeatedName: String)
   extends SyntacticException("Nonlinear pattern: variable " + repeatedName + " occurs more than once.")
   with SeverityError
 
+/** A call pattern appears as a subpattern of an as pattern.
+  */
+case class CallPatternWithinAsPattern()
+  extends SyntacticException("Call pattern occurs within as pattern. This can produce unexpected matching behavior.")
+  with SeverityWarning
+  
+  
 /** A list of type formals mentions the same variable more than once.
   */
 case class DuplicateTypeFormalException(val repeatedName: String)
