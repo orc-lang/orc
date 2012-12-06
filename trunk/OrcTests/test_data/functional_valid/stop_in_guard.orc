@@ -1,3 +1,4 @@
+def f(Integer) :: Integer
 def f(x) if (stop) = x
 def f(x) = x+1
 
