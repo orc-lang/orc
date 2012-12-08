@@ -29,7 +29,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def publish(t: Token, v: AnyRef) {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSidePublished; r.schedule() }
+        case LeftSideUnknown(r) => { state = LeftSidePublished; r.stage() }
         case LeftSidePublished => { /* Left side publication is idempotent */ }
         case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
       }
@@ -40,7 +40,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def onHalt() {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSideSilent; r.schedule() }
+        case LeftSideUnknown(r) => { state = LeftSideSilent; r.stage() }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
         case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
       }

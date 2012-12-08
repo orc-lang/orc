@@ -58,7 +58,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
     t.pop()
     t.bind(BoundValue(v))
     t.move(node)
-    t.schedule()
+    t.stage()
   }
   override def toString = stringPrefix + "(" + node + ")"
 }

@@ -48,7 +48,7 @@ trait Group extends GroupMember {
     if (alive) {
       alive = false
       for (m <- members) {
-        runtime.schedule(m)
+        runtime.stage(m)
         /* Optimization: assume Tokens do not remove themselves from Groups */
         if (root.options.maxTokens > 0 && m.isInstanceOf[Token]) root.tokenCount.decrementAndGet()
       }

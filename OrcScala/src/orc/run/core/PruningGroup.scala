@@ -32,7 +32,7 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
         state = RightSidePublished(v)
         t.kill()
         this.kill()
-        for (w <- waitlist) { runtime.schedule(w) }
+        for (w <- waitlist) { runtime.stage(w) }
       }
       case _ => t.kill()
     }
@@ -43,7 +43,7 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
       case RightSideUnknown(waitlist) => {
         state = RightSideSilent
         parent.remove(this)
-        for (w <- waitlist) { runtime.schedule(w) }
+        for (w <- waitlist) { runtime.stage(w) }
       }
       case _ => {}
     }

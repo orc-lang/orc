@@ -95,11 +95,13 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 
   def startScheduler(options: OrcExecutionOptions): Unit
 
-  def schedule(ts: List[Schedulable]): Unit
+  def schedule(t: Schedulable): Unit
+
+  def stage(ts: List[Schedulable]): Unit
 
   // Schedule function is overloaded for convenience
-  def schedule(t: Schedulable) { schedule(List(t)) }
-  def schedule(t: Schedulable, u: Schedulable) { schedule(List(t, u)) }
+  def stage(t: Schedulable) { stage(List(t)) }
+  def stage(t: Schedulable, u: Schedulable) { stage(List(t, u)) }
 
   def stopScheduler(): Unit
 
