@@ -32,7 +32,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     synchronized {
       if (isLive) {
         state = newState
-        caller.schedule()
+        caller.stage()
         true
       } else {
         false

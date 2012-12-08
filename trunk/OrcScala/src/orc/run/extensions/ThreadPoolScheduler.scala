@@ -37,13 +37,21 @@ trait OrcWithThreadPoolScheduler extends Orc {
   private var executor: OrcRunner = null
   private val executorLock = new Object()
 
-  override def schedule(ts: List[Schedulable]) {
-    ts.foreach(schedule(_))
+  override def stage(ts: List[Schedulable]) {
+    ts.foreach(stage(_))
   }
 
-  override def schedule(t: Schedulable, u: Schedulable) {
-    schedule(t)
-    schedule(u)
+  override def stage(t: Schedulable, u: Schedulable) {
+    stage(t)
+    stage(u)
+  }
+
+  override def stage(t: Schedulable) {
+    if (executor == null) {
+      throw new IllegalStateException("Cannot stage a task without an inited executor")
+    }
+    t.onSchedule()
+    executor.stageTask(t)
   }
 
   override def schedule(t: Schedulable) {
@@ -81,6 +89,9 @@ trait OrcWithThreadPoolScheduler extends Orc {
     def startupRunner() = 
       throw new IllegalStateException("Cannot start a shutting down scheduler")
 
+    def stageTask(task: Schedulable) = 
+      { /* Silently discard task */ }
+
     def executeTask(task: Schedulable) = 
       { /* Silently discard task */ }
 
@@ -102,6 +113,10 @@ trait OrcRunner {
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
   def startupRunner(): Unit
+
+  /** Submit task for execution after this task completes */
+  @throws(classOf[IllegalStateException])
+  def stageTask(task: Schedulable): Unit
 
   /** Submit task for execution */
   @throws(classOf[IllegalStateException])
@@ -166,6 +181,18 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   }
 
   @throws(classOf[IllegalStateException])
+  def stageTask(task: Schedulable): Unit = {
+    if (supervisorThread == null) {
+      throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
+    }
+    if (OrcThreadPoolExecutor.stagedTasks.get == null) {
+      throw new AssertionError("stageTask called from a non scheduler worker thread")
+    }
+
+    OrcThreadPoolExecutor.stagedTasks.set(task :: OrcThreadPoolExecutor.stagedTasks.get())
+  }
+
+  @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
   def executeTask(task: Schedulable): Unit = {
     if (supervisorThread == null) {
@@ -175,12 +202,18 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     execute(task)
   }
 
+  override def beforeExecute(t: Thread, r: Runnable): Unit = {
+    OrcThreadPoolExecutor.stagedTasks.set(Nil)
+  }
+
   override def afterExecute(r: Runnable, t: Throwable): Unit = {
     super.afterExecute(r, t)
     r match {
       case s: Schedulable => s.onComplete()
       case _ => {}
     }
+    OrcThreadPoolExecutor.stagedTasks.get.reverseIterator.foreach(executeTask)
+    OrcThreadPoolExecutor.stagedTasks.set(Nil)
   }
 
   @throws(classOf[IllegalStateException])
@@ -328,4 +361,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     Logger.finest("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
   }
 
+}
+
+object OrcThreadPoolExecutor {
+  val stagedTasks: ThreadLocal[List[Schedulable]] = new ThreadLocal[List[Schedulable]]()
 }

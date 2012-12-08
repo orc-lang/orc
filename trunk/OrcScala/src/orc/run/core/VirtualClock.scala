@@ -15,9 +15,11 @@
 package orc.run.core
 
 import scala.collection.mutable
-
 import orc.{ Schedulable, OrcRuntime }
 import orc.values.sites.{ SpecificArity, Site }
+import orc.error.runtime.TokenError
+import orc.run.Logger
+import orc.error.runtime.VirtualClockError
 
 /** @author dkitchin
   */
@@ -26,8 +28,7 @@ trait VirtualClockOperation extends Site with SpecificArity
 /** @author dkitchin
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
-
-  override def toString() = "AwaitCallHandle"
+    override def toString() = "AwaitCallHandle(caller=" + caller + ")"
 }
 
 /** @author dkitchin
@@ -49,7 +50,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
   private var readyCount: Int = 1
 
   /** Take all minimum time elements from the waiter queue.
-    * Return Some tuple contaning the minimum time and a nonempty list of waiters on that time.
+    * Return Some tuple containing the minimum time and a nonempty list of waiters on that time.
     * If the queue is empty, return None instead.
     */
   private def dequeueMins(): Option[(Time, List[AwaitCallHandle])] = {
@@ -80,7 +81,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
             rest foreach { _.publish(false.asInstanceOf[AnyRef]) }
           }
           case None => {}
-          case _ => throw new AssertionError("Virtual clock internal failure (dequeueMins return not matched)")
+          case _ => throw new VirtualClockError("Virtual clock internal failure (dequeueMins return not matched)")
         }
       }
     }
@@ -88,11 +89,11 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
 
   def setQuiescent() {
     synchronized {
-      assert(readyCount > 0, "Virtual clock internal failure: setQuiescent when readyCount <= 0")
+      assert(readyCount > 0, "Virtual clock internal failure: setQuiescent when readyCount = "+readyCount)
       readyCount -= 1
       if (readyCount == 0) {
         parent foreach { _.setQuiescent() }
-        runtime.schedule(this)
+        runtime.stage(this)
       }
     }
   }
@@ -109,7 +110,9 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
   def await(caller: Token, t: Time) {
     val h = new AwaitCallHandle(caller)
     val timeOrder = synchronized {
-      assert(readyCount > 0, "Virtual clock internal failure: await when readyCount <= 0")
+      if (readyCount <= 0) {
+        h !! new VirtualClockError("Virtual clock internal failure: await when readyCount = "+readyCount)
+      }
       val order = currentTime map { ordering(t, _) } getOrElse 1
       if (order == 1) { waiterQueue += ((h, t)) }
       order

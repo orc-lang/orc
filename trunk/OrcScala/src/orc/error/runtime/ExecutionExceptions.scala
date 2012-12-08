@@ -112,3 +112,5 @@ class JavaException(cause: Throwable) extends SiteException(cause.toString(), ca
 }
 
 class ProgramSignalledError(message: String) extends SiteException(message)
+
+class VirtualClockError(val message: String) extends TokenError(message)

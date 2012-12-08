@@ -155,10 +155,10 @@ class Token protected (
   def unblock() {
     state match {
       case Blocked(_) => {
-        if (setState(Live)) { schedule() }
+        if (setState(Live)) { stage() }
       }
       case Suspending(Blocked(_: OtherwiseGroup)) => {
-        if (setState(Suspending(Live))) { schedule() }
+        if (setState(Suspending(Live))) { stage() }
       }
       case Suspended(Blocked(_: OtherwiseGroup)) => {
         setState(Suspended(Live))
@@ -191,13 +191,13 @@ class Token protected (
     state match {
       case Suspending(prevState) => setState(prevState)
       case Suspended(prevState) => {
-        if (setState(prevState)) { schedule() }
+        if (setState(prevState)) { stage() }
       }
       case Publishing(_) | Live | Blocked(_) | Halted | Killed => {}
     }
   }
 
-  def schedule() = runtime.schedule(this)
+  def stage() = runtime.stage(this)
 
   protected def fork() = synchronized { (this, copy()) }
 
@@ -354,7 +354,7 @@ class Token protected (
 
       /* Move into the function body */
       move(d.body)
-      schedule()
+      stage()
     }
   }
 
@@ -402,7 +402,7 @@ class Token protected (
       case _ => {
         val sh = new SiteCallHandle(this, s, actuals)
         blockOn(sh)
-        runtime.schedule(sh)
+        runtime.stage(sh)
       }
     }
   }
@@ -476,13 +476,13 @@ class Token protected (
         val (l, r) = fork()
         l.move(left)
         r.move(right)
-        runtime.schedule(l, r)
+        runtime.stage(l, r)
       }
 
       case Sequence(left, right) => {
         push(SequenceFrame(right, stack))
         move(left)
-        schedule()
+        stage()
       }
 
       case Prune(left, right) => {
@@ -492,7 +492,7 @@ class Token protected (
         r.join(pg)
         l.move(left)
         r.move(right)
-        runtime.schedule(l, r)
+        runtime.stage(l, r)
       }
 
       case Otherwise(left, right) => {
@@ -501,7 +501,7 @@ class Token protected (
         val region = new OtherwiseGroup(group, r)
         l.join(region)
         l.move(left)
-        runtime.schedule(l)
+        runtime.stage(l)
       }
 
       case decldefs @ DeclareDefs(openvars, defs, body) => {
@@ -513,7 +513,7 @@ class Token protected (
           bind(BoundValue(Closure(defs, i, lexicalContext)))
         }
         move(body)
-        schedule()
+        stage()
       }
 
       case HasType(expr, _) => {
@@ -533,11 +533,11 @@ class Token protected (
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live | Blocked(_) => {
         setState(Publishing(v))
-        schedule()
+        stage()
       }
       case Suspending(_) => {
         setState(Suspending(Publishing(v)))
-        schedule()
+        stage()
       }
       case Suspended(_) => {
         setState(Suspended(Publishing(v)))
