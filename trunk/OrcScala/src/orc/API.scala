@@ -75,14 +75,14 @@ trait Schedulable extends Runnable {
   val nonblocking: Boolean = false
 
   /* 
-   * This method is invoked when this schedulable unit
-   * is put on the scheduler queue (not when it is executed).
+   * This method is invoked just before this schedulable unit
+   * is scheduled or staged.
    * It is run in the thread that made the enqueueing call. 
    */
   def onSchedule() {}
 
   /*
-   * This method is invoked when this schedulable unit 
+   * This method is invoked after this schedulable unit 
    * has been run by the scheduler and has completed (successfully or not).
    * It is run in the same thread that executed the unit.
    */
