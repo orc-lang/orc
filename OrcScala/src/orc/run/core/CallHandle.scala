@@ -19,6 +19,18 @@ import orc.Handle
 
 /** An abstract call handle for any call made by a token.
   *
+  *
+  * All descendants of CallHandle must maintain a scheduling invariant:
+  * it must not be possible for the handle to reschedule the calling token
+  * until the calling thread enters the onComplete method of the token.
+  * 
+  * SiteCallHandle maintains this invariant by staging itself on the caller,
+  * so that it cannot be scheduled to run until after the caller has completed.
+  * 
+  * AwaitCallHandle maintains this invariant because the calling token keeps
+  * its governing clock from becoming quiescent until the token itself becomes 
+  * quiescent in its onComplete method.
+  *
   * @author dkitchin
   */
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
@@ -32,7 +44,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     synchronized {
       if (isLive) {
         state = newState
-        caller.stage()
+        caller.runtime.schedule(caller)
         true
       } else {
         false
