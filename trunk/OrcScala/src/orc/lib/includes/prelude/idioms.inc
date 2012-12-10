@@ -173,6 +173,11 @@ by the applications.
 The expression <code>forkMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) | f(b) | f(c)</code>
 
+This function can be thought of as the following composition 
+<code>fork(map(curry(defer)(f), xs))</code> (hence the name <code>forkMap</code>).
+It maps <code>f</code> over the list and then forks each of the
+resulting computations.
+
 @implementation
 --}
 def forkMap[A,B](lambda (A) :: B, List[A]) :: B
@@ -205,6 +210,12 @@ actual publications of the given functions are not
 The expression <code>seqMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) >> f(b) >> f(c) >> signal</code>
 
+This function can be thought of as the following composition 
+<code>seq(map(curry(defer)(f), xs))</code> (hence the name <code>seqMap</code>).
+It maps <code>f</code> over the list and then runs each of the
+resulting computations in sequence. This is analogous to <code>foreach</code> in Scala 
+or <code>iterate</code> in OCaml.
+
 @implementation
 --}
 def seqMap[A,B](lambda (A) :: B, List[A]) :: Signal
@@ -233,6 +244,9 @@ a <link linkend="ref.data.signal">signal</link> once all applications have compl
 The expression <code>joinMap(f, [a,b,c])</code> is equivalent to
 the expression <code>(f(a), f(b), f(c)) >> signal</code>
 
+This function can be thought of as the following composition 
+<code>join(map(curry(defer)(f), xs))</code> (hence the name <code>joinMap</code>).
+
 @implementation
 --}
 def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
@@ -241,7 +255,8 @@ def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
 
 {--
 @def alt[A](List[lambda () :: A]) :: A
-Call each function in the list until one of them <link linkend="ref.concepts.publish">publishes</link>.
+Call each function in the list until one of them <link linkend="ref.concepts.publish">publishes</link>
+(choosing the publishing alternative).
 
 The expression <code>alt([f,g,h])</code> is equivalent to
 the expression <code>f() ; g() ; h()</code>
@@ -258,6 +273,9 @@ Apply the function to each element in the list until one <link linkend="ref.conc
 
 The expression <code>altMap(f, [a,b,c])</code> is equivalent to
 the expression <code>f(a) ; f(b) ; f(c)</code>
+
+This function can be thought of as the following composition 
+<code>alt(map(curry(defer)(f), xs))</code> (hence the name <code>altMap</code>).
 
 @implementation
 --}
