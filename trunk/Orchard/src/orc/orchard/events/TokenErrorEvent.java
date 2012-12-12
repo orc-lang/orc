@@ -13,20 +13,35 @@
 
 package orc.orchard.events;
 
+import orc.error.OrcException;
+import orc.error.runtime.JavaException;
+import scala.util.parsing.input.NoPosition$;
+import scala.util.parsing.input.Position;
 import scala.util.parsing.input.Positional;
 
 public class TokenErrorEvent extends JobEvent {
 	public String message;
-	public String postionString;
+	public String positionString;
 
 	public TokenErrorEvent() {
 	}
 
 	public TokenErrorEvent(final Throwable problem) {
 		if (problem instanceof Positional) {
-			postionString = ((Positional) problem).pos().toString();
+			Position pos = ((Positional) problem).pos();
+			if (pos != null && !(pos instanceof NoPosition$)) {
+				positionString = pos.toString();
+			}
 		}
-		message = problem.getMessage();
+		if (problem instanceof JavaException) {
+			JavaException je = (JavaException)problem;
+			message = je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString();
+		} else if (problem instanceof OrcException) {
+			OrcException oe = (OrcException)problem;
+			message = oe.getMessageAndDiagnostics();
+		} else {
+			message = problem.toString();
+		}
 	}
 
 	@Override

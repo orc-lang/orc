@@ -55,7 +55,7 @@ public abstract class CompilationException extends OrcException {
 	@Override
 	public String getMessageAndPositon() {
 		if (getPosition() != null && !(getPosition() instanceof NoPosition$)) {
-			return getPosition().toString() + ": " + getLocalizedMessage() + "\n" + getPosition().longString();
+			return getPosition().toString() + ": " + getLocalizedMessage() + (getPosition().longString().equals("\n^") ? "" : "\n" + getPosition().longString());
 		} else {
 			return getLocalizedMessage();
 		}

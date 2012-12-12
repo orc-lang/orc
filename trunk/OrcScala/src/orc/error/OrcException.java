@@ -79,7 +79,7 @@ public abstract class OrcException extends Exception {
 	 */
 	public String getMessageAndPositon() {
 		if (position != null && !(position instanceof NoPosition$)) {
-			return position.toString() + ": " + getClass().getCanonicalName() + ": " + getLocalizedMessage() + "\n" + position.longString();
+			return position.toString() + ": " + getClass().getCanonicalName() + ": " + getLocalizedMessage() + (position.longString().equals("\n^") ? "" : "\n" + position.longString());
 		} else {
 			return getLocalizedMessage();
 		}
