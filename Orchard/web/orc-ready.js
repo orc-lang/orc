@@ -310,7 +310,7 @@ function orcify(code, defaultConfig) {
 
 	function renderTokenError(p) {
 		appendEventHtml('<div class="orc-error">'
-			+ escapeHtml(p.message)
+			+ (p.message ? escapeHtml(p.message) : 'Unknown exception thrown')
 			+ (p.location && p.location.file
 				? ' at '
 					+ escapeHtml(p.location.file)
