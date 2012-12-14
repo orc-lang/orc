@@ -94,17 +94,17 @@ class NoSuchMemberException(val v: AnyRef, val unknownMember: String) extends Ru
   * to localize the failure to the calling token.
   */
 class JavaException(cause: Throwable) extends SiteException(cause.toString(), cause) {
-  /** @return "position: ClassName: detailMessage (newline) position.longString"
+  /** @return "position: ClassName: detailMessage (newline) position.longString [if available]"
     */
   override def getMessageAndPositon(): String = {
     if (getPosition() != null && getPosition() != NoPosition) {
-      getPosition().toString() + ": " + getCause().toString() + "\n" + getPosition().longString
+      getPosition().toString() + ": " + getCause().toString() + (if (getPosition().longString.equals("\n^")) "" else "\n" + getPosition().longString)
     } else {
       getCause().toString()
     }
   }
 
-  /** @return "position: ClassName: detailMessage (newline) position.longString (newline) Orc stack trace... (newline) Java stack trace..."
+  /** @return "position: ClassName: detailMessage (newline) position.longString [if available] (newline) Orc stack trace... (newline) Java stack trace..."
     */
   override def getMessageAndDiagnostics(): String = {
     getMessageAndPositon() + "\n" + getOrcStacktraceAsString() + getJavaStacktraceAsString(getCause());

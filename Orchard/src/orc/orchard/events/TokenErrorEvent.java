@@ -13,32 +13,43 @@
 
 package orc.orchard.events;
 
+import orc.compile.parse.PositionWithFilename;
 import orc.error.OrcException;
 import orc.error.runtime.JavaException;
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.Position;
-import scala.util.parsing.input.Positional;
 
 public class TokenErrorEvent extends JobEvent {
 	public String message;
 	public String positionString;
+	public String posFilename;
+	public int posLine;
+	public int posColumn;
 
 	public TokenErrorEvent() {
 	}
 
 	public TokenErrorEvent(final Throwable problem) {
-		if (problem instanceof Positional) {
-			Position pos = ((Positional) problem).pos();
+		if (problem instanceof OrcException) {
+			OrcException oe = (OrcException)problem;
+
+			Position pos = oe.getPosition();
 			if (pos != null && !(pos instanceof NoPosition$)) {
 				positionString = pos.toString();
+				if (pos instanceof PositionWithFilename) {
+					posFilename = ((PositionWithFilename)pos).filename();
+				}
+				posLine = pos.line();
+				posColumn = pos.column();
 			}
-		}
-		if (problem instanceof JavaException) {
-			JavaException je = (JavaException)problem;
-			message = je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString();
-		} else if (problem instanceof OrcException) {
-			OrcException oe = (OrcException)problem;
-			message = oe.getMessageAndDiagnostics();
+
+			if (oe instanceof JavaException) {
+				// Don't reveal Java stack trace
+				JavaException je = (JavaException)oe;
+				message = je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString();
+			} else {
+				message = oe.getMessageAndDiagnostics();
+			} 
 		} else {
 			message = problem.toString();
 		}

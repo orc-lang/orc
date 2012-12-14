@@ -38,7 +38,7 @@ public abstract class TokenException extends ExecutionException {
 	}
 
 	/**
-	 * @return "position: ClassName: detailMessage (newline) position.longString (newline) Orc stack trace..."
+	 * @return "position: ClassName: detailMessage (newline) position.longString [if available] (newline) Orc stack trace..."
 	 */
 	@Override
 	public String getMessageAndDiagnostics() {

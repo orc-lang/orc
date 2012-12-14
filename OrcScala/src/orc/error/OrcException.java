@@ -75,7 +75,7 @@ public abstract class OrcException extends Exception {
 	}
 
 	/**
-	 * @return "position: ClassName: detailMessage (newline) position.longString"
+	 * @return "position: ClassName: detailMessage (newline) position.longString [if available]"
 	 */
 	public String getMessageAndPositon() {
 		if (position != null && !(position instanceof NoPosition$)) {
@@ -100,7 +100,7 @@ public abstract class OrcException extends Exception {
 
 	/**
 	 * @param e Throwable to retrieve stack trace from
-	 * @return The stack trace, as would be printed, without the leading line "ClasName: detailMessage"
+	 * @return The stack trace, as would be printed, without the leading line "ClassName: detailMessage"
 	 */
 	public String getJavaStacktraceAsString(final Throwable e) {
 		final StringWriter sw = new StringWriter();
