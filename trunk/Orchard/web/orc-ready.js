@@ -311,13 +311,10 @@ function orcify(code, defaultConfig) {
 	function renderTokenError(p) {
 		appendEventHtml('<div class="orc-error">'
 			+ (p.message ? escapeHtml(p.message) : 'Unknown exception thrown')
-			+ (p.location && p.location.file
-				? ' at '
-					+ escapeHtml(p.location.file)
-					+ ':' + p.location.line
-					+ ':' + p.location.column
-				: '')
 			+ '</div>');
+        if (p.posFilename == "") {
+            codemirror.selectLines(codemirror.nthLine(p.posLine), p.posColumn-1, codemirror.nthLine(p.posLine), p.posColumn-1);
+        }
 	}
 
 	function renderPublication(p) {
