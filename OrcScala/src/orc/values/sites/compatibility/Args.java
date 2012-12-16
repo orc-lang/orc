@@ -249,29 +249,31 @@ public class Args implements Serializable {
 				if (b instanceof BigDecimal) {
 					return op.apply((BigDecimal) a, (BigDecimal) b);
 				} else {
-					return op.apply((BigDecimal) a, BigDecimal.valueOf(b.doubleValue()));
+					return op.apply((BigDecimal) a, new BigDecimal(b.toString()));
 				}
 			} else if (b instanceof BigDecimal) {
 				if (a instanceof BigDecimal) {
 					return op.apply((BigDecimal) a, (BigDecimal) b);
 				} else {
-					return op.apply(BigDecimal.valueOf(a.doubleValue()), (BigDecimal) b);
+					return op.apply(new BigDecimal(a.toString()), (BigDecimal) b);
 				}
 			} else if (a instanceof Double || b instanceof Double) {
 				return op.apply(a.doubleValue(), b.doubleValue());
 			} else if (a instanceof Float || b instanceof Float) {
 				return op.apply(a.floatValue(), b.floatValue());
 			} else if (a instanceof BigInteger) {
+			    // Presumably at this point, b is some integral type
 				if (b instanceof BigInteger) {
 					return op.apply((BigInteger) a, (BigInteger) b);
 				} else {
-					return op.apply((BigInteger) a, BigInteger.valueOf(b.longValue()));
+					return op.apply((BigInteger) a, new BigInteger(b.toString()));
 				}
 			} else if (b instanceof BigInteger) {
+                // Presumably at this point, a is some integral type
 				if (a instanceof BigInteger) {
 					return op.apply((BigInteger) a, (BigInteger) b);
 				} else {
-					return op.apply(BigInteger.valueOf(a.longValue()), (BigInteger) b);
+					return op.apply(new BigInteger(a.toString()), (BigInteger) b);
 				}
 			} else if (a instanceof Long || b instanceof Long) {
 				return op.apply(a.longValue(), b.longValue());
