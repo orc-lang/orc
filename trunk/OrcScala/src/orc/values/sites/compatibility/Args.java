@@ -249,13 +249,25 @@ public class Args implements Serializable {
 				if (b instanceof BigDecimal) {
 					return op.apply((BigDecimal) a, (BigDecimal) b);
 				} else {
-					return op.apply((BigDecimal) a, new BigDecimal(b.toString()));
+				    final String bStr = b.toString();
+                    if (bStr.equals("Infinity") || bStr.equals("-Infinity") || bStr.equals("NaN")) {
+                        // BigDecimal can't represent +/-Infinity or NaN, so use double
+                        return op.apply(a.doubleValue(), b.doubleValue());
+                    } else {
+                        return op.apply((BigDecimal) a, new BigDecimal(bStr));
+                    }
 				}
 			} else if (b instanceof BigDecimal) {
 				if (a instanceof BigDecimal) {
 					return op.apply((BigDecimal) a, (BigDecimal) b);
 				} else {
-					return op.apply(new BigDecimal(a.toString()), (BigDecimal) b);
+                    final String aStr = a.toString();
+                    if (aStr.equals("Infinity") || aStr.equals("-Infinity") || aStr.equals("NaN")) {
+                        // BigDecimal can't represent +/-Infinity or NaN, so use double
+                        return op.apply(a.doubleValue(), b.doubleValue());
+                    } else {
+					    return op.apply(new BigDecimal(a.toString()), (BigDecimal) b);
+                    }
 				}
 			} else if (a instanceof Double || b instanceof Double) {
 				return op.apply(a.doubleValue(), b.doubleValue());
