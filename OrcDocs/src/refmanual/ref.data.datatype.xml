@@ -123,7 +123,7 @@ area(Rectangle(2, 3)) | area(Circle(1))
 {-
 OUTPUT:PERMUTABLE:
 6
-3.14159265358970
+3.1415926535897
 -}
 ]]></programlisting>
 </example>
