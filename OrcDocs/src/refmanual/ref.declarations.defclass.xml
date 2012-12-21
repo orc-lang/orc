@@ -237,7 +237,7 @@ def class CustomChannel() =
   val ch = Channel()
   val chlen = Counter(0)
 
-  def put(x) = ch.put(x) >> chlen.inc()
+  def put(x) = chlen.inc() >> ch.put(x)
   def get() = ch.get() >x> chlen.dec() >> x
   def length() = chlen.value()
 
