@@ -15,6 +15,8 @@ identifier and publishes the identifiers
 of all of its immediate neighbors.
 -}
 
+def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
+
 Vclock(IntegerTimeOrder) >> Vawait(0) >> (
 type Node = Integer
 type Distance = Number
