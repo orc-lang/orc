@@ -40,7 +40,15 @@
 	    In a <link linkend="ref.combinators.sequential">sequential combinator</link>, the right hand side is executed multiple times, once for each match.
 	    In a <link linkend="ref.combinators.pruning">pruning combinator</link>, one of the matches is chosen arbitrarily.
 	  </para>
-			 
+	  
+	  <warning>
+      <para>
+        When an <link linkend="ref.patterns.as">as pattern</link> contains a call pattern, counterintuitive behavior may result.
+        The as pattern will capture the value fragment before matching, so if a call pattern changes the value fragment, that change
+        will not be captured by the as pattern. Avoid using call patterns within as patterns unless the value fragment is guaranteed 
+        to remain unchanged.   
+      </para> 
+    </warning>
 		
 		<section xml:id="ref.patterns.call.syntax">
 	  <title>Syntax</title>
