@@ -8,6 +8,7 @@
 import class JavaBoolean = "java.lang.Boolean"
 import class JavaString = "java.lang.String"
 import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
+import class AccessTestClass = "javax.swing.JTextField"
 
 -- 1. Static field access
 (if JavaBoolean.TRUE? then "1 pass" else "1 FAIL") |
@@ -39,18 +40,27 @@ import class FieldTestClass = "org.omg.CORBA.portable.ServantObject"
 -- 10. An overloading & Orc conversion test -- make sure String.valueOf(double) is chosen
 (if (JavaString.valueOf(2e108).equalsIgnoreCase("2E+108") || JavaString.valueOf(2e108).equalsIgnoreCase("2.0E108")) then "10 pass" else "10 FAIL") |
 
--- 10. Another overloading & Orc conversion test -- make sure String.valueOf(long) is chosen
+-- 11. Another overloading & Orc conversion test -- make sure String.valueOf(long) is chosen
 (if JavaString.valueOf(9223372036854770000).equalsIgnoreCase("9223372036854770000") then "11 pass" else "11 FAIL") |
 
--- 12. Conversion tests: Test Java-Orc conversion
+-- 12. Method accessibility tricky case: access a public method of a non-public class that is declared (publicly) in an interface
+(
+  AccessTestClass("Hello, world")  >o>
+  o.getKeymap()  >km>
+  km.getResolveParent() >r>
+  r.getName() >>
+  "12 pass"
+) |
+
+-- 13. Conversion tests: Test Java-Orc conversion
 (if (
-	126.byteValue() = 126 &&
-	8e307.doubleValue() :> 7.99e307 && 
-	1e38.floatValue() :> 0.99e38 &&
-	2147483640.intValue() = 2147483640 &&
-	9223372036854775800.longValue() = 9223372036854775800 &&
-	32766.shortValue() = 32766
-    ) then "12 pass" else "12 FAIL") |
+	    126.byteValue() = 126 &&
+	    8e307.doubleValue() :> 7.99e307 && 
+	    1e38.floatValue() :> 0.99e38 &&
+	    2147483640.intValue() = 2147483640 &&
+	    9223372036854775800.longValue() = 9223372036854775800 &&
+	    32766.shortValue() = 32766
+  ) then "13 pass" else "13 FAIL") |
 
 
 --TODO: These require a custom Java class to test against: 
@@ -70,12 +80,13 @@ OUTPUT:PERMUTABLE
 "2 pass"
 "3 pass"
 "4 pass"
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: servant in org.omg.CORBA.portable.ServantObject
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible servant in org.omg.CORBA.portable.ServantObject
 Error: orc.error.runtime.JavaException: java.lang.NoSuchFieldException: toString
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: TRUE in java.lang.Boolean
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible TRUE in java.lang.Boolean
 Error: orc.error.runtime.JavaException: java.lang.NoSuchFieldException: parseBoolean
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: clone in java.lang.Boolean
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible clone in java.lang.Boolean
 "10 pass"
 "11 pass"
 "12 pass"
+"13 pass"
 -}
