@@ -18,6 +18,8 @@ import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.WrappedArray
 
 /**
   *
@@ -106,20 +108,17 @@ object OrcJavaCompatibility {
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
     type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
     val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
-    var leastPublicClass = targetClass
-    while (!Modifier.isPublic(leastPublicClass.getModifiers())) leastPublicClass = leastPublicClass.getSuperclass()
-    Logger.finest(targetClass.getName() + "'s least public class="+leastPublicClass)
-    val ms: Array[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors().asInstanceOf[Array[JavaMethodOrCtor]] else leastPublicClass.getMethods().asInstanceOf[Array[JavaMethodOrCtor]]
+    val ms: Traversable[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors() else getAccessibleMethods(targetClass)
     val potentiallyApplicableMethods = ms.filter({ m =>
       m.getName().equals(methodName) &&
-        Modifier.isPublic(m.getModifiers()) &&
-        // Modfier ABSTRACT is handled later.
+        // Modifier PUBLIC (for method & class) already handled
+        // Modifier ABSTRACT is handled later.
         (m.getParameterTypes().size == argTypes.size ||
           m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
     })
     Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
-      throw new NoSuchMethodException(methodName + " in " + targetClass.getName())
+      throw new NoSuchMethodException("No accessible " + methodName + " in " + targetClass.getName())
     }
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
@@ -129,7 +128,7 @@ object OrcJavaCompatibility {
     })
     Logger.finest(memberName + " phase1Results=" + phase1Results.mkString("{", ", ", "}"))
     if (phase1Results.nonEmpty) {
-      return Invocable(mostSpecificMethod(phase1Results.toList))
+      return Invocable(mostSpecificMethod(phase1Results))
     }
 
     //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
@@ -139,7 +138,7 @@ object OrcJavaCompatibility {
     })
     Logger.finest(memberName + " phase2Results=" + phase2Results.mkString("{", ", ", "}"))
     if (phase2Results.nonEmpty) {
-      return Invocable(mostSpecificMethod(phase2Results.toList))
+      return Invocable(mostSpecificMethod(phase2Results))
     }
 
     //Phase 3: Identify Applicable Variable Arity Methods
@@ -147,6 +146,48 @@ object OrcJavaCompatibility {
 
     // No match
     throw new orc.error.runtime.MethodTypeMismatchException(memberName, targetClass);
+  }
+
+  /** Given a type (class or interface), returns a sequence of declared or
+    * inherited public methods in public types.  Overridden methods are
+    * excluded, leaving only the overriding method.  This methods is like
+    * java.lang.Class.getMethods, except this handles public methods in
+    * inaccessible classes correctly. */
+  private def getAccessibleMethods(typeToSearch: Class[_]): Seq[JavaMethod] = {
+    val accessibleMethods = new ArrayBuffer[JavaMethod]()
+    if (Modifier.isPublic(typeToSearch.getModifiers())) accessibleMethods ++=
+      (typeToSearch.getDeclaredMethods() filter (m => Modifier.isPublic(m.getModifiers())))
+
+    val accessibleInheritedMethods = new ArrayBuffer[JavaMethod]()
+    /* All interfaces and their methods are always accessible */
+    typeToSearch.getInterfaces() foreach (ifc => accessibleInheritedMethods ++= WrappedArray.make(ifc.getMethods()))
+    /* (Note: OK to use java.lang.Class.getMethods for interfaces) */
+
+    val superclass = typeToSearch.getSuperclass()
+    if (superclass != null) {
+      val superMethods = getAccessibleMethods(superclass)
+      /* If typeToSearch inherits an interface that has a method
+       * that has been already implemented in a superclass, ignore
+       * the interface's re-declaration of that method. */
+      superMethods foreach (removeEqSignature(accessibleInheritedMethods, _))
+      accessibleInheritedMethods.prependAll(superMethods)
+    }
+
+    /* remove typeToSearch's overrides from inherited methods */
+    accessibleMethods foreach (removeEqSignature(accessibleInheritedMethods, _))
+
+    accessibleMethods.sizeHint(accessibleMethods.size + accessibleInheritedMethods.size)
+    accessibleInheritedMethods foreach (m => if (!accessibleMethods.contains(m)) accessibleMethods += m)
+
+    accessibleMethods
+  }
+
+  private def removeEqSignature(methSeq: Traversable[JavaMethod], signatureToRemove: JavaMethod) {
+    methSeq filterNot (m =>
+        m.getReturnType == signatureToRemove.getReturnType &&
+        m.getName == signatureToRemove.getName &&
+        m.getParameterTypes.sameElements(signatureToRemove.getParameterTypes)
+    )
   }
 
   /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */
@@ -160,7 +201,7 @@ object OrcJavaCompatibility {
     // "Method invocation conversions specifically do not include the implicit narrowing of integer constants which is part of assignment conversion"
 
     if (!formalParamType.isPrimitive() && actualArgType == null) {
-      true // Null type is a subtype of all reference types (JLS §4.10) 
+      true // Null type is a subtype of all reference types (JLS §4.10)
     } else if (!allowConversion || (!formalParamType.isPrimitive() && !actualArgType.isPrimitive())) {
       formalParamType.isAssignableFrom(actualArgType)
     } else if (formalParamType.isPrimitive() && actualArgType.isPrimitive()) {
@@ -253,7 +294,7 @@ object OrcJavaCompatibility {
   }
 
   /** Most specific method per JLS §15.12.2.5 */
-  private def mostSpecificMethod[M <: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int }](methods: List[M]): M = {
+  private def mostSpecificMethod[M <: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int }](methods: Traversable[M]): M = {
     //FIXME:TODO: Implement var arg calls
     val maximallySpecificMethods =
       methods.foldLeft(List[M]())({ (prevMostSpecific: List[M], nextMethod: M) =>
@@ -274,7 +315,7 @@ object OrcJavaCompatibility {
     Logger.finest("maximallySpecificMethods=" + maximallySpecificMethods.mkString("{", ", ", "}"))
     if (maximallySpecificMethods.length == 1) {
       return maximallySpecificMethods.head
-    } else if (maximallySpecificMethods.length == 0) {
+    } else if (maximallySpecificMethods.isEmpty) {
       throw new java.lang.NoSuchMethodException() //TODO: throw a MethodTypeMismatchException instead
     } else {
       val concreteMethods = maximallySpecificMethods.filter({ m => !Modifier.isAbstract(m.getModifiers()) })
