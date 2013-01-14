@@ -17,12 +17,12 @@ package orc.lib.net
 import java.io.FileNotFoundException
 import java.util.Properties
 import java.io.InputStream
-
 import orc.values.sites.Site
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.values.OrcRecord
 import orc.values.sites.TotalSite2
 import orc.lib.web.HTTP
+import orc.error.runtime.SiteException
 
 /**
  * 
@@ -83,6 +83,7 @@ object KeyedHTTP extends TotalSite2 {
 			val domain = p.getProperty("webservice." + service + ".domain")
 			val pname = p.getProperty("webservice." + service + ".parameter.name")
 			val pvalue = p.getProperty("webservice." + service + ".parameter.value")
+			if (domain == null || pname == null || pvalue == null) throw new KeyNotPresentException("Missing KeyedHTTP webservice properties entry for "+service+" service")
 			new KeyedHTTPInstance(domain, pname, pvalue)
 		}
 		else {
@@ -111,3 +112,5 @@ class KeyedHTTPInstance(domain: String, param: String, secret: String) extends T
   }
   
 }
+
+class KeyNotPresentException(message: String) extends SiteException(message)
