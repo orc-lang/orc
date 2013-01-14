@@ -47,18 +47,34 @@ def weather(Trip(time, location)) =
   NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
  
 {--
-Given a trip, return an array of event records during
+Given a trip, return a list of event records during
 that trip. If no events are found or the location is
-not recognized, return an empty array.
+not recognized, return an empty list.
 --}
 def events(Trip(time, location), term) =
-  import class Upcoming = "orc.lib.net.Upcoming"
-  val search = Upcoming("orc/orchard/orchard.properties").eventSearch()
-  search.search_text := term >>
-  search.min_date := time.toLocalDate() >>
-  search.max_date := time.toLocalDate().plusDays(1) >>
-  search.location := location >>
-  search.run()
+  import site KeyedHTTP = "orc.lib.net.KeyedHTTP"
+  import class ISODateTimeFormat = "org.joda.time.format.ISODateTimeFormat"
+  val EventfulHTTP = KeyedHTTP("webservice.properties", "eventful")
+  val searchdate = ISODateTimeFormat.basicDate().print(time)+"00"
+  val searchResponse = ReadXML(EventfulHTTP("http://api.eventful.com/rest/events/search", {.
+      location = location,
+      date = searchdate+"-"+searchdate,
+      keywords = term,
+      page_size = 100
+    .}).get())
+  searchResponse
+    >xml("search",XMLElement("events", _, eventsChildren))>
+  filter(lambda(c) = (c >XMLElement("event", _, _)> true); false, eventsChildren)
+    >events>
+  map(lambda(ev) =
+    (
+      val xml("event", xml("title", title)) = ev
+      val xml("event", xml("url", url)) = ev
+      val xml("event", xml("start_time", start_time)) = ev
+      val xml("event", xml("venue_name", venue_name)) = ev #
+      {. title = title, url = url, start_time = start_time, venue_name = venue_name .}
+    ) 
+  , events)
 
 {--
 Poll the calendar at the given interval for probable trips.
@@ -108,16 +124,16 @@ Repeats indefinitely, and never publishes.
 def notify(get) =
   get() >Trip(time, location) as trip> (
     val forecast = weather(trip)
-    val events = arrayToList(events(trip, "museum"))
+    val events = events(trip, "museum")
     -- at least one of forecast or events must be present
     Let(forecast | events) >>
     Println("TRIP TO " + location + " on " + time) >>
     -- print the forecast if present
-    (forecast >> Println("FORECAST:") >> Println(forecast) ; signal) >>
+    (forecast >> Println("FORECAST:  Weather by NOAA  http://www.weather.gov/") >> Println(forecast) ; signal) >>
     -- then print the events if present
-    Println("EVENTS:") >>
+    Println("MUSEUM EVENTS:  Events by Eventful  http://eventful.com/") >>
     ( each(events) >event>
-      Println(event.start_time? + " " + event.name? + ": " + event.venue_name?)
+      Println(event.start_time? + " " + event.title? + ": " + event.venue_name? + " -- " + event.url?)
       ; Println("None found.")
     ) >>
     stop
