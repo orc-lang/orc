@@ -54,7 +54,7 @@ not recognized, return an empty list.
 def events(Trip(time, location), term) =
   import site KeyedHTTP = "orc.lib.net.KeyedHTTP"
   import class ISODateTimeFormat = "org.joda.time.format.ISODateTimeFormat"
-  val EventfulHTTP = KeyedHTTP("webservice.properties", "eventful")
+  val EventfulHTTP = KeyedHTTP("orc/orchard/orchard.properties", "eventful")
   val searchdate = ISODateTimeFormat.basicDate().print(time)+"00"
   val searchResponse = ReadXML(EventfulHTTP("http://api.eventful.com/rest/events/search", {.
       location = location,

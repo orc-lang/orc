@@ -112,10 +112,11 @@ public class OilSecurityValidator {
 		allowedClasses.add("orc.lib.orchard.forms.DateTimeRangesField");
 
 		// org.joda.time
-		allowedClasses.add("org.joda.time.format.DateTimeFormat");
 		allowedClasses.add("org.joda.time.DateTime");
 		allowedClasses.add("org.joda.time.LocalDateTime");
 		allowedClasses.add("org.joda.time.LocalDate");
+		allowedClasses.add("org.joda.time.format.DateTimeFormat");
+		allowedClasses.add("org.joda.time.format.ISODateTimeFormat");
 
 		// scala.collection
 		allowedClasses.add("scala.collection.BitSet");
