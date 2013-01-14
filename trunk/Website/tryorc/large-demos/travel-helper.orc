@@ -133,7 +133,7 @@ def notify(get) =
     -- then print the events if present
     Println("MUSEUM EVENTS:  Events by Eventful  http://eventful.com/") >>
     ( each(events) >event>
-      Println(event.start_time? + " " + event.title? + ": " + event.venue_name? + " -- " + event.url?)
+      Println(event.start_time + " " + event.title + ": " + event.venue_name {- + " -- " + event.url -})
       ; Println("None found.")
     ) >>
     stop
