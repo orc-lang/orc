@@ -1,5 +1,5 @@
 //
-// BingSearch.scala -- Java class BingSearch
+// BingSearch.scala -- Scala class BingSearch
 // Project OrcSites
 //
 // $Id$

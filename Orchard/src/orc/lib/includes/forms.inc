@@ -1,3 +1,8 @@
+-- forms.inc
+-
+-- $Id$
+--
+
 include "date.inc"
 
 import site SendForm = "orc.lib.orchard.forms.FormSenderSite"

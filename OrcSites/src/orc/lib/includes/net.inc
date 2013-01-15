@@ -1,3 +1,8 @@
+-- net.inc
+--
+-- $Id$
+--
+
 import site localhost = "orc.lib.net.Localhost"
 import site Webservice = "orc.lib.net.Webservice"
 import site Ping = "orc.lib.net.Ping"

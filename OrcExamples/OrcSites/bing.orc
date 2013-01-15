@@ -1,4 +1,4 @@
-{- google.orc -- Orc program that performs a Google search
+{- bing.orc -- Orc program that performs a Bing search
  -}
 
 {-
