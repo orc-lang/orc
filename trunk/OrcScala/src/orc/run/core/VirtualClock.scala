@@ -122,7 +122,7 @@ class VirtualClock(val parent: Option[VirtualClock] = None, ordering: (AnyRef, A
       case -1 => caller.halt()
 
       // Awaiting the current time.
-      case 0 => caller.publish(false.asInstanceOf[AnyRef])
+      case 0 => caller.publish(Some(false.asInstanceOf[AnyRef]))
 
       // Awaiting a future time.
       case 1 => caller.blockOn(h)

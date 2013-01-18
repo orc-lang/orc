@@ -23,12 +23,12 @@ import scala.collection.mutable.ListBuffer
 /** @author dkitchin
   */
 trait Frame extends Traversable[Frame] {
-  def apply(t: Token, v: AnyRef): Unit
+  def apply(t: Token, v: Option[AnyRef]): Unit
   // Be careful when using a Frame as a collection; it does not have a builder
 }
 
 case object EmptyFrame extends Frame {
-  def apply(t: Token, v: AnyRef) = {
+  def apply(t: Token, v: Option[AnyRef]) = {
     throw new AssertionError("Cannot publish through an empty frame")
   }
   def foreach[U](f: Frame => U) = {}
@@ -43,7 +43,7 @@ trait CompositeFrame extends Frame {
 /** @author dkitchin
   */
 case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
-  def apply(t: Token, v: AnyRef) {
+  def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
     t.unbind(n)
     previous(t, v)
@@ -54,9 +54,9 @@ case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
   */
 case class SequenceFrame(private[run] var _node: Expression, val previous: Frame) extends CompositeFrame {
   def node = _node
-  def apply(t: Token, v: AnyRef) {
+  def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
-    t.bind(BoundValue(v))
+    t.bind(BoundValue(v.get))
     t.move(node)
     t.stage()
   }
@@ -67,7 +67,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
   */
 case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding], val previous: Frame) extends CompositeFrame {
   def callpoint = _callpoint
-  def apply(t: Token, v: AnyRef) {
+  def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
     t.jump(env)
     t.move(callpoint)
@@ -80,17 +80,16 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
   */
 case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: Frame) extends CompositeFrame {
   def k = _k
-  def apply(t: Token, v: AnyRef) {
+  def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
-    val _v = v.asInstanceOf[Option[AnyRef]]
-    k(_v)
+    k(v)
   }
 }
 
 /** @author dkitchin
   */
 case class GroupFrame(val previous: Frame) extends CompositeFrame {
-  def apply(t: Token, v: AnyRef) {
+  def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
     t.getGroup().publish(t, v)
   }

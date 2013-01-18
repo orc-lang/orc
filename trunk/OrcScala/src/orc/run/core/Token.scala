@@ -23,8 +23,24 @@ import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
 import orc.values.{ Signal, OrcRecord, Field }
 
-/** @author dkitchin
-  */
+/** 
+ * Token represents a "process" executing in the Orc program.
+ * 
+ * For lack of a better place to put it here is a little 
+ * documentation of how publish and other methods on Token 
+ * and other classes (notably Group) handle their Option[AnyRef]
+ * argument. None represents stop and Some(v) represents the
+ * value v. So the expression x.get represents the assumption
+ * (runtime checked) that x is not a stop value. 
+ * 
+ * This convention is not consistent as the Java sites are not
+ * able to access the Option type well, so the Site API is 
+ * unchanged. This confines the changes to the core runtime,
+ * however it does mean that there are still parts of the code
+ * where there is no way to represent stop.
+ * 
+ * @author dkitchin
+ */
 class Token protected (
   protected var node: Expression,
   protected var stack: Frame = EmptyFrame,
@@ -32,7 +48,8 @@ class Token protected (
   protected var group: Group,
   protected var clock: Option[VirtualClock] = None,
   protected var state: TokenState = Live)
-  extends GroupMember with Schedulable {
+  extends GroupMember with Schedulable
+  with Blockable {
 
   var functionFramesPushed: Int = 0
 
@@ -386,7 +403,7 @@ class Token protected (
       }
       case (`Vtime`, Nil) => {
         clock flatMap { _.now() } match {
-          case Some(t) => publish(t)
+          case Some(t) => publish(Some(t))
           case None => halt()
         }
       }
@@ -462,7 +479,7 @@ class Token protected (
 
       case Hole(_, _) => halt()
 
-      case (a: Argument) => resolve(lookup(a)) { publish }
+      case (a: Argument) => resolve(lookup(a)) { v => publish(Some(v)) }
 
       case Call(target, args, _) => {
         val params = args map lookup
@@ -528,7 +545,7 @@ class Token protected (
     }
   }
 
-  def publish(v: AnyRef) {
+  def publish(v: Option[AnyRef]) {
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live | Blocked(_) => {
@@ -547,9 +564,9 @@ class Token protected (
     }
   }
 
-  def publish() { publish(Signal) }
+  def publish() { publish(Some(Signal)) }
 
-  def halt() {
+  override def halt() {
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
         setState(Halted)
@@ -572,7 +589,13 @@ class Token protected (
     notifyOrc(CaughtEvent(e))
     halt()
   }
-
+  
+  def awakeValue(v : AnyRef) = publish(Some(v))
+  def awakeStop() = publish(None)
+  
+  override def awakeException(e : OrcException) = this !! e
+  
+  override def awake() { unblock() }
 }
 
 /**  */
@@ -586,7 +609,7 @@ case object Live extends TokenState {
 }
 
 /** Token is propagating a published value */
-case class Publishing(v: AnyRef) extends TokenState {
+case class Publishing(v: Option[AnyRef]) extends TokenState {
   val isLive = true
 }
 

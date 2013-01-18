@@ -38,7 +38,7 @@ trait Group extends GroupMember {
 
   private var alive = true
 
-  def publish(t: Token, v: AnyRef): Unit
+  def publish(t: Token, v: Option[AnyRef]): Unit
   def onHalt(): Unit
   def run(): Unit
 
