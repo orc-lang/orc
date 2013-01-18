@@ -14,13 +14,18 @@
 //
 package orc.run.core
 
-/** @author dkitchin
-  */
+/**
+ * The trait for objects that can be blocked on. 
+ * @author dkitchin
+ */
 trait Blocker {
-  /* 
-   * When a token blocked on this resource is scheduled,
+  /**
+   * When a Blockable blocked on this resource is scheduled,
    * it performs this check to observe any changes in
    * the state of this resource. 
+   * 
+   * This should call Blockable#awake(AnyRef) to notify the
+   * Blockable.
    */
-  def check(t: Token): Unit
+  def check(t: Blockable): Unit
 }

@@ -34,6 +34,7 @@ import orc.Handle
   * @author dkitchin
   */
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
+   // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallInProgress
 
@@ -74,13 +75,13 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     }
   }
 
-  def check(t: Token) {
+  def check(t: Blockable) {
     val callState = synchronized { state }
     callState match {
       case CallInProgress => { /*t.scheduledBy.printStackTrace();*/ throw new AssertionError("Spurious check of call handle. state=" + this.state) }
-      case CallReturnedValue(v) => { t.publish(v) }
-      case CallSilent => { t.halt() }
-      case CallRaisedException(e) => { t !! e }
+      case CallReturnedValue(v) => { t.awakeValue(v) } // t.publish(v) sort of
+      case CallSilent => { t.halt() } // t.halt()
+      case CallRaisedException(e) => { t.awakeException(e) } // t !! e
       case CallWasKilled => {}
     }
   }

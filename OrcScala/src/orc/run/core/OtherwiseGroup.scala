@@ -18,7 +18,7 @@ package orc.run.core
   *
   * @author dkitchin
   */
-class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
+class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with Blocker {
 
   val quiescentWhileBlocked = true
 
@@ -26,10 +26,10 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
 
   t.blockOn(this)
 
-  def publish(t: Token, v: AnyRef) {
+  def publish(t: Token, v: Option[AnyRef]) {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSidePublished; r.stage() }
+        case LeftSideUnknown(r) => { state = LeftSidePublished; runtime.stage(r) }
         case LeftSidePublished => { /* Left side publication is idempotent */ }
         case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
       }
@@ -40,7 +40,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def onHalt() {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSideSilent; r.stage() }
+        case LeftSideUnknown(r) => { state = LeftSideSilent; runtime.stage(r) }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
         case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
       }
@@ -48,11 +48,11 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
     parent.remove(this)
   }
 
-  def check(t: Token) {
+  def check(t: Blockable) {
     synchronized {
       state match {
-        case LeftSidePublished => { t.halt() }
-        case LeftSideSilent => { t.unblock() }
+        case LeftSidePublished => { t.halt() } // t.halt()
+        case LeftSideSilent => { t.awake() } // t.unblock()
         case LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }
@@ -62,6 +62,6 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
 
 /** Possible states of an OtherwiseGroup */
 class OtherwiseGroupState
-case class LeftSideUnknown(r: Token) extends OtherwiseGroupState
+case class LeftSideUnknown(r: Blockable) extends OtherwiseGroupState
 case object LeftSidePublished extends OtherwiseGroupState
 case object LeftSideSilent extends OtherwiseGroupState

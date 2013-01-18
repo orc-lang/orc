@@ -51,11 +51,11 @@ trait SupportForClasses extends Orc {
 
     var listener: Option[Handle] = Some(caller)
 
-    override def publish(t: Token, v: AnyRef) = synchronized {
+    override def publish(t: Token, v: Option[AnyRef]) = synchronized {
       listener match {
         case Some(l) => {
           listener = None
-          l.publish(v)
+          l.publish(v.get)
         }
         case None => {}
       }

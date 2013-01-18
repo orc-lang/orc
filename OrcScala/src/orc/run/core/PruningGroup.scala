@@ -26,7 +26,7 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   var state: PruningGroupState = RightSideUnknown(Nil)
 
-  def publish(t: Token, v: AnyRef) = synchronized {
+  def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
       case RightSideUnknown(waitlist) => {
         state = RightSidePublished(v)
@@ -50,10 +50,10 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
   }
 
   // Specific to PruningGroups
-  def read(t: Token) = synchronized {
+  def read(t: Blockable) = synchronized {
     state match {
-      case RightSidePublished(v) => t.publish(Some(v))
-      case RightSideSilent => t.publish(None)
+      case RightSidePublished(v) => t.awakeValue(v.get) // t.publish(Some(v))
+      case RightSideSilent => t.awakeStop() // t.publish(None)
       case RightSideUnknown(waitlist) => {
         t.blockOn(this)
         state = RightSideUnknown(t :: waitlist)
@@ -61,11 +61,11 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
     }
   }
 
-  def check(t: Token) {
+  def check(t: Blockable) {
     synchronized {
       state match {
-        case RightSidePublished(v) => t.publish(Some(v))
-        case RightSideSilent => t.publish(None)
+        case RightSidePublished(v) => t.awakeValue(v.get) // t.publish(Some(v))
+        case RightSideSilent => t.awakeStop() // t.publish(None)
         case RightSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }
@@ -76,5 +76,5 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
 /** Possible states of a PruningGroup */
 class PruningGroupState
 case class RightSideUnknown(waitlist: List[Schedulable]) extends PruningGroupState
-case class RightSidePublished(v: AnyRef) extends PruningGroupState
+case class RightSidePublished(v: Option[AnyRef]) extends PruningGroupState
 case object RightSideSilent extends PruningGroupState
