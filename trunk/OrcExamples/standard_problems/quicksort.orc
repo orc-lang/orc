@@ -1,6 +1,6 @@
-{- quicksort.orc -- Orc program implemting Quicksort
+{- quicksort.orc -- Orc program implementing Quicksort
 
-The original quicksort algorithm (Hoare, C. A. R.
+The original Quicksort algorithm (Hoare, C. A. R.
 "Partition: Algorithm 63," "Quicksort: Algorithm 64,"
 and "Find: Algorithm 65." Comm. ACM 4(7), 321-322, 1961),
 was designed for efficient execution on a uniprocessor, and it
@@ -18,7 +18,7 @@ unneeded.
 def swapRefs[X](Ref[X], Ref[X]) :: Signal
 def swapRefs(x, y) = x? >z> x := y? >> y := z
 
-{- parallel quicksort -}
+{- parallel Quicksort -}
 def quicksort[X](Array[X]) :: Signal
 def quicksort(a) =
 
@@ -73,7 +73,7 @@ def quicksort(a) =
 
 --------------  Test Routines -------------
 {- sorted(xs) returns true if non-empty list xs is sorted.
-   We check if the result of quicksort is sorted.
+   We check if the result of Quicksort is sorted.
    We do not check if the final array is a permutation of the initial
    array, because the array elements are merely swapped in this program. -}
 def sorted[X](List[X]) :: Boolean

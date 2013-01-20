@@ -25,9 +25,9 @@ Readers-Writers solution.
 include "../synchronization/BoundedChannel.inc"
 include "../clock_time/Stopwatch.inc"
 
-def class Sequencer(n) = 
- val bb = BChannel(n)  -- waiting customers' semaphores
- val sem = BChannel(n) -- semaphore pool
+def class Sequencer(n :: Integer) = 
+ val bb = BChannel[Semaphore](n)  -- waiting customers' semaphores
+ val sem = BChannel[Semaphore](n) -- semaphore pool
  
  def  incr() =  bb.get() >s> s.release() 
 

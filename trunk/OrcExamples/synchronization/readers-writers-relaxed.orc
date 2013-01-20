@@ -41,48 +41,49 @@ remove. Since coin flip is fair, it will not favor of one kind forever.
 -}
 
 def class RelaxedChannel() =
- val (nwr, nww) = (Ref(0),Ref(0)) -- # waiting readers, writers
- val mutex = Semaphore(1) -- to gain access to (nwr, nww)
- val count = Semaphore(0) -- nwr? + nww? 
+  val (nwr, nww) = (Ref[Integer](0),Ref[Integer](0)) -- # waiting readers, writers
+  val mutex = Semaphore(1) -- to gain access to (nwr, nww)
+  val count = Semaphore(0) -- nwr? + nww? 
 
- def put(b) = 
-     mutex.acquire() >> 
-     (if b then nwr := nwr? + 1 else nww := nww? + 1) >>
-     mutex.release() >> count.release()
+  def put(b :: Boolean) = 
+    mutex.acquire() >> 
+    (if b then nwr := nwr? + 1 else nww := nww? + 1) >>
+    mutex.release() >> count.release()
 
- def get() = 
+  def get() :: Boolean = 
     count.acquire() >>
     mutex.acquire() >> chooseone(nwr?,nww?) >b> mutex.release() >> b
 
   def removereader() = nwr := nwr? - 1 >> true
   def removewriter() = nww := nww? - 1 >> false
-  
+
+  def chooseone(Integer, Integer) :: Boolean
   def chooseone(0,_) = removewriter()
   def chooseone(_,0) = removereader()
   def chooseone(_,_) =      
-      if (Random(2) = 0) then removereader() else removewriter()
+    if (Random(2) = 0) then removereader() else removewriter()
 
- stop
+  stop
 
 def class ReadersWriters() =
-  val buff = RelaxedChannel()
-  val cb  = Counter()
+  val buff  = RelaxedChannel()
+  val cb    = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
 
-def start(b) = buff.put(b) >> 
-               (if b then r.acquire()                        
-                     else w.acquire())
+  def start(b :: Boolean) :: Signal = 
+    buff.put(b) >> 
+    (if b then r.acquire() else w.acquire())
 
-def end() = cb.dec()
+  def end() = cb.dec()
 
-def main() =
-   buff.get() >b> 
-   (if  b 
+  def main() :: Bot =
+    buff.get() >b> 
+    (if  b 
       then  (cb.inc() >> r.release()  >> main())
       else  (cb.onZero() >> cb.inc() >> w.release() >> cb.onZero() >> main())
-   )
+    )
 
-main()
+  main()
 
 val rw = ReadersWriters()
 

@@ -46,17 +46,19 @@ among the callback cells.
 
 -}
 
-def class Rendezvous(n,f) =
-  val b = Table(n, lambda(_) = Channel())
+def class Rendezvous[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
+  val b = Table(n, lambda(_::Top) = Channel[(A, Cell[A])]())
 
-  def go(i,v) = 
-    val c = Cell()
+  def go(i :: Integer, v :: A) = 
+    val c = Cell[A]()
     b(i).put((v,c)) >> c.read()
 
+  def collect((List[A], List[Cell[A]]), Integer) :: (List[A], List[Cell[A]])
   def collect(vcl,0) = vcl
   def collect((vl,cl),i) =  -- collect i more items
     b(n-i).get() >(v,c)> collect((v:vl,c:cl),i-1) 
 
+  def distribute(List[A], List[Cell[A]]) :: Signal
   def distribute([],[]) = signal
 {-
 distribute(vl,cl)
@@ -65,9 +67,9 @@ distribute(vl,cl)
  vl and cl are of the same length,
  stores each result in the corresponding cells.
 -}
-  def distribute(v:vl,c:cl) = c := v >> distribute(vl,cl)
+  def distribute(v:vl,c:cl) = c.write(v) >> distribute(vl,cl)
 
-  def manager() = 
+  def manager() :: Bot = 
    collect(([],[]),n) >(vl,cl)> distribute(f(vl),cl) >> manager()
 
   manager()
@@ -92,24 +94,26 @@ into b(i) until p has completed its cycle, i.e., removed the result
 from c(i).
 -}
 
-def class Rendezvous2(n,f) =
-  val b = Table(n, lambda(_) = Channel())
-  val c = Table(n, lambda(_) = Channel())
-  val sem = Table(n, lambda(_) = Semaphore(1))
+def class Rendezvous2[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
+  val b = Table(n, lambda(_::Top) = Channel[A]())
+  val c = Table(n, lambda(_::Top) = Channel[A]())
+  val sem = Table(n, lambda(_::Top) = Semaphore(1))
 
-  def go(i,v) = 
+  def go(i :: Integer, v :: A) = 
     sem(i).acquire() >> 
     b(i).put(v) >> c(i).get() >w> 
     sem(i).release() >> 
     w
 
+  def collect(List[A], Integer) :: List[A]
   def collect(vl,0) = vl
   def collect(vl,i) = b(n-i).get() >v> collect(v:vl,i-1)
 
+  def distribute(List[A], Integer) :: Signal
   def distribute(_,0) = signal
   def distribute(v:vl,i) = c(n-i).put(v) >> distribute(vl,i-1)
 
-  def manager() = 
+  def manager() :: Bot = 
     collect([],n) >vl> distribute(f(vl),n) >> manager()
 
   manager()
@@ -125,7 +129,7 @@ val rg = Rendezvous(2,exch).go
 | rg(1,5) >y> ("1 gets " + y)
 -}
 
-def avg([a,b,c])  = 
+def avg([a,b,c] :: List[Integer])  = 
   val av = (a+b+c)/3
   [av,av,av]
 
