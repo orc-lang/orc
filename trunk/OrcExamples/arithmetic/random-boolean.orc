@@ -8,11 +8,12 @@
 {- RandomBool() has:
    f a real number between 0 and 1,
    t an integer,
-   A call to site RandomBool(f,t) responds with 
+   A call to site RandomBool.main(f,t) responds with 
      probability f
-     afer some random time at most t
+     after some random time at most t
      with a random boolean.
-   
+   (Note that the call just halts silently with probability 1-f.)
+
   It has just one method, main(). It handles one call at a time.
 -}
 
@@ -34,12 +35,3 @@ val (_,y) = rb(1,3000)
 val z = Ift(x) >> true | Ift(y) >> true | x||y
 
 z
-
-{-
-OUTPUT:
-true
--}
-{-
-OUTPUT:
-false
--}
