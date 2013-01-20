@@ -12,7 +12,7 @@ val (id,dd) = (3000,100)
 -- id is the initial delay in starting a game
 -- dd is the delay in printing digits
 
-def rand_seq() = Random(10) |  Rwait(dd) >> rand_seq()
+def rand_seq() :: Integer = Random(10) |  Rwait(dd) >> rand_seq()
 
 def game() =
   {- game() conducts one game and returns a pair (b,w).

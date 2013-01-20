@@ -52,8 +52,8 @@ laststart is the time at which the last call to start was made.
 
 def class Stopwatch() =
 
-  val (laststart, lastpause) = (Ref(0), Ref(0))
-  val running = Ref(false)
+  val (laststart, lastpause) = (Ref[Integer](0), Ref[Integer](0))
+  val running = Ref[Boolean](false)
   val sem = Semaphore(1)
 
   def start() = 

@@ -12,8 +12,8 @@ is not the root(node 0) nor has a parent, N if i is the root (node 0),
 and j, 0<= j< N, if i has parent j.
 
 Edge (i,j) is a tree edge if i is j's parent, i.e., parent(j) = i;
-� �(i,j) is backward if j is an ancestor, possibly parent, of i,
-� ��i.e., parent(j) =/ i
+(i,j) is backward if j is an ancestor, possibly parent, of i,
+i.e., parent(j) =/ i
 -}
 
 val N = 6

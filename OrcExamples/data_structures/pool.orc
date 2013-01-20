@@ -18,7 +18,7 @@ Semaphore(0) and Semaphore(1) can not both be allocated using the
 sempool shown below.
 
 2. The deallocated objects have to have the same initial value. Thus,
-every sempahore that is deallocated must have value 0.
+every semaphore that is deallocated must have value 0.
  
 -}
 
