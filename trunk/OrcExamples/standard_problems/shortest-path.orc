@@ -19,7 +19,7 @@ def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
 
 Vclock(IntegerTimeOrder) >> Vawait(0) >> (
 type Node = Integer
-type Distance = Number
+type Distance = Integer
 
 def path(source :: Node, 
 		 sink :: Node, 
