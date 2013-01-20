@@ -16,7 +16,7 @@ package orc.run.core
 
 /** @author dkitchin
   */
-trait Binding
+sealed trait Binding
 
 /**  */
 case class BoundValue(v: AnyRef) extends Binding
@@ -25,7 +25,7 @@ case class BoundValue(v: AnyRef) extends Binding
 case class BoundFuture(g: PruningGroup) extends Binding
 
 /**  */
-case class BoundClosure(g: Closure) extends Binding
+case class BoundClosure(c: Closure) extends Binding
 
 /**  */
 case object BoundStop extends Binding

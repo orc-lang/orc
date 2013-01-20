@@ -49,7 +49,7 @@ class Token protected (
   protected var clock: Option[VirtualClock] = None,
   protected var state: TokenState = Live)
   extends GroupMember with Schedulable
-  with Blockable {
+  with Blockable with Resolver {
 
   var functionFramesPushed: Int = 0
 
@@ -232,6 +232,8 @@ class Token protected (
     stack = newStack
     this
   }
+  
+  protected def pushContinuation(k : (Option[AnyRef] => Unit)) = push(FutureFrame(k, stack))
 
   /** Remove the top frame of this token's stack.
     *
@@ -287,58 +289,6 @@ class Token protected (
       case Variable(n) => env(n)
       case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
     }
-  }
-
-  /** Attempt to resolve a binding to a value.
-    * When the binding resolves to v, call k(v).
-    * (If it is already resolved, k is called immediately)
-    *
-    * If the binding resolves to a halt, halt this token.
-    */
-  protected def resolve(b: Binding)(k: AnyRef => Unit) {
-    resolveOptional(b) {
-      case Some(v) => k(v)
-      case None => halt()
-    }
-  }
-
-  /** Attempt to resolve a binding to a value.
-    * When the binding resolves to v, call k(Some(v)).
-    * (If it is already resolved, k is called immediately)
-    *
-    * If the binding resolves to a halt, call k(None).
-    *
-    * Note that resolving a closure also encloses its context.
-    */
-  protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
-    b match {
-      case BoundValue(v) =>
-        v match {
-          case c: Closure =>
-            enclose(c.lexicalContext) { newContext: List[Binding] =>
-              k(Some(Closure(c.defs, c.pos, newContext)))
-            }
-          case u => k(Some(u))
-        }
-      case BoundStop => k(None)
-      case BoundFuture(g) => {
-        push(FutureFrame(k, stack))
-        g read this
-      }
-    }
-  }
-
-  /** Create a new Closure object whose lexical bindings are all resolved and replaced.
-    * Such a closure will have no references to any group.
-    * This object is then passed to the continuation.
-    */
-  protected def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
-    def resolveBound(b: Binding)(k: Binding => Unit) =
-      resolveOptional(b) {
-        case Some(v) => k(BoundValue(v))
-        case None => k(BoundStop)
-      }
-    bs.blockableMap(resolveBound)(k)
   }
 
   protected def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
@@ -484,7 +434,10 @@ class Token protected (
       case Call(target, args, _) => {
         val params = args map lookup
         lookup(target) match {
+          // These 2 cases implement lenient closure (and hence def) calls. makeCall would 
+          // do the same thing but it would be after resolving the arguments.
           case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
+          case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
           case b => resolve(b) { makeCall(_, params) }
         }
       }
@@ -527,7 +480,9 @@ class Token protected (
          */
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
         for (i <- defs.indices) {
-          bind(BoundValue(Closure(defs, i, lexicalContext)))
+          val c = new Closure(defs, i, lexicalContext, runtime)
+          runtime.stage(c)
+          bind(BoundClosure(c))
         }
         move(body)
         stage()
