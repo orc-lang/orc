@@ -71,7 +71,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   def kill() {
     synchronized {
-      state = CallWasKilled
+      setState(CallWasKilled)
     }
   }
 
