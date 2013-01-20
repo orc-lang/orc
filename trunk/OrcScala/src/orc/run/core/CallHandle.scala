@@ -37,6 +37,8 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
    // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallInProgress
+  
+  val runtime = caller.runtime
 
   /* Returns true if the state transition was made, 
    * false otherwise (e.g. if the handle was already in a final state)
@@ -45,7 +47,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     synchronized {
       if (isLive) {
         state = newState
-        caller.runtime.schedule(caller)
+        runtime.schedule(caller)
         true
       } else {
         false
