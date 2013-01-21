@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -472,3 +472,9 @@ def class InvokeExecutable(command :: List[String]) =
   | (copyToChan(execOutReader, buff1, execOutChan) ; execOutChan.closeD() >> execOutEOF.write(signal) >> execOutReader.close())
   | (copyToChan(execErrReader, buff2, execErrChan) ; execErrChan.closeD() >> execErrEOF.write(signal) >> execErrReader.close())
   )
+
+{--
+@site OrcVersion() :: String
+Return a name, version, URL, and copyright string for Orc.
+--}
+import site OrcVersion = "orc.lib.util.OrcVersion"
