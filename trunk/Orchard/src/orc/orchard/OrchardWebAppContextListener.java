@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Feb 24, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,8 +15,12 @@
 
 package orc.orchard;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -32,6 +36,8 @@ import javax.servlet.ServletContextListener;
  */
 public class OrchardWebAppContextListener implements ServletContextListener {
 
+	protected static Logger logger = Logger.getLogger("orc.orchard");
+
 	/* (non-Javadoc)
 	 * @see javax.servlet.ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent)
 	 */
@@ -41,6 +47,23 @@ public class OrchardWebAppContextListener implements ServletContextListener {
 		for (final String parmName : Collections.list(entries)) {
 			OrchardProperties.setProperty(parmName, event.getServletContext().getInitParameter(parmName));
 		}
+		try {
+			final Manifest warManifest = new Manifest(event.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
+			for (Object key : warManifest.getMainAttributes().keySet()) {
+				final String propName = "war.manifest." + key;
+				OrchardProperties.setProperty(propName, warManifest.getMainAttributes().get(key).toString());
+			}
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, "Orchard WAR manifest attributes read failed", e);
+		}
+		logger.config(getOrchardFullVersionString());
+		logger.config(orc.Main.orcImplName() + " " + orc.Main.orcVersion()); 
+	}
+
+	private String getOrchardFullVersionString() {
+		return OrchardProperties.getProperty("war.manifest.Implementation-Title") + " " +
+			OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+			" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision");
 	}
 
 	/* (non-Javadoc)
