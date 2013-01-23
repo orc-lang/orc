@@ -374,26 +374,66 @@ class Token protected (
     }
   }
 
+  /* 
+   * Make a call. 
+   * The call target is resolved, but the parameters are not yet resolved.
+   *  
+   */
   protected def makeCall(target: AnyRef, params: List[Binding]): Unit = {
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
+      case _ => {
+        params match {
+          /* Zero parameters. No need to block. */
+          case Nil => {
+            target match {
+              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params) 
+              case s => siteCall(s, Nil) 
+            }
+          }
+          
+          /* One parameter. May need to block. No need to join. */
+          case List(param) => {
+            target match {
+              case r @ OrcRecord(entries) if entries contains "apply" => { 
+                resolveOptional(param) { 
+                  /* apply isn't allowed to supersede other member accesses */
+                  case Some(Field(f)) => siteCall(r, List(Field(f))) 
+                  /* 
+                   * The resolved arg is ignored and the apply member is retried on the parameters.
+                   * The arg is ignored even if it is halted, since the apply member might be a function. 
+                   */
+                  case _ => makeCall(entries("apply"), params)  
+                } 
+              }
+              case s => resolve(param) { arg : AnyRef => siteCall(s, List(arg)) } 
+            }
+          }
+          
+          /* Multiple parameters. May need to join. */
+          case _ => {
+            target match {
+              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params) 
+              case s => {
+                                
+                /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
+                pushContinuation({ 
+                  case Some(args : List[AnyRef]) => siteCall(s, args)
+                  case Some(_) => throw new Error("Join resulted in a non-list")
+                  case None => halt()
+                })
+                
+                /* Create a join over the parameters. */
+                val j = new Join(params, this, runtime)
 
-      /* I wish this didn't need a special case... 
-       * but if the record element is a closure,
-       * it can't be handled by an invocation trait.
-       * -dkitchin
-       */
-      case r @ OrcRecord(entries) if entries contains "apply" => {
-        params.blockableMap(resolve) {
-          case args @ List(Field(_)) => siteCall(r, args) // apply isn't allowed to supersede other member accesses
-          case _ => makeCall(entries("apply"), params)
+                /* Perform the join. */
+                j.join()
+              }  
+            }
+          }          
         }
-      }
-
-      case s => {
-        params.blockableMap(resolve) { siteCall(s, _) }
       }
     }
   }
@@ -434,10 +474,12 @@ class Token protected (
       case Call(target, args, _) => {
         val params = args map lookup
         lookup(target) match {
-          // These 2 cases implement lenient closure (and hence def) calls. makeCall would 
-          // do the same thing but it would be after resolving the arguments.
-          case BoundValue(c: Closure) => functionCall(c.code, c.context, params)
+          /* 
+           * Allow a def to be called with an open context. 
+           * This functionality is sound, but technically exceeds the formal semantics of Orc.
+           */ 
           case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
+          
           case b => resolve(b) { makeCall(_, params) }
         }
       }

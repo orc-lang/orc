@@ -50,7 +50,7 @@ trait Blockable extends Schedulable {
   }
   
   /**
-   * Called by the blocker from within it's check method to notify the 
+   * Called by the blocker from within its check method to notify the 
    * Blockable that it has been unblocked and to provide the value that 
    * it might was waiting on. This must only be called while 
    * executing on behalf of the Blockable.
@@ -58,7 +58,7 @@ trait Blockable extends Schedulable {
   def awakeValue(v : AnyRef) : Unit
   
   /**
-   * Called by the blocker from within it's check method to notify the 
+   * Called by the blocker from within its check method to notify the 
    * Blockable that it has been unblocked and notify it that the value it
    * it was waiting on is Stop (this is similar to publish(None)). 
    * This must only be called while executing on behalf of the Blockable.
@@ -66,7 +66,7 @@ trait Blockable extends Schedulable {
   def awakeStop() : Unit
 
   /**
-   * Called by the blocker from within it's check method to notify the 
+   * Called by the blocker from within its check method to notify the 
    * Blockable that it has been unblocked by an exception. This must only be called while 
    * executing on behalf of the Blockable.
    * 
