@@ -244,8 +244,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
     val recursiveContext = context ++ namesMap
     val newdefs = for ((n, d) <- defsMap) yield {
-      d.convert(namesMap(n), recursiveContext, typecontext)
+      d ->> d.convert(namesMap(n), recursiveContext, typecontext)
     }
+    
+    
 
     (newdefs.toList, namesMap)
   }
