@@ -52,7 +52,8 @@ case class AggregateDef(clauses: List[Clause],
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+        val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+        result takeEarlierPos this
       }
       case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
@@ -61,7 +62,8 @@ case class AggregateDef(clauses: List[Clause],
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
-        AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
+        val result = AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
+        result takeEarlierPos this
       }
     }
 
@@ -71,7 +73,8 @@ case class AggregateDef(clauses: List[Clause],
     val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+    val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+    result takeEarlierPos this
   }
 
   def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
