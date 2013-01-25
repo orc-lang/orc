@@ -1,5 +1,10 @@
 <!--#include virtual="/template/header.shtml" --> 
 
+<div style="border: solid #F70; padding: 2px;">
+The Orc Web server will be unavailable on Tuesday, 29 January, from 17:00 to
+19:00 UTC (11:00 to 13:00 U.S. central time), for server relocation.
+</div>
+
 <h2>Orc is ...</h2>
 
 <p>... a novel language for distributed and concurrent programming which provides
