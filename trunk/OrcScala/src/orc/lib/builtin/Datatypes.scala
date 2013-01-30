@@ -47,12 +47,27 @@ object DatatypeBuilder extends TotalSite with TypedSite {
       /* Extract the constructor types from the datatype
        * passed as a type argument
        */
+      
+      /*
+       * There is a special case for datatypes with a single constructor. Instead of
+       * using a tuple type we simply use the type of the single constructor.
+       * 
+       * This matches the pattern generated in Translator.scala.
+       */
       typeArgs match {
         case List(d: MonomorphicDatatype) => {
-          TupleType(d.constructorTypes.get)
+          val cts = d.constructorTypes.get
+          if(cts.size == 1)
+            cts.head
+          else
+            TupleType(cts)
         }
         case List(TypeInstance(d: PolymorphicDatatype, _)) => {
-          TupleType(d.constructorTypes.get)
+          val cts = d.constructorTypes.get
+          if(cts.size == 1)
+            cts.head
+          else
+            TupleType(cts)
         }
         case _ => throw new MalformedDatatypeCallException()
       }

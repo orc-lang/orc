@@ -190,7 +190,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         }
 
         val names = constructors map { _.name }
-        val p = ext.TuplePattern(names map { ext.VariablePattern(_) })
+        /*
+         * There is a special case for datatypes with a single constructor. Instead of
+         * using a tuple pattern we simply have a variable for the single constructor.
+         * 
+         * This matches the type generated in Datatypes.scala.
+         */
+        val p = if(names.size == 1) ext.VariablePattern(names.head)
+                               else ext.TuplePattern(names map { ext.VariablePattern(_) })
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
 
