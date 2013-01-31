@@ -16,6 +16,7 @@
 package orc.orchard;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.jar.Manifest;
@@ -48,10 +49,15 @@ public class OrchardWebAppContextListener implements ServletContextListener {
 			OrchardProperties.setProperty(parmName, event.getServletContext().getInitParameter(parmName));
 		}
 		try {
-			final Manifest warManifest = new Manifest(event.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF"));
-			for (Object key : warManifest.getMainAttributes().keySet()) {
-				final String propName = "war.manifest." + key;
-				OrchardProperties.setProperty(propName, warManifest.getMainAttributes().get(key).toString());
+			final InputStream manifestStream = event.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF");
+			if (manifestStream != null) {
+				final Manifest warManifest = new Manifest(manifestStream);
+				for (Object key : warManifest.getMainAttributes().keySet()) {
+					final String propName = "war.manifest." + key;
+					OrchardProperties.setProperty(propName, warManifest.getMainAttributes().get(key).toString());
+				}
+			} else {
+				logger.log(Level.SEVERE, "Orchard WAR manifest attributes read failed: ServletContext.getResourceAsStream(\"/META-INF/MANIFEST.MF\") returned null");
 			}
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Orchard WAR manifest attributes read failed", e);
