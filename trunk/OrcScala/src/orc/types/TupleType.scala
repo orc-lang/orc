@@ -15,6 +15,7 @@
 package orc.types
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
+import orc.util.TypeListEnrichment._
 
 /**
   * A tuple type.

@@ -19,6 +19,7 @@ import orc.values._
 import orc.values.sites._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
+import orc.util.TypeListEnrichment._
 
 object Ift extends PartialSite with TypedSite {
   override def name = "Ift"

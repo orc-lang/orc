@@ -19,6 +19,7 @@ import orc.error.compiletime.typing._
 import orc.error.NotYetImplementedException
 import orc.types.Variance._
 import orc.values.sites.OrcJavaCompatibility._
+import orc.util.TypeListEnrichment._
 
 /* Used for reference only. */
 trait TypeInterface {
@@ -28,7 +29,7 @@ trait TypeInterface {
   def subst(sigma: Map[TypeVariable, Type]): Type
 }
 
-trait Type extends TypeInterface with TypeListEnrichment {
+trait Type extends TypeInterface {
 
   override def toString = this.getClass.toString
 
@@ -186,35 +187,6 @@ trait Type extends TypeInterface with TypeListEnrichment {
       case Nil => SignalType
       case List(t) => t
       case _ => TupleType(ts)
-    }
-  }
-
-}
-
-trait TypeListEnrichment {
-  /* Extend join, meet, and < to lists of types */
-  implicit def enrichTypeList(types: List[Type]): RichTypeList = new RichTypeList(types)
-}
-
-class RichTypeList(types: List[Type]) {
-
-  def join(otherTypes: List[Type]): List[Type] = {
-    (types, otherTypes).zipped map { case (t, u) => t join u }
-  }
-
-  def meet(otherTypes: List[Type]): List[Type] = {
-    (types, otherTypes).zipped map { case (t, u) => t meet u }
-  }
-
-  def <(otherTypes: List[Type]): Boolean = {
-    (types, otherTypes).zipped forall { case (t, u) => t < u }
-  }
-
-  def condense: Type = {
-    types match {
-      case Nil => SignalType
-      case List(t) => t
-      case ts => TupleType(ts)
     }
   }
 

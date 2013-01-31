@@ -23,6 +23,7 @@ import orc.error.compiletime.typing._
 import orc.error.compiletime.UnboundTypeVariableException
 import orc.util.OptionMapExtension._
 import java.lang.{ reflect => jvm }
+import orc.util.TypeListEnrichment._
 
 import scala.collection.immutable.HashMap
 
@@ -34,7 +35,7 @@ import orc.lib.state.types.RefType
   *
   * @author dkitchin
   */
-object Typeloader extends SiteClassLoading with TypeListEnrichment {
+object Typeloader extends SiteClassLoading {
 
   /** Lift a syntactic type to a first-order semantic type.
     */

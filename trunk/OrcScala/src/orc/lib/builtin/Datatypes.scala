@@ -20,6 +20,7 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.compiletime.typing._
 import orc.types._
+import orc.util.TypeListEnrichment._
 
 object DatatypeBuilder extends TotalSite with TypedSite {
 
@@ -56,18 +57,10 @@ object DatatypeBuilder extends TotalSite with TypedSite {
        */
       typeArgs match {
         case List(d: MonomorphicDatatype) => {
-          val cts = d.constructorTypes.get
-          if(cts.size == 1)
-            cts.head
-          else
-            TupleType(cts)
+          d.constructorTypes.get.condense
         }
         case List(TypeInstance(d: PolymorphicDatatype, _)) => {
-          val cts = d.constructorTypes.get
-          if(cts.size == 1)
-            cts.head
-          else
-            TupleType(cts)
+          d.constructorTypes.get.condense
         }
         case _ => throw new MalformedDatatypeCallException()
       }
