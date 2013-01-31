@@ -16,6 +16,7 @@ package orc.types
 
 import orc.error.compiletime.typing.ArgumentArityException
 import orc.error.compiletime.typing.TypeArgumentArityException
+import orc.util.TypeListEnrichment._
 
 /**
   * The semantic type of functions.

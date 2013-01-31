@@ -1,5 +1,5 @@
 //
-// PartialMapExtension.scala -- Scala object PartialMapExtension
+// OptionMapExtension.scala -- Scala object OptionMapExtension
 // Project OrcScala
 //
 // $Id$
