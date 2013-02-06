@@ -230,7 +230,7 @@ def metronomeN(i) =
     i
   | Rwait(1000) &gt;&gt; metronomeN(i+1)
 
-metronomeN(0) &gt;n&gt; if(n%2 = 0) &gt;&gt; n
+metronomeN(0) &gt;n&gt; Ift(n%2 = 0) &gt;&gt; n
 </pre>
 
 <a id="Advanced"></a><h2>Advanced Techniques <small>(<a href="#top">top</a>)</small></h2>
