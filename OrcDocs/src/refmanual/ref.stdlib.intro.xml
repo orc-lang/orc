@@ -57,7 +57,7 @@
 		    <term><od:sitepropset><od:siteprop propname="definite"/></od:sitepropset></term>
 		    <listitem>
 		      <para>A call to this site will never block execution of an expression, since it is 
-		            guaranteed to always eventually publish a value or halt.</para>
+		            guaranteed to always immediately publish a value or halt.</para>
 		    </listitem>
 		  </varlistentry>
 		  <varlistentry>
