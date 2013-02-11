@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -237,16 +237,28 @@ def cfold(f, L) =
 
 
 {--
+@def def zipWith[A, B, C](lambda (A, B) :: C, List[A], List[B]) :: List[C]
+Combine two <link linkend="ref.data.list">lists</link> into a list of
+elements, each produced by calling the given function with corresponding
+elements of each list.
+The length of the shortest list determines the length of the result.
+
+@implementation
+--}
+def zipWith[A, B, C](lambda (A, B) :: C, List[A], List[B]) :: List[C]
+def zipWith(_, [], _) = []
+def zipWith(_, _, []) = []
+def zipWith(f, x:xs, y:ys) = f(x, y) : zipWith(f, xs, ys)
+
+{--
 @def zip[A,B](List[A], List[B]) :: List[(A,B)]
-Combine a <link linkend="ref.data.tuple">pair</link> of <link linkend="ref.data.list">lists</link> into a list of pairs.
+Combine two <link linkend="ref.data.list">lists</link> into a list of pairs.
 The length of the shortest list determines the length of the result.
 
 @implementation
 --}
 def zip[A,B](List[A], List[B]) :: List[(A,B)]
-def zip([],_) = []
-def zip(_,[]) = []
-def zip(x:xs,y:ys) = (x,y):zip(xs,ys)
+def zip(x:xs, y:ys) = zipWith(lambda(x, y) = (x, y), xs, ys)
 
 {--
 @def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
