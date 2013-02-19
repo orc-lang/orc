@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 7, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -73,6 +73,7 @@ class PrettyPrint {
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
+      case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
       case Constant(v) => Format.formatValue(v)
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
       case UnboundVar(s) => "?" + s

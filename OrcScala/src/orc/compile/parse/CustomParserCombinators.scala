@@ -36,7 +36,7 @@ trait CustomParserCombinators {
     override def apply(i: Input) = {
       val position = i.pos
       val result: ParseResult[A] = p.apply(i)
-      result map { _.pos = position }
+      result map { _.setPos(position) }
       result
     }
   }
@@ -196,7 +196,7 @@ trait CustomParserCombinators {
               {
                 val result = f(a, b)
                 result match {
-                  case ast: AST => ast.pos = position
+                  case ast: AST => ast.setPos(position)
                 }
                 result
               }

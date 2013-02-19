@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 27, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -34,19 +34,18 @@ trait AST extends Positional {
   def ->[B <: AST](f: this.type => B): B = {
     this ->> f(this)
   }
-  
-  /**
-   * If the argument has an earlier file position than
-   * this AST node, reassign this node's position.
-   * 
-   * If either position is undefined, choose the defined one.
-   */
+
+  /** If the argument has an earlier file position than
+    * this AST node, reassign this node's position.
+    *
+    * If either position is undefined, choose the defined one.
+    */
   def takeEarlierPos[B <: AST](that: B): this.type = {
     (this.pos, that.pos) match {
       case (NoPosition, NoPosition) => {}
       case (NoPosition, p) => this.pushDownPosition(p)
       case (p, NoPosition) => this.pushDownPosition(p)
-      case (thisp, thatp) => if (thatp < thisp) { this.pushDownPosition(thatp) } 
+      case (thisp, thatp) => if (thatp < thisp) { this.pushDownPosition(thatp) }
     }
     this
   }
@@ -119,6 +118,13 @@ trait AST extends Positional {
   }
 
   def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
+
+  def dump(prefix: String = ""): this.type = {
+    Console.println(prefix + getClass().getCanonicalName() + " at " + pos + ": " + toString())
+    subtrees foreach { _.dump(prefix + "  ") }
+    this
+  }
+
 }
 
 trait OrcSyntaxConvertible {

@@ -16,7 +16,7 @@
 package orc.compile.typecheck
 
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }
@@ -100,6 +100,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newDefs, defBindings) = typeDefs(defs)
             val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
             (DeclareDefs(newDefs, newBody), typeBody)
+          }
+          case VtimeZone(order, body) => {
+            val (newBody, typeBody) = typeSynthExpr(body)
+            (VtimeZone(order, newBody), typeBody)
           }
           case HasType(body, syntactic.AssertedType(t)) => {
             (expr, lift(t))

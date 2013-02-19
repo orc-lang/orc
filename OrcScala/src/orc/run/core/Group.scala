@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -37,6 +37,9 @@ trait Group extends GroupMember {
   val root: Execution
 
   private var alive = true
+
+  /** An expensive walk-to-root check for alive state */
+  override def checkAlive(): Boolean = alive
 
   def publish(t: Token, v: Option[AnyRef]): Unit
   def onHalt(): Unit

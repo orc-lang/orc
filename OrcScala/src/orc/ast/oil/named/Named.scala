@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,6 +30,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Prune(left, x, right) => List(left, x, right)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
+    case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
@@ -77,6 +78,7 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
+case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
 /* Match an expression with exactly one hole. 
  * Matches as Module(f), where f is a function which takes

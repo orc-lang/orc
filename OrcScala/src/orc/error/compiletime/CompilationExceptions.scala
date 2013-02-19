@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Aug 11, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -73,8 +73,7 @@ case class NonlinearPatternException(val repeatedName: String)
 case class CallPatternWithinAsPattern()
   extends SyntacticException("Call pattern occurs within as pattern. This can produce unexpected matching behavior.")
   with SeverityWarning
-  
-  
+
 /** A list of type formals mentions the same variable more than once.
   */
 case class DuplicateTypeFormalException(val repeatedName: String)
@@ -109,6 +108,18 @@ case class ClassDefInNonclassContext()
   with SeverityError
 case class NonclassDefInClassContext()
   extends SyntacticException("This clause must be declared as 'class'; preceding clauses were declared as 'class'")
+  with SeverityError
+
+/** Call to the Vclock quasi-site (in a sequential combinator) that is malformed
+  */
+case class IncorrectVclockCall()
+  extends SyntacticException("Vclock calls should be of the form: Vclock(SomeOrdering) >> e")
+  with SeverityError
+
+/** Use of the Vclock quasi-site in an invalid location
+  */
+case class InvalidVclockUse()
+  extends SyntacticException("Vclock can only be used as a call on the left side of a sequential combinator")
   with SeverityError
 
 /** A variable is unbound.

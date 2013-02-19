@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,25 +22,25 @@ import orc.lib.time.{ Vtime, Vclock, Vawait }
 import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
 import orc.values.{ Signal, OrcRecord, Field }
+import orc.ast.oil.nameless.VtimeZone
 
-/** 
- * Token represents a "process" executing in the Orc program.
- * 
- * For lack of a better place to put it here is a little 
- * documentation of how publish and other methods on Token 
- * and other classes (notably Group) handle their Option[AnyRef]
- * argument. None represents stop and Some(v) represents the
- * value v. So the expression x.get represents the assumption
- * (runtime checked) that x is not a stop value. 
- * 
- * This convention is not consistent as the Java sites are not
- * able to access the Option type well, so the Site API is 
- * unchanged. This confines the changes to the core runtime,
- * however it does mean that there are still parts of the code
- * where there is no way to represent stop.
- * 
- * @author dkitchin
- */
+/** Token represents a "process" executing in the Orc program.
+  *
+  * For lack of a better place to put it here is a little
+  * documentation of how publish and other methods on Token
+  * and other classes (notably Group) handle their Option[AnyRef]
+  * argument. None represents stop and Some(v) represents the
+  * value v. So the expression x.get represents the assumption
+  * (runtime checked) that x is not a stop value.
+  *
+  * This convention is not consistent as the Java sites are not
+  * able to access the Option type well, so the Site API is
+  * unchanged. This confines the changes to the core runtime,
+  * however it does mean that there are still parts of the code
+  * where there is no way to represent stop.
+  *
+  * @author dkitchin
+  */
 class Token protected (
   protected var node: Expression,
   protected var stack: Frame = EmptyFrame,
@@ -48,8 +48,7 @@ class Token protected (
   protected var group: Group,
   protected var clock: Option[VirtualClock] = None,
   protected var state: TokenState = Live)
-  extends GroupMember with Schedulable
-  with Blockable with Resolver {
+  extends GroupMember with Schedulable with Blockable with Resolver {
 
   var functionFramesPushed: Int = 0
 
@@ -99,6 +98,9 @@ class Token protected (
     if (state != Killed) { state = newState; true } else false
   }
 
+  /** An expensive walk-to-root check for alive state */
+  def checkAlive(): Boolean = state.isLive && group.checkAlive()
+
   //@volatile
   //var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
   /* When a token is scheduled, notify its clock accordingly */
@@ -111,8 +113,8 @@ class Token protected (
 
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
-    clock foreach { _.setQuiescent() }
     super.onComplete()
+    clock foreach { _.setQuiescent() }
   }
 
   /** Pass an event to this token's enclosing group.
@@ -232,8 +234,8 @@ class Token protected (
     stack = newStack
     this
   }
-  
-  protected def pushContinuation(k : (Option[AnyRef] => Unit)) = push(FutureFrame(k, stack))
+
+  protected def pushContinuation(k: (Option[AnyRef] => Unit)) = push(FutureFrame(k, stack))
 
   /** Remove the top frame of this token's stack.
     *
@@ -327,24 +329,6 @@ class Token protected (
 
   protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]): Unit = {
     (vc, actuals) match {
-      case (`Vclock`, List(f)) => {
-        f match {
-          case totalf: TotalSite => {
-            def ordering(x: AnyRef, y: AnyRef) = {
-              // TODO: Add error handling, either here or in the scheduler.
-              // A comparator error should kill the engine.
-              val i = totalf.evaluate(List(x, y)).asInstanceOf[Int]
-              assert(i == -1 || i == 0 || i == 1)
-              i
-            }
-            clock = Some(new VirtualClock(clock, ordering, runtime))
-            publish()
-          }
-          case _ => {
-            this !! (new ArgumentTypeMismatchException(0, "TotalSite", f.toString()))
-          }
-        }
-      }
       case (`Vawait`, List(t)) => {
         clock match {
           case Some(cl) => cl.await(this, t)
@@ -374,11 +358,9 @@ class Token protected (
     }
   }
 
-  /* 
-   * Make a call. 
-   * The call target is resolved, but the parameters are not yet resolved.
-   *  
-   */
+  /** Make a call.
+    * The call target is resolved, but the parameters are not yet resolved.
+    */
   protected def makeCall(target: AnyRef, params: List[Binding]): Unit = {
     target match {
       case c: Closure => {
@@ -389,51 +371,78 @@ class Token protected (
           /* Zero parameters. No need to block. */
           case Nil => {
             target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params) 
-              case s => siteCall(s, Nil) 
+              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
+              case s => siteCall(s, Nil)
             }
           }
-          
+
           /* One parameter. May need to block. No need to join. */
           case List(param) => {
             target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => { 
-                resolveOptional(param) { 
+              case r @ OrcRecord(entries) if entries contains "apply" => {
+                resolveOptional(param) {
                   /* apply isn't allowed to supersede other member accesses */
-                  case Some(Field(f)) => siteCall(r, List(Field(f))) 
+                  case Some(Field(f)) => siteCall(r, List(Field(f)))
                   /* 
                    * The resolved arg is ignored and the apply member is retried on the parameters.
                    * The arg is ignored even if it is halted, since the apply member might be a function. 
                    */
-                  case _ => makeCall(entries("apply"), params)  
-                } 
+                  case _ => makeCall(entries("apply"), params)
+                }
               }
-              case s => resolve(param) { arg : AnyRef => siteCall(s, List(arg)) } 
+              case s => resolve(param) { arg: AnyRef => siteCall(s, List(arg)) }
             }
           }
-          
+
           /* Multiple parameters. May need to join. */
           case _ => {
             target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params) 
+              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
               case s => {
-                                
+
                 /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
-                pushContinuation({ 
-                  case Some(args : List[AnyRef]) => siteCall(s, args)
+                pushContinuation({
+                  case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
                   case Some(_) => throw new Error("Join resulted in a non-list")
                   case None => halt()
                 })
-                
+
                 /* Create a join over the parameters. */
                 val j = new Join(params, this, runtime)
 
                 /* Perform the join. */
                 j.join()
-              }  
+              }
             }
-          }          
+          }
         }
+      }
+    }
+  }
+
+  def designateClock(newClock: Option[VirtualClock]) {
+    newClock foreach { _.unsetQuiescent() }
+    clock foreach { _.setQuiescent() }
+    clock = newClock
+  }
+
+  def newVclock(orderingArg: AnyRef, body: Expression) = {
+    orderingArg match {
+      case orderingSite: TotalSite => {
+        def ordering(x: AnyRef, y: AnyRef) = {
+          // TODO: Add error handling, either here or in the scheduler.
+          // A comparator error should kill the engine.
+          val i = orderingSite.evaluate(List(x, y)).asInstanceOf[Int]
+          assert(i == -1 || i == 0 || i == 1, "Vclock time comparator "+orderingSite.name+" did not return -1/0/1")
+          i
+        }
+        join(new VirtualClockGroup(clock, group))
+        designateClock(Some(new VirtualClock(ordering, runtime)))
+        move(body)
+        stage()
+      }
+      case _ => {
+        this !! (new ArgumentTypeMismatchException(0, "TotalSite", orderingArg.toString()))
       }
     }
   }
@@ -477,9 +486,9 @@ class Token protected (
           /* 
            * Allow a def to be called with an open context. 
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
-           */ 
+           */
           case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
-          
+
           case b => resolve(b) { makeCall(_, params) }
         }
       }
@@ -514,6 +523,10 @@ class Token protected (
         l.join(region)
         l.move(left)
         runtime.stage(l)
+      }
+
+      case VtimeZone(timeOrdering, body) => {
+        resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
 
       case decldefs @ DeclareDefs(openvars, defs, body) => {
@@ -586,12 +599,12 @@ class Token protected (
     notifyOrc(CaughtEvent(e))
     halt()
   }
-  
-  def awakeValue(v : AnyRef) = publish(Some(v))
+
+  def awakeValue(v: AnyRef) = publish(Some(v))
   def awakeStop() = publish(None)
-  
-  override def awakeException(e : OrcException) = this !! e
-  
+
+  override def awakeException(e: OrcException) = this !! e
+
   override def awake() { unblock() }
 }
 

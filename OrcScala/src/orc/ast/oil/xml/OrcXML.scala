@@ -6,7 +6,7 @@
 //
 // Created by amshali on Jul 12, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -200,6 +200,11 @@ object OrcXML {
       case Constant(v: Any) => <constant>{ anyToXML(v) }</constant>
       case Constant(null) => <constant><nil/></constant>
       case Variable(i: Int) => <variable index={ i.toString }/>
+      case VtimeZone(timeOrder, body) =>
+        <vtimezone>
+          <timeorder>{ toXML(timeOrder) }</timeorder>
+          <body>{ toXML(body) }</body>
+        </vtimezone>
       case Hole(context, typecontext) =>
         <hole>
           <context>
@@ -367,6 +372,8 @@ object OrcXML {
       case <hastype><body>{ body }</body><expectedtype>{ expectedType }</expectedtype></hastype> => {
         HasType(fromXML(body), typeFromXML(expectedType))
       }
+      case <vtimezone><timeorder>{ timeOrder }</timeorder><body>{ body }</body></vtimezone> =>
+        VtimeZone(argumentFromXML(timeOrder), fromXML(body))
       case <hole><context>{ ctx @ _* }</context><typecontext>{ typectx @ _* }</typecontext></hole> => {
         val context = HashMap.empty ++ {
           for (b @ <binding>{ a }</binding> <- ctx) yield ((b \ "@name").text, argumentFromXML(a))

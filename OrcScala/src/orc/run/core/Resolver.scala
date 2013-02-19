@@ -60,7 +60,7 @@ trait Resolver extends Blockable {
   
   /**
    * Store a continuation that will be run when this resolver is unblocked with a value.
-   * None means stop. Just(v) means the value v.
+   * None means stop. Some(v) means the value v.
    */
   protected def pushContinuation(k : (Option[AnyRef] => Unit)) : Unit
 }
