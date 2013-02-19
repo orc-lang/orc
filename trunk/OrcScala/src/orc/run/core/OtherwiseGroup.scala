@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,8 +19,6 @@ package orc.run.core
   * @author dkitchin
   */
 class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with Blocker {
-
-  val quiescentWhileBlocked = true
 
   var state: OtherwiseGroupState = LeftSideUnknown(t)
 
@@ -42,7 +40,7 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
       state match {
         case LeftSideUnknown(r) => { state = LeftSideSilent; runtime.stage(r) }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
+        case LeftSideSilent => { throw new AssertionError("halt of silent f in f;g") }
       }
     }
     parent.remove(this)

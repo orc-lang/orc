@@ -4,16 +4,16 @@
 
      $Id$
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
      URL: http://orc.csres.utexas.edu/license.shtml .
   -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	xmlns="http://orc.csres.utexas.edu/oil.xsd"
-	targetNamespace="http://orc.csres.utexas.edu/oil.xsd"
-	elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://orc.csres.utexas.edu/oil.xsd"
+  targetNamespace="http://orc.csres.utexas.edu/oil.xsd"
+  elementFormDefault="qualified">
 
 
   <!-- An Orc program is an 'oil' element containing exactly one expression -->
@@ -21,289 +21,300 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="exp">
-          <xs:attribute name="created-by" type="xs:string"/> 
+          <xs:attribute name="created-by" type="xs:string"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <!--  Common attributes for all AST nodes -->
   <xs:attributeGroup name="ast">
     <xs:attribute name="pos" type="xs:string"/>
   </xs:attributeGroup>
-  
+
   <!--  Some AST nodes have an optionally present variable name -->
   <xs:attributeGroup name="varnamed">
     <xs:attribute name="varname" type="xs:string"/>
   </xs:attributeGroup>
-  
+
   <!--  Leaf node (AST) -->
   <xs:complexType name="leaf">
-	  <xs:attributeGroup ref="ast" />
-	</xs:complexType>
-	
-	<!--  Variable (AST)  -->
-	<xs:complexType name="var">
-	  <xs:attribute name="index" type="index" use="required" />
-	  <xs:attributeGroup ref="ast" />
-	  <xs:attributeGroup ref="varnamed" />
-	</xs:complexType>
-	
-	<!--  Type variable (AST)  -->
-	<xs:complexType name="typevar">
-	  <xs:attribute name="index" type="index" use="required" />
-	  <xs:attributeGroup ref="ast" />
-	  <xs:attributeGroup ref="varnamed" />
-	</xs:complexType>
+    <xs:attributeGroup ref="ast" />
+  </xs:complexType>
 
-	<!--  Combinators (AST)  -->
+  <!--  Variable (AST)  -->
+  <xs:complexType name="var">
+    <xs:attribute name="index" type="index" use="required" />
+    <xs:attributeGroup ref="ast" />
+    <xs:attributeGroup ref="varnamed" />
+  </xs:complexType>
+
+  <!--  Type variable (AST)  -->
+  <xs:complexType name="typevar">
+    <xs:attribute name="index" type="index" use="required" />
+    <xs:attributeGroup ref="ast" />
+    <xs:attributeGroup ref="varnamed" />
+  </xs:complexType>
+
+  <!--  Combinators (AST)  -->
   <xs:complexType name="combinator">
-		<xs:sequence>
-		  <xs:element name="left" type="exp" />
-			<xs:element name="right" type="exp" />
-	  </xs:sequence>
-	  <xs:attributeGroup ref="ast" />
-	</xs:complexType>
-	
-	<!--  Binding combinator (AST)  -->
+    <xs:sequence>
+      <xs:element name="left" type="exp" />
+      <xs:element name="right" type="exp" />
+    </xs:sequence>
+    <xs:attributeGroup ref="ast" />
+  </xs:complexType>
+
+  <!--  Binding combinator (AST)  -->
   <xs:complexType name="binding_combinator">
-		<xs:sequence>
-		  <xs:element name="left" type="exp" />
-			<xs:element name="right" type="exp" />
-	  </xs:sequence>
-	  <xs:attributeGroup ref="ast" />
-	  <xs:attributeGroup ref="varnamed" />
-	</xs:complexType>
-  	
-	<!--  Argument  -->
-	<xs:complexType name="arg">
+    <xs:sequence>
+      <xs:element name="left" type="exp" />
+      <xs:element name="right" type="exp" />
+    </xs:sequence>
+    <xs:attributeGroup ref="ast" />
+    <xs:attributeGroup ref="varnamed" />
+  </xs:complexType>
+
+  <!--  Argument  -->
+  <xs:complexType name="arg">
     <xs:group ref="arguments" />
   </xs:complexType>
-  
+
   <!--  Expression  -->
   <xs:complexType name="exp">
     <xs:choice>
       <xs:group ref="expressions" />
     </xs:choice>
   </xs:complexType>
-  
+
   <!--  Type  -->
   <xs:complexType name="type">
     <xs:choice>
       <xs:group ref="types" />
     </xs:choice>
   </xs:complexType>
-  
-  <!--  Type sequence  -->
-	<xs:complexType name="typesequence">
-	  <xs:sequence>
-			<xs:group ref="types" minOccurs="0" maxOccurs="unbounded" />
-		</xs:sequence>
-  </xs:complexType>
-	
-  
-	
-  <!--  Indices -->
-	<xs:simpleType name="index">
-	  <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="0"/>
-	  </xs:restriction>
-	</xs:simpleType>
-	
-	<!--  Arities -->
-	<xs:simpleType name="arity">
-	  <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="0"/>
-	  </xs:restriction>
-	</xs:simpleType>
 
-	<!--  Values  -->
-	<xs:group name="values">
-	  <xs:choice>
-	    <xs:element name="integer" type="xs:integer" />
-	    <xs:element name="number" type="xs:double" />
-	    <xs:element name="string" type="xs:string" />
-	    <xs:element name="true" />
-	    <xs:element name="false" />
-	    <xs:element name="signal" />
-	    <xs:element name="field" type="xs:string" />
-	    <xs:element name="nil" />
-	    <xs:element name="jclassproxy" type="xs:string" />
-	    <xs:element name="site" type="xs:string" />
-	  </xs:choice>
-	</xs:group>
-	
-  <!--  Arguments  -->  
-	<xs:group name="arguments">
-		<xs:choice>
-		
-			<xs:element name="constant">
-			  <xs:complexType>
-			    <xs:group ref="values" />
-			    <xs:attributeGroup ref="ast" />
-			  </xs:complexType>
-			</xs:element>
-			
-			<xs:element name="variable" type="var" />
-			
-			<xs:element name="unboundvariable">
-			  <xs:complexType>
-			    <xs:attribute name="name" type="xs:string" />
-			    <xs:attributeGroup ref="ast" />
-			  </xs:complexType>
-			</xs:element>
-			
-		</xs:choice>
-	</xs:group>
+  <!--  Type sequence  -->
+  <xs:complexType name="typesequence">
+    <xs:sequence>
+      <xs:group ref="types" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+  <!--  Indices -->
+  <xs:simpleType name="index">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  Arities -->
+  <xs:simpleType name="arity">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!--  Values  -->
+  <xs:group name="values">
+    <xs:choice>
+      <xs:element name="integer" type="xs:integer" />
+      <xs:element name="number" type="xs:double" />
+      <xs:element name="string" type="xs:string" />
+      <xs:element name="true" />
+      <xs:element name="false" />
+      <xs:element name="signal" />
+      <xs:element name="field" type="xs:string" />
+      <xs:element name="nil" />
+      <xs:element name="jclassproxy" type="xs:string" />
+      <xs:element name="site" type="xs:string" />
+    </xs:choice>
+  </xs:group>
+
+  <!--  Arguments  -->
+  <xs:group name="arguments">
+    <xs:choice>
+
+      <xs:element name="constant">
+        <xs:complexType>
+          <xs:group ref="values" />
+          <xs:attributeGroup ref="ast" />
+        </xs:complexType>
+      </xs:element>
+
+      <xs:element name="variable" type="var" />
+
+      <xs:element name="unboundvariable">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:string" />
+          <xs:attributeGroup ref="ast" />
+        </xs:complexType>
+      </xs:element>
+
+    </xs:choice>
+  </xs:group>
 
 
   <!--  Expressions  -->
   <xs:group name="expressions">
-	  <xs:choice>
-			
-			  <!--  any argument  -->
-			  <xs:group ref="arguments" />
-			
-			  <!--  stop  -->
-				<xs:element name="stop" type="leaf" />
+    <xs:choice>
+
+        <!--  any argument  -->
+        <xs:group ref="arguments" />
+
+        <!--  stop  -->
+        <xs:element name="stop" type="leaf" />
 
         <!--  f | g  -->
-				<xs:element name="parallel" type="combinator" />
-				
-				<!--  f >> g  -->
-				<xs:element name="sequence" type="binding_combinator" />
-				
-				<!--  f << g  -->
-				<xs:element name="prune" type="binding_combinator" />
-				
-				<!--  f ; g  -->
-				<xs:element name="otherwise" type="combinator" />
+        <xs:element name="parallel" type="combinator" />
+
+        <!--  f >> g  -->
+        <xs:element name="sequence" type="binding_combinator" />
+
+        <!--  f << g  -->
+        <xs:element name="prune" type="binding_combinator" />
+
+        <!--  f ; g  -->
+        <xs:element name="otherwise" type="combinator" />
 
         <!--  Site or function call  -->
-				<xs:element name="call">
-					<xs:complexType>
-						<xs:sequence>
-						  <xs:element name="target" type="arg" />
-							<xs:element name="args">
-							  <xs:complexType>
-								  <xs:sequence>
-									  <xs:group ref="arguments" minOccurs="0" maxOccurs="unbounded" />
-								  </xs:sequence>
-								</xs:complexType>
-							</xs:element>
-						  <xs:element name="typeargs" type="typesequence" minOccurs="0" />
-						</xs:sequence>
-						<xs:attributeGroup ref="ast"/>
-					</xs:complexType>
-				</xs:element>
+        <xs:element name="call">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="target" type="arg" />
+              <xs:element name="args">
+              <xs:complexType>
+                <xs:sequence>
+                <xs:group ref="arguments" minOccurs="0" maxOccurs="unbounded" />
+                </xs:sequence>
+              </xs:complexType>
+              </xs:element>
+              <xs:element name="typeargs" type="typesequence" minOccurs="0" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast"/>
+          </xs:complexType>
+        </xs:element>
 
-        <!--  
+        <!--
               def ...
               def ...
-              f  
+              f
         -->
-				<xs:element name="declaredefs">
-				  <xs:complexType>
-				    <xs:sequence>					
-							<xs:element name="unclosedvars">
-								<xs:simpleType>
-  								<xs:list itemType="index"/>
-								</xs:simpleType>
-							</xs:element>
-							<xs:element name="defs">
-							  <xs:complexType>
-								  <xs:sequence>
-									  <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
-								  </xs:sequence>
-								</xs:complexType>
-							</xs:element>
-					    <xs:element name="body" type="exp" />
-					  </xs:sequence>
-					  <xs:attributeGroup ref="ast" />
-				  </xs:complexType>
-				</xs:element>
+        <xs:element name="declaredefs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="unclosedvars">
+                <xs:simpleType>
+                  <xs:list itemType="index"/>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="defs">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="body" type="exp" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
 
-        <!--  
+        <!--
               type ...
-              f  
+              f
         -->
-				<xs:element name="declaretype">
-				  <xs:complexType>
-				    <xs:sequence>
-						  <xs:element name="type" type="type" />					
-						  <xs:element name="body" type="exp" />
-					  </xs:sequence>
-					  <xs:attributeGroup ref="ast" />
-					  <xs:attributeGroup ref="varnamed" />
-				  </xs:complexType>
-				</xs:element>
-				
-				<!-- f :: T -->
-				<xs:element name="hastype">
-				  <xs:complexType>
-				    <xs:sequence>					
-						  <xs:element name="body" type="exp" />
-							<xs:element name="expectedtype" type="type" />
-					  </xs:sequence>
-					  <xs:attributeGroup ref="ast" />
-				  </xs:complexType>
-				</xs:element>			
-				
-				<!-- A hole in an expression -->
-				<xs:element name="hole">
-					<xs:complexType>
-					  <xs:sequence>
-						  <xs:element name="context">
-								<xs:complexType>
-								  <xs:sequence>
-									  <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
-										  <xs:complexType>
-										    <xs:group ref="arguments" />
-										    <xs:attribute name="name" type="xs:string" use="required" />
-										  </xs:complexType>
-								    </xs:element>
-							    </xs:sequence>
-							  </xs:complexType>
-							</xs:element>
-						  <xs:element name="typecontext">
-								<xs:complexType>
-								  <xs:sequence>
-									  <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
-										  <xs:complexType>
-										    <xs:group ref="types" />
-										    <xs:attribute name="name" type="xs:string" use="required" />
-										  </xs:complexType>
-								    </xs:element>
-							    </xs:sequence>
-							  </xs:complexType>
-							</xs:element>
-						</xs:sequence>
-					  <xs:attributeGroup ref="ast" />
-					</xs:complexType>
-				</xs:element>
-				
-	  </xs:choice>
-	</xs:group>
+        <xs:element name="declaretype">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="type" type="type" />
+              <xs:element name="body" type="exp" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+            <xs:attributeGroup ref="varnamed" />
+          </xs:complexType>
+        </xs:element>
+
+        <!-- f :: T -->
+        <xs:element name="hastype">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="body" type="exp" />
+              <xs:element name="expectedtype" type="type" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
+
+        <!-- Vclock Order f -->
+        <xs:element name="vtimezone">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="timeorder" type="arg" />
+              <xs:element name="body" type="exp" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast"/>
+          </xs:complexType>
+        </xs:element>
+
+        <!-- A hole in an expression -->
+        <xs:element name="hole">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="context">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:group ref="arguments" />
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="typecontext">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:group ref="types" />
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
+
+    </xs:choice>
+  </xs:group>
 
   <!--  Types  -->
-	<xs:group name="types">
-	<xs:choice>
-		<xs:element name="top" type="leaf" />
-		<xs:element name="bot" type="leaf" />
-		<xs:element name="typevar" type="typevar" />
-		<xs:element name="unboundtypevar">
-			<xs:complexType>
-			  <xs:attribute name="name" type="xs:string" />
-			  <xs:attributeGroup ref="ast" />
-			</xs:complexType>
-	  </xs:element>
+  <xs:group name="types">
+  <xs:choice>
+    <xs:element name="top" type="leaf" />
+    <xs:element name="bot" type="leaf" />
+    <xs:element name="typevar" type="typevar" />
+    <xs:element name="unboundtypevar">
+      <xs:complexType>
+        <xs:attribute name="name" type="xs:string" />
+        <xs:attributeGroup ref="ast" />
+      </xs:complexType>
+    </xs:element>
     <xs:element name="tupletype">
       <xs:complexType>
         <xs:sequence>
-			    <xs:group ref="types" minOccurs="2" maxOccurs="unbounded" />
-		    </xs:sequence>
-		    <xs:attributeGroup ref="ast" />
-		  </xs:complexType>
+          <xs:group ref="types" minOccurs="2" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attributeGroup ref="ast" />
+      </xs:complexType>
     </xs:element>
     <xs:element name="recordtype">
       <xs:complexType>
@@ -317,7 +328,7 @@
         </xs:sequence>
         <xs:attributeGroup ref="ast" />
       </xs:complexType>
-    </xs:element>  
+    </xs:element>
     <xs:element name="typeapplication">
       <xs:complexType>
         <xs:sequence>
@@ -332,7 +343,7 @@
         <xs:group ref="types" />
         <xs:attributeGroup ref="ast" />
       </xs:complexType>
-    </xs:element>  
+    </xs:element>
     <xs:element name="functiontype">
       <xs:complexType>
         <xs:sequence>
@@ -354,17 +365,17 @@
       <xs:complexType>
         <xs:simpleContent>
           <xs:extension base="xs:string">
-	          <xs:attributeGroup ref="ast" />
+            <xs:attributeGroup ref="ast" />
           </xs:extension>
         </xs:simpleContent>
-      </xs:complexType> 
+      </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="classtype">
       <xs:complexType>
         <xs:simpleContent>
           <xs:extension base="xs:string">
-	          <xs:attributeGroup ref="ast" />
+            <xs:attributeGroup ref="ast" />
           </xs:extension>
         </xs:simpleContent>
       </xs:complexType>
@@ -375,8 +386,8 @@
           <xs:element name="variant" maxOccurs="unbounded">
             <xs:complexType>
               <xs:sequence>
-							  <xs:group ref="types" minOccurs="0" maxOccurs="unbounded" />
-							</xs:sequence>
+                <xs:group ref="types" minOccurs="0" maxOccurs="unbounded" />
+              </xs:sequence>
               <xs:attribute name="name" type="xs:string" />
             </xs:complexType>
           </xs:element>
@@ -385,10 +396,10 @@
         <xs:attributeGroup ref="ast" />
       </xs:complexType>
     </xs:element>
-    
+
   </xs:choice>
-	</xs:group>
-	
+  </xs:group>
+
   <!-- Definitions -->
   <xs:complexType name="definition">
     <xs:sequence>
@@ -401,6 +412,6 @@
     <xs:attributeGroup ref="ast"/>
     <xs:attributeGroup ref="varnamed" />
   </xs:complexType>
-	
+
 
 </xs:schema>

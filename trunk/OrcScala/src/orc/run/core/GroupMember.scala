@@ -23,4 +23,7 @@ trait GroupMember extends Schedulable {
   def suspend(): Unit
   def resume(): Unit
   def notifyOrc(event: OrcEvent): Unit
+
+  /** An expensive walk-to-root check for alive state */
+  def checkAlive(): Boolean
 }

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 12, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -106,6 +106,7 @@ trait NamedASTTransform extends NamedASTFunction {
           DeclareType(u, newt, newbody)
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
+        case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
       }
     }
   }

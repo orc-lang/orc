@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,6 +30,7 @@ import orc.values.sites.SiteClassLoading
 import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
+import orc.compile.translate.TranslateVclock
 
 /** Represents a configuration state for a compiler.
   */
@@ -129,6 +130,11 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       }
   }
 
+  val vClockTrans = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+    val phaseName = "vClockTrans"
+    override def apply(co: CompilerOptions) = new TranslateVclock(co.reportProblem)(_)
+  }
+
   val noUnboundVars = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "noUnboundVars"
     override def apply(co: CompilerOptions) = { ast =>
@@ -145,7 +151,6 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   val fractionDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
     val phaseName = "fractionDefs"
     override def apply(co: CompilerOptions) = { FractionDefs(_) }
-
   }
 
   val removeUnusedDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
@@ -227,15 +232,16 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
   val phases =
     parse.timePhase >>>
-      translate.timePhase >>>
-      noUnboundVars.timePhase >>>
-      fractionDefs.timePhase >>>
-      typeCheck.timePhase >>>
-      removeUnusedDefs.timePhase >>>
-      removeUnusedTypes.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
-      deBruijn.timePhase >>>
-      outputOil
+    translate.timePhase >>>
+    vClockTrans.timePhase >>>
+    noUnboundVars.timePhase >>>
+    fractionDefs.timePhase >>>
+    typeCheck.timePhase >>>
+    removeUnusedDefs.timePhase >>>
+    removeUnusedTypes.timePhase >>>
+    noUnguardedRecursion.timePhase >>>
+    deBruijn.timePhase >>>
+    outputOil
 
   ////////
   // Compiler methods

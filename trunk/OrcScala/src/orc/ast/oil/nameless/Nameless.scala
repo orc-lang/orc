@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -36,6 +36,7 @@ sealed abstract class NamelessAST extends AST {
     case Prune(left, right) => List(left, right)
     case left ow right => List(left, right)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
+    case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
     case Def(_, _, body, argtypes, returntype) => {
@@ -78,6 +79,7 @@ sealed abstract class Expression extends NamelessAST
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
+      case VtimeZone(timeOrder, body) => timeOrder.freevars ++ body.freevars
       // Free variable determination will probably be incorrect on an expression with holes
       case Hole(_, _) => {
         Set.empty
@@ -121,6 +123,7 @@ sealed abstract class Expression extends NamelessAST
       }
       case HasType(body, t) => HasType(body.subst(ctx), t)
       case DeclareType(t, body) => DeclareType(t, body.subst(ctx))
+      case VtimeZone(timeOrder, body) => VtimeZone(timeOrder.subst(ctx).asInstanceOf[Argument], body.subst(ctx))
       case Hole(holeContext, holeTypeContext) => {
         Hole(holeContext mapValues { _.subst(ctx).asInstanceOf[Argument] }, holeTypeContext)
       }
@@ -141,6 +144,7 @@ case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expressio
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
+case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument

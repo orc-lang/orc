@@ -10,13 +10,13 @@ def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
 def simulate(n :: String) =
   val x = Rwait(100)
     stop
-  | Rwait(0) >> Vwait(3) >> n+": "+4
-  | Rwait(100) >> Vwait(2) >> n+": "+3
-  | Rwait(200) >> Vwait(1) >> n+": "+2
+  | Rwait(0) >> Vwait(3) >> n+": "+3
+  | Rwait(100) >> Vwait(2) >> n+": "+2
+  | Rwait(200) >> Vwait(1) >> n+": "+4
   -- nested simulation
   | Vclock(IntegerTimeOrder) >> Vawait(0) >> 
-      ( x >> Vwait(1) >> n+": "+0
-      | Vwait(2) >> n+": "+1
+      ( x >> Vwait(1) >> n+": "+1
+      | Vwait(2) >> n+": "+0
       )
 
   Vclock(IntegerTimeOrder) >> Vawait(0) >> 

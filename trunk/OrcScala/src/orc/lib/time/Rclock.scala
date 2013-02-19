@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jan 13, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -52,6 +52,7 @@ class Rtime(startTime: Long) extends TotalSite0 {
 /**
   */
 object Rwait extends Site1 {
+  override val quiescentWhileInvoked: Boolean = true
 
   def call(a: AnyRef, h: Handle) {
     a match {
