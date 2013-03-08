@@ -49,8 +49,8 @@ Submitted to <span class="venue"><a href="http://www.springer.com/engineering/ci
 
 <ul>
 <li><a href="#SLADeclaration">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
-<li><a href="#TravelAgent">TravelAgent.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
-<li><a href="#TravelAgentWeaved">TravelAgentWeaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2">TravelAgent.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2Weaved">TravelAgentWeaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
 </ul>
 
 <a id="SLADeclaration"></a><h2>SLADeclaration.orc <small>(<a href="#top">top</a>)</small></h2>
@@ -64,297 +64,93 @@ locations (<code>Ref</code> and FIFO channels (<code>Channel</code>) are also
 invoked.</p>
 
 <pre class="orc-snippet">
-def bestQoS(comparer, publisher) = head(sortBy(comparer, publisher))
-
-def class InterQueryTime()=
-  def QoS(sitex) =
-    val s = {. r = Ref(0), c = Channel() .}		
-    val curTime = Rtime()
-    s.r?  &gt;p&gt;
-    (s.c.put(curTime-p) | s.r := curTime)  &gt;&gt;
-    Dictionary()  &gt;sitex&gt;
-    sitex.InterQueryTime := s  &gt;&gt;
-    stop
-  def QoSCompare(it1, it2) = it1 &gt;= it2
-  def QoSCompete(it1, it2) = bestQoS(QoSCompare, [it1, it2])
-  stop
-
-def class ResponseTime() =
-  def QoS(sitex, d) = Rtime()-d &gt;q&gt; q
-  def QoSOplus(rt1, rt2) = rt1+rt2
-  def QoSCompare(rt1, rt2) = rt1 &lt;= rt2
-  def QoSCompete(rt1, rt2) = bestQoS(QoSCompare, [rt1, rt2])
-  def QoSVee(rt1, rt2) = max(rt1, rt2)
-  stop
-
-def class Cost() =
-  def QoS(sitex, c)=
-    val s = Ref([])
-    s?  &gt;x&gt;
-    QoSOplus(x, [])  &gt;q&gt;
-    s:= q  &gt;&gt;
-    Dictionary()  &gt;sitex&gt;
-    sitex.Cost := s
-  def QoSOplus(c1, c2) =
-    def Oplus([], []) = []
-    def Oplus(x:xs, y:ys) = (x+y):Oplus(xs, ys)
-    Oplus(c1, c2)
-  def QoSCompare(c1, c2) =
-    def Compare([], []) = true
-    def Compare(x:xs, y:ys) = (x &lt;= y) && Compare(xs, ys)
-    Compare(c1, c2)
-  def QoSCompete(c1, c2) = bestQoS(QoSCompare, [c1, c2])	                                   	
-  def QoSVee(c1, c2) =
-    def Vee([], []) = []
-    def Vee(x:xs, y:ys) = max(x, y):Vee(xs, ys)
-    Vee(c1, c2)
-  stop
+{- -}
 </pre>
 
-<a id="TravelAgent"></a><h2>TravelAgent.orc <small>(<a href="#top">top</a>)</small></h2>
+<a id="TravelAgent2"></a><h2>TravelAgent2.orc <small>(<a href="#top">top</a>)</small></h2>
 
-<p>The Orc specification of the TravelAgent2 orchestration. The general purpose
-<code>Dictionary</code> site is used as a mutable map from field names to
-values, references to which are accessed using <code>.</code> access. Values
-held by references are obtained using <code>x?</code> (equivalent to
-<code>x.read()</code>) and set using <code>x:=y</code> (equivalent to
-<code>x.write(y)</code>).</p>
+<p>The Orc specification of the TravelAgent2 orchestration.</p>
 
 <pre class="orc">
-val airlineList = ["Airline 1", "Airline 2"]
-val hotelList = ["Hotel A", "Hotel B"]
+--------
+-- Air travel quote service
+--------
 
---BestQoS and simulation utilities
-def bestQ(comparer, publisher) =  head(sortBy(comparer, collect(publisher)))
-def cat() = if (Random(1) = 1) then "Economy" else "Premium"
-val simElapsedClock = Rclock()
+def randomPrice() = Random(50)
 
---Simulation definition
-def TravelAgent(salesOrder, budget) =
+def class Airline(name) =
+  def quoteAvailPrice(order) = {. supplier = name, price = randomPrice() .} >c> Println("Air "+name+" quote "+c) >> c
+  stop
 
-  def inquireCost(list) =
-    each(list)  &gt;sup&gt;
-    Dictionary()  &gt;productDetails&gt;
-    productDetails.company := sup  &gt;&gt;
-    productDetails.cost := Random(100)  &gt;&gt;
-    productDetails
-  def inquireCategory(list) =
-    each(list)  &gt;sup&gt;
-    Dictionary()  &gt;productDetails&gt;
-    productDetails.company := sup  &gt;&gt;
-    productDetails.cost := Random(100)  &gt;&gt;
-    productDetails.category := cat()  &gt;&gt;
-    productDetails
+--------
+-- Hotel accomodation quote service
+--------
 
-  def compareCost(x, y) = x.cost? &lt;= y.cost?
-  def compareCategory(x, y) =
-    if x.category? = "Economy" then false
-    else if y.category? = "Economy" then true
-    else compareCost(x, y)
+type RoomCategory = Deluxe() | Standard()
+def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
 
-  def acceptOrder(salesOrder, budget) =
-    Dictionary()  &gt;bookingRequest&gt;
-    bookingRequest.orderNumber := salesOrder.ordernumber?  &gt;&gt;
-    bookingRequest.acceptedTime := simElapsedClock.time()  &gt;&gt;
-    Println("Order "+bookingRequest.orderNumber?+" accepted at time "+bookingRequest.acceptedTime?)  &gt;&gt;
-    (bookingRequest, budget)
+def class Hotel(name) =
+  def quoteAvailPrice(order) = {. supplier = name, roomCat = randomRoomCat(), price = randomPrice() .} >c> Println("Hotel "+name+" quote "+c) >> c
+  stop
 
-  def quoteAirfare(bookingRequest) =
-    bestQ(compareCost, defer(inquireCost, airlineList))  &gt;q&gt;
-    bookingRequest.airQuote := q
-  def quoteHotel(bookingRequest) =
-    bestQ(compareCategory, defer(inquireCategory, hotelList))  &gt;q&gt;
-    bookingRequest.hotelQuote := q
+--------
+-- Travel Agency orchestration
+--------
 
-  def checkBudget(bookingRequest, budget) =
-    if (bookingRequest.airQuote?.cost? + bookingRequest.hotelQuote?.cost? &lt;: budget)
-    then bookingRequest
-    else (
-      Println("Resubmit Order "+bookingRequest.orderNumber?)  &gt;&gt;
-      Dictionary()  &gt;salesOrder&gt;
-      salesOrder.ordernumber := bookingRequest.orderNumber? &gt;&gt;
-      (salesOrder, acceptOrder(salesOrder, budget)))
+{- Conventional, non-QoS-based comparisons -}
 
-  def timeout(x, t, salesOrder) = 
-    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(salesOrder, "Timeout") &gt;&gt; None()))
-  def notifyFail(salesOrder, reason) =
-    Println("Order "+salesOrder.orderNumber?+" failed: "+reason) &gt;&gt; stop
+def bestPrice(x, y) = if x.price <= y.price then x else y
 
-  timeout(
-    ( acceptOrder(salesOrder, budget)  &gt;(bookingRequest, budget)&gt;
-      quoteAirfare(bookingRequest)  &gt;&gt;
-      quoteHotel(bookingRequest)  &gt;&gt;
-      checkBudget(bookingRequest, budget)),
-    2000, salesOrder)  &gt;Some(bookingRequest)&gt;
-  bookingRequest
+def bestCategoryPrice(x, y) if (x.roomCat = y.roomCat) = bestPrice(x, y) 
+def bestCategoryPrice(x, y) if (x.roomCat = Deluxe())  = x 
+def bestCategoryPrice(x, y) if (y.roomCat = Deluxe())  = y 
 
---Simulation
-def simulateOrders(50) = stop  -- Stop after simulating 50 orders
-def simulateOrders(n) =
-  Dictionary()  &gt;salesOrder&gt;
-  salesOrder.ordernumber := n  &gt;&gt;
-  Println("Order "+n+" created")  &gt;&gt;
-  salesOrder | Rwait(Random(100))  &gt;&gt;
-  simulateOrders(n+1)
+{- Service instances -}
 
-simulateOrders(1)  &gt;salesOrder&gt; 
-TravelAgent(salesOrder, 50)  &gt;bookingRequest&gt;
-Println("Invoice for order "+salesOrder.ordernumber?+" presented at time "+simElapsedClock.time())  &gt;&gt;
-stop
+val airline1 = Airline("Airline 1")
+val airline2 = Airline("Airline 2")
+val hotelA = Hotel("Hotel A")
+val hotelB = Hotel("Hotel B")
+
+{- The TravelAgent2 workflow -}
+
+def class TravelAgent2() = 
+  def acceptOrder(order, budget) =
+    {. order = order .}  >i>
+    (i + {. airSegment = bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) .})  >i>
+    (i + {. hotelSegment = bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) .})  >i>
+    (i + {. totalPrice = i.airSegment.price + i.hotelSegment.price .})  >i>
+    (if i.totalPrice <= budget then i else Println("Budget exceeded, resubmit") >> acceptOrder(order, budget))
+  stop
+
+
+--------
+-- Simulate some orders
+--------
+
+{- Simulation paramters -}
+val numSimulatedOrders = 10
+val budget = 40
+val delayBetweenOrders = 100
+
+def simulateOrders(_, 0) = stop
+def simulateOrders(number, max) =
+    ( Println("Placing order " + number) >>
+      TravelAgent2().acceptOrder(number, budget) >invoice>
+      Println("Invoice: " + invoice) >>
+      stop)
+  | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
+
+simulateOrders(0, numSimulatedOrders)
 </pre>
 
-<a id="TravelAgentWeaved"></a><h2>TravelAgentWeaved.orc <small>(<a href="#top">top</a>)</small></h2>
+<a id="TravelAgent2Weaved"></a><h2>TravelAgent2Weaved.orc <small>(<a href="#top">top</a>)</small></h2>
 
 <p>The QoS-weaved description of the TravelAgent2 orchestration. Pattern
 matching is used extensively to assign and propagate QoS values.</p>
 
 <pre class="orc">
-def bestQoS(comparer, publisher) = head(sortBy(comparer, publisher))
-
-def class InterQueryTime()=
-  def QoS(sitex) =
-    val s = {. r = Ref(0), c = Channel() .}		
-    val curTime = Rtime()
-    s.r?  &gt;p&gt;
-    (s.c.put(curTime-p) | s.r := curTime)  &gt;&gt;
-    Dictionary()  &gt;sitex&gt;
-    sitex.InterQueryTime := s  &gt;&gt;
-    stop
-  def QoSCompare(it1, it2) = it1 &gt;= it2
-  def QoSCompete(it1, it2) = bestQoS(QoSCompare, [it1, it2])
-  stop
-
-def class ResponseTime() =
-  def QoS(sitex, d) = Rtime()-d &gt;q&gt; q
-  def QoSOplus(rt1, rt2) = rt1+rt2
-  def QoSCompare(rt1, rt2) = rt1 &lt;= rt2
-  def QoSCompete(rt1, rt2) = bestQoS(QoSCompare, [rt1, rt2])
-  def QoSVee(rt1, rt2) = max(rt1, rt2)
-  stop
-
-def class Cost() =
-  def QoS(sitex, c)=
-    val s = Ref([])
-    s?  &gt;x&gt;
-    QoSOplus(x, [])  &gt;q&gt;
-    s:= q  &gt;&gt;
-    Dictionary()  &gt;sitex&gt;
-    sitex.Cost := s
-  def QoSOplus(c1, c2) =
-    def Oplus([], []) = []
-    def Oplus(x:xs, y:ys) = (x+y):Oplus(xs, ys)
-    Oplus(c1, c2)
-  def QoSCompare(c1, c2) =
-    def Compare([], []) = true
-    def Compare(x:xs, y:ys) = (x &lt;= y) && Compare(xs, ys)
-    Compare(c1, c2)
-  def QoSCompete(c1, c2) = bestQoS(QoSCompare, [c1, c2])	                                   	
-  def QoSVee(c1, c2) =
-    def Vee([], []) = []
-    def Vee(x:xs, y:ys) = max(x, y):Vee(xs, ys)
-    Vee(c1, c2)
-  stop
-{- EXAMPLE -}
---include "SLADeclaration.orc"
-
-val airlineList = ["Airline 1", "Airline 2"]
-val hotelList = ["Hotel A", "Hotel B"]
-
---BestQoS and simulation utilities
-def bestQ(comparer, publisher) = head(sortBy(comparer, collect(publisher)))
-def cat() = if (Random(1) = 1) then "Economy" else "Premium"
-val simElaspedTime = Rclock()
-val respTime = Ref(0)
-
---Simulation definition
-def TravelAgent(salesOrder, budget, ResponseTime, Cost) =
-
-  def inquireCost(list) =
-    each(list)  &gt;sup&gt;
-    Dictionary()  &gt;productDetails&gt;
-    productDetails.company := sup  &gt;&gt;
-    productDetails.cost := Random(100)  &gt;&gt;
-    productDetails
-  def inquireCategory(list) =
-    each(list)  &gt;sup&gt;
-    Dictionary()  &gt;productDetails&gt;
-    productDetails.company := sup  &gt;&gt;
-    productDetails.cost := Random(100)  &gt;&gt;
-    productDetails.category := cat()  &gt;&gt;
-    productDetails
-
-  def compareCost(x, y) = x.cost? &lt;= y.cost?
-  def compareCategory(x, y) =
-    if x.category? = "Economy" then false
-    else if y.category? = "Economy" then true
-    else compareCost(x, y)
-
-  def acceptOrder(salesOrder, budget) =
-    ( Dictionary()  &gt;bookingRequest&gt;
-      bookingRequest.orderNumber := salesOrder.ordernumber?  &gt;&gt;
-      bookingRequest.acceptedTime := simElaspedTime.time()  &gt;&gt;
-      Println("Order "+bookingRequest.orderNumber?+" accepted at time "+bookingRequest.acceptedTime?)  &gt;&gt;
-      (bookingRequest, budget), Rclock().time()
-    )  &gt;((bookingRequest, budget), d)&gt;
-    ((bookingRequest, budget), ResponseTime().QoS(acceptOrder, d))
-  def quoteAirfare(bookingRequest, Cost) =
-    ( bestQ(compareCost, defer(inquireCost, airlineList))  &gt;q&gt;
-      bookingRequest.airQuote := q  &gt;&gt;
-      Cost().QoS(quoteAirfare, [q]), Rclock().time()
-    )  &gt;(q, d)&gt;
-    (q, ResponseTime().QoS(quoteAirfare, d))
-  def quoteHotel(bookingRequest, Cost) =
-    ( bestQ(compareCategory, defer(inquireCategory, hotelList))  &gt;q&gt;
-      bookingRequest.hotelQuote := q  &gt;&gt;
-      Cost().QoS(quoteHotel, [q]), Rclock().time()
-    ) &gt;(q, d)&gt;
-    (q, ResponseTime().QoS(quoteHotel, d))
-  def checkBudget(bookingRequest, budget, Cost) =
-    ( if (bookingRequest.airQuote?.cost? + bookingRequest.hotelQuote?.cost? &lt;: budget)
-      then bookingRequest
-      else (
-        Println("Resubmit Order "+bookingRequest.orderNumber?+" with bigger budget")  &gt;&gt;
-        Dictionary()  &gt;salesOrder&gt;
-        salesOrder.ordernumber := bookingRequest.orderNumber?  &gt;&gt;
-        (salesOrder, acceptOrder(salesOrder, budget))
-      )  &gt;r&gt;
-      Cost().QoSOplus(bookingRequest.airQuote?, bookingRequest.hotelQuote?)  &gt;v&gt;
-      Cost().QoSCompete(v, budget)  &gt;&gt;
-      r, Rclock().time()
-    ) &gt;(r, d)&gt;
-    (r, ResponseTime().QoS(checkBudget, d))
-  def timeout(x, t, salesOrder) =
-    Let(Some(x) | (Rwait(t) &gt;&gt; notifyFail(salesOrder, "Timeout") &gt;&gt; None()))
-  def notifyFail(salesOrder, reason) =
-    Println("Order "+salesOrder.orderNumber?+" failed: "+reason) &gt;&gt; stop
-
-    acceptOrder(salesOrder, budget)  &gt;((bookingRequest, budget), RT)&gt;
-    timeout(
-      ( quoteAirfare(bookingRequest, Cost)  &gt;(q, RT1)&gt;
-        (q, ResponseTime().QoSOplus(RT, RT1))  &gt;(q, RT)&gt;
-        quoteHotel(bookingRequest, Cost)  &gt;(q, RT2)&gt;
-        (q, ResponseTime().QoSOplus(RT, RT2))  &gt;(q, RT)&gt;
-        checkBudget(bookingRequest, budget, Cost))  &gt;(r, RT3)&gt;
-        (r, ResponseTime().QoSOplus(RT, RT3))  &gt;(r, RT)&gt;
-        respTime := RT  &gt;&gt;
-      r, 2000, salesOrder)  &gt;Some(r)&gt;
-    (bookingRequest, ResponseTime().QoSCompete(respTime?, 2000))  &gt;(bookingRequest, RT)&gt;
-    (bookingRequest, RT)
-  | InterQueryTime().QoS(TravelAgent)
-
---Simulation
-def simulateOrders(50) = stop  -- Stop after simulating 50 orders
-def simulateOrders(n) =
-    Dictionary()  &gt;salesOrder&gt;
-    salesOrder.ordernumber:= n  &gt;&gt;
-    Println("Order "+n+" created")  &gt;&gt;
-    salesOrder
-  | Rwait(Random(100))  &gt;&gt; simulateOrders(n+1)
-
-simulateOrders(1)  &gt;salesOrder&gt;
-TravelAgent(salesOrder, 50, ResponseTime, Cost)  &gt;bookingRequest&gt;
-Println("Invoice for order "+salesOrder.ordernumber?+" presented at time "+simElaspedTime.time())  &gt;&gt;
-stop
+{- -}
 </pre>
 
 			</div>
