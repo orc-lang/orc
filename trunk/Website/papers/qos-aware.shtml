@@ -79,7 +79,7 @@ invoked.</p>
 def randomPrice() = Random(50)
 
 def class Airline(name) =
-  def quoteAvailPrice(order) = {. supplier = name, price = randomPrice() .} >c> Println("Air "+name+" quote "+c) >> c
+  def quoteAvailPrice(order) = {. supplier = name, price = randomPrice() .} >c> Println("Order "+order+": Air "+name+" quote "+c) >> c
   stop
 
 --------
@@ -90,7 +90,7 @@ type RoomCategory = Deluxe() | Standard()
 def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
 
 def class Hotel(name) =
-  def quoteAvailPrice(order) = {. supplier = name, roomCat = randomRoomCat(), price = randomPrice() .} >c> Println("Hotel "+name+" quote "+c) >> c
+  def quoteAvailPrice(order) = {. supplier = name, roomCat = randomRoomCat(), price = randomPrice() .} >c> Println("Order "+order+":Hotel "+name+" quote "+c) >> c
   stop
 
 --------
@@ -99,7 +99,7 @@ def class Hotel(name) =
 
 {- Conventional, non-QoS-based comparisons -}
 
-def bestPrice(x, y) = if x.price <= y.price then x else y
+def bestPrice(x, y) = if x.price &lt;= y.price then x else y
 
 def bestCategoryPrice(x, y) if (x.roomCat = y.roomCat) = bestPrice(x, y) 
 def bestCategoryPrice(x, y) if (x.roomCat = Deluxe())  = x 
@@ -120,7 +120,7 @@ def class TravelAgent2() =
     (i + {. airSegment = bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) .})  >i>
     (i + {. hotelSegment = bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) .})  >i>
     (i + {. totalPrice = i.airSegment.price + i.hotelSegment.price .})  >i>
-    (if i.totalPrice <= budget then i else Println("Budget exceeded, resubmit") >> acceptOrder(order, budget))
+    (if i.totalPrice &lt;= budget then i else Println("Order "+order+":Budget exceeded, resubmit") >> acceptOrder(order, budget))
   stop
 
 
@@ -135,9 +135,9 @@ val delayBetweenOrders = 100
 
 def simulateOrders(_, 0) = stop
 def simulateOrders(number, max) =
-    ( Println("Placing order " + number) >>
+    ( Println("Order "+order+": Placing order") >>
       TravelAgent2().acceptOrder(number, budget) >invoice>
-      Println("Invoice: " + invoice) >>
+      Println("Order "+order+": Invoice: " + invoice) >>
       stop)
   | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
 
