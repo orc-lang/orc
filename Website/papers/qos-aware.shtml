@@ -71,7 +71,7 @@ invoked.</p>
 
 <p>The Orc specification of the TravelAgent2 orchestration.</p>
 
-<pre class="orc"><![CDATA[
+<pre class="orc">
 --------
 -- Air travel quote service
 --------
@@ -99,7 +99,7 @@ def class Hotel(name) =
 
 {- Conventional, non-QoS-based comparisons -}
 
-def bestPrice(x, y) = if x.price <= y.price then x else y
+def bestPrice(x, y) = if x.price &lt;= y.price then x else y
 
 def bestCategoryPrice(x, y) if (x.roomCat = y.roomCat) = bestPrice(x, y) 
 def bestCategoryPrice(x, y) if (x.roomCat = Deluxe())  = x 
@@ -120,7 +120,7 @@ def class TravelAgent2() =
     (i + {. airSegment = bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) .})  >i>
     (i + {. hotelSegment = bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) .})  >i>
     (i + {. totalPrice = i.airSegment.price + i.hotelSegment.price .})  >i>
-    (if i.totalPrice <= budget then i else Println("Order "+order+": Budget exceeded, resubmit") >> acceptOrder(order, budget))
+    (if i.totalPrice &lt;= budget then i else Println("Order "+order+": Budget exceeded, resubmit") >> acceptOrder(order, budget))
   stop
 
 
@@ -142,7 +142,7 @@ def simulateOrders(number, max) =
   | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
 
 simulateOrders(0, numSimulatedOrders)
-]]></pre>
+</pre>
 
 <a id="TravelAgent2Weaved"></a><h2>TravelAgent2Weaved.orc <small>(<a href="#top">top</a>)</small></h2>
 
