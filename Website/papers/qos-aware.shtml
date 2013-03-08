@@ -135,9 +135,9 @@ val delayBetweenOrders = 100
 
 def simulateOrders(_, 0) = stop
 def simulateOrders(number, max) =
-    ( Println("Order "+order+": Placing order") >>
+    ( Println("Order "+number+": Placing order") >>
       TravelAgent2().acceptOrder(number, budget) >invoice>
-      Println("Order "+order+": Invoice: " + invoice) >>
+      Println("Order "+number+": Invoice: " + invoice) >>
       stop)
   | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
 
