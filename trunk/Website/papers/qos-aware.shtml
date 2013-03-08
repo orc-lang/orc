@@ -49,8 +49,8 @@ Submitted to <span class="venue"><a href="http://www.springer.com/engineering/ci
 
 <ul>
 <li><a href="#SLADeclaration">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
-<li><a href="#TravelAgent2">TravelAgent.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
-<li><a href="#TravelAgent2Weaved">TravelAgentWeaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2">TravelAgent2.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2Weaved">TravelAgent2Weaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
 </ul>
 
 <a id="SLADeclaration"></a><h2>SLADeclaration.orc <small>(<a href="#top">top</a>)</small></h2>
@@ -128,7 +128,7 @@ def class TravelAgent2() =
 -- Simulate some orders
 --------
 
-{- Simulation paramters -}
+{- Simulation parameters -}
 val numSimulatedOrders = 10
 val budget = 40
 val delayBetweenOrders = 100
