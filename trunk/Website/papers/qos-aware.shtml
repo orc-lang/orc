@@ -83,7 +83,7 @@ def class Airline(name) =
   stop
 
 --------
--- Hotel accomodation quote service
+-- Hotel accommodation quote service
 --------
 
 type RoomCategory = Deluxe() | Standard()
