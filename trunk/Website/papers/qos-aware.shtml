@@ -48,23 +48,77 @@ A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware 
 Submitted to <span class="venue"><a href="http://www.springer.com/engineering/circuits+%26+systems/journal/10703">Formal Methods in System Design</a></span>, 2013.</p>
 
 <ul>
-<li><a href="#SLADeclaration">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
+<li><a href="#QoS">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
 <li><a href="#TravelAgent2">TravelAgent2.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
 <li><a href="#TravelAgent2Weaved">TravelAgent2Weaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
 </ul>
 
-<a id="SLADeclaration"></a><h2>SLADeclaration.orc <small>(<a href="#top">top</a>)</small></h2>
+<a id="QoS"></a><h2>QoS.inc <small>(<a href="#top">top</a>)</small></h2>
 
-<p>Declaration of the SLA for the TravelAgent2 orchestration. We make use of
-the <code>def class</code> declaration to implement new sites to track QoS
-metrics. Data structures and operations on records <code>{. .}</code>, lists
-<code>[f, g]</code> and tuples <code>(f, g)</code> are used. Other general sites
-available in Orc such as real time (<code>Rtime</code>) rewritable storage
-locations (<code>Ref</code> and FIFO channels (<code>Channel</code>) are also
-invoked.</p>
+<p>The QoS operator definitions for the response time domain, cost domain,
+and more interestingly, the composite cost-response time domain.</p>
+
+<p>Note the following about the cost domain implementation:  In the body of the
+article, lattice operators' semantics forced us to use multisets to represent
+cost.  Since the join operator is defined explicitly here, as an optimization,
+we deviate from the lattice semantics for the cost domain, so it can be
+defined as a single number.</p>
+
 
 <pre class="orc-snippet">
-{- -}
+--------
+-- Response time
+--------
+
+def class ResponseTimeDomainClass() =
+  def leq(x, y) = x <= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = max(xs)
+  def compete(x, ys) = x
+  def get(r) = r.responseTime
+  def put(r, v) = r + {. responseTime = v .}
+  stop
+
+val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
+
+--------
+-- Cost
+--------
+
+def class CostDomainClass() =
+  def leq(x, y) = x <= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = cfold(oPlus, xs)
+  def compete(x, ys) = x
+  def get(r) = r.cost
+  def put(r, v) = r + {. cost = v .}
+  stop
+
+val costDomain = CostDomainClass() -- Singleton
+
+--------
+-- Cost and response time
+--------
+
+def class CostAndRTDomainClass() =
+  def leq((c1, rt1), (c2, rt2)) = if c1 /= c2 then costDomain.leq(c1, c2) else responseTimeDomain.leq(rt1, rt2)
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus((c1, rt1), (c2, rt2)) =  (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
+  def zero() = (costDomain.zero(), responseTimeDomain.zero())
+  def join(xs) = unzip(xs) >(cs,rts)> (costDomain.join(cs), responseTimeDomain.join(rts))
+  def compete((cx,rtx), ys) = unzip(ys) >(_,rtys)> (cx, responseTimeDomain.join(rtx:rtys))
+  def get(r) = (r.cost, r.responseTime)
+  def put(r, (c, rt)) = r + {. cost = c, responseTime = rt .}
+  stop
+
+val costAndRTDomain = CostAndRTDomainClass() -- Singleton
 </pre>
 
 <a id="TravelAgent2"></a><h2>TravelAgent2.orc <small>(<a href="#top">top</a>)</small></h2>
