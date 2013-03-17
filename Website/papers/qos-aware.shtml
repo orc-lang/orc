@@ -71,15 +71,13 @@ defined as a single number.</p>
 --------
 
 def class ResponseTimeDomainClass() =
-  def leq(x, y) = x <= y
+  def leq(x, y) = x &lt;= y
   def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
   def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
   def oPlus(x, y) = x + y
   def zero() = 0
   def join(xs) = max(xs)
   def compete(x, ys) = x
-  def get(r) = r.responseTime
-  def put(r, v) = r + {. responseTime = v .}
   stop
 
 val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
@@ -89,15 +87,13 @@ val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
 --------
 
 def class CostDomainClass() =
-  def leq(x, y) = x <= y
+  def leq(x, y) = x &lt;= y
   def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
   def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
   def oPlus(x, y) = x + y
   def zero() = 0
   def join(xs) = cfold(oPlus, xs)
   def compete(x, ys) = x
-  def get(r) = r.cost
-  def put(r, v) = r + {. cost = v .}
   stop
 
 val costDomain = CostDomainClass() -- Singleton
@@ -110,12 +106,10 @@ def class CostAndRTDomainClass() =
   def leq((c1, rt1), (c2, rt2)) = if c1 /= c2 then costDomain.leq(c1, c2) else responseTimeDomain.leq(rt1, rt2)
   def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
   def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
-  def oPlus((c1, rt1), (c2, rt2)) =  (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
+  def oPlus((c1, rt1), (c2, rt2)) = (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
   def zero() = (costDomain.zero(), responseTimeDomain.zero())
   def join(xs) = unzip(xs) >(cs,rts)> (costDomain.join(cs), responseTimeDomain.join(rts))
   def compete((cx,rtx), ys) = unzip(ys) >(_,rtys)> (cx, responseTimeDomain.join(rtx:rtys))
-  def get(r) = (r.cost, r.responseTime)
-  def put(r, (c, rt)) = r + {. cost = c, responseTime = rt .}
   stop
 
 val costAndRTDomain = CostAndRTDomainClass() -- Singleton
@@ -131,9 +125,14 @@ val costAndRTDomain = CostAndRTDomainClass() -- Singleton
 --------
 
 def randomPrice() = Random(50)
+def simulateDelay() = Random(150) >d> Rwait(d) >> d
 
 def class Airline(name) =
-  def quoteAvailPrice(order) = {. supplier = name, price = randomPrice() .} >c> Println("Order "+order+": Air "+name+" quote "+c) >> c
+  def quoteAvailPrice(order) =
+    randomPrice()  >p>
+    simulateDelay()  >d>
+    Println("Order "+order+": Airline '"+name+"' quote="+p+" (response time "+d+" ms)") >>
+    {. supplier = name, price = p .}
   stop
 
 --------
@@ -144,20 +143,25 @@ type RoomCategory = Deluxe() | Standard()
 def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
 
 def class Hotel(name) =
-  def quoteAvailPrice(order) = {. supplier = name, roomCat = randomRoomCat(), price = randomPrice() .} >c> Println("Order "+order+": Hotel "+name+" quote "+c) >> c
+  def quoteAvailPrice(order) =
+    randomPrice()  >p>
+    randomRoomCat() >r>
+    simulateDelay()  >d>
+    Println("Order "+order+": Hotel '"+name+"' room category="+r+", quote="+p+" (response time "+d+" ms)") >>
+    {. supplier = name, roomCat = r, price = p .}
   stop
 
 --------
 -- Travel Agency orchestration
 --------
 
-{- Conventional, non-QoS-based comparisons -}
+{- QoS-based comparisons -}
 
-def bestPrice(x, y) = if x.price &lt;= y.price then x else y
+def bestPrice(vx, vy) = if vx.price &lt;= vy.price then vx else vy
 
-def bestCategoryPrice(x, y) if (x.roomCat = y.roomCat) = bestPrice(x, y) 
-def bestCategoryPrice(x, y) if (x.roomCat = Deluxe())  = x 
-def bestCategoryPrice(x, y) if (y.roomCat = Deluxe())  = y 
+def bestCategoryPrice(vx, vy) if (vx.roomCat = vy.roomCat) = if vx.price &lt;= vy.price then vx else vy
+def bestCategoryPrice(vx, vy) if (vx.roomCat = Deluxe())   = vx
+def bestCategoryPrice(vx, vy) if (vy.roomCat = Deluxe())   = vy
 
 {- Service instances -}
 
@@ -168,13 +172,24 @@ val hotelB = Hotel("Hotel B")
 
 {- The TravelAgent2 workflow -}
 
+{- Wait for up to 't' milliseconds for the first value from x, then halt -}
+def timeout(t, x) = Let(Some(x) | Rwait(t) >> None()) >Some(y)> y
+
 def class TravelAgent2() = 
   def acceptOrder(order, budget) =
-    {. order = order .}  >i>
-    (i + {. airSegment = bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) .})  >i>
-    (i + {. hotelSegment = bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) .})  >i>
-    (i + {. totalPrice = i.airSegment.price + i.hotelSegment.price .})  >i>
-    (if i.totalPrice &lt;= budget then i else Println("Order "+order+": Budget exceeded, resubmit") >> acceptOrder(order, budget))
+    (timeout(325,
+      Println("Order "+order+": Accepted by travel agent") >>
+      {. order = order .}  >invoice>
+      bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) >air>
+      invoice + {. airSegment = air .}  >invoice>
+      bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) >hotel>
+      invoice + {. hotelSegment = hotel .}  >invoice>
+      invoice + {. totalPrice = invoice.airSegment.price + invoice.hotelSegment.price .}
+    ) ; Println("Order "+order+": Timeout") >> stop)
+      >invoice>
+    ( if invoice.totalPrice &lt;= budget 
+      then (Println("Order "+order+": Orchestration completed") >> invoice)
+      else (Println("Order "+order+": Budget exceeded, resubmitting") >> acceptOrder(order, budget)))
   stop
 
 
@@ -185,14 +200,11 @@ def class TravelAgent2() =
 {- Simulation parameters -}
 val numSimulatedOrders = 10
 val budget = 40
-val delayBetweenOrders = 100
+val delayBetweenOrders = 200
 
 def simulateOrders(_, 0) = stop
 def simulateOrders(number, max) =
-    ( Println("Order "+number+": Placing order") >>
-      TravelAgent2().acceptOrder(number, budget) >invoice>
-      Println("Order "+number+": Invoice: " + invoice) >>
-      stop)
+    TravelAgent2().acceptOrder(number, budget)
   | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
 
 simulateOrders(0, numSimulatedOrders)
@@ -204,7 +216,143 @@ simulateOrders(0, numSimulatedOrders)
 matching is used extensively to assign and propagate QoS values.</p>
 
 <pre class="orc">
-{- -}
+--------
+-- Response time
+--------
+
+def class ResponseTimeDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = max(xs)
+  def compete(x, ys) = x
+  stop
+
+val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
+
+--------
+-- Cost
+--------
+
+def class CostDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = cfold(oPlus, xs)
+  def compete(x, ys) = x
+  stop
+
+val costDomain = CostDomainClass() -- Singleton
+
+--------
+-- Cost and response time
+--------
+
+def class CostAndRTDomainClass() =
+  def leq((c1, rt1), (c2, rt2)) = if c1 /= c2 then costDomain.leq(c1, c2) else responseTimeDomain.leq(rt1, rt2)
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus((c1, rt1), (c2, rt2)) = (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
+  def zero() = (costDomain.zero(), responseTimeDomain.zero())
+  def join(xs) = unzip(xs) >(cs,rts)> (costDomain.join(cs), responseTimeDomain.join(rts))
+  def compete((cx,rtx), ys) = unzip(ys) >(_,rtys)> (cx, responseTimeDomain.join(rtx:rtys))
+  stop
+
+val costAndRTDomain = CostAndRTDomainClass() -- Singleton
+{- EXAMPLE -}
+--------
+-- Air travel quote service
+--------
+
+def randomPrice() = Random(50)
+def simulateDelay() = Random(150) >d> Rwait(d) >> d
+
+def class Airline(name) =
+  def quoteAvailPrice(order, qosParms) =
+    randomPrice()  >p>
+    simulateDelay()  >d>
+    Println("Order "+order+": Airline '"+name+"' quote="+p+" (response time "+d+" ms)") >>
+    ({. supplier = name, price = p .}, costAndRTDomain.oPlus(qosParms, (p,d)))
+  stop
+
+--------
+-- Hotel accommodation quote service
+--------
+
+type RoomCategory = Deluxe() | Standard()
+def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
+
+def class Hotel(name) =
+  def quoteAvailPrice(order, qosParms) =
+    randomPrice()  >p>
+    randomRoomCat() >r>
+    simulateDelay()  >d>
+    Println("Order "+order+": Hotel '"+name+"' room category="+r+", quote="+p+" (response time "+d+" ms)") >>
+    ({. supplier = name, roomCat = r, price = p .}, costAndRTDomain.oPlus(qosParms, (p,d)))
+  stop
+
+--------
+-- Travel Agency orchestration
+--------
+
+{- QoS-based comparisons -}
+
+def bestPrice((vx, qx), (vy, qy)) = if vx.price &lt;= vy.price then (vx, costAndRTDomain.compete(qx,[qy])) else (vy, costAndRTDomain.compete(qy,[qx]))
+
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vx.roomCat = vy.roomCat) = if vx.price &lt;= vy.price then (vx, costAndRTDomain.compete(qx,[qy])) else (vy, costAndRTDomain.compete(qy,[qx]))
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vx.roomCat = Deluxe())   = (vx, costAndRTDomain.compete(qx,[qy]))
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vy.roomCat = Deluxe())   = (vy, costAndRTDomain.compete(qy,[qx]))
+
+{- Service instances -}
+
+val airline1 = Airline("Airline 1")
+val airline2 = Airline("Airline 2")
+val hotelA = Hotel("Hotel A")
+val hotelB = Hotel("Hotel B")
+
+{- The TravelAgent2 workflow -}
+
+{- Wait for up to 't' milliseconds for the first value from x, then halt -}
+def timeout(t, x) = Let(Some(x) | Rwait(t) >> None()) >Some(y)> y
+
+def class TravelAgent2() = 
+  def acceptOrder(order, budget) =
+    (timeout(325,
+      Println("Order "+order+": Accepted by travel agent") >>
+      {. order = order .}  >invoice>
+      costAndRTDomain.zero()  >qosParms>
+      bestPrice(airline1.quoteAvailPrice(order, qosParms), airline2.quoteAvailPrice(order, qosParms)) >(air,qosParms)>
+      (invoice + {. airSegment = air .})  >invoice>
+      bestCategoryPrice(hotelA.quoteAvailPrice(order, qosParms), hotelB.quoteAvailPrice(order, qosParms)) >(hotel,qosParms)>
+      (invoice + {. hotelSegment = hotel .})  >invoice>
+      (invoice + {. totalPrice = invoice.airSegment.price + invoice.hotelSegment.price .}, qosParms)
+    ) ; Println("Order "+order+": Timeout") >> stop)
+      >(invoice, qosParms)>
+    ( if invoice.totalPrice &lt;= budget 
+      then (Println("Order "+order+": Orchestration completed with (cost, response time) QoS delivered="+qosParms) >> (invoice, qosParms))
+      else (Println("Order "+order+": Budget exceeded, resubmitting") >> acceptOrder(order, budget)))
+  stop
+
+
+--------
+-- Simulate some orders
+--------
+
+{- Simulation parameters -}
+val numSimulatedOrders = 10
+val budget = 40
+val delayBetweenOrders = 200
+
+def simulateOrders(_, 0) = stop
+def simulateOrders(number, max) =
+    TravelAgent2().acceptOrder(number, budget)
+  | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
+
+simulateOrders(0, numSimulatedOrders)
 </pre>
 
 			</div>
