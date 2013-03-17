@@ -48,9 +48,9 @@ A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware 
 Submitted to <span class="venue"><a href="http://www.springer.com/engineering/circuits+%26+systems/journal/10703">Formal Methods in System Design</a></span>, 2013.</p>
 
 <ul>
-<li><a href="#QoS">SLADeclaration.orc&mdash;Declaration of the SLA for the TravelAgent2 orchestration.</a></li>
-<li><a href="#TravelAgent2">TravelAgent2.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
-<li><a href="#TravelAgent2Weaved">TravelAgent2Weaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
+<li><a href="#QoS">QoS.orc&mdash;Declaration of the QoS operators for the Cost and ResponseTime QoS domains.</a></li>
+<li><a href="#TravelAgent2-sim">TravelAgent2-sim.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2-weaved">TravelAgent2-weaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
 </ul>
 
 <a id="QoS"></a><h2>QoS.inc <small>(<a href="#top">top</a>)</small></h2>
@@ -115,7 +115,7 @@ def class CostAndRTDomainClass() =
 val costAndRTDomain = CostAndRTDomainClass() -- Singleton
 </pre>
 
-<a id="TravelAgent2"></a><h2>TravelAgent2.orc <small>(<a href="#top">top</a>)</small></h2>
+<a id="TravelAgent2-sim"></a><h2>TravelAgent2-sim.orc <small>(<a href="#top">top</a>)</small></h2>
 
 <p>The Orc specification of the TravelAgent2 orchestration.</p>
 
@@ -210,7 +210,7 @@ def simulateOrders(number, max) =
 simulateOrders(0, numSimulatedOrders)
 </pre>
 
-<a id="TravelAgent2Weaved"></a><h2>TravelAgent2Weaved.orc <small>(<a href="#top">top</a>)</small></h2>
+<a id="TravelAgent2-weaved"></a><h2>TravelAgent2-weaved.orc <small>(<a href="#top">top</a>)</small></h2>
 
 <p>The QoS-weaved description of the TravelAgent2 orchestration. Pattern
 matching is used extensively to assign and propagate QoS values.</p>
