@@ -432,7 +432,7 @@ import type BoundedChannel = "orc.lib.state.types.BoundedChannelType"
 
 {--
 @site Array[A](Integer) :: Array[A]
-Create a new native array of the given size. The array is initialized
+Create a new native array of the given nonnegative size. The array is initialized
 to contain <code>null</code>s.
 
 The resulting array can be called directly with an index, as if
