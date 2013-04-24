@@ -100,7 +100,7 @@ public class OrcScriptException extends ScriptException {
    * @see java.lang.Throwable#getCause()
    */
   @Override
-  public Throwable getCause() {
+  synchronized public Throwable getCause() {
     return orcE.getCause();
   }
 
