@@ -5,15 +5,16 @@
 <h2>Install Prerequisites</h2>
 <ol>
 <li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
-<li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>
-<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.5 or later. These
-instructions assume version 3.6.2, but other versions should behave similarly.</li>
+<!--<li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
+<li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.7 or later. These
+instructions assume version 3.7.2, but other versions should behave similarly.</li>
 <li><a href="http://www.eclipse.org/subversive/">Subversive</a>. You may also use
 	<a href="http://subclipse.tigris.org">Subclipse</a>, or
 	<a href="http://code.google.com/p/orc/source/checkout">check out the
 	project manually</a> with the client of your choice.
 </li>
-<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.9.1.</li>
+<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.10.1.
+Note that the Scala Eclipse plug in <a href="https://www.assembla.com/spaces/scala-ide/wiki/Setup">works better with a modified eclipse.ini</a>.</li>
 <li>A Subversion distribution that includes the <code>svnversion</code> command.  Most UNIX systems (including Mac OS X),
 Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,
 require one to install a <a href="http://subversion.apache.org/packages.html">Subversion client</a>.</li>
