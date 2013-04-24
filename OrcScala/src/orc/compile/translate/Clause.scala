@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -21,6 +21,8 @@ import orc.ast.oil.named
 import orc.compile.translate.PrimitiveForms._
 import scala.collection.immutable._
 import orc.error.compiletime._
+
+import scala.language.reflectiveCalls
 
 case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: Expression) extends orc.ast.AST {
 

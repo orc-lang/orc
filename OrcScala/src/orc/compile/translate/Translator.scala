@@ -15,20 +15,22 @@
 
 package orc.compile.translate
 
+import scala.collection.immutable.{HashMap, List, Map, Nil}
+import scala.collection.mutable
+import scala.language.reflectiveCalls
+
 import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
-import orc.compile.translate.ClassForms._
-import orc.compile.translate.PrimitiveForms._
+import orc.compile.translate.ClassForms.makeClassBody
+import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
-import orc.error.OrcExceptionExtension._
-import orc.error.compiletime._
+import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException}
 import orc.lib.builtin
-import orc.values.{ Signal, Field }
-import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
-import scala.collection.mutable
-import scala.collection.immutable._
+import orc.values.{Field, Signal}
+import orc.values.sites.{JavaSiteForm, OrcSiteForm}
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 

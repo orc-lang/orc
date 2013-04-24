@@ -74,6 +74,7 @@ trait NamedToNameless {
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
     }
   }
 
@@ -120,6 +121,7 @@ trait NamedToNameless {
         nameless.VariantType(typeformals.size, newVariants)
       }
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
+      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
 

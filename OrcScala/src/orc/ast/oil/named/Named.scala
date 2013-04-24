@@ -15,6 +15,8 @@
 
 package orc.ast.oil.named
 
+import scala.language.reflectiveCalls
+
 import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName

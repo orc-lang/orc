@@ -14,6 +14,8 @@
 //
 package orc.util
 
+import scala.language.implicitConversions
+
 import orc.types.Type
 import orc.types.SignalType
 import orc.types.TupleType

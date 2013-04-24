@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Mar 29, 2011.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -329,13 +329,13 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
         }
       }
     } catch {
-      case t => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in " + getClass.getCanonicalName + ".run()", t); shutdownNow(); throw t }
+      case t: Throwable => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in " + getClass.getCanonicalName + ".run()", t); shutdownNow(); throw t }
     } finally {
       try {
         if (!isTerminated) shutdownNow()
         onShutdownFinish()
       } catch {
-        case _ => /* Do nothing */
+        case _: Throwable => /* Do nothing */
       }
       supervisorThread.getThreadGroup().setDaemon(true)
       logThreadExit()
