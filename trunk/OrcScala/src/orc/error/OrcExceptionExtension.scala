@@ -6,13 +6,15 @@
 //
 // Created by dkitchin on Aug 16, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.error
+
+import scala.language.implicitConversions
 
 /** Implicitly extend Orc exceptions with an additional method to set their location.
   * This is in Scala so that the exception's specific type can be maintained through the call.

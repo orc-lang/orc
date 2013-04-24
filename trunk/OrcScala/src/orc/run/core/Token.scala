@@ -468,7 +468,7 @@ class Token protected (
     } catch {
       case e: OrcException => this !! e
       case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
-      case e => { notifyOrc(CaughtEvent(e)); halt() }
+      case e: Throwable => { notifyOrc(CaughtEvent(e)); halt() }
     }
   }
 

@@ -14,6 +14,8 @@
 //
 package orc.ast.oil.named
 
+import scala.language.reflectiveCalls
+
 /** @author dkitchin
   */
 trait NamedASTFunction {

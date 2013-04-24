@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Dec 17, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,7 +20,7 @@ package docgen
   */
 
 /** Parent trait of parsed documentation items */
-trait DocItem
+sealed trait DocItem
 
 /** A plain chunk of documentation text */
 case class DocText(content: String) extends DocItem

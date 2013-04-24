@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 24, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@
 
 package orc.compile.typecheck
 
+import scala.language.reflectiveCalls
 import orc.ast.oil.{ named => syntactic }
 import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._

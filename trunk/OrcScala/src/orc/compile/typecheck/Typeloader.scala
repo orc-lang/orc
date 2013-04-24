@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Nov 29, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -413,14 +413,14 @@ object Typeloader extends SiteClassLoading {
       try {
         return loadedClass.asInstanceOf[Class[Type]].newInstance()
       } catch {
-        case e => throw new TypeResolutionException(loadedClass.getName(), e)
+        case e: Throwable => throw new TypeResolutionException(loadedClass.getName(), e)
       }
     } else {
       try { // Maybe it's a Scala object....
         val loadedClassCompanion = loadClass(name + "$")
         return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Type]
       } catch {
-        case _ => {} //Ignore -- It's not a Scala object, then.
+        case _: Throwable => {} //Ignore -- It's not a Scala object, then.
       }
       throw new TypeResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getName + " cannot be cast to " + classOf[Type].getName))
     }
@@ -435,14 +435,14 @@ object Typeloader extends SiteClassLoading {
       try {
         return loadedClass.asInstanceOf[Class[TypeOperator]].newInstance()
       } catch {
-        case e => throw new TypeOperatorResolutionException(loadedClass.getName(), e)
+        case e: Throwable => throw new TypeOperatorResolutionException(loadedClass.getName(), e)
       }
     } else {
       try { // Maybe it's a Scala object....
         val loadedClassCompanion = loadClass(name + "$")
         return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[TypeOperator]
       } catch {
-        case _ => {} //Ignore -- It's not a Scala object, then.
+        case _: Throwable => {} //Ignore -- It's not a Scala object, then.
       }
       throw new TypeOperatorResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getName + " cannot be cast to " + classOf[TypeOperator].getName))
     }

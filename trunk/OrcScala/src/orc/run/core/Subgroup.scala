@@ -38,7 +38,7 @@ abstract class Subgroup(parent: Group) extends Group {
       if (parent.isKilled()) { kill() }
     } catch {
       case e: InterruptedException => Thread.currentThread().interrupt()
-      case e => { notifyOrc(CaughtEvent(e)) }
+      case e: Throwable => { notifyOrc(CaughtEvent(e)) }
     }
   }
 

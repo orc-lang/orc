@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Dec 8, 2010.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,12 +14,13 @@
 //
 package orc.values.sites
 
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.WrappedArray
+import scala.language.{existentials,reflectiveCalls}
 import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.WrappedArray
 
 /**
   *

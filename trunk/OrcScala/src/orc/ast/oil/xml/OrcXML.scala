@@ -14,6 +14,7 @@
 //
 package orc.ast.oil.xml
 
+import scala.language.implicitConversions
 import orc.compile.parse.OrcPosition
 import orc.compile.parse.PositionWithFilename
 import scala.util.parsing.input.NoPosition
@@ -121,7 +122,7 @@ object OrcXML {
   def writeOilToStream(ast: Expression, dest: java.io.OutputStream): Unit = {
     val writer = new java.io.OutputStreamWriter(dest)
     val node = astToXml(ast)
-    val xml = Utility.toXML(node, preserveWhitespace = true, minimizeTags = true).toString
+    val xml = Utility.serialize(node, preserveWhitespace = true, minimizeTags = MinimizeMode.Always).toString
     writer.write("<?xml version='1.0' encoding='UTF-8'?>\n")
     writer.write(xml)
     writer.close()

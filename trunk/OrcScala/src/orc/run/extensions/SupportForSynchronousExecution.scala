@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -41,7 +41,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
     val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
     def syncAction(event: OrcEvent): Unit = {
       event match {
-        case HaltedOrKilledEvent => { done.set({}) }
+        case HaltedOrKilledEvent => { done.put({}) }
         case _ => {}
       }
       k(event)

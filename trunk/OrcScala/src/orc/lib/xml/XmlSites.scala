@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Sep 29, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -57,7 +57,7 @@ object XMLElementConstructor extends TotalSite3 with TypedSite {
       case (tag: String, attr: OrcRecord, children: List[_]) => {
         val metadata = attr.entries.foldRight[MetaData](Null) { case ((k, v), rest) => new UnprefixedAttribute(k, v.toString, rest) }
         val childNodes = for (c <- children) yield c.asInstanceOf[Node]
-        new Elem(null, tag, metadata, TopScope, childNodes: _*)
+        new Elem(null, tag, metadata, TopScope, true, childNodes: _*)
       }
       case (tag: String, attr: OrcRecord, a) => {
         throw new ArgumentTypeMismatchException(2, "List[Node]", a.getClass().toString())
@@ -124,7 +124,7 @@ object XMLTextExtractor extends PartialSite1 with TypedSite {
 
   override def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
-      case xml: Text => Some(xml._data)
+      case xml: Text => Some(xml.text)
       case _ => None
     }
   }
@@ -155,7 +155,7 @@ object XMLCDataExtractor extends PartialSite1 with TypedSite {
 
   override def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
-      case xml: PCData => Some(xml._data)
+      case xml: PCData => Some(xml.text)
       case _ => None
     }
   }

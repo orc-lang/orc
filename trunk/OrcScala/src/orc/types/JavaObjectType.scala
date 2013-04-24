@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Nov 29, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,11 +14,12 @@
 //
 package orc.types
 
+import scala.language.existentials
+import java.lang.{ reflect => jvm }
+import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.NoSuchMemberException
-import java.lang.{ reflect => jvm }
-import orc.compile.typecheck.Typeloader._
 
 /**
   * The type of a Java object.
