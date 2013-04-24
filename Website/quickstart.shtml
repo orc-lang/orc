@@ -7,7 +7,8 @@
 <li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
 <!--<li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
 <li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.7 or later. These
-instructions assume version 3.7.2, but other versions should behave similarly.</li>
+instructions assume version 3.7.2, but other versions should behave similarly. 
+"Eclipse Classic" is sufficient, but any Eclipse package with the JDT can be used.</li>
 <li><a href="http://www.eclipse.org/subversive/">Subversive</a>. You may also use
 	<a href="http://subclipse.tigris.org">Subclipse</a>, or
 	<a href="http://code.google.com/p/orc/source/checkout">check out the
