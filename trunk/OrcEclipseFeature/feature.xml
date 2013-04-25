@@ -4,7 +4,7 @@
 
      $Id$
 
-     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms at
      URL: http://orc.csres.utexas.edu/license.shtml .
@@ -22,14 +22,14 @@ Development Environment). Provides editing, parsing, building, and execution ser
    </description>
 
    <copyright url="http://orc.csres.utexas.edu/license.shtml">
-      Copyright (c) 2012 The University of Texas at Austin. All rights
+      Copyright (c) 2013 The University of Texas at Austin. All rights
 reserved.
    </copyright>
 
    <license url="http://orc.csres.utexas.edu/license.shtml">
 Orc License [An instance of the OSI Simplified BSD License]
 --
-Copyright (c) 2012 The University of Texas at Austin. All rights
+Copyright (c) 2013 The University of Texas at Austin. All rights
 reserved.
 --
 Redistribution and use in source and binary forms, with or without
