@@ -1,9 +1,0 @@
-<?xml version="1.0" ?>
-<project name="orc-jspwiki" default="jar" basedir=".">
-	<description>
-		Ant build file for Orc binary distribution.
-	</description>
-	<target name="jar" description="generate the distribution">
-		<jar jarfile="orc-jspwiki.jar" basedir="build"></jar>
-	</target>
-</project>
