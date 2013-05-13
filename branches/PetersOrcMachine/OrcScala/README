@@ -1,0 +1,38 @@
+                      THE ORC PROGRAMMING LANGUAGE
+                   STRUCTURED CONCURRENT PROGRAMMING
+
+                   The University of Texas at Austin
+
+
+                           README for orc.zip
+
+
+Welcome! This archive includes the compiler and runtime engine for the
+Orc language, along with the standard Orc library.
+
+Orc runs in a Java SE 6 runtime environment.  Required JARs are
+included here, in the "lib" directory.
+
+There are numerous examples of Orc programs included in the "examples"
+directory.
+
+Orc can be used in several different ways:
+- Eclipse IDE plug-in
+- Command line JVM invocation
+- Mac OS X application
+- Embedded in other applications
+- Web interface
+- SOAP/JSON/RMI
+
+The command line and embedded usage methods only require this archive
+(orc.zip). See the file INSTALL for details. There remaining ways to
+use Orc, require separate archives, available at the Orc Web site.
+
+See https://orc.csres.utexas.edu/ for more information about Orc,
+including the language user's guide, discussion groups, a wiki, and more.
+
+See the files LICENSE and licenses.yml for license agreements.
+
+
+--
+[$Id$]
