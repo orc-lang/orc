@@ -45,7 +45,11 @@ abstract class SiteAdaptor extends Site {
     */
   @throws(classOf[TokenException])
   def callSite(args: Args, h: Handle): Unit
-
+  
+  override def immediateHalt: Boolean = false
+  override def immediatePublish: Boolean = false
+  override def publications: (Int, Option[Int]) = (0, None)
+  override def effectFree: Boolean = false
 }
 
 object SiteAdaptor {

@@ -92,4 +92,7 @@ public class Exponent extends EvalSite implements TypedSite {
 	public Type orcType() {
 		return Types.function(Types.number(), Types.number(), Types.number());
 	}
+
+	@Override
+    public boolean effectFree() { return true; }
 }

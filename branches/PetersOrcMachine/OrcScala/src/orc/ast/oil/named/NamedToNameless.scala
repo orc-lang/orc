@@ -100,6 +100,7 @@ trait NamedToNameless {
         nameless.RecordType(newEntries)
       }
       case TypeApplication(tycon, typeactuals) => {
+        // TODO: This may be a bug. tycon may not be a type variable.
         val i = typecontext indexOf tycon
         assert(i >= 0)
         nameless.TypeApplication(i, typeactuals map toType)

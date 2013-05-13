@@ -87,4 +87,7 @@ public class Div extends EvalSite implements TypedSite {
 	public Type orcType() {
 		return Types.overload(Types.function(Types.integer(), Types.integer(), Types.integer()), Types.function(Types.number(), Types.number(), Types.number()));
 	}
+
+	@Override
+    public boolean effectFree() { return true; }
 }
