@@ -17,6 +17,9 @@ package orc.values.sites.compatibility;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import scala.Option;
+import scala.Some;
+import scala.Tuple2;
 
 /**
  * 
@@ -31,4 +34,11 @@ public abstract class EvalSite extends SiteAdaptor {
 	}
 
 	public abstract Object evaluate(Args args) throws TokenException;
+
+    @Override
+    public boolean immediateHalt() { return true; }
+    @Override
+    public Tuple2<Object, Option<Object>> publications() { 
+      return new Tuple2<Object, Option<Object>>(1, new Some<Object>(1));
+    }
 }

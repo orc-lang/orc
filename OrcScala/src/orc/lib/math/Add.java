@@ -110,4 +110,9 @@ public class Add extends EvalSite implements TypedSite {
 		    Types.function(Types.string(), Types.top(), Types.string()), 
 		    Types.function(Types.top(), Types.string(), Types.string()));
 	}
+
+    @Override
+    public boolean immediatePublish() { return true; }
+    @Override
+    public boolean effectFree() { return true; }
 }

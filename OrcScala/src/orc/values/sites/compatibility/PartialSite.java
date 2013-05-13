@@ -15,6 +15,9 @@ package orc.values.sites.compatibility;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import scala.Option;
+import scala.Some;
+import scala.Tuple2;
 
 /**
  * Abstract class for sites with a partial and immediate semantics: evaluate as for a total
@@ -42,4 +45,10 @@ public abstract class PartialSite extends SiteAdaptor {
 
 	abstract public Object evaluate(Args args) throws TokenException;
 
+    @Override
+    public boolean immediateHalt() { return true; }
+    @Override
+    public Tuple2<Object, Option<Object>> publications() { 
+      return new Tuple2<Object, Option<Object>>(0, new Some<Object>(1));
+    }
 }

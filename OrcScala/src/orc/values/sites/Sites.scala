@@ -31,6 +31,11 @@ trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
   // BIG TODO: Remove this default value
   val quiescentWhileInvoked: Boolean = false
+  
+  def immediateHalt: Boolean = false
+  def immediatePublish: Boolean = false
+  def publications: (Int, Option[Int]) = (0, None)
+  def effectFree: Boolean = false
 }
 
 trait Site extends OrcValue with SiteMetadata {
@@ -73,6 +78,10 @@ trait TotalSite extends Site {
   }
 
   def evaluate(args: List[AnyRef]): AnyRef
+  
+  override val immediateHalt = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 
 /* Enforce nonblocking, but do not enforce totality */
@@ -86,6 +95,9 @@ trait PartialSite extends Site {
   }
 
   def evaluate(args: List[AnyRef]): Option[AnyRef]
+
+  override val immediateHalt = true
+  override val publications = (0, Some(1))
 }
 
 trait UnimplementedSite extends Site {

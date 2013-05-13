@@ -69,7 +69,8 @@ trait AST extends Positional {
   def transferOptionalVariableName(source: AST, target: AST) {
     (source, target) match {
       case (x: hasOptionalVariableName, y: hasOptionalVariableName) => {
-        y.optionalVariableName = x.optionalVariableName
+        if( x.optionalVariableName.isDefined )
+          y.optionalVariableName = x.optionalVariableName
       }
       case _ => {}
     }
