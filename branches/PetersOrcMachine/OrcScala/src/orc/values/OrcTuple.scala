@@ -39,4 +39,6 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
       case _ => throw new ArityMismatchException(1, args.size)
     }
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"
+  
+  override val effectFree = true
 }

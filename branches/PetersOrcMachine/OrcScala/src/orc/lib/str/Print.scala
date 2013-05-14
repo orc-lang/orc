@@ -41,6 +41,10 @@ abstract class PrintSite extends Site1 with TypedSite {
 
   def orcType = SimpleFunctionType(Top, SignalType)
 
+  override val effectFree = false
+  override val immediatePublish = true
+  override val immediateHalt = true
+  override val publications = (1, Some(1))
 }
 
 object Print extends PrintSite {

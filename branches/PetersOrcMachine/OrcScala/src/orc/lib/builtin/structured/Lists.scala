@@ -27,6 +27,7 @@ object NilConstructor extends TotalSite0 with TypedSite {
   override def name = "Nil"
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
+  override val effectFree = true
 }
 object NilExtractor extends PartialSite1 with TypedSite {
   override def name = "Nil.unapply"
@@ -37,6 +38,7 @@ object NilExtractor extends PartialSite1 with TypedSite {
     }
   }
   def orcType() = SimpleFunctionType(ListType(Top), SignalType)
+  override val effectFree = true
 }
 
 object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor)
@@ -52,6 +54,7 @@ object ConsConstructor extends TotalSite2 with TypedSite {
     val X = new TypeVariable()
     FunctionType(List(X), List(X, ListType(X)), ListType(X))
   }
+  override val effectFree = true
 }
 object ConsExtractor extends PartialSite1 with TypedSite {
   override def name = "Cons.unapply"
@@ -66,4 +69,5 @@ object ConsExtractor extends PartialSite1 with TypedSite {
     new FunctionType(List(X), List(ListType(X)), TupleType(List(X, ListType(X))))
   }
 
+  override val effectFree = true
 }

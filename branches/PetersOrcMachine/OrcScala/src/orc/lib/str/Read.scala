@@ -53,4 +53,5 @@ object Read extends TotalSite with TypedSite {
 
   def orcType(): Type = SimpleFunctionType(StringType, Top)
 
+  override val effectFree = true
 }

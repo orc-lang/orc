@@ -32,6 +32,8 @@ object Ift extends PartialSite with TypedSite {
     }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
+
+  override val effectFree = true
 }
 
 object Iff extends PartialSite with TypedSite {
@@ -45,6 +47,8 @@ object Iff extends PartialSite with TypedSite {
     }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
+
+  override val effectFree = true
 }
 
 object Eq extends TotalSite with TypedSite {
@@ -57,6 +61,8 @@ object Eq extends TotalSite with TypedSite {
     }
 
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
+
+  override val effectFree = true
 }
 
 object Let extends TotalSite with TypedSite {
@@ -69,6 +75,8 @@ object Let extends TotalSite with TypedSite {
     }
 
   def orcType() = LetType
+
+  override val effectFree = true
 }
 
 object LetType extends SimpleCallableType with StrictType {

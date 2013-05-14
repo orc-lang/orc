@@ -121,7 +121,7 @@ class PrettyPrintWithAnalysis(analyzer : ExpressionAnalysisStore) extends Pretty
     import analyzer.ImplicitResults._
     def ic(c : String, b : Boolean) = if(b) c else ""
     ast match {
-      case _: Constant | _: Var => s
+      case _: Constant => s
       case e: Expression =>
         val range = if (e.publications != (0, None)) { val (l, u) = e.publications; l.toString + "-" + (u map (_.toString) getOrElse "inf") } else ""
         val tag = s"${ic("~", e.immediateHalt)}${ic("!", e.immediatePublish)}${ic("*", e.effectFree)}$range${e.strictOnSet.mkString("", ",", "")}"

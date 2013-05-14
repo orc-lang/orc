@@ -26,6 +26,7 @@ object NoneConstructor extends TotalSite0 with TypedSite {
   override def name = "None"
   def eval() = None
   def orcType() = SimpleFunctionType(OptionType(Bot))
+  override val effectFree = true
 }
 object NoneExtractor extends PartialSite1 with TypedSite {
   override def name = "None.unapply"
@@ -37,6 +38,7 @@ object NoneExtractor extends PartialSite1 with TypedSite {
     }
   }
   def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
+  override val effectFree = true
 }
 
 object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor)
@@ -47,6 +49,7 @@ object SomeConstructor extends TotalSite1 with TypedSite {
     val X = new TypeVariable()
     new FunctionType(List(X), List(X), OptionType(X))
   }
+  override val effectFree = true
 }
 object SomeExtractor extends PartialSite1 with TypedSite {
   override def name = "Some.unapply"
@@ -61,4 +64,5 @@ object SomeExtractor extends PartialSite1 with TypedSite {
     val X = new TypeVariable()
     new FunctionType(List(X), List(OptionType(X)), X)
   }
+  override val effectFree = true
 }

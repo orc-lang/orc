@@ -39,6 +39,7 @@ object Rclock extends TotalSite0 with TypedSite {
         "time" -> SimpleFunctionType(IntegerType),
         "wait" -> SimpleFunctionType(IntegerType, SignalType)))
 
+  override val effectFree = true
 }
 
 /**
@@ -47,6 +48,7 @@ class Rtime(startTime: Long) extends TotalSite0 {
 
   def eval() = (System.currentTimeMillis() - startTime).asInstanceOf[AnyRef]
 
+  override val effectFree = true
 }
 
 /**
@@ -69,4 +71,5 @@ object Rwait extends Site1 {
     }
   }
 
+  override val publications = (0, Some(1))
 }
