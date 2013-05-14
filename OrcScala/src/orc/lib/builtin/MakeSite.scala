@@ -50,6 +50,7 @@ object MakeSite extends TotalSite1 with TypedSite {
     }
   }
 
+  override val effectFree = true
 }
 
 // Standalone class execution

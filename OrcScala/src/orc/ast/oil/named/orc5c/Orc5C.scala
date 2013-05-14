@@ -22,11 +22,41 @@ import orc.ast.hasOptionalVariableName
 sealed abstract class Orc5CAST extends AST {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
+
+  override val subtrees: Iterable[Orc5CAST] = this match {
+    case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
+    case left || right => List(left, right)
+    case Sequence(left, x, right) => List(left, x, right)
+    case LateBind(left, x, right) => List(left, x, right)
+    case Limit(f) => List(f)
+    case left ow right => List(left, right)
+    case DeclareDefs(defs, body) => defs ::: List(body)
+    case VtimeZone(timeOrder, body) => List(timeOrder, body)
+    case HasType(body, expectedType) => List(body, expectedType)
+    case DeclareType(u, t, body) => List(u, t, body)
+    case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
+    }
+    case TupleType(elements) => elements
+    case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
+    case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
+    case AssertedType(assertedType) => List(assertedType)
+    case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
+    case RecordType(entries) => entries.values
+    case VariantType(self, typeformals, variants) => {
+      self :: typeformals ::: (for ((_, variant) <- variants; t <- variant) yield t)
+    }
+    case Constant(_) | UnboundVar(_) | Stop() => Nil
+    case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
+    case _: BoundVar | _: BoundTypevar => Nil
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in Orc5CAST.subtrees")
+  }
 }
 
 sealed abstract class Expression
   extends Orc5CAST
-  with Orc5CInfixCombinators {
+  with Orc5CInfixCombinators
+  with Substitution[Expression] {
 }
 
 case class Stop() extends Expression

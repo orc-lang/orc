@@ -30,6 +30,7 @@ object TupleConstructor extends TotalSite with TypedSite {
   def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
   }
+  override val effectFree = true
 }
 
 /* 
@@ -69,4 +70,5 @@ object TupleArityChecker extends PartialSite2 with TypedSite {
     }
   }
 
+  override val effectFree = true
 }

@@ -42,6 +42,9 @@ trait AnalysisResults {
   
   def silent = publications._2 == Some(0)
   def talkative = publications._1 >= 1
+  
+  def publishesAtMost(n : Int) = publications._2 map { i => i <= n } getOrElse false
+  def publishesAtLeast(n : Int) = publications._1 >= n
 
   /**
    * Is this expression strict on the variable <code>x</code>?
@@ -268,6 +271,15 @@ class Analyzer extends ExpressionAnalysisStore {
  
   def publications(e : Expression, ctx: AnalysisContext): (Int, Option[Int]) = {
     import ctx.ImplicitResults._
+
+    def comp(minF: (Int, Int) => Int, maxF: (Int, Int) => Int)(f: Expression, g: Expression) = {
+      (minF(f.publications._1, g.publications._1),
+        (f.publications._2, g.publications._2) match {
+          case (Some(n), Some(m)) => Some(maxF(n, m))
+          case _ => None
+        })
+    }
+
     e match {
       case Stop() => (0, Some(0))
       case Call(target, args, _) => (target match {
@@ -281,11 +293,13 @@ class Analyzer extends ExpressionAnalysisStore {
         case _ => (0, None)
       })
       case Limit(f) => (f.publications._1 min 1, Some(f.publications._2 map (_ min 1) getOrElse 1))
-      case f || g => (f.publications._1 + g.publications._1, 
-          (f.publications._2, g.publications._2) match {
-        case (Some(n), Some(m)) => Some(n+m)
-        case _ => None
-          })
+      case f || g =>
+        comp(_ + _, _ + _)(f, g)
+      case f ow g => 
+        comp((n, m) => (if(n == 0) 1 else n) min m, _ max _)(f, g)
+      case f > x > g =>
+        comp(_ * _, _ * _)(f, g)
+      case f < x <| g => f.publications
       case DeclareType(_, _, b) => b.publications
       case HasType(b, _) => b.publications
       case Constant(_) => (1, Some(1))
@@ -337,5 +351,16 @@ class Analyzer extends ExpressionAnalysisStore {
       case v : BoundVar => true
       case _ => false
     }
+  }
+}
+
+object Analysis {
+  def count(t : Orc5CAST, p : (Expression => Boolean)) : Int = {
+    val cs = t.subtrees
+    (t match {
+      case e : Expression if p(e) => 1
+      case _ => 0
+    }) +
+    (cs.map( count(_, p) ).sum)
   }
 }

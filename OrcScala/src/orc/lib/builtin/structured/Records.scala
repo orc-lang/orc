@@ -56,6 +56,7 @@ object RecordConstructor extends TotalSite with TypedSite {
       RecordType(bindings.toMap)
     }
   }
+  override val effectFree = true
 }
 
 object RecordMatcher extends PartialSite with TypedSite {
@@ -91,4 +92,5 @@ object RecordMatcher extends PartialSite with TypedSite {
       }
     }
   }
+  override val effectFree = true
 }
