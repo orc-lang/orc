@@ -27,7 +27,9 @@ import scala.Tuple2;
  * @author jthywiss
  */
 public abstract class EvalSite extends SiteAdaptor {
-
+    static Tuple2<Object, Option<Object>> Publications_0_1 = new Tuple2<Object, Option<Object>>(0, new Some<Object>(1));
+    static Tuple2<Object, Option<Object>> Publications_1_1 = new Tuple2<Object, Option<Object>>(1, new Some<Object>(1));
+  
 	@Override
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		caller.publish(object2value(evaluate(args)));
@@ -38,7 +40,10 @@ public abstract class EvalSite extends SiteAdaptor {
     @Override
     public boolean immediateHalt() { return true; }
     @Override
-    public Tuple2<Object, Option<Object>> publications() { 
-      return new Tuple2<Object, Option<Object>>(1, new Some<Object>(1));
+    public Tuple2<Object, Option<Object>> publications() {
+      if( immediatePublish() )
+        return Publications_1_1;
+      else
+        return Publications_0_1;
     }
 }

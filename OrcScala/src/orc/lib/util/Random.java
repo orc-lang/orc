@@ -52,4 +52,6 @@ public class Random extends PartialSite implements TypedSite {
 		return Types.overload(Types.function(Types.integer()), Types.function(Types.integer(), Types.integer()));
 	}
 
+    @Override
+    public boolean effectFree() { return true; }
 }

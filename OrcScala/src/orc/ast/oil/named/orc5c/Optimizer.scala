@@ -50,6 +50,7 @@ class Optimizer(opts : Seq[Optimization]) {
         case Some(e2) => 
           if( e != e2 ) {
             println(s"${opt.name}: ${e.toString.replace("\n", " ").take(60)} ==> ${e2.toString.replace("\n", " ").take(60)}")
+            //println(s"${opt.name}: ${e.toString} ==> ${e2.toString}")
             e2
           } else
             e
@@ -90,6 +91,23 @@ object Optimizer {
     // But if the variable publishs immediate than the blocking would not happen anyway.
   }
   
-  val defaultOptimizer = new Optimizer(List(LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqElim))
+  private def pars(p : Expression) : Set[Expression] = {
+    p match {
+      case f || g => pars(f) ++ pars(g)
+      case e => Set(e)
+    }
+  }
+  val LiftUnrelated = Opt("lift-unrelated") {
+    case (e@(p < x <| g), a) if pars(p).exists(!_.freevars.contains(x)) => {
+      val (f, h) = pars(p).partition(_.freevars.contains(x))
+      (f.isEmpty, h.isEmpty) match {
+        case (false, false) => (f.reduce(_ || _) < x <| g) || h.reduce(_ || _)
+        case (true, false) => (g >> Stop()) || h.reduce(_ || _)
+        case (false, true) => e
+      }
+    }
+  }
+  
+  val defaultOptimizer = new Optimizer(List(LiftUnrelated, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqElim))
 }
 
