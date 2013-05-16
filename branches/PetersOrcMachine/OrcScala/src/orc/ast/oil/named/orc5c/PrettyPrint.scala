@@ -75,7 +75,7 @@ class PrettyPrint {
       case Limit(expr) => "limit(" + reduce(expr) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
-        val name = f.optionalVariableName.getOrElse(lookup(f))
+        val name = f.optionalVariableName.getOrElse(lookup(f)) // "@" + f.##.toString
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
           (returntype match {
             case Some(t) => " :: " + reduce(t)
@@ -89,7 +89,7 @@ class PrettyPrint {
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
       case Constant(v) => Format.formatValue(v)
-      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
+      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) //+ "@" + x.##.toString
       case UnboundVar(s) => "?" + s
       case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
       case UnboundTypevar(s) => "?" + s

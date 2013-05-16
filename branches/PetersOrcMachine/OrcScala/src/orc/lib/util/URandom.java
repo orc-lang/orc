@@ -44,4 +44,7 @@ public class URandom extends PartialSite implements TypedSite {
 		return Types.function(Types.number());
 	}
 
+
+    @Override
+    public boolean effectFree() { return true; }
 }

@@ -130,7 +130,7 @@ object NamedToOrc5C {
         val newbody = namedToOrc5C(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { _ map { namedToOrc5C(_, newTypeContext) } }
         val newReturnType = returntype map { namedToOrc5C(_, newTypeContext) }
-        val newName = new orc5c.BoundVar(name.optionalVariableName)
+        val newName = context(name)
         orc5c.Def(newName, newFormals, newbody, newTypeFormals, newArgTypes, newReturnType)
       }
     }
