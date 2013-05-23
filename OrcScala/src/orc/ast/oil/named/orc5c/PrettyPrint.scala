@@ -83,7 +83,7 @@ class PrettyPrint {
           }) +
           "\n" +
           "def " + name + paren(formals) + " = " + reduce(body) +
-          "\n"
+          "#\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
@@ -116,14 +116,14 @@ class PrettyPrint {
   }
 }
 
-class PrettyPrintWithAnalysis(analyzer : ExpressionAnalysisStore) extends PrettyPrint {
+class PrettyPrintWithAnalysis(analyzer : ExpressionAnalysisProvider[Expression]) extends PrettyPrint {
   override def tag(ast: Orc5CAST, s: String) : String = {
     import analyzer.ImplicitResults._
     def ic(c : String, b : Boolean) = if(b) c else ""
     ast match {
       case _: Constant => s
       case e: Expression =>
-        val range = if (e.publications != (0, None)) { val (l, u) = e.publications; l.toString + "-" + (u map (_.toString) getOrElse "inf") } else ""
+        val range = if (e.publications != Range(0, None)) { val Range(l, u) = e.publications; l.toString + "-" + (u map (_.toString) getOrElse "inf") } else ""
         val tag = s"${ic("~", e.immediateHalt)}${ic("!", e.immediatePublish)}${ic("*", e.effectFree)}$range${e.strictOnSet.mkString("", ",", "")}"
         if (tag.isEmpty)
           s

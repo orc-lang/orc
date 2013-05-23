@@ -17,6 +17,66 @@ package orc.ast.oil.named.orc5c
 import orc.values.sites.Site
 import scala.collection.mutable
 
+case class Range(mini : Int, maxi : Option[Int]) {
+  assert(mini >= 0)
+  assert(maxi map {_ >= mini} getOrElse true)
+  
+  def >=(n : Int) = mini >= n
+  def >(n : Int) = mini > n
+  def <=(n : Int) = maxi map {_ <= n} getOrElse false
+  def <(n : Int) = maxi map {_ < n} getOrElse false
+  
+  def only(n : Int) = mini == n && maxi == Some(n)
+  
+  def intersect(r : Range) : Option[Range] = {
+    val n = mini max r.mini
+    val m = (maxi, r.maxi) match {
+      case (Some(x), Some(y)) => Some(x min y)
+      case (Some(_), None) => maxi
+      case (None, Some(_)) => r.maxi
+      case (None, None) => None
+    }
+    if( m map {_ >= n} getOrElse true )
+      Some(Range(n, m))
+    else
+      None
+  }
+  
+  def +(r : Range) = {
+    Range(mini + r.mini, (maxi, r.maxi) match {
+      case (Some(n), Some(m)) => Some(n + m)
+      case _ => None
+    })
+  }
+  def *(r : Range) = {
+    Range(mini * r.mini, (maxi, r.maxi) match {
+      case (Some(n), Some(m)) => Some(n * m)
+      case _ => None
+    })
+  }
+  
+  /**
+   * Return a range that allows a maximum of n publications.
+   */
+  def limitTo(lim : Int) = {
+    val n = mini min lim
+    val m = maxi map (_ min lim) getOrElse lim
+    Range(n, m)   
+  }
+  
+  def mayHalt = {
+    Range(0, maxi)
+  }
+}
+
+object Range {
+  def apply(n : Int, m : Int) : Range = Range(n, Some(m))
+  
+  def apply(r : (Int, Option[Int])) : Range = {
+    Range(r._1, r._2)
+  }
+}
+
 /**
  * The analysis results of an expression. The results refer to this object used an 
  * expression. So for variables publication is in terms of what happens when you
@@ -38,13 +98,13 @@ trait AnalysisResults {
    * The pair is minimum and maximum where None represents
    * no maximum.
    */
-  def publications: (Int, Option[Int]) 
+  def publications: Range
   
-  def silent = publications._2 == Some(0)
-  def talkative = publications._1 >= 1
+  def silent = publications only 0
+  def talkative = publications >= 1
   
-  def publishesAtMost(n : Int) = publications._2 map { i => i <= n } getOrElse false
-  def publishesAtLeast(n : Int) = publications._1 >= n
+  def publishesAtMost(n : Int) = publications <= n
+  def publishesAtLeast(n : Int) = publications >= n
 
   /**
    * Is this expression strict on the variable <code>x</code>?
@@ -58,12 +118,20 @@ trait AnalysisResults {
    * Does this expression have side-effects?
    */
   def effectFree: Boolean
+  
+  def same(r : AnalysisResults) = {
+    immediateHalt == r.immediateHalt &&
+    immediatePublish == r.immediatePublish &&
+    publications == r.publications &&
+    strictOnSet == r.strictOnSet &&
+    effectFree == r.effectFree
+  }
 }
 
 case class AnalysisResultsConcrete(
   immediateHalt: Boolean, 
   immediatePublish: Boolean,
-  publications: (Int, Option[Int]), 
+  publications: Range, 
   strictOnSet: Set[Var],
   effectFree: Boolean
     ) extends AnalysisResults {
@@ -73,129 +141,286 @@ case class AnalysisResultsConcrete(
     assert(immediatePublish, "immediateHalt and at least 1 publication must imply immediatePublish") 
 }
 
-trait ExpressionAnalysisStore {
-  outer =>
-  def apply(e: Expression) : AnalysisResults
+sealed trait ExpressionAnalysisProvider[E <: Expression] {
+  def apply(e: E) : AnalysisResults
   
   object ImplicitResults {
     import scala.language.implicitConversions
-    implicit def expressionWithResults(e : Expression) : AnalysisResults = outer.apply(e) 
-  }
-}
-
-/**
- * The context of an expression needed for analysis. The contents are only things we know about. There 
- * may be other variables in context that we have no information about.
- * 
- * @param variables A map of variables to analysis information about the properties of dereferencing this variable.
- * @param closures A map of variables to the closures they reference. 
- */
-case class AnalysisContext(
-    //variables : Map[BoundVar, AnalysisResults] = Map(), 
-    closures : Map[BoundVar, (AnalysisContext, Def)] = Map(),
-    expressions : Map[Expression, AnalysisResults] = Map()
-    ) extends ExpressionAnalysisStore {
-  def addVariable(x : BoundVar, a : AnalysisResults) = addVariables(Seq((x, a)))
-  def addVariables(vs : Seq[(BoundVar,AnalysisResults)]) = addExpressions(vs)
-  def addClosure(x : BoundVar, ctx : AnalysisContext, c : Def) = 
-    this.copy(closures = closures + ((x, (ctx, c))))
-  def addExpressions(es : Seq[(Expression,AnalysisResults)]) = {
-    /*for((e, r) <- es if expressions.contains(e)) {
-      println(s"$e: ${expressions(e)} => $r")
-    }*/
-    this.copy(expressions = expressions ++ es)
+    implicit def expressionWithResults(e : E) : AnalysisResults = apply(e) 
   }
   
-  /**
-   * Get the analysis information for a variable or None if it is not in the context.
-   */
-  //def getVariable(x : BoundVar) : Option[AnalysisResults] = variables.get(x)
-  /*
-   * Get analysis infomation about the closure when called on arguments with the given
-   * analysis.
-
-  def getClosure(x : BoundVar, args : Seq[AnalysisResults]) : Option[AnalysisResults] = {
-    closures.get(x) map { p => 
-      val (ctx, d) = p
-      analyze(d.body, ctx.addVariables(d.formals zip args), (_,_) => ())
+  def toMap : collection.Map[E, AnalysisResults]
+  
+  def withDefault : ExpressionAnalysisProvider[E] = {
+    val m = toMap
+    new ExpressionAnalysisProvider[E] {
+      def apply(e: E) : AnalysisResults = m.getOrElse(e, AnalysisResultsConcrete(false, false, Range(0, None), Set(), false))
+      def toMap = m
     }
   }
-  */
+}
+
+/*
+There are 2 distinct kinds of ExpressionAnalysisProviders. First are contexts which will 
+recompute the value based on the context. Second are stores that actually keep information 
+about expression in the context of some larger expression.
+*/
+/**
+ * The context in which analysis is occuring. 
+ */
+class AnalysisContext(val bindings : Map[BoundVar, Binding]) extends ExpressionAnalysisProvider[BoundVar] {
+  def apply(e : BoundVar) : AnalysisResults = bindings(e) 
+  def toMap = bindings
   
-  def getClosure(x : BoundVar) = closures.get(x)
-  def get(x : Expression) = {
-    expressions.get(x)
+  def this() = this(Map())
+  
+  def extend(bs : Iterable[Binding]) : AnalysisContext = {
+    new AnalysisContext(bindings ++ bs.map(b => (b.variable, b)))
   }
+  def ++(bs : Iterable[Binding]) = extend(bs)
   
-  def apply(e: Expression) = expressions(e)
+  def +(b : Binding) : AnalysisContext = {
+    new AnalysisContext(bindings + ((b.variable, b)))
+  }
 }
 
 /**
-  *
-  * @author amp
-  */
-class Analyzer extends ExpressionAnalysisStore {
-  val results : mutable.Map[Expression, AnalysisResults] = mutable.Map()  
+ * The class representing binding in the context. The analysis results stored in it refer 
+ * to a simple direct reference to the variable.
+ */
+sealed trait Binding extends AnalysisResults {
+  /**
+   * The variable that is bound.
+   */
+  val variable : BoundVar
+
+  val effectFree = true
+}
+
+case class SeqBound(variable : BoundVar) extends Binding {
+  val immediateHalt = true
+  val immediatePublish = true
+  val publications = Range(1, 1)
+  val strictOnSet : Set[Var] = Set(variable)
+}
+
+case class LateBound(
+  variable: BoundVar,
+  immediateHalt: Boolean,
+  immediatePublish: Boolean,
+  publications: Range) extends Binding {
+  val strictOnSet : Set[Var] = Set(variable)
+}
+object LateBound {
+  /**
+   * g is the analysis results of the expression producing the value.
+   */
+  def apply(v : BoundVar, g : AnalysisResults) : LateBound = {
+    LateBound(v,
+             g.immediatePublish || g.immediateHalt,
+             g.immediatePublish,
+             g.publications limitTo 1)
+  }
+}
+
+case class DefBound(variable : BoundVar, d : Def, body : AnalysisResults) extends Binding {
+  val immediateHalt = true
+  val immediatePublish = true
+  val publications = Range(1, 1)
+  val strictOnSet : Set[Var] = Set(variable)
+ 
+  def call(args : IndexedSeq[(Argument, AnalysisResults)]) : AnalysisResults = {
+    val strictSilent = body.strictOnSet.exists{ v => d.formals.contains(v) && args(d.formals.indexOf(v))._2.silent }
+    val strictSilentHalt = body.strictOnSet.exists{ v => 
+      d.formals.contains(v) && {
+        val a = args(d.formals.indexOf(v))._2
+        a.silent && a.immediateHalt 
+      }
+    }
+    AnalysisResultsConcrete(
+      body.immediateHalt || strictSilentHalt,
+      body.immediatePublish,
+      if (strictSilent) Range(0, 0) else body.publications,
+      (body.strictOnSet flatMap { v =>
+        if (d.formals.contains(v))
+          args(d.formals.indexOf(v)) match {
+            case (v: BoundVar, _) => Some(v : Var)
+            case _ => None
+          }
+        else
+          None
+      }) + (variable : Var),
+      body.effectFree)
+  }
+}
+object DefBound {
+  def apply(variable : BoundVar, d : Def, ctx : AnalysisContext) : DefBound = {
+    val bodyCtx = ctx.extend(d.formals.map(UnknownArgumentBound(_))) 
+    val body = Analysis.analyzeIn(bodyCtx, d.body)
+    DefBound(variable, d, body)
+  }
+} 
+
+case class UnknownArgumentBound(variable : BoundVar) extends Binding {
+  val immediateHalt = false
+  val immediatePublish = false
+  val publications = Range(0, 1)
+  val strictOnSet : Set[Var] = Set(variable)
+}
+case class RecursiveDefBound(variable : BoundVar) extends Binding {
+  val immediateHalt = true
+  val immediatePublish = true
+  val publications = Range(1, 1)
+  val strictOnSet : Set[Var] = Set(variable)
+}
+
+/**
+ * A cache for storing all the results of a bunch of expressions.
+ */
+class ExpressionAnalysisCache extends ExpressionAnalysisProvider[Expression] {
+  val cache = mutable.Map[Expression, AnalysisResults]()
+  def apply(e : Expression) = cache(e)
   
-  def apply(e : Expression) = results.get(e) getOrElse AnalysisResultsConcrete(false, false, (0, None), Set(), false)
-  
-  val SeqBoundVarResults = AnalysisResultsConcrete(true, true, (1, Some(1)), Set(), true)
-  
-  def analyze(e : Expression) {
-    analyze(e, AnalysisContext(), true)
+  def +=(e : Expression, r : AnalysisResults) = {
+    assert(checkInsert(e, r))
+    cache += ((e, r))
+  }
+  def ++=[E <: Expression](p : ExpressionAnalysisProvider[E]) = {
+    val m = p.toMap
+    assert(m.forall(p => checkInsert(p._1, p._2)))
+    cache ++= m
   }
   
-  def analyze(e : Expression, ctx: AnalysisContext, storing: Boolean) : AnalysisResults = {
-    def resHandler(e: Expression, r: AnalysisResults) = if( storing ) results += ((e, r))
+  private def checkInsert(e : Expression, r : AnalysisResults) : Boolean = {
+    if( cache.contains(e) ) {
+      if(cache(e) same r) 
+        true
+        else {
+          println("Inserted different analysis: " + cache(e) + " " + r)
+          false
+        }
+          
+    } else
+      true
+  }
+  
+  def toMap = cache
+}
+
+
+object Analysis {
+  def count(t : Orc5CAST, p : (Expression => Boolean)) : Int = {
+    val cs = t.subtrees
+    (t match {
+      case e : Expression if p(e) => 1
+      case _ => 0
+    }) +
+    (cs.map( count(_, p) ).sum)
+  }
+  
+  
+  def fix[A, B, T](f:((A,B)=>T)=>((A,B)=>T)): (A,B)=>T = f((x:A, y:B) => fix(f)(x,y))
+  /**
+   * Analyze an expression in the given context. This returns only the
+   * analysis of the top level expression.
+   */
+  def analyzeIn(ctx : AnalysisContext, e : Expression) : AnalysisResults = {
+    fix(analyze)(ctx, e)
+  }
+  /**
+   * Analyze an expression in the given context. This returns only the
+   * analysis of the top level expression.
+   */
+  def analyzeAllIn(ctx : AnalysisContext, e : Expression) : ExpressionAnalysisProvider[Expression] = {
+    val results = new ExpressionAnalysisCache()
+    def h(recurse : (AnalysisContext, Expression) => AnalysisResults)(ctx : AnalysisContext, e : Expression) : AnalysisResults = {
+      val r = recurse(ctx, e)
+      results += (e, r)
+      r
+    }
+    fix(h _ compose analyze)(ctx, e)
+    results
+  }
+  
+  def analyzeAll(e: Expression) = analyzeAllIn(new AnalysisContext(), e)
+  
+  /**
+   * 
+   */
+  def analyze(recurse : (AnalysisContext, Expression) => AnalysisResults)(ctx : AnalysisContext, e : Expression) : AnalysisResults = {
+    /*def resHandler(e: Expression, r: AnalysisResults) = if( storing ) results += ((e, r))
     def res(r : AnalysisResults) = { resHandler(e, r); r }
     def a(es : Expression*) : AnalysisContext = as(es)
     def as(es : Seq[Expression]) : AnalysisContext = ctx.addExpressions(es.map(e => (e, analyze(e, ctx, storing))))
     def recurse(e : Expression) = res(analyze(e, ctx, storing))
     def compute(e : Expression, ctx : AnalysisContext) = 
       res(AnalysisResultsConcrete(immediateHalt(e, ctx), immediatePublish(e, ctx), publications(e, ctx), strictOn(e, ctx), effectFree(e, ctx)))
+    def compute(e : Expression, ctx : AnalysisContext) = 
+      res(AnalysisResultsConcrete(immediateHalt(e, ctx), immediatePublish(e, ctx), publications(e, ctx), strictOn(e, ctx), effectFree(e, ctx)))
+    */
+    val c = new ExpressionAnalysisCache()
+    c ++= ctx
+    def a(es : Expression*) {
+      as(es)
+    }
+    def as(es : Seq[Expression]) {
+      for(e <- es) {
+        c += (e, recurse(ctx, e))
+      }
+    }
+    def compute(e : Expression, ctx : AnalysisContext) : AnalysisResults =
+      AnalysisResultsConcrete(immediateHalt(e, c, ctx), immediatePublish(e, c, ctx), publications(e, c, ctx), strictOn(e, c, ctx), effectFree(e, c, ctx))
+    
+      
     val ret = e match {
-      case Stop() => res(AnalysisResultsConcrete(true, false, (0, Some(0)), Set(), true))
-      case f || g => compute(e, a(f, g))
-      case f ow g => compute(e, a(f, g))
+      case Stop() => AnalysisResultsConcrete(true, false, Range(0,0), Set(), true)
+      case f || g => {
+        a(f, g)
+        compute(e, ctx)
+      }
+      case f ow g => {
+        a(f, g)
+        compute(e, ctx)
+      }
       case f > x > g => {
-        val ctx1 = a(f)
-        val ctx2 = ctx1.addExpressions(Seq((g, analyze(g, ctx.addVariable(x, SeqBoundVarResults), storing))))
-        resHandler(x, SeqBoundVarResults)
-        compute(e, ctx2)
+        a(f)
+        c += (g, recurse(ctx + SeqBound(x), g))
+        recurse(ctx + SeqBound(x), x)
+        compute(e, ctx)
       }
       case f < x <| g => {
-        val ctx1 = a(g)
-        val varResults = AnalysisResultsConcrete(
-            ctx1(g).immediatePublish || ctx1(g).immediateHalt,
-            ctx1(g).immediatePublish,
-            (ctx1(g).publications._1 min 1, Some(ctx1(g).publications._2 map (_ min 1) getOrElse 1)), 
-            Set(), 
-            true)
-        val ctx2 = ctx1.addVariable(x, varResults)
-        val ctx3 = ctx2.addExpressions(Seq((f, analyze(f, ctx2, storing))))
-        resHandler(x, varResults)
-        compute(e, ctx3)
+        a(g)
+        c += (f, recurse(ctx + LateBound(x, c(g)), f))
+        recurse(ctx + LateBound(x, c(g)), x)
+        compute(e, ctx)
       }
       case Limit(f) => {
-        compute(e, a(f))
+        a(f)
+        compute(e, ctx)
       }
       case Call(target, args, _) => {
-        compute(e, as(target :: args))
+        as(target :: args)
+        target match {
+          case v : BoundVar =>
+            ctx(v) match {
+              case d@DefBound(_,_,_) =>
+                d.call(args.map(a => (a, c(a))).toIndexedSeq)
+              case _ => compute(e, ctx)
+            }
+          case _ => compute(e, ctx)
+        }
       }
       case DeclareDefs(defs, body) => {
-        val ctx1 = defs.foldLeft(ctx)((c, d) => c.addClosure(d.name, ctx, d)) 
-        val ctx2 = defs.foldLeft(ctx1)((c, d) => c.addVariable(d.name, SeqBoundVarResults))
-        // FIXME: This context needs to be generated recursively. :-(
-        if(storing) {
-          for(Def(name, formals, body, _, _, _) <- defs) {
-            resHandler(name, SeqBoundVarResults)
-            analyze(body, ctx2, storing)
-          }
+        val ctx0 = ctx ++ defs.map(d => RecursiveDefBound(d.name))
+        val ctx1: AnalysisContext = defs.foldLeft(ctx) { (c, d) =>
+          c + DefBound(d.name, d, recurse(c ++ ctx0.toMap.values ++ d.formals.map(UnknownArgumentBound(_)), d.body))
         }
-       res(analyze(body, ctx2, storing))
+        // FIXME: This context needs to be generated recursively. :-(
+
+        recurse(ctx1, body)
       }
-      case DeclareType(_, _, b) => recurse(b)
-      case HasType(b, _) => recurse(b)
+      case DeclareType(_, _, b) => recurse(ctx, b)
+      case HasType(b, _) => recurse(ctx, b)
       case _ => {
         assert(e.subtrees.isEmpty)
         compute(e, ctx)
@@ -204,45 +429,34 @@ class Analyzer extends ExpressionAnalysisStore {
     ret
   }
   
-  def analyzeClosureCall(ctx: AnalysisContext, x : BoundVar, args : Seq[AnalysisResults]) : Option[AnalysisResults] = {
-    /* This is disabled because it makes the analysis so dreadfuly slow. It will be replaced.
-     ctx.getClosure(x) map { p => 
-      val (ctx, d) = p
-      analyze(d.body, ctx.addVariables(d.formals zip args), false)
-    }*/
-    None
-  }
-  
-  def immediateHalt(e : Expression, ctx: AnalysisContext): Boolean = {
-    import ctx.ImplicitResults._
+  def immediateHalt(e : Expression, c: ExpressionAnalysisProvider[Expression], ctx : AnalysisContext): Boolean = {
+    import c.ImplicitResults._
     e match {
       case Stop() => true
       case f || g => f.immediateHalt && g.immediateHalt
       case f ow g => (f.immediateHalt && g.immediateHalt) || 
-                     (f.immediateHalt && f.publications._1 > 0)
+                     (f.immediateHalt && f.publications > 0)
       case f > x > g => (f.immediateHalt && g.immediateHalt) || 
                         (f.immediateHalt && f.silent)
       case f < x <| g => (f.immediateHalt && g.immediateHalt)
       case Limit(f) => f.immediateHalt || f.immediatePublish
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => s.immediateHalt || args.exists(a => a.immediateHalt && a.silent)
-        case v : BoundVar => 
-          (analyzeClosureCall(ctx, v, args.map(ctx(_))) map (_.immediateHalt) getOrElse false) || 
-          (ctx.get(v) map (r => r.immediateHalt && r.silent) getOrElse false) 
+        case v : BoundVar => v.immediateHalt && v.silent
         case _ => false
-      }) && args.forall(a => a.immediatePublish || a.immediateHalt) // FIXME: Is this right?
+      }) && args.forall(a => a.immediatePublish || a.immediateHalt)
       case DeclareDefs(defs, body) => {
         body.immediateHalt
       }
       case DeclareType(_, _, b) => b.immediateHalt
       case HasType(b, _) => b.immediateHalt
       case Constant(_) => true
-      case v : BoundVar => ctx.get(v) map {_.immediateHalt} getOrElse false
+      case v : BoundVar => ctx(v).immediateHalt
       case _ => false
     }
   }
-  def immediatePublish(e : Expression, ctx: AnalysisContext): Boolean = {
-    import ctx.ImplicitResults._
+  def immediatePublish(e : Expression, c: ExpressionAnalysisProvider[Expression], ctx : AnalysisContext): Boolean = {
+    import c.ImplicitResults._
     e match {
       case Stop() => false
       case f || g => f.immediatePublish || g.immediatePublish
@@ -252,72 +466,61 @@ class Analyzer extends ExpressionAnalysisStore {
       case f < x <| g => f.immediatePublish 
       case Limit(f) => f.immediatePublish
       case Call(target, args, _) => target match {
-          case Constant(s: Site) => s.immediatePublish && args.forall(_.immediatePublish)
-          case v: BoundVar =>
-            (analyzeClosureCall(ctx, v, args.map(ctx(_))) map (_.immediatePublish) getOrElse false)
-          case _ => false
-        }         
+        case Constant(s: Site) => s.immediatePublish && args.forall(_.immediatePublish)
+        case v: BoundVar => false
+        case _ => false
+      }
       case DeclareDefs(defs, body) => {
         body.immediateHalt
       }
       case DeclareType(_, _, b) => b.immediatePublish
       case HasType(b, _) => b.immediatePublish
       case Constant(_) => true
-      case v : BoundVar => ctx.get(v) map (_.immediatePublish) getOrElse false
+      case v : BoundVar => ctx(v).immediatePublish
       case _ => false
     }
   }
  
-  def publications(e : Expression, ctx: AnalysisContext): (Int, Option[Int]) = {
-    import ctx.ImplicitResults._
-
-    def comp(minF: (Int, Int) => Int, maxF: (Int, Int) => Int)(f: AnalysisResults, g: AnalysisResults) = {
-      (minF(f.publications._1, g.publications._1),
-        (f.publications._2, g.publications._2) match {
-          case (Some(n), Some(m)) => Some(maxF(n, m))
-          case _ => None
-        })
-    }
-
+  def publications(e : Expression, c: ExpressionAnalysisProvider[Expression], ctx : AnalysisContext): Range = {
+    import c.ImplicitResults._
     e match {
-      case Stop() => (0, Some(0))
+      case Stop() => Range(0,0)
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => {
           if( args.forall(a => a.talkative) )
-            s.publications
-            else
-            (0, s.publications._2)
-            // TODO: Could also detect silent arguments and guarentee this is silent as well.
+            Range(s.publications)
+          else if( args.exists(a => a.silent) )
+              Range(0, 0)
+          else
+            Range(s.publications).mayHalt
         }
-        case v: BoundVar =>
-          (analyzeClosureCall(ctx, v, args.map(ctx(_))) map (comp(_ min _, (n, m) => (if(n == 0) 0 else m))(_,v)) getOrElse (0, None))  
-               
-        case _ => (0, None)
+        case _ => Range(0, None)
       })
-      case Limit(f) => (f.publications._1 min 1, Some(f.publications._2 map (_ min 1) getOrElse 1))
-      case f || g =>
-        comp(_ + _, _ + _)(f, g)
-      case f ow g => 
-        comp((n, m) => (if(n == 0) 1 else n) min m, _ max _)(f, g)
-      case f > x > g =>
-        comp(_ * _, _ * _)(f, g)
+      case Limit(f) => f.publications.limitTo(1)
+      case f || g => f.publications + g.publications
+      case f ow g if f.publications.maxi == 0 =>
+        Range(1 min g.publications.mini, (f.publications.maxi, g.publications.maxi) match {
+          case (Some(n), Some(m)) => Some(n max m)
+          case _ => None
+        })
+      case f ow g if f.publishesAtLeast(1) => f.publications
+      case f > x > g => f.publications * g.publications
       case f < x <| g => f.publications
       case DeclareType(_, _, b) => b.publications
       case HasType(b, _) => b.publications
-      case Constant(_) => (1, Some(1))
-      case v : BoundVar => ctx.get(v) map (_.publications) getOrElse (0, Some(1))
-      case _ => (0, None)
+      case Constant(_) => Range(1,1)
+      case v : BoundVar => ctx(v).publications
+      case _ => Range(0, None)
     }
   }
 
-  def strictOn(e : Expression, ctx: AnalysisContext): Set[Var] =  {
-    import ctx.ImplicitResults._
+  def strictOn(e : Expression, c: ExpressionAnalysisProvider[Expression], ctx : AnalysisContext): Set[Var] =  {
+    import c.ImplicitResults._
     e match {
       case Stop() => Set()
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => (args collect { case v : Var => v }).toSet
-        case v: BoundVar =>
-            (analyzeClosureCall(ctx, v, args.map(ctx(_))) map (_.strictOnSet) getOrElse Set()) ++ Set(v) 
+        case v : Var => Set(v)
         case _ => Set()
       })
       case f || g => f.strictOnSet & g.strictOnSet
@@ -333,14 +536,12 @@ class Analyzer extends ExpressionAnalysisStore {
     }
   }
   
-  def effectFree(e : Expression, ctx: AnalysisContext): Boolean = {
-    import ctx.ImplicitResults._
+  def effectFree(e : Expression, c: ExpressionAnalysisProvider[Expression], ctx : AnalysisContext): Boolean = {
+    import c.ImplicitResults._
     e match {
       case Stop() => true
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => s.effectFree
-        case v: BoundVar =>
-            (analyzeClosureCall(ctx, v, args.map(ctx(_))) map (_.effectFree) getOrElse false)
         case _ => false
       })
       case f || g => f.effectFree && g.effectFree
@@ -356,16 +557,5 @@ class Analyzer extends ExpressionAnalysisStore {
       case v : BoundVar => true
       case _ => false
     }
-  }
-}
-
-object Analysis {
-  def count(t : Orc5CAST, p : (Expression => Boolean)) : Int = {
-    val cs = t.subtrees
-    (t match {
-      case e : Expression if p(e) => 1
-      case _ => 0
-    }) +
-    (cs.map( count(_, p) ).sum)
   }
 }

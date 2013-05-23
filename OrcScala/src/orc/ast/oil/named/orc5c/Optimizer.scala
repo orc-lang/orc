@@ -15,14 +15,14 @@
 package orc.ast.oil.named.orc5c
 
 
-trait Optimization extends PartialFunction[(Expression, ExpressionAnalysisStore), Expression] {
-  def apply(e : Expression, analysis : ExpressionAnalysisStore) : Expression = apply((e, analysis))
+trait Optimization extends PartialFunction[(Expression, ExpressionAnalysisProvider[Expression]), Expression] {
+  def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression]) : Expression = apply((e, analysis))
   def name : String
 }
 
-case class Opt(name : String)(f : PartialFunction[(Expression, ExpressionAnalysisStore), Expression]) extends Optimization {
-  def apply(v : (Expression, ExpressionAnalysisStore)) = f(v)
-  def isDefinedAt(v : (Expression, ExpressionAnalysisStore)) = f.isDefinedAt(v)
+case class Opt(name : String)(f : PartialFunction[(Expression, ExpressionAnalysisProvider[Expression]), Expression]) extends Optimization {
+  def apply(v : (Expression, ExpressionAnalysisProvider[Expression])) = f(v)
+  def isDefinedAt(v : (Expression, ExpressionAnalysisProvider[Expression])) = f.isDefinedAt(v)
 }
 
 /**
@@ -30,7 +30,7 @@ case class Opt(name : String)(f : PartialFunction[(Expression, ExpressionAnalysi
   * @author amp
   */
 class Optimizer(opts : Seq[Optimization]) {
-  def apply(e : Expression, analysis : ExpressionAnalysisStore) : Expression = {
+  def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression]) : Expression = {
     val e1 = e match {
       case f || g => apply(f, analysis) || apply(g, analysis)
       case f ow g => apply(f, analysis) ow apply(g, analysis)
@@ -66,7 +66,7 @@ object Optimizer {
     case (Stop() < x <| g, a) => g > x > Stop()
   }
   val StopEquiv = Opt("stop-equiv") {
-    case (f, a) if a(f).silent && a(f).effectFree => Stop()
+    case (f, a) if a(f).silent && a(f).effectFree && a(f).immediateHalt => Stop()
   }
   val LimitElim = Opt("limit-elim") {
     case (Limit(f), a) if a(f).publishesAtMost(1) && a(f).effectFree => f
