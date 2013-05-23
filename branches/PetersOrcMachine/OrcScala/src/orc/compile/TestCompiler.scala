@@ -22,7 +22,6 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import orc.ast.oil.named.orc5c.NamedToOrc5C
 import orc.ast.oil.named.orc5c.Orc5CAST
-import orc.ast.oil.named.orc5c.Analyzer
 import orc.ast.oil.named.orc5c.PrettyPrint
 import orc.ast.oil.named.orc5c.Expression
 import orc.ast.oil.named.orc5c.PrettyPrintWithAnalysis
@@ -49,8 +48,7 @@ class TestCompiler extends StandardOrcCompiler {
     val phaseName = "outputAnalysedAST"
     override def apply(co: CompilerOptions) = { ast =>
       println("====================================== Analysed" )
-      val analyzer = new Analyzer()
-      analyzer.analyze(ast)
+      val analyzer = Analysis.analyzeAll(ast)
       println(new PrettyPrintWithAnalysis(analyzer).reduce(ast))
 
       ast
@@ -94,13 +92,15 @@ class TestCompiler extends StandardOrcCompiler {
           )
         println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
         println("-------")
-        val analyzer = new Analyzer()
-        analyzer.analyze(prog)
+        val analyzer = Analysis.analyzeAll(prog).withDefault
+        //println(new PrettyPrintWithAnalysis(analyzer).reduce(prog))
+        //println("----------------")
         val prog1 = Optimizer.defaultOptimizer(prog, analyzer)
         if(prog1 == prog)
           prog1
-        else
+        else {
           opt(prog1, pass+1)
+        }
       }
       
       opt(ast, 1)
@@ -132,7 +132,7 @@ class TestCompiler extends StandardOrcCompiler {
     outputAST >>>
     outputAnalysedAST >>> 
     optimize >>>
-    outputAnalysedAST >>>
+    outputAnalysedAST >>> 
     awfulHack
 }
 
