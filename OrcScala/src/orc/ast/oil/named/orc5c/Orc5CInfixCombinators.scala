@@ -58,7 +58,7 @@ object > {
 
 
 object <| {
-  def unapply(e: Expression) = {
+  def unapply(e: LateBind) = {
     e match {
       case LateBind(f, x, g) => Some(((f, x), g))
       case _ => None

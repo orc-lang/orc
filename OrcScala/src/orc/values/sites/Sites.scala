@@ -79,9 +79,9 @@ trait TotalSite extends Site {
 
   def evaluate(args: List[AnyRef]): AnyRef
   
-  override val immediateHalt = true
-  override val immediatePublish = true
-  override val publications = (1, Some(1))
+  override val immediateHalt = true // FIXME: Is this correct? It could block.
+  //override val immediatePublish = true
+  override val publications = (0, Some(1))
 }
 
 /* Enforce nonblocking, but do not enforce totality */
@@ -96,7 +96,7 @@ trait PartialSite extends Site {
 
   def evaluate(args: List[AnyRef]): Option[AnyRef]
 
-  override val immediateHalt = true
+  override val immediateHalt = true // FIXME: Is this correct? It could block.
   override val publications = (0, Some(1))
 }
 

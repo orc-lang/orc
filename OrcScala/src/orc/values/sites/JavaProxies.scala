@@ -116,6 +116,8 @@ abstract class JavaProxy extends Site {
     classNameAndSignature(methodName, args.map(_.getClass()))
   }
 
+  override val publications = (0, Some(1))
+
 }
 
 /** Wrapper for a plain old Java class as an Orc site

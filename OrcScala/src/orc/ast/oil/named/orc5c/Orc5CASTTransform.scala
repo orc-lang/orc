@@ -102,7 +102,7 @@ trait Orc5CASTTransform extends Orc5CASTFunction {
         case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
         case left < x <| right => transform(left, x :: context, typecontext) < x <| recurse(right)
         case left ow right => recurse(left) ow recurse(right)
-        case Limit(f) => recurse(f)
+        case Limit(f) => Limit(recurse(f))
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
