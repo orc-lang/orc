@@ -62,6 +62,7 @@ sealed abstract class Expression
   with Orc5CInfixCombinators
   with Substitution[Expression]
   with hasVars 
+  with ReferencedSites
 
 case class Stop() extends Expression with PrecomputeHashcode
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression with PrecomputeHashcode

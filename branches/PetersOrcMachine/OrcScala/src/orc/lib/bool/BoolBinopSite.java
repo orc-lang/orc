@@ -40,4 +40,9 @@ public abstract class BoolBinopSite extends EvalSite implements TypedSite {
 	public Type orcType() {
 		return Types.function(Types.bool(), Types.bool(), Types.bool());
 	}
+	
+    @Override
+    public boolean effectFree() { return true; }
+    @Override
+    public boolean immediatePublish() { return true; }
 }

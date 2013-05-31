@@ -16,6 +16,7 @@ package orc.ast.oil.named.orc5c
 
 import orc.values.sites.Site
 import scala.collection.mutable
+import orc.values.Field
 
 case class Range(mini : Int, maxi : Option[Int]) {
   assert(mini >= 0)
@@ -169,7 +170,7 @@ about expression in the context of some larger expression.
  * The context in which analysis is occuring. 
  */
 class AnalysisContext(val bindings : Map[BoundVar, Binding]) extends ExpressionAnalysisProvider[BoundVar] {
-  def apply(e : BoundVar) : AnalysisResults = bindings(e) 
+  def apply(e : BoundVar) : Binding = bindings(e) 
   def toMap = bindings
   
   def this() = this(Map())
@@ -348,18 +349,9 @@ object Analysis {
    * 
    */
   def analyze(recurse : (AnalysisContext, Expression) => AnalysisResults)(ctx : AnalysisContext, e : Expression) : AnalysisResults = {
-    /*def resHandler(e: Expression, r: AnalysisResults) = if( storing ) results += ((e, r))
-    def res(r : AnalysisResults) = { resHandler(e, r); r }
-    def a(es : Expression*) : AnalysisContext = as(es)
-    def as(es : Seq[Expression]) : AnalysisContext = ctx.addExpressions(es.map(e => (e, analyze(e, ctx, storing))))
-    def recurse(e : Expression) = res(analyze(e, ctx, storing))
-    def compute(e : Expression, ctx : AnalysisContext) = 
-      res(AnalysisResultsConcrete(immediateHalt(e, ctx), immediatePublish(e, ctx), publications(e, ctx), strictOn(e, ctx), effectFree(e, ctx)))
-    def compute(e : Expression, ctx : AnalysisContext) = 
-      res(AnalysisResultsConcrete(immediateHalt(e, ctx), immediatePublish(e, ctx), publications(e, ctx), strictOn(e, ctx), effectFree(e, ctx)))
-    */
     val c = new ExpressionAnalysisCache()
     c ++= ctx
+    
     def a(es : Expression*) {
       as(es)
     }
@@ -370,7 +362,6 @@ object Analysis {
     }
     def compute(e : Expression, ctx : AnalysisContext) : AnalysisResults =
       AnalysisResultsConcrete(immediateHalt(e, c, ctx), immediatePublish(e, c, ctx), publications(e, c, ctx), strictOn(e, c, ctx), effectFree(e, c, ctx))
-    
       
     val ret = e match {
       case Stop() => AnalysisResultsConcrete(true, false, Range(0,0), Set(), true)
@@ -440,6 +431,9 @@ object Analysis {
                         (f.immediateHalt && f.silent)
       case f < x <| g => (f.immediateHalt && g.immediateHalt)
       case Limit(f) => f.immediateHalt || f.immediatePublish
+      case Call(target, List(Constant(f : Field)), _) => { // TODO: Verify the correctness of this.
+        target.immediateHalt
+      }
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => s.immediateHalt || args.exists(a => a.immediateHalt && a.silent)
         case v : BoundVar => v.immediateHalt && v.silent
@@ -465,6 +459,9 @@ object Analysis {
       case f > x > g => (f.immediatePublish && g.immediatePublish)
       case f < x <| g => f.immediatePublish 
       case Limit(f) => f.immediatePublish
+      case Call(target, List(Constant(f : Field)), _) => { // TODO: Verify the correctness of this.
+        target.immediatePublish
+      }
       case Call(target, args, _) => target match {
         case Constant(s: Site) => s.immediatePublish && args.forall(_.immediatePublish)
         case v: BoundVar => false
@@ -485,6 +482,9 @@ object Analysis {
     import c.ImplicitResults._
     e match {
       case Stop() => Range(0,0)
+      case Call(target, List(Constant(f : Field)), _) => { // TODO: Verify the correctness of this.
+        target.publications.limitTo(1)
+      }
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => {
           if( args.forall(a => a.talkative) )
@@ -498,7 +498,7 @@ object Analysis {
       })
       case Limit(f) => f.publications.limitTo(1)
       case f || g => f.publications + g.publications
-      case f ow g if f.publications.maxi == 0 =>
+      case f ow g if f.publications.mini == 0 =>
         Range(1 min g.publications.mini, (f.publications.maxi, g.publications.maxi) match {
           case (Some(n), Some(m)) => Some(n max m)
           case _ => None
@@ -519,7 +519,7 @@ object Analysis {
     e match {
       case Stop() => Set()
       case Call(target, args, _) => (target match {
-        case Constant(s : Site) => (args collect { case v : Var => v }).toSet
+        case Constant(s : Site) => (args collect { case v : Var => v }).toSet // Somehow this is not catching references to some variables
         case v : Var => Set(v)
         case _ => Set()
       })
@@ -540,6 +540,9 @@ object Analysis {
     import c.ImplicitResults._
     e match {
       case Stop() => true
+      case Call(target, List(Constant(f : Field)), _) => { // TODO: Verify the correctness of this.
+        target.effectFree
+      }
       case Call(target, args, _) => (target match {
         case Constant(s : Site) => s.effectFree
         case _ => false

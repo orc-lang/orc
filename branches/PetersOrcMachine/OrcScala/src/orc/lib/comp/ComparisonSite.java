@@ -95,4 +95,9 @@ public abstract class ComparisonSite extends EvalSite implements TypedSite {
 	public Type orcType() {
 		return Types.function(Types.top(), Types.top(), Types.bool());
 	}
+	
+    @Override
+    public boolean effectFree() { return true; }	
+    @Override
+    public boolean immediatePublish() { return true; }
 }
