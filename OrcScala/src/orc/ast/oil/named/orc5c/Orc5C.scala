@@ -23,7 +23,7 @@ trait PrecomputeHashcode { self: Product =>
   override val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
 }
 
-sealed abstract class Orc5CAST extends AST {
+sealed abstract class Orc5CAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 

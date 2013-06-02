@@ -24,9 +24,10 @@ import orc.ast.oil.named.orc5c.NamedToOrc5C
 import orc.ast.oil.named.orc5c.Orc5CAST
 import orc.ast.oil.named.orc5c.PrettyPrint
 import orc.ast.oil.named.orc5c.Expression
-import orc.ast.oil.named.orc5c.PrettyPrintWithAnalysis
 import orc.ast.oil.named.orc5c.Optimizer
 import orc.ast.oil.named.orc5c.Analysis
+import orc.ast.oil.named.orc5c.TranslateToPorc
+import orc.ast.oil.named.orc5c.ContextualTransform
 
 /**
   * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
@@ -44,13 +45,57 @@ class TestCompiler extends StandardOrcCompiler {
     }
   }
   
+  def traversalTest[A] = new CompilerPhase[CompilerOptions, Expression, Expression] {
+    val phaseName = "traversalTest"
+    override def apply(co: CompilerOptions) = { ast =>
+      import orc.ast.oil.named.orc5c._
+      /*val ts = List(
+        new ContextualTransform.Pre {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); e
+          }
+        },
+        new ContextualTransform.NonDescending {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
+          }
+        },
+        new ContextualTransform.Post {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
+          }
+        }
+        )*/
+      object boundTo {
+        def unapply(v : BoundVar)(implicit ctx: TransformContext): Option[(BoundVar, Bindings.Binding)] = {
+          if(ctx.contains(v)) {
+            Some((v, ctx(v)))
+          } else
+            None
+        }
+      }
+      val ts = List(
+        new ContextualTransform.Pre {
+          override def onArgument(implicit ctx: TransformContext) = {
+            case e@(v boundTo b) => println(s"$v $b ${ctx.size}"); e
+          }
+        }
+        )
+      for(t <- ts) {
+        println(s"====================== $t")
+        t(ast)
+      }
+      ast
+    }
+  }
+  
   def outputAnalysedAST = new CompilerPhase[CompilerOptions, Expression, Expression] {
+    import orc.ast.oil.named.orc5c._
     val phaseName = "outputAnalysedAST"
     override def apply(co: CompilerOptions) = { ast =>
       println("====================================== Analysed" )
-      val analyzer = Analysis.analyzeAll(ast)
-      println(new PrettyPrintWithAnalysis(analyzer).reduce(ast))
-
+      val analyzer = new ExpressionAnalyzer
+      println(new PrettyPrintWithAnalysis(analyzer).reduce(ast in TransformContext()))
       ast
     }
   }
@@ -88,15 +133,18 @@ class TestCompiler extends StandardOrcCompiler {
               case f ow g => true
               case _ => false
             }),
-            "nodes" -> Analysis.count(prog, (_ => true))
+            "nodes" -> Analysis.count(prog, (_ => true)),
+            "cost" -> Analysis.cost(prog)
           )
         println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
         println("-------")
-        val analyzer = Analysis.analyzeAll(prog).withDefault
+        val analyzer = new ExpressionAnalyzer
         //println(new PrettyPrintWithAnalysis(analyzer).reduce(prog))
         //println("----------------")
-        val prog1 = Optimizer.defaultOptimizer(prog, analyzer)
-        if(prog1 == prog)
+        val opts = Optimizer.basicOpts ++ (if( pass > 1 ) Optimizer.secondOpts else List())
+        val prog1 = Optimizer(opts)(prog, analyzer)
+        println(s"analyzer.size = ${analyzer.cache.size}")
+        if(prog1 == prog && pass > 1)
           prog1
         else {
           opt(prog1, pass+1)
@@ -110,6 +158,10 @@ class TestCompiler extends StandardOrcCompiler {
   val translate5C = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.orc5c.Expression] {
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => NamedToOrc5C.namedToOrc5C(ast, Map(), Map()) }
+  }
+  val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.orc5c.Expression, orc.ast.porc.Command] {
+    val phaseName = "translate5C"
+    override def apply(co: CompilerOptions) = { ast => TranslateToPorc.orc5cToPorc(ast) }
   }
   
   def awfulHack[A, B >: AnyRef] = new CompilerPhase[CompilerOptions, A, orc.ast.oil.nameless.Expression] {
@@ -130,9 +182,12 @@ class TestCompiler extends StandardOrcCompiler {
     outputAST >>>
     translate5C.timePhase >>>
     outputAST >>>
-    outputAnalysedAST >>> 
+    //traversalTest >>>
     optimize >>>
     outputAnalysedAST >>> 
+    outputAST >>> 
+    translatePorc >>> 
+    outputAST >>>
     awfulHack
 }
 
