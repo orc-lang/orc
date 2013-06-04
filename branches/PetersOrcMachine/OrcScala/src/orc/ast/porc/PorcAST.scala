@@ -23,7 +23,7 @@ import orc.values.sites
   *
   * @author amp
   */
-sealed abstract class PorcAST extends AST {
+sealed abstract class PorcAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 }
@@ -33,7 +33,7 @@ trait hasSimpleContinuation {
 }
 
 // ==================== CORE ===================
-sealed abstract class Value extends PorcAST with PorcInfixValue
+sealed abstract class Value extends PorcAST with PorcInfixValue with Substitution[Value]
 case class Constant(value: AnyRef) extends Value
 case class Tuple(values: List[Value]) extends Value
 object Tuple {
@@ -69,9 +69,9 @@ class ClosureVariable(optionalName: Option[String] = None) extends Var(optionalN
 }
 
 
-sealed abstract class Command extends PorcAST
+sealed abstract class Command extends PorcAST with FreeVariables with Substitution[Command]
 
-case class Let(defs: List[ClosureDef], k: Command) extends Command with hasSimpleContinuation
+case class Let(d: ClosureDef, k: Command) extends Command with hasSimpleContinuation
 case class Site(defs: List[SiteDef], k: Command) extends Command with hasSimpleContinuation
 
 case class SiteDef(name: SiteVariable, arguments: List[Variable], body: Command) extends PorcAST
@@ -114,4 +114,4 @@ case class ReadFlag(flag: Variable, trueBranch: Command, falseBranch: Command) e
 
 // ==================== EXT ====================
 
-case class ExternalCall(site: sites.Site, arguments: Variable, p: Value, h: Value) extends Command
+case class ExternalCall(site: sites.Site, arguments: Value, p: Value, h: Value) extends Command

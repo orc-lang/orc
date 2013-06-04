@@ -16,8 +16,9 @@ package orc.ast.oil.named.orc5c
 
 import orc.ast.porc
 import orc.ast.porc._
-
 import orc.values.sites.{Site => OrcSite}
+import orc.values.sites.TotalSite1
+import orc.values.Signal
 
 /**
   *
@@ -48,13 +49,29 @@ object TranslateToPorc {
   }
   
   def orc5cToPorc(e: Expression): porc.Command = {
-    val topP = new Variable(Some("Publish"))
-    val topH = new Variable(Some("Halt"))
+    val topP = new ClosureVariable(Some("Publish"))
+    val topH = new ClosureVariable(Some("Halt"))
     
     val (sites, names, defs) = e.referencedSites.toList.map(wrapSite).unzip3
    
     val p = translate(e)(TranslationContext(topP, topH, sites = (sites zip names).toMap))
-    defs.foldLeft(p)((p, s) => Site(List(s), p))
+    val sp = defs.foldLeft(p)((p, s) => Site(List(s), p))
+    
+    val x = new Variable("x")
+    val h = new Variable("h")
+     
+    val printSite = new TotalSite1 {
+      override def name = "TopLevelPublishHandler"
+      def eval(x: AnyRef): AnyRef = {
+        println(x)
+        Signal
+      }
+    }
+    
+    let(topH() === Die(),
+        topP(x, h) === ExternalCall(printSite, x, topP, h)) {
+      sp
+    }
   }
   
   def wrapSite(s: OrcSite) = {
@@ -77,7 +94,7 @@ object TranslateToPorc {
   
   def translate(e: Expression)(implicit ctx: TranslationContext): porc.Command = {
     import ctx.{h, p}
-    e ->> e match {
+    e -> {
       case Stop() => ClosureCall(h, Tuple())
       case f || g => {
         val gCl = new ClosureVariable("g")
