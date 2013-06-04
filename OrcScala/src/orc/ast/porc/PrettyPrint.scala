@@ -29,6 +29,7 @@ class PrettyPrint {
     implicit class RecursiveReduce(val sc: StringContext) {
       import StringContext._
       import sc._
+      
       def rd(args: Any*): String = {
         checkLengths(args)
         val pi = parts.iterator
@@ -53,7 +54,7 @@ class PrettyPrint {
       case Tuple(l) => l.map(reduce(_, i+1)).mkString("(",", ",")")
       case v : Var => v.optionalVariableName.getOrElse(v.toString)
       
-      case Let(l, b) => s"let ${l.map(reduce(_, i+3)).mkString(";\n"+indent(i+2))}\n${indent(i+2)} in\n$ind${reduce(b, i)}"
+      case Let(d, b) => s"let ${reduce(d, i+3)}\n${indent(i+2)}in\n$ind${reduce(b, i)}"
       case Site(l, b) => s"site ${l.map(reduce(_, i+3)).mkString(";\n"+indent(i+2))}\n${indent(i+2)} in\n$ind${reduce(b, i)}"
       case ClosureDef(name, args, body) => rd"$name(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
       case SiteDef(name, args, body) => rd"$name(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"

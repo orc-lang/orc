@@ -20,14 +20,7 @@ import orc.util.PrintVersionAndMessageException
 import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
-import orc.ast.oil.named.orc5c.NamedToOrc5C
-import orc.ast.oil.named.orc5c.Orc5CAST
-import orc.ast.oil.named.orc5c.PrettyPrint
 import orc.ast.oil.named.orc5c.Expression
-import orc.ast.oil.named.orc5c.Optimizer
-import orc.ast.oil.named.orc5c.Analysis
-import orc.ast.oil.named.orc5c.TranslateToPorc
-import orc.ast.oil.named.orc5c.ContextualTransform
 
 /**
   * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
@@ -156,12 +149,64 @@ class TestCompiler extends StandardOrcCompiler {
   }
   
   val translate5C = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.orc5c.Expression] {
+    import orc.ast.oil.named.orc5c._
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => NamedToOrc5C.namedToOrc5C(ast, Map(), Map()) }
   }
   val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.orc5c.Expression, orc.ast.porc.Command] {
+    import orc.ast.oil.named.orc5c._
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => TranslateToPorc.orc5cToPorc(ast) }
+  }
+  
+  val porcAnalysis = new CompilerPhase[CompilerOptions, orc.ast.porc.Command,orc.ast.porc.Command] {
+    import orc.ast.porc._
+    val phaseName = "translate5C"
+    override def apply(co: CompilerOptions) = { ast => 
+      val analyzer = new Analyzer()
+      import analyzer.ImplicitResults._
+      (new ContextualTransform.Pre {
+        override def onCommand = {
+          case c => {
+            println(c.immediatelyCallsSet + c.e.toString.take(100).replace('\n', ' '))
+            c.e
+          }
+        }
+      })(ast)
+      ast
+    }
+  }
+  
+  def optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Command, orc.ast.porc.Command] {
+    import orc.ast.porc._
+    val phaseName = "optimize"
+    override def apply(co: CompilerOptions) = { ast =>
+      println("====================================== optimizing" )
+   
+      def opt(prog : Command, pass : Int) : Command = {
+        println("--------------------- pass " + pass )
+        val stats = Map(
+            "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
+            "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
+            "closures" -> Analysis.count(prog, _.isInstanceOf[Let]),
+            "sites" -> Analysis.count(prog, _.isInstanceOf[Site]),
+            "nodes" -> Analysis.count(prog, (_ => true)),
+            "cost" -> Analysis.cost(prog)
+          )
+        println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
+        println("-------")
+        val analyzer = new Analyzer
+        val prog1 = Optimizer(Optimizer.opts)(prog, analyzer)
+        println(s"analyzer.size = ${analyzer.cache.size}")
+        if(prog1 == prog && pass > 1)
+          prog1
+        else {
+          opt(prog1, pass+1)
+        }
+      }
+      
+      opt(ast, 1)
+    }
   }
   
   def awfulHack[A, B >: AnyRef] = new CompilerPhase[CompilerOptions, A, orc.ast.oil.nameless.Expression] {
@@ -187,7 +232,10 @@ class TestCompiler extends StandardOrcCompiler {
     outputAnalysedAST >>> 
     outputAST >>> 
     translatePorc >>> 
+    porcAnalysis >>>
     outputAST >>>
+    //optimizePorc >>>
+    //outputAST >>>
     awfulHack
 }
 
