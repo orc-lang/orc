@@ -22,7 +22,7 @@ import scala.collection.mutable
   */
 trait FreeVariables {
   this: Command =>
-  def freevars: Set[Var] = {
+  lazy val freevars: Set[Var] = {
     val s = mutable.Set[Var]()
     (new ContextualTransform.NonDescending {
       override def onVar = {

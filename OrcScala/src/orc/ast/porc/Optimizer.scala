@@ -60,14 +60,25 @@ case class Optimizer(opts : Seq[Optimization]) {
 }
 
 object Optimizer {
+  val letInlineThreshold = 30
+  val letInlineCodeExpansionThreshold = 30
+  val referenceThreshold = 5
+  
   val InlineLet = OptFull("inline-let") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case ClosureCallIn((t:Var) in ctx, Tuple(args) in _) => ctx(t) match {
+      case ClosureCallIn((t:Var) in ctx, args, _) => ctx(t) match {
         case LetBound(dctx, l) => {
           val compat = ctx.compatibleFor(l.d.body)(dctx)
-          if ( !compat )
-            None // No inlining of recursive functions or large functions.
+          lazy val size = Analysis.cost(l.d.body)
+          def smallEnough = size <= letInlineThreshold
+          lazy val referencedN = Analysis.count(l.k, {
+            case ClosureCall(`t`, _) => true
+            case _ => false
+          })
+          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
+          if ( !compat || (referencedN-1)*size > letInlineCodeExpansionThreshold )
+            None // No inlining of recursive, heavily referenced, or large functions.
           else
             Some(l.d.body.substAll(((l.d.arguments: List[Var]) zip args).toMap))
         }
@@ -79,24 +90,33 @@ object Optimizer {
   val EtaReduce = OptFull("eta-reduce") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case LetIn(ClosureDefIn(name, formals, _, ClosureCallIn(t, Tuple(args) in _)), body) if args.toList == formals.toList => {
+      case LetIn(ClosureDefIn(name, formals, _, ClosureCallIn(t, args, _)), body) if args.toList == formals.toList => {
         Some(body.substAll(Map((name, t))))
       }
       case _ => None
     }
   }
   
-  val siteInlineThreshold = 12
-    
+  val siteInlineThreshold = 50
+  val siteInlineCodeExpansionThreshold = 50
+  val siteInlineTinySize = 12
+   
   val InlineSite = OptFull("inline-site") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case SiteCallIn((t:Var) in ctx, Tuple(args) in _) => ctx(t) match {
-        case SiteBound(dctx, _, d) => {
+      case SiteCallIn((t:Var) in ctx, args, _) => ctx(t) match {
+        case SiteBound(dctx, Site(_,k), d) => {
           def recursive = d.body.freevars.contains(d.name)
-          def compat = ctx.compatibleForSite(d.body)(dctx)
-          def smallEnough = Analysis.cost(d.body) <= siteInlineThreshold
-          if ( recursive || !smallEnough || !compat )
+          lazy val compat = ctx.compatibleForSite(d.body)(dctx)
+          lazy val size = Analysis.cost(d.body)
+          def smallEnough = size <= siteInlineThreshold
+          lazy val referencedN = Analysis.count(k, {
+            case SiteCall(`t`, _) => true
+            case _ => false
+          })
+          def tooMuchExpansion = (referencedN-1)*size > siteInlineCodeExpansionThreshold && size > siteInlineTinySize
+          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
+          if ( recursive || !smallEnough || !compat || tooMuchExpansion )
             None // No inlining of recursive functions or large functions.
           else
             Some(d.body.substAll(((d.arguments: List[Var]) zip args).toMap))
@@ -130,7 +150,7 @@ object Optimizer {
             if(body.immediatelyCalls(h)) {
               import PorcInfixNotation._
               val kCl = new ClosureVariable("k")
-              Some(let(kCl() === k) { t(Tuple(kCl)) })
+              Some(let(kCl() === k) { t(kCl) })
             } else 
               None
           }
@@ -141,7 +161,14 @@ object Optimizer {
       case _ => None
     }
   }
-  
-  val opts = List(InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce)
+
+  val UnpackElim = Opt("unpack-elim") {
+      case (UnpackIn(vs, Tuple(as), k), a) => {
+        import a.ImplicitResults._
+        k.substAll((vs zip as).toMap)
+      }
+  }
+
+  val opts = List(InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce, UnpackElim)
 
 }

@@ -56,11 +56,20 @@ trait ContextualTransform {
   
   def transformCommand(expr: WithContext[Command]): Command = {
     order[Command](callHandler, {
-      case LetIn(d, b) => Let(transformLetDef(d), transformCommand(b))
-      case SiteIn(l, ctx, b) => Site(l map { v => transformSiteDef(v in ctx) }, transformCommand(b))
+      case LetIn(d, b) => {
+        val l = transformLetDef(d)
+        val e1 = Let(l, b)
+        Let(l, transformCommand(b.e in d.ctx + LetBound(d.ctx, e1)))
+      }
+      case s@SiteIn(l, ctx, b) => {
+        val ls1 = l map { v => transformSiteDef(v in ctx) }
+        val e1 = Site(ls1, b)
+        val ctx1 = s.ctx extendBindings ls1.map(SiteBound(ctx, e1, _))
+        Site(ls1, transformCommand(b.e in ctx1))
+      }
 
-      case ClosureCallIn(t, a) => ClosureCall(transformValue(t), transformValue(a))
-      case SiteCallIn(t, a) => SiteCall(transformValue(t), transformValue(a))
+      case ClosureCallIn(t, a, ctx) => ClosureCall(transformValue(t), a map { v => transformValue(v in ctx) })
+      case SiteCallIn(t, a, ctx) => SiteCall(transformValue(t), a map { v => transformValue(v in ctx) })
       
       case UnpackIn(vars, v, k) => Unpack(vars map { v => transformVariable(v in k.ctx) }, transformValue(v in k.ctx), transformCommand(k))
       
@@ -71,6 +80,7 @@ trait ContextualTransform {
       case RestoreCounterIn(a, b) => RestoreCounter(transformCommand(a), transformCommand(b))
       case SetCounterHaltIn(v, k) => SetCounterHalt(transformClosureVariable(v in k.ctx), transformCommand(k))
       case GetCounterHaltIn(x, k) => GetCounterHalt(transformClosureVariable(x in k.ctx), transformCommand(k))
+      case DecrCounterIn(k) => DecrCounter(transformCommand(k))
 
       case NewTerminatorIn(k) => NewTerminator(transformCommand(k))
       case GetTerminatorIn(x, k) => GetTerminator(transformVariable(x in k.ctx), transformCommand(k))

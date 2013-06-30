@@ -65,13 +65,9 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     AnalysisResults(immediatelyCalls(e), nonFuture(e))
   }
   
-  def translateArguments(args: Value, formals: List[Var], s: Set[Var]): Set[Var] = {
-    args match {
-      case Tuple(vs) => {
-        val m = (formals zip vs).toMap
-        s.collect(m).collect{ case v: Var => v }
-      }
-    }
+  def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
+    val m = (formals zip vs).toMap
+    s.collect(m).collect { case v: Var => v }
   }
   
   def immediatelyCalls(e : WithContext[PorcAST]): Set[Var] = {
@@ -80,13 +76,13 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case LetIn(d, b) => b.immediatelyCallsSet
       case SiteIn(l, ctx, b) => b.immediatelyCallsSet
 
-      case ClosureCallIn((v : Var) in ctx, a) => ctx(v) match {
+      case ClosureCallIn((v : Var) in ctx, a, _) => ctx(v) match {
         case LetBound(ctx, n) => (n.d in ctx) match {
           case ClosureDefIn(_, formals, _, body) => translateArguments(a, formals, body.immediatelyCallsSet) + v
         }
         case _ => Set(v)
       }
-      case SiteCallIn((v: Var) in ctx, a) => {
+      case SiteCallIn((v: Var) in ctx, a, _) => {
         val b = ctx(v) 
         b match {
           case SiteBound(ctx, _, d) => (d in ctx) match {
@@ -156,6 +152,8 @@ object Analysis {
   val forceCost = 3
   val killCost = 2
   val callkillhandlersCost = 5
+  val callCost = 1
+  val externalCallCost = 2
   
   def cost(t : PorcAST) : Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
@@ -165,6 +163,8 @@ object Analysis {
       case _ : Kill => killCost
       case _ : CallKillHandlers => callkillhandlersCost
       case _ : Let | _ : Site => closureCost
+      case _ : ClosureCall | _ : SiteCall => callCost
+      case _ : ExternalCall => externalCallCost
       case _ => 0
     }) +
     (cs.map( cost(_) ).sum)
