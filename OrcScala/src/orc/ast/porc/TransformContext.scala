@@ -49,9 +49,11 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
   }
   
   def compatibleFor(e: Command)(o: TransformContext): Boolean = {
+    val fc = e.referencesCounter
+    val ft = e.referencesTerminator
     compatibleForSite(e)(o) &&
-    enclosingCounter == o.enclosingCounter &&
-    enclosingTerminator == o.enclosingTerminator
+    (!fc || enclosingCounter == o.enclosingCounter) &&
+    (!ft || enclosingTerminator == o.enclosingTerminator)
   } 
   def compatibleForSite(e: Command)(o: TransformContext): Boolean = {
     val fv = e.freevars

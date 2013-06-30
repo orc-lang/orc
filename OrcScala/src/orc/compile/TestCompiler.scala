@@ -249,7 +249,7 @@ class TestCompiler extends StandardOrcCompiler {
     outputAST >>>
     //traversalTest >>>
     optimize >>>
-    outputAnalysedAST >>> 
+    //outputAnalysedAST >>> 
     outputAST >>> 
     translatePorc >>> 
     //porcAnalysis >>>
