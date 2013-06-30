@@ -76,7 +76,7 @@ object Optimizer {
             case ClosureCall(`t`, _) => true
             case _ => false
           })
-          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
+          println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat, ${l.d.body.referencesCounter}, ${l.d.body.referencesTerminator})")
           if ( !compat || (referencedN-1)*size > letInlineCodeExpansionThreshold )
             None // No inlining of recursive, heavily referenced, or large functions.
           else

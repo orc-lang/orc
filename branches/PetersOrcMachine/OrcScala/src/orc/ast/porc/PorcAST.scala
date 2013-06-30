@@ -69,7 +69,7 @@ class ClosureVariable(optionalName: Option[String] = None) extends Var(optionalN
 }
 
 
-sealed abstract class Command extends PorcAST with FreeVariables with Substitution[Command]
+sealed abstract class Command extends PorcAST with FreeVariables with ReferencesRegisters with Substitution[Command]
 
 case class Let(d: ClosureDef, k: Command) extends Command with hasSimpleContinuation
 case class Site(defs: List[SiteDef], k: Command) extends Command with hasSimpleContinuation

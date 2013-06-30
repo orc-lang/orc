@@ -31,7 +31,7 @@ final class Terminator {
   
   var _killHandlers = new ArrayList[Closure]()
   def addKillHandler(kh: Closure) = _killHandlers synchronized { 
-    assert(!isKilled)
+    //assert(!isKilled)
     _killHandlers.add(kh)
   }
   def killHandlers = _killHandlers synchronized { 
