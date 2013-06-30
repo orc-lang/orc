@@ -77,8 +77,8 @@ case class Site(defs: List[SiteDef], k: Command) extends Command with hasSimpleC
 case class SiteDef(name: SiteVariable, arguments: List[Variable], body: Command) extends PorcAST
 case class ClosureDef(name: ClosureVariable, arguments: List[Variable], body: Command) extends PorcAST
 
-case class ClosureCall(target: Value, argument: Value) extends Command
-case class SiteCall(target: Value, argument: Value) extends Command
+case class ClosureCall(target: Value, argument: List[Value]) extends Command
+case class SiteCall(target: Value, argument: List[Value]) extends Command
 
 case class Unpack(variables: List[Variable], v: Value, k: Command) extends Command with hasSimpleContinuation
 
@@ -91,6 +91,7 @@ case class NewCounter(k: Command) extends Command with hasSimpleContinuation
 case class RestoreCounter(zeroBranch: Command, nonzeroBranch: Command) extends Command
 case class SetCounterHalt(haltCont: ClosureVariable, k: Command) extends Command with hasSimpleContinuation
 case class GetCounterHalt(x: ClosureVariable, k: Command) extends Command with hasSimpleContinuation
+case class DecrCounter(k: Command) extends Command with hasSimpleContinuation
 
 case class NewTerminator(k: Command) extends Command with hasSimpleContinuation
 case class GetTerminator(x: Variable, k: Command) extends Command with hasSimpleContinuation

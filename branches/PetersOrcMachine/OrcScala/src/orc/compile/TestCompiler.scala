@@ -21,6 +21,7 @@ import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import orc.ast.oil.named.orc5c.Expression
+import orc.ast.porc.TranslateToPorcEval
 
 /**
   * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
@@ -194,7 +195,10 @@ class TestCompiler extends StandardOrcCompiler {
             "cost" -> Analysis.cost(prog)
           )
         println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
-        println("-------")
+        /*println("-------==========")
+        println(prog)
+        println("-------==========")
+        */
         val analyzer = new Analyzer
         val prog1 = Optimizer(Optimizer.opts)(prog, analyzer)
         println(s"analyzer.size = ${analyzer.cache.size}")
@@ -209,6 +213,22 @@ class TestCompiler extends StandardOrcCompiler {
     }
   }
   
+  val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Command, orc.run.porc.Command] {
+    val phaseName = "translatePorcEval"
+    override def apply(co: CompilerOptions) = { ast => TranslateToPorcEval(ast) }
+  }
+  val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Command, orc.run.porc.Command] {
+    import orc.run.porc._
+    val phaseName = "evalPorc"
+    override def apply(co: CompilerOptions) = { ast => 
+      val interp = new Interpreter()
+      interp.start(ast)
+      ast
+    }
+  }
+  
+  
+
   def awfulHack[A, B >: AnyRef] = new CompilerPhase[CompilerOptions, A, orc.ast.oil.nameless.Expression] {
     val phaseName = "awfulHack"
     override def apply(co: CompilerOptions) = { _ => null }
@@ -232,10 +252,13 @@ class TestCompiler extends StandardOrcCompiler {
     outputAnalysedAST >>> 
     outputAST >>> 
     translatePorc >>> 
-    porcAnalysis >>>
+    //porcAnalysis >>>
     outputAST >>>
-    //optimizePorc >>>
-    //outputAST >>>
+    optimizePorc >>>
+    outputAST >>>
+    translatePorcEval >>>
+    outputAST >>>
+    evalPorc >>>
     awfulHack
 }
 
@@ -246,6 +269,7 @@ object TestCompiler {
       try {
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
+
       setupLogging(options)
 
       val compiler = new TestCompiler()

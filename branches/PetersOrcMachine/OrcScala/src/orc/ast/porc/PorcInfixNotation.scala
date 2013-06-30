@@ -35,8 +35,8 @@ object in {
 
 trait PorcInfixValue {
   this: Value =>
-  def apply(arg: Tuple) = ClosureCall(this, arg)
-  def sitecall(arg: Tuple) = SiteCall(this, arg)
+  def apply(arg: Value*) = ClosureCall(this, arg.toList)
+  def sitecall(arg: Value*) = SiteCall(this, arg.toList)
 }
 
 trait PorcInfixBinder[VT <: Variable, T <: Command] {
@@ -139,14 +139,14 @@ object ClosureDefIn {
 
 object ClosureCallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@ClosureCall(t, arg)) in ctx => Some(t in ctx, arg in ctx)
+    case (c@ClosureCall(t, args)) in ctx => Some(t in ctx, args, ctx)
     case _ => None
   }
 }
 
 object SiteCallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@SiteCall(t, arg)) in ctx => Some(t in ctx, arg in ctx)
+    case (c@SiteCall(t, args)) in ctx => Some(t in ctx, args, ctx)
     case _ => None
   }
 }
@@ -173,6 +173,12 @@ object SpawnIn {
 object NewCounterIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (n@NewCounter(k)) in ctx => Some(k in ctx.setCounter(n))
+    case _ => None
+  }
+}
+object DecrCounterIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (n@DecrCounter(k)) in ctx => Some(k in ctx)
     case _ => None
   }
 }

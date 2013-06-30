@@ -14,7 +14,9 @@
 //
 package orc.util
 
-import java.util.logging.Level
+import java.util.logging.Level 
+import scala.annotation.elidable
+import scala.annotation.elidable._
 
 /** A Scala wrapper around java.util.logging.Logger
   * <p>
@@ -67,18 +69,30 @@ class Logger(name: String) {
   final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, param1)
   final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, params)
   final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, thrown)
+  @elidable(FINER)
   final def entering(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod)
   //final def entering(sourceClass: => String, sourceMethod: => String, param1: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, param1)
+  @elidable(FINER)
   final def entering(sourceClass: => String, sourceMethod: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, params)
+  @elidable(FINER)
   final def exiting(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod)
+  @elidable(FINER)
   final def exiting(sourceClass: => String, sourceMethod: => String, result: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod, result)
+  @elidable(FINER)
   final def throwing(sourceClass: => String, sourceMethod: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.throwing(sourceClass, sourceMethod, thrown)
+  @elidable(SEVERE)
   final def severe(msg: => String): Unit = if (julLogger.isLoggable(Level.SEVERE)) julLogger.severe(msg)
+  @elidable(WARNING)
   final def warning(msg: => String): Unit = if (julLogger.isLoggable(Level.WARNING)) julLogger.warning(msg)
+  @elidable(INFO)
   final def info(msg: => String): Unit = if (julLogger.isLoggable(Level.INFO)) julLogger.info(msg)
+  @elidable(CONFIG)
   final def config(msg: => String): Unit = if (julLogger.isLoggable(Level.CONFIG)) julLogger.config(msg)
+  @elidable(FINE)
   final def fine(msg: => String): Unit = if (julLogger.isLoggable(Level.FINE)) julLogger.fine(msg)
+  @elidable(FINER)
   final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.finer(msg)
+  @elidable(FINEST)
   final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) julLogger.finest(msg)
 
   def logAllToStderr() {

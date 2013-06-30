@@ -71,6 +71,7 @@ class PrettyPrint {
       case RestoreCounter(a, b) => rd"restoreCounter {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
       case SetCounterHalt(v, k) => rd"setCounterHalt $v\n$ind$k"
       case GetCounterHalt(x, k) => rd"getCounterHalt $x in\n$ind$k"
+      case DecrCounter(k) => rd"decrCounter\n$ind$k"
 
       case NewTerminator(k) => rd"terminator in\n$ind$k"
       case GetTerminator(x, k) => rd"getTerminator $x in\n$ind$k"
