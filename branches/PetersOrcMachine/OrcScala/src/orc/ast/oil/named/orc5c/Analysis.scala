@@ -109,11 +109,19 @@ trait AnalysisResults {
 
   /**
    * Is this expression strict on the variable <code>x</code>?
-   * In otherwords does it dereference it before doing anything else?
+   * In other words does it dereference it before doing anything else?
    */
   def strictOn(x : Var) = strictOnSet(x)
   
   def strictOnSet : Set[Var]
+  
+  /**
+   * Does this expression force the variable <code>x</code> before performing any visible action?
+   * Specifically is <code>x</code> forced before the expression has side effects or publishes.
+   */
+  def forces(x : Var) = forcesSet(x)
+  def forcesSet : Set[Var]
+  // This would allow for analysis that detects variables that must be bound and allows late-bind to be removed in cases where the values will be used eventually.
   
   /**
    * Does this expression have side-effects?
@@ -125,6 +133,7 @@ trait AnalysisResults {
     immediatePublish == r.immediatePublish &&
     publications == r.publications &&
     strictOnSet == r.strictOnSet &&
+    forcesSet == r.forcesSet &&
     effectFree == r.effectFree
   }
 }
@@ -134,12 +143,15 @@ case class AnalysisResultsConcrete(
   immediatePublish: Boolean,
   publications: Range, 
   strictOnSet: Set[Var],
+  forcesSet: Set[Var],
   effectFree: Boolean
     ) extends AnalysisResults {
   if( immediatePublish && !publishesAtLeast(1) )
     assert(publishesAtLeast(1), "immediatePublish must imply at least one publication") 
   if( immediateHalt && publishesAtLeast(1) && !immediatePublish)
     assert(immediatePublish, "immediateHalt and at least 1 publication must imply immediatePublish") 
+  if( !(strictOnSet subsetOf forcesSet) )
+    assert(strictOnSet subsetOf forcesSet, "Any var that we are strict on is also forced") 
 }
 
 sealed trait ExpressionAnalysisProvider[E <: Expression] {
@@ -158,7 +170,7 @@ sealed trait ExpressionAnalysisProvider[E <: Expression] {
   
   def withDefault : ExpressionAnalysisProvider[E] = {
     new ExpressionAnalysisProvider[E] {
-      def apply(e: E)(implicit ctx: TransformContext) : AnalysisResults = get(e).getOrElse(AnalysisResultsConcrete(false, false, Range(0, None), Set(), false))
+      def apply(e: E)(implicit ctx: TransformContext) : AnalysisResults = get(e).getOrElse(AnalysisResultsConcrete(false, false, Range(0, None), Set(), Set(), false))
       def get(e: E)(implicit ctx: TransformContext) : Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -189,7 +201,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   def get(e : Expression)(implicit ctx: TransformContext) = Some(this(e))
   
   def analyze(e : WithContext[Expression]) : AnalysisResults = {
-    AnalysisResultsConcrete(immediateHalt(e), immediatePublish(e), publications(e), strictOn(e), effectFree(e))
+    AnalysisResultsConcrete(immediateHalt(e), immediatePublish(e), publications(e), strictOn(e), forces(e), effectFree(e))
   }
   
   def immediateHalt(e : WithContext[Expression]): Boolean = {
@@ -352,15 +364,47 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f || g => f.strictOnSet & g.strictOnSet
       case f ow g => f.strictOnSet
       case f > x > g => f.strictOnSet
-      case f < x <| g => f.strictOnSet & g.strictOnSet // TODO: It may be possible to catch a few cases where f is strict on x and so it's strictness can be ignored.
+      case f < x <| g if f.strictOn(x) => g.strictOnSet 
+      case f < x <| g => f.strictOnSet & g.strictOnSet
       case LimitAt(f) => f.strictOnSet
       case DeclareDefsAt(defs, defsctx, body) => {
         body.strictOnSet
       }
       case DeclareTypeAt(_, _, b) => b.strictOnSet
-      case HasType(b, _) in ctx => this(b)(ctx).strictOnSet
+      case HasType(b, _) in ctx => (b in ctx).strictOnSet
       case Constant(_) in _ => Set()
-      case (v : BoundVar) in _ => Set(v)
+      case (v : BoundVar) in ctx => {
+        ctx(v) match {
+          case Bindings.DefBound(ctx2, _, d) =>  d in ctx match {
+              case DefAt(name in _, formals, body, _, _, _, _) => {
+                assert(name == v)
+                ((body.freevars -- formals) + v).collect{case v : Var => v}
+              }
+            }
+          case _ => Set(v)
+        }
+      }
+      case _ => Set()
+    }
+  }
+  def forces(e : WithContext[Expression]): Set[Var] =  {
+    import ImplicitResults._
+    e match {
+      case Stop() in _ => Set()
+      case CallAt(_, _, _, _) => strictOn(e)
+      case f || g => f.forcesSet & g.forcesSet
+      case f ow g => f.forcesSet
+      case f > x > g if f.effectFree => f.forcesSet ++ g.forcesSet
+      case f > x > g => f.forcesSet
+      case f < x <| g if f.forces(x) => g.forcesSet ++ (f.forcesSet - x)
+      case f < x <| g => f.forcesSet & g.forcesSet 
+      case LimitAt(f) => f.forcesSet
+      case DeclareDefsAt(defs, defsctx, body) => {
+        body.forcesSet
+      }
+      case DeclareTypeAt(_, _, b) => b.forcesSet
+      case HasType(b, _) in ctx => (b in ctx).forcesSet
+      case (v : BoundVar) in _ => strictOn(e)
       case _ => Set()
     }
   }

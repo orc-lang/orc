@@ -17,7 +17,7 @@ package orc.ast.porc
 import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
-import orc.ast.oil.named.orc5c.PrecomputeHashcode
+import orc.ast.PrecomputeHashcode
 
 /** The context in which analysis is occuring.
   */

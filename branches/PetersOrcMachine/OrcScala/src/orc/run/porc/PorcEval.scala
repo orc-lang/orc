@@ -24,6 +24,7 @@ import orc.lib.str.PrintEvent
 import orc.PublishedEvent
 import orc.values.Format
 import orc.values.OrcRecord
+import orc.run.extensions.RwaitEvent
 
 // Value is an alias for AnyRef. It exists to make this code more self documenting.
 
@@ -69,8 +70,9 @@ sealed abstract class Command {
         event match {
           case PublishedEvent(v) => println(s"publication: ${Format.formatValue(v)}")
           case PrintEvent(s) => print(s)
+          case RwaitEvent(d, h) => interp.engine.registerDelayed(d.toLong, () => h.publish())
           case _ =>
-            Logger.info(event.toString)
+            Logger.severe(event.toString)
         }
       }
     
@@ -86,7 +88,8 @@ sealed abstract class Command {
       }
       
       def !!(e: OrcException) {
-        Logger.severe(s"ORC EXCEPTION: $e")
+        Logger.severe(s"ORC EXCEPTION: $e") 
+        halt
       }
     
       def hasRight(rightName: String): Boolean = {
@@ -98,7 +101,13 @@ sealed abstract class Command {
       }
     }
     
-    interp.invoke(handle, callable, arguments)
+    callable match {
+      case r : OrcRecord if r.entries.contains("apply") && (arguments.size != 1 || arguments.size == 1 && !arguments(0).isInstanceOf[orc.values.Field]) =>
+        Logger.warning(s"Using ugly record call hack: $r $arguments")
+        invokeExternal(ctx, interp, r.entries("apply"), arguments, pc, hc)
+      case _ =>
+        interp.invoke(handle, callable, arguments)
+    }
   }
 
   final protected def forceFutures(interp: InterpreterContext, vs: List[AnyRef], bb: Closure, hb: Closure): Unit = {
