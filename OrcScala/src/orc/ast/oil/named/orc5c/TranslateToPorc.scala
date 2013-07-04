@@ -22,6 +22,7 @@ import orc.values.Signal
 import orc.values.Format
 import orc.Handle
 import orc.PublishedEvent
+import orc.lib.builtin.MakeSite
 
 /**
   *
@@ -91,22 +92,42 @@ object TranslateToPorc {
     }
   }
   
+  val porcImplementedSites = Map[OrcSite, (Variable, Variable, Variable) => Command](
+    MakeSite -> { (args, p, h) =>
+      val f = new Variable("f")
+      val f1 = new SiteVariable("f'")
+      val args1 = new Variable("args")
+      val p1 = new Variable("P")
+      val h1 = new Variable("H")
+      Unpack(List(f), args,
+        Site(List(SiteDef(f1, List(args1, p1, h1),
+          NewTerminator {
+            f sitecall (args1, p1, h1)
+          })),
+          p(f1, h)))
+
+    })
+  
   def wrapSite(s: OrcSite) = {
     val name = new SiteVariable(Some("_" + s.name))
     val args = new Variable("args")
     val p = new Variable("P")
     val h = new Variable("H")
-    (s, name, SiteDef(name, List(args, p, h), {
-      val pp = new ClosureVariable("pp")
-      val x = new Variable("x")
-      val impl = let(pp(x) === ExternalCall(s, x, p, h)) {
-        Force(args, pp, h)
-      }
-      if(s.effectFree)
-        impl
+    val body = porcImplementedSites.get(s) match {
+      case Some(b) => b(args, p, h)
+      case None => {
+        val pp = new ClosureVariable("pp")
+        val x = new Variable("x")
+        val impl = let(pp(x) === ExternalCall(s, x, p, h)) {
+          Force(args, pp, h)
+        }
+        if (s.effectFree)
+          impl
         else
           IsKilled(h(), impl)
-    }))
+      }
+    }
+    (s, name, SiteDef(name, List(args, p, h), body))
   }
   
   def translate(e: Expression)(implicit ctx: TranslationContext): porc.Command = {

@@ -18,6 +18,7 @@ package orc.ast.porc
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.values.sites
+import orc.ast.PrecomputeHashcode
 
 /**
   *
@@ -38,6 +39,7 @@ case class Constant(value: AnyRef) extends Value
 case class Tuple(values: List[Value]) extends Value
 object Tuple {
   def apply(values: Value*): Tuple = Tuple(values.toList)
+  def unapplySeq(t: Tuple): Option[List[Value]] = Some(t.values)
 }
 
 sealed abstract class Var(optionalName: Option[String]) extends Value with hasOptionalVariableName {
@@ -69,7 +71,7 @@ class ClosureVariable(optionalName: Option[String] = None) extends Var(optionalN
 }
 
 
-sealed abstract class Command extends PorcAST with FreeVariables with ReferencesRegisters with Substitution[Command]
+sealed abstract class Command extends PorcAST with FreeVariables with ReferencesRegisters with Substitution[Command] with Product with PrecomputeHashcode
 
 case class Let(d: ClosureDef, k: Command) extends Command with hasSimpleContinuation
 case class Site(defs: List[SiteDef], k: Command) extends Command with hasSimpleContinuation

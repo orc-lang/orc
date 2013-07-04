@@ -147,6 +147,10 @@ object Optimizer {
       LateBinds(f, lbs1.map(p => (p._1, p._2.e)))
     }
   }
+  val flattenThreshold = 5
+  val LateBindElimFlatten = Opt("late-bind-elim-flatten") {
+    case (f < x <| g, a) if a(f).forces(x) && a(g).publishesAtMost(1) && Analysis.cost(g) <= flattenThreshold => g > x > f
+  }
   val LateBindElim = Opt("late-bind-elim") {
     case (f < x <| g, a) if a(f).strictOn(x) && a(g).publishesAtMost(1) => g > x > f
     case (f < x <| g, a) if a(g).immediatePublish && a(g).publishesAtMost(1) => g > x > f
@@ -254,5 +258,8 @@ object Optimizer {
   
   val basicOpts = List(DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
   val secondOpts = List(InlineDef)
+  
+  // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.
+  val flatteningOpts = List(LateBindElimFlatten)
 }
 

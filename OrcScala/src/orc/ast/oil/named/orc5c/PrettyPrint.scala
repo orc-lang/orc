@@ -124,8 +124,8 @@ class PrettyPrintWithAnalysis(analyzer : ExpressionAnalysisProvider[Expression])
       case (_: Constant) in _ => ""
       case e : WithContext[Expression] if e.e.isInstanceOf[Expression] => // Ugly hack to reify check
         val range = if (e.publications != Range(0, None)) { val Range(l, u) = e.publications; l.toString + "-" + (u map (_.toString) getOrElse "inf") } else ""
-        val tag = s"${ic("~", e.immediateHalt)}${ic("!", e.immediatePublish)}${ic("*", e.effectFree)}$range${e.strictOnSet.mkString("", ",", "")}"
-        if (tag.isEmpty)
+        val tag = s"${ic("~", e.immediateHalt)}${ic("!", e.immediatePublish)}${ic("*", e.effectFree)}$range;${e.strictOnSet.mkString("", ",", "")};${e.forcesSet.mkString("", ",", "")}"
+        if (tag == ";;")
           ""
         else
           s"[$tag]"

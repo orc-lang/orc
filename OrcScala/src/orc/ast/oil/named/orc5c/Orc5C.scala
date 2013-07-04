@@ -18,10 +18,7 @@ package orc.ast.oil.named.orc5c
 import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
-
-trait PrecomputeHashcode { self: Product => 
-  override val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
-}
+import orc.ast.PrecomputeHashcode
 
 sealed abstract class Orc5CAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
@@ -53,8 +50,7 @@ sealed abstract class Orc5CAST extends AST with WithContextInfixCombinator {
     case Constant(_) | UnboundVar(_) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in Orc5CAST.subtrees")
-  }
+    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in Orc5CAST.subtrees") }
 }
 
 sealed abstract class Expression

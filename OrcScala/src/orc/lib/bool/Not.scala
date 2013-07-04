@@ -32,4 +32,6 @@ object Not extends TotalSite with TypedSite {
     }
 
   def orcType() = SimpleFunctionType(BooleanType, BooleanType)
+  
+  override val effectFree = true
 }

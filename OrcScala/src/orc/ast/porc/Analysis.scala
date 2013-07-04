@@ -15,6 +15,7 @@
 package orc.ast.porc
 
 import scala.collection.mutable
+import orc.values.Field
 
 case class AnalysisResults(
     immediatelyCallsSet: Set[Var],
@@ -88,7 +89,10 @@ class Analyzer extends AnalysisProvider[PorcAST] {
           case SiteBound(ctx, _, d) => (d in ctx) match {
             case SiteDefIn(_, formals, _, body) => translateArguments(a, formals, body.immediatelyCallsSet) + v
           }
-          case _ => Set(v)
+          case _ => a match {
+            case List(Tuple(List(Constant(f : Field))), p, h : Var) => Set(v, h)
+            case _ => Set(v)
+          }
         }
       }
       
@@ -118,6 +122,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case ReadFlagIn(f, a, b) => a.immediatelyCallsSet & b.immediatelyCallsSet
 
       case ExternalCallIn(site, _, _, (h:Var) in _) if site.immediateHalt => Set(h)
+      //case ExternalCallIn(site, Tuple(List(Constant(f : Field))) in _, _, (h:Var) in _) => Set(h)
 
       case _ => Set()
     }

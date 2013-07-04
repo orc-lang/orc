@@ -14,6 +14,10 @@
 //
 package orc.run.porc
 
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.Timer
+import java.util.TimerTask
+
 /**
   *
   * @author amp
@@ -28,10 +32,13 @@ class Interpreter {
     // spawn 2 threads per core (currently do not worry about blocked threads)
     val nthreads = processors * 2
     threads = for(_ <- 1 to nthreads) yield {
-      new InterpreterThread()
+      new InterpreterThread(this)
     }
+    runningCount.set(threads.size)
     // Insert the initial program state into one of the threads.
     val initCounter = new Counter()
+    InterpreterContext.default = threads(0).ctx
+    
     threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null)), Nil)
     // Tell them all about the other contexts and start them all.
     val ctxs = threads.map(_.ctx).toList
@@ -45,11 +52,36 @@ class Interpreter {
     for(t <- threads) {
       t.kill()
     }
+    
+    timer.cancel()
+  }
+
+  private val runningCount: AtomicInteger = new AtomicInteger(1)
+  
+  def waitForWork() {
+    if( runningCount.decrementAndGet() == 0 ) {
+      // We are done, All threads are waiting for work.
+      //kill()
+    } else {
+      Thread.sleep(0, 100)
+      runningCount.incrementAndGet()
+    }
+  }
+  
+  val timer: Timer = new Timer()
+
+  def registerDelayed(delay: Long, f: () => Unit) = {
+    val callback =
+      new TimerTask() {
+        @Override
+        override def run() { f() }
+      }
+    timer.schedule(callback, delay)
   }
 }
 
-final class InterpreterThread extends Thread {
-  val ctx = new InterpreterContext()
+final class InterpreterThread(val interp: Interpreter) extends Thread {
+  val ctx = new InterpreterContext(interp)
   var otherContexts = List[InterpreterContext]()
  
   @volatile
@@ -66,13 +98,16 @@ final class InterpreterThread extends Thread {
           clos.body.eval(ectx, ctx)
         case None => 
           // steal work
-          // FIXME: This busy waits. I need a better underlying data structure.
-          Thread.sleep(10)
-          otherContexts.find(c => !c.queue.isEmpty()) flatMap { _.dequeue } foreach { t =>
-            ctx.schedule(t._1, t._2)
+          otherContexts.find(c => !c.queue.isEmpty()) flatMap { _.steal } match { 
+            case Some(t) => {
+              //println("Stealing work.")
+              ctx.schedule(t._1, t._2)
+            }
+            case None => {
+              // Wait a little while and see if more work has appeared
+              interp.waitForWork()
+            }
           }
-          // stealing disabled for now. Just exit.
-          //running = false
       }
     }
   }

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.ArrayList
 import orc.run.StandardInvocationBehavior
+import java.util.concurrent.LinkedBlockingDeque
 
 final case class Closure(body: Command, var ctx: Context) {
   override def toString = s"Clos($body)"
@@ -70,7 +71,7 @@ final class Counter {
   * @author amp
   */
 final case class Context(_valueStack: List[AnyRef], terminator: Terminator, counter: Counter, oldCounter: Counter) {
-  def pushValues(vs: Seq[AnyRef]) = copy(_valueStack = vs.toList ::: _valueStack)
+  def pushValues(vs: Seq[AnyRef]) = copy(_valueStack = vs.foldRight(_valueStack)(_::_))
   def getValue(i: Int) = _valueStack(i)
   def apply(i: Int) = getValue(i)
   
@@ -83,20 +84,33 @@ final case class Context(_valueStack: List[AnyRef], terminator: Terminator, coun
   }
 }
 
-final class InterpreterContext extends StandardInvocationBehavior {
+final class InterpreterContext(val engine: Interpreter) extends StandardInvocationBehavior {
   def schedule(clos: Closure, args: List[AnyRef] = Nil) {
     queue.add((clos, args))
   }
   def dequeue(): Option[(Closure, List[AnyRef])] = {
     Option(queue.poll())
   }
+  def steal(): Option[(Closure, List[AnyRef])] = {
+    Option(queue.pollLast())
+  }
   
   // TODO: This needs to be a special dequeue implementation.
-  val queue = new ConcurrentLinkedQueue[(Closure, List[AnyRef])]()
+  val queue = new LinkedBlockingDeque[(Closure, List[AnyRef])]()
 } 
 
 object InterpreterContext {
   private val currentInterpreterContext = new ThreadLocal[InterpreterContext]()
   def current_=(v: InterpreterContext) = currentInterpreterContext.set(v)
-  def current: InterpreterContext = currentInterpreterContext.get()
+  def current: InterpreterContext = {
+    Option(currentInterpreterContext.get()) getOrElse defaultCtx
+  }
+  
+  private var defaultCtx: InterpreterContext = null
+  
+  def default_=(v: InterpreterContext) {
+    assert(defaultCtx == null)
+    defaultCtx = v
+  }
+  def default = defaultCtx
 }
