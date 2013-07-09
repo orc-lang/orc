@@ -62,8 +62,9 @@ object TranslateToPorc {
     val topP = new ClosureVariable(Some("Publish"))
     val topH = new ClosureVariable(Some("Halt"))
     
-    val (sites, names, defs) = e.referencedSites.toList.sortBy(_.name).map(wrapSite).unzip3
-   
+    //val (sites, names, defs) = e.referencedSites.toList.sortBy(_.name).map(wrapSite).unzip3
+    val (sites, names, defs) = porcImplementedSiteDefs.unzip3
+    
     val p = translate(e)(TranslationContext(topP, topH, sites = (sites zip names).toMap))
     val sp = defs.foldLeft(p)((p, s) => Site(List(s), p))
     
@@ -71,6 +72,8 @@ object TranslateToPorc {
     val h = new Variable("h")
 
     val printSite = new orc.values.sites.Site {
+      override val name = "PublishToUser"
+        
       def call(args: List[AnyRef], h: Handle) {
         h.notifyOrc(PublishedEvent(args(0)))
         h.publish(Signal)
@@ -99,14 +102,38 @@ object TranslateToPorc {
       val args1 = new Variable("args")
       val p1 = new Variable("P")
       val h1 = new Variable("H")
+      val topH = new ClosureVariable("Halt")
       Unpack(List(f), args,
         Site(List(SiteDef(f1, List(args1, p1, h1),
           NewTerminator {
-            f sitecall (args1, p1, h1)
+            NewCounterDisconnected {
+              let(topH() === restoreCounter {
+                    h1()
+                  } {
+                    Die()
+                  }) {
+                setCounterHalt(topH) {
+                  f sitecall (args1, p1, topH)
+                }
+              }
+            }
           })),
           p(f1, h)))
 
     })
+    
+  val porcImplementedSiteDefs = {
+    for ((s, b) <- porcImplementedSites) yield {
+      val name = new SiteVariable(Some("_" + s.name))
+      val args = new Variable("args")
+      val p = new Variable("P")
+      val h = new Variable("H")
+      val body = porcImplementedSites.get(s) match {
+        case Some(b) => b(args, p, h)
+      }
+      (s, name, SiteDef(name, List(args, p, h), body))
+    }
+  }.toSeq
   
   def wrapSite(s: OrcSite) = {
     val name = new SiteVariable(Some("_" + s.name))
@@ -354,7 +381,7 @@ object TranslateToPorc {
   def argumentToPorc(v : Argument, ctx : TranslationContext) : Value = {
     v -> {
       case v : BoundVar => ctx(v)
-      case Constant(s : OrcSite) => ctx(s)
+      case Constant(s : OrcSite) if ctx.sites.contains(s) => ctx(s)
       case Constant(c) => porc.Constant(c)
     }
   }

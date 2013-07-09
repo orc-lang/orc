@@ -14,6 +14,7 @@
 //
 package orc.ast.porc
 
+import orc.values.sites.{Site => OrcSite}
 
 trait Optimization extends ((WithContext[Command], AnalysisProvider[PorcAST]) => Option[Command]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -161,6 +162,19 @@ object Optimizer {
       case _ => None
     }
   }
+  val ExternalSiteCall = Opt("external-sitecall") {
+    case (SiteCallIn(Constant(s: OrcSite) in _, List(args, p, h), _), a) => 
+      import PorcInfixNotation._ 
+      val pp = new ClosureVariable("pp")
+      val x = new Variable("x")
+      val impl = let(pp(x) === ExternalCall(s, x, p, h)) {
+          Force(args, pp, h)
+      }
+      if( s.effectFree )
+        impl
+      else
+        IsKilled(h (), impl)
+  }
 
   val UnpackElim = Opt("unpack-elim") {
       case (UnpackIn(vs, Tuple(as), k), a) => {
@@ -169,6 +183,6 @@ object Optimizer {
       }
   }
 
-  val opts = List(InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce, UnpackElim)
+  val opts = List(ExternalSiteCall, InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce, UnpackElim)
 
 }

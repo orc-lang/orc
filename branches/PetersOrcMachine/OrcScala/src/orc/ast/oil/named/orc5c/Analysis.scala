@@ -364,6 +364,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f || g => f.strictOnSet & g.strictOnSet
       case f ow g => f.strictOnSet
       case f > x > g => f.strictOnSet
+      case f > x > g if f.effectFree && f.immediatePublish => f.strictOnSet ++ (g.strictOnSet - x)
       case f < x <| g if f.strictOn(x) => g.strictOnSet 
       case f < x <| g => f.strictOnSet & g.strictOnSet
       case LimitAt(f) => f.strictOnSet
@@ -394,7 +395,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case CallAt(_, _, _, _) => strictOn(e)
       case f || g => f.forcesSet & g.forcesSet
       case f ow g => f.forcesSet
-      case f > x > g if f.effectFree => f.forcesSet ++ g.forcesSet
+      case f > x > g if f.effectFree => f.forcesSet ++ (g.forcesSet - x)
       case f > x > g => f.forcesSet
       case f < x <| g if f.forces(x) => g.forcesSet ++ (f.forcesSet - x)
       case f < x <| g => f.forcesSet & g.forcesSet 

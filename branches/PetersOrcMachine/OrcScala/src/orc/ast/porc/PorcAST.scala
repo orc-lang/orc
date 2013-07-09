@@ -90,6 +90,7 @@ case class Spawn(target: ClosureVariable, k: Command) extends Command with hasSi
 case class Die() extends Command
 
 case class NewCounter(k: Command) extends Command with hasSimpleContinuation
+case class NewCounterDisconnected(k: Command) extends Command with hasSimpleContinuation
 case class RestoreCounter(zeroBranch: Command, nonzeroBranch: Command) extends Command
 case class SetCounterHalt(haltCont: ClosureVariable, k: Command) extends Command with hasSimpleContinuation
 case class GetCounterHalt(x: ClosureVariable, k: Command) extends Command with hasSimpleContinuation
