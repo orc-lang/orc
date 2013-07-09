@@ -18,7 +18,6 @@ package orc.compile.translate
 import scala.collection.immutable.{HashMap, List, Map, Nil}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
-
 import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
@@ -31,6 +30,8 @@ import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, 
 import orc.lib.builtin
 import orc.values.{Field, Signal}
 import orc.values.sites.{JavaSiteForm, OrcSiteForm}
+import orc.values.sites.Site
+import orc.values.sites.HasFields
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 
@@ -224,10 +225,17 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     ag match {
       case ext.Args(typeargs, args) => {
         val newtypeargs = typeargs map { _ map convertType }
-        unfold(args map convert, { Call(target, _, newtypeargs) })
+        val f = new BoundVar()
+        unfold(args map convert, { as => 
+          target match {
+            case c@Constant(s: Site) if !s.isInstanceOf[HasFields] => Call(c, as, newtypeargs)
+            // TODO: It would be nice to avoid the call for defs as well, but that is not possible without adding information to the context.
+            case _ => Call(Constant(builtin.ProjectClosure), List(target), None) > f > Call(f, as, newtypeargs)
+          }
+        })
       }
       case ext.FieldAccess(field) => {
-        Call(target, List(Constant(Field(field))), None)
+        Call(Constant(builtin.GetField), List(target, Constant(Field(field))), None)
       }
       case ext.Dereference => {
         Call(context("?"), List(target), None)

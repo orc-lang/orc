@@ -32,8 +32,7 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
     args match {
       case List(bi: BigInt) => {
         val i: Int = bi.intValue
-        if (0 <= i && i < values.size) { Some(values(i)) }
-        else { throw new TupleIndexOutOfBoundsException(i) }
+        getElem(i)
       }
       case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
@@ -41,4 +40,9 @@ case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"
   
   override val effectFree = true
+  
+  def getElem(i: Int): Option[AnyRef] = {
+    if (0 <= i && i < values.size) { Some(values(i)) }
+    else { throw new TupleIndexOutOfBoundsException(i) }
+  }
 }

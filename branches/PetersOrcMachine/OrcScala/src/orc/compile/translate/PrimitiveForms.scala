@@ -55,12 +55,12 @@ object PrimitiveForms {
 
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
-    val getExtractor = Call(constructor, List(Constant(Field("unapply"))), None)
+    val getExtractor = Call(Constant(ProjectUnapply), List(constructor), None)
     val invokeExtractor = Call(extractor, List(a), None)
     getExtractor > extractor > invokeExtractor
   }
 
-  def makeNth(a: Argument, i: Int) = Call(a, List(Constant(BigInt(i))), None)
+  def makeNth(a: Argument, i: Int) = Call(Constant(GetElem), List(a, Constant(BigInt(i))), None)
 
   def makeLet(args: List[Argument]): Expression = {
     args match {
