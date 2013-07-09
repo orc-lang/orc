@@ -77,6 +77,7 @@ trait ContextualTransform {
       case Die() in _ => Die()
         
       case NewCounterIn(k) => NewCounter(transformCommand(k))
+      case NewCounterDisconnectedIn(k) => NewCounterDisconnected(transformCommand(k))
       case RestoreCounterIn(a, b) => RestoreCounter(transformCommand(a), transformCommand(b))
       case SetCounterHaltIn(v, k) => SetCounterHalt(transformClosureVariable(v in k.ctx), transformCommand(k))
       case GetCounterHaltIn(x, k) => GetCounterHalt(transformClosureVariable(x in k.ctx), transformCommand(k))

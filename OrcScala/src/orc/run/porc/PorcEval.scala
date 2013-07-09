@@ -62,8 +62,18 @@ sealed abstract class Command {
     case v => v
   }
 
+  /*
+  sealed trait CallResult
+  final case class CallValue(v: AnyRef) extends CallResult
+  final case object CallHalt extends CallResult
+  final case object CallNotImmediate extends CallResult
+  */
+  
   final protected def invokeExternal(ctx: Context, interp: InterpreterContext, callable: AnyRef, arguments: List[AnyRef], pc: Closure, hc: Closure): Unit = {
     val t = ctx.terminator
+    //var result: CallResult = CallNotImmediate
+    //val startingThread = Thread.currentThread
+    
     Logger.finer(s"Site call started: $callable $arguments")
     val handle = new Handle {
       def notifyOrc(event: OrcEvent) {
@@ -77,13 +87,20 @@ sealed abstract class Command {
       }
     
       // FIXME: It would be much better to be able to make the call directly here. However 
-      // that would require differentiating calls in the same thread and those in other threads.
+      // that would require differentiating calls in the same thread and those in other threads. 
+      // AND it would require a counter to prevent the stack from overflowing in deep recursion.
       def publish(v: AnyRef) {
         Logger.finer(s"Site call published: $callable $arguments -> $v")
+        /*if(startingThread == Thread.currentThread) {
+          result = CallValue(v)
+        } else*/
         InterpreterContext.current.schedule(pc, List(v, hc))
       }
       def halt {
         Logger.finer(s"Site call halted: $callable $arguments")
+        /*if(startingThread == Thread.currentThread) {
+          result = CallHalt
+        } else*/
         InterpreterContext.current.schedule(hc)
       }
       
@@ -101,13 +118,27 @@ sealed abstract class Command {
       }
     }
     
-    callable match {
+    /*callable match {
+      // TODO: Lift this check into a projection function.
       case r : OrcRecord if r.entries.contains("apply") && (arguments.size != 1 || arguments.size == 1 && !arguments(0).isInstanceOf[orc.values.Field]) =>
         Logger.warning(s"Using ugly record call hack: $r $arguments")
         invokeExternal(ctx, interp, r.entries("apply"), arguments, pc, hc)
       case _ =>
-        interp.invoke(handle, callable, arguments)
+    */
+    // TODO: Some checks in the invoke implementation could be lifted into Porc code.
+    interp.invoke(handle, callable, arguments)
+    
+    /*
+    result match {
+      case CallValue(v) =>
+        val ctx1 = pc.ctx.pushValues(List(v, hc))
+        pc.body.eval(ctx1, interp)
+      case CallHalt =>
+        hc.body.eval(hc.ctx, interp)
+      case CallNotImmediate => 
+        ()
     }
+    */
   }
 
   final protected def forceFutures(interp: InterpreterContext, vs: List[AnyRef], bb: Closure, hb: Closure): Unit = {
@@ -157,7 +188,7 @@ case class Site(defs: List[SiteDef], k: Command) extends Command {
 case class SiteDef(name: Option[String], arity: Int, body: Command)
 case class ClosureDef(name: Option[String], arity: Int, body: Command)
 
-case class ClosureCall(target: Var, arguments: List[Value]) extends Command {
+case class ClosureCall(target: Value, arguments: List[Value]) extends Command {
   def eval(ctx: Context, interp: InterpreterContext) {
     val clos = dereference(target, ctx).asInstanceOf[Closure]
     Logger.finer(s"closcall: $target $arguments { $clos }" )
@@ -165,23 +196,14 @@ case class ClosureCall(target: Var, arguments: List[Value]) extends Command {
     clos.body.eval(ctx1, interp)
   }
 }
-case class SiteCall(target: Var, arguments: List[Value]) extends Command {
+case class SiteCall(target: Value, arguments: List[Value]) extends Command {
   def eval(ctx: Context, interp: InterpreterContext) {
+    // TODO: The 2 choices here should be encoded in Porc directly to allow optimization. Closure calls and bare site calls are quite different.
     dereference(target, ctx) match {
       case clos : Closure =>
         Logger.finer(s"sitecall: $target $arguments { $clos }" )
         val ctx1 = clos.ctx.pushValues(arguments.map(dereference(_, ctx))).copy(terminator = ctx.terminator, counter = ctx.counter, oldCounter = ctx.oldCounter)
         clos.body.eval(ctx1, interp)
-      /*case record: OrcRecord if record.entries.contains("apply") =>
-        val v = record.entries("apply")
-        Logger.finer(s"sitecall: $target $arguments { $v }" )
-        val List(arg: Value, pc: Closure, hc: Closure) = arguments.map(dereference(_, ctx))
-        
-        val bb = Closure(ExternalCall(v, Var(0, None), 1, 2), Context(List(pc, hc), ctx.terminator, ctx.counter, ctx.oldCounter))
-        val hb = hc
-        
-        val vs = dereferenceTuple(arg, ctx)
-        forceFutures(interp, vs, bb, hb)*/
       case v =>
         Logger.finer(s"sitecall: $target $arguments { $v }" )
         val List(arg: Value, pc: Closure, hc: Closure) = arguments.map(dereference(_, ctx))
@@ -230,6 +252,12 @@ case class NewCounter(k: Command) extends Command {
     val c = new Counter()
     ctx.counter.increment()
     k.eval(ctx.copy(counter = c, oldCounter = ctx.counter), interp)
+  }
+}
+case class NewCounterDisconnected(k: Command) extends Command {
+  def eval(ctx: Context, interp: InterpreterContext) {
+    val c = new Counter()
+    k.eval(ctx.copy(counter = c, oldCounter = null), interp)
   }
 }
 case class RestoreCounter(zeroBranch: Command, nonzeroBranch: Command) extends Command {

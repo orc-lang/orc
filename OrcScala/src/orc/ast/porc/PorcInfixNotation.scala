@@ -176,6 +176,12 @@ object NewCounterIn {
     case _ => None
   }
 }
+object NewCounterDisconnectedIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (n@NewCounterDisconnected(k)) in ctx => Some(k in ctx.setCounter(n))
+    case _ => None
+  }
+}
 object DecrCounterIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (n@DecrCounter(k)) in ctx => Some(k in ctx)

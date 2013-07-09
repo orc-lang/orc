@@ -14,6 +14,12 @@
 //
 package orc.ast.oil.named.orc5c
 
+import orc.lib.builtin.GetField
+import orc.values.OrcRecord
+import orc.values.Field
+import orc.lib.builtin.ProjectClosure
+import orc.lib.builtin.ProjectUnapply
+
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -256,7 +262,26 @@ object Optimizer {
     case (DeclareDefsAt(defs, ctx, b), a) if (b.freevars & defs.map(_.name).toSet).isEmpty => b
   }
   
-  val basicOpts = List(DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
+  def isClosureBinding(b: Bindings.Binding) = {
+    import Bindings._
+    b match {
+      case DefBound(_,_,_) | RecursiveDefBound(_,_,_) => true
+      case _ => false
+    } 
+  }
+  
+  val AccessorElim = Opt("accessor-elim") {
+    case (CallAt(Constant(GetField) in _, List(Constant(r : OrcRecord), Constant(f: Field)), ctx, _), a) if r.entries.contains(f.field) => 
+      Constant(r.getField(f))
+    case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
+      Constant(r.getField(Field("apply")).get)
+    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
+      v
+    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
+      Constant(r.getField(Field("unapply")).get)
+  }
+  
+  val basicOpts = List(AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
   val secondOpts = List(InlineDef)
   
   // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.

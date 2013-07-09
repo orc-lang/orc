@@ -63,6 +63,7 @@ object TranslateToPorcEval {
       case Die() => pe.Die()
         
       case NewCounter(k) => pe.NewCounter(translate(k))
+      case NewCounterDisconnected(k) => pe.NewCounterDisconnected(translate(k))
       case RestoreCounter(a, b) => pe.RestoreCounter(translate(a), translate(b))
       case SetCounterHalt(v, k) => pe.SetCounterHalt(translateVar(v), translate(k))
       case GetCounterHalt(x, k) => pe.GetCounterHalt(translate(k)(ctx + x))
@@ -95,9 +96,11 @@ object TranslateToPorcEval {
       case v : Var => ctx(v)
     }
   }
-  def translateVarVar(v: Value)(implicit ctx: TranslationContext): pe.Var = {
+  def translateVarVar(v: Value)(implicit ctx: TranslationContext): pe.Value = {
     v match {
       case v : Var => pe.Var(ctx(v), v.optionalVariableName)
+      case Constant(v) => v
+      case Tuple(vs) => pe.Tuple(vs:_*)
     }
   }
   /*def translateTuple(v: Value)(implicit ctx: TranslationContext): List[pe.Value] = {
