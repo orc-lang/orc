@@ -19,14 +19,14 @@ import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
-
 import scala.collection.immutable.Map
+import orc.values.sites.HasFields
 
 /**
   *
   * @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasFields {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
@@ -36,11 +36,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
 
   override def evaluate(args: List[AnyRef]) =
     args match {
-      case List(Field(name)) =>
-        entries.get(name) match {
-          case Some(v) => Some(v)
-          case None => throw new NoSuchMemberException(this, name)
-        }
+      case List(f : Field) => getField(f)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
@@ -68,5 +64,12 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
 
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
+  
+  def getField(field: Field): Option[AnyRef] = {
+    entries.get(field.field) match {
+      case v@Some(_) => v
+      case None => throw new NoSuchMemberException(this, name)
+    }
+  }
 
 }

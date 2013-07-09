@@ -268,3 +268,8 @@ class StructurePairSite(
     "apply" -> applySite.orcType(),
     "unapply" -> unapplySite.orcType())
 }
+
+
+trait HasFields extends Site {
+  def getField(f: Field): Option[AnyRef]
+}

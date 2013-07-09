@@ -22,6 +22,8 @@ import orc.values.Signal
 import orc.values.OrcTuple
 import orc.error.runtime.TokenException
 import orc.types.Type
+import orc.values.sites.HasFields
+import orc.values.Field
 
 /** Adapts old OrcJava sites to the new OrcScala site interface
   *
@@ -50,6 +52,15 @@ abstract class SiteAdaptor extends Site {
   override def immediatePublish: Boolean = false
   override def publications: (Int, Option[Int]) = (0, None)
   override def effectFree: Boolean = false
+}
+
+abstract class FieldSiteAdapter extends SiteAdaptor with HasFields {
+  def getField(f: Field): Option[AnyRef] = {
+    Some(getField(f.field))
+  }
+  
+  @throws(classOf[TokenException])
+  def getField(f: String): Object
 }
 
 object SiteAdaptor {

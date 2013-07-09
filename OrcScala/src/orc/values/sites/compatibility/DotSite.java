@@ -33,7 +33,7 @@ import orc.error.runtime.NoSuchMemberException;
  * 
  * @author dkitchin
  */
-public abstract class DotSite extends SiteAdaptor {
+public abstract class DotSite extends FieldSiteAdapter {
 
 	Map<String, Object> methodMap;
 
@@ -64,7 +64,17 @@ public abstract class DotSite extends SiteAdaptor {
 			throw new NoSuchMemberException(this, f);
 		}
 	}
-
+	
+	@Override
+	public Object getField(final String f) throws TokenException {
+      final Object m = getMember(f);
+      if (m != null) {
+          return m;
+      } else {
+          throw new NoSuchMemberException(this, f);
+      }	  
+	}
+	
 	Object getMember(final String f) {
 		return methodMap.get(f);
 	}
