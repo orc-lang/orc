@@ -134,7 +134,7 @@ Language</a><br />
 <ul>
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="http://apps.cs.utexas.edu/tech_reports/reports/tr/TR-2113.pdf">cOrcS: Continuation of Orc Security with Static Integrity Checking</a><br />
 	Lauren Yew<br />
-	The University of Texas at Austin, Department of Computer Science, Undergraduate honors thesis HR-12-11.</li>
+	The University of Texas at Austin, Department of Computer Science, Undergraduate honors thesis HR-12-11, Dec 2011.</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/Secure-Information-Flow-Orc.pdf">Secure Information Flow in the Orc Concurrent Programming Language</a><br />
 	John A. Thywissen<br />
