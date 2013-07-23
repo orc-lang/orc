@@ -18,7 +18,7 @@
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-3-642-02138-1_1">DOI</a>
 	<a class="bibtex" href="papers/forte09.bib">BibTeX</a>
 	<br />
-	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
+	David Kitchin, Adrian Quark, William Cook, and Jayadev Misra<br />
 	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
 	
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
@@ -31,13 +31,13 @@
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-3-540-89437-7_9">DOI</a>
 	<a class="bibtex" href="papers/structured_interacting_computations_2008.bib">BibTeX</a>
 	<br />
-	William Cook and Jayadev Misra<br />
+	William Cook, and Jayadev Misra<br />
 	<span class="venue">Proceedings of Software-Intensive Systems</span>, Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10270-006-0012-1">DOI</a>
 	<a class="bibtex" href="papers/OrcJSSM.bib">BibTeX</a>
 	<br />
-	Jayadev Misra and William R. Cook<br />
+	Jayadev Misra, and William R. Cook<br />
 	Journal of Software and Systems Modeling, March 2007</li>
 </ul>
 
@@ -48,14 +48,14 @@
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1016/j.tcs.2008.04.037">DOI</a>
 	<a class="bibtex" href="papers/timed_semantics.bib">BibTeX</a>
 	<br />
-	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
+	Ian Wehrman, David Kitchin, William R. Cook, and Jayadev Misra<br />
 	Theoretical Computer Science, August 2008</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/tcs07-tr.pdf">Properties of the Timed Operational and Denotational Semantics of Orc</a>
 	<a class="bibtex" href="papers/tcs07-tr.bib">BibTeX</a>
 	<br />
-	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
-	University of Texas at Austin, Department of Computer Sciences, 2007, Report# TR-07-65</li>
+	Ian Wehrman, David Kitchin, William R. Cook, and Jayadev Misra<br />
+	University of Texas at Austin, Department of Computer Science, 2007, Report# TR-07-65</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/events.pdf">Event Structure Semantics of Orc</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-3-540-79230-7_11">DOI</a>
@@ -69,7 +69,7 @@
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/11817949_32">DOI</a>
 	<a class="bibtex" href="papers/OrcSemantics.bib">BibTeX</a>
 	<br />
-	David Kitchin, William R. Cook and Jayadev Misra<br />
+	David Kitchin, William R. Cook, and Jayadev Misra<br />
 	<a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://depend.cs.uni-sb.de/concur2006">Proc. of the International Conference on Concurrency Theory (CONCUR), 2006</a>.<br />
 	August 27-30, Bonn, Germany.<br />
 	Extended version: <a onclick="window.open(this.href,'_blank');return false;" href="http://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
@@ -77,13 +77,20 @@
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a>
 	<a class="bibtex" href="papers/Semantics.Orc.bib">BibTeX</a>
 	<br />
-	Jayadev Misra, Tony Hoare and Galen Menzel<br />
+	Jayadev Misra, Tony Hoare, and Galen Menzel<br />
 	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
 
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a class="paper"><!-- <a onclick="window.open(this.href,'_blank');return false;" href="papers/QoS-Aware-Orchestration.pdf" class="paper"> -->QoS-aware management of monotonic service orchestrations</a>
+	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10703-013-????-?">DOI</a> -->
+	<!-- <a class="bibtex" href="papers/QoS-Aware-Orchestration.bib">BibTeX</a> -->
+	<br />
+	Albert Benveniste, Claude Jard, Ajay Kattepur, Sidney Rosario, and John A. Thywissen<br />
+	To appear in <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://link.springer.com/journal/10703/">Formal Methods in System Design</a>, 2013[?]</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" href="papers/OrcSimulation.pdf" class="paper">Simulation using Orchestration (DRAFT)</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-3-540-79980-1_2">DOI</a>
 	<a class="bibtex" href="papers/OrcSimulation.bib">BibTeX</a>
@@ -95,7 +102,7 @@
 	<a class="bibtex" href="papers/tr07-63.bib">BibTeX</a>
 	<br />
 	Kristi Morton, David Kitchin, William Cook<br />
-	The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63</li>
+	The University of Texas at Austin, Department of Computer Science, December 2007, Report# TR-07-63</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a onclick="window.open(this.href,'_blank');return false;" href="papers/OrcWorkflow2up.pdf">2up</a>)
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/11767954_6">DOI</a>
@@ -125,13 +132,17 @@ Language</a><br />
 <a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="http://apps.cs.utexas.edu/tech_reports/reports/tr/TR-2113.pdf">cOrcS: Continuation of Orc Security with Static Integrity Checking</a><br />
+	Lauren Yew<br />
+	The University of Texas at Austin, Department of Computer Science, Undergraduate honors thesis HR-12-11.</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/Secure-Information-Flow-Orc.pdf">Secure Information Flow in the Orc Concurrent Programming Language</a><br />
 	John A. Thywissen<br />
 	The University of Texas at Austin, C S 380S Theory and Practice of Secure Systems, Dec 2009</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
 	Adrian Quark<br />
-	The University of Texas at Austin, Department of Computer Sciences, May 2009</li>
+	The University of Texas at Austin, Department of Computer Science, May 2009</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/coonske_sp08.pdf">Transactional Orc</a><br />
 	Katherine E. Coons<br />
