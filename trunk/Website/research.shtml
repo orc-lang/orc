@@ -84,7 +84,7 @@
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
-	<li><a class="paper"><!-- <a onclick="window.open(this.href,'_blank');return false;" href="papers/QoS-Aware-Orchestration.pdf" class="paper"> -->QoS-aware management of monotonic service orchestrations</a>
+	<li><a onclick="window.open(this.href,'_blank');return false;" href="papers/QoS-Aware-Orchestration.pdf" class="paper">QoS-aware Management of Monotonic Service Orchestrations</a>
 	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10703-013-????-?">DOI</a> -->
 	<!-- <a class="bibtex" href="papers/QoS-Aware-Orchestration.bib">BibTeX</a> -->
 	<br />
