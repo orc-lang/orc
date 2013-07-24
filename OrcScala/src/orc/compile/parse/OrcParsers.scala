@@ -19,14 +19,13 @@ import scala.language.{implicitConversions, postfixOps}
 import scala.util.parsing.input.Reader
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input.Position
-
 import java.io.IOException
-
 import orc.ast.AST
 import orc.OrcCompilationOptions
 import orc.OrcCompilerRequires
 import orc.ast.ext.ConsPattern
 import orc.ast.ext._
+import orc.util.SynchronousThreadExec
 
 /** Mix-in for result types from Orc parsers
   *
@@ -55,9 +54,12 @@ trait OrcParserResultTypes[T] {
   */
 object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(s: String): ParseResult = {
-    val parsers = new OrcParsers(null, null, null)
-    val tokens = new parsers.lexical.Scanner(s)
-    parsers.phrase(parsers.parserForReadSite)(tokens)
+    //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
+    SynchronousThreadExec("Orc Parser Thread", {
+      val parsers = new OrcParsers(null, null, null)
+      val tokens = new parsers.lexical.Scanner(s)
+      parsers.phrase(parsers.parserForReadSite)(tokens)
+    })
   }
 }
 
@@ -69,9 +71,12 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
   */
 object OrcProgramParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
-    val parsers = new OrcParsers(ic, options, envServices)
-    val tokens = new parsers.lexical.Scanner(ic.reader)
-    parsers.phrase(parsers.parseProgram)(tokens)
+    //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
+    SynchronousThreadExec("Orc Parser Thread: "+ic.descr, {
+      val parsers = new OrcParsers(ic, options, envServices)
+      val tokens = new parsers.lexical.Scanner(ic.reader)
+      parsers.phrase(parsers.parseProgram)(tokens)
+    })
   }
 }
 
@@ -83,10 +88,13 @@ object OrcProgramParser extends ((OrcInputContext, OrcCompilationOptions, OrcCom
   */
 object OrcIncludeParser extends ((OrcInputContext, OrcCompilationOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
   def apply(ic: OrcInputContext, options: OrcCompilationOptions, envServices: OrcCompilerRequires): ParseResult = {
-    val newParsers = new OrcParsers(ic, options, envServices)
-    val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
-    val tokens = new newParsers.lexical.Scanner(ic.reader)
-    newParsers.phrase(parseInclude)(tokens)
+    //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
+    SynchronousThreadExec("Orc Parser Thread: "+ic.descr, {
+      val newParsers = new OrcParsers(ic, options, envServices)
+      val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
+      val tokens = new newParsers.lexical.Scanner(ic.reader)
+      newParsers.phrase(parseInclude)(tokens)
+    })
   }
 }
 
