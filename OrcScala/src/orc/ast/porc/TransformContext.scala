@@ -48,14 +48,16 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
     normalize(SetCounterTerminator(Some(n), Some(n), this))
   }
   
-  def compatibleFor(e: Command)(o: TransformContext): Boolean = {
+  // TODO: add enclosing exception context, this will not effect compatibility since it is always dynamic anyway
+  
+  def compatibleFor(e: Expr)(o: TransformContext): Boolean = {
     val fc = e.referencesCounter
     val ft = e.referencesTerminator
     compatibleForSite(e)(o) &&
     (!fc || enclosingCounter == o.enclosingCounter) &&
     (!ft || enclosingTerminator == o.enclosingTerminator)
   } 
-  def compatibleForSite(e: Command)(o: TransformContext): Boolean = {
+  def compatibleForSite(e: Expr)(o: TransformContext): Boolean = {
     val fv = e.freevars
     bindings.filter(b => fv.contains(b.variable)) == o.bindings.filter(b => fv.contains(b.variable)) 
   } 
@@ -125,30 +127,29 @@ sealed trait Binding extends PrecomputeHashcode with Product {
   override def toString = s"$productPrefix($variable)" //${ast.toString.take(50).replace('\n', ' ')}
 }
 
-case class StrictBound(ctx: TransformContext, ast: Command, variable: Var) extends Binding
+case class StrictBound(ctx: TransformContext, ast: Expr, variable: Var) extends Binding
 
 case class LetBound(ctx: TransformContext, ast: Let) extends Binding {
-  def variable: ClosureVariable = ast.d.name
+  def variable: Var = ast.x
 }
 
 case class SiteBound(ctx: TransformContext, ast: Site, d: SiteDef) extends Binding {
   assert(ast.defs.contains(d))
-  def variable: SiteVariable = d.name
+  def variable: Var = d.name
 }
 case class RecursiveSiteBound(ctx: TransformContext, ast: Site, d: SiteDef) extends Binding {
   assert(ast.defs.contains(d))
-  def variable: SiteVariable = d.name
+  def variable: Var = d.name
 }
 
-case class UnpackBound(ctx: TransformContext, ast: Unpack, variable: Variable) extends Binding {
-  assert(ast.variables.contains(variable))
-  def valueExpr = WithContext(ast.v, ctx)
-}
-
-case class SiteArgumentBound(ctx: TransformContext, ast: SiteDef, variable: Variable) extends Binding {
+case class SiteArgumentBound(ctx: TransformContext, ast: SiteDef, variable: Var) extends Binding {
   assert(ast.arguments.contains(variable))
 }
-case class LetArgumentBound(ctx: TransformContext, ast: ClosureDef, variable: Variable) extends Binding {
+case class SitePublishBound(ctx: TransformContext, ast: SiteDef) extends Binding {
+  def variable: Var = ast.pArg
+}
+
+case class LambdaArgumentBound(ctx: TransformContext, ast: Lambda, variable: Var) extends Binding {
   assert(ast.arguments.contains(variable))
 }
 

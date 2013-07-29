@@ -50,6 +50,13 @@ trait Site extends OrcValue with SiteMetadata {
   }
 }
 
+final class HaltedException() extends Exception("Expression halted")
+
+trait DirectSite extends Site {
+  @throws(classOf[HaltedException])
+  def directcall(args: List[AnyRef]): AnyRef
+}
+
 /* A site which provides type information. */
 trait TypedSite extends Site {
   @throws(classOf[TypeException])
