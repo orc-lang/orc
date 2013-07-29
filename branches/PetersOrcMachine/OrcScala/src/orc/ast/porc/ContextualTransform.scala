@@ -19,25 +19,23 @@ import orc.ast.oil.named.orc5c.EmptyFunction
 trait ContextualTransform {  
   def order[E <: PorcAST](pf: WithContext[E] => Option[E], descend: WithContext[E] => E)(e: WithContext[E]): E
   
-  def apply(c: Command): Command = transformCommand(c in TransformContext())
+  def apply(c: Expr): Expr = transformExpr(c in TransformContext())
   def apply(c: Value): Value = transformValue(c in TransformContext())
-  def apply(c: ClosureDef): ClosureDef = transformLetDef(c in TransformContext())
   def apply(c: SiteDef): SiteDef = transformSiteDef(c in TransformContext())
   
   def apply(c: PorcAST): PorcAST = c match {
-    case c: Command => this(c)
+    case c: Expr => this(c)
     case c: Value => this(c)
-    case c: ClosureDef => this(c)
     case c: SiteDef => this(c)
   }
 
-  def onCommand: PartialFunction[WithContext[Command], Command] = EmptyFunction
+  def onExpr: PartialFunction[WithContext[Expr], Expr] = EmptyFunction
   def onValue: PartialFunction[WithContext[Value], Value] = EmptyFunction
   def onVar: PartialFunction[WithContext[Var], Value] = EmptyFunction
 
   def callHandler[E <: PorcAST](e: WithContext[E]): Option[E] = {
     e match {
-      case (c: Command) in ctx => onCommand.lift(c in ctx).asInstanceOf[Option[E]]
+      case (c: Expr) in ctx => onExpr.lift(c in ctx).asInstanceOf[Option[E]]
       case (v: Var) in ctx => onVar.lift(v in ctx).asInstanceOf[Option[E]]
       case (v: Value) in ctx => onValue.lift(v in ctx).asInstanceOf[Option[E]]
       case _ => None
@@ -54,83 +52,62 @@ trait ContextualTransform {
     }
   }
   
-  def transformCommand(expr: WithContext[Command]): Command = {
-    order[Command](callHandler, {
-      case LetIn(d, b) => {
-        val l = transformLetDef(d)
-        val e1 = Let(l, b)
-        Let(l, transformCommand(b.e in d.ctx + LetBound(d.ctx, e1)))
+  def transformExpr(expr: WithContext[Expr]): Expr = {
+    order[Expr](callHandler, {
+      case LetIn(x, v, b) => {
+        val e1 = Let(transformVariable(x), transformExpr(v), b)
+        Let(e1.x, e1.v, transformExpr(b.e in x.ctx + LetBound(x.ctx, e1)))
       }
       case s@SiteIn(l, ctx, b) => {
         val ls1 = l map { v => transformSiteDef(v in ctx) }
         val e1 = Site(ls1, b)
         val ctx1 = s.ctx extendBindings ls1.map(SiteBound(ctx, e1, _))
-        Site(ls1, transformCommand(b.e in ctx1))
+        Site(ls1, transformExpr(b.e in ctx1))
       }
 
-      case ClosureCallIn(t, a, ctx) => ClosureCall(transformValue(t), a map { v => transformValue(v in ctx) })
-      case SiteCallIn(t, a, ctx) => SiteCall(transformValue(t), a map { v => transformValue(v in ctx) })
+      case CallIn(t, a, ctx) => Call(transformValue(t), a map { v => transformValue(v in ctx) })
+      case SiteCallIn(t, a, p, ctx) => SiteCall(transformValue(t), a map { v => transformValue(v in ctx) }, transformValue(p in ctx))
       
-      case UnpackIn(vars, v, k) => Unpack(vars map { v => transformVariable(v in k.ctx) }, transformValue(v in k.ctx), transformCommand(k))
+      //case ProjectIn(n, v) => Project(n, transformValue(v))
       
-      case SpawnIn(v, k) => Spawn(transformClosureVariable(v), transformCommand(k))
-      case Die() in _ => Die()
+      case SpawnIn(v) => Spawn(transformVariable(v))
         
-      case NewCounterIn(k) => NewCounter(transformCommand(k))
-      case NewCounterDisconnectedIn(k) => NewCounterDisconnected(transformCommand(k))
-      case RestoreCounterIn(a, b) => RestoreCounter(transformCommand(a), transformCommand(b))
-      case SetCounterHaltIn(v, k) => SetCounterHalt(transformClosureVariable(v in k.ctx), transformCommand(k))
-      case GetCounterHaltIn(x, k) => GetCounterHalt(transformClosureVariable(x in k.ctx), transformCommand(k))
-      case DecrCounterIn(k) => DecrCounter(transformCommand(k))
+      case NewCounterIn(e) => NewCounter(transformExpr(e))
+      //case NewCounterDisconnectedIn(k) => NewCounterDisconnected(transformCommand(k))
+      case RestoreCounterIn(a, b) => RestoreCounter(transformExpr(a), transformExpr(b))
+      case SetCounterHaltIn(v) => SetCounterHalt(transformVariable(v))
 
-      case NewTerminatorIn(k) => NewTerminator(transformCommand(k))
-      case GetTerminatorIn(x, k) => GetTerminator(transformVariable(x in k.ctx), transformCommand(k))
-      case KillIn(a, b) => Kill(transformCommand(a), transformCommand(b))
-      case IsKilledIn(a, b) => IsKilled(transformCommand(a), transformCommand(b))
-      case AddKillHandlerIn(u, m, k) => AddKillHandler(transformValue(u), transformClosureVariable(m), transformCommand(k))
-      case CallKillHandlersIn(k) => CallKillHandlers(transformCommand(k))
+      case NewTerminatorIn(k) => NewTerminator(transformExpr(k))
+      case AddKillHandlerIn(u, m) => AddKillHandler(transformValue(u), transformValue(m))
         
-      case NewFutureIn(x, k) => NewFuture(transformVariable(x in k.ctx), transformCommand(k))
-      case ForceIn(vs, a, b) => Force(transformValue(vs), transformValue(a), transformValue(b))
-      case BindIn(f, v, k) => Bind(transformVariable(f), transformValue(v), transformCommand(k))
-      case StopIn(f, k) => Stop(transformVariable(f), transformCommand(k))
+      case ForceIn(vs, ctx, b) => Force(vs map (v => transformValue(v in ctx)), transformValue(b))
+      case BindIn(f, v) => Bind(transformVariable(f), transformValue(v))
+      case StopIn(f) => Stop(transformVariable(f))
       
-      case NewFlagIn(x, k) => NewFlag(transformVariable(x in k.ctx), transformCommand(k))
-      case SetFlagIn(f, k) => SetFlag(transformVariable(f), transformCommand(k))
-      case ReadFlagIn(f, a, b) => ReadFlag(transformVariable(f), transformCommand(a), transformCommand(b))
+      case SetFlagIn(f) => SetFlag(transformVariable(f))
+      case ReadFlagIn(f) => ReadFlag(transformVariable(f))
 
-      case ExternalCallIn(s, args, h, p) => ExternalCall(s, transformValue(args), transformValue(h), transformValue(p))
-      })(expr)
-  }
-  
-  def transformLetDef(expr: WithContext[ClosureDef]): ClosureDef = { 
-    order[ClosureDef](callHandler, {
-      case ClosureDefIn(name, args, ctx, body) => ClosureDef(transformClosureVariable(name in ctx), args map { v => transformVariable(v in ctx) }, transformCommand(body))
+      case ExternalCallIn(s, args, ctx, p) => ExternalCall(s, args map (v => transformValue(v in ctx)), transformValue(p))
+
+      case e in _ if e.productArity == 0 => e
     })(expr)
   }
+  
   def transformSiteDef(expr: WithContext[SiteDef]): SiteDef = {
     order[SiteDef](callHandler, {
-      case SiteDefIn(name, args, ctx, body) => SiteDef(transformSiteVariable(name in ctx), args map { v => transformVariable(v in ctx) }, transformCommand(body))
+      case SiteDefIn(name, args, pArg, ctx, body) => SiteDef(transformVariable(name in ctx), args map { v => transformVariable(v in ctx) }, transformVariable(pArg in ctx), transformExpr(body))
     })(expr)
   }
 
   def transformValue(expr: WithContext[Value]): Value = {
     order[Value](callHandler, {
-      case (n @ Constant(_)) in _ => n
-      case (n @ Tuple(vs)) in ctx => Tuple(vs.map(v => transformValue(v in ctx)))
-      case (v: Variable) in ctx => v
-      case (v: SiteVariable) in ctx => v
-      case (v: ClosureVariable) in ctx => v
+      case (n @ OrcValue(_)) in _ => n
+      //case (n @ Tuple(vs)) in ctx => Tuple(vs.map(v => transformValue(v in ctx)))
+      case (v: Var) in ctx => v
     })(expr)
   }
-  def transformVariable(expr: WithContext[Variable]): Variable = {
-    order[Variable](callHandler, x => x)(expr)
-  }
-  def transformSiteVariable(expr: WithContext[SiteVariable]): SiteVariable = {
-    order[SiteVariable](callHandler, x => x)(expr)
-  }
-  def transformClosureVariable(expr: WithContext[ClosureVariable]): ClosureVariable = {
-    order[ClosureVariable](callHandler, x => x)(expr)
+  def transformVariable(expr: WithContext[Var]): Var = {
+    order[Var](callHandler, x => x)(expr)
   }
 }
 

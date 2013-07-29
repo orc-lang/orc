@@ -21,7 +21,7 @@ import orc.run.{porc => pe}
   * @author amp
   */
 object TranslateToPorcEval {
-  def apply(ast: Command): pe.Command = translate(ast)(TranslationContext(Nil))
+  def apply(ast: Expr): pe.Expr = translate(ast)(TranslationContext(Nil))
   
   case class TranslationContext(
       variables: List[Var]) {
@@ -29,83 +29,80 @@ object TranslateToPorcEval {
     def ++(s: List[Var]) = this.copy(variables = s ::: variables)
     def apply(v: Var): Int = {
       val i = variables.indexOf(v)
+      //println(s"$v $variables $i ${variables.filter(_ == v)}")
       assert(i >= 0, s"Unknown variable: $v")
       i
     }
   }
 
   def translate(ast: Value)(implicit ctx: TranslationContext): pe.Value = {
-    ast match {
-      case Constant(v) => v
-      case Tuple(l) => pe.Tuple(l map {translate(_)})
-      case v : Var => pe.Var(ctx(v), v.optionalVariableName)
-    }
+    translateVarVar(ast)
   }
 
-  def translate(d: ClosureDef)(implicit ctx: TranslationContext): pe.ClosureDef = {
-    pe.ClosureDef(d.name.optionalVariableName, d.arguments.size, translate(d.body)(ctx ++ d.arguments))
-  }
+
   def translate(d: SiteDef)(implicit ctx: TranslationContext): pe.SiteDef = {
-    pe.SiteDef(d.name.optionalVariableName, d.arguments.size, translate(d.body)(ctx ++ d.arguments))
+    val bT = translate(d.body)(ctx ++ d.arguments + d.pArg)
+    pe.SiteDef(d.name.optionalVariableName, d.arguments.size, bT)
   }
   
-  def translate(ast: Command)(implicit ctx: TranslationContext): pe.Command = {
+  def translate(ast: Expr)(implicit ctx: TranslationContext): pe.Expr = {
     ast match {
-      case Let(d, b) => pe.Let(translate(d), translate(b)(ctx + d.name))
+      case Let(x, v, b) => pe.Let(translate(v), translate(b)(ctx + x))
       case Site(l, b) => pe.Site(l.map(d => translate(d)(ctx ++ l.map(_.name))), translate(b)(ctx ++ l.map(_.name)))
+      case Lambda(arguments, body) => pe.Lambda(arguments.size, translate(body)(ctx ++ arguments))
 
-      case ClosureCall(t, a) => pe.ClosureCall(translateVarVar(t), a map translate)
-      case SiteCall(t, a) => pe.SiteCall(translateVarVar(t), a map translate)
+      case Call(t, a) => 
+        pe.Call(translateVarVar(t), a map translate)
+      case SiteCall(t, a, p) => 
+        pe.SiteCall(translateVarVar(t), a map translate, translate(p))
+            
+      case Spawn(v) => pe.Spawn(translateVarVar(v)) 
+      case Sequence(es) => pe.Sequence(es map translate) 
       
-      case Unpack(vars, v, k) => pe.Unpack(vars.size, translate(v), translate(k)(ctx ++ vars))
+      case If(b, t, e) => pe.If(translateVarVar(b), translate(t), translate(e))
       
-      case Spawn(v, k) => pe.Spawn(translateVar(v), translate(k))
-      case Die() => pe.Die()
-        
+      case CallCounterHalt() => pe.CallCounterHalt
+      case CallParentCounterHalt() => pe.CallParentCounterHalt
+
       case NewCounter(k) => pe.NewCounter(translate(k))
-      case NewCounterDisconnected(k) => pe.NewCounterDisconnected(translate(k))
+      //case NewCounterDisconnected(k) => pe.NewCounterDisconnected(translate(k))
       case RestoreCounter(a, b) => pe.RestoreCounter(translate(a), translate(b))
-      case SetCounterHalt(v, k) => pe.SetCounterHalt(translateVar(v), translate(k))
-      case GetCounterHalt(x, k) => pe.GetCounterHalt(translate(k)(ctx + x))
-      case DecrCounter(k) => pe.DecrCounter(translate(k))
+      case SetCounterHalt(v) => pe.SetCounterHalt(translateVarVar(v))
+      case DecrCounter() => pe.DecrCounter
 
       case NewTerminator(k) => pe.NewTerminator(translate(k))
-      case GetTerminator(x, k) => pe.GetTerminator(translate(k)(ctx + x))
-      case Kill(a, b) => pe.Kill(translate(a), translate(b))
-      case IsKilled(a, b) => pe.IsKilled(translate(a), translate(b))
-      case AddKillHandler(u, m, k) => pe.AddKillHandler(translateVar(u), translateVar(m), translate(k))
-      case CallKillHandlers(k) => pe.CallKillHandlers(translate(k))
-
-      case NewFuture(x, k) => pe.NewFuture(translate(k)(ctx + x))
-      case Force(vs, a, b) => pe.Force(translate(vs), translateVar(a), translateVar(b))
-      case Bind(f, v, k) => pe.Bind(translateVar(f), translate(v), translate(k))
-      case Stop(f, k) => pe.Stop(translateVar(f), translate(k))
+      case GetTerminator() => pe.GetTerminator
+      case SetKill() => pe.SetKill
+      case CheckKilled() => pe.CheckKilled
+      case AddKillHandler(u, m) => pe.AddKillHandler(translateVarVar(u), translateVarVar(m))
+      case CallKillHandlers() => pe.CallKillHandlers
+      case Killed() => pe.Killed
+      case TryOnKilled(body, handler) => pe.TryOnKilled(translate(body), translate(handler))
+      case Halted() => pe.Halted
+      case TryOnHalted(body, handler) => pe.TryOnHalted(translate(body), translate(handler))
       
-      case NewFlag(x, k) => pe.NewFlag(translate(k)(ctx + x))
-      case SetFlag(f, k) => pe.SetFlag(translateVar(f), translate(k))
-      case ReadFlag(f, a, b) => pe.ReadFlag(translateVar(f), translate(a), translate(b))
-
-      case ExternalCall(s, args, h, p) => pe.ExternalCall(s, translate(args), translateVar(h), translateVar(p))
+      case NewFuture() => pe.NewFuture
+      case Force(vs, a) => pe.Force(vs map {x => translate(x)}, translateVarVar(a))
+      case Bind(f, v) => pe.Bind(translateVarVar(f), translateVarVar(v))
+      case Stop(f) => pe.Stop(translateVarVar(f))
       
-      case _ => ???
+      case NewFlag() => pe.NewFlag
+      case SetFlag(f) => pe.SetFlag(translateVarVar(f))
+      case ReadFlag(f) => pe.ReadFlag(translateVarVar(f))
+
+      case ExternalCall(s, args, p) => pe.ExternalCall(s, args map {x => translate(x)}, translateVarVar(p))
+      
+      case v : Value => pe.ValueExpr(translateVarVar(v))
+      case _ => throw new NotImplementedError(s"$ast")
     }
   }
   
-  def translateVar(v: Value)(implicit ctx: TranslationContext): Int = {
-    v match {
-      case v : Var => ctx(v)
-    }
-  }
   def translateVarVar(v: Value)(implicit ctx: TranslationContext): pe.Value = {
     v match {
       case v : Var => pe.Var(ctx(v), v.optionalVariableName)
-      case Constant(v) => v
-      case Tuple(vs) => pe.Tuple(vs:_*)
+      case Unit() => scala.Unit
+      case Bool(v) => v : java.lang.Boolean
+      case OrcValue(v) => v
     }
   }
-  /*def translateTuple(v: Value)(implicit ctx: TranslationContext): List[pe.Value] = {
-    v match {
-      case Tuple(vs) => vs.map(translate(_:Value))
-    }
-  }*/
 }

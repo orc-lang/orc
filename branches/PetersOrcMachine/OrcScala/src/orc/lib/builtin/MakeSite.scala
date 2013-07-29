@@ -53,6 +53,30 @@ object MakeSite extends TotalSite1 with TypedSite {
   override val effectFree = true
 }
 
+class UnimplementedMakeSitePart(override val name: String) extends TotalSite1 with TypedSite {
+  def eval(arg: AnyRef) = {
+    arg match {
+      case c: Closure => ???
+      case _ => throw new ArgumentTypeMismatchException(0, "Closure", arg.getClass().getCanonicalName())
+    }
+  }
+
+  def orcType() = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        case f: FunctionType => f
+        case g => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
+      }
+    }
+  }
+
+  override val effectFree = true
+}
+
+object MakeStrict extends UnimplementedMakeSitePart("MakeStrict")
+object MakeSingleValued extends UnimplementedMakeSitePart("MakeSingleValued")
+object MakeResiliant extends UnimplementedMakeSitePart("MakeResiliant")
+
 // Standalone class execution
 
 class RunLikeSite(closure: Closure) extends UntypedSite {

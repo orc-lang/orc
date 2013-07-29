@@ -154,20 +154,20 @@ class TestCompiler extends StandardOrcCompiler {
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => NamedToOrc5C.namedToOrc5C(ast, Map(), Map()) }
   }
-  val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.orc5c.Expression, orc.ast.porc.Command] {
+  val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.orc5c.Expression, orc.ast.porc.Expr] {
     import orc.ast.oil.named.orc5c._
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => TranslateToPorc.orc5cToPorc(ast) }
   }
   
-  val porcAnalysis = new CompilerPhase[CompilerOptions, orc.ast.porc.Command,orc.ast.porc.Command] {
+  /*val porcAnalysis = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr,orc.ast.porc.Expr] {
     import orc.ast.porc._
     val phaseName = "translate5C"
     override def apply(co: CompilerOptions) = { ast => 
       val analyzer = new Analyzer()
       import analyzer.ImplicitResults._
       (new ContextualTransform.Pre {
-        override def onCommand = {
+        override def onExpr = {
           case c => {
             println(c.immediatelyCallsSet + c.e.toString.take(100).replace('\n', ' '))
             c.e
@@ -176,15 +176,15 @@ class TestCompiler extends StandardOrcCompiler {
       })(ast)
       ast
     }
-  }
+  }*/
   
-  def optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Command, orc.ast.porc.Command] {
+  def optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.ast.porc.Expr] {
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
       println("====================================== optimizing" )
    
-      def opt(prog : Command, pass : Int) : Command = {
+      def opt(prog : Expr, pass : Int) : Expr = {
         println("--------------------- pass " + pass )
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
@@ -213,11 +213,11 @@ class TestCompiler extends StandardOrcCompiler {
     }
   }
   
-  val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Command, orc.run.porc.Command] {
+  val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.run.porc.Expr] {
     val phaseName = "translatePorcEval"
     override def apply(co: CompilerOptions) = { ast => TranslateToPorcEval(ast) }
   }
-  val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Command, orc.run.porc.Command] {
+  val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Expr, orc.run.porc.Expr] {
     import orc.run.porc._
     val phaseName = "evalPorc"
     override def apply(co: CompilerOptions) = { ast => 
@@ -254,10 +254,10 @@ class TestCompiler extends StandardOrcCompiler {
     translatePorc >>> 
     //porcAnalysis >>>
     outputAST >>>
-    optimizePorc >>>
-    outputAST >>>
-    translatePorcEval >>>
+    //optimizePorc >>>
     //outputAST >>>
+    translatePorcEval >>>
+    outputAST >>>
     evalPorc >>>
     awfulHack
 }

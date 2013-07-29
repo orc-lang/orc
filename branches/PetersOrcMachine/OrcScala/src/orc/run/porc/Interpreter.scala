@@ -28,9 +28,9 @@ class Interpreter {
   
   //Logger.logAllToStderr()
   
-  def start(e: Command) {
+  def start(e: Expr) {
     // spawn 2 threads per core (currently do not worry about blocked threads)
-    val nthreads = processors * 2
+    val nthreads = if(false) 1 else processors * 2
     threads = for(_ <- 1 to nthreads) yield {
       new InterpreterThread(this)
     }
@@ -92,16 +92,28 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
     
     while(running) {
       ctx.dequeue() match {
-        case Some((clos, args)) =>
+        case Some((clos, args, halt)) =>
           val ectx = clos.ctx.pushValues(args)
-          //println((clos, args))
-          clos.body.eval(ectx, ctx)
+          Logger.fine(s"Executing $clos $args")
+          try {
+            clos.body.eval(ectx, ctx)
+          } catch {
+            case _ : KilledException.type => ()
+          }
+          Logger.fine(s"Executing halt $halt")
+          if( halt != null ) {
+            try {
+              halt.body.eval(halt.ctx, ctx)
+            } catch {
+              case _ : KilledException.type => ()
+            }
+          }
         case None => 
           // steal work
           otherContexts.find(c => !c.queue.isEmpty()) flatMap { _.steal } match { 
             case Some(t) => {
               //println("Stealing work.")
-              ctx.schedule(t._1, t._2)
+              ctx.schedule(t)
             }
             case None => {
               // Wait a little while and see if more work has appeared

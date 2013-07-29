@@ -21,7 +21,7 @@ import scala.collection.mutable
   * @author amp
   */
 trait FreeVariables {
-  this: Command =>
+  this: Expr =>
   lazy val freevars: Set[Var] = {
     val s = mutable.Set[Var]()
     (new ContextualTransform.NonDescending {

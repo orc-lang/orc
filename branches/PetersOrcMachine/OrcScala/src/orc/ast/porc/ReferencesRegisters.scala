@@ -19,19 +19,20 @@ package orc.ast.porc
   * @author amp
   */
 trait ReferencesRegisters {
-  this: Command =>
+  this: Expr =>
   lazy val referencesCounter: Boolean = {
     var foundCounter = false
     (new ContextualTransform.Post {
-      override def onCommand = {
-      case e@(LetIn(_, _) 
-         | SiteCallIn(_, _, _) 
-         | SpawnIn(_, _)
+      override def onExpr = {
+      case e@(LambdaIn(_, _, _) 
+         | SiteCallIn(_, _, _, _) 
+         | SpawnIn(_)
          | NewCounterIn(_) 
          | RestoreCounterIn(_, _) 
-         | SetCounterHaltIn(_, _) 
-         | GetCounterHaltIn(_, _) 
-         | DecrCounterIn(_)) => foundCounter = true; e
+         | SetCounterHaltIn(_)
+         | CallCounterHalt() in _
+         | CallParentCounterHalt() in _
+         | DecrCounter() in _) => foundCounter = true; e
       }
     })(this)
     foundCounter
@@ -39,14 +40,15 @@ trait ReferencesRegisters {
   lazy val referencesTerminator: Boolean = {
     var foundTerminator = false
     (new ContextualTransform.Post {
-      override def onCommand = {
-      case e@(LetIn(_, _) 
-         | SiteCallIn(_, _, _) 
-         //| NewTerminatorIn(_) // TODO: In theory this actually blocks T references. I think
-         | GetTerminatorIn(_, _) 
-         | KillIn(_, _) 
-         | IsKilledIn(_, _) 
-         | CallKillHandlersIn(_)) => foundTerminator = true; e
+      override def onExpr = {
+      case e@(LambdaIn(_, _, _) 
+         | SiteCallIn(_, _, _, _) 
+         //| NewTerminatorIn() in _ // TODO: In theory this actually blocks T references. I think
+         | GetTerminator() in _ 
+         | SetKill() in _ 
+         | Killed() in _ 
+         | CheckKilled() in _ 
+         | CallKillHandlers() in _) => foundTerminator = true; e
       }
     })(this)
     foundTerminator

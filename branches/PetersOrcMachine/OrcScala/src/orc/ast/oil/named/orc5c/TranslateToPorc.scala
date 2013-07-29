@@ -33,12 +33,13 @@ object TranslateToPorc {
   
   // TODO: Use a varient of the TransformContext allowing us to know how variables where bound and translate to better code.
   
+  case class SiteInfo(val arity: Int, val closedVariables: Set[porc.Var])
+  
   case class TranslationContext(
       p: porc.Value,
-      h: porc.Value,
-      sites: Map[OrcSite, porc.SiteVariable] = Map(), 
+      sites: Map[OrcSite, porc.Var] = Map(), 
       variables: Map[BoundVar, porc.Var] = Map(),
-      siteInfo: Map[BoundVar, Set[porc.Var]] = Map(),
+      siteInfo: Map[BoundVar, SiteInfo] = Map(),
       recursives: Set[BoundVar] = Set()) {
     def +(v: (BoundVar, porc.Var)) = this.copy(variables = variables + v)
     def ++(s: Iterable[(BoundVar, porc.Var)]) = this.copy(variables = variables ++ s)
@@ -52,24 +53,23 @@ object TranslateToPorc {
     def isRecursive(v: BoundVar) = recursives(v)
     
     def addRecursives(vs: Iterable[BoundVar]) = this.copy(recursives = recursives ++ vs)
-    def addSiteInfo(vs: Iterable[(BoundVar, Set[porc.Var])]) = this.copy(siteInfo = siteInfo ++ vs)
+    def addSiteInfo(vs: Iterable[(BoundVar, SiteInfo)]) = this.copy(siteInfo = siteInfo ++ vs)
     
     def setP(v: Value) = copy(p=v)
-    def setH(v: Value) = copy(h=v)
   }
   
-  def orc5cToPorc(e: Expression): porc.Command = {
-    val topP = new ClosureVariable(Some("Publish"))
-    val topH = new ClosureVariable(Some("Halt"))
+  def orc5cToPorc(e: Expression): porc.Expr = {
+    val topP = new porc.Var(Some("Publish"))
+    val topH = new porc.Var(Some("Halt"))
     
     //val (sites, names, defs) = e.referencedSites.toList.sortBy(_.name).map(wrapSite).unzip3
     val (sites, names, defs) = porcImplementedSiteDefs.unzip3
+    // TODO: Add support for direct call stubs.
     
-    val p = translate(e)(TranslationContext(topP, topH, sites = (sites zip names).toMap))
+    val p = translate(e)(TranslationContext(topP, sites = (sites zip names).toMap))
     val sp = defs.foldLeft(p)((p, s) => Site(List(s), p))
     
-    val x = new Variable("x")
-    val h = new Variable("h")
+    val x = new porc.Var("x")
 
     val printSite = new orc.values.sites.Site {
       override val name = "PublishToUser"
@@ -83,26 +83,26 @@ object TranslateToPorc {
       override val publications = (1, Some(1))
     }
     
-    val noopP = new ClosureVariable("noop")
+    val noopP = new porc.Var("noop")
 
-    let(topH() === Die()) {
-      setCounterHalt(topH) {
-        let(noopP(x, h) === h(),
-          topP(x, h) === ExternalCall(printSite, Tuple(x), noopP, h)) {
+    let((topH, porc.Lambda(Nil, porc.Unit()))) {
+      SetCounterHalt(topH) :::
+      let((noopP, Lambda(List(x), Unit())),
+          (topP, Lambda(List(x), ExternalCall(printSite, List(x), noopP)))) {
             sp
           }
-      }
     }
   }
   
-  val porcImplementedSites = Map[OrcSite, (Variable, Variable, Variable) => Command](
-    MakeSite -> { (args, p, h) =>
-      val f = new Variable("f")
-      val f1 = new SiteVariable("f'")
-      val args1 = new Variable("args")
-      val p1 = new Variable("P")
-      val h1 = new Variable("H")
-      val topH = new ClosureVariable("Halt")
+  val porcImplementedSites = Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)](
+    /*MakeSite -> { (args, p, h) =>
+      import porc._
+      val f = new Var("f")
+      val f1 = new Var("f'")
+      val args1 = new Var("args")
+      val p1 = new Var("P")
+      val h1 = new Var("H")
+      val topH = new Var("Halt")
       Unpack(List(f), args,
         Site(List(SiteDef(f1, List(args1, p1, h1),
           NewTerminator {
@@ -119,23 +119,21 @@ object TranslateToPorc {
             }
           })),
           p(f1, h)))
-
-    })
+    }*/)
     
   val porcImplementedSiteDefs = {
     for ((s, b) <- porcImplementedSites) yield {
-      val name = new SiteVariable(Some("_" + s.name))
-      val args = new Variable("args")
-      val p = new Variable("P")
-      val h = new Variable("H")
-      val body = porcImplementedSites.get(s) match {
-        case Some(b) => b(args, p, h)
+      import porc._
+      val name = new Var(Some("_" + s.name))
+      val p = new Var("P")
+      val (args,body) = porcImplementedSites.get(s) match {
+        case Some(b) => b(p)
       }
-      (s, name, SiteDef(name, List(args, p, h), body))
+      (s, name, SiteDef(name, args, p, body))
     }
   }.toSeq
   
-  def wrapSite(s: OrcSite) = {
+  /*def wrapSite(s: OrcSite) = {
     val name = new SiteVariable(Some("_" + s.name))
     val args = new Variable("args")
     val p = new Variable("P")
@@ -155,127 +153,112 @@ object TranslateToPorc {
       }
     }
     (s, name, SiteDef(name, List(args, p, h), body))
-  }
+  }*/
   
-  def translate(e: Expression)(implicit ctx: TranslationContext): porc.Command = {
-    import ctx.{h, p}
+  def translate(e: Expression)(implicit ctx: TranslationContext): porc.Expr = {
+    import ctx.{p => P}
     e -> {
-      case Stop() => ClosureCall(h, Nil)
+      case Stop() => Unit()
       case f || g => {
-        val gCl = new ClosureVariable("g")
-        val hInG = new Variable("h")
-        let(gCl(hInG) === translate(g)(ctx setH hInG)) {
-          spawn(gCl) {
-            translate(f)
-          }
+        val gCl = new porc.Var("g")
+        let((gCl, Lambda(List(), translate(g)(ctx)))) {
+          Spawn(gCl) :::
+          translate(f)
         }
       }
       case f > x > g => {
-        val p1Cl = new ClosureVariable("p'")
-        val hInP1 = new Variable("h")
-        val x1 = new Variable(x.optionalVariableName)
-        let(p1Cl(x1, hInP1) === {
-          val gCl = new ClosureVariable("g")
-          val hInG = new Variable("h'")
-          let(gCl(hInG) === (translate(g)(ctx + ((x, x1)) setH hInG))) {
-            spawn(gCl) {
-              ClosureCall(hInP1, Nil)
-            }
-          }
-        }) {
+        val p1Cl = new porc.Var("p'")
+        val x1 = x ->> new porc.Var()
+        let((p1Cl, lambda(x1){ translate(g)(ctx + (x, x1)) })) {
           translate(f)(ctx setP p1Cl)
         }
       }
       case f ow g => {
-        val hasPublished = new Variable("hasPublished")
-        flag(hasPublished) {
+        val hasPublished = new porc.Var("hasPublished")
+        let((hasPublished, NewFlag())) {
           NewCounter {
-            val h1 = new ClosureVariable("h'")
-            let(h1() === {
+            val h1 = new porc.Var("h'")
+            val b = new porc.Var("b")
+            let((h1, lambda(){
               restoreCounter {
-                getCounterHalt { ch =>
-                  readFlag(hasPublished) {
-                    ch()
-                  } {
-                    translate(g)(ctx setH ch)
-                  }
-                }
+                let((b, ReadFlag(hasPublished))) {
+                  If(b, Unit(), translate(g))
+                } :::
+                CallCounterHalt()
               }{
-                Die()
+                Unit()
               }
-            }) {
-              setCounterHalt(h1) {
-                val p1 = new ClosureVariable("p'")
-                val hlocal = new ClosureVariable("hlocal")
-                val hInP1 = new Variable("h''")
-                val x = new Variable("x")
-               
-                let(p1(x,hInP1) === {
-                  setFlag(hasPublished) { p(x, hInP1) }
-                },
-                    hlocal() === { 
-                  restoreCounter {
-                    DecrCounter {
-                    getCounterHalt { ch =>
-                      readFlag(hasPublished) {
-                        h()
+            })) {
+              val p1 = new porc.Var("p'")
+              val x = new porc.Var("x")
+              SetCounterHalt(h1) :::
+              let((p1, lambda(x) {
+                SetFlag(hasPublished) ::: P(x)
+              })) {
+                  TryOnKilled({
+                    translate(f)(ctx setP p1) :::
+                      restoreCounter {
+                        DecrCounter() :::
+                          let((b, ReadFlag(hasPublished))) {
+                            If(b, Unit(), translate(g))
+                          }
                       } {
-                        translate(g)
+                        Unit()
                       }
-                    }
-                    }
-                  }{
-                    h()
-                  }
-                }) {
-                  translate(f)(ctx setP p1 setH hlocal)
-                }
+                  }, {
+                    restoreCounter {
+                      DecrCounter()
+                    } {
+                      Unit()
+                    } :::
+                    Killed()
+                  })
               }
             }
           }
         }
       }
       case f < x <| g => {
-        val x1 = x ->> new Variable()
-        future(x1) {
-          val fCl = new ClosureVariable("f")
-          val hInF = new Variable("h'")
-          let(fCl(hInF) === {
-            translate(f)(ctx + ((x, x1)) setH hInF)
-          }) {
-            spawn(fCl) {
-              NewCounter {
-                val h1 = new ClosureVariable("h''")
-                let(h1() === {
+        val x1 = x ->> new porc.Var()
+        let((x1, NewFuture())) {
+          val fCl = new porc.Var("f")
+          let((fCl, lambda() {
+            translate(f)(ctx + ((x, x1)))
+          })) {
+            Spawn(fCl) :::
+            NewCounter {
+              val h1 = new porc.Var("h''")
+              let((h1, lambda() {
+                restoreCounter {
+                  porc.Stop(x1) :::
+                  CallCounterHalt()
+                } {
+                  Unit()
+                }
+              })) {
+                val p1 = new porc.Var("p'")
+                val xv = new porc.Var("xv")
+                SetCounterHalt(h1) :::
+                let((p1, lambda(xv) {
+                  Bind(x1, xv)
+                })) {
+                 TryOnKilled({
+                  translate(g)(ctx setP p1) :::
                   restoreCounter {
-                    stop(x1) {
-                      getCounterHalt { ch =>
-                        ch()
-                      }
-                    }
+                    DecrCounter() :::
+                    porc.Stop(x1)
                   } {
-                    Die()
+                    Unit()
                   }
-                }) {
-                  setCounterHalt(h1) {
-                    val p1 = new ClosureVariable("p'")
-                    val hlocal = new ClosureVariable("hlocal")
-                    val hInP1 = new Variable("h''")
-                    val xv = new Variable("xv")
-
-                    let(p1(xv, hInP1) === {
-                      bind(x1, xv) { hInP1() }
-                    },
-                      hlocal() === {
-                        restoreCounter {
-                          DecrCounter { stop(x1) { h() } }
-                        } {
-                          h()
-                        }
-                      }) {
-                        translate(g)(ctx setP p1 setH hlocal)
-                      }
-                  }
+                 }, {
+                  restoreCounter {
+                    DecrCounter() :::
+                    porc.Stop(x1)
+                  } {
+                    Unit()
+                  } :::
+                  Killed()
+                 })
                 }
               }
             }
@@ -283,94 +266,133 @@ object TranslateToPorc {
         }
       }
       case Limit(f) => {
-        getTerminator { t =>
+        val t = new porc.Var("T")
+        let((t, GetTerminator())) {
           NewTerminator {
-            val killHandler = new ClosureVariable("kH")
-            let(killHandler() === {
-              kill {
-                CallKillHandlers {
-                  Die()
-                }
-              } {
-                Die()
+            val killHandler = new porc.Var("kH")
+            val b = new porc.Var("b")
+            let((killHandler, lambda() {
+              let((b, SetKill())) {
+                If(b,
+                  CallKillHandlers(),
+                  Unit())
               }
-            }) {
-              addKillHandler(t, killHandler) {
-                val p1 = new ClosureVariable("p'")
-                val hInP1 = new Variable("h'")
-                val xv = new Variable("xv")
-                let(p1(xv, hInP1) === {
-                  kill {
-                    CallKillHandlers {
-                      p(xv, hInP1)
-                    }
-                  } {
-                    hInP1()
-                  }
-                }) {
-                  translate(f)(ctx setP p1)
+            })) {
+              val p1 = new porc.Var("p'")
+              val xv = new porc.Var("xv")
+              AddKillHandler(t, killHandler) :::
+              let((p1, lambda(xv) {
+                let((b, SetKill())) {
+                  If(b,
+                      CallKillHandlers() ::: P(xv) ::: Killed(),
+                      Killed())
                 }
+              })) {
+                TryOnKilled(translate(f)(ctx setP p1), Unit())
               }
             }
           }
         }
       }
       case Call(target : BoundVar, args, _) if ctx.isRecursive(target) => {
-        IsKilled(h(),
-            argumentToPorc(target, ctx) sitecall (Tuple(args.map(argumentToPorc(_, ctx))), p, h)
-        )
+        val g = new porc.Var("g")
+        CheckKilled() :::
+        let((g, lambda() { SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P) })) {
+          Spawn(g)
+        }
       }      
       case Call(target : BoundVar, args, _) => {
-        val pp = new ClosureVariable("pp")
-        val x = new Variable("x")
-        val x1 = new Variable("x'")
-        let(pp(x) === Unpack(List(x1), x, x1 sitecall (Tuple(args.map(argumentToPorc(_, ctx))), p, h))) {
-          Force(Tuple(ctx(target)), pp, h)
+        // TODO: Is this correct? This seems to force the target, but not force anything bound in it's closure.
+        val pp = new porc.Var("pp")
+        val x = new porc.Var("x")
+        val x1 = new porc.Var("x'")
+        let((pp, lambda(x) { SiteCall(x, args.map(argumentToPorc(_, ctx)), P) })) {
+          Force(List(ctx(target)), pp)
         } 
       }
+      case Call(c@Constant(_), args, _) => {
+        SiteCall(argumentToPorc(c, ctx), args.map(argumentToPorc(_, ctx)), P)
+      }
+      
+      // Handle "magic" sites.
+      /*case Call(Constant(MakeStrict), List(f : BoundVar), _) if (ctx site f).isDefined  => {
+        val Some(SiteInfo(arity, _)) = ctx site f
+        
+        val fStrict = new porc.Var(f.optionalVariableName map (_ ++ "Strict"))
+        val formals = for(i <- 0 to arity) yield new porc.Var(s"x$i_")
+        val formals2 = for(i <- 0 to arity) yield new porc.Var(s"y$i_")
+        val p1 = new porc.Var("P")
+        val ff = new porc.Var("ff")
+        Site(SiteDef(fStrict, formals, p1, {
+          let((ff, lambda(formals2: _*)(SiteCall(f, formals2, p1)))) {
+            Force(formals, ff)
+          }
+        }), {
+          P(fStrict)
+        })
+      }
+      case Call(Constant(MakeSingleValued), List(f : BoundVar), _) if (ctx site f).isDefined  => {
+        val Some(SiteInfo(arity, _)) = ctx site f
+        val formals = for(i <- 0 to arity) yield new BoundVar(Some(s"x$i"))
+        val fSingle = new BoundVar()
+        translate(DeclareDefs(List(Def(fSingle, formals, Limit(Call(f, formals, None)), None, None)), f))
+      }
+      case Call(Constant(MakeResilient), List(f : BoundVar), _) if (ctx site f).isDefined  => {
+        val Some(SiteInfo(arity, _)) = ctx site f
+        
+        val fResilient = new porc.Var(f.optionalVariableName map (_ ++ "Resilient"))
+        val formals = for(i <- 0 to arity) yield new porc.Var(s"x$i_")
+        val p1 = new porc.Var("P")
+        val ff = new porc.Var("ff")
+        val t = new porc.Var("T")
+        Site(SiteDef(fResilient, formals, p1, {
+          let((t, lambda(formals2: _*)(SiteCall(f, formals2, p1)))) {
+            Force(formals, ff)
+          }
+        }), {
+          P(fResilient)
+        })
+      }*/
+      
       case Call(target, args, _) => {
-        argumentToPorc(target, ctx) sitecall (Tuple(args.map(argumentToPorc(_, ctx))), p, h)
+        SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P)
       }
       case DeclareDefs(defs, body) => {
         val names = defs.map(_.name)
-        val newnames = (for(name <- names) yield (name, new SiteVariable(name.optionalVariableName))).toMap
+        val newnames = (for(name <- names) yield (name, name ->> new porc.Var())).toMap
         val closedVariables = (for(Def(_, formals, body, _, _, _) <- defs) yield {
           body.freevars -- formals
         }).flatten.toSet -- names
         val closedPorcVars = closedVariables.map(ctx(_))
-        val ctx1 : TranslationContext = (ctx ++ newnames).addSiteInfo(names map {(_, closedPorcVars)})
+        val ctx1 : TranslationContext = (ctx ++ newnames).addSiteInfo(defs map {d => (d.name, SiteInfo(d.formals.size, closedPorcVars))})
         val ctxdefs = ctx1 addRecursives names
         val sitedefs = for(Def(name, formals, body, _, _, _) <- defs) yield {
-          val newformals = for(x <- formals) yield new Variable(x.optionalVariableName)
-          val p1 = new Variable("P")
-          val h1 = new Variable("H")
-          val args = new Variable("args")
+          val newformals = for(x <- formals) yield x ->> new porc.Var()
+          val p1 = new porc.Var("P")
           SiteDef(newnames(name), 
-              List(args, p1, h1),
-              Unpack(newformals, args, translate(body)(ctxdefs ++ (formals zip newformals) setP p1 setH h1)))
+              newformals, p1,
+             translate(body)(ctxdefs ++ (formals zip newformals) setP p1))
         }
         Site(sitedefs, translate(body)(ctx1))
       }
       case DeclareType(_, _, b) => translate(b)
       case HasType(b, _) => translate(b)
       case v : Constant => {
-        p(argumentToPorc(v, ctx), h)
+        P(argumentToPorc(v, ctx))
       }
       case v : BoundVar if (ctx site v).isEmpty => {
-        val pp = new ClosureVariable("pp")
-        val x = new Variable("x")
-        val x1 = new Variable("x'")
-        let(pp(x) === Unpack(List(x1), x,p(x1, h))) {
-          Force(Tuple(ctx(v)), pp, h)
-        }
+        //val pp = new porc.Var("pp")
+        //val x = new porc.Var("x")
+        //let((pp, lambda(x) { P(x) })) {
+        Force(List(ctx(v)), P)
+        //} 
       }
       case v : BoundVar if (ctx site v).isDefined => {
-        val Some(cvs) = ctx site v
-        val pp = new ClosureVariable("pp")
-        val x = new Variable("x")
-        val xs = (0 to cvs.size).map(i => new Variable(s"x${i}_")).toList
-        let(pp(x) === Unpack(xs, x,p(xs(0), h))) {
-          Force(Tuple(ctx(v) :: cvs.toList), pp, h)
+        val Some(SiteInfo(_, cvs)) = ctx site v
+        val pp = new porc.Var("pp")
+        val x = new porc.Var("x")
+        let((pp, lambda(x :: (cvs.toList map {v => new porc.Var()}) : _*) { P(x) })) {
+          Force(ctx(v) :: cvs.toList, pp)
         }
       }
       case _ => throw new Error(s"Unable to handle expression $e")
@@ -382,7 +404,7 @@ object TranslateToPorc {
     v -> {
       case v : BoundVar => ctx(v)
       case Constant(s : OrcSite) if ctx.sites.contains(s) => ctx(s)
-      case Constant(c) => porc.Constant(c)
+      case Constant(c) => porc.OrcValue(c)
     }
   }
 }

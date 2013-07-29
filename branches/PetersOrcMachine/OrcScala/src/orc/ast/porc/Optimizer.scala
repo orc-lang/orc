@@ -16,16 +16,16 @@ package orc.ast.porc
 
 import orc.values.sites.{Site => OrcSite}
 
-trait Optimization extends ((WithContext[Command], AnalysisProvider[PorcAST]) => Option[Command]) {
+trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
   def name : String
 }
 
-case class Opt(name : String)(f : PartialFunction[(WithContext[Command], AnalysisProvider[PorcAST]), Command]) extends Optimization {
-  def apply(e : WithContext[Command], analysis : AnalysisProvider[PorcAST]) : Option[Command] = f.lift((e, analysis))
+case class Opt(name : String)(f : PartialFunction[(WithContext[Expr], AnalysisProvider[PorcAST]), Expr]) extends Optimization {
+  def apply(e : WithContext[Expr], analysis : AnalysisProvider[PorcAST]) : Option[Expr] = f.lift((e, analysis))
 }
-case class OptFull(name : String)(f : (WithContext[Command], AnalysisProvider[PorcAST]) => Option[Command]) extends Optimization {
-  def apply(e : WithContext[Command], analysis : AnalysisProvider[PorcAST]) : Option[Command] = f(e, analysis)
+case class OptFull(name : String)(f : (WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) extends Optimization {
+  def apply(e : WithContext[Expr], analysis : AnalysisProvider[PorcAST]) : Option[Expr] = f(e, analysis)
 }
 
 
@@ -34,10 +34,10 @@ case class OptFull(name : String)(f : (WithContext[Command], AnalysisProvider[Po
   * @author amp
   */
 case class Optimizer(opts : Seq[Optimization]) {
-  def apply(e : Command, analysis : AnalysisProvider[PorcAST]) : Command = {
+  def apply(e : Expr, analysis : AnalysisProvider[PorcAST]) : Expr = {
     val trans = new ContextualTransform.Pre {
-      override def onCommand = {
-        case (e: WithContext[Command]) => {
+      override def onExpr = {
+        case (e: WithContext[Expr]) => {
           //println("Optimizing: " + (new PrettyPrint).reduce(e))
           val e1 = opts.foldLeft(e)((e, opt) => {
             opt(e, analysis) match {
@@ -64,7 +64,7 @@ object Optimizer {
   val letInlineThreshold = 30
   val letInlineCodeExpansionThreshold = 30
   val referenceThreshold = 5
-  
+  /*
   val InlineLet = OptFull("inline-let") { (e, a) =>
     import a.ImplicitResults._
     e match {
@@ -184,5 +184,6 @@ object Optimizer {
   }
 
   val opts = List(ExternalSiteCall, InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce, UnpackElim)
-
+*/
+  val opts = Nil
 }

@@ -21,15 +21,17 @@ import java.util.ArrayList
 import orc.run.StandardInvocationBehavior
 import java.util.concurrent.LinkedBlockingDeque
 
-final case class Closure(body: Command, var ctx: Context) {
-  override def toString = s"Clos($body)"
+final case class Closure(body: Expr, var ctx: Context) {
+  override def toString = s"Clos(${body.toString.replace('\n', ' ').take(100)})"
 }
 
 final class Terminator {
   val _isKilled = new AtomicBoolean(false)
   def isKilled = _isKilled.get()
   def setIsKilled() : Boolean = _isKilled.getAndSet(true) == false
-  
+
+  Logger.fine(s"created $this")
+
   var _killHandlers = new ArrayList[Closure]()
   def addKillHandler(kh: Closure) = _killHandlers synchronized { 
     //assert(!isKilled)
@@ -44,7 +46,9 @@ final class Terminator {
 
 final class Counter {
   val _count: AtomicInteger = new AtomicInteger(1)
-  
+
+  Logger.fine(s"created $this")
+
   def increment() {
     val v = _count.get()
     if( v <= 0 ) {
@@ -64,16 +68,29 @@ final class Counter {
 
   @volatile
   var haltHandler: Closure = null 
+  /*
+  def haltHandler = synchronized {
+    assert(_haltHandler != null)
+    Logger.finest(s"Getting halt $this, ${_haltHandler}")
+    _haltHandler
+  }
+  def haltHandler_=(v: Closure) = synchronized { 
+    assert(_haltHandler == null)
+    Logger.finest(s"Setting halt $this, $v")
+    _haltHandler = v
+  }
+  */
 }
 
 /**
-  * A mutable store that encodes the state of a process in the interpreter.
+  * A store that encodes the state of a process in the interpreter.
   * @author amp
   */
 final case class Context(_valueStack: List[AnyRef], terminator: Terminator, counter: Counter, oldCounter: Counter) {
-  def pushValues(vs: Seq[AnyRef]) = copy(_valueStack = vs.foldRight(_valueStack)(_::_))
-  def getValue(i: Int) = _valueStack(i)
-  def apply(i: Int) = getValue(i)
+  def pushValue(v: Value) = copy(_valueStack = v :: _valueStack)
+  def pushValues(vs: Seq[Value]) = copy(_valueStack = vs.foldRight(_valueStack)(_::_))
+  @inline def getValue(i: Int) = _valueStack(i)
+  @inline def apply(i: Int) = getValue(i)
   
   override def toString = {
     s"Context(terminator = $terminator, counter = $counter, oldCounter = $oldCounter, \n" ++
@@ -85,18 +102,21 @@ final case class Context(_valueStack: List[AnyRef], terminator: Terminator, coun
 }
 
 final class InterpreterContext(val engine: Interpreter) extends StandardInvocationBehavior {
-  def schedule(clos: Closure, args: List[AnyRef] = Nil) {
-    queue.add((clos, args))
+  def schedule(clos: Closure, args: List[AnyRef] = Nil, halt: Closure = null) {
+    queue.add((clos, args, halt))
   }
-  def dequeue(): Option[(Closure, List[AnyRef])] = {
+  def schedule(t: (Closure, List[AnyRef], Closure)) {
+    queue.add(t)
+  }
+  def dequeue(): Option[(Closure, List[AnyRef], Closure)] = {
     Option(queue.poll())
   }
-  def steal(): Option[(Closure, List[AnyRef])] = {
+  def steal(): Option[(Closure, List[AnyRef], Closure)] = {
     Option(queue.pollLast())
   }
   
   // TODO: This needs to be a special dequeue implementation.
-  val queue = new LinkedBlockingDeque[(Closure, List[AnyRef])]()
+  val queue = new LinkedBlockingDeque[(Closure, List[AnyRef], Closure)]()
 } 
 
 object InterpreterContext {

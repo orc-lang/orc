@@ -18,10 +18,8 @@ import scala.collection.mutable
 import orc.values.Field
 
 case class AnalysisResults(
-    immediatelyCallsSet: Set[Var],
     nonFuture: Boolean
     ) {
-  def immediatelyCalls(v : Var) = immediatelyCallsSet(v)
 }
 
 sealed trait AnalysisProvider[E <: PorcAST] {
@@ -36,7 +34,7 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   
   def withDefault : AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(Set(), false))
+      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false))
       def get(e: WithContext[E]) : Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -63,90 +61,34 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   
   
   def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(immediatelyCalls(e), nonFuture(e))
+    AnalysisResults(nonFuture(e))
   }
   
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
     val m = (formals zip vs).toMap
     s.collect(m).collect { case v: Var => v }
   }
-  
-  def immediatelyCalls(e : WithContext[PorcAST]): Set[Var] = {
-    import ImplicitResults._
-    e match {
-      case LetIn(d, b) => b.immediatelyCallsSet
-      case SiteIn(l, ctx, b) => b.immediatelyCallsSet
-
-      case ClosureCallIn((v : Var) in ctx, a, _) => ctx(v) match {
-        case LetBound(ctx, n) => (n.d in ctx) match {
-          case ClosureDefIn(_, formals, _, body) => translateArguments(a, formals, body.immediatelyCallsSet) + v
-        }
-        case _ => Set(v)
-      }
-      case SiteCallIn((v: Var) in ctx, a, _) => {
-        val b = ctx(v) 
-        b match {
-          case SiteBound(ctx, _, d) => (d in ctx) match {
-            case SiteDefIn(_, formals, _, body) => translateArguments(a, formals, body.immediatelyCallsSet) + v
-          }
-          case _ => a match {
-            case List(Tuple(List(Constant(f : Field))), p, h : Var) => Set(v, h)
-            case _ => Set(v)
-          }
-        }
-      }
-      
-      case UnpackIn(vars, v, k) => k.immediatelyCallsSet
-      
-      case SpawnIn(v, k) => k.immediatelyCallsSet
-        
-      case NewCounterIn(k) => k.immediatelyCallsSet
-      case RestoreCounterIn(a, b) => a.immediatelyCallsSet & b.immediatelyCallsSet
-      case SetCounterHaltIn(v, k) => k.immediatelyCallsSet
-      case GetCounterHaltIn(x, k) => k.immediatelyCallsSet
-
-      case NewTerminatorIn(k) => k.immediatelyCallsSet
-      case GetTerminatorIn(x, k) => k.immediatelyCallsSet
-      case KillIn(a, b) => a.immediatelyCallsSet & b.immediatelyCallsSet
-      case IsKilledIn(a, b) => a.immediatelyCallsSet & b.immediatelyCallsSet
-      case AddKillHandlerIn(u, m, k) => k.immediatelyCallsSet
-      case CallKillHandlersIn(k) => k.immediatelyCallsSet
-        
-      case NewFutureIn(x, k) => k.immediatelyCallsSet
-      case ForceIn(vs, a, b) => Set()
-      case BindIn(f, v, k) => k.immediatelyCallsSet
-      case StopIn(f, k) => k.immediatelyCallsSet
-      
-      case NewFlagIn(x, k) => k.immediatelyCallsSet
-      case SetFlagIn(f, k) => k.immediatelyCallsSet
-      case ReadFlagIn(f, a, b) => a.immediatelyCallsSet & b.immediatelyCallsSet
-
-      case ExternalCallIn(site, _, _, (h:Var) in _) if site.immediateHalt => Set(h)
-      //case ExternalCallIn(site, Tuple(List(Constant(f : Field))) in _, _, (h:Var) in _) => Set(h)
-
-      case _ => Set()
-    }
-  }
-  
   def nonFuture(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
-    e match {
+    /*e match {
       case (_:ClosureVariable) in _ => true
       case (_:SiteVariable) in _ => true
       case (v:Variable) in ctx if ctx(v).isInstanceOf[LetArgumentBound] => true
       case (_:Constant) in _ => true
       case Tuple(vs) in ctx => vs.forall(v => (v in ctx).nonFuture)
       case _ => false
-    }
+    }*/
+    // This needs types.
+    false 
   }
 }
 
 
 object Analysis {
-  def count(t : PorcAST, p : (Command => Boolean)) : Int = {
+  def count(t : PorcAST, p : (Expr => Boolean)) : Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
     (t match {
-      case e : Command if p(e) => 1
+      case e : Expr if p(e) => 1
       case _ => 0
     }) +
     (cs.map( count(_, p) ).sum)
@@ -165,10 +107,10 @@ object Analysis {
     (t match {
       case _ : Spawn => spawnCost
       case _ : Force => forceCost
-      case _ : Kill => killCost
+      case _ : SetKill => killCost
       case _ : CallKillHandlers => callkillhandlersCost
       case _ : Let | _ : Site => closureCost
-      case _ : ClosureCall | _ : SiteCall => callCost
+      case _ : Call | _ : SiteCall => callCost
       case _ : ExternalCall => externalCallCost
       case _ => 0
     }) +
