@@ -18,6 +18,7 @@ import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
 import orc.types.Type;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.Args.NumericUnaryOperator;
@@ -28,7 +29,7 @@ import orc.values.sites.compatibility.Types;
  * @author dkitchin
  *
  */
-public class UMinus extends EvalSite implements TypedSite {
+public class UMinus extends EvalSite implements TypedSite, DirectSite {
 	@SuppressWarnings("synthetic-access")
 	private static final MyOperator op = new MyOperator();
 

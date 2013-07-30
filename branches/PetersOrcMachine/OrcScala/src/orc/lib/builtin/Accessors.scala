@@ -33,7 +33,7 @@ import orc.values.OrcRecord
   *
   * @author amp
   */
-object GetField extends PartialSite2 {
+object GetField extends PartialSite2 with DirectPartialSite {
   override def name = "GetField"
   def eval(v: AnyRef, f: AnyRef) = {
     val field = f match {
@@ -64,7 +64,7 @@ object GetField extends PartialSite2 {
   override val effectFree = true
 }
 
-object GetElem extends PartialSite2 {
+object GetElem extends PartialSite2 with DirectPartialSite {
   override def name = "GetElem"
   def eval(v: AnyRef, i: AnyRef) = {
     val index = i match {
@@ -89,7 +89,7 @@ object GetElem extends PartialSite2 {
   override val effectFree = true
 }
 
-object ProjectClosure extends TotalSite1 {
+object ProjectClosure extends TotalSite1 with DirectTotalSite {
   override def name = "ProjectClosure"
   def eval(v: AnyRef) = {
     v match {
@@ -116,7 +116,7 @@ object ProjectClosure extends TotalSite1 {
 }
 
 
-object ProjectUnapply extends TotalSite1 {
+object ProjectUnapply extends TotalSite1 with DirectTotalSite {
   override def name = "ProjectUnapply"
   def eval(v: AnyRef) = {
     v match {
@@ -139,4 +139,6 @@ object ProjectUnapply extends TotalSite1 {
   */
 
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }

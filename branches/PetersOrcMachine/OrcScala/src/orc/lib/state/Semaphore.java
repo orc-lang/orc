@@ -21,6 +21,7 @@ import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SemaphoreType;
 import orc.types.Type;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
@@ -31,7 +32,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @authors quark, dkitchin
  */
 @SuppressWarnings("hiding")
-public class Semaphore extends EvalSite implements TypedSite {
+public class Semaphore extends EvalSite implements TypedSite, DirectSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {

@@ -18,7 +18,8 @@ import scala.collection.mutable
 import orc.values.Field
 
 case class AnalysisResults(
-    nonFuture: Boolean
+    isNotFuture: Boolean,
+    doesNotThrowHalt: Boolean
     ) {
 }
 
@@ -34,7 +35,7 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   
   def withDefault : AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false))
+      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false))
       def get(e: WithContext[E]) : Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -61,7 +62,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   
   
   def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(nonFuture(e))
+    AnalysisResults(nonFuture(e), nonHalt(e))
   }
   
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -70,17 +71,29 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   }
   def nonFuture(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
-    /*e match {
-      case (_:ClosureVariable) in _ => true
-      case (_:SiteVariable) in _ => true
-      case (v:Variable) in ctx if ctx(v).isInstanceOf[LetArgumentBound] => true
-      case (_:Constant) in _ => true
-      case Tuple(vs) in ctx => vs.forall(v => (v in ctx).nonFuture)
+    e match {
+      case (_:OrcValue | _:Bool | _:Unit) in _ => true
+      case (v:Var) in ctx  => ctx(v) match {
+        case _ : LambdaArgumentBound | _ : SiteBound | _ : RecursiveSiteBound => true
+        case _ => false // This needs types.
+      }
       case _ => false
-    }*/
-    // This needs types.
-    false 
+    }
   }
+  def nonHalt(e : WithContext[PorcAST]): Boolean = {
+    import ImplicitResults._
+    // TODO: Fill this out to be a more accurate analysis. It should be a type analysis.
+    e match {
+      case (_:OrcValue | _:Bool | _:Unit | _:Var) in _ => true
+      case LambdaIn(_, _, _) => true
+      case SequenceIn(l, ctx) => l forall (e => (e in ctx).doesNotThrowHalt)
+      case LetIn(_, v, b) => v.doesNotThrowHalt && b.doesNotThrowHalt
+      case (NewFlag() | NewFuture()) in _ => true
+      case _ => false
+    }
+  }
+  
+  // TODO: Add analysis detecting properties of a closures only use site and using that to specify it's arguments properties.
 }
 
 
@@ -95,12 +108,12 @@ object Analysis {
   }
   
   val closureCost = 5
-  val spawnCost = 5
+  val spawnCost = 4
   val forceCost = 3
   val killCost = 2
   val callkillhandlersCost = 5
   val callCost = 1
-  val externalCallCost = 2
+  val externalCallCost = 5
   
   def cost(t : PorcAST) : Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
@@ -110,8 +123,8 @@ object Analysis {
       case _ : SetKill => killCost
       case _ : CallKillHandlers => callkillhandlersCost
       case _ : Let | _ : Site => closureCost
-      case _ : Call | _ : SiteCall => callCost
-      case _ : ExternalCall => externalCallCost
+      case _ : Call => callCost
+      case _ : ExternalCall | _ : SiteCall => externalCallCost
       case _ => 0
     }) +
     (cs.map( cost(_) ).sum)

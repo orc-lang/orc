@@ -19,6 +19,8 @@ import orc.values.OrcRecord
 import orc.values.Field
 import orc.lib.builtin.ProjectClosure
 import orc.lib.builtin.ProjectUnapply
+import orc.lib.builtin.GetElem
+import orc.lib.builtin.structured.TupleConstructor
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -45,14 +47,12 @@ case class Optimizer(opts : Seq[Optimization]) {
     val trans = new ContextualTransform.Pre {
       override def onExpressionCtx = {
         case (e: WithContext[Expression]) => {
-          //println("Optimizing: " + (new PrettyPrint).reduce(e))
           val e1 = opts.foldLeft(e)((e, opt) => {
             opt(e, analysis) match {
               case None => e
               case Some(e2) =>
                 if (e.e != e2) {
-                  println(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(60)} ==> ${e2.toString.replace("\n", " ").take(60)}")
-                  //println(s"${opt.name}: ${e.toString} ==> ${e2.toString}")
+                  Logger.finer(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
                   e2 in e.ctx
                 } else
                   e
@@ -84,6 +84,46 @@ object Optimizer {
     
     def apply(l : Traversable[Expression]) = l.reduce(_ || _)
   }
+  
+  /**
+   * Match a sequence of expressions in the form: e1 >x1> ... >xn-1> en (ignoring association)
+   */
+  object Seqs {
+    /*private def latebinds(p: Expression): (Expression, List[(BoundVar, Expression)]) = {
+      p match {
+        case f < x <| g => {
+          val (e1, lbs) = latebinds(f)
+          (e1, lbs :+ (x, g))
+        }
+        case e => (e, Nil)
+      }
+    }*/
+    private def seqsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
+      p match {
+        case f > x > g => {
+          val (fss, fn) = seqsAt(f) // f1 >x1> ... >xn-1> fn
+          val (gss, gn) = seqsAt(g) // g1 >y1> ... >yn-1> gn 
+          // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
+          // f1 >x1> ... >xn-1> fn >x> g1 >y1> ... >yn-1> gn
+          (fss ::: (fn, x) :: gss, gn)
+        }
+        case e => (Nil, e)
+      }
+    }
+    //def unapply(e: Expression): Option[(Expression, List[(BoundVar, Expression)])] = Some(latebinds(e))
+    def unapply(e: WithContext[Expression]): Option[(List[(WithContext[Expression], BoundVar)], WithContext[Expression])] = {
+      Some(seqsAt(e))
+    }
+    
+    def apply(ss: List[(WithContext[Expression], BoundVar)], en: Expression) : Expression = {
+      ss match {
+        case Nil => en
+        case (e, x) :: sst => e > x > apply(sst, en)
+      }
+    }
+  }
+  
+
   
   object LateBinds {
     private def latebinds(p: Expression): (Expression, List[(BoundVar, Expression)]) = {
@@ -166,7 +206,8 @@ object Optimizer {
     case (f, a) if f != Stop() && a(f).silent && a(f).effectFree && a(f).immediateHalt => Stop()
   }
   val SeqElim = Opt("seq-elim") {
-    case (f > x > g, a) if a(f).silent => f.e
+    case (f > x > g, a) if a(f).silent => f
+    case (f > x > g, a) if a(f).effectFree && a(f).immediatePublish && (a(f).publications only 1) && a(f).immediateHalt && !g.freevars.contains(x) => g
   }
   val SeqExp = Opt("seq-expansion") {
     case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
@@ -188,9 +229,18 @@ object Optimizer {
       }
     }
   }
+  
+  val SeqReassoc = Opt("seq-reassoc") {
+    case (Seqs(ss, en), a) if ss.size > 1 => {
+      Seqs(ss, en) 
+    }
+  }
+  
+  
   val SeqElimVar = Opt("seq-elim-var") {
     case (f > x > y, a) if x == y => f.e
   }
+
   val ParElim = OptSimple("par-elim") {
     case (Stop() in _) || g => g.e
     case f || (Stop() in _) => f.e
@@ -281,7 +331,20 @@ object Optimizer {
       Constant(r.getField(Field("unapply")).get)
   }
   
-  val basicOpts = List(AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
+  val TupleElim = OptFull("tuple-elim") { (e, a) =>
+    import a.ImplicitResults._, Bindings._
+    e match {
+      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(_, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(args(i))
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+  
+  val basicOpts = List(SeqReassoc, TupleElim, AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
   val secondOpts = List(InlineDef)
   
   // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.

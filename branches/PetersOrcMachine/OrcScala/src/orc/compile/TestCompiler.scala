@@ -101,7 +101,7 @@ class TestCompiler extends StandardOrcCompiler {
    
       def opt(prog : Expression, pass : Int) : Expression = {
         import orc.ast.oil.named.orc5c._
-        println("--------------------- pass " + pass )
+        //println("--------------------- pass " + pass )
         val stats = Map(
             "limits" -> Analysis.count(prog, {
               case Limit(_) => true
@@ -130,14 +130,14 @@ class TestCompiler extends StandardOrcCompiler {
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> Analysis.cost(prog)
           )
-        println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
-        println("-------")
+        val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        orc.ast.oil.named.orc5c.Logger.info(s"Orc5C Optimization Pass $pass: $s")
         val analyzer = new ExpressionAnalyzer
         //println(new PrettyPrintWithAnalysis(analyzer).reduce(prog))
         //println("----------------")
         val opts = Optimizer.basicOpts ++ (if( pass > 1 ) Optimizer.secondOpts else List())
         val prog1 = Optimizer(opts)(prog, analyzer)
-        println(s"analyzer.size = ${analyzer.cache.size}")
+        orc.ast.oil.named.orc5c.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
         if(prog1 == prog && pass > 1)
           prog1
         else {
@@ -185,7 +185,7 @@ class TestCompiler extends StandardOrcCompiler {
       println("====================================== optimizing" )
    
       def opt(prog : Expr, pass : Int) : Expr = {
-        println("--------------------- pass " + pass )
+        //println("--------------------- pass " + pass )
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
             "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
@@ -194,14 +194,15 @@ class TestCompiler extends StandardOrcCompiler {
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> Analysis.cost(prog)
           )
-        println(stats.map(p => s"${p._1} = ${p._2}").mkString(", "))
+        val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        orc.ast.porc.Logger.info(s"Porc Optimization Pass $pass: $s")
         /*println("-------==========")
         println(prog)
         println("-------==========")
         */
         val analyzer = new Analyzer
         val prog1 = Optimizer(Optimizer.opts)(prog, analyzer)
-        println(s"analyzer.size = ${analyzer.cache.size}")
+        orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
         if(prog1 == prog && pass > 1)
           prog1
         else {
@@ -254,10 +255,10 @@ class TestCompiler extends StandardOrcCompiler {
     translatePorc >>> 
     //porcAnalysis >>>
     outputAST >>>
-    //optimizePorc >>>
-    //outputAST >>>
-    translatePorcEval >>>
+    optimizePorc >>>
     outputAST >>>
+    translatePorcEval >>>
+    //outputAST >>>
     evalPorc >>>
     awfulHack
 }

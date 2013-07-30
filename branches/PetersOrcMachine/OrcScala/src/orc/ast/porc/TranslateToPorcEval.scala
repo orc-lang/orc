@@ -55,6 +55,8 @@ object TranslateToPorcEval {
         pe.Call(translateVarVar(t), a map translate)
       case SiteCall(t, a, p) => 
         pe.SiteCall(translateVarVar(t), a map translate, translate(p))
+      case DirectSiteCall(t, a) => 
+        pe.DirectSiteCall(translateVarVar(t), a map translate)
             
       case Spawn(v) => pe.Spawn(translateVarVar(v)) 
       case Sequence(es) => pe.Sequence(es map translate) 

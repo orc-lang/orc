@@ -17,6 +17,7 @@ package orc.values.sites.compatibility;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import orc.values.sites.HaltedException;
 import scala.Option;
 import scala.Some;
 import scala.Tuple2;
@@ -45,5 +46,9 @@ public abstract class EvalSite extends SiteAdaptor {
         return Publications_1_1;
       else
         return Publications_0_1;
+    }
+  
+    public Object directcall(scala.collection.immutable.List<Object> args) throws TokenException, HaltedException {
+      return object2value(evaluate(makeArgs(args)));
     }
 }

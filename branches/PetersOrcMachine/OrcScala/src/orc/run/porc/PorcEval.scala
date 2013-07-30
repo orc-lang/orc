@@ -243,7 +243,15 @@ case class DirectSiteCall(target: Value, arguments: List[Value]) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     val s = target.asInstanceOf[DirectSite]
     Logger.finer(s"directsitecall: $target $arguments" )
-    s.directcall(dereferenceSeq(arguments, ctx))
+    try {
+      s.directcall(dereferenceSeq(arguments, ctx))
+    } catch {
+      case e:HaltedException => throw e
+      case e:Exception => {
+        Logger.severe(s"ORC EXCEPTION: $e") 
+        throw new HaltedException
+      }
+    }
   }
 }
 

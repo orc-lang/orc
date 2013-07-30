@@ -35,9 +35,9 @@ trait ContextualTransform {
 
   def callHandler[E <: PorcAST](e: WithContext[E]): Option[E] = {
     e match {
-      case (c: Expr) in ctx => onExpr.lift(c in ctx).asInstanceOf[Option[E]]
       case (v: Var) in ctx => onVar.lift(v in ctx).asInstanceOf[Option[E]]
       case (v: Value) in ctx => onValue.lift(v in ctx).asInstanceOf[Option[E]]
+      case (c: Expr) in ctx => onExpr.lift(c in ctx).asInstanceOf[Option[E]]
       case _ => None
     }
   }
@@ -67,7 +67,19 @@ trait ContextualTransform {
 
       case CallIn(t, a, ctx) => Call(transformValue(t), a map { v => transformValue(v in ctx) })
       case SiteCallIn(t, a, p, ctx) => SiteCall(transformValue(t), a map { v => transformValue(v in ctx) }, transformValue(p in ctx))
+      case DirectSiteCallIn(t, a, ctx) => DirectSiteCall(transformValue(t), a map { v => transformValue(v in ctx) })
+
+      case LambdaIn(args, ctx, b) => Lambda(args map {v => transformVariable(v in ctx)}, transformExpr(b))
+
+      case SequenceIn(l, ctx) => {
+        Sequence(l map {e => transformExpr(e in ctx)})
+      }
+
+      case If(b, t, e) in ctx => If(transformValue(b in ctx), transformExpr(t in ctx), transformExpr(e in ctx))
+      case TryOnKilled(b, h) in ctx => TryOnKilled(transformExpr(b in ctx), transformExpr(h in ctx))
+      case TryOnHalted(b, h) in ctx => TryOnHalted(transformExpr(b in ctx), transformExpr(h in ctx))
       
+
       //case ProjectIn(n, v) => Project(n, transformValue(v))
       
       case SpawnIn(v) => Spawn(transformVariable(v))

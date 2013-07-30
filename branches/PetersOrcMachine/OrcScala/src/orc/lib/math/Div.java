@@ -18,6 +18,7 @@ import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
 import orc.types.Type;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
@@ -25,7 +26,7 @@ import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
 
 @SuppressWarnings("synthetic-access")
-public class Div extends EvalSite implements TypedSite {
+public class Div extends EvalSite implements TypedSite, DirectSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {

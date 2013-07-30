@@ -62,6 +62,7 @@ class PrettyPrint {
 
       case Call(t, a) => rd"$t (${a.map(reduce(_, i)).mkString(", ")})"
       case SiteCall(t, a, p) => rd"sitecall $t (${a.map(reduce(_, i)).mkString(", ")}) $p"
+      case DirectSiteCall(t, a) => rd"directsitecall $t (${a.map(reduce(_, i)).mkString(", ")})"
       
       //case Project(n, v) => rd"project_$n $v"
       
