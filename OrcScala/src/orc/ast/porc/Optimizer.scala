@@ -15,6 +15,7 @@
 package orc.ast.porc
 
 import orc.values.sites.{Site => OrcSite}
+import orc.values.sites.DirectSite
 
 trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -38,14 +39,12 @@ case class Optimizer(opts : Seq[Optimization]) {
     val trans = new ContextualTransform.Pre {
       override def onExpr = {
         case (e: WithContext[Expr]) => {
-          //println("Optimizing: " + (new PrettyPrint).reduce(e))
           val e1 = opts.foldLeft(e)((e, opt) => {
             opt(e, analysis) match {
               case None => e
               case Some(e2) =>
                 if (e.e != e2) {
-                  println(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(60)} ==> ${e2.toString.replace("\n", " ").take(60)}")
-                  //println(s"${opt.name}: ${e.toString} ==> ${e2.toString}")
+                  Logger.finer(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(60)} ==> ${e2.toString.replace("\n", " ").take(60)}")
                   e2 in e.ctx
                 } else
                   e
@@ -61,42 +60,139 @@ case class Optimizer(opts : Seq[Optimization]) {
 }
 
 object Optimizer {
+  object <::: {
+    def unapply(e: WithContext[PorcAST]) = e match {
+      case Sequence(l) in ctx =>
+         Some(Sequence(l.init) in ctx, l.last in ctx)
+      case _ => None
+    }
+  }
+  object :::> {
+    def unapply(e: WithContext[PorcAST]) = e match {
+      case Sequence(e :: l) in ctx =>
+         Some(e, Sequence(l) in ctx)
+      case _ => None
+    }
+  }
+  
   val letInlineThreshold = 30
   val letInlineCodeExpansionThreshold = 30
   val referenceThreshold = 5
-  /*
+  
   val InlineLet = OptFull("inline-let") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case ClosureCallIn((t:Var) in ctx, args, _) => ctx(t) match {
-        case LetBound(dctx, l) => {
-          val compat = ctx.compatibleFor(l.d.body)(dctx)
-          lazy val size = Analysis.cost(l.d.body)
+      case CallIn((t:Var) in ctx, args, _) => ctx(t) match {
+        case LetBound(dctx, Let(`t`, Lambda(formals, b), k)) => {
+          val compat = ctx.compatibleFor(b)(dctx)
+          lazy val size = Analysis.cost(b)
           def smallEnough = size <= letInlineThreshold
-          lazy val referencedN = Analysis.count(l.k, {
-            case ClosureCall(`t`, _) => true
+          lazy val referencedN = Analysis.count(k, {
+            case Call(`t`, _) => true
             case _ => false
           })
+          //val referencedN = 2
           //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat, ${l.d.body.referencesCounter}, ${l.d.body.referencesTerminator})")
           if ( !compat || (referencedN-1)*size > letInlineCodeExpansionThreshold )
             None // No inlining of recursive, heavily referenced, or large functions.
           else
-            Some(l.d.body.substAll(((l.d.arguments: List[Var]) zip args).toMap))
+            Some(b.substAll((formals zip args).toMap))
         }
         case _ => None
       }
       case _ => None
     }
   }
-  val EtaReduce = OptFull("eta-reduce") { (e, a) =>
+  
+  val EtaReduce = Opt("eta-reduce") {
+    case (LambdaIn(formals, _, CallIn(t, args, _)), a) if args.toList == formals.toList => t
+  }
+  
+  val LetElim = Opt("let-elim") {
+    case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt => b 
+    case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
+    // This is unsound in cases where a directsitecall may throw in v
+  }
+  val VarLetElim = Opt("var-let-elim") {
+    case (LetIn(x, (y:Var) in _, b), a) => b.substAll(Map((x, y)))
+  }
+  val SiteElim = Opt("site-elim") {
+    case (SiteIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
+  }
+  
+  val ForceElim = Opt("force-elim") {
+    case (ForceIn(List(), _, b), a) => b()
+    case (ForceIn(args, ctx, b), a) if args.forall(v => a(v in ctx).isNotFuture) => b(args: _*)
+  }
+
+  val spawnCostInlineThreshold = 30
+
+  val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case LetIn(ClosureDefIn(name, formals, _, ClosureCallIn(t, args, _)), body) if args.toList == formals.toList => {
-        Some(body.substAll(Map((name, t))))
+      case SpawnIn((t: Var) in ctx) => ctx(t) match {
+        case LetBound(dctx, Let(`t`, Lambda(_,b), _)) => {
+          val c = Analysis.cost(b)
+          if( c <= spawnCostInlineThreshold )
+            Some(t())
+            else
+              None
+        }
+        case _ => None
       }
       case _ => None
     }
   }
+  
+  val ExternalSiteCall = Opt("external-sitecall") {
+    case (SiteCallIn(OrcValue(s: OrcSite) in _, args, p, ctx), a) => 
+      import PorcInfixNotation._ 
+      val pp = new Var("pp")
+      val (xs, ys) = (args collect {
+        case x : Var => (x, new Var())
+      }).unzip
+      
+      def pickArg(a: Value) = {
+        if(xs contains a) {
+          ys(xs.indexOf(a))
+        } else {
+          a
+        }          
+      } 
+      
+      val callArgs = args map pickArg
+      val callImpl = s match {
+        case s : DirectSite => {
+          val v = new Var("v")
+          TryOnHalted( {
+            let((v, DirectSiteCall(OrcValue(s), callArgs))) {
+              p(v)
+            }
+          }, Unit())
+        }
+        case _ => ExternalCall(s, callArgs, p)
+      }
+      
+      val impl = let((pp, lambda(ys:_*){ callImpl })) {
+        Force(xs, pp)
+      }
+      if( s.effectFree )
+        impl
+      else
+        CheckKilled() ::: impl
+  }
+  
+  val OnHaltedElim = Opt("onHalted-elim") {
+    case (TryOnHaltedIn(LetIn(x, v, TryOnHaltedIn(b, h1)), h2), a) if h1.e == h2.e =>
+      TryOnHalted(Let(x, v, b), h2)
+    case (TryOnHaltedIn(s <::: TryOnHaltedIn(b, h1), h2), a) if h1.e == h2.e =>
+      TryOnHalted(s ::: b, h2)
+  }
+
+  val opts = List(ExternalSiteCall, InlineSpawn, EtaReduce, ForceElim, VarLetElim, InlineLet, LetElim, SiteElim, OnHaltedElim)
+
+  /*
+  This may not be needed because site inlining is already done in Orc5C
   
   val siteInlineThreshold = 50
   val siteInlineCodeExpansionThreshold = 50
@@ -127,63 +223,5 @@ object Optimizer {
       case _ => None
     }
   }
-  
-  val LetElim = Opt("let-elim") {
-    case (LetIn(d, b), a) if !b.freevars.contains(d.name) => b
-  }
-  val SiteElim = Opt("site-elim") {
-    case (SiteIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
-  }
-  val ForceElim = Opt("force-elim") {
-    case (ForceIn(Tuple(List()) in _, b, _), a) => b(Tuple())
-    case (ForceIn((t@Tuple(args)) in _, b, _), a) if args.forall(_.isInstanceOf[Constant]) => b(t)
-  }
-  val ForceElimVar = Opt("force-elim-var") {
-    case (ForceIn((t@Tuple(args)) in ctx, b, _), a) if a(t in ctx).nonFuture => b(t)
-  }
-  
-  val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case SpawnIn((t: ClosureVariable) in ctx, k) => ctx(t) match {
-        case LetBound(dctx, Let(d, _)) => (d in ctx) match {
-          case ClosureDefIn(_, List(h), _, body) => {
-            if(body.immediatelyCalls(h)) {
-              import PorcInfixNotation._
-              val kCl = new ClosureVariable("k")
-              Some(let(kCl() === k) { t(kCl) })
-            } else 
-              None
-          }
-          case _ => None
-        }
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-  val ExternalSiteCall = Opt("external-sitecall") {
-    case (SiteCallIn(Constant(s: OrcSite) in _, List(args, p, h), _), a) => 
-      import PorcInfixNotation._ 
-      val pp = new ClosureVariable("pp")
-      val x = new Variable("x")
-      val impl = let(pp(x) === ExternalCall(s, x, p, h)) {
-          Force(args, pp, h)
-      }
-      if( s.effectFree )
-        impl
-      else
-        IsKilled(h (), impl)
-  }
-
-  val UnpackElim = Opt("unpack-elim") {
-      case (UnpackIn(vs, Tuple(as), k), a) => {
-        import a.ImplicitResults._
-        k.substAll((vs zip as).toMap)
-      }
-  }
-
-  val opts = List(ExternalSiteCall, InlineSpawn, InlineLet, LetElim, InlineSite, SiteElim, ForceElim, ForceElimVar, EtaReduce, UnpackElim)
 */
-  val opts = Nil
 }

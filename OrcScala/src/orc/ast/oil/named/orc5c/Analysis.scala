@@ -228,9 +228,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case DeclareDefsAt(defs, defsctx, body) => {
         val v = body.immediateHalt
-        if(defs.exists(_.name.optionalVariableName == Some("toattr")) && !v) {
+        /*if(defs.exists(_.name.optionalVariableName == Some("toattr")) && !v) {
           println("Here: " + (body))
-        }
+        }*/
         v
       }
       case DeclareTypeAt(_, _, b) => b.immediateHalt

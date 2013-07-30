@@ -21,12 +21,13 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 import orc.values.sites.HasFields
+import orc.values.sites.DirectPartialSite
 
 /**
   *
   * @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasFields {
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasFields with DirectPartialSite {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)

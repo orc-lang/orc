@@ -21,7 +21,7 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.util.TypeListEnrichment._
 
-object Ift extends PartialSite with TypedSite {
+object Ift extends PartialSite with TypedSite with DirectPartialSite {
   override def name = "Ift"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -36,7 +36,7 @@ object Ift extends PartialSite with TypedSite {
   override val effectFree = true
 }
 
-object Iff extends PartialSite with TypedSite {
+object Iff extends PartialSite with TypedSite with DirectPartialSite {
   override def name = "Iff"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -51,7 +51,7 @@ object Iff extends PartialSite with TypedSite {
   override val effectFree = true
 }
 
-object Eq extends TotalSite with TypedSite {
+object Eq extends TotalSite with TypedSite with DirectTotalSite {
   override def name = "Eq"
   def evaluate(args: List[AnyRef]) =
     args match {
@@ -65,7 +65,7 @@ object Eq extends TotalSite with TypedSite {
   override val effectFree = true
 }
 
-object Let extends TotalSite with TypedSite {
+object Let extends TotalSite with TypedSite with DirectTotalSite {
   override def name = "let"
   def evaluate(args: List[AnyRef]) =
     args match {

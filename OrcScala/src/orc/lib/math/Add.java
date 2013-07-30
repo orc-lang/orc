@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import orc.error.runtime.TokenException;
 import orc.types.Type;
 import orc.types.RecordExtensorType;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.Args.NumericBinaryOperator;
@@ -31,7 +32,7 @@ import orc.values.sites.compatibility.Types;
  * @author quark
  */
 @SuppressWarnings("synthetic-access")
-public class Add extends EvalSite implements TypedSite {
+public class Add extends EvalSite implements TypedSite, DirectSite {
 	private static final MyOperator op = new MyOperator();
 
 	private static final class MyOperator implements NumericBinaryOperator<Number> {

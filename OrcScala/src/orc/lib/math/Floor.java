@@ -18,12 +18,13 @@ import java.math.BigInteger;
 
 import orc.error.runtime.TokenException;
 import orc.types.Type;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.Types;
 
-public class Floor extends EvalSite implements TypedSite {
+public class Floor extends EvalSite implements TypedSite, DirectSite {
 
 	public static BigInteger floor(BigDecimal d) {
 		if (d.signum() >= 0) {

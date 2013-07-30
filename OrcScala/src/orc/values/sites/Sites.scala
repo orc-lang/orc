@@ -26,6 +26,7 @@ import orc.types.Type
 import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
+import orc.error.runtime.TokenException
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
@@ -53,8 +54,25 @@ trait Site extends OrcValue with SiteMetadata {
 final class HaltedException() extends Exception("Expression halted")
 
 trait DirectSite extends Site {
-  @throws(classOf[HaltedException])
+  @throws(classOf[HaltedException]) @throws(classOf[TokenException])
   def directcall(args: List[AnyRef]): AnyRef
+}
+trait DirectTotalSite extends DirectSite {
+  this : TotalSite =>
+  @throws(classOf[HaltedException])
+  def directcall(args: List[AnyRef]): AnyRef = {
+    evaluate(args)
+  }
+}
+trait DirectPartialSite extends DirectSite {
+  this : PartialSite =>
+  @throws(classOf[HaltedException])
+  def directcall(args: List[AnyRef]): AnyRef = {
+    evaluate(args) match {
+      case Some(v) => v
+      case None => throw new HaltedException
+    }
+  }
 }
 
 /* A site which provides type information. */

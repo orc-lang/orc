@@ -196,15 +196,7 @@ object TranslateToPorc {
                 SetFlag(hasPublished) ::: P(x)
               })) {
                   TryOnKilled({
-                    translate(f)(ctx setP p1) :::
-                      restoreCounter {
-                        DecrCounter() :::
-                          let((b, ReadFlag(hasPublished))) {
-                            If(b, Unit(), translate(g))
-                          }
-                      } {
-                        Unit()
-                      }
+                    translate(f)(ctx setP p1)
                   }, {
                     restoreCounter {
                       DecrCounter()
@@ -212,7 +204,15 @@ object TranslateToPorc {
                       Unit()
                     } :::
                     Killed()
-                  })
+                  }) :::
+                  restoreCounter {
+                    DecrCounter() :::
+                      let((b, ReadFlag(hasPublished))) {
+                        If(b, Unit(), translate(g))
+                      }
+                  } {
+                    Unit()
+                  }
               }
             }
           }
@@ -243,13 +243,7 @@ object TranslateToPorc {
                   Bind(x1, xv)
                 })) {
                  TryOnKilled({
-                  translate(g)(ctx setP p1) :::
-                  restoreCounter {
-                    DecrCounter() :::
-                    porc.Stop(x1)
-                  } {
-                    Unit()
-                  }
+                  translate(g)(ctx setP p1)
                  }, {
                   restoreCounter {
                     DecrCounter() :::
@@ -258,7 +252,13 @@ object TranslateToPorc {
                     Unit()
                   } :::
                   Killed()
-                 })
+                 }) :::
+                  restoreCounter {
+                    DecrCounter() :::
+                    porc.Stop(x1)
+                  } {
+                    Unit()
+                  }
                 }
               }
             }

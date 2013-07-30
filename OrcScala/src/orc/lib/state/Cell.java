@@ -21,6 +21,7 @@ import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CellType;
 import orc.types.Type;
+import orc.values.sites.DirectSite;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
@@ -34,7 +35,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  *
  * @author dkitchin
  */
-public class Cell extends EvalSite implements TypedSite {
+public class Cell extends EvalSite implements TypedSite, DirectSite {
 
 	/* (non-Javadoc)
 	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)

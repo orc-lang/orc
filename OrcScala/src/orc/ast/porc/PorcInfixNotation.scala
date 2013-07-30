@@ -63,11 +63,19 @@ object LambdaIn {
   }
 }
 
+object SequenceIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case Sequence(l) in ctx =>
+      Some(l, ctx)
+    case _ => None
+  }
+}
+
 object SiteIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (s@Site(ds, b)) in ctx =>
       val bodyctx = ctx extendBindings ds.map(SiteBound(ctx, s, _))
-      val sitectx = ctx extendBindings ds.map(RecursiveSiteBound(ctx, s, _))
+      val sitectx = ctx extendBindings (ds.map(RecursiveSiteBound(ctx, s, _)))
       Some(ds, sitectx, b in bodyctx)
     case _ => None
   }
@@ -77,7 +85,7 @@ object SiteIn {
 object SiteDefIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (s@SiteDef(n, args, p, b)) in ctx =>
-      val bodyctx = ctx setCounterTerminator(s) extendBindings args.map(SiteArgumentBound(ctx, s, _))
+      val bodyctx = ctx setCounterTerminator(s) extendBindings args.map(SiteArgumentBound(ctx, s, _)) extendBindings List(SitePublishBound(ctx, s))
       Some(n, args, p, bodyctx, b in bodyctx)
     case _ => None
   }
@@ -95,6 +103,25 @@ object SiteCallIn {
     case (c@SiteCall(t, args, p)) in ctx => Some(t in ctx, args, p, ctx)
     case _ => None
   }
+}
+object DirectSiteCallIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (c@DirectSiteCall(t, args)) in ctx => Some(t in ctx, args, ctx)
+    case _ => None
+  }
+}
+
+object TryOnHaltedIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case TryOnHalted(b, h) in ctx => Some(b in ctx, h in ctx)
+    case _ => None
+  } 
+}
+object TryOnKilledIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case TryOnKilled(b, h) in ctx => Some(b in ctx, h in ctx)
+    case _ => None
+  } 
 }
 
 /*object ProjectIn {

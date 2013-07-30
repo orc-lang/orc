@@ -32,13 +32,8 @@ import orc.values.Field
 abstract class SiteAdaptor extends Site {
 
   def call(args: List[AnyRef], h: Handle) {
-    val jl = new java.util.ArrayList[Object](args.size)
-    for (arg <- args) arg match {
-      case i: scala.math.BigInt => jl.add(i.bigInteger)
-      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
-      case _ => jl.add(arg)
-    }
-    callSite(new Args(jl), h)
+    val jargs = SiteAdaptor.makeArgs(args)
+    callSite(jargs, h)
   }
 
   /** Must be implemented by subclasses to implement the site behavior
@@ -85,4 +80,14 @@ object SiteAdaptor {
 
   def nilList[T](): List[T] = Nil
 
+  def makeArgs(args: List[AnyRef]): orc.values.sites.compatibility.Args = {
+    val jl = new java.util.ArrayList[Object](args.size)
+    for (arg <- args) arg match {
+      case i: scala.math.BigInt => jl.add(i.bigInteger)
+      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
+      case _ => jl.add(arg)
+    }
+    val jargs = new Args(jl)
+    jargs
+  }
 }
