@@ -85,7 +85,8 @@
 
 <ul>
 	<li><a onclick="window.open(this.href,'_blank');return false;" href="papers/QoS-Aware-Orchestration.pdf" class="paper">QoS-aware Management of Monotonic Service Orchestrations</a>
-	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10703-013-????-?">DOI</a> -->
+	(<a href="http://link.springer.com/article/10.1007/s10703-013-0191-7">published version</a>)
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10703-013-0191-7">DOI</a>
 	<!-- <a class="bibtex" href="papers/QoS-Aware-Orchestration.bib">BibTeX</a> -->
 	<br />
 	Albert Benveniste, Claude Jard, Ajay Kattepur, Sidney Rosario, and John A. Thywissen<br />
