@@ -30,7 +30,9 @@ import orc.values.sites.DirectSite
 
 // Value is an alias for AnyRef. It exists to make this code more self documenting.
 
-object KilledException extends RuntimeException("Group killed")
+class KilledException extends RuntimeException("Group killed")
+
+object KilledException extends KilledException
 
 // ==================== Values ===================
 case class Var(index: Int, optionalName: Option[String]) extends Value
@@ -383,7 +385,7 @@ case class TryOnKilled(e: Expr, f: Expr) extends Expr {
     try {
       e.eval(ctx, interp)
     } catch {
-      case _ : KilledException.type => 
+      case _ : KilledException => 
         f.eval(ctx, interp)
     }
   }  
