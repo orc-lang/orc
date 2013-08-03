@@ -21,6 +21,8 @@ import orc.lib.builtin.ProjectClosure
 import orc.lib.builtin.ProjectUnapply
 import orc.lib.builtin.GetElem
 import orc.lib.builtin.structured.TupleConstructor
+import orc.lib.builtin.structured.TupleArityChecker
+import orc.values.Signal
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -334,10 +336,22 @@ object Optimizer {
   val TupleElim = OptFull("tuple-elim") { (e, a) =>
     import a.ImplicitResults._, Bindings._
     e match {
-      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) => 
+      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
         val i = bi.intValue
         ctx(v) match {
-          case SeqBound(_, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(args(i))
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size && (args(i) in tctx).immediatePublish => Some(args(i))
+          case _ => None
+        }
+      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) > x > e if (v in ctx).immediatePublish && !e.freevars.contains(x) => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
+          case _ => None
+        }
+      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
           case _ => None
         }
       case _ => None
@@ -345,7 +359,7 @@ object Optimizer {
   }
   
   val basicOpts = List(SeqReassoc, TupleElim, AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
-  val secondOpts = List(InlineDef)
+  val secondOpts = List(InlineDef, LateBindElimFlatten)
   
   // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.
   val flatteningOpts = List(LateBindElimFlatten)

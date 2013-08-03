@@ -18,4 +18,6 @@ package orc.ast.oil.named.orc5c
   *
   * @author jthywiss
   */
-object Logger extends orc.util.Logger("orc.ast.oil.named.orc5c")
+object Logger extends orc.util.Logger("orc.ast.oil.named.orc5c") {
+  //logAllToStderr()
+}
