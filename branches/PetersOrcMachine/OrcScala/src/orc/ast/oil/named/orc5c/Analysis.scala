@@ -116,7 +116,7 @@ trait AnalysisResults {
   def strictOnSet : Set[Var]
   
   /**
-   * Does this expression force the variable <code>x</code> before performing any visible action?
+   * Does this expression force the variable <code>x</code> before performing any visible action other than halting?
    * Specifically is <code>x</code> forced before the expression has side effects or publishes.
    */
   def forces(x : Var) = forcesSet(x)
@@ -395,7 +395,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case CallAt(_, _, _, _) => strictOn(e)
       case f || g => f.forcesSet & g.forcesSet
       case f ow g => f.forcesSet
-      case f > x > g if f.effectFree => f.forcesSet ++ (g.forcesSet - x)
+      case f > x > g if f.effectFree => f.forcesSet ++ (g.forcesSet - x) // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
       case f > x > g => f.forcesSet
       case f < x <| g if f.forces(x) => g.forcesSet ++ (f.forcesSet - x)
       case f < x <| g => f.forcesSet & g.forcesSet 

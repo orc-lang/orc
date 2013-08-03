@@ -18,4 +18,7 @@ package orc.ast.porc
   *
   * @author jthywiss
   */
-object Logger extends orc.util.Logger("orc.ast.porc")
+object Logger extends orc.util.Logger("orc.ast.porc") {
+  //logAllToStderr()
+}
+
