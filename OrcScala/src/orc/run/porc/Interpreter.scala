@@ -98,14 +98,14 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
           try {
             clos.body.eval(ectx, ctx)
           } catch {
-            case _ : KilledException.type => ()
+            case _ : KilledException => ()
           }
           Logger.fine(s"Executing halt $halt")
           if( halt != null ) {
             try {
               halt.body.eval(halt.ctx, ctx)
             } catch {
-              case _ : KilledException.type => ()
+              case _ : KilledException => ()
             }
           }
         case None => 
