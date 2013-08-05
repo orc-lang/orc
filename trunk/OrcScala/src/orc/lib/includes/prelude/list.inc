@@ -258,7 +258,7 @@ The length of the shortest list determines the length of the result.
 @implementation
 --}
 def zip[A,B](List[A], List[B]) :: List[(A,B)]
-def zip(x:xs, y:ys) = zipWith(lambda(x :: A, y :: B) = (x, y), xs, ys)
+def zip(xs, ys) = zipWith(lambda(x :: A, y :: B) = (x, y), xs, ys)
 
 {--
 @def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
