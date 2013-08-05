@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Apr 04, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -34,9 +34,11 @@ object DocExamplesTest extends ExamplesTest {
     extractAllExamples(new File("../OrcDocs/src/userguide"), userguideOutDir)
     extractAllExamples(new File("../OrcDocs/src/refmanual"), refmanualOutDir)
     val bindings = new OrcBindings();
-    ExamplesTest.buildSuite(getClass.getCanonicalName, bindings, new File("build/docexamples"));
+    TestUtils.buildSuite(getClass.getSimpleName, classOf[DocExamplesTestCase], bindings, new File("build/docexamples"));
   }
 
+  class DocExamplesTestCase extends TestUtils.OrcTestCase { }
+  
   def extractAllExamples(sourcedir: File, targetdir: File): Unit = {
     val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
 
