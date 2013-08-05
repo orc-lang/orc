@@ -14,57 +14,54 @@ order values were received on the input channel.
 SOLUTION:
 --}
 
-type inType = Number
-type outType = Number
-type siteType = (lambda(inType) :: outType)
+type InType = Number
+type OutType = Number
+type SiteType = (lambda(InType) :: OutType)
 
-def balance(Channel[inType], Channel[outType], List[siteType]) :: Bot
+def balance(Channel[InType], Channel[OutType], List[SiteType]) :: Bot
 def balance(in, out, ps) =
-  def makeChannel(_ :: Top) = Channel[outType]()
-  val bs = map(makeChannel, ps)
-  def write(List[Channel[outType]]) :: Bot
-  def read(List[(siteType,Channel[outType])]) :: Bot
-  def write(b:bs) = out.put(b.get()) >> write(append(bs, [b]))
-  def read((p,b):pbs) =
-    ( in.get() ; b.close() >> stop ) >x>
-    ( b.put(p(x)) >> stop | read(append(pbs, [(p,b)])) )
-  write(bs) | read(zip(ps,bs))
+  def makeChannel(_ :: Top) = Channel[OutType]()
+  val cs = map(makeChannel, ps) 
+  def write(List[Channel[OutType]]) :: Bot
+  def read(List[(SiteType,Channel[OutType])]) :: Bot
+  def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
+  def read((p,c):pcs) =
+    ( in.get() ; c.close() >> stop ) >x>
+    ( c.put(p(x)) >> stop | read(append(pcs, [(p,c)])) )
+  write(cs) | read(zip(ps,cs))
 
-val in = Channel[inType]()
-val out = Channel[outType]()
-def compute(Integer) :: siteType
-def compute(n) = lambda(x) = Println("Site " + n) >> x*x
+val in = Channel[InType]()
+val out = Channel[OutType]()
+def compute(Integer) :: SiteType
+def compute(n) = lambda(x) = Println("Site " + n + " computing") >> x*x  #
 
 
-
-#
-( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
--- FIXME: Replace the Rwait here with some type of Buffer.awaitEmpty function
-  ; Rwait(15) >> out.close() >> stop )
+  ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
+    ; out.close() >> stop )
 | ( upto(10) >n> in.put(n) >> stop
     ; in.close() >> stop )
 | repeat(out.get)
 
 {-
 OUTPUT:PERMUTABLE:
-Site 1
+Site 1 computing
 0
-Site 2
+Site 2 computing
 1
-Site 3
+Site 3 computing
 4
-Site 4
+Site 4 computing
 9
-Site 1
+Site 1 computing
 16
-Site 2
+Site 2 computing
 25
-Site 3
+Site 3 computing
 36
-Site 4
+Site 4 computing
 49
-Site 1
+Site 1 computing
 64
-Site 2
+Site 2 computing
 81
 -}
