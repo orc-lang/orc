@@ -37,8 +37,8 @@ public final class TestUtils {
 	        super();
 	    }
 
-        void otcInit(String suiteName1, File orcFile1, ExpectedOutput expecteds1, OrcBindings bindings1) {
-            setName(orcFile1.toString());
+        void otcInit(String suiteName1, String testName, File orcFile1, ExpectedOutput expecteds1, OrcBindings bindings1) {
+            setName(testName);
             this.suiteName = suiteName1;
             this.orcFile = orcFile1;
             this.expecteds = expecteds1;
@@ -64,35 +64,41 @@ public final class TestUtils {
         }
     }
 
-    public static TestSuite buildSuite(final String name, Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
-        final TestSuite suite = new TestSuite(name);
-        final LinkedList<File> files = new LinkedList<File>();
+    public static TestSuite buildSuite(final String suitename, Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
+        final TestSuite suite = new TestSuite(suitename);
         for (final File examplePath : examplePaths) {
+            final LinkedList<File> files = new LinkedList<File>();
             TestUtils.findOrcFiles(examplePath, files);
-        }
-        for (final File file : files) {
-            final ExpectedOutput expecteds;
-            try {
-                expecteds = new ExpectedOutput(file);
-            } catch (final IOException e) {
-                throw new AssertionError(e);
+            TestSuite nestedSuite = null;
+            for (final File file : files) {
+                final ExpectedOutput expecteds;
+                try {
+                    expecteds = new ExpectedOutput(file);
+                } catch (final IOException e) {
+                    throw new AssertionError(e);
+                }
+                // skip tests with no expected output
+                if (expecteds.isEmpty()) {
+                    continue;
+                }
+                if (nestedSuite == null) {
+                    nestedSuite = new TestSuite(examplePath.toString());
+                    suite.addTest(nestedSuite);
+                }
+                OrcTestCase tc;
+                try {
+                    tc = testCaseClass.newInstance();
+                } catch (InstantiationException e) {
+                    // Shouldn't happen -- class is a sibling inner class of this class
+                    throw new AssertionError(e);
+                } catch (IllegalAccessException e) {
+                    // Shouldn't happen -- class is a sibling inner class of this class
+                    throw new AssertionError(e);
+                }
+                final String testname = file.toString().startsWith(examplePath.getPath()+File.separator) ? file.toString().substring(examplePath.getPath().length()+1) : file.toString();
+                tc.otcInit(suitename, testname, file, expecteds, bindings);
+                nestedSuite.addTest(tc);
             }
-            // skip tests with no expected output
-            if (expecteds.isEmpty()) {
-                continue;
-            }
-            OrcTestCase tc;
-            try {
-              tc = testCaseClass.newInstance();
-            } catch (InstantiationException e) {
-              // Shouldn't happen -- class is a sibling inner class of this class
-              throw new AssertionError(e);
-            } catch (IllegalAccessException e) {
-              // Shouldn't happen -- class is a sibling inner class of this class
-              throw new AssertionError(e);
-            }
-            tc.otcInit(name, file, expecteds, bindings);
-            suite.addTest(tc);
         }
         return suite;
     }

@@ -46,7 +46,7 @@ public class OrcParserTest {
   }
 
   public static Test suite() {
-    final TestSuite suite = new TestSuite("OrcParserTest");
+    final TestSuite suite = new TestSuite(OrcParserTest.class.getSimpleName());
     final LinkedList<File> files = new LinkedList<File>();
     TestUtils.findOrcFiles(new File("test_data"), files);
     TestUtils.findOrcFiles(new File("../OrcExamples"), files);
