@@ -1,3 +1,8 @@
+{- lazyStream-fib.orc -- Lazy Fibonacci sequence; Test case for closures
+ - 
+ - Created by arthur.peters on Jan 19, 2013
+ -}
+
 type Step[A] = Empty() | Item(A, lambda() :: Step[A])
 
 def cons[A](x :: A, s :: lambda() :: Step[A]) = lambda () :: Step[A] = Item(x, s)
@@ -23,8 +28,8 @@ def sumStreams(s, t) = zipStreams(addInt, s, t)
 
 def fib() :: lambda () :: Step[Integer] = sumStreams(cons(0, fib), cons(0, cons(1, fib)))() :!: lambda () :: Step[Integer]
 
-def takeStep[A5](Integer, Step[A5]) :: List[A5]
-def takeStream[A6](Integer, lambda() :: Step[A6]) :: List[A6]
+def takeStep[A](Integer, Step[A]) :: List[A]
+def takeStream[A](Integer, lambda() :: Step[A]) :: List[A]
 def takeStep(0, _) = []
 def takeStep(n, Item(x, s)) = x : takeStream(n-1, s)
 def takeStream(n, s) = takeStep(n, s())
