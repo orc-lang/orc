@@ -39,14 +39,14 @@ trait Blockable extends Schedulable {
    * Called to wake up the blockable without providing any information. Just wake up to whatever you where doing.
    */
   def awake() : Unit = {
-    throw new Error("Awake called on blockable that does not support awake without information (This is an interpreter bug).")
+    throw new AssertionError("Awake called on blockable that does not support awake without information (This is an interpreter bug).")
   }
   
   /**
    * Called to wake up the blockable, but halt it immediately.
    */
   def halt() : Unit = {
-    throw new Error("Halt called on non-haltable blockable (This is an interpreter bug).")
+    throw new AssertionError("Halt called on non-haltable blockable (This is an interpreter bug).")
   }
   
   /**

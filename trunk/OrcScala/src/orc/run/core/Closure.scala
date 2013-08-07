@@ -110,7 +110,7 @@ class Closure(
       case Blocked(b) => {
         b.check(this)
       }
-      case Resolved => throw new Error("Closure scheduled in bad state: " + state)
+      case Resolved => throw new AssertionError("Closure scheduled in bad state: " + state)
     }
   }
   
@@ -119,7 +119,7 @@ class Closure(
   def check(t: Blockable) = synchronized {
     state match {
       case Resolved => t.awakeValue(this)
-      case _ => throw new Error("Closure.check called in bad state: " + state)
+      case _ => throw new AssertionError("Closure.check called in bad state: " + state)
     }
   }
   

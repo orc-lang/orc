@@ -91,7 +91,7 @@ trait Group extends GroupMember {
   def remove(m: GroupMember) {
     synchronized {
       members -= m
-      if (members.isEmpty) { onHalt }
+      if (members.isEmpty) { onHalt() }
     }
     m match {
       /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
