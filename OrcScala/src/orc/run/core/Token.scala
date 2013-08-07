@@ -403,7 +403,7 @@ class Token protected (
                 /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
                 pushContinuation({
                   case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
-                  case Some(_) => throw new Error("Join resulted in a non-list")
+                  case Some(_) => throw new AssertionError("Join resulted in a non-list")
                   case None => halt()
                 })
 

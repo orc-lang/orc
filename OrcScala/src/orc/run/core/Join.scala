@@ -51,7 +51,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
         runtime.stage(t)
       }
       case JoinHalted => {}
-      case _ => throw new Error("Erroneous state transformation in Join")
+      case _ => throw new AssertionError("Erroneous state transformation in Join")
     }
   }
   
@@ -62,7 +62,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
         runtime.stage(t)
       }
       case JoinHalted => {}
-      case JoinComplete => throw new Error("Erroneous state transformation in Join")
+      case JoinComplete => throw new AssertionError("Erroneous state transformation in Join")
     }
   }
 
@@ -87,7 +87,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
   
   def check(t: Blockable) = synchronized {
     state match {
-      case JoinInProgress(_) => throw new Error("Spurious check on Join")
+      case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
       case JoinHalted => t.awakeStop()
       case JoinComplete => t.awakeValue(items.toList) // The checking entity must expect a list
     }
