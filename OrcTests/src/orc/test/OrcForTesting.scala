@@ -66,6 +66,7 @@ object OrcForTesting {
   def run(compiledScript: OrcScriptEngine#OrcCompiledScript, timeout: Long): String = {
     try {
       val output = new StringBuilder()
+      var lastError: Throwable = null
       val eventActions = new OrcEventAction() {
         override def published(value: AnyRef) {
           output.append(Format.formatValue(value) + "\n")
@@ -78,6 +79,7 @@ object OrcForTesting {
           println(msg)
           Console.out.flush()
           output.append(msg + "\n")
+          if (e.isInstanceOf[Error]) lastError = e
         }
         override def other(event: OrcEvent) {
           event match {
@@ -100,6 +102,7 @@ object OrcForTesting {
          * engine on an interrupt of the main thread. */
       })
 
+      if (lastError != null) throw lastError 
       output.toString
     } catch {
       case e: ScriptException => throw e.getCause // un-wrap and propagate
