@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -47,28 +47,35 @@ class Execution(
   }
 
   override def kill() = {
+    if (!isKilled) notifyOrc(HaltedOrKilledEvent)
     super.kill()
-    notifyOrc(HaltedOrKilledEvent)
   }
 
   def onHalt() {
-    notifyOrc(HaltedOrKilledEvent)
+    if (!isKilled) notifyOrc(HaltedOrKilledEvent)
   }
 
-  def run() = { assert(false, "Execution scheduled") }
+  def run() = { throw new AssertionError("Execution scheduled") }
 
   val oldHandler = eventHandler
   eventHandler = {
-    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Java Error -- killing Execution: ", je); kill(); oldHandler(e) }
-    case e @ CaughtEvent(_: TokenError) => { kill(); oldHandler(e) }
+    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Unexpected Java Error thrown; killing Orc Execution", je); oldHandler(e); kill() }
+    case e @ CaughtEvent(_: TokenError) => { oldHandler(e); kill() }
     case e => oldHandler(e)
   }
 
   def installHandler(newHandler: PartialFunction[OrcEvent, Unit]) = {
     val oldHandler = eventHandler
-    eventHandler = { e => if (newHandler isDefinedAt e) { newHandler(e) } else { oldHandler(e) } }
+    eventHandler = { e => if (newHandler isDefinedAt e) newHandler(e) else oldHandler(e) }
   }
 
-  def notifyOrc(event: OrcEvent) = { eventHandler(event) }
+  def notifyOrc(event: OrcEvent) {
+    try {
+      eventHandler(event)
+    } catch {
+      case e: InterruptedException => throw e
+      case e: Throwable => { Logger.log(Level.SEVERE, "Event handler abnormal termination", e); throw e }
+    }
+  }
 
 }

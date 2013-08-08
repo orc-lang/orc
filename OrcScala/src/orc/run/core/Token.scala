@@ -23,6 +23,8 @@ import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
 import orc.values.{ Signal, OrcRecord, Field }
 import orc.ast.oil.nameless.VtimeZone
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -105,7 +107,7 @@ class Token protected (
   //var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
-    //scheduledBy = new Throwable("Task scheduled by")
+    //scheduledBy = new Throwable(this+" scheduled by")
     //if (runtime.asInstanceOf[OrcWithThreadPoolScheduler].executor.asInstanceOf[OrcThreadPoolExecutor].getQueue().contains(this) && !group.isKilled()) Console.err.println("Token scheduled, in queue, && group alive! state="+state+"\n"+scheduledBy.toString())
     clock foreach { _.unsetQuiescent() }
     super.onSchedule()
@@ -447,15 +449,17 @@ class Token protected (
     }
   }
 
-  def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
-    testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
-      testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
+  //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
+  //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
+  //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
+  val runGuard = new AtomicInteger(0)
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
     try {
       if (group.isKilled()) { kill() }
+      assert(runGuard.getAndIncrement() == 0 || state == Killed, this.toString()+".run() should be run on one thread at a time.  state="+state)
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
@@ -469,6 +473,8 @@ class Token protected (
       case e: OrcException => this !! e
       case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
       case e: Throwable => { notifyOrc(CaughtEvent(e)); halt() }
+    } finally {
+      runGuard.decrementAndGet()
     }
   }
 
@@ -545,12 +551,12 @@ class Token protected (
 
       case HasType(expr, _) => {
         move(expr)
-        run()
+        eval(this.node)
       }
 
       case DeclareType(_, expr) => {
         move(expr)
-        run()
+        eval(this.node)
       }
     }
   }

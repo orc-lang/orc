@@ -275,7 +275,15 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             ifElapsed(120L, { shutdownNow() })
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
             ifElapsed(303000L, {
-              Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads")
+              Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads, after trying for ~5 minutes\n" +
+                  threadGroup.getName() + " thread dump: \n\n" +
+                  (for (thread <- threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false)))
+                    yield (
+                        '"' + thread.getName() + '"' + (if (thread.isDaemon()) "daemon " else "") + "prio=" + thread.getPriority() + " tid=" + thread.getId() + " " + thread.getState() + "\n" +
+                            (for (stackFrame <- thread.getStackTrace())
+                              yield "\tat " + stackFrame.toString() + "\n").mkString("") + "\n"
+                    )).mkString("")
+                )
               giveUp = true
             })
 
