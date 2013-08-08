@@ -43,29 +43,29 @@ import edu.utexas.cs.orc.orceclipse.Messages;
 /**
  * Launch shortcut for Orc programs.
  * <p>
- * A launch shortcut is capable of launching a selection
- * or active editor in the workbench. The delegate is responsible for
- * interpreting the selection or active editor (if it applies), and launching
- * an application. This may require creating a new launch configuration
- * with default values, or re-using an existing launch configuration.
+ * A launch shortcut is capable of launching a selection or active editor in the
+ * workbench. The delegate is responsible for interpreting the selection or
+ * active editor (if it applies), and launching an application. This may require
+ * creating a new launch configuration with default values, or re-using an
+ * existing launch configuration.
  * <p>
- * A launch shortcut is defined as an extension
- * of type <code>org.eclipse.debug.ui.launchShortcuts</code>.
- * A shortcut specifies the perspectives in which is should be available
- * from the "Run/Debug" cascade menus.
- *
+ * A launch shortcut is defined as an extension of type
+ * <code>org.eclipse.debug.ui.launchShortcuts</code>. A shortcut specifies the
+ * perspectives in which is should be available from the "Run/Debug" cascade
+ * menus.
+ * 
  * @author jthywiss
  */
 public class OrcLaunchShortcut implements ILaunchShortcut {
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.jface.viewers.ISelection, java.lang.String)
 	 */
 	@Override
 	public void launch(final ISelection selection, final String mode) {
-		// Make sure the selection is the active resource, so the launch delegate knows who to launch.
-		//Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
+		// Make sure the selection is the active resource, so the launch
+		// delegate knows who to launch.
+		// Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
 
 		try {
 			final IFile file = (IFile) ((IAdaptable) ((IStructuredSelection) selection).getFirstElement()).getAdapter(IFile.class);
@@ -92,12 +92,24 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @param mode Launch mode to use (run, debug, profile, etc.)
 	 */
 	public void launch(final IFile file, final String mode) {
-		ILaunchConfiguration config = findLaunchConfiguration(file, mode);
-		if (config == null) {
-			config = createConfiguration(file, mode);
-		}
-		if (config != null) {
-			DebugUITools.launch(config, mode);
+		final List<ILaunchConfiguration> configs = getCandidates(file, mode);
+		if (configs != null) {
+			ILaunchConfiguration config = null;
+			final int count = configs.size();
+			if (count == 1) {
+				config = configs.get(0);
+			} else if (count > 1) {
+				config = chooseConfiguration(configs);
+				if (config == null) {
+					return;
+				}
+			}
+			if (config == null) {
+				config = createConfiguration(file, mode);
+			}
+			if (config != null) {
+				DebugUITools.launch(config, mode);
+			}
 		}
 	}
 
@@ -106,12 +118,11 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @param mode Launch mode
 	 * @return The chosen Orc launch configuration
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected ILaunchConfiguration findLaunchConfiguration(final IFile file, final String mode) {
-		List candidateConfigs = Collections.EMPTY_LIST;
+	protected List<ILaunchConfiguration> getCandidates(final IFile file, final String mode) {
+		List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
 		try {
 			final ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(OrcLaunchDelegate.getLaunchConfigType());
-			candidateConfigs = new ArrayList(configs.length);
+			candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
 			for (final ILaunchConfiguration config : configs) {
 				// FUTURE: If needed, filter here.
 				candidateConfigs.add(config);
@@ -119,21 +130,14 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 		} catch (final CoreException e) {
 			Activator.log(e);
 		}
-		final int candidateCount = candidateConfigs.size();
-		if (candidateCount == 1) {
-			return (ILaunchConfiguration) candidateConfigs.get(0);
-		} else if (candidateCount > 1) {
-			return chooseConfiguration(candidateConfigs);
-		}
-		return null;
+		return candidateConfigs;
 	}
 
 	/**
 	 * @param configList List of launch configs to show the user
 	 * @return User's chosen launch config
 	 */
-	@SuppressWarnings("rawtypes")
-	protected ILaunchConfiguration chooseConfiguration(final List configList) {
+	protected ILaunchConfiguration chooseConfiguration(final List<ILaunchConfiguration> configList) {
 		final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
 		final ElementListSelectionDialog dialog = new ElementListSelectionDialog(Display.getCurrent().getActiveShell(), labelProvider);
 		dialog.setElements(configList.toArray());
@@ -160,7 +164,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 		try {
 			final ILaunchConfigurationType configType = OrcLaunchDelegate.getLaunchConfigType();
 			// RATIONALE FOR CALLING DEPRECATED METHOD:
-			// generateUniqueLaunchConfigurationNameFrom was replaced 
+			// generateUniqueLaunchConfigurationNameFrom was replaced
 			// in Eclipse 3.6, but we'll use it until we're ready to
 			// break all pre-3.6 users.
 			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateUniqueLaunchConfigurationNameFrom(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
