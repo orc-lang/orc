@@ -14,6 +14,9 @@
 //
 package orc.util
 
+import scala.util.{Try, Success, Failure}
+import java.util.concurrent.TimeoutException
+
 /** SynchronousThreadExec runs a thunk (block expression) in a new
   * thread, and waits for the result: either a returned value or a
   * throwable.  This is useful when a block of code needs a new
@@ -24,34 +27,29 @@ package orc.util
   */
 object SynchronousThreadExec {
 
-  def apply[T](threadName: String, thunk: => T): T = {
-    var returnVal: ReturnOrThow[T] = null
+  def apply[T](threadName: String, thunk: => T): T = apply(threadName, 0, thunk)
+
+  def apply[T](threadName: String, maxWaitMillis: Long, thunk: => T): T = {
+    var returnVal: Try[T] = null
     val thunkWrapper = new Runnable {
       def run() {
         try {
-          returnVal = Return(thunk)
+          returnVal = Success(thunk)
         } catch {
-          case t: Throwable => returnVal = Throw(t)
+          case t: Throwable => returnVal = Failure(t)
         }
       }
     }
     val thunkThread = new Thread(thunkWrapper, threadName)
     thunkThread.start()
-    thunkThread.join()
+    thunkThread.join(maxWaitMillis)
+    if (thunkThread.isAlive()) {
+      thunkThread.interrupt()
+      /* "thunkThread, you have 1 ms to get your affairs in order..." */
+      thunkThread.join(1L)
+      throw new TimeoutException()
+    }
     returnVal.get
   }
 
-}
-
-
-sealed abstract class ReturnOrThow[+A] {
-  def get: A
-}
-
-final case class Return[+A](x: A) extends ReturnOrThow[A] {
-  def get = x
-}
-
-final case class Throw(t: Throwable) extends ReturnOrThow[Nothing] {
-  def get = throw t
 }
