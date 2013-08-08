@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 22, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -34,6 +34,7 @@ import orc.OrcEventAction
 import orc.lib.str.PrintEvent
 import orc.values.Format
 import orc.error.OrcException
+import orc.util.SynchronousThreadExec
 
 /** A test harness for the standard Orc compiler and runtime
   * engine, as exposed through the JSR-223 interface.
@@ -92,22 +93,12 @@ object OrcForTesting {
       }
 
       // run the engine with a fixed timeout
-      val future = new FutureTask[Unit](new Callable[Unit]() {
-        def call() { compiledScript.run(eventActions) }
-      });
-      new Thread(future, "Orc Test Main Thread").start();
-      try {
-        try {
-          future.get(timeout, SECONDS);
-        } catch {
-          case e: TimeoutException => {
-            future.cancel(true)
-            throw e
-          }
-        }
-      } catch {
-        case e: ExecutionException => throw e.getCause()
-      }
+      SynchronousThreadExec("Orc Test Main Thread", timeout*1000L, {
+        compiledScript.run(eventActions)
+        /* SynchronousThreadExec will interrupt thread after timeout.
+         * SupportForSynchronousExecution.runSynchronous will stop the
+         * engine on an interrupt of the main thread. */
+      })
 
       output.toString
     } catch {
