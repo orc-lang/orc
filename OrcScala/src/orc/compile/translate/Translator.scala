@@ -132,18 +132,21 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ext.Val(p, f), body) => {
         convert(ext.Pruning(body, Some(p), f))
       }
-      case ext.Declare(ext.SiteImport(name, sitename), body) => {
+      case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
           val site = Constant(OrcSiteForm.resolve(sitename))
+          site.pushDownPosition(si.pos)
           convert(body)(context + { (name, site) }, typecontext)
         } catch {
           case oe: OrcException => throw oe at e
         }
       }
-      case ext.Declare(ext.ClassImport(name, classname), body) => {
+      case ext.Declare(ci @ ext.ClassImport(name, classname), body) => {
         try {
           val u = new BoundTypevar(Some(name))
+          u.pushDownPosition(ci.pos)
           val site = Constant(JavaSiteForm.resolve(classname))
+          site.pushDownPosition(ci.pos)
           val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
           DeclareType(u, ClassType(classname), newbody)
         } catch {
