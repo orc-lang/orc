@@ -80,6 +80,7 @@ object TranslateToPorcEval {
       case CallKillHandlers() => pe.CallKillHandlers
       case Killed() => pe.Killed
       case TryOnKilled(body, handler) => pe.TryOnKilled(translate(body), translate(handler))
+      case IsKilled(t) => pe.IsKilled(translateVarVar(t))
       case Halted() => pe.Halted
       case TryOnHalted(body, handler) => pe.TryOnHalted(translate(body), translate(handler))
       

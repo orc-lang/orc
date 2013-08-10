@@ -91,6 +91,7 @@ trait ContextualTransform {
 
       case NewTerminatorIn(k) => NewTerminator(transformExpr(k))
       case AddKillHandlerIn(u, m) => AddKillHandler(transformValue(u), transformValue(m))
+      case IsKilledIn(t) => IsKilled(transformVariable(t))
         
       case ForceIn(vs, ctx, b) => Force(vs map (v => transformValue(v in ctx)), transformValue(b))
       case BindIn(f, v) => Bind(transformVariable(f), transformValue(v))

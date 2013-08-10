@@ -22,7 +22,7 @@ import orc.values.Signal
 import orc.values.Format
 import orc.Handle
 import orc.PublishedEvent
-import orc.lib.builtin.MakeSite
+import orc.lib.builtin.MakeResilients
 
 /**
   *
@@ -64,7 +64,6 @@ object TranslateToPorc {
     
     //val (sites, names, defs) = e.referencedSites.toList.sortBy(_.name).map(wrapSite).unzip3
     val (sites, names, defs) = porcImplementedSiteDefs.unzip3
-    // TODO: Add support for direct call stubs.
     
     val p = translate(e)(TranslationContext(topP, sites = (sites zip names).toMap))
     val sp = defs.foldLeft(p)((p, s) => Site(List(s), p))
@@ -94,32 +93,90 @@ object TranslateToPorc {
     }
   }
   
-  val porcImplementedSites = Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)](
-    /*MakeSite -> { (args, p, h) =>
-      import porc._
-      val f = new Var("f")
-      val f1 = new Var("f'")
-      val args1 = new Var("args")
-      val p1 = new Var("P")
-      val h1 = new Var("H")
-      val topH = new Var("Halt")
-      Unpack(List(f), args,
-        Site(List(SiteDef(f1, List(args1, p1, h1),
+  def makeMakeResilient(n: Int, p: porc.Var) = {
+    import porc._
+
+    val f = new Var("f")
+    val f1 = new Var("f'")
+    val args1 = 0 until n map (i => new Var(s"x${i}_")) toList
+    val p1 = new Var("P")
+    
+    //site MakeResilient (f) P =
+    val code = 
+    //  site fRes (y1, ..., yn) P =
+      Site(List(SiteDef(f1, args1, p1, {
+        //let t = T in
+        val t = new porc.Var("T")
+        let((t, GetTerminator())) {
+          // terminator in
           NewTerminator {
-            NewCounterDisconnected {
-              let(topH() === restoreCounter {
-                    h1()
+            //let reportedHalted = newFlag in
+            //let kH = lambda (). callCounterHalt in
+            val kH = new Var("kH")
+            let((kH, lambda()(CallCounterHalt()))) {
+              //addKillHandler t kH
+              AddKillHandler(t, kH) :::
+              //counter in
+              NewCounter {
+                //let h' = lambda (). restoreCounter 
+                //         (if (isKilled t) unit callCounterHalt)
+                //         (unit) in
+                val h1 = new Var("h'")
+                let((h1, lambda() {
+                  restoreCounter {
+                    val tmp = new Var()
+                    let((tmp, IsKilled(t))) {
+                      If(tmp, Unit(), CallCounterHalt())
+                    }
                   } {
-                    Die()
-                  }) {
-                setCounterHalt(topH) {
-                  f sitecall (args1, p1, topH)
+                    Unit()
+                  }
+                })) {
+                  val caughtKilled = new Var("caughtKilled")
+                  val p2 = new Var("p2_")
+                  val x = new Var("x")
+                  SetCounterHalt(h1) :::
+                  let((caughtKilled, NewFlag()),
+                      //    let p' = lambda (x).
+                      //               try P(x) onKilled (setFlag caughtKilled; unit) in
+                      (p2, lambda(x) {
+                        TryOnKilled({
+                          p1(x)
+                        }, { 
+                          SetFlag(caughtKilled) :::
+                          Unit()
+                        })
+                      })) {
+                    val b = new Var("b")
+                    // sitecall f (y1, ..., yn) p';
+                    (f sitecall(p2, args1:_*)) :::
+                    // let b = readFlag caughtKilled in
+                    let((b, ReadFlag(caughtKilled))) {
+                      If(b, Killed(), Unit()) :::
+                      restoreCounter {
+                        DecrCounter()
+                      } {
+                        Unit()
+                      }
+                    }
+                  }
                 }
               }
             }
-          })),
-          p(f1, h)))
-    }*/)
+            
+          }
+        }
+      })),
+    //  P (fRes)  
+      p (f1))
+    (List(f), code)
+  }
+  
+  val porcImplementedSites : Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)] = Map() ++ {
+    MakeResilients.sites.zipWithIndex.map({ pair => val (s, i) = pair
+      s -> ((p : porc.Var) => makeMakeResilient(i, p) )
+    }).toMap
+  }
     
   val porcImplementedSiteDefs = {
     for ((s, b) <- porcImplementedSites) yield {

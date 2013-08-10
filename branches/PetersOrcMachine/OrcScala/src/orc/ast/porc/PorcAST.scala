@@ -119,6 +119,8 @@ case class Killed() extends Expr
 case class CheckKilled() extends Expr
 case class TryOnKilled(body: Expr, handler: Expr) extends Expr
 
+case class IsKilled(t: Var) extends Expr
+
 case class Halted() extends Expr
 case class TryOnHalted(body: Expr, handler: Expr) extends Expr
 

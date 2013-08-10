@@ -138,7 +138,7 @@
 	<!-- =================================
           target: jar
          ================================= -->
-	<target name="jar" depends="version" description="Build orc-*.jar">
+	<target name="jar" depends="version,generatecode" description="Build orc-*.jar">
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Main-Class" value="${orc.main-class}"/>
@@ -273,4 +273,16 @@
 		</exec>
 		<delete dir="build" followsymlinks="no" includeemptydirs="true"/>
 	</target>
+	
+	<!-- =================================
+          target: generatecode
+         ================================= -->
+	<target name="generatecode" description="Make generated Orc code for prelude">
+		<java classname="orc.lib.generated.GenerateMakeX">
+			<arg file="src/orc/lib/includes/prelude/makex.inc"/>
+		 	<classpath refid="orc.classpath" />
+		</java>
+	</target>
 </project>
+
+
