@@ -237,10 +237,18 @@ object Optimizer {
       Seqs(ss, en) 
     }
   }
+  val DefSeqNorm = Opt("def-seq-norm") {
+    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (e.freevars & defs.map(_.name).toSet).isEmpty  => {
+       DeclareDefs(defs, b > x > e)
+    }
+  }
   
   
-  val SeqElimVar = Opt("seq-elim-var") {
-    case (f > x > y, a) if x == y => f.e
+  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
+    e match {
+      case f > x > y if x == y.e => Some(f)
+      case _ => None
+    }
   }
 
   val ParElim = OptSimple("par-elim") {
@@ -358,7 +366,7 @@ object Optimizer {
     }
   }
   
-  val basicOpts = List(SeqReassoc, TupleElim, AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
+  val basicOpts = List(SeqReassoc, DefSeqNorm, TupleElim, AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
   val secondOpts = List(InlineDef, LateBindElimFlatten)
   
   // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.

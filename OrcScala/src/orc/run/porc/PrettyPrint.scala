@@ -98,6 +98,7 @@ class PrettyPrint {
       case CheckKilled => "checkKilled"
       case AddKillHandler(u, m) => rd"addKillHandler $u $m"
       case CallKillHandlers => "callKillHandlers"
+      case IsKilled(t) => rd"isKilled $t"
 
       case NewFuture => "newFuture"
       case Force(vs, b) => rd"force (${vs.map(reduceVal).mkString(", ")}) $b"

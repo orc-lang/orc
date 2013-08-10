@@ -390,6 +390,13 @@ case class TryOnKilled(e: Expr, f: Expr) extends Expr {
     }
   }  
 }
+
+case class IsKilled(t: Value) extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    dereference(t, ctx).asInstanceOf[Terminator].isKilled : java.lang.Boolean
+  }
+}
+
 case object Halted extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     Logger.fine("Throwing halted exception")

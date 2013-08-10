@@ -22,7 +22,7 @@ import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
-import orc.compile.translate.ClassForms.makeClassBody
+import orc.compile.translate.ClassForms._
 import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
 import orc.error.OrcExceptionExtension.extendOrcException
@@ -119,8 +119,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.DefClassBody(b) => {
         var capThunk = ext.Lambda(None, Nil, None, None, makeClassBody(b, reportProblem))
-        convert(ext.Call(
-          ext.Call(ext.Constant(builtin.MakeSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
+        convert(ext.Call(makeMakeSite(capThunk, 0), List(ext.Args(None, Nil))))
       }
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))

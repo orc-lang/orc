@@ -20,7 +20,7 @@ final class Flag {
   
   @inline
   def set() = {
-    Logger.fine(s"Flag set $this")
+    Logger.finest(s"Flag set $this")
     _value = true
   }
   @inline

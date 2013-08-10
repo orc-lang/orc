@@ -1,7 +1,7 @@
 Xcheck-null=false
 Xcheckinit=true
 Xdisable-assertions=false
-Xelide-below=-2147483648
+Xelide-below=0
 Xexperimental=false
 Xfatal-warnings=false
 Xfuture=false

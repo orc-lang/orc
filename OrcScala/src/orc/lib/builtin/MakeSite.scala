@@ -25,10 +25,7 @@ import orc.types.FunctionType
 import orc.types.Type
 import orc.run.extensions.InstanceEvent
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.run.extensions.InstanceEvent
-import orc.run.extensions.InstanceEvent
 import orc.run.core.Closure
-import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
@@ -73,9 +70,11 @@ class UnimplementedMakeSitePart(override val name: String) extends TotalSite1 wi
   override val effectFree = true
 }
 
-object MakeStrict extends UnimplementedMakeSitePart("MakeStrict")
-object MakeSingleValued extends UnimplementedMakeSitePart("MakeSingleValued")
-object MakeResiliant extends UnimplementedMakeSitePart("MakeResiliant")
+class MakeResilient(val n: Int) extends UnimplementedMakeSitePart(s"MakeResilient$n")
+
+object MakeResilients {
+  val sites = 0 to 22 map (new MakeResilient(_))
+}
 
 // Standalone class execution
 

@@ -187,6 +187,12 @@ object AddKillHandlerIn {
     case _ => None
   }
 }
+object IsKilledIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (n@IsKilled(t)) in ctx => Some(t in ctx)
+    case _ => None
+  }
+}
 
 
 // ==================== FUTURE ===================
