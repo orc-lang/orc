@@ -1,5 +1,5 @@
 //
-// OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandradOrcCompiler
+// OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandardOrcCompiler
 // Project OrcScala
 //
 // $Id$
@@ -34,10 +34,10 @@ import orc.compile.translate.TranslateVclock
 
 /** Represents a configuration state for a compiler.
   */
-class CompilerOptions(val options: OrcCompilationOptions, val logger: CompileLogger) {
+class CompilerOptions(val options: OrcCompilationOptions, val compileLogger: CompileLogger) {
 
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
-    logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
+    compileLogger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
   }
 
 }
@@ -100,20 +100,24 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "parse"
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
-      val options = co.options
       val topLevelSourcePos = source.reader.pos
-      var includeFileNames = options.additionalIncludes
-      if (options.usePrelude) {
+      var includeFileNames = co.options.additionalIncludes
+      if (co.options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
       }
       val includeAsts = for (fileName <- includeFileNames) yield {
-        val ic = openInclude(fileName, null, options)
-        OrcIncludeParser(ic, options, CoreOrcCompiler.this) match {
-          case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
-          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+        val ic = openInclude(fileName, null, co.options)
+        co.compileLogger.beginDependency(ic);
+        try {
+          OrcIncludeParser(ic, co, CoreOrcCompiler.this) match {
+            case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
+            case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+          }
+        } finally {
+          co.compileLogger.endDependency(ic);
         }
       }
-      val progAst = OrcProgramParser(source, options, CoreOrcCompiler.this) match {
+      val progAst = OrcProgramParser(source, co, CoreOrcCompiler.this) match {
         case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
         case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
@@ -170,7 +174,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         val typechecker = new Typechecker(co.reportProblem)
         val (newAst, programType) = typechecker.typecheck(ast)
         val typeReport = "Program type checks as " + programType.toString
-        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
+        co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
         newAst
       } else {
         ast
@@ -251,7 +255,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
     //Logger.config(options)
     Logger.config("Begin compile " + options.filename)
-    compileLogger.beginProcessing(options.filename)
+    compileLogger.beginProcessing(source)
     try {
       val result = phases(new CompilerOptions(options, compileLogger))(source)
       if (compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal()) null else result
@@ -260,7 +264,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
         null
     } finally {
-      compileLogger.endProcessing(options.filename)
+      compileLogger.endProcessing(source)
       Logger.config("End compile " + options.filename)
     }
   }

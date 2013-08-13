@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Aug 26, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,6 +18,7 @@ package orc.orchard;
 import java.util.List;
 
 import orc.ast.AST;
+import orc.compile.parse.OrcInputContext;
 import orc.error.compiletime.CompileLogger;
 import scala.util.parsing.input.Position;
 
@@ -81,18 +82,34 @@ public class OrchardCompileLogger implements CompileLogger {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#beginProcessing(OrcInputContext)
 	 */
 	@Override
-	public void beginProcessing(final String filename) {
+	public void beginProcessing(final OrcInputContext inputContext) {
 		maxSeverity = Severity.UNKNOWN;
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#endProcessing(OrcInputContext)
 	 */
 	@Override
-	public void endProcessing(final String filename) {
+	public void endProcessing(final OrcInputContext inputContext) {
+		// Nothing needed
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileLogger#beginDependency(OrcInputContext)
+	 */
+	@Override
+	public void beginDependency(final OrcInputContext inputContext) {
+		// Nothing needed
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileLogger#endDependency(OrcInputContext)
+	 */
+	@Override
+	public void endDependency(final OrcInputContext inputContext) {
 		// Nothing needed
 	}
 

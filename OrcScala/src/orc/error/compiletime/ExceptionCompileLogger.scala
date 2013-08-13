@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jun 8, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,26 +17,41 @@ package orc.error.compiletime
 import orc.error.compiletime.CompileLogger.Severity
 import orc.ast.AST
 import scala.util.parsing.input.Position
+import orc.compile.parse.OrcInputContext
 
 /** A CompileMessageRecorder that throws an exception on a message of
   * severity WARNING or higher.
   *
   * @author jthywiss
   */
-class ExceptionCompileLogger extends CompileLogger {
+class ExceptionCompileLogger() extends CompileLogger {
   private var maxSeverity = Severity.UNKNOWN;
 
   /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
-     */
-  def beginProcessing(filename: String) {
+   * @see orc.error.compiletime.CompileLogger#beginProcessing(OrcInputContext)
+   */
+  def beginProcessing(inputContext: OrcInputContext) {
     maxSeverity = Severity.UNKNOWN;
   }
 
   /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
-     */
-  def endProcessing(filename: String) {
+   * @see orc.error.compiletime.CompileLogger#endProcessing(OrcInputContext)
+   */
+  def endProcessing(inputContext: OrcInputContext) {
+    // Nothing needed
+  }
+
+  /* (non-Javadoc)
+   * @see orc.error.compiletime.CompileLogger#beginDependency(OrcInputContext)
+   */
+  def beginDependency(inputContext: OrcInputContext) {
+    // Nothing needed
+  }
+
+  /* (non-Javadoc)
+   * @see orc.error.compiletime.CompileLogger#endDependency(OrcInputContext)
+   */
+  def endDependency(inputContext: OrcInputContext) {
     // Nothing needed
   }
 

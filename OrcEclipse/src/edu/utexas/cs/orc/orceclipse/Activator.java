@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,7 +32,7 @@ import org.osgi.framework.BundleContext;
  * Orc plug-in runtime class, represents the entire plug-in.
  * <p>
  * Contains a number of utility methods. This class is a singleton.
- * 
+ *
  * @author jthywiss
  */
 public class Activator extends PluginBase {
@@ -84,7 +84,7 @@ public class Activator extends PluginBase {
 	}
 
 	/*
-	 * (non-Javadoc) 
+	 * (non-Javadoc)
 	 * This is really language NAME, not ID -- PluginBase named the method incorrectly.
 	 * @see org.eclipse.imp.runtime.PluginBase#getLanguageID()
 	 */
@@ -95,7 +95,7 @@ public class Activator extends PluginBase {
 
 	/**
 	 * Logs the specified status with this plug-in's log.
-	 * 
+	 *
 	 * @param status status to log
 	 */
 	public static void log(final IStatus status) {
@@ -104,7 +104,7 @@ public class Activator extends PluginBase {
 
 	/**
 	 * Logs an internal error with the specified message.
-	 * 
+	 *
 	 * @param message the error message to log
 	 */
 	public static void logErrorMessage(final String message) {
@@ -113,7 +113,7 @@ public class Activator extends PluginBase {
 
 	/**
 	 * Logs an internal error with the specified throwable
-	 * 
+	 *
 	 * @param e the exception to be logged
 	 */
 	public static void log(final Throwable e) {
@@ -126,7 +126,7 @@ public class Activator extends PluginBase {
 
 	/**
 	 * Logs an internal error with the specified throwable
-	 * 
+	 *
 	 * @param e the exception to be logged
 	 */
 	public static void logAndShow(final Throwable e) {
@@ -152,7 +152,7 @@ public class Activator extends PluginBase {
 
 	/**
 	 * Reads the entire contents of a file into a String
-	 * 
+	 *
 	 * @param file IFile to read contents from
 	 * @return String containing contents of file
 	 * @throws CoreException If an InputStream cannot be created for
@@ -170,4 +170,21 @@ public class Activator extends PluginBase {
 	public static boolean isOrcIncludeFile(final IPath file) {
 		return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
 	}
+
+//	public static final PrintWriter errWriter = new PrintWriter(new FileWriter(FileDescriptor.err), true);
+//	public static final PrintStream errStream = new PrintStream(new FileOutputStream(FileDescriptor.err), true);
+//	public static void debugEnter(Object... args) {
+//		String argString = Arrays.deepToString(args);
+//		argString = argString.substring(1, argString.length()-1);
+//		debugWrite("("+argString+")"); //$NON-NLS-1$ //$NON-NLS-2$
+//	}
+//	public static void debugMsg(String message) {
+//		debugWrite(": "+message); //$NON-NLS-1$
+//	}
+//	private static void debugWrite(String string) {
+//		final StackTraceElement caller = new Throwable("Get stack trace").getStackTrace()[2]; //$NON-NLS-1$
+//		String className = caller.getClassName();
+//		if (className.startsWith(pluginID)) className = className.substring(pluginID.length()+1);
+//		errWriter.println(className+"."+caller.getMethodName()+string); //$NON-NLS-1$
+//	}
 }

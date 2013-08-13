@@ -13,8 +13,8 @@
 
 package orc.test;
 
-import java.io.File;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -22,9 +22,11 @@ import java.util.LinkedList;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import orc.compile.CompilerOptions;
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcFileInputContext;
 import orc.compile.parse.OrcProgramParser;
+import orc.error.compiletime.ExceptionCompileLogger;
 import orc.error.compiletime.ParsingException;
 import orc.script.OrcBindings;
 import scala.util.parsing.combinator.Parsers;
@@ -32,45 +34,43 @@ import scala.util.parsing.combinator.Parsers;
 /**
  * This validates the parser simply by trying to parse everything in the
  * "test_data" and "../OrcExamples" directory.
- *
+ * 
  * @author quark
  */
 public class OrcParserTest {
-  public static String readFileAsString(String filePath)
-      throws java.io.IOException {
-    byte[] buffer = new byte[(int) new File(filePath).length()];
-    BufferedInputStream f = new BufferedInputStream(new FileInputStream(
-        filePath));
-    f.read(buffer);
-    return new String(buffer);
-  }
-
-  public static Test suite() {
-    final TestSuite suite = new TestSuite(OrcParserTest.class.getSimpleName());
-    final LinkedList<File> files = new LinkedList<File>();
-    TestUtils.findOrcFiles(new File("test_data"), files);
-    TestUtils.findOrcFiles(new File("../OrcExamples"), files);
-    final OrcBindings options = new OrcBindings();
-    final StandardOrcCompiler envServices = new StandardOrcCompiler();
-    for (final File file : files) {
-      if (file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar) &&
-          !file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar+"parse_fail"+File.separatorChar)) {
-        continue; // Only run cases for parser invalid testing
-      }
-      suite.addTest(new TestCase(file.toString()) {
-        @Override
-        public void runTest() throws ParsingException, IOException {
-          OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
-          options.filename_$eq(file.toString());
-          Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, options, envServices);
-          if (!file.getAbsolutePath().contains(File.separatorChar+"functional_invalid"+File.separatorChar)) {
-            assertTrue("Parsing unsucessful: "+pr.toString(), pr.successful());
-          } else {
-            assertTrue("Parsing did not identify error: "+pr.toString(), !pr.successful());
-          }
-        }
-      });
+    public static String readFileAsString(final String filePath) throws java.io.IOException {
+        final byte[] buffer = new byte[(int) new File(filePath).length()];
+        final BufferedInputStream f = new BufferedInputStream(new FileInputStream(filePath));
+        f.read(buffer);
+        return new String(buffer);
     }
-    return suite;
-  }
+
+    public static Test suite() {
+        final TestSuite suite = new TestSuite(OrcParserTest.class.getSimpleName());
+        final LinkedList<File> files = new LinkedList<File>();
+        TestUtils.findOrcFiles(new File("test_data"), files);
+        TestUtils.findOrcFiles(new File("../OrcExamples"), files);
+        final OrcBindings options = new OrcBindings();
+        final StandardOrcCompiler envServices = new StandardOrcCompiler();
+        final CompilerOptions co = new CompilerOptions(options, new ExceptionCompileLogger());
+        for (final File file : files) {
+            if (file.getAbsolutePath().contains(File.separatorChar + "functional_invalid" + File.separatorChar) && !file.getAbsolutePath().contains(File.separatorChar + "functional_invalid" + File.separatorChar + "parse_fail" + File.separatorChar)) {
+                continue; // Only run cases for parser invalid testing
+            }
+            suite.addTest(new TestCase(file.toString()) {
+                @Override
+                public void runTest() throws ParsingException, IOException {
+                    final OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
+                    options.filename_$eq(file.toString());
+                    Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, co, envServices);
+                    if (!file.getAbsolutePath().contains(File.separatorChar + "functional_invalid" + File.separatorChar)) {
+                        assertTrue("Parsing unsucessful: " + pr.toString(), pr.successful());
+                    } else {
+                        assertTrue("Parsing did not identify error: " + pr.toString(), !pr.successful());
+                    }
+                }
+            });
+        }
+        return suite;
+    }
 }

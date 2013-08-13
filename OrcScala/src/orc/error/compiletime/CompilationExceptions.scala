@@ -142,6 +142,12 @@ case class MalformedExpression(complaint: String)
   */
 case class UnguardedRecursionException() extends SyntacticException("Unguarded recursion") with SeverityWarning
 
+/** Indicate a problem with include file open/read operations.
+  */
+case class IncludeFileException(val includeFileName: String, cause: Throwable)
+  extends CompilationException("Problem including " + includeFileName + ": " + cause.getLocalizedMessage(), cause)
+  with SeverityError
+
 /** Indicate a problem with site resolution. Ideally
   * this would be a loadtime error, but currently site
   * resolution is done at compile time.
