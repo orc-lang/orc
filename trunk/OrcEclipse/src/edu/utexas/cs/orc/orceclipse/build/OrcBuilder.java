@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,13 +27,13 @@ import orc.compile.parse.OrcFileInputContext;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.imp.builder.BuilderBase;
-import org.eclipse.imp.builder.MarkerCreatorWithBatching;
 import org.eclipse.imp.language.Language;
 import org.eclipse.imp.language.LanguageRegistry;
 import org.eclipse.imp.runtime.PluginBase;
@@ -64,6 +64,16 @@ public class OrcBuilder extends BuilderBase {
 	 * A marker ID that identifies problems detected by the builder
 	 */
 	public static final String PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".problemmarker"; //$NON-NLS-1$
+
+	/**
+	 * A marker ID that identifies parse problems detected by the builder
+	 */
+	public static final String PARSE_PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".parse.problemmarker"; //$NON-NLS-1$
+
+	/**
+	 * A marker attribute name for the compile message code attribute
+	 */
+	public static final String COMPILE_EXCEPTION_NAME = Activator.getInstance().getID() + ".compileexceptionname"; //$NON-NLS-1$
 
 	/**
 	 * Name of the language for this builder.
@@ -133,7 +143,7 @@ public class OrcBuilder extends BuilderBase {
 	 * Decide whether a file needs to be build using this builder. Note that
 	 * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
 	 * never return true for the same file.
-	 * 
+	 *
 	 * @return true iff an arbitrary file is a Orc source file.
 	 * @see org.eclipse.imp.builder.BuilderBase#isSourceFile(org.eclipse.core.resources.IFile)
 	 */
@@ -167,7 +177,7 @@ public class OrcBuilder extends BuilderBase {
 	 * Decide whether or not to scan a file for dependencies. Note:
 	 * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
 	 * never return true for the same file.
-	 * 
+	 *
 	 * @return true iff the given file is a source file that this builder should
 	 *         scan for dependencies, but not compile as a top-level compilation
 	 *         unit.
@@ -264,8 +274,7 @@ public class OrcBuilder extends BuilderBase {
 			config.filename_$eq(file.getLocation().toOSString());
 			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
 			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
-			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(new MarkerCreatorWithBatching(file, null, this));
-			file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(BUILDER_ID, false);
 
 			try {
 				new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
@@ -299,7 +308,7 @@ public class OrcBuilder extends BuilderBase {
 
 	/**
 	 * Check whether the build has been canceled.
-	 * 
+	 *
 	 * @param monitor
 	 * @throws OperationCanceledException
 	 */
@@ -307,5 +316,20 @@ public class OrcBuilder extends BuilderBase {
 		if (monitor != null && monitor.isCanceled()) {
 			throw new OperationCanceledException();
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.core.resources.IncrementalProjectBuilder#clean(org.eclipse.core.runtime.IProgressMonitor)
+	 */
+	@Override
+	protected void clean(IProgressMonitor monitor) throws CoreException {
+		super.clean(monitor);
+		IProject currentProject = getProject();
+		if (currentProject == null || !currentProject.isAccessible() || !currentProject.exists()) return;
+
+		currentProject.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+
+		if (monitor != null)
+			monitor.done();
 	}
 }

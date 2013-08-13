@@ -132,6 +132,17 @@
       </persistent>
    </extension>
    <extension
+         id="parse.problemmarker"
+         name="Orc Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="edu.utexas.cs.orc.orceclipse.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
          point="org.eclipse.ui.propertyPages">
       <page
             class="edu.utexas.cs.orc.orceclipse.project.OrcProjectPropertyPage"

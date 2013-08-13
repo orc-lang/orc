@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Aug 9, 2009.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,10 +15,12 @@
 
 package edu.utexas.cs.orc.orceclipse.parse;
 
+import java.net.URI;
 import java.util.Iterator;
 
 import orc.OrcCompilationOptions;
 import orc.ast.AST;
+import orc.compile.CompilerOptions;
 import orc.compile.parse.OrcIncludeParser;
 import orc.compile.parse.OrcInputContext;
 import orc.compile.parse.OrcProgramParser;
@@ -98,7 +100,7 @@ public class OrcParseController extends ParseControllerBase {
 		/**
 		 * Not used. Orc doesn't have multi-component identifiers at present.
 		 * @param ident ignored
-		 * @return Dummy value -- an int array with one zero element 
+		 * @return Dummy value -- an int array with one zero element
 		 */
 		@Override
 		public int[] getIdentifierComponents(final String ident) {
@@ -151,8 +153,7 @@ public class OrcParseController extends ParseControllerBase {
 		super.initialize(filePath, project, handler);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.IParseController#getSourcePositionLocator()
 	 */
 	@Override
@@ -167,7 +168,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * Returns an Iterator that iterates over the tokens contained within the given region, including any tokens that are only partially contained.
 	 * <p>
 	 * <code>parse</code> must be called before this method is called.
-	 * 
+	 *
 	 * @see org.eclipse.imp.parser.IParseController#getTokenIterator(org.eclipse.jface.text.IRegion)
 	 */
 	@SuppressWarnings("rawtypes")
@@ -177,8 +178,7 @@ public class OrcParseController extends ParseControllerBase {
 		return lexer.iterator(region);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/* (non-Javadoc)
 	 * @see org.eclipse.imp.parser.IParseController#getAnnotationTypeInfo()
 	 */
 	@Override
@@ -201,7 +201,7 @@ public class OrcParseController extends ParseControllerBase {
 	 * produced.
 	 * <p>
 	 * {@link #initialize(IPath, ISourceProject, IMessageHandler)} must be called before calling this method.
-	 * 
+	 *
 	 * @return the AST, if any, resulting from the parse
 	 * @param contents String containing the source text to parse
 	 * @param monitor ProgressMonitor to check for cancellation
@@ -223,13 +223,24 @@ public class OrcParseController extends ParseControllerBase {
 
 		final IPath absolutePath = getProject().getRawProject().getLocation().append(getPath());
 
-		final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(handler);
-		compileLogger.beginProcessing(absolutePath.toFile().toString());
+		final OrcStringInputContext ic = new OrcStringInputContext(contents) {
+			@Override
+			public String descr() {
+				return absolutePath.toFile().toString();
+			}
+			@Override
+			public URI toURI() {
+				return absolutePath.toFile().toURI();
+			}
+		};
+
+		final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(Activator.getInstance().getID() + ".parse.orcParseController", true); //$NON-NLS-1$
+		final CompilerOptions co = new CompilerOptions(config, compileLogger);
+		
+		compileLogger.beginProcessing(ic);
 		if (lexer == null) {
 			lexer = new OrcLexer(this);
 		}
-
-		final OrcStringInputContext ic = new OrcStringInputContext(contents);
 
 		final orc.OrcCompilerRequires dummyEnvServices = new orc.OrcCompilerRequires() {
 			@Override
@@ -252,9 +263,9 @@ public class OrcParseController extends ParseControllerBase {
 		try {
 			ParseResult<?> result;
 			if (!Activator.isOrcIncludeFile(absolutePath)) {
-				result = OrcProgramParser.apply(ic, config, dummyEnvServices);
+				result = OrcProgramParser.apply(ic, co, dummyEnvServices);
 			} else {
-				result = OrcIncludeParser.apply(ic, config, dummyEnvServices);
+				result = OrcIncludeParser.apply(ic, co, dummyEnvServices);
 			}
 			if (result.successful()) {
 				currentAst = (AST) result.get();
@@ -265,7 +276,7 @@ public class OrcParseController extends ParseControllerBase {
 		} catch (final Exception e) {
 			compileLogger.recordMessage(Severity.FATAL, 0, e.getLocalizedMessage(), null, null, e);
 		} finally {
-			compileLogger.endProcessing(absolutePath.toFile().toString());
+			compileLogger.endProcessing(ic);
 		}
 
 		// Walk AST and tie id refs to id defs
@@ -292,9 +303,9 @@ public class OrcParseController extends ParseControllerBase {
 	}
 
 	/**
-	 * @return the {@link OrcLexer} for this ParseController, 
-	 *   as created by the last invocation of {@link #parse(String, IProgressMonitor)}, 
-	 *   or null
+	 * @return the {@link OrcLexer} for this ParseController, as created by the
+	 *         last invocation of {@link #parse(String, IProgressMonitor)}, or
+	 *         null
 	 */
 	public OrcLexer getLexer() {
 		return lexer;
