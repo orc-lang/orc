@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -60,7 +60,7 @@ public class Channel extends EvalSite implements TypedSite {
 
 	protected class ChannelInstance extends DotSite {
 
-		protected final LinkedList<Object> Channel;
+		protected final LinkedList<Object> contents;
 		protected final LinkedList<Handle> readers;
 		protected Handle closer;
 		/**
@@ -70,7 +70,7 @@ public class Channel extends EvalSite implements TypedSite {
 		protected boolean closed = false;
 
 		ChannelInstance() {
-			Channel = new LinkedList<Object>();
+			contents = new LinkedList<Object>();
 			readers = new LinkedList<Handle>();
 		}
 
@@ -80,7 +80,7 @@ public class Channel extends EvalSite implements TypedSite {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (ChannelInstance.this) {
-						if (Channel.isEmpty()) {
+						if (contents.isEmpty()) {
 							if (closed) {
 								reader.halt();
 							} else {
@@ -88,8 +88,8 @@ public class Channel extends EvalSite implements TypedSite {
 							}
 						} else {
 							// If there is an item available, pop it and return it.
-							reader.publish(object2value(Channel.removeFirst()));
-							if (closer != null && Channel.isEmpty()) {
+							reader.publish(object2value(contents.removeFirst()));
+							if (closer != null && contents.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -108,7 +108,7 @@ public class Channel extends EvalSite implements TypedSite {
 						}
 						if (readers.isEmpty()) {
 							// If there are no waiting callers, queue this item.
-							Channel.addLast(item);
+							contents.addLast(item);
 						} else {
 							// If there are callers waiting, give this item to the top caller.
 							final Handle receiver = readers.removeFirst();
@@ -123,11 +123,11 @@ public class Channel extends EvalSite implements TypedSite {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (ChannelInstance.this) {
-						if (Channel.isEmpty()) {
+						if (contents.isEmpty()) {
 							reader.halt();
 						} else {
-							reader.publish(object2value(Channel.removeFirst()));
-							if (closer != null && Channel.isEmpty()) {
+							reader.publish(object2value(contents.removeFirst()));
+							if (closer != null && contents.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -139,8 +139,8 @@ public class Channel extends EvalSite implements TypedSite {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
 					synchronized (ChannelInstance.this) {
-						final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(Channel).toList();
-						Channel.clear();
+						final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(contents).toList();
+						contents.clear();
 						if (closer != null) {
 							closer.publish(signal());
 							closer = null;
@@ -163,7 +163,7 @@ public class Channel extends EvalSite implements TypedSite {
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						if (Channel.isEmpty()) {
+						if (contents.isEmpty()) {
 							token.publish(signal());
 						} else {
 							closer = token;
@@ -187,7 +187,7 @@ public class Channel extends EvalSite implements TypedSite {
 
 		@Override
 		public String toString() {
-			return super.toString() + Channel.toString();
+			return super.toString() + contents.toString();
 		}
 
 	}
