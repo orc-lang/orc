@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,6 +25,7 @@ import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
+import scala.util.parsing.input.Position
 
 /** The interface from a caller to the Orc compiler
   */
@@ -118,6 +119,7 @@ trait Handle {
   def halt: Unit
   def !!(e: OrcException): Unit
 
+  def callSitePosition: Position
   def hasRight(rightName: String): Boolean
 
   def isLive: Boolean

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -36,7 +36,7 @@ trait SupportForClasses extends Orc {
   override def installHandlers(host: Execution) {
     val thisHandler = {
       case InstanceEvent(closure, args, caller) => {
-        val node = Call(Constant(closure), args map Constant, Some(Nil))
+        val node = Call(Constant(closure), args map Constant, Some(Nil)).pushDownPosition(caller.callSitePosition)
         val exec = new ClassExecution(caller, host)
         val t = new Token(node, exec)
         schedule(t)

@@ -53,7 +53,7 @@ trait AST extends Positional {
   /** Set source location at this node and propagate
     * the change to any children without source locations.
     */
-  def pushDownPosition(p: Position): Unit = {
+  def pushDownPosition(p: Position): this.type = {
     this.pos match {
       case NoPosition => {
         this.setPos(p)
@@ -61,6 +61,7 @@ trait AST extends Positional {
       }
       case _ => {}
     }
+    this
   }
 
   /** If both AST nodes have an optional variable name,

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,16 +27,16 @@ import orc.util.BlockableMapExtension
  */
 class Closure(
     private[run] var _defs: List[Def], 
-    pos: Int, 
+    index: Int, 
     private var _lexicalContext: List[Binding], 
     override val runtime: OrcRuntime) 
       extends Schedulable 
         with Blocker with Blockable with Resolver {
   import Closure._
   import BlockableMapExtension._
-  
+
   private var stack : List[Option[AnyRef] => Unit] = Nil
-  
+
   private def pop() = {
     val top = stack.head
     stack = stack.tail
@@ -53,7 +53,7 @@ class Closure(
   
   def defs = _defs
 
-  def code: Def = defs(pos)
+  def code: Def = defs(index)
   
   def lexicalContext = _lexicalContext
   
