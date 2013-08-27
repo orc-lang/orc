@@ -37,7 +37,7 @@ import orc.error.compiletime.typing.OverloadedTypeException
   */
 case class OverloadedType(alternatives: List[CallableType]) extends CallableType {
 
-  override def toString = alternatives.mkString("(", " /\\ ", ")")
+  override def toString = alternatives.mkString("(", " \u2227 ", ")")
 
   override def <(that: Type): Boolean = {
     for (t <- alternatives) {

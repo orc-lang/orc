@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 26, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -59,6 +59,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def halt() { setState(CallSilent) }
   def !!(e: OrcException) { setState(CallRaisedException(e)) }
 
+  def callSitePosition = caller.sourcePosition
   def hasRight(rightName: String) = caller.options.hasRight(rightName)
 
   def notifyOrc(event: orc.OrcEvent) {

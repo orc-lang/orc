@@ -56,6 +56,8 @@ class Token protected (
 
   val runtime: OrcRuntime = group.runtime
 
+  def sourcePosition = node.pos
+
   val options = group.root.options
 
   /** Execution of a token cannot indefinitely block the executing thread. */
@@ -343,7 +345,7 @@ class Token protected (
           case None => halt()
         }
       }
-      case _ => throw new ArityMismatchException(vc.arity, actuals.size)
+      case _ => this !! new ArityMismatchException(vc.arity, actuals.size)
     }
   }
 
