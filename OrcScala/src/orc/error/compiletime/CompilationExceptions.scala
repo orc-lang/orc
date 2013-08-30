@@ -145,7 +145,7 @@ case class UnguardedRecursionException() extends SyntacticException("Unguarded r
 /** Indicate a problem with include file open/read operations.
   */
 case class IncludeFileException(val includeFileName: String, cause: Throwable)
-  extends CompilationException("Problem including " + includeFileName + (if (cause == null) "" else ": " + cause.getLocalizedMessage()), cause)
+  extends CompilationException("Problem including " + includeFileName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityError
 
 /** Indicate a problem with site resolution. Ideally
@@ -153,5 +153,5 @@ case class IncludeFileException(val includeFileName: String, cause: Throwable)
   * resolution is done at compile time.
   */
 case class SiteResolutionException(val siteName: String, cause: Throwable)
-  extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.getLocalizedMessage()), cause)
+  extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
