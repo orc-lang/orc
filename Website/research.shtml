@@ -44,6 +44,13 @@
 <a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/kitchin_dissertation_20136.pdf">Orchestration and Atomicity</a>
+	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/99999">hdl</a> -->
+	<a class="bibtex" href="papers/kitchin_dissertation_20136.bib">BibTeX</a>
+	<br />
+	David Kitchin<br />
+	Ph.D. dissertation, The University of Texas at Austin, August 2013</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/timed_semantics.pdf">A Timed semantics of Orc</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1016/j.tcs.2008.04.037">DOI</a>
 	<a class="bibtex" href="papers/timed_semantics.bib">BibTeX</a>

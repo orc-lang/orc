@@ -1,0 +1,15 @@
+@phdthesis{Kitchin2013a,
+	Author = {Kitchin, David},
+	Month = aug,
+	School = {The University of Texas at Austin},
+	Title = {Orchestration and Atomicity},
+	Year = {2013},
+	Abstract = {Writing clear and correct concurrent code is a difficult task, even for experienced programmers. It requires attention to the potential interactions of many different entities, and those entities are often in disparate locations in a program. Current programming abstractions have not been adequate to manage this complexity. Threads with shared state are at present the dominant approach to concurrent programming. Under this model, the dynamic structure of the concurrent execution is not at all apparent from the lexical structure of the program.
+
+The Orc programming language changes the conceptual model of programming to be pervasively concurrent in a structured way. The concurrent structure of an Orc execution is evident from the lexical structure of the program; this is a substantial improvement on the threaded programming model. Orc uses special objects called sites to perform computation, to communicate with the external world, and to mediate access to shared state.
+
+Sites are numerous and diverse, they can have nontrivial semantics, and many of them represent some kind of shared resource. Thus, the difficulties inherent in using shared state still recur frequently when writing Orc programs. At present, Orc programs make use of locks, semaphores, and other mutual exclusion disciplines to safeguard access to shared state at sites. This gives rise to all of the difficulties inherent in locking.
+
+The use of language-level transactions, especially in the context of transactional memory, has been explored as an alternative to locks. Inspired by this approach, I have developed Ora, an extension of Orc with a new 'atomic' combinator, which executes an Orc expression transactionally. I show how the specification of 'atomic' can be formalized in a novel way. Rather than describing a transaction as being equivalent to some uninterrupted sequence of operations, I show how the essence of transactional execution can be described in terms of two constraints on the causal order of events, without ever requiring a global sequencing of events. These two constraints are called 'atomicity' and 'coatomicity'. I show how these are separate concerns from 'consistency', which governs only the invariants of shared state.
+
+Ora allows unlimited concurrent activity within a transaction, as well as unbounded nesting of transactions. It also allows the transactional use of semaphores and asynchronous channels. I have developed an algorithm that extends the standard approach of multiversion concurrency control (MVCC) to allow unbounded parallelism and unbounded nesting while maintaining the properties of atomicity, coatomicity, and consistency for shared memory as well as for semaphores and channels.}}
