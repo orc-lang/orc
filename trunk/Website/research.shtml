@@ -5,6 +5,7 @@
 <ul>
 	<li><a href="#Introduction">Introduction to Orc</a></li>
 	<li><a href="#Semantics">Semantics &amp; Verification</a></li>
+	<li><a href="#Causality">Causality</a></li>
 	<li><a href="#Applications">Applications</a></li>
 	<li><a href="#Presentations">Presentations</a></li>
 	<li><a href="#Student_Reports">Student Reports</a></li>
