@@ -88,6 +88,17 @@
 	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
 
+<a name="Causality" id="Causality"></a><h2>Causality <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/kitchin_dissertation_20136.pdf">Orchestration and Atomicity</a>
+	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/99999">hdl</a> -->
+	<a class="bibtex" href="papers/kitchin_dissertation_20136.bib">BibTeX</a>
+	<br />
+	David Kitchin<br />
+	Ph.D. dissertation, The University of Texas at Austin, August 2013</li>
+</ul>
+
 <a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
