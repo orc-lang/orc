@@ -81,7 +81,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def check(t: Blockable) {
     val callState = synchronized { state }
     callState match {
-      case CallInProgress => { /*t.scheduledBy.printStackTrace();*/ throw new AssertionError("Spurious check of call handle. state=" + this.state) }
+      case CallInProgress => { throw new AssertionError("Spurious check of call handle. "+this+".state=" + this.state) }
       case CallReturnedValue(v) => { t.awakeValue(v) } // t.publish(v) sort of
       case CallSilent => { t.halt() } // t.halt()
       case CallRaisedException(e) => { t.awakeException(e) } // t !! e
