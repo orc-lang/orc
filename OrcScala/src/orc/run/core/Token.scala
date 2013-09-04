@@ -105,12 +105,8 @@ class Token protected (
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = state.isLive && group.checkAlive()
 
-  //@volatile
-  //var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
-    //scheduledBy = new Throwable(this+" scheduled by")
-    //if (runtime.asInstanceOf[OrcWithThreadPoolScheduler].executor.asInstanceOf[OrcThreadPoolExecutor].getQueue().contains(this) && !group.isKilled()) Console.err.println("Token scheduled, in queue, && group alive! state="+state+"\n"+scheduledBy.toString())
     clock foreach { _.unsetQuiescent() }
     super.onSchedule()
   }
