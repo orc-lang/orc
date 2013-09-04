@@ -17,35 +17,50 @@ package orc.run.porc
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.Timer
 import java.util.TimerTask
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
   *
   * @author amp
   */
 class Interpreter {
+  class ExecutionHandle(c: Counter) {
+    def waitForHalt() {
+      c.waitZero()
+    }
+  }
+  
+  private val runningCount: AtomicInteger = new AtomicInteger(1)
+  
   private val processors = Runtime.getRuntime().availableProcessors()
   private var threads: IndexedSeq[InterpreterThread] = IndexedSeq()
+
+  // spawn 2 threads per core (currently do not worry about blocked threads)
+  val nthreads = if(false) 1 else processors * 2
   
-  //Logger.logAllToStderr()
+  threads = for(_ <- 1 to nthreads) yield {
+    new InterpreterThread(this)
+  }
+  runningCount.set(threads.size)
+
+  // Tell them all about the other contexts and start them all.
+  val ctxs = threads.map(_.ctx).toList
+  for(t <- threads) {
+    t.otherContexts = ctxs
+    t.start()
+  }
+
+  InterpreterContext.default = threads(0).ctx
+
+  Logger.logAllToStderr()
   
-  def start(e: Expr) {
-    // spawn 2 threads per core (currently do not worry about blocked threads)
-    val nthreads = if(false) 1 else processors * 2
-    threads = for(_ <- 1 to nthreads) yield {
-      new InterpreterThread(this)
-    }
-    runningCount.set(threads.size)
+  def start(e: Expr) : ExecutionHandle = {
     // Insert the initial program state into one of the threads.
     val initCounter = new Counter()
-    InterpreterContext.default = threads(0).ctx
     
     threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null)), Nil)
-    // Tell them all about the other contexts and start them all.
-    val ctxs = threads.map(_.ctx).toList
-    for(t <- threads) {
-      t.otherContexts = ctxs
-      t.start()
-    }
+    
+    new ExecutionHandle(initCounter)
   }
   
   def kill() {
@@ -55,8 +70,6 @@ class Interpreter {
     
     timer.cancel()
   }
-
-  private val runningCount: AtomicInteger = new AtomicInteger(1)
   
   def waitForWork() {
     if( runningCount.decrementAndGet() == 0 ) {
@@ -81,6 +94,8 @@ class Interpreter {
 }
 
 final class InterpreterThread(val interp: Interpreter) extends Thread {
+  setDaemon(true)
+  
   val ctx = new InterpreterContext(interp)
   var otherContexts = List[InterpreterContext]()
  
