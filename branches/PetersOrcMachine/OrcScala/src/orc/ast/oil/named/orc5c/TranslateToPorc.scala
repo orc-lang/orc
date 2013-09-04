@@ -84,11 +84,12 @@ object TranslateToPorc {
     
     val noopP = new porc.Var("noop")
 
-    let((topH, porc.Lambda(Nil, porc.Unit()))) {
+    let((topH, porc.Lambda(Nil, porc.RestoreCounter(porc.Unit(), porc.Unit())))) {
       SetCounterHalt(topH) :::
       let((noopP, Lambda(List(x), Unit())),
           (topP, Lambda(List(x), ExternalCall(printSite, List(x), noopP)))) {
-            sp
+            sp :::
+            topH()
           }
     }
   }

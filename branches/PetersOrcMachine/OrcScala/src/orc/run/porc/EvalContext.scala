@@ -45,7 +45,7 @@ final class Terminator {
 }
 
 final class Counter {
-  val _count: AtomicInteger = new AtomicInteger(1)
+  private[porc] val _count: AtomicInteger = new AtomicInteger(1)
 
   Logger.fine(s"created $this")
 
@@ -63,7 +63,14 @@ final class Counter {
       assert(v > 0, "Uberkilling old Counter") 
     }
     Logger.finer(s"decr $this ($v)")
-    _count.decrementAndGet() == 0
+    if(_count.decrementAndGet() == 0) {
+      synchronized { 
+        notifyAll()
+      }
+      true
+    } else {
+      false
+    }
   }
 
   @volatile
@@ -80,6 +87,10 @@ final class Counter {
     _haltHandler = v
   }
   */
+  
+  private[porc] def waitZero() {
+    while(_count.get() != 0) synchronized { wait() }
+  }
 }
 
 /**
@@ -120,6 +131,8 @@ final class InterpreterContext(val engine: Interpreter) extends StandardInvocati
 } 
 
 object InterpreterContext {
+  // FIXME: This assumes there is only one interpreter running in a process. This may not be the case.
+ 
   private val currentInterpreterContext = new ThreadLocal[InterpreterContext]()
   def current_=(v: InterpreterContext) = currentInterpreterContext.set(v)
   def current: InterpreterContext = {

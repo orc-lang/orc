@@ -201,7 +201,7 @@ object Optimizer {
   }
   val LateBindElim = Opt("late-bind-elim") {
     case (f < x <| g, a) if a(f).strictOn(x) && a(g).publishesAtMost(1) => g > x > f
-    case (f < x <| g, a) if a(g).immediatePublish && a(g).publishesAtMost(1) => g > x > f
+    //FIXME: Unsound if g does not publish: case (f < x <| g, a) if a(g).immediatePublish && a(g).publishesAtMost(1) => g > x > f
     case ((Stop() in _) < x <| g, a) => g > x > Stop()
   }
   val StopEquiv = Opt("stop-equiv") {

@@ -111,7 +111,6 @@ object Optimizer {
   val LetElim = Opt("let-elim") {
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt => b 
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
-    // This is unsound in cases where a directsitecall may throw in v
   }
   val VarLetElim = Opt("var-let-elim") {
     case (LetIn(x, (y:Var) in _, b), a) => b.substAll(Map((x, y)))
@@ -123,6 +122,7 @@ object Optimizer {
   val ForceElim = Opt("force-elim") {
     case (ForceIn(List(), _, b), a) => b()
     case (ForceIn(args, ctx, b), a) if args.forall(v => a(v in ctx).isNotFuture) => b(args: _*)
+    // FIXME: Add form that removes the variables that are not futures but leaves the futures.
   }
 
   val spawnCostInlineThreshold = 30
