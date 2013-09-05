@@ -119,7 +119,7 @@ object OrcJavaCompatibility {
     })
     Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
-      throw new NoSuchMethodException("No accessible " + methodName + " in " + targetClass.getName())
+      throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
     }
 
     //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
