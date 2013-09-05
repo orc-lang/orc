@@ -24,8 +24,6 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * API for http://geocoder.us. This service returns a latitude/longitude tuple
  * given a city/state, zip code, or full address in the United States.
  * 
- * FIXME: as of 6/9/2009, geocoder.us responds to all requests with a "Bad Request"
- * message. Therefore I recommend using GoogleGeocoderFactory instead.
  * @author quark
  */
 public class Geocoder {
