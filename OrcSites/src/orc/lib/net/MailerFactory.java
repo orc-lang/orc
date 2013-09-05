@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -669,8 +669,20 @@ public class MailerFactory extends SiteAdaptor {
 			message.removeHeader(arg0);
 		}
 
-		public OrcMessage reply(final boolean arg0) throws MessagingException {
-			return new OrcMessage(message.reply(arg0));
+		public OrcMessage autoReply(final boolean replyToAll) throws MessagingException {
+			if (!safeToAutoRespond()) {
+				return null;
+			}
+			OrcMessage reply = new OrcMessage(message.reply(replyToAll));
+			reply.addHeader("Auto-Submitted", "auto-replied");
+			String subject = reply.getSubject();
+			if (subject.regionMatches(true, 0, "Re: ", 0, 4)) subject = subject.substring(4);
+			reply.setSubject("Auto: "+subject);
+			return reply;
+		}
+
+		public OrcMessage humanReply(final boolean replyToAll) throws MessagingException {
+			return new OrcMessage(message.reply(replyToAll));
 		}
 
 		public void saveChanges() throws MessagingException {
@@ -725,6 +737,24 @@ public class MailerFactory extends SiteAdaptor {
 		/** Added utility method. */
 		public void delete() throws MessagingException {
 			message.setFlag(Flags.Flag.DELETED, true);
+		}
+		
+		/** Check if auto-reply to this message is allowable per RFC 3834 */
+		public boolean safeToAutoRespond() throws MessagingException {
+			String[] autoSubmittedHdrs = message.getHeader("Auto-Submitted");
+			String[] returnPathHdrs = message.getHeader("Return-Path");
+			Address[] replyTo = message.getReplyTo();
+			String[] precedenceHdrs = message.getHeader("Precedence");
+			return
+				// No Auto-Submitted header, or Auto-Submitted: no
+				(autoSubmittedHdrs.length == 0 || (autoSubmittedHdrs.length == 1 && autoSubmittedHdrs[0].equalsIgnoreCase("no"))) &&
+				// No Return-Path: <>
+				(returnPathHdrs.length == 0 || (returnPathHdrs.length == 1 && !returnPathHdrs[0].equalsIgnoreCase("<>"))) &&
+				(replyTo != null && replyTo.length > 0 && !replyTo[0].toString().toUpperCase().contains("MAILER-DAEMON@")) &&
+				// TODO: Maybe? replyTo is not "owner-*", "*-request"
+				// TODO: Maybe? Does not have any List-* headers
+				// No Precedence: list, junk, or bulk
+				(precedenceHdrs.length == 0 || (precedenceHdrs.length == 1 && !precedenceHdrs[0].equalsIgnoreCase("list") && !precedenceHdrs[0].equalsIgnoreCase("junk") && !precedenceHdrs[0].equalsIgnoreCase("bulk")));
 		}
 	}
 
