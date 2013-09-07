@@ -22,7 +22,6 @@ import orc.values.Format
   *
   * @author dkitchin
   */
-
 class PrettyPrint {
 
   val vars: Map[BoundVar, String] = new HashMap()

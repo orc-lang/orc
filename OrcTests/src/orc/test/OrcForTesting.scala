@@ -95,14 +95,14 @@ object OrcForTesting {
       }
 
       // run the engine with a fixed timeout
-      SynchronousThreadExec("Orc Test Main Thread", timeout*1000L, {
+      SynchronousThreadExec("Orc Test Main Thread", timeout * 1000L, {
         compiledScript.run(eventActions)
         /* SynchronousThreadExec will interrupt thread after timeout.
          * SupportForSynchronousExecution.runSynchronous will stop the
          * engine on an interrupt of the main thread. */
       })
 
-      if (lastError != null) throw lastError 
+      if (lastError != null) throw lastError
       output.toString
     } catch {
       case e: ScriptException => throw e.getCause // un-wrap and propagate

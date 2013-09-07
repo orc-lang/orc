@@ -16,7 +16,6 @@ package orc.ast.oil.named
 
 /** @author dkitchin
   */
-
 trait hasVars
   extends hasFreeVars
   with hasFreeTypeVars

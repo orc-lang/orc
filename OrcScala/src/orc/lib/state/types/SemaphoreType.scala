@@ -17,7 +17,6 @@ package orc.lib.state.types
 import orc.types._
 
 /**
-  *
   * @author dkitchin
   */
 object SemaphoreType extends RecordType(

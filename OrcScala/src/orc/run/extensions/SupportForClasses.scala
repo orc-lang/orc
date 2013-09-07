@@ -25,10 +25,8 @@ import orc.run.core.Closure
 import orc.run.core.Token
 
 /**
-  *
   * @author dkitchin
   */
-
 case class InstanceEvent(c: Closure, args: List[AnyRef], caller: Handle) extends OrcEvent
 
 trait SupportForClasses extends Orc {

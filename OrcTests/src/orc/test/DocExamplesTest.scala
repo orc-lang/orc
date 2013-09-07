@@ -37,8 +37,8 @@ object DocExamplesTest extends ExamplesTest {
     TestUtils.buildSuite(getClass.getSimpleName, classOf[DocExamplesTestCase], bindings, new File("build/docexamples"));
   }
 
-  class DocExamplesTestCase extends TestUtils.OrcTestCase { }
-  
+  class DocExamplesTestCase extends TestUtils.OrcTestCase {}
+
   def extractAllExamples(sourcedir: File, targetdir: File): Unit = {
     val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
 

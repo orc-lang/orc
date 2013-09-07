@@ -23,7 +23,6 @@ import orc.error.runtime.ExecutionException
 import orc.util.LatchingSignal
 
 /**
-  *
   * @author dkitchin
   */
 trait SupportForSynchronousExecution extends OrcRuntime {

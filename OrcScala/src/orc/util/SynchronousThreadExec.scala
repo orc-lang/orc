@@ -14,7 +14,7 @@
 //
 package orc.util
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 import java.util.concurrent.TimeoutException
 
 /** SynchronousThreadExec runs a thunk (block expression) in a new

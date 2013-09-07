@@ -19,44 +19,43 @@ import orc.Schedulable
 import orc.OrcRuntime
 import orc.util.BlockableMapExtension
 
-/** 
- * A closure that both resolves itself and represents the closure itself. This should
- * be scheduled when it is created.
- * 
- * @author dkitchin, amp
- */
+/** A closure that both resolves itself and represents the closure itself. This should
+  * be scheduled when it is created.
+  *
+  * @author dkitchin, amp
+  */
 class Closure(
-    private[run] var _defs: List[Def], 
-    index: Int, 
-    private var _lexicalContext: List[Binding], 
-    override val runtime: OrcRuntime) 
-      extends Schedulable 
-        with Blocker with Blockable with Resolver {
+  private[run] var _defs: List[Def],
+  index: Int,
+  private var _lexicalContext: List[Binding],
+  override val runtime: OrcRuntime)
+  extends Schedulable
+  with Blocker with Blockable with Resolver {
   import Closure._
   import BlockableMapExtension._
 
-  private var stack : List[Option[AnyRef] => Unit] = Nil
+  private var stack: List[Option[AnyRef] => Unit] = Nil
 
   private def pop() = {
     val top = stack.head
     stack = stack.tail
     top
   }
-  private def push(k : (Option[AnyRef] => Unit)) = stack = k :: stack
-  protected def pushContinuation(k : (Option[AnyRef] => Unit)) = push(k)
+  private def push(k: (Option[AnyRef] => Unit)) = stack = k :: stack
+  protected def pushContinuation(k: (Option[AnyRef] => Unit)) = push(k)
 
   // State is used for the blocker side
-  private var state : ClosureState = Started
-  
+  private var state: ClosureState = Started
+
   // waitlist is effectively the state of the blocker side.
-  private var waitlist : List[Blockable] = Nil // This should be empty at any time state = Resolved
-  
+  private var waitlist: List[Blockable] = Nil // This should be empty at any time state = Resolved
+
   def defs = _defs
 
   def code: Def = defs(index)
-  
+
   def lexicalContext = _lexicalContext
-  
+
   override def toString = synchronized { "Closure@" + ## + (code.body.pos, lexicalContext, state, stack) }
 
   // FIXME: This should work but it produces duplicate versions of closures and I don't see why 
@@ -76,7 +75,7 @@ class Closure(
       }
     fs.toList.reverse ::: lexicalContext
   }
-  
+
   /** Create a new Closure object whose lexical bindings are all resolved and replaced.
     * Such a closure will have no references to any group.
     * This object is then passed to the continuation.
@@ -90,15 +89,13 @@ class Closure(
     bs.blockableMap(resolveBound)(k)
   }
 
-  
-  /**
-   * Execute the resolution process of this Closure. This should be called by the scheduler.
-   */
+  /** Execute the resolution process of this Closure. This should be called by the scheduler.
+    */
   def run() = synchronized {
     state match {
       case Started => {
         // Start the resolution process
-        enclose(_lexicalContext){ newContext => 
+        enclose(_lexicalContext) { newContext =>
           assert(stack.size == 0) // Check for a bug that existed before and was non-deterministic
           //assert(_lexicalContext.size == newContext.size) // FIXME: Silly debugging check
           _lexicalContext = newContext
@@ -113,20 +110,20 @@ class Closure(
       case Resolved => throw new AssertionError("Closure scheduled in bad state: " + state)
     }
   }
-  
+
   //// Blocker Implementation
-  
+
   def check(t: Blockable) = synchronized {
     state match {
       case Resolved => t.awakeValue(this)
       case _ => throw new AssertionError("Closure.check called in bad state: " + state)
     }
   }
-  
+
   def read(t: Blockable) = synchronized {
     state match {
-     case Resolved => t.awakeValue(this)
-     case _ => {
+      case Resolved => t.awakeValue(this)
+      case _ => {
         t.blockOn(this)
         waitlist ::= t
       }
@@ -134,15 +131,15 @@ class Closure(
   }
 
   //// Blockable Implementation
-  
-  private def handleValue(v : Option[AnyRef]) {
+
+  private def handleValue(v: Option[AnyRef]) {
     pop()(v) // Pop and call the old top of the stack on the value. The pop happens first. That's important.
   }
-  
-  def awakeValue(v : AnyRef) = handleValue(Some(v))
+
+  def awakeValue(v: AnyRef) = handleValue(Some(v))
   def awakeStop() = handleValue(None)
-  
-  def blockOn(b : Blocker) {
+
+  def blockOn(b: Blocker) {
     assert(state != Resolved)
     state = Blocked(b)
   }
@@ -150,7 +147,7 @@ class Closure(
 
 object Closure {
   sealed trait ClosureState
-  case class Blocked(blocker : Blocker) extends ClosureState
+  case class Blocked(blocker: Blocker) extends ClosureState
   case object Resolved extends ClosureState
   case object Started extends ClosureState
 }

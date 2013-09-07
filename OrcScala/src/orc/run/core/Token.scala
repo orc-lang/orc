@@ -433,7 +433,7 @@ class Token protected (
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.
           val i = orderingSite.evaluate(List(x, y)).asInstanceOf[Int]
-          assert(i == -1 || i == 0 || i == 1, "Vclock time comparator "+orderingSite.name+" did not return -1/0/1")
+          assert(i == -1 || i == 0 || i == 1, "Vclock time comparator " + orderingSite.name + " did not return -1/0/1")
           i
         }
         join(new VirtualClockGroup(clock, group))
@@ -457,7 +457,7 @@ class Token protected (
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
     try {
       if (group.isKilled()) { kill() }
-      assert(runGuard.getAndIncrement() == 0 || state == Killed, this.toString()+".run() should be run on one thread at a time.  state="+state)
+      assert(runGuard.getAndIncrement() == 0 || state == Killed, this.toString() + ".run() should be run on one thread at a time.  state=" + state)
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))

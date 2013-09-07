@@ -16,8 +16,7 @@ package orc.types
 
 import orc.error.compiletime.typing.ArgumentTypecheckingException
 
-/**
-  * The type of the record extension operation (+).
+/** The type of the record extension operation (+).
   *
   * @author dkitchin
   */

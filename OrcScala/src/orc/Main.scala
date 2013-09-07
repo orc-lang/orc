@@ -104,11 +104,11 @@ object Main {
     testOrcLogRecord.setLoggerName(orcLogger.getName())
     def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
       for (handler <- checkLogger.getHandlers()) {
-            if (handler.isLoggable(testLogRecord))
-              return true
+        if (handler.isLoggable(testLogRecord))
+          return true
       }
       if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
-        return willLog(checkLogger.getParent(), testLogRecord) 
+        return willLog(checkLogger.getParent(), testLogRecord)
       } else {
         return false
       }
@@ -118,7 +118,7 @@ object Main {
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
       orcLogger.addHandler(logHandler)
-      orcLogger.warning("No log handler found for 'orc' "+logLevel+" log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
+      orcLogger.warning("No log handler found for 'orc' " + logLevel + " log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
     }
     orcLogger.config(orcImplName + " " + orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)

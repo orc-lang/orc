@@ -23,14 +23,12 @@ import orc.types.StringType
 import orc.Handle
 import orc.OrcEvent
 
-/**
-  * Generic site for presenting the user with a prompt for input.
+/** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending
   * on how they handle a PromptEvent.
   *
   * @author dkitchin
   */
-
 trait PromptCallback {
   def respondToPrompt(response: String)
   def cancelPrompt()

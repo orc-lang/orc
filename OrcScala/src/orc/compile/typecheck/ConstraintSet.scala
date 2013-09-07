@@ -21,7 +21,7 @@ import orc.error.compiletime.typing._
   *
   * Each constraint is of the form
   *
-  *   S <: X <: T
+  *  S <: X <: T
   *
   * @author dkitchin
   */
@@ -73,14 +73,13 @@ class ConstraintSet(val bounds: List[(TypeVariable, (Type, Type))]) {
           case Invariant => {
             val S = this lowerBoundOn x
             val T = this upperBoundOn x
-            if (S equals T) { 
-              (x, S)  
-            } 
-            else {
-              val bestGuess = 
-                S match { 
-                  case Bot => T 
-                  case _ => S 
+            if (S equals T) {
+              (x, S)
+            } else {
+              val bestGuess =
+                S match {
+                  case Bot => T
+                  case _ => S
                 }
               warnNoMinimal(bestGuess)
               (x, bestGuess)

@@ -79,20 +79,20 @@ trait OrcWithThreadPoolScheduler extends Orc {
     executorLock synchronized {
       if (executor != null) {
         executor.shutdownRunner(
-            { () => executorLock synchronized { executor = ShutdownScheduler} }, 
-            { () => executorLock synchronized { executor = null } })
+          { () => executorLock synchronized { executor = ShutdownScheduler } },
+          { () => executorLock synchronized { executor = null } })
       }
     }
   }
 
   object ShutdownScheduler extends OrcRunner {
-    def startupRunner() = 
+    def startupRunner() =
       throw new IllegalStateException("Cannot start a shutting down scheduler")
 
-    def stageTask(task: Schedulable) = 
+    def stageTask(task: Schedulable) =
       { /* Silently discard task */ }
 
-    def executeTask(task: Schedulable) = 
+    def executeTask(task: Schedulable) =
       { /* Silently discard task */ }
 
     def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit) =
@@ -276,14 +276,12 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
             ifElapsed(303000L, {
               Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads, after trying for ~5 minutes\n" +
-                  threadGroup.getName() + " thread dump: \n\n" +
-                  (for (thread <- threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false)))
-                    yield (
-                        '"' + thread.getName() + '"' + (if (thread.isDaemon()) "daemon " else "") + "prio=" + thread.getPriority() + " tid=" + thread.getId() + " " + thread.getState() + "\n" +
-                            (for (stackFrame <- thread.getStackTrace())
-                              yield "\tat " + stackFrame.toString() + "\n").mkString("") + "\n"
-                    )).mkString("")
-                )
+                threadGroup.getName() + " thread dump: \n\n" +
+                (for (thread <- threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false)))
+                  yield (
+                  '"' + thread.getName() + '"' + (if (thread.isDaemon()) "daemon " else "") + "prio=" + thread.getPriority() + " tid=" + thread.getId() + " " + thread.getState() + "\n" +
+                  (for (stackFrame <- thread.getStackTrace())
+                    yield "\tat " + stackFrame.toString() + "\n").mkString("") + "\n")).mkString(""))
               giveUp = true
             })
 

@@ -359,7 +359,7 @@ object Typeloader extends SiteClassLoading {
         for ((k, t) <- entries) {
           if (!newEntries.isEmpty) {
             reify(t) match {
-              case Some(u) => newEntries = newEntries map {_ + ((k,u))}
+              case Some(u) => newEntries = newEntries map { _ + ((k, u)) }
               case None => newEntries = None
             }
           }

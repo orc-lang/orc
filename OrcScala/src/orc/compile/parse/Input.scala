@@ -127,7 +127,7 @@ trait OrcInputContext {
     OrcInputContext(resolvedURI)
   }
 
-  override def toString = getClass().getCanonicalName()+"(descr="+descr+")"
+  override def toString = getClass().getCanonicalName() + "(descr=" + descr + ")"
 }
 
 object OrcInputContext {

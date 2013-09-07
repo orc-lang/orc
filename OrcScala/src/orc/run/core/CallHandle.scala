@@ -19,25 +19,24 @@ import orc.Handle
 
 /** An abstract call handle for any call made by a token.
   *
-  *
   * All descendants of CallHandle must maintain a scheduling invariant:
   * it must not be possible for the handle to reschedule the calling token
   * until the calling thread enters the onComplete method of the token.
-  * 
+  *
   * SiteCallHandle maintains this invariant by staging itself on the caller,
   * so that it cannot be scheduled to run until after the caller has completed.
-  * 
+  *
   * AwaitCallHandle maintains this invariant because the calling token keeps
-  * its governing clock from becoming quiescent until the token itself becomes 
+  * its governing clock from becoming quiescent until the token itself becomes
   * quiescent in its onComplete method.
   *
   * @author dkitchin
   */
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
-   // This is the only Blocker that can produce exceptions.
+  // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallInProgress
-  
+
   val runtime = caller.runtime
 
   /* Returns true if the state transition was made, 
@@ -81,7 +80,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def check(t: Blockable) {
     val callState = synchronized { state }
     callState match {
-      case CallInProgress => { throw new AssertionError("Spurious check of call handle. "+this+".state=" + this.state) }
+      case CallInProgress => { throw new AssertionError("Spurious check of call handle. " + this + ".state=" + this.state) }
       case CallReturnedValue(v) => { t.awakeValue(v) } // t.publish(v) sort of
       case CallSilent => { t.halt() } // t.halt()
       case CallRaisedException(e) => { t.awakeException(e) } // t !! e

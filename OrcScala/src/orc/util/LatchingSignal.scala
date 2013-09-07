@@ -24,13 +24,15 @@ class LatchingSignal() {
   var signalled = false
 
   /** Wait until signal has been invoked.  If signal
-    * has been invoked, then return immediately.  */
+    * has been invoked, then return immediately.
+    */
   def await() = synchronized {
     while (!signalled) wait()
   }
 
   /** Notify all waiting and future callers of await to proceed.
-    * This method is is idempotent.  */
+    * This method is is idempotent.
+    */
   def signal() = synchronized {
     signalled = true
     notifyAll()
