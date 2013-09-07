@@ -21,8 +21,7 @@ import orc.error.NotYetImplementedException
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.NoMatchingConstructorException
 
-/**
-  * The type of a Java class, providing constructors and static members.
+/** The type of a Java class, providing constructors and static members.
   *
   * @author dkitchin
   */

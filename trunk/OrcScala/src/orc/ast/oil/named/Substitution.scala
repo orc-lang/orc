@@ -18,7 +18,6 @@ package orc.ast.oil.named
   *
   * @author dkitchin
   */
-
 trait Substitution[X <: NamedAST] {
   self: NamedAST =>
 

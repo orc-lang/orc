@@ -21,7 +21,6 @@ import orc.error.OrcException
 import orc.error.runtime.JavaException
 
 /**
-  *
   * @author dkitchin
   */
 trait SupportForSiteInvocation extends InvocationBehavior {

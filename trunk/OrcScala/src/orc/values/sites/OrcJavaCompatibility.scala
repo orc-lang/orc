@@ -16,14 +16,13 @@ package orc.values.sites
 
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.WrappedArray
-import scala.language.{existentials,reflectiveCalls}
+import scala.language.{ existentials, reflectiveCalls }
 import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
 
 /**
-  *
   * @author jthywiss, dkitchin
   */
 object OrcJavaCompatibility {
@@ -153,7 +152,8 @@ object OrcJavaCompatibility {
     * inherited public methods in public types.  Overridden methods are
     * excluded, leaving only the overriding method.  This methods is like
     * java.lang.Class.getMethods, except this handles public methods in
-    * inaccessible classes correctly. */
+    * inaccessible classes correctly.
+    */
   private def getAccessibleMethods(typeToSearch: Class[_]): Seq[JavaMethod] = {
     val accessibleMethods = new ArrayBuffer[JavaMethod]()
     if (Modifier.isPublic(typeToSearch.getModifiers())) accessibleMethods ++=
@@ -185,10 +185,9 @@ object OrcJavaCompatibility {
 
   private def removeEqSignature(methSeq: Traversable[JavaMethod], signatureToRemove: JavaMethod) {
     methSeq filterNot (m =>
-        m.getReturnType == signatureToRemove.getReturnType &&
+      m.getReturnType == signatureToRemove.getReturnType &&
         m.getName == signatureToRemove.getName &&
-        m.getParameterTypes.sameElements(signatureToRemove.getParameterTypes)
-    )
+        m.getParameterTypes.sameElements(signatureToRemove.getParameterTypes))
   }
 
   /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */

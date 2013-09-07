@@ -21,8 +21,7 @@ import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.NoSuchMemberException
 
-/**
-  * The type of a Java object.
+/** The type of a Java object.
   *
   * @author dkitchin
   */

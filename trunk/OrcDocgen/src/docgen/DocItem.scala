@@ -14,11 +14,6 @@
 //
 package docgen
 
-/**
-  *
-  * @author dkitchin
-  */
-
 /** Parent trait of parsed documentation items */
 sealed trait DocItem
 

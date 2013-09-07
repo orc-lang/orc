@@ -15,7 +15,7 @@
 package orc.compile.optimize
 
 import scala.language.postfixOps
-import orc.ast.oil.named.{BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTransform}
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTransform }
 
 /** Removes unused definitions from the OIL AST.
   *

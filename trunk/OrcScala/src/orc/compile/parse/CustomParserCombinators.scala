@@ -14,7 +14,7 @@
 //
 package orc.compile.parse
 
-import scala.language.{implicitConversions,postfixOps}
+import scala.language.{ implicitConversions, postfixOps }
 import scala.util.parsing.combinator.syntactical._
 import orc.ast.ext.Expression
 import orc.ast.ext.InfixOperator

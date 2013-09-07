@@ -32,13 +32,11 @@ import scala.xml._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 
-/**
-  * XML elements. These sites are not namespace aware. Construction defaults
+/** XML elements. These sites are not namespace aware. Construction defaults
   * to the empty namespace, and matching discards namespace information.
   *
   * @author dkitchin
   */
-
 /* Template for building values which act as constructor-extractor sites,
  * such as the Some site.
  */

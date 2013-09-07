@@ -33,10 +33,10 @@ object OrcSiteForm extends SiteForm {
       case e: InterruptedException => throw e
       case e: Exception =>
         throw new SiteResolutionException(name, e)
-        case e: ThreadDeath => throw e
-        case e: VirtualMachineError => throw e
-        case e: Error =>
-          throw new SiteResolutionException(name, e)
+      case e: ThreadDeath => throw e
+      case e: VirtualMachineError => throw e
+      case e: Error =>
+        throw new SiteResolutionException(name, e)
     }
     if (classOf[Site].isAssignableFrom(loadedClass)) {
       try {

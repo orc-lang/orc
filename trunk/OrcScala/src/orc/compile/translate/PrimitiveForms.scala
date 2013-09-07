@@ -26,7 +26,6 @@ import orc.ast.ext
 import orc.values.{ Signal, Field }
 import orc.values.sites.Site
 
-
 object PrimitiveForms {
 
   def nullaryBuiltinCall(s: Site)() = Call(Constant(s), Nil, None)

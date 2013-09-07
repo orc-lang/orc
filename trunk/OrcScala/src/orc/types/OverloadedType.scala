@@ -17,8 +17,7 @@ package orc.types
 import orc.error.compiletime.typing.TypeException
 import orc.error.compiletime.typing.OverloadedTypeException
 
-/**
-  * Ad-hoc polymorphic callable types.
+/** Ad-hoc polymorphic callable types.
   *
   * For simplicity and modularity of implementation, type inference
   * and type meets and joins in the core type system will not generate

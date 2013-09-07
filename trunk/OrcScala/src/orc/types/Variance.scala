@@ -16,8 +16,7 @@ package orc.types
 
 import scala.language.implicitConversions
 
-/**
-  * Variances of type variables and type constructor arguments.
+/** Variances of type variables and type constructor arguments.
   *
   * @author dkitchin
   */

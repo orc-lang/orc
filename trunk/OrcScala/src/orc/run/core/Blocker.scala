@@ -15,24 +15,21 @@
 package orc.run.core
 import orc.OrcRuntime
 
-/**
- * The trait for objects that can be blocked on. 
- * @author dkitchin
- */
+/** The trait for objects that can be blocked on.
+  * @author dkitchin
+  */
 trait Blocker {
-  /**
-   * Require that the blocker has a runtime reference because it will
-   * always need one and making it consistent is nice.
-   */
-  val runtime : OrcRuntime
-  
-  /**
-   * When a Blockable blocked on this resource is scheduled,
-   * it performs this check to observe any changes in
-   * the state of this resource. 
-   * 
-   * This should call Blockable#awake(AnyRef) to notify the
-   * Blockable.
-   */
+  /** Require that the blocker has a runtime reference because it will
+    * always need one and making it consistent is nice.
+    */
+  val runtime: OrcRuntime
+
+  /** When a Blockable blocked on this resource is scheduled,
+    * it performs this check to observe any changes in
+    * the state of this resource.
+    *
+    * This should call Blockable#awake(AnyRef) to notify the
+    * Blockable.
+    */
   def check(t: Blockable): Unit
 }

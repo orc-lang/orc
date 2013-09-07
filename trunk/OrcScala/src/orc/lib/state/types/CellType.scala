@@ -18,10 +18,8 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
-  *
   * @author dkitchin
   */
-
 object CellType extends SimpleTypeConstructor("Cell", Invariant) {
 
   def getBuilder: Type = {

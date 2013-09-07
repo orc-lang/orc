@@ -74,7 +74,7 @@ trait NamedToNameless {
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
+      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
     }
   }
 

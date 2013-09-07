@@ -1,5 +1,5 @@
 //
-// Join.scala -- Scala class/trait/object Join
+// Join.scala -- Scala class Join
 // Project OrcScala
 //
 // $Id$
@@ -17,33 +17,30 @@ package orc.run.core
 import orc.OrcRuntime
 
 /**
-  *
   * A join point for waiting on multiple strict parameters.
-  * 
+  *
   * If any joined parameter halts, the join point halts.
-  * 
+  *
   * Joins are used to wait for all arguments to a site call,
   * since site calls are strict.
-  *  
-  * 
+  *
   * @author dkitchin
   */
 class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends Blocker {
 
   // TODO: Optimize the case where no parameter requires blocking.
-  
+
   // Additional implementation will be needed to detect when a blocking step could be skipped,
   // for example, when a pruning group or closure is already bound.
-  
-  
+
   val items = new Array[AnyRef](params.size)
   var state: JoinState = JoinInProgress(params.size)
-  
+
   def set(index: Int, arg: AnyRef) = synchronized {
     state match {
       case JoinInProgress(n) if (n > 1) => {
         items(index) = arg
-        state = JoinInProgress(n-1)
+        state = JoinInProgress(n - 1)
       }
       case JoinInProgress(1) => {
         items(index) = arg
@@ -54,8 +51,8 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
       case _ => throw new AssertionError("Erroneous state transformation in Join")
     }
   }
-  
-  def halt() = synchronized { 
+
+  def halt() = synchronized {
     state match {
       case JoinInProgress(_) => {
         state = JoinHalted
@@ -66,10 +63,9 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
     }
   }
 
-  
   def join() = {
     t.blockOn(this)
-    for ((param,i) <- params.view.zipWithIndex) {
+    for ((param, i) <- params.view.zipWithIndex) {
       param match {
         case BoundValue(v) => set(i, v)
         case BoundStop => halt()
@@ -81,10 +77,10 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
           val item = new JoinItem(this, i)
           c read item
         }
-      }      
+      }
     }
   }
-  
+
   def check(t: Blockable) = synchronized {
     state match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
@@ -92,20 +88,20 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
       case JoinComplete => t.awakeValue(items.toList) // The checking entity must expect a list
     }
   }
-    
+
 }
 
 class JoinItem(source: Join, index: Int) extends Blockable {
-  
+
   var obstacle: Option[Blocker] = None
-  
+
   def awakeValue(v: AnyRef) = source.set(index, v)
   def awakeStop() = source.halt()
-    
+
   def blockOn(b: Blocker) { obstacle = Some(b) }
-  
+
   def run() = { obstacle foreach { _.check(this) } }
-  
+
 }
 
 class JoinState

@@ -23,9 +23,8 @@ import scala.collection.mutable.HashSet
 import scala.ref.WeakReference
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
-  
-  var roots: HashSet[WeakReference[Execution]] = new HashSet[WeakReference[Execution]] with SynchronizedSet[WeakReference[Execution]]
 
+  var roots: HashSet[WeakReference[Execution]] = new HashSet[WeakReference[Execution]] with SynchronizedSet[WeakReference[Execution]]
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)

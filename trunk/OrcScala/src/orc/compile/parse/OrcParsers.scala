@@ -15,7 +15,7 @@
 
 package orc.compile.parse
 
-import scala.language.{implicitConversions, postfixOps}
+import scala.language.{ implicitConversions, postfixOps }
 import scala.util.parsing.input.Reader
 import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.input.Position
@@ -74,7 +74,7 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
 object OrcProgramParser extends ((OrcInputContext, CompilerOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(ic: OrcInputContext, co: CompilerOptions, envServices: OrcCompilerRequires): ParseResult = {
     //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
-    SynchronousThreadExec("Orc Parser Thread: "+ic.descr, {
+    SynchronousThreadExec("Orc Parser Thread: " + ic.descr, {
       val parsers = new OrcParsers(ic, co, envServices)
       val tokens = new parsers.lexical.Scanner(ic.reader)
       parsers.phrase(parsers.parseProgram)(tokens)
@@ -91,7 +91,7 @@ object OrcProgramParser extends ((OrcInputContext, CompilerOptions, OrcCompilerR
 object OrcIncludeParser extends ((OrcInputContext, CompilerOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
   def apply(ic: OrcInputContext, co: CompilerOptions, envServices: OrcCompilerRequires): ParseResult = {
     //FIXME: Remove this SynchronousThreadExec when Scala Issue SI-4929 is fixed
-    SynchronousThreadExec("Orc Parser Thread: "+ic.descr, {
+    SynchronousThreadExec("Orc Parser Thread: " + ic.descr, {
       val newParsers = new OrcParsers(ic, co, envServices)
       val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
       val tokens = new newParsers.lexical.Scanner(ic.reader)
@@ -312,7 +312,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | ")" ^^^ None)
 
   val parseBasePattern = (
-      "-" ~> numericLit -> { s => ConstantPattern(-BigInt(s)) }
+    "-" ~> numericLit -> { s => ConstantPattern(-BigInt(s)) }
     | "-" ~> floatLit -> { s => ConstantPattern(-BigDecimal(s)) }
     | parseValue -> ConstantPattern
     | "_" -> Wildcard
@@ -381,30 +381,28 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     (
 
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
-  
+
       | "def" ~> parseDefDeclaration
-  
+
       | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
-  
+
       | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
 
       | !@(("include" ~> stringLit).into(performInclude))
 
       | "import" ~> "type" ~> ident ~ ("=" ~> parseSiteLocation) -> TypeImport
-  
+
       | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> rep1sep(parseConstructor, "|"))
       -> ((x, ys, t) => Datatype(x, ys getOrElse Nil, t))
-  
+
       | "type" ~> parseTypeVariable ~ ((ListOf(parseTypeVariable))?) ~ ("=" ~> parseType)
-      -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))
+      -> ((x, ys, t) => TypeAlias(x, ys getOrElse Nil, t))) <~ ("#"?) /* Optional declaration terminator # */
 
-    )  <~ ("#"?) /* Optional declaration terminator # */
-
-    | failExpecting("declaration (val, def, type, etc.)"))
+      | failExpecting("declaration (val, def, type, etc.)"))
 
   /** Sets the position of any OrcException thrown by this
-   *  parser to the starting position of this parse.
-   */
+    * parser to the starting position of this parse.
+    */
   def !@[U](x: Parser[U]): Parser[U] =
     Parser { in =>
       val pos = in.pos;

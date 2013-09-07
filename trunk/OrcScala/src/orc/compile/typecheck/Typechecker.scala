@@ -48,13 +48,12 @@ import orc.compile.typecheck.Typeloader._
   *
   * @author dkitchin
   */
-
 object Typechecker {
-  
+
   type Context = Map[syntactic.BoundVar, Type]
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
-  
+
 }
 
 class Typechecker(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
@@ -325,8 +324,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           case _ => {
             if (entries contains "apply") {
               typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType, callPoint)
-            }
-            else {
+            } else {
               typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
             }
           }
@@ -336,11 +334,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
         var failure = new OverloadedTypeException()
         def tryAlternatives(alts: List[Type]): (Option[List[syntactic.Type]], Type) =
           alts match {
-            case t::rest => {
+            case t :: rest => {
               try {
                 typeCall(syntacticTypeArgs, t, argTypes, checkReturnType, callPoint)
-              } 
-              catch {
+              } catch {
                 case te: TypeException => {
                   failure = failure.addAlternative(t, te)
                   tryAlternatives(rest)
@@ -349,7 +346,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             }
             case Nil => {
               throw failure
-            } 
+            }
           }
         tryAlternatives(alternatives)
       }
@@ -364,11 +361,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       }
     }
 
-    
   }
-  
+
   def typeCoreCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
-    
+
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {
         case Some(args) => {
@@ -425,10 +421,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
                   }
                   case None => {
                     /* Emit a warning if an invariant type constructor cannot find a minimal type, and must make a guess. */
-                    def warnNoMinimal(guess: Type) { 
-                      reportProblem((new NoMinimalTypeWarning(guess)) at callPoint) 
+                    def warnNoMinimal(guess: Type) {
+                      reportProblem((new NoMinimalTypeWarning(guess)) at callPoint)
                     }
-                    
+
                     val allConstraints = meetAll(argConstraints) meet baseConstraints
                     allConstraints.minimalSubstitution(funReturnType, warnNoMinimal)
                   }
@@ -448,22 +444,21 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
         }
       }
-    
+
     checkReturnType match {
       case Some(t) => finalReturnType assertSubtype t
       case None => {}
     }
-    
+
     (finalSyntacticTypeArgs, finalReturnType)
-    
+
   }
 
   def typeValue(value: AnyRef): Type = {
 
-    if (value eq null) { 
-      NullType 
-    }
-    else {
+    if (value eq null) {
+      NullType
+    } else {
       value match {
         case Signal => SignalType
         case _: java.lang.Boolean => BooleanType
@@ -553,5 +548,5 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
 
     }
   }
-  
+
 }
