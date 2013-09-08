@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 
 /**
  * API for the NOAA Weather Forecasts service as described at http://www.weather.gov/forecasts/xml/.
- * 
+ *
  * @author quark
  */
 public class NOAAWeather {
@@ -40,7 +40,7 @@ public class NOAAWeather {
 	/**
 	 * parameters element. In addition to getting lists of values for each kind of parameter,
 	 * also supports aggregates over the forecasted period (e.g. maximum and minimum temperature).
-	 * 
+	 *
 	 * <p>TODO: support more parameters
 	 */
 	public static final class Forecast {

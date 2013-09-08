@@ -1,6 +1,6 @@
 /**
  * Orchard is the service-oriented implementation of Orc.
- * 
+ *
  * This package consists of:
  * <ul>
  * <li>Interfaces for services. These exist primarily for documentation,
@@ -14,7 +14,7 @@
  * <li>Properties files. These contain sensitive information like developer keys
  * and are therefore not checked in to version control.
  * </ul>
- * 
+ *
  * <p>Some conventions used by the interfaces:
  * <ul>
  * <li>Service methods should throw RemoteException to indicate a protocol error

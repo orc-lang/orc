@@ -60,7 +60,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
    * Constructs an object of class OrcScriptEngine using the specified
    * <code>Bindings</code> as the <code>ENGINE_SCOPE</code>
    * <code>Bindings</code>.
-   * 
+   *
    * @param n
    */
   public OrcScriptEngine(final Bindings n) {
@@ -72,7 +72,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
 
     /**
      * Constructs an object of class OrcCompiledScript.
-     * 
+     *
      * @param oilAstRoot Root node of the OIL AST from the compilation
      */
     /* default-access */OrcCompiledScript(final orc.ast.oil.nameless.Expression oilAstRoot) {
@@ -140,7 +140,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
      * This, like <code>eval</code>, runs synchronously. Instead of returning a
      * list of publications, <code>run</code> calls the <code>publish</code>
      * method of the given <code>OrcEventAction</code> object.
-     * 
+     *
      * @param ctx A <code>ScriptContext</code> that is used in the same way as
      *          the <code>ScriptContext</code> passed to the <code>eval</code>
      *          methods of <code>ScriptEngine</code>.
@@ -172,7 +172,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
     /**
      * Convenience method for <code>run(getEngine().getContext(), pubAct)</code>
      * .
-     * 
+     *
      * @param pubAct A <code>OrcEventAction</code> that receives publish
      *          messages for each published value from the script.
      * @throws ScriptException if an error occurs.
@@ -270,7 +270,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   /**
    * Set the <code>ScriptEngineFactory</code> instance to which this
    * <code>ScriptEngine</code> belongs.
-   * 
+   *
    * @param factory The <code>ScriptEngineFactory</code>
    */
   void setFactory(final OrcScriptEngineFactory owningFactory) {
@@ -307,7 +307,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
    * Takes an unknown <code>Bindings</code> and makes an instance of
    * <code>OrcBindings</code>. Copies if needed; returns the argument unchanged
    * if it's already an <code>OrcBindings</code>.
-   * 
+   *
    * @param b The unknown <code>Bindings</code>
    * @return An <code>OrcBindings</code>
    */

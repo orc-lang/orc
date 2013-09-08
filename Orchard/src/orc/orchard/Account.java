@@ -35,7 +35,7 @@ import orc.script.OrcBindings;
  * Manage a group of jobs associated with a user account. Note that jobs are
  * tracked solely in memory, mainly because it would be a hassle to keep the
  * database up-to-date otherwise.
- * 
+ *
  * @author quark
  */
 public abstract class Account implements AccountMBean {

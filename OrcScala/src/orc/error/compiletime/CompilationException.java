@@ -20,7 +20,7 @@ import orc.error.compiletime.CompileLogger.Severity;
 /**
  * Exceptions generated during Orc compilation from source to
  * portable compiled representations.
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions

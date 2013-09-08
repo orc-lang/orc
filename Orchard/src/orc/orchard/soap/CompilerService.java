@@ -34,7 +34,7 @@ import orc.orchard.errors.InvalidProgramException;
  * publish, but...
  * <li>JAX-WS JSON bindings don't work with endpointInterface at all.
  * </ul>
- * 
+ *
  * @author quark
  */
 @WebService

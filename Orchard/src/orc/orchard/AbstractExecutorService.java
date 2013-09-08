@@ -39,7 +39,7 @@ import scala.xml.XML;
  * createJobService.
  *
  * @author quark
- * 
+ *
  */
 public abstract class AbstractExecutorService implements ExecutorServiceInterface {
 	protected static Logger logger = Logger.getLogger("orc.orchard.run");

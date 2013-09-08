@@ -20,7 +20,7 @@ import java.util.HashSet;
  * Holds references to objects identified by unique string keys.
  * Each key is associated with a handle; a handle's keys can be deleted
  * en masse.
- * 
+ *
  * @param <H> handle type
  * @param <V> value type
  * @author quark

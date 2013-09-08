@@ -15,7 +15,7 @@ PREREQUISITE:
 
 Install IMP, the Eclipse IDE Meta-tooling Platform from the IMP Eclipse
 Update Site (Eclipse menu item Help > Install new Software...)  Add the
-site with Name: IMP Update Site, 
+site with Name: IMP Update Site,
           URL: http://download.eclipse.org/technology/imp/updates/
 From that site, select all categories and install.
 
@@ -57,7 +57,7 @@ Note: This Eclipse plug-in will build in the Eclipse IDE.  There is no
    - In OrcEclipse project properties > Java Build Path, select the
      orc-*.jar entry, press Edit..., and select the orc-*.jar of the
      new release.
-   - In the META-INF/MANIFEST.MF manifest file, update the 
+   - In the META-INF/MANIFEST.MF manifest file, update the
      Bundle-ClassPath attribute path to include the new release's
      JAR (in lib/orc-*.jar)
    - In the build.properties file, update the jars.extra.classpath
@@ -66,12 +66,12 @@ Note: This Eclipse plug-in will build in the Eclipse IDE.  There is no
 3. Bump the plug-in's version number: Open the Plug-In Overview page
    of the Plug-In Manifest Editor, accessed by opening the MANIFEST.MF
    file and selecting the Overview tab.  Change the Version field per
-   the Eclipse rules:  
+   the Eclipse rules:
 
      In Eclipse, version numbers are composed of four segments:
-     three integers and a string respectively named 
+     three integers and a string respectively named
      major.minor.service.qualifier.
-     
+
      Increment major when incompatible/breaking changes have been made
      to an interface. Reset minor and service to 0 in this case.
 

@@ -8,9 +8,8 @@ def track(t, s) =
   def tick(n) = report(n) >> tick((n % 99) + 1)
   tick(1)
 
-  
-  track(2, "two") 
-| track(3, "three") 
-| track(5, "five") 
+
+  track(2, "two")
+| track(3, "three")
+| track(5, "five")
 | track(7, "seven")
-  

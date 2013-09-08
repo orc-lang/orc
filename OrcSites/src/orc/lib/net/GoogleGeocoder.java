@@ -32,7 +32,7 @@ import orc.values.sites.compatibility.EvalSite;
 /**
  * API for Google Geocoding service. This service returns a latitude/longitude tuple
  * given a city/state, zip code, or full address in the United States.
- * 
+ *
  * @author quark
  */
 public class GoogleGeocoder extends EvalSite {

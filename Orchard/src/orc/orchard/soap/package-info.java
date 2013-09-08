@@ -4,7 +4,7 @@
  * <p>In order to compile these, you will need to do a manual or clean build.
  * I have added an Ant wsgen.xml file with the necessary tasks to build the
  * webservice stuff.
- * 
+ *
  * <p>There are two separate implementations of the services depending on how
  * you intend to deploy them (unfortunately some duplication seems to be
  * unavoidable):
@@ -15,7 +15,7 @@
  * <dt>servlet</dt><dd>Packaged in a WAR to be run in a servlet container.
  * These are typically how you would deploy the services in production.</dd>
  * </dl>
- * 
+ *
  * <p>In theory it should be possible to integrate this stuff into Eclipse
  * automatically via the JDT-APT plugin (which is included in 3.2+).
  * Unfortunately there are problems with the JAX-WS annotation processor
@@ -34,7 +34,7 @@
  * but in any case that makes the annotation processor unusable even
  * with the "Batch mode" hack.
  * </ul>
- * 
+ *
  * <p>For testing purposes I would recommend installing the soapUI plugin.
  * Instructions can be found at http://www.soapui.org/eclipse/index.html
  */

@@ -58,11 +58,11 @@ class Closure(
 
   override def toString = synchronized { "Closure@" + ## + (code.body.pos, lexicalContext, state, stack) }
 
-  // FIXME: This should work but it produces duplicate versions of closures and I don't see why 
-  // we should do that. The resolution will be fast because the lexical context will already 
+  // FIXME: This should work but it produces duplicate versions of closures and I don't see why
+  // we should do that. The resolution will be fast because the lexical context will already
   // have been resolved. But still.
 
-  // This is a lazy val because it the data in the returned object always has 
+  // This is a lazy val because it the data in the returned object always has
   // the same meaning even if it is mutable. So we can safely reuse the result.
   lazy val context: List[Binding] = synchronized {
     val fs =

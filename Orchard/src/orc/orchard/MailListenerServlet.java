@@ -28,11 +28,11 @@ import orc.lib.orchard.MailListenerFactory.MailListener;
 /**
  * Works with {@link MailListenerFactory} to provide non-polling notification of
  * new messages.
- * 
+ *
  * <p>This should be called with a GET parameter to, whose value is the recipient
  * address where the mail was received. This is used to look up the {@link MailListener}
  * for that address and deliver the message to it.
- * 
+ *
  * @author quark
  */
 @SuppressWarnings("serial")
@@ -72,7 +72,7 @@ public class MailListenerServlet extends HttpServlet {
 	 */
 	@Override
 	public String getServletInfo() {
-		return OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+		return OrchardProperties.getProperty("war.manifest.Implementation-Version") +
 				" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") +
 				"  Copyright The University of Texas at Austin";
 	}

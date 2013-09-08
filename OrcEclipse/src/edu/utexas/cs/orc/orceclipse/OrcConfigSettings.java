@@ -147,7 +147,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
 	/**
 	 * @param launchConfig
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	@SuppressWarnings("unchecked")
 	private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException {
@@ -199,7 +199,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 		}
 		return sb.substring(0, sb.length() - sep.length());
 	}
-	
+
 	public static List<String> stringToPathList(final String pathsString) {
 		if (pathsString.isEmpty()) {
 			return new ArrayList<String>(0);

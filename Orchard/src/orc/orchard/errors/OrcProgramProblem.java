@@ -17,7 +17,7 @@ package orc.orchard.errors;
 
 /**
  * A problem in an Orc program.
- * 
+ *
  * Similar to CompileMessage, but suitable for JAXB marshaling.
  *
  * @author jthywiss

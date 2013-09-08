@@ -15,7 +15,7 @@ Rwait(250) >> Println("250ms") >> stop
 (
   def f() = x
   Println("scope of f") >> f() >> stop
-) 
+)
 
 {-
 OUTPUT:

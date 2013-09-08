@@ -49,7 +49,7 @@ public class TokenErrorEvent extends JobEvent {
 				message = je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString();
 			} else {
 				message = oe.getMessageAndDiagnostics();
-			} 
+			}
 		} else {
 			message = problem.toString();
 		}

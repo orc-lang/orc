@@ -2,7 +2,7 @@
 Experiments with Dice:
 
 Roll a pair of dice n times and count the number of times the
-total shown by the two dice is c. experiment(n,c) returns this value. 
+total shown by the two dice is c. experiment(n,c) returns this value.
 -}
 
 def throw() = Random(6) + 1 -- roll of a single die

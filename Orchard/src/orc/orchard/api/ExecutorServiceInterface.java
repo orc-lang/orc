@@ -28,10 +28,10 @@ import orc.orchard.events.JobEvent;
 
 /**
  * Broker used to create and manage running jobs.
- * 
+ *
  * <p>
  * The lifecycle of a job:
- * 
+ *
  * <ol>
  * <li>Client calls compile to get a job ID.
  * <li>Client calls jobStart to start the job.
@@ -44,12 +44,12 @@ import orc.orchard.events.JobEvent;
  * <li>Job finishes.
  * <li>Client calls finishJob to clean up the job.
  * </ol>
- * 
+ *
  * <p>
  * Note that the job publication buffer has a fixed size, so if you don't call
  * purgeJobEvents regularly your job will be suspended when the buffer fills.
- * 
- *  * 
+ *
+ *  *
  * <p>
  * Originally the executor only allow clients to create jobs and clients had to
  * use a separate service to manage running jobs. This did make the interfaces
@@ -68,13 +68,13 @@ import orc.orchard.events.JobEvent;
  * <li>Building job URLs requires knowledge about the protocol, so it creates
  * a lot more work to build a new protocol front-end.
  * </ul>
- * 
+ *
  * @author quark
  */
 public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Register a new job for execution.
-	 * 
+	 *
 	 * @return String Job ID of new job.
 	 * @throws QuotaException
 	 *             if registering this job would exceed quotas.
@@ -108,8 +108,8 @@ public interface ExecutorServiceInterface extends Remote {
 
 	/**
 	 * Begin executing the job.
-	 * 
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws InvalidJobStateException
 	 *             if the job was already started, or was aborted.
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
@@ -119,21 +119,21 @@ public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Indicate that the client is done with the job. The job will be canceled if
 	 * necessary.
-	 * 
+	 *
 	 * <p>
 	 * Once this method is called, the service provider is free to garbage
 	 * collect the service and the service URL may become invalid, so no other
 	 * methods should be called after this.
 	 *
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void finishJob(String devKey, String job) throws InvalidJobException, RemoteException;
 
 	/**
 	 * Cancel the job forcibly.
-	 * 
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void cancelJob(String devKey, String job) throws InvalidJobException, RemoteException;
@@ -143,10 +143,10 @@ public interface ExecutorServiceInterface extends Remote {
 	 * NEW: not yet started.
 	 * RUNNING: started and processing tokens.
 	 * BLOCKED: blocked because event buffer is full.
-	 * DONE: finished executing. 
+	 * DONE: finished executing.
 	 *
 	 * @return the current state of the job.
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public String jobState(String devKey, String job) throws InvalidJobException, RemoteException;
@@ -155,10 +155,10 @@ public interface ExecutorServiceInterface extends Remote {
 	 * Retrieve events. If no events occurred, block until at least one occurs.
 	 * If the job finishes without any more events happening, an empty list will
 	 * be returned.
-	 * 
+	 *
 	 * <p>FIXME: ensure clients like web/orc.js can recover from connection timeouts.
-	 * 
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 *
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
@@ -170,7 +170,7 @@ public interface ExecutorServiceInterface extends Remote {
 	 * jobEvents. The client is responsible for calling this method regularly to
 	 * keep the event buffer from filling up.
 	 *
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
 	public void purgeJobEvents(String devKey, String job) throws InvalidJobException, RemoteException;
@@ -178,7 +178,7 @@ public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Submit a response to a prompt (initiated by the Prompt site).
 	 *
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws InvalidPromptException if the promptID is not valid.
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */
@@ -187,7 +187,7 @@ public interface ExecutorServiceInterface extends Remote {
 	/**
 	 * Cancel a prompt (initiated by the Prompt site).
 	 *
-	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs  
+	 * @throws InvalidJobException if the job ID argument is not in this developer key's jobs
 	 * @throws InvalidPromptException if the promptID is not valid.
 	 * @throws RemoteException if remote method invocation fails (Communication failure, marshalling or unmarshalling failure, Protocol error, ...)
 	 */

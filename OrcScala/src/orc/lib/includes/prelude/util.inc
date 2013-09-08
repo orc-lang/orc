@@ -433,7 +433,7 @@ def class InvokeExecutable(command :: List[String]) =
 	  import class OutputStreamWriter = "java.io.OutputStreamWriter"
 	  import class JavaCharacter = "java.lang.Character"
 	  import class JavaString = "java.lang.String"
-	
+
   -- Note: Inheriting current processes's working directory and environment.
   val p = ProcessBuilder(listToJavaList[String](command)).start()
 

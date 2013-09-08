@@ -21,7 +21,7 @@ type SiteType = (lambda(InType) :: OutType)
 def balance(Channel[InType], Channel[OutType], List[SiteType]) :: Bot
 def balance(in, out, ps) =
   def makeChannel(_ :: Top) = Channel[OutType]()
-  val cs = map(makeChannel, ps) 
+  val cs = map(makeChannel, ps)
   def write(List[Channel[OutType]]) :: Bot
   def read(List[(SiteType,Channel[OutType])]) :: Bot
   def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))

@@ -16,7 +16,7 @@
 package orc.error;
 
 /**
- * An exception for an unimplemented point in code. 
+ * An exception for an unimplemented point in code.
  *
  * @author jthywiss
  */

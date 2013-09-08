@@ -32,7 +32,7 @@ import scala.collection.JavaConversions;
 /**
  * A bounded cchannel.
  * With a bound of zero, behaves as a synchronous channel.
- * 
+ *
  * @author quark
  */
 public class BoundedChannel extends EvalSite implements TypedSite {
@@ -42,7 +42,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-	  
+
 	  if (args.size() == 1) {
 	    return new ChannelInstance(args.intArg(0));
 	  }

@@ -27,14 +27,14 @@ import edu.utexas.cs.orc.orceclipse.parse.OrcLexer.OrcToken;
 /**
  * Provides token-coloring services for the Orc language to the IMP source code editor.
  * <p>
- * Given a token, {@link #getColoring(IParseController, Object)} 
+ * Given a token, {@link #getColoring(IParseController, Object)}
  * returns the {@link TextAttribute} to use to display that token.
  *
  * @author jthywiss
  */
 public class OrcTokenColorer extends TokenColorerBase implements ITokenColorer {
 	/**
-	 * 
+	 *
 	 */
 	protected final TextAttribute identifierAttribute, /*keywordAttribute, (already in TokenColorerBase) */
 	numberAttribute, stringAttribute, commentAttribute, operatorAttribute, combinatorAttribute, bracketAttribute, badCharAttribute;

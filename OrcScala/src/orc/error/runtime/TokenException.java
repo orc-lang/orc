@@ -22,7 +22,7 @@ import scala.util.parsing.input.Position;
  * assigned a source location, a TokenException implements Locatable and will
  * typically have its source location set before the exception is passed back to
  * the engine.
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") // We don't care about serialization compatibility of Orc Exceptions

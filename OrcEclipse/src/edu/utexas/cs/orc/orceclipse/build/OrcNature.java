@@ -22,7 +22,7 @@ import org.eclipse.imp.runtime.IPluginLog;
 import edu.utexas.cs.orc.orceclipse.Activator;
 
 /**
- * Orc project nature. When a project is configured with the 
+ * Orc project nature. When a project is configured with the
  * Orc nature, it will have the Orc builder,
  * Orc project actions, and so on.
  *

@@ -24,13 +24,13 @@ trait Blockable extends Schedulable {
    *
    *        P = Pruning, O = Otherwise, L = Closure, C = CallHandle
    *        These define what Blockers use what kind of awake.
-   * 
+   *
    * Publish a value                 PCL
    * Publish stop                    P
    * Halt                            OC
    * Unblock and simply continue     O
    * Unblock with an exception       C
-   * 
+   *
    * Tokens do all of these. Closures will only do publish of value and stop.
    */
 

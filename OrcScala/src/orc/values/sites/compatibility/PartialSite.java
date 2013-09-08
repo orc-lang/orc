@@ -20,7 +20,7 @@ import orc.error.runtime.TokenException;
  * Abstract class for sites with a partial and immediate semantics: evaluate as for a total
  * immediate site (see EvalSite), but if the evaluation returns null, the site remains silent.
  * The site "if" is a good example.
- * 
+ *
  * Subclasses must implement the method evaluate, which takes an argument list and returns
  * a single value (possibly null).
  *

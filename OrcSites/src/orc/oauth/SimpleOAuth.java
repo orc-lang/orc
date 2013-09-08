@@ -48,10 +48,10 @@ import net.oauth.signature.RSA_SHA1;
  * Wrapper around the OAuth libraries which should simplify using them.
  * It's simple because it gets all the information it needs upfront in
  * a properties file (or object).  See the main method for an example.
- * 
+ *
  * <p>All providers are configured with a properties file. A provider identified by NAME
  * must have the following properties defined:
- * 
+ *
  * <ul>
  * <li>NAME.serviceProvider.baseURL: prepended to all service URLs
  * <li>NAME.serviceProvider.requestTokenURL: URL to get a request token
@@ -59,14 +59,14 @@ import net.oauth.signature.RSA_SHA1;
  * <li>NAME.serviceProvider.accessTokenURL: URL to exchange request for access token
  * <li>NAME.consumerKey: oauth_consumer_key
  * </ul>
- * 
+ *
  * <p>The following properties are optional:
  * <ul>
  * <li>NAME.consumerSecret: oauth_consumer_secret
  * <li>NAME.consumer.oauth_signature_method: oauth_signature_method
  * <li>NAME.consumer.httpMethod: POST or GET
  * </ul>
- * 
+ *
  * <p>The following optional properties were added by this library and are not part of the core OAuth library:
  * <ul>
  * <li>NAME.consumer.keystore.storePath: resource path to JKS file containing signing key
@@ -74,9 +74,9 @@ import net.oauth.signature.RSA_SHA1;
  * <li>NAME.consumer.keystore.storePassword: password for keystore
  * <li>NAME.consumer.keystore.keyPassword: password for key (if omitted, assumed same as storePassword)
  * </ul>
- * 
+ *
  * <p>See {@link ConsumerProperties} for more details on the properties file.
- * 
+ *
  * @author quark
  */
 public class SimpleOAuth {
@@ -139,7 +139,7 @@ public class SimpleOAuth {
 	/**
 	 * Invoke an OAuth service with custom parameters while handling redirects
 	 * transparently.
-	 * 
+	 *
 	 * @param accessor
 	 * @param url
 	 * @param parameters
@@ -183,7 +183,7 @@ public class SimpleOAuth {
 
 	/**
 	 * Get the consumer/client with the given name.
-	 * 
+	 *
 	 * @param consumer String name of consumer/client
 	 * @return OAuthConsumer, with private key property set from keystore
 	 * @throws OAuthException
@@ -248,7 +248,7 @@ public class SimpleOAuth {
 
 	/**
 	 * Get a new accessor for a consumer/client in the properties file.
-	 * 
+	 *
 	 * @param consumer
 	 * @return OAuthAccessor for this consumer/client
 	 * @throws OAuthException
@@ -259,10 +259,10 @@ public class SimpleOAuth {
 
 	/**
 	 * Get a new request token/temporary credentials.
-	 * The consumer/client obtains a set of temporary credentials from the 
-	 * server by making an authenticated request to the Temporary 
+	 * The consumer/client obtains a set of temporary credentials from the
+	 * server by making an authenticated request to the Temporary
 	 * Credential Request endpoint.
-	 * 
+	 *
 	 * @param accessor
 	 * @param callbackURL
 	 * @throws IOException
@@ -274,10 +274,10 @@ public class SimpleOAuth {
 
 	/**
 	 * Get a new request token/temporary credentials, with custom parameters in the request.
-	 * The consumer/client obtains a set of temporary credentials from the 
-	 * server by making an authenticated request to the Temporary 
+	 * The consumer/client obtains a set of temporary credentials from the
+	 * server by making an authenticated request to the Temporary
 	 * Credential Request endpoint.
-	 * 
+	 *
 	 * @param accessor
 	 * @param parameters
 	 * @param callbackURL
@@ -312,10 +312,10 @@ public class SimpleOAuth {
 
 	/**
 	 * Exchange a request token/temporary credentials for an access token/token credentials.
-	 * The consumer/client obtains a set of token credentials from the 
-	 * server by making an authenticated request to the Token 
+	 * The consumer/client obtains a set of token credentials from the
+	 * server by making an authenticated request to the Token
 	 * Credential Request endpoint, using the temporary credentials.
-	 * 
+	 *
 	 * @param accessor
 	 * @throws IOException
 	 * @throws OAuthException
@@ -326,10 +326,10 @@ public class SimpleOAuth {
 
 	/**
 	 * Exchange a request token/temporary credentials for an access token/token credentials, with custom parameters in the request.
-	 * The consumer/client obtains a set of token credentials from the 
-	 * server by making an authenticated request to the Token 
+	 * The consumer/client obtains a set of token credentials from the
+	 * server by making an authenticated request to the Token
 	 * Credential Request endpoint, using the temporary credentials.
-	 * 
+	 *
 	 * @param accessor
 	 * @param parameters
 	 * @throws IOException
@@ -381,7 +381,7 @@ public class SimpleOAuth {
 	 * @param args
 	 * @throws IOException
 	 * @throws OAuthException
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException
 	 */
 	public static void main(final String[] args) throws IOException, OAuthException, URISyntaxException {
 		// create a request token

@@ -19,7 +19,7 @@ def spellCheck(word:words, i) =
       ("G", i, word, suggs)
   | BingSpell(word) >(_:_) as suggs>
       ("B", i, word, suggs)
-  | spellCheck(words, i+1)  
+  | spellCheck(words, i+1)
 
 Prompt("Enter one or more words:") >text>
 words(text) >words>

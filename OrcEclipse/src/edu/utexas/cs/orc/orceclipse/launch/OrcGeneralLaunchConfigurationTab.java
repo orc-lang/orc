@@ -39,7 +39,7 @@ import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
  * The "General" tab of the Orc launch configuration options user interface.
- * 
+ *
  * @author jthywiss
  * @see org.eclipse.debug.ui.ILaunchConfigurationTab
  * @see org.eclipse.debug.ui.AbstractLaunchConfigurationTab
@@ -213,7 +213,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 	}
 
 	protected String orcVersionText() {
-		return orc.Main.orcImplName() + " " + orc.Main.orcVersion() + "\n" + orc.Main.orcURL() + "\n" + orc.Main.orcCopyright(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ 
+		return orc.Main.orcImplName() + " " + orc.Main.orcVersion() + "\n" + orc.Main.orcURL() + "\n" + orc.Main.orcCopyright(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 
 	protected void widgetSelectedAction(final SelectionEvent e) {

@@ -53,7 +53,7 @@ import edu.utexas.cs.orc.orceclipse.Messages;
  * <code>org.eclipse.debug.ui.launchShortcuts</code>. A shortcut specifies the
  * perspectives in which is should be available from the "Run/Debug" cascade
  * menus.
- * 
+ *
  * @author jthywiss
  */
 public class OrcLaunchShortcut implements ILaunchShortcut {

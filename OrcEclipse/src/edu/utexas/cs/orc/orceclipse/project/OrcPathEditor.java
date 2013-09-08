@@ -58,7 +58,7 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
  * <li>A folder external to the current Eclipse workspace</li>
  * <li>A JAR file external to the current Eclipse workspace</li>
  * </ol>
- * 
+ *
  * @author jthywiss
  */
 @SuppressWarnings("restriction") // Using three JDT internal classes.
@@ -71,7 +71,7 @@ public class OrcPathEditor extends PathEditor {
 
 	/**
 	 * Constructs an object of class OrcPathEditor.
-	 * 
+	 *
 	 * @param name the name of the preference this field editor works on
 	 * @param labelText the label text of the field editor
 	 * @param pathDescriptionForDialogMessage text describing the path (used in

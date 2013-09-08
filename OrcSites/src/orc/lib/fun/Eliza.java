@@ -50,8 +50,8 @@ public class Eliza extends EvalSite {
 				addMember("finished", new EvalSite() {
 					@Override
 					public Object evaluate(final Args args) throws TokenException {
-						if (args.size() != 0) { 
-							throw new ArityMismatchException(1, args.size()); 
+						if (args.size() != 0) {
+							throw new ArityMismatchException(1, args.size());
 						}
 						return eliza.finished();
 					}
@@ -60,8 +60,8 @@ public class Eliza extends EvalSite {
 
 			@Override
 			protected void defaultTo(final Args args, final Handle token) throws TokenException {
-				if (args.size() != 1) { 
-					throw new ArityMismatchException(1, args.size()); 
+				if (args.size() != 1) {
+					throw new ArityMismatchException(1, args.size());
 				}
 				synchronized (eliza) {
 					if (eliza.finished()) {

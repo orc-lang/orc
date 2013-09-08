@@ -95,7 +95,7 @@ class Token protected (
     * Return false if the token's state was already Killed.
     */
   protected def setState(newState: TokenState): Boolean = synchronized {
-    /* 
+    /*
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
@@ -383,9 +383,9 @@ class Token protected (
                 resolveOptional(param) {
                   /* apply isn't allowed to supersede other member accesses */
                   case Some(Field(f)) => siteCall(r, List(Field(f)))
-                  /* 
+                  /*
                    * The resolved arg is ignored and the apply member is retried on the parameters.
-                   * The arg is ignored even if it is halted, since the apply member might be a function. 
+                   * The arg is ignored even if it is halted, since the apply member might be a function.
                    */
                   case _ => makeCall(entries("apply"), params)
                 }
@@ -487,8 +487,8 @@ class Token protected (
       case Call(target, args, _) => {
         val params = args map lookup
         lookup(target) match {
-          /* 
-           * Allow a def to be called with an open context. 
+          /*
+           * Allow a def to be called with an open context.
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
            */
           case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)

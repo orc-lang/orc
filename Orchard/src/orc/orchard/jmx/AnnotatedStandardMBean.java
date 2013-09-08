@@ -28,7 +28,7 @@ import javax.management.StandardMBean;
  * Mostly copied from Eamon McManus's java.net article "Adding information to a
  * Standard MBean interface using annotations."
  * http://weblogs.java.net/blog/emcmanus/archive/2005/07/adding_informat.html
- * 
+ *
  * @author quark
  */
 public class AnnotatedStandardMBean extends StandardMBean {

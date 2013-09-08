@@ -28,13 +28,13 @@ def skipto(reader, phrase) =
   if line = null then ""
   else if line.contains(phrase) then line
   else skipto(reader, phrase)
-  
+
 def spellCheck([], _) = stop
 def spellCheck(word:words, i) =
   GoogleSpellUnofficial(word) >(_:_) as suggs>
   (i, word, suggs)
-  | spellCheck(words, i+1)  
-  
+  | spellCheck(words, i+1)
+
 val url = "http://orc.csres.utexas.edu/test-data/Gutenberg_Through-the-Looking-Glass.zip"
     -- Orc project's cached copy; Gutenberg doesn't like robots.
     -- Original URL: http://www.gutenberg.org/files/12/12.zip

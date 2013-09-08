@@ -7,7 +7,7 @@
 
 def class A() =
 	val x = 4
-	def myX() = 
+	def myX() =
 		x
 	signal
 

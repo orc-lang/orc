@@ -67,7 +67,7 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
   override def setState(newState: CallState): Boolean = {
     synchronized {
       val success = super.setState(newState)
-      /* If a successful transition was made, 
+      /* If a successful transition was made,
        * and the resulting state is final,
        * notify the clock.
        */

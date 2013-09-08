@@ -3,14 +3,14 @@
  - A BBtree is a balanced binary tree of depth n. An index is a list
  - of 0s and 1s whose length is less than n. It identifies a node in
  - the tree as follows: a 0 identifies a left branch and a 1 a right
- - branch. 
+ - branch.
  - 
- - Two operations are supported: read(is) where is an index list, 
- - reads the value at the specified node (given by the index) and 
+ - Two operations are supported: read(is) where is an index list,
+ - reads the value at the specified node (given by the index) and
  - write(v,is) writes value v at the given node.
 -}
 
-type BBTree[A] = 
+type BBTree[A] =
 {.
   read :: lambda(List[Integer]) :: A,
   write :: lambda(A, List[Integer]) :: Signal
@@ -18,13 +18,13 @@ type BBTree[A] =
 
 def BBTree[A](Integer) :: BBTree[A]
 def class BBTree(0) =
- 
+
   def read(List[Integer]) :: A
   def read(is) = stop
- 
+
   def write(A, List[Integer]) :: Signal
   def write(v,is) = stop
- 
+
   stop
 
 

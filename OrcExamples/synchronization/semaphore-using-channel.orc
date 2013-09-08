@@ -11,7 +11,7 @@ def class NewSemaphore(n :: Integer) =
   def release() = b.put(signal)
 
   def add(Integer) :: Signal
-  def add(0) = signal 
+  def add(0) = signal
   def add(i) = release() >> add(i-1)
 
   add(n)

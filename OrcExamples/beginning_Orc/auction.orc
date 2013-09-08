@@ -30,7 +30,7 @@ def auction(bidders, max) =
       (false, bid)
   Println("Current bid: " +  max) >>
   ( if done then max else auction(bidders, bid) )
-  
+
 
 def bidder(Bid) :: lambda(Bid) :: Bid
 def bidder(max) = lambda(n) = Ift(n <: max) >> n + 1

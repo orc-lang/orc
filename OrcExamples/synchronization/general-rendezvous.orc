@@ -6,12 +6,12 @@
  -}
 
 {- n party rendezvous with data transfer.
-   The instance of a Rendezvous specifies 
+   The instance of a Rendezvous specifies
      n: the number of processes in the rendezvous
      f: a distribution function that maps a list of n data items to
          a list of n data items.
 The distribution function could be:
-  - a 2-party rendezvous in which the first data item is placed as 
+  - a 2-party rendezvous in which the first data item is placed as
   the second item in the result; the classical sender-receiver.
 
   - a 2-party rendezvous in which the two data items are swapped;
@@ -20,10 +20,10 @@ The distribution function could be:
   - a n-party rendezvous in which the first data item is given to all
     other parties. This is the broadcast paradigm.
 
-  - a n-party rendezvous in which the value returned by the function 
-    is the rank of the value among all values. This can be used to 
+  - a n-party rendezvous in which the value returned by the function
+    is the rank of the value among all values. This can be used to
     radix-sorting in which each value is input on a separate channel
-    one digit at a time; the ith process is the one that has the 
+    one digit at a time; the ith process is the one that has the
     current rank i. As it inputs the next digit, its rank may change.
 
   - a n-party rendezvous for secret sharing.
@@ -32,14 +32,14 @@ Access protocol:
 A party calls the rendezvous object with its own identity and data.
 It receives the result value as the effect of the call.
 
-Implementation strategy: 
-b is an array of n channels. The data submitted by process i is 
+Implementation strategy:
+b is an array of n channels. The data submitted by process i is
 added to b(i). Additionally, a callback cell is is also put in b(i)
-where the result to i will be delivered. The data and cell are put 
+where the result to i will be delivered. The data and cell are put
 as a pair in b(i).
 
 A manager sweeps through all the channels from 0 through n-1
-removing one item from each, and storing them in a list. 
+removing one item from each, and storing them in a list.
 After one sweep, it applies the distribution function to all the
 data, and computes the result list. Next, it distributes the results
 among the callback cells.
@@ -49,14 +49,14 @@ among the callback cells.
 def class Rendezvous[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
   val b = Table(n, lambda(_::Top) = Channel[(A, Cell[A])]())
 
-  def go(i :: Integer, v :: A) = 
+  def go(i :: Integer, v :: A) =
     val c = Cell[A]()
     b(i).put((v,c)) >> c.read()
 
   def collect((List[A], List[Cell[A]]), Integer) :: (List[A], List[Cell[A]])
   def collect(vcl,0) = vcl
   def collect((vl,cl),i) =  -- collect i more items
-    b(n-i).get() >(v,c)> collect((v:vl,c:cl),i-1) 
+    b(n-i).get() >(v,c)> collect((v:vl,c:cl),i-1)
 
   def distribute(List[A], List[Cell[A]]) :: Signal
   def distribute([],[]) = signal
@@ -69,7 +69,7 @@ distribute(vl,cl)
 -}
   def distribute(v:vl,c:cl) = c.write(v) >> distribute(vl,cl)
 
-  def manager() :: Bot = 
+  def manager() :: Bot =
    collect(([],[]),n) >(vl,cl)> distribute(f(vl),cl) >> manager()
 
   manager()
@@ -80,7 +80,7 @@ The following implementation does not use callback mechanism. But, it
 uses two arrays of Channels, b and c. The ith process participating in
 the rendezvous calls it as before, with its identity i and a value v
 that would be used in the rendezvous. The call returns a value after
-rendezvous is accomplished. 
+rendezvous is accomplished.
 
 The implementation strategy is to:
 deposits i's value in b(i). Then the manager proceeds as before and
@@ -99,10 +99,10 @@ def class Rendezvous2[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
   val c = Table(n, lambda(_::Top) = Channel[A]())
   val sem = Table(n, lambda(_::Top) = Semaphore(1))
 
-  def go(i :: Integer, v :: A) = 
-    sem(i).acquire() >> 
-    b(i).put(v) >> c(i).get() >w> 
-    sem(i).release() >> 
+  def go(i :: Integer, v :: A) =
+    sem(i).acquire() >>
+    b(i).put(v) >> c(i).get() >w>
+    sem(i).release() >>
     w
 
   def collect(List[A], Integer) :: List[A]
@@ -113,7 +113,7 @@ def class Rendezvous2[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
   def distribute(_,0) = signal
   def distribute(v:vl,i) = c(n-i).put(v) >> distribute(vl,i-1)
 
-  def manager() :: Bot = 
+  def manager() :: Bot =
     collect([],n) >vl> distribute(f(vl),n) >> manager()
 
   manager()
@@ -129,13 +129,13 @@ val rg = Rendezvous(2,exch).go
 | rg(1,5) >y> ("1 gets " + y)
 -}
 
-def avg([a,b,c] :: List[Integer])  = 
+def avg([a,b,c] :: List[Integer])  =
   val av = (a+b+c)/3
   [av,av,av]
 
 val rg3 = Rendezvous2(3,avg).go
 
-  rg3(0,0) >x> ("0 gets " + x) 
-| rg3(1,1) >x> ("1 gets " + x) 
-| rg3(2,5) >x> ("2 gets " + x) 
-| rg3(2,2) >x> ("2 gets " + x) 
+  rg3(0,0) >x> ("0 gets " + x)
+| rg3(1,1) >x> ("1 gets " + x)
+| rg3(2,5) >x> ("2 gets " + x)
+| rg3(2,2) >x> ("2 gets " + x)

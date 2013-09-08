@@ -8,10 +8,9 @@
  * rmi://localhost/orchard
  * <li>Run {@link orc.orchard.rmi.RmiTest} to run a simple test.
  * </ol>
- * 
+ *
  * <p>Running across a network is somewhat more complicated.
  * I will document that soon.
  */
 
 package orc.orchard.rmi;
-

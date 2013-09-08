@@ -33,7 +33,7 @@ case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_]
    * Such an implementation would require a time-intensive traversal of
    * the Java class hierarchy. In some cases, it may not even be possible
    * to find a suitable result.
-   * 
+   *
    * The absence of a least supertype join or greatest subtype meet does
    * not affect the correctness of type checking, just the effectiveness
    * of inference.

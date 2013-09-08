@@ -33,7 +33,7 @@ trait TypeConstructor extends TypeOperator {
     TypeInstance(this, ts)
   }
 
-  /* 
+  /*
    * When an instance of this type is called, instantiate it at particular type parameters.
    * By default, a constructed type is uncallable.
    * Subclasses will override this method to provide the calling type behavior of instances.

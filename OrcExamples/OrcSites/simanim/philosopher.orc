@@ -26,7 +26,7 @@ def releaseAnimate(p,s,i) =
     canvas.setFork(p,s,i) >>
     Rwait(50) >>
     releaseAnimate(p,s,i-1)
-     
+
 def grabAnimate(p,s,i) =
   if i = 0 then
     true
@@ -48,7 +48,7 @@ def getForks(n,fl,fr) =
 def releaseFork(n,side,f) =
   releaseAnimate(n,side,10) >>
   f.put(true)
- 
+
 def getFork(n,side,f) =
   f.getD() >>
   grabAnimate(n,side,10)
@@ -61,7 +61,7 @@ def eatAnimate(p,i,speed) =
     Rwait(speed) >>
     eatAnimate(p,i-1,speed)
 
-def eat(n) = 
+def eat(n) =
   eatAnimate(n,10,index([100,200,300,500],Random(4))) >>
   canvas.setEat(n,0)
 
@@ -92,7 +92,7 @@ def redraw() =
   canvas.redraw() >>
   Rwait(50) >>
   redraw()
-  
+
 def clock() =
   Rwait(1) >>
   Rwait(1) >>

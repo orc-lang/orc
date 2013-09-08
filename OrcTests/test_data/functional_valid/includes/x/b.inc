@@ -6,5 +6,5 @@
  -}
 
 include "y/c.inc"
- 
+
 def b() = c()

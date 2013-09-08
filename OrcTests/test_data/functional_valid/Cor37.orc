@@ -6,15 +6,15 @@
  -}
 
 val empty = {.  .} :: {.  .}
-val one = {. x = 1 .} :: {. x :: Integer .} 
-val two = {. y = 3, z = true .} :: {. y :: Integer, z :: Boolean .} 
+val one = {. x = 1 .} :: {. x :: Integer .}
+val two = {. y = 3, z = true .} :: {. y :: Integer, z :: Boolean .}
 
   empty
 | one
 | (one.x :: Integer)
 | (two.y :: Integer)
 | (two.z :: Boolean)
- 
+
 
 {-
 OUTPUT:PERMUTABLE:

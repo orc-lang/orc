@@ -32,7 +32,7 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
 /**
  * JAX-RPC-based webservice site.
  * Stubs for the service are generated and compiled on the fly.
- * 
+ *
  * <p>This example should get you started:
  * <pre>
  * val Google = Webservice("http://api.google.com/GoogleSearch.wsdl")
@@ -43,7 +43,7 @@ import org.apache.axis.wsdl.toJava.GeneratedFileInfo;
  * each(GoogleSearch("test").getResultElements()) >r>
  * 	r.getURL()
  * </pre>
- * 
+ *
  * <p>TODO: allow webservices to provide constructors for complex objects.
  * @author quark, unknown
  */

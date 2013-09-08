@@ -131,7 +131,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 	/**
 	 * @param n AST node to retrieve an image
-	 * @return Image representing the type of the given AST node 
+	 * @return Image representing the type of the given AST node
 	 */
 	public static Image getImageFor(final AST n) {
 		if (n instanceof Include) {
@@ -170,7 +170,7 @@ public class OrcLabelProvider implements ILabelProvider {
 
 	/**
 	 * @param n AST node to label
-	 * @return String representing a label of the given AST node 
+	 * @return String representing a label of the given AST node
 	 */
 	public static String getLabelFor(final AST n) {
 		if (n instanceof Include) {

@@ -6,5 +6,5 @@
  -}
 
 include "../d.inc"
- 
+
 def c() = d()

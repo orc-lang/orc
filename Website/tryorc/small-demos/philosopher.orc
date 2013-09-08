@@ -11,10 +11,10 @@ Programming Languages 1981 (POPL'81), pages 133-138.
 def shuffle(a,b) = if (Random(2) = 1) then (a,b) else (b,a)
 
 -- Acquire two forks in the order given
-def take((a,b)) =  
+def take((a,b)) =
   a.acquire() >> b.acquireD() ;
   a.release() >> take(shuffle(a,b))
-    
+
 -- Release two forks
 def drop(a,b) = (a.release(), b.release()) >> signal
 
@@ -22,9 +22,9 @@ def drop(a,b) = (a.release(), b.release()) >> signal
 def phil(a,b,name) =
   def thinking() = Rwait(Random(1000))
   def hungry() = take((a,b))
-  def eating() = 
-    Println(name + " is eating.") >> 
-    Rwait(Random(1000)) >> 
+  def eating() =
+    Println(name + " is eating.") >>
+    Rwait(Random(1000)) >>
     Println(name + " has finished eating.") >>
     drop(a,b)
   thinking() >> hungry() >> eating() >> phil(a,b,name)
@@ -36,8 +36,8 @@ def dining(n) =
   def phils(i) =
       phil(forks(i%n), forks(i-1), "Philosopher " + i)
     | phils(i-1)
-  phils(n) 
-  
+  phils(n)
+
 -- Simulate 5 philosophers for 10 seconds before halting
 Let( dining(5) | Rwait(10000) ) >>
 Println("Simulation stopped.") >>

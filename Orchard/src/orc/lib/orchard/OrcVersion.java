@@ -40,7 +40,7 @@ public class OrcVersion extends EvalSite implements TypedSite {
 			throw new ArityMismatchException(0, args.size());
 		}
 		return OrchardProperties.getProperty("war.manifest.Implementation-Title") + ' ' +
-			OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+			OrchardProperties.getProperty("war.manifest.Implementation-Version") +
 			" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") + '\n' +
 			orc.Main.orcImplName() + ' ' + orc.Main.orcVersion() + '\n' +
 			orc.Main.orcURL() + '\n' + orc.Main.orcCopyright();

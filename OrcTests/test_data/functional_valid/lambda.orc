@@ -1,7 +1,7 @@
 def Counter(n :: Integer) =
 	val nr = Channel[Integer]()
 	nr.put(n) >>
-	(lambda () = 
+	(lambda () =
 	  nr.get() >n>
 		( n | nr.put(n+1) >> stop ) )
 

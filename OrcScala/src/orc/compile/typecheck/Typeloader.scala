@@ -130,7 +130,7 @@ object Typeloader extends SiteClassLoading {
         }
 
         /* Find the variance of X in this datatype by a search.
-         * 
+         *
          * We assume that variances are linearly independent, i.e.
          * that the variances of formals besides X cannot affect
          * the variance of X.

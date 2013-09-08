@@ -117,7 +117,7 @@ public class LoginServlet extends HttpServlet {
 	 */
 	@Override
 	public String getServletInfo() {
-		return OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+		return OrchardProperties.getProperty("war.manifest.Implementation-Version") +
 				" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") +
 				"  Copyright The University of Texas at Austin";
 	}

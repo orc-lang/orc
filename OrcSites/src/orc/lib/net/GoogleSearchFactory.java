@@ -39,7 +39,7 @@ import scala.collection.immutable.List;
 /**
  * Wrapper for the Google Search AJAX API described at
  * http://code.google.com/apis/ajaxsearch/documentation/#fonje
- * 
+ *
  * Returns a list of pages, where each page is a site which
  * returns a list of result GSearch objects. See the Google Search
  * AJAX API documentation for details. Properties include:
@@ -52,7 +52,7 @@ import scala.collection.immutable.List;
  * <li>titleNoFormatting
  * <li>content
  * </ul>
- * 
+ *
  * @author quark
  */
 public class GoogleSearchFactory extends EvalSite {

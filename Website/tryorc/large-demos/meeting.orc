@@ -77,4 +77,3 @@ Let(
   format.print(time) >time>
   notify(time, invitees, responders)
   ; "No acceptable meeting found")
-

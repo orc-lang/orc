@@ -31,7 +31,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * Rewritable mutable reference. The reference can be initialized with a value,
  * or left initially empty. Read operations block if the reference is empty.
  * Write operations always succeed.
- * 
+ *
  * @author dkitchin
  */
 public class Ref extends EvalSite implements TypedSite {

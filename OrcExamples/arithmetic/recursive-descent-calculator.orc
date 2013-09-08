@@ -5,13 +5,13 @@
  - Created by misra on Mar 10, 2010 3:02:30 PM
  -}
 
-{- Computes value of an arithmetic expression. Only +, unary minus and * are 
+{- Computes value of an arithmetic expression. Only +, unary minus and * are
    supported. White spaces are ignored. The expression and its
    value are output, or it reports the expression to be "illegal".
 
-   The following grammar is used. 
+   The following grammar is used.
 
-expr    ::= term | term + expr | 
+expr    ::= term | term + expr |
 term    ::= factor | factor * term
 factor  ::= ufactor | - ufactor
 ufactor ::= integer | (expr)
@@ -27,25 +27,25 @@ def stringtolist(s :: String) :: List[String] = -- convert a string to a list om
 
   rest(0)
 
-def calculate() :: Bot = 
+def calculate() :: Bot =
   Prompt("Write an expression")  >r> stringtolist(r) >xs>
-  (expr(xs) >(n,[])> Println(r + " = " +n); Println(r +" is illegal")) >> 
+  (expr(xs) >(n,[])> Println(r + " = " +n); Println(r +" is illegal")) >>
   calculate()
 
 def expr(List[String]) :: (Integer, List[String])
-def expr(xs) = term(xs) >(n,ys)> 
-               ( (n,ys) 
+def expr(xs) = term(xs) >(n,ys)>
+               ( (n,ys)
                | ys >"+":zs> expr(zs) >(m,ws)> (n+m,ws)
                )
 
 def term(List[String]) :: (Integer, List[String])
-def term(xs) = factor(xs) >(n,ys)> 
-               ( (n,ys) 
+def term(xs) = factor(xs) >(n,ys)>
+               ( (n,ys)
                | ys >"*":zs> term(zs) >(m,ws)> (n*m,ws)
                )
 
 def factor(List[String]) :: (Integer, List[String])
-def factor(xs) = ufactor(xs) 
+def factor(xs) = ufactor(xs)
                | xs >"-":ys> ufactor(ys) >(n,zs)> (-n,zs) -- unary minus
 
 def ufactor(List[String]) :: (Integer, List[String])

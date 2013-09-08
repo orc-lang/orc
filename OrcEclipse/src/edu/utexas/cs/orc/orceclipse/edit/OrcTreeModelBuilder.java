@@ -85,7 +85,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	/**
 	 * Creates a child of the current node in the model tree.
-	 * 
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with current node as parent
@@ -98,9 +98,9 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	/**
 	 * Creates a child of the current node in the model tree.
-	 * 
-	 * Equivalent to <code>createSubItem(n, DEFAULT_CATEGORY)</code> 
-	 * 
+	 *
+	 * Equivalent to <code>createSubItem(n, DEFAULT_CATEGORY)</code>
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createSubItem(java.lang.Object)
@@ -112,7 +112,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	/**
 	 * Creates a node for the model tree which has no parent node.
-	 * 
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with no parent
@@ -125,9 +125,9 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	/**
 	 * Creates a node for the model tree which has no parent node.
-	 * 
-	 * Equivalent to <code>createTopItem(n, DEFAULT_CATEGORY)</code> 
-	 * 
+	 *
+	 * Equivalent to <code>createTopItem(n, DEFAULT_CATEGORY)</code>
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with no parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#createTopItem(java.lang.Object)
@@ -139,7 +139,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 
 	/**
 	 * Change the current node to the parent of the current current node.
-	 * 
+	 *
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#popSubItem()
 	 */
 	@Override
@@ -150,7 +150,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	/**
 	 * Creates a child of the current node in the model tree, then makes it the current node.
 	 * Thus, future nodes will be build in this sub-tree, until {@link #popSubItem()} is invoked.
-	 * 
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @param category integer category of model tree node (currently used for sorting -- sort on category then label text)
 	 * @return ModeTreeNode created with previous current node as parent
@@ -164,9 +164,9 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	/**
 	 * Creates a child of the current node in the model tree, then makes it the current node.
 	 * Thus, future nodes will be build in this sub-tree, until {@link #popSubItem()} is invoked.
-	 * 
-	 * Equivalent to <code>pushSubItem(n, DEFAULT_CATEGORY)</code> 
-	 * 
+	 *
+	 * Equivalent to <code>pushSubItem(n, DEFAULT_CATEGORY)</code>
+	 *
 	 * @param n AST node to associate with this node in the model tree
 	 * @return ModeTreeNode created with previous current node as parent
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#pushSubItem(java.lang.Object)

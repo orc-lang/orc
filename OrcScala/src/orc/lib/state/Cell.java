@@ -28,7 +28,7 @@ import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
- * Write-once cell. 
+ * Write-once cell.
  * Read operations block while the cell is empty.
  * Write operatons fail once the cell is full.
  *
@@ -41,7 +41,7 @@ public class Cell extends EvalSite implements TypedSite {
 	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-	  if (args.size() == 0) {	
+	  if (args.size() == 0) {
 	    return new CellInstance();
 	  }
 	  else {
@@ -65,7 +65,7 @@ public class Cell extends EvalSite implements TypedSite {
 			/* Note that the readQueue also signals whether the cell contents have been assigned.
 			 * If it is non-null (as it is initially), the cell is empty.
 			 * If it is null, the cell has been written.
-			 * 
+			 *
 			 * This allows the cell to contain a null value if needed, and it also
 			 * frees the memory associated with the read queue once the cell has been assigned.
 			 */
@@ -125,7 +125,7 @@ public class Cell extends EvalSite implements TypedSite {
 							reader.publish(object2value(val));
 						}
 
-						/* Null out the read queue. 
+						/* Null out the read queue.
 						 * This indicates that the cell has been written.
 						 * It also allowed the associated memory to be reclaimed.
 						 */

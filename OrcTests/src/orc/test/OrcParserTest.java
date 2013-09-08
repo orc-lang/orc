@@ -34,7 +34,7 @@ import scala.util.parsing.combinator.Parsers;
 /**
  * This validates the parser simply by trying to parse everything in the
  * "test_data" and "../OrcExamples" directory.
- * 
+ *
  * @author quark
  */
 public class OrcParserTest {

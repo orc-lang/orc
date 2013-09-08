@@ -11,31 +11,31 @@ A customer requests service by calling register(); this call responds
 only when he is granted service.
 
 The server(s) call incr() when they are ready to serve the next
-customer. Each call to incr() triggers the earliest remaining 
-customer to receive service, i.e., his call to register() 
-to respond. If there are k servers there may be k simultaneous 
+customer. Each call to incr() triggers the earliest remaining
+customer to receive service, i.e., his call to register()
+to respond. If there are k servers there may be k simultaneous
 executions of incr(). With k = 1, we have mutual execution in service.
 
-The parameter n is the maximum number of customers that may be in 
-the queue waiting to be served. 
+The parameter n is the maximum number of customers that may be in
+the queue waiting to be served.
 
-The implementation uses the call-back mechanism used in the 
+The implementation uses the call-back mechanism used in the
 Readers-Writers solution.
 -}
 include "../synchronization/BoundedChannel.inc"
 include "../clock_time/Stopwatch.inc"
 
-def class Sequencer(n :: Integer) = 
+def class Sequencer(n :: Integer) =
  val bb = BChannel[Semaphore](n)  -- waiting customers' semaphores
  val sem = BChannel[Semaphore](n) -- semaphore pool
- 
- def  incr() =  bb.get() >s> s.release() 
 
- def register() = 
+ def  incr() =  bb.get() >s> s.release()
+
+ def register() =
       sem.get() >s> bb.put(s) >> s.acquire() >> sem.put(s)
 
   {- allocate n semaphores in the pool at start. -}
-  upto(n) >> 
+  upto(n) >>
   (val s = Semaphore(0)
    sem.put(s))
 

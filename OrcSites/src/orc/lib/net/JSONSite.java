@@ -31,7 +31,7 @@ import org.codehaus.jettison.json.JSONObject;
  * turned into Orc lists, object values are turned into
  * sites, and all other values are turned into the Orc
  * atomic types you would expect.
- * 
+ *
  * @author quark
  */
 class JSONSite extends EvalSite {

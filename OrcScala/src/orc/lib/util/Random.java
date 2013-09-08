@@ -41,8 +41,8 @@ public class Random extends PartialSite implements TypedSite {
 		}
 
 		if (!(args.getArg(0) instanceof Number) ||
-		    args.longArg(0) > Integer.MAX_VALUE || 
-		    args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE || 
+		    args.longArg(0) > Integer.MAX_VALUE ||
+		    args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE ||
 		    ((Number) args.getArg(0)).doubleValue() <= 0.0 ||
 		    ((Number) args.getArg(0)).doubleValue() != Math.rint(((Number) args.getArg(0)).doubleValue()) ) {
 			throw new IllegalArgumentException("Random's argument must be an integer strictly between 0 and 2**31");

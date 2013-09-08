@@ -1,4 +1,4 @@
-type Range = Range(Integer, Integer) 
+type Range = Range(Integer, Integer)
 
 Range(1, 2)
 

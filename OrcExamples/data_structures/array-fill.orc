@@ -5,12 +5,12 @@
 -- An immutable array with the value equal to the index
 val a = Table[Integer](3, Let)
 -- A mutable array with the value equal to the index
-val b = 
+val b =
   Array[Integer](5) >a>
   fillArray[Integer](a, Let) >>
   a
 -- A mutable array initialized to constant value 0
-val c = 
+val c =
   Array[Integer](3) >a>
   fillArray(a, lambda (_ :: Integer) = 0) >>
   a

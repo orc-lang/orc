@@ -1,4 +1,4 @@
-<!--#include virtual="/template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" -->
 
 <h1>Why Orc?</h1>
 
@@ -31,4 +31,4 @@ succinctly in Orc.</p>
 <p>To see how this is achieved and learn more about Orc's syntax and semantics,
 please proceed to the <a href="tutorial.shtml">Tutorial</a>.</p>
 
-<!--#include virtual="/template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" -->

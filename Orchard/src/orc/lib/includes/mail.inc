@@ -16,7 +16,7 @@ def SendMail(to, subject, body) =
   outbox.connect() >>
   outbox.send(message) >>
   outbox.close()
-  
+
 {-
 Simplified mail sending interface.
 -}
@@ -30,11 +30,11 @@ def SendMailFrom(from, to, subject, body) =
   outbox.connect() >>
   outbox.send(message) >>
   outbox.close()
-  
+
 {-
 Send an email to the given address(es).
 Return a site which can be used to poll for responses.
-Each time the returned site is called, it will return the 
+Each time the returned site is called, it will return the
 body of the next response.
 -}
 def MailPrompt(to, subject, body) =

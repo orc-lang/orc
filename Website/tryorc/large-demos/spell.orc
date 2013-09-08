@@ -1,11 +1,11 @@
 {-
 Spell-check the first 20 words of a text file
-which you will be prompted to upload. 
+which you will be prompted to upload.
 -}
 include "net.inc"
 include "forms.inc"
 
-  
+
 def spellCheck([], _) = stop
 def spellCheck(word:words, i) =
   GoogleSpellUnofficial(word) >(_:_) as suggs> (i, word, suggs)

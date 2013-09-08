@@ -55,7 +55,7 @@ import class AccessTestClass = "javax.swing.JTextField"
 -- 13. Conversion tests: Test Java-Orc conversion
 (if (
 	    126.byteValue() = 126 &&
-	    8e307.doubleValue() :> 7.99e307 && 
+	    8e307.doubleValue() :> 7.99e307 &&
 	    1e38.floatValue() :> 0.99e38 &&
 	    2147483640.intValue() = 2147483640 &&
 	    9223372036854775800.longValue() = 9223372036854775800 &&
@@ -63,10 +63,10 @@ import class AccessTestClass = "javax.swing.JTextField"
   ) then "13 pass" else "13 FAIL") |
 
 
---TODO: These require a custom Java class to test against: 
+--TODO: These require a custom Java class to test against:
 -- "apply" default method
 -- identical member name -- method vs. field
--- Invocation conversions.... prim widen, subclass, box, box-subclass, unbox, unbox-widen 
+-- Invocation conversions.... prim widen, subclass, box, box-subclass, unbox, unbox-widen
 -- Overloading where boxing would select a different method (i.e. JLS 15.12.2 Phase 1 & 2 different)
 -- Check "most specific" picks right method
 -- Ambiguous method invocation

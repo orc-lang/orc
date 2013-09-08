@@ -33,7 +33,7 @@ trait Guarding {
         if (context contains target) {
           unguardedRecursion(this); false
         } else {
-          /* This is a liberal approximation and will generate false negatives. 
+          /* This is a liberal approximation and will generate false negatives.
            * Not all calls are truly guarding; only calls to sites or to guarded
            * functions or closures are actually guarding. However, since this
            * is just a sanity check, not a safety guarantee, it seems appropriate

@@ -19,37 +19,37 @@ def lswitch(n,l) =
 	-- oMin,oMax -- Range for output
 	-- mnMn,mnMx -- Minimum delay during spurts
 	-- mxMn,mxMx -- Maximum delay during spurts
-	
+
 	* Generate random numbers in periodic bursts:
 	  Random intervals of nothing
-	  Interspersed with spurts of something 
+	  Interspersed with spurts of something
 ---------------------------------------------------------------------}
 def randRange(mn,mx) =
 	Random(mx+1-mn)+mn
 
 def nSpurt(n,tMin,tMax,oMin,oMax) =
-	( Ift(n>=1) 
+	( Ift(n>=1)
 	  >> randRange(tMin,tMax)
 	  >d> Rwait(d)				-- Delay
 	  >>	( randRange(oMin,oMax) 	-- Deliver a value
 			| nSpurt(n-1,tMin,tMax,oMin,oMax) -- Recurse
-			) 
+			)
 	| Ift(n<=0)
 	  >> false
 	)
-	
+
 def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
-	randRange(lMin,lMax) 
+	randRange(lMin,lMax)
 	>lull> Rwait(lull)
 	>> randRange(sMin,sMax)
 	>spurt>	(nSpurt(spurt,tMin,tMax,oMin,oMax)
 		<tMin< randRange(mnMn,mnMx)
 		<tMax< randRange(mxMn,mxMx)
-		) 
+		)
 	>x>	( 	Ift(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
 		|	Ift(~(x=false)) >> x
-		) 
+		)
 ----------------------------------------------------------------------	
 
 {-
@@ -79,7 +79,7 @@ def rightDone() =
 -}
 def makeRope(len,lb,ls) =
 	(Ift(len=0) >> Let(signal,false,lb,ls)
-	|	(  Ift(1<=len) 
+	|	(  Ift(1<=len)
 		>> Channel()
 		>b> makeRope(len-1,b,true)
 		>(rb,rs,eb,es)> b.put((lb,ls,rb,rs,len))
@@ -90,14 +90,14 @@ def makeRope(len,lb,ls) =
 {-
 	Follow a rope along the right, beginning at link b with type s
 	When we arrive at the end of the rope (s=false) we execute f().
-	Between links, we logically delay for d units. 
+	Between links, we logically delay for d units.
 -}
 def followRight(b,s,f,d) =
 	(	( Ift(~s) >> (Let() | f()>>stop)
 		)
-	|	(  Ift(s) 
+	|	(  Ift(s)
 		>> b.get()
-		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
+		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false
 							| (Rwait(d) >> true)
 							)
 		>c>	(	( Ift(c)
@@ -114,14 +114,14 @@ def followRight(b,s,f,d) =
 {-
 	Follow a rope along to the left, beginning at link b with type s
 	When we arrive at the end of the rope (s=false) we execute f().
-	Between links, we logically delay for d units. 
+	Between links, we logically delay for d units.
 -}
 def followLeft(b,s,f,d) =
 	(	( Ift(~s) >> (Let() | f()>>stop)
 		)
-	|	(  Ift(s) 
+	|	(  Ift(s)
 		>> b.get()
-		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false 
+		>(lb,ls,rb,rs,len)> ( disp.setLink(len,d) >> false
 							| (Rwait(d) >> true)
 							)
 		>c>	(	( Ift(c)
@@ -133,8 +133,8 @@ def followLeft(b,s,f,d) =
 			|	Ift(~c)
 			)
 		)
-	)	
-	
+	)
+
 {-
 	Get a monkey from 'b'.
 	Put it 'on deck'.
@@ -142,19 +142,19 @@ def followLeft(b,s,f,d) =
 	Await acknowledgement.
 -}
 def bGuide(b,deck,sideFlag,sideAck,mainLine) =
-	( b.get() 
+	( b.get()
 	>d> deck.put(d)
 	>>  sideFlag.get()
 	>>  sideFlag.put(true)
 	>>  mainLine.put(true)
 	>>  sideAck.get()
 	>>  bGuide(b,deck,sideFlag,sideAck,mainLine)
-	) 
-	
+	)
+
 def bManager(mainLine,aPack,oPack) =
 	oPack >(oFlag,oDeck,oAck,oFollow,oLink,oSign,oMonkeyDone,oPop)>
 	aPack >(aFlag,aDeck,aAck,aFollow,aLink,aSign,aMonkeyDone,aPop)>
-	mainLine.get() 
+	mainLine.get()
 	>> oFlag.get() -- Check opposite side
 	>rdy> oFlag.put(false) -- Replace notifier
 	>>	((	Ift(rdy) -- A monkey's waiting
@@ -172,19 +172,19 @@ def bManager(mainLine,aPack,oPack) =
 			>> aDeck.get() -- Get the waiting monkey
 			>d> aAck.put(true) -- Acknowledge the current guide
 			>> aFollow(aLink,aSign,aMonkeyDone,d) -- Send the monkey across
-			>> aPop() 
+			>> aPop()
 			>> bManager(mainLine,aPack,oPack)
 		))
 
 def framerate() =
 	disp.redraw() >> Rwait(5) >> framerate()
-	
+
 -- How many miliseconds go by in between logical timer clicks.
 def realTime() =
 	Rwait(5) >> Rwait(15) >> realTime()
 
-	 
-disp.open() >> 
+
+disp.open() >>
 ( Rwait(10000)>> (framerate() | realTime())
 |( (spurtSource(500,2200,1,5,1,64,10,50,100,400) >lm> disp.leftPush(lm) >> leftQ.put(lm) >> stop)
  | (spurtSource(500,2200,1,5,1,64,10,50,100,400) >rm> disp.rightPush(rm) >> rightQ.put(rm) >> stop) -- The right side is more popular

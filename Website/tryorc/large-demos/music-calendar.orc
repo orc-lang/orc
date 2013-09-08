@@ -44,45 +44,45 @@ val SongKickHTTP = KeyedHTTP("orc/orchard/orchard.properties", "songkick")
 
 {- Use the SongKick Web API to look up shows -}
 def findShows(city, numberOfShows) =
-  
+
   {- Given a city name, find the corresponding metro area ID -}
   def lookupMetro(city) =
     val base = "http://api.songkick.com/api/3.0/search/locations.xml"
 	   val query = {. query = city .}
-	   val response = SongKickHTTP(base,query).get() 
-    ReadXML(response) 
+	   val response = SongKickHTTP(base,query).get()
+    ReadXML(response)
       >xml("resultsPage",xml("results", xml("location", m)))>
-    m 
+    m
       >XMLElement("metroArea", {. id = n .}, _)>
     n
-    
+
 		{- Given a metro ID, publish the first n events in that metro area -}
 		def metroShows(metroID, n) =
 		  val base = "http://api.songkick.com/api/3.0/metro_areas/" + metroID + "/calendar.xml"
 		  val query = {. per_page = n .}
 		  val response = SongKickHTTP(base, query).get()
-		  ReadXML(response) 
+		  ReadXML(response)
 		    >xml("resultsPage",xml("results", m))>
-		  m 
+		  m
 		    >XMLElement("event", _, _)>
 		  m
-		
+
 		{- 
-		  Extract an xs:datetime or xs:date, depending on which is available. 
-		  Halt if argument is silent.  
+		  Extract an xs:datetime or xs:date, depending on which is available.
+		  Halt if argument is silent.
 		-}
 		def extractDT(info) =
-		  info.datetime >dt> Iff(dt.isEmpty()) >> 
+		  info.datetime >dt> Iff(dt.isEmpty()) >>
       dt.substring(0, dt.length() - 2)
       + ":"
       + dt.substring(dt.length() - 2)
     ;
     info.date >d> Iff(d.isEmpty()) >> d
-		  
-		val metroID = 
-		  lookupMetro(city) 
-		  ; Println("Couldn't find a metro area corresponding to " + city) >> stop    
-  
+
+		val metroID =
+		  lookupMetro(city)
+		  ; Println("Couldn't find a metro area corresponding to " + city) >> stop
+
   metroShows(metroID, numberOfShows) >event>
   (
   val xattr(_, {. displayName = title .}) = event
@@ -99,18 +99,17 @@ def findShows(city, numberOfShows) =
     endTime = extractDT(endInfo) ; ""
   .}
   )
-  
+
 -- execution
 Println("Authenticating...") >>
 GoogleCalendar.authenticate(oauth.authenticate("google", "scope", "http://www.google.com/calendar/feeds/")) >>
-findShows(Prompt("Search in city: "), 50) >show> 
+findShows(Prompt("Search in city: "), 50) >show>
 GoogleCalendar.addEventToCalendar(
-  show.title, 
-  show.content, 
-  show.location, 
-  show.startTime, 
+  show.title,
+  show.content,
+  show.location,
+  show.startTime,
   show.endTime) >>
 Println("Added show to calendar: " + show.title) >>
 stop
 ; "DONE"
-

@@ -25,7 +25,7 @@ import net.oauth.signature.RSA_SHA1;
  * Abstract out the details of OAuth authentication so
  * that sites can use it without relying on a particular
  * platform (UI or web).
- * 
+ *
  * @author quark
  */
 public abstract class OAuthProvider extends DotSite {
@@ -41,7 +41,7 @@ public abstract class OAuthProvider extends DotSite {
 
 //	/**
 //	 * Get an authenticated OAuthAccessor.
-//	 * 
+//	 *
 //	 * @param name
 //	 * @param request
 //	 * @return

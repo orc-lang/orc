@@ -106,7 +106,7 @@ public final class Interval<T extends Comparable> implements Comparable<Interval
 	 * Returns 0 if the intervals overlap. For non-disjoint intervals, this
 	 * violates transitivity, but that's ok because we ensure that only
 	 * disjoint ranges are stored in a sorted set.
-	 * 
+	 *
 	 * <p>Note that even if this method returns 0, the two objects are
 	 * not necessarily equal.
 	 */

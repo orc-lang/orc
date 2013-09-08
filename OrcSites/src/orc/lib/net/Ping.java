@@ -27,11 +27,11 @@ import orc.values.sites.compatibility.PartialSite;
  * as a string and an optional timeout (defaulting to 10 seconds), and returns
  * the approximate time in milliseconds required to receive a response. If no
  * response is received within the timeout, does not publish.
- * 
+ *
  * <p>WARNING: if ICMP cannot be used for some reason (e.g. you are running the
  * program as a non-root user on a Linux system), this will fall back to a regular
- * TCP/IP request to port 7 (echo), which often fails due to firewalls and the like. 
- * 
+ * TCP/IP request to port 7 (echo), which often fails due to firewalls and the like.
+ *
  * @author quark
  */
 public class Ping extends PartialSite {

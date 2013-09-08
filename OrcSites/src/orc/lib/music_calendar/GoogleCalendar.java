@@ -126,13 +126,13 @@ public class GoogleCalendar extends EvalSite {
 		 * Actually add an event to a calendar. BLOCKING.
 		 */
 		public void addEventToCalendar(final String eventTitle, final String eventContent, final String location, final String startDT, final String endDT) throws ServiceException, IOException, OAuthException {
-			
+
 			synchronized (this) {
 				if (!authenticated) {
 					throw new OAuthException("Not authenticated.");
 				}
 			}
-			
+
 			final When eventTimes = new When();
 			eventTimes.setStartTime(DateTime.parseDateTimeChoice(startDT));
 			if (!endDT.isEmpty()) {

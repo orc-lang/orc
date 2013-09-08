@@ -19,7 +19,7 @@ package orc.orchard.events;
  * println events. Well-written Orc programs should
  * use publications to communicate with the client,
  * but using prints is convenient for short scripts.
- * 
+ *
  * @author quark
  */
 public class PrintlnEvent extends JobEvent {

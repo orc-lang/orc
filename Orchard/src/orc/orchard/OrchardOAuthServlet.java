@@ -36,7 +36,7 @@ public class OrchardOAuthServlet extends HttpServlet {
 	/**
 	 * Adds this accessor to the Orc engine globals for retrieval when authorization callback is received.
 	 * This is not idempotent, only call this method once per auth request.
-	 * 
+	 *
 	 * @param accessor Accessor to be authorized
 	 * @param mbox Mailbox to be signaled when authorization is received
 	 * @param job Orchard job that will receive the callback
@@ -55,11 +55,11 @@ public class OrchardOAuthServlet extends HttpServlet {
 
 	/**
 	 * Receive and validate an authorization callback and alert the client.
-	 * 
+	 *
 	 * @param request
 	 * @throws IOException
 	 * @throws OAuthException
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	public void receiveAuthorization(final HttpServletRequest request) throws IOException, OAuthException, InterruptedException {
 		final OAuthMessage requestMessage = OAuthServlet.getMessage(request, null);
@@ -122,7 +122,7 @@ public class OrchardOAuthServlet extends HttpServlet {
 	 */
 	@Override
 	public String getServletInfo() {
-		return OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+		return OrchardProperties.getProperty("war.manifest.Implementation-Version") +
 			" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") +
 			"  Copyright The University of Texas at Austin";
 	}
