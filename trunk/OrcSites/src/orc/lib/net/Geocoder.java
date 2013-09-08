@@ -23,7 +23,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
 /**
  * API for http://geocoder.us. This service returns a latitude/longitude tuple
  * given a city/state, zip code, or full address in the United States.
- * 
+ *
  * @author quark
  */
 public class Geocoder {

@@ -35,9 +35,9 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * Support for non-polling notification of new messages. Each listener has a
  * globally-unique email address ({@link MailListener#getAddress()}) and a
  * {@link MailListener#get()} method used to receive emails at that address.
- * 
+ *
  * <p>Only one process should be listening for messages at any time.
- * 
+ *
  * @author quark
  */
 public class MailListenerFactory extends SiteAdaptor {

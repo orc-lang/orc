@@ -5,7 +5,7 @@ c.get()
 | Rwait(100) >>
   c.put(3) >>
   c.put(3) >>
-  c.close() >> 
+  c.close() >>
   Rwait(50) >>
   4
 

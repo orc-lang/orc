@@ -45,7 +45,7 @@ import scala.util.parsing.input.Positional;
  * Standard implementation of a JobService. Extenders should only need to
  * provide a constructor and override onFinish() to clean up any external
  * resources.
- * 
+ *
  * @author quark
  */
 public final class Job implements JobMBean {
@@ -244,7 +244,7 @@ public final class Job implements JobMBean {
 				stop();
 			}
 
-			/** 
+			/**
 			 * Save prints in a buffer.
 			 * Send completed lines to the event stream.
 			 */
@@ -310,7 +310,7 @@ public final class Job implements JobMBean {
 
 	/**
 	 * Begin executing the job.
-	 * 
+	 *
 	 * @throws InvalidJobStateException
 	 *             if the job was already started, or was aborted.
 	 */
@@ -324,7 +324,7 @@ public final class Job implements JobMBean {
 	/**
 	 * Indicate that the client is done with the job. The job will be canceled if
 	 * necessary.
-	 * 
+	 *
 	 * <p>
 	 * Once this method is called, the service provider is free to garbage
 	 * collect the service and the service URL may become invalid, so no other
@@ -366,7 +366,7 @@ public final class Job implements JobMBean {
 	 * If no events have occurred, block using waiter until one occurs.
 	 * If/when the job completes (so no more events can occur), return
 	 * an empty list.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *             if the request times out.
 	 */
@@ -388,7 +388,7 @@ public final class Job implements JobMBean {
 	 * NEW: not yet started.
 	 * RUNNING: started and processing tokens.
 	 * BLOCKED: blocked because event buffer is full.
-	 * DONE: finished executing. 
+	 * DONE: finished executing.
 	 * @return the current state of the job.
 	 */
 	@Override
@@ -420,10 +420,10 @@ public final class Job implements JobMBean {
 	@Override
 	public String getRunningTime() {
 		final long elapsed = (events.isClosed() ? endDate.getTime() : System.currentTimeMillis()) - startDate.getTime();
-		return	elapsed / 86400000 + " d " + 
-				elapsed / 3600000 % 24 + " hr " + 
-				elapsed / 60000 % 60 + " min " + 
-				elapsed / 1000 % 60 + " s"; 
+		return	elapsed / 86400000 + " d " +
+				elapsed / 3600000 % 24 + " hr " +
+				elapsed / 60000 % 60 + " min " +
+				elapsed / 1000 % 60 + " s";
 	}
 
 	/**

@@ -14,7 +14,7 @@ Rwait(250) >> Println("250ms") >> stop
 (
   def f() = Println("f()") >> x
   f() >> stop
-) 
+)
 
 {-
 OUTPUT:

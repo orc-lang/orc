@@ -108,7 +108,7 @@ public class PublicationEvent extends JobEvent {
 
 	protected static Object toXmlMarshallableValue(final Object value) {
 		if (value == null ||
-				// primitive types will be boxed if passed as args	
+				// primitive types will be boxed if passed as args
 				//value.getClass() == java.lang.Boolean.TYPE ||
 				//value.getClass() == java.lang.Byte.TYPE ||
 				//value.getClass() == java.lang.Short.TYPE ||

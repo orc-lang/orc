@@ -21,13 +21,13 @@
 	<br />
 	David Kitchin, Adrian Quark, William Cook, and Jayadev Misra<br />
 	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
-	
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
 	<a class="bibtex" href="papers/qs.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, and Jayadev Misra<br />
 	"Reflections on the Work of C.A.R. Hoare", a Festschrift in honor of his 75th birthday, Springer-Verlag, 2010.</li>
-	
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-3-540-89437-7_9">DOI</a>
 	<a class="bibtex" href="papers/structured_interacting_computations_2008.bib">BibTeX</a>
@@ -140,12 +140,12 @@ Wide-Area Networks</a><br />
 	William Cook, Jayadev Misra, David Kitchin, Adrian Quark, Andrew Matsuoka, John Thywissen<br />
 	FORTE 2009
 	</li>
-	
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/orc-pads09.pdf">Describing Simulations in the Orc Programming
 Language</a><br />
 	David Kitchin, Adrian Quark, Jayadev Misra<br />
 	23rd ACM/IEEE/SCS Workshop on Principles of Advanced and Distributed Simulation (PADS 2009)</li>
-	
+
 </ul>
 
 

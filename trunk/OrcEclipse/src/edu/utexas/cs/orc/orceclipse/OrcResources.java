@@ -83,7 +83,7 @@ public class OrcResources {
 	public static final String ORC_TYPE_OBJ = "orc_type_obj"; //$NON-NLS-1$
 
 	/**
-	 * Name of the 7x8 overlay image for the Orc project nature 
+	 * Name of the 7x8 overlay image for the Orc project nature
 	 */
 	public static final String ORC_OVR = "orc_ovr"; //$NON-NLS-1$
 
@@ -146,7 +146,7 @@ public class OrcResources {
 	 * Create an image descriptor for the given path in a bundle. The path can contain variables
 	 * like $NL$.
 	 * If no image could be found, <code>null</code> is returned.
-	 * 
+	 *
 	 * @param bundle Plug-in to serh fo the image
 	 * @param path Path to the image file in the give plug-in
 	 * @return ImageDescriptor of image or null

@@ -39,7 +39,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   val runtime = caller.runtime
 
-  /* Returns true if the state transition was made, 
+  /* Returns true if the state transition was made,
    * false otherwise (e.g. if the handle was already in a final state)
    */
   protected def setState(newState: CallState): Boolean = {

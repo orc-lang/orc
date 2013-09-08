@@ -9,7 +9,7 @@ def countdown(i) = Println(i) >> Rwait(500) >> countdown(i-1)
 val Countdown = MakeSite(countdown)
 
 Let(Rwait(250) >> true | Countdown(4)) -- | Rwait(750) >> false
- 
+
 
 {-
 OUTPUT:

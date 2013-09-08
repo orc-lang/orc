@@ -69,7 +69,7 @@ container of your choosing.
 Note: You will need to tell your JAX-WS implementation and servlet
       container to use the same HTTP server.  For Jetty, you'll
       need the J2SE6 module (see note below), and add the following to
-      the Configure Server element of jetty.xml: 
+      the Configure Server element of jetty.xml:
 
     <!-- Use Jetty as Java 6 HTTP server provider - JAX-WS uses this for Endpoint publishing -->
     <Call class="org.mortbay.jetty.j2se6.JettyHttpServerProvider" name="setServer">

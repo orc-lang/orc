@@ -18,7 +18,7 @@ import java.util.LinkedList;
 /**
  * Manage waiters waiting for the same event. This is NOT thread-safe -- since
  * you should only call it from within a synchronized block there is no need.
- * 
+ *
  * @author quark
  */
 public class WaiterManager {

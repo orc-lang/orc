@@ -59,7 +59,7 @@ trait Group extends GroupMember {
     }
   }
 
-  /* 
+  /*
    * Note: This is a local live check.
    * A global check requires a linear-time
    * ascension of the group tree.

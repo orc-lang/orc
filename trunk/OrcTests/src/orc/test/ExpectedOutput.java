@@ -24,7 +24,7 @@ import java.util.List;
  * We look for one or more comment blocks with a line starting with "OUTPUT:",
  * and take everything in the comment after the "OUTPUT:" line to be a possible
  * output of the program. Example:
- * 
+ *
  * <pre>
  * {-
  * OUTPUT:
@@ -33,10 +33,10 @@ import java.util.List;
  * -}
  * 1 | 2
  * </pre>
- * 
+ *
  * An output block starting with "OUTPUT:PERMUTABLE" specifies that any
  * permutation of the given values is a valid output. Example:
- * 
+ *
  * <pre>
  * {-
  * OUTPUT:PERMUTABLE
@@ -45,13 +45,13 @@ import java.util.List;
  * 3
  * -}
  * </pre>
- * 
+ *
  * says that the program may publish the values 1, 2 and 3 in any order. If none
  * of the expected outputs match the actual output, the test fails for that
  * example. The multiple output blocks and OUTPUT:PERMUTABLE feature let us cope
  * with limited non-determinism, but a better solution is needed for serious
  * testing of non-deterministic programs.
- * 
+ *
  * @author quark, srosario
  */
 public class ExpectedOutput {

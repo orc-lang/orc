@@ -8,7 +8,7 @@
 
 (
 
-Channel(0) >> "Channel arity checking is faulty." 
+Channel(0) >> "Channel arity checking is faulty."
 ;
 Cell(0) >> "Cell arity checking is faulty."
 ;
@@ -16,10 +16,10 @@ BoundedChannel(0,1) >> "BoundedChannel arity checking is faulty."
 ;
 Ref(0,1) >> "Ref arity checking is faulty."
 ;
-Semaphore(0,1) >> "Semaphore arity checking is faulty." 
+Semaphore(0,1) >> "Semaphore arity checking is faulty."
 ;
 Counter(0,1) >> "Counter arity checking is faulty."
- 
+
 ) :!: Bot
 
 {- 

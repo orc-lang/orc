@@ -20,7 +20,7 @@ type Message = Dec() | Wait(Callback)
 
 val m = Channel[Message]()
 
-def actor(Integer, List[Callback]) :: Signal 
+def actor(Integer, List[Callback]) :: Signal
 def actor(n, waiters) =
   def on(Message) :: Signal
   def on(Dec()) =

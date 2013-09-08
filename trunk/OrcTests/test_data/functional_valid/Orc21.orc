@@ -1,7 +1,7 @@
 {- Orc21.orc
  - 
  - Testing for guarded clauses
- - (equivalent to previous test for 
+ - (equivalent to previous test for
  -  now-deprecated equality pattern)
  - 
  - Created by dkitchin on Oct 12, 2010

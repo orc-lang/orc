@@ -15,22 +15,22 @@ package orc.orchard;
 
 /**
  * Provides blocking or callback behavior for asynchronous methods.
- * 
+ *
  * <p>
  * In a servlet, it's bad practice to actually block a method call because
  * threads are a limited resource. As an alternative, some servlet containers
  * allow you to register a request to be suspended and later resumed/retried
  * (examples: Jetty Continuations, Java Servlet 3.0 suspendable requests).
- * 
+ *
  * <p>
  * This interface abstracts away the differences between blocking and callback
  * implementations of asynchrony so the underlying implementation doesn't have
  * to know about them.
- * 
+ *
  * <p>
  * This is not thread-safe -- you are expected to call it from within
  * a block synchronized on the monitor.
- * 
+ *
  * @author quark
  */
 public interface Waiter {

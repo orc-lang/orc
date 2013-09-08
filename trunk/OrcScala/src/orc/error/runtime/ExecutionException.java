@@ -17,7 +17,7 @@ import orc.error.OrcException;
 
 /**
  * Exceptions generated while executing a compiled graph.
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions

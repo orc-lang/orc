@@ -1,4 +1,4 @@
-<!--#include virtual="/template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" -->
 
 <h1>Quick Start to Developing the Orc Language Toolset</h1>
 
@@ -7,7 +7,7 @@
 <li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
 <!--<li><a href="http://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
 <li><a href="http://www.eclipse.org/downloads/">Eclipse</a> 3.7 or later. These
-instructions assume version 3.7.2, but other versions should behave similarly. 
+instructions assume version 3.7.2, but other versions should behave similarly.
 "Eclipse Classic" is sufficient, but any Eclipse package with the JDT can be used.</li>
 <li><a href="http://www.eclipse.org/subversive/">Subversive</a>. You may also use
 	<a href="http://subclipse.tigris.org">Subclipse</a>, or
@@ -67,4 +67,4 @@ Note that adding the Scala library (as it is represented in the OrcScala class p
 <li>Go to <b>Run -&gt; Run ...</b>, select <b>Orc</b>, and click <b>Run</b> (after doing this once, you can use the dropdown menu of the "run" icon in the toolbar as a shortcut).</li>
 </ol>
 
-<!--#include virtual="/template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" -->

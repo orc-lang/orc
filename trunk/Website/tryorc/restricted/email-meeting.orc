@@ -40,7 +40,7 @@ val (from, meetingTopic, duration, span, invitees, quorum, timeLimit, requestTem
       "Invitees should be one per line: name and e-mail address, separated by space. You may either upload the invitees or enter them in the text box below."),
     UploadField("inviteesUpload", "Upload Invitees"),
     Textarea("inviteesText", "Enter Invitees", "", false),
-    Mandatory(Textarea("requestTemplate", "Request Message", 
+    Mandatory(Textarea("requestTemplate", "Request Message",
       "Greetings {{NAME}},\n\n"
       + "We are organizing a \"{{TOPIC}}\" meeting.\n\n"
       + "Click on the below URL to choose time slots when you"

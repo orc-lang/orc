@@ -3,7 +3,7 @@
 
 include "date.inc"
 
-def clock() =   
+def clock() =
   val start = DateTime().getMillis()
   lambda () = DateTime().getMillis() - start
 

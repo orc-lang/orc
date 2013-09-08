@@ -44,8 +44,8 @@
     </path>
 
 
-	<!-- ================================= 
-          target: jar              
+	<!-- =================================
+          target: jar
          ================================= -->
 	<target name="jar" description="Build orc-sites-*.jar">
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
@@ -70,8 +70,8 @@
 		</jar>
 	</target>
 
-	<!-- ================================= 
-          target: javadoc              
+	<!-- =================================
+          target: javadoc
          ================================= -->
 	<target name="javadoc" description="Build Javadoc">
 		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true"/>
@@ -89,14 +89,14 @@
 		</javadoc>
 		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" duplicate="fail"/>
 	</target>
-	
+
 	<!-- =================================
           target: build
          ================================= -->
     <target name="build" depends="jar,javadoc" description="Build all targets"/>
 
-	<!-- ================================= 
-          target: zip              
+	<!-- =================================
+          target: zip
          ================================= -->
 	<target name="zip" depends="jar" description="Build ZIP archive for distribution">
     	<delete file="build/${target.name}.zip"/>
@@ -129,37 +129,37 @@
 	<target name="package" depends="zip" description="Package for distribution">
 	</target>
 
-	<!-- ================================= 
-          target: all              
+	<!-- =================================
+          target: all
          ================================= -->
     <target name="all" depends="zip,javadoc" description="Build all targets"/>
 
-	<!-- ================================= 
-          target: upload              
+	<!-- =================================
+          target: upload
          ================================= -->
 	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
 			classpath="${orc.location.OrcScala}/tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
-		<gcupload 
-			username="${orc.googlecode.username}" 
-			password="${orc.googlecode.password}" 
-			projectname="orc" 
-			filename="build/${target.name}.zip" 
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}.zip"
 			targetfilename="${target.name}.zip"
 			summary="Supplemental Orc sites, for webservices and other demos."
 			labels="Type-Archive, OpSys-All"/>
-		<gcupload 
-			username="${orc.googlecode.username}" 
-			password="${orc.googlecode.password}" 
-			projectname="orc" 
-			filename="build/${target.name}-doc.zip" 
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}-doc.zip"
 			targetfilename="${target.name}-doc.zip"
 			summary="Javadoc documentation for supplemental Orc sites."
 			labels="Type-Docs, OpSys-All"/>
 	</target>
 
-	<!-- ================================= 
-          target: clean              
+	<!-- =================================
+          target: clean
          ================================= -->
 	<target name="clean" description="Delete build directory">
 		<delete dir="build" followsymlinks="no" includeemptydirs="true"/>

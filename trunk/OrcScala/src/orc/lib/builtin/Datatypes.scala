@@ -52,7 +52,7 @@ object DatatypeBuilder extends TotalSite with TypedSite {
       /*
        * There is a special case for datatypes with a single constructor. Instead of
        * using a tuple type we simply use the type of the single constructor.
-       * 
+       *
        * This matches the pattern generated in Translator.scala.
        */
       typeArgs match {

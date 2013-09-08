@@ -1,4 +1,4 @@
-<!--#include virtual="/template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" -->
 
 <h2>Community Resources</h2>
 <ul>
@@ -19,8 +19,8 @@
 	<li><a href="http://www.cs.utexas.edu/~misra/">Prof. Jayadev Misra</a></li>
 	<li><a href="http://www.cs.utexas.edu/~wcook/">Prof. William Cook</a></li>
 	<li><a href="http://www.cs.utexas.edu/~dkitchin/">David Kitchin</a></li>
-	<li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>        
-	<li><a href="http://www.cs.utexas.edu/~amp/">Arthur Peters</a></li>        
+	<li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>
+	<li><a href="http://www.cs.utexas.edu/~amp/">Arthur Peters</a></li>
 </ul>
 <h3>Past</h3>
 <ul>
@@ -38,4 +38,4 @@
 	<li>Kristi Morton</li>
 </ul>
 
-<!--#include virtual="/template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" -->

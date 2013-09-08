@@ -6,7 +6,7 @@ You are given the site <code>ls(x)</code> which returns
 a list of file names found in the directory named
 by the path <code>x</code>, or an empty list if <code>x</code> is
 not a directory. Paths are written as strings
-using POSIX conventions, e.g. "/foo/bar/baz". 
+using POSIX conventions, e.g. "/foo/bar/baz".
 So for example <code>ls("/usr/")</code> might return
 <code>["local/", "bin/", "lib/]</code>. Unlike POSIX, you
 can assume that directory paths always end in "/".

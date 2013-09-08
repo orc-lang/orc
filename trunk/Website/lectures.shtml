@@ -1,4 +1,4 @@
-<!--#include virtual="/template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" -->
 
 <script src="/orchard/orc.js" type="text/javascript"></script>
 
@@ -55,4 +55,4 @@ various ways in which classes can be used.</p>
 guidance.  When you are ready, <a href="tryorc.shtml">try Orc</a>
 yourself.</p>
 
-<!--#include virtual="/template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" -->

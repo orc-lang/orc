@@ -4,12 +4,12 @@
  - 
  - Created by misra on Mar 30, 2010 2:25:16 PM
  -}
- 
+
 {-
 A RelaxedChannel implements the explicit channel in a more compact
 fashion. It supports the put and get operations as before. But, unlike
 a FIFO channel it only guarantees that every entry is eventually
-removed. 
+removed.
 
 We can not claim that the readers will get service in the order in
 which they were put in the channel. When a semaphore, r or w, is
@@ -43,14 +43,14 @@ remove. Since coin flip is fair, it will not favor of one kind forever.
 def class RelaxedChannel() =
   val (nwr, nww) = (Ref[Integer](0),Ref[Integer](0)) -- # waiting readers, writers
   val mutex = Semaphore(1) -- to gain access to (nwr, nww)
-  val count = Semaphore(0) -- nwr? + nww? 
+  val count = Semaphore(0) -- nwr? + nww?
 
-  def put(b :: Boolean) = 
-    mutex.acquire() >> 
+  def put(b :: Boolean) =
+    mutex.acquire() >>
     (if b then nwr := nwr? + 1 else nww := nww? + 1) >>
     mutex.release() >> count.release()
 
-  def get() :: Boolean = 
+  def get() :: Boolean =
     count.acquire() >>
     mutex.acquire() >> chooseone(nwr?,nww?) >b> mutex.release() >> b
 
@@ -60,7 +60,7 @@ def class RelaxedChannel() =
   def chooseone(Integer, Integer) :: Boolean
   def chooseone(0,_) = removewriter()
   def chooseone(_,0) = removereader()
-  def chooseone(_,_) =      
+  def chooseone(_,_) =
     if (Random(2) = 0) then removereader() else removewriter()
 
   stop
@@ -70,15 +70,15 @@ def class ReadersWriters() =
   val cb    = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
 
-  def start(b :: Boolean) :: Signal = 
-    buff.put(b) >> 
+  def start(b :: Boolean) :: Signal =
+    buff.put(b) >>
     (if b then r.acquire() else w.acquire())
 
   def end() = cb.dec()
 
   def main() :: Bot =
-    buff.get() >b> 
-    (if  b 
+    buff.get() >b>
+    (if  b
       then  (cb.inc() >> r.release()  >> main())
       else  (cb.onZero() >> cb.inc() >> w.release() >> cb.onZero() >> main())
     )

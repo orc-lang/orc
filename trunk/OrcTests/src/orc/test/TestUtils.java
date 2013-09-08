@@ -26,7 +26,7 @@ public final class TestUtils {
 	private TestUtils() {
 		/* Only static members*/
 	}
-	
+
 	abstract public static class OrcTestCase extends TestCase {
 	    protected String suiteName;
 	    protected File orcFile;

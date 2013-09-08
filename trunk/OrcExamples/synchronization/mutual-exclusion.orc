@@ -12,13 +12,13 @@ acquire a lock before calling the server and release it afterwards. But
 this exposes the lock and introduces the possibility of some one
 process making an error.
 
-Similarly, the lock can be accessed by the server, but it still exposes the lock. 
+Similarly, the lock can be accessed by the server, but it still exposes the lock.
 We would like to encapsulate the lock.
 -}
 
 def class Servercall[A]() =
   val lock = Semaphore(1)
-  def main(v :: A) = 
+  def main(v :: A) =
     lock.acquire() >> Server(v) >w> lock.release() >> w
 stop
 

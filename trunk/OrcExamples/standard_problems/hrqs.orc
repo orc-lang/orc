@@ -2,8 +2,8 @@
  - 
  - Created by Amin Shali on Ausg 23, 2010
 
-The idea of this code is from 
-http://www.cs.cmu.edu/~scandal/nesl/alg-sequence.html 
+The idea of this code is from
+http://www.cs.cmu.edu/~scandal/nesl/alg-sequence.html
  -}
 
 def qs[A](List[A]) :: List[A]

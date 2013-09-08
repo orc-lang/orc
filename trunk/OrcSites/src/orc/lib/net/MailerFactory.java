@@ -75,7 +75,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * <li>{@link OrcTransport} provides a cooperatively-threaded wrapper for
  * blocking {@link Transport} operations. It also supports a quota.
  * </ul>
- * 
+ *
  * <p>This adds the following custom properties:
  * <ul>
  * <li>orc.mail.from.separator: separator used by {@link Mailer#newFromAddress()}.
@@ -85,7 +85,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * <li>orc.mail.quota.duration: how long a quota period lasts
  * <li>orc.mail.quota.burst: maximum number of messages that can be sent during any one quota period
  * </ul>
- * 
+ *
  * @author quark
  */
 public class MailerFactory extends SiteAdaptor {
@@ -106,7 +106,7 @@ public class MailerFactory extends SiteAdaptor {
 	 * A quota which allows sending no more than {@link #burst} mails per
 	 * {@link #duration} milliseconds. Think of mails as occupying slots in
 	 * a buffer of fixed size which is emptied regularly.
-	 * 
+	 *
 	 * <p>
 	 * This quota scheme is somewhat unusual and hard to describe formally, but
 	 * it's the closest I could come up with to something like restricted
@@ -331,7 +331,7 @@ public class MailerFactory extends SiteAdaptor {
 		/**
 		 * Generate a new random "FROM" address, of the following form:
 		 * USER + orc.mail.from.separator + unique id + "@" + HOST
-		 * @throws AddressException 
+		 * @throws AddressException
 		 */
 		public Address newFromAddress() throws AddressException {
 			final String from = properties.getProperty("mail.from");
@@ -524,7 +524,7 @@ public class MailerFactory extends SiteAdaptor {
 	 * Wraps methods of {@link Message} to make them use cooperative
 	 * threading and return {@link OrcFolder} when appropriate. Also
 	 * added utility methods {@link #getText()} and {@link #delete()}.
-	 * 
+	 *
 	 * @author quark
 	 */
 	public static class OrcMessage {
@@ -738,7 +738,7 @@ public class MailerFactory extends SiteAdaptor {
 		public void delete() throws MessagingException {
 			message.setFlag(Flags.Flag.DELETED, true);
 		}
-		
+
 		/** Check if auto-reply to this message is allowable per RFC 3834 */
 		public boolean safeToAutoRespond() throws MessagingException {
 			String[] autoSubmittedHdrs = message.getHeader("Auto-Submitted");
@@ -762,7 +762,7 @@ public class MailerFactory extends SiteAdaptor {
 	 * Filter for a MailFolder. Methods on a filter return a new filter, so you
 	 * can create compound filters easily. I.e. to filter mails from "foo" with
 	 * subject "bar": filter.from("foo").subject("bar")
-	 * 
+	 *
 	 * <p>
 	 * Filters include:
 	 * <ul>
@@ -778,9 +778,9 @@ public class MailerFactory extends SiteAdaptor {
 	 * <li>body(String): match any substring of the body
 	 * <li>header(header, content): match any substring of a header
 	 * </ul>
-	 * 
+	 *
 	 * @author quark
-	 * 
+	 *
 	 */
 	public static class MailFilter {
 		private final SearchTerm term;

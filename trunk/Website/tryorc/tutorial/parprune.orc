@@ -3,4 +3,4 @@
 
   <color<
 
-    Prompt("Choose a color.")  
+    Prompt("Choose a color.")

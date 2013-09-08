@@ -22,7 +22,7 @@ import java.util.Properties;
 /**
  * Store global properties. See uses of this class to see which properties are
  * supported.
- * 
+ *
  * @author quark
  */
 public final class OrchardProperties {

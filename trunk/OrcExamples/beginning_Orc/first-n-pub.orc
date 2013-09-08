@@ -23,7 +23,7 @@ val c = Channel[Integer]()
 val s = Semaphore(0)
 allow(5, c, s) <<
   s.acquire() | f() >x> c.put(x) >> stop
-  
+
 {-
 OUTPUT:
 0

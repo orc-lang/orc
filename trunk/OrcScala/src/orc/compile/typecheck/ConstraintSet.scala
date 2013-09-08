@@ -59,7 +59,7 @@ class ConstraintSet(val bounds: List[(TypeVariable, (Type, Type))]) {
 
   /* Find the minimal substitution of the type variables
    * from this constraint set into the given type R.
-   * 
+   *
    * If there is no minimal type, invoke warnNoMinimal
    * to emit a warning and report the type that was guessed.
    */

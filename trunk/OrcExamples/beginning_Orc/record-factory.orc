@@ -17,10 +17,10 @@ def Counter() =
   def read() = n?
 
   -- Return a record of synchronized methods
-  {. 
+  {.
     inc = synchronized(lock, inc),
     dec = synchronized(lock, dec),
-    read = synchronized(lock, read) 
+    read = synchronized(lock, read)
   .}
 
 -- Example of using the counter

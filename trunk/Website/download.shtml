@@ -1,4 +1,4 @@
-<!--#include virtual="/template/header.shtml" --> 
+<!--#include virtual="/template/header.shtml" -->
 
 <h2>License</h2>
 
@@ -52,4 +52,4 @@ quick start</a> describes how to check out and build the Orc Eclipse project
 from source and start running Orc programs.</p>
 
 
-<!--#include virtual="/template/footer.shtml" --> 
+<!--#include virtual="/template/footer.shtml" -->

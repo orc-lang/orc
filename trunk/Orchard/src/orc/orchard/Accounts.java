@@ -186,7 +186,7 @@ class DbAccounts extends Accounts {
 			final ResultSet rs = sql.executeQuery();
 			try {
 				if (!rs.next()) {
-					// If the account was not found, use 
+					// If the account was not found, use
 					// a special "guest" account.
 					logger.warning("Orchard accounts: Account '" + devKey + "' not found, using guest account.");
 					return guest;

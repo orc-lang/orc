@@ -26,26 +26,26 @@ def tallyVotes(votes :: List[Integer]) =
     val t = default(table.get(v) :!: Option[Integer], 0)
     val newt = t+1
     table.put(v, newt) >>
-    ( 
-    if newt :> mt then 
+    (
+    if newt :> mt then
       (v, newt)
-    else 
-      (mv, mt) 
+    else
+      (mv, mt)
     )
   foldl(tallyVote, (0, 0), votes)
-  
+
 -- decision algorithm for a good process
 def good(maj :: Integer, tally :: Integer) =
   val threshold = (if coin() then 5*t else 6*t)
   if tally :> threshold then maj else 0
-  
+
 -- decision algorithm for a bad process
 def bad(_ :: Integer, _ :: Integer) = Random(2)
 
 val nRounds = Ref[Integer](0)
 
 -- generic process; pick is the decision algorithm
-def process(pick :: lambda(Integer, Integer) :: Integer) :: lambda(Channel[Integer]) :: Integer = 
+def process(pick :: lambda(Integer, Integer) :: Integer) :: lambda(Channel[Integer]) :: Integer =
   lambda (out) = (
     -- vote for a value
     def vote(value :: Integer) = map(lambda (_::Top) = out.put(value), channels)

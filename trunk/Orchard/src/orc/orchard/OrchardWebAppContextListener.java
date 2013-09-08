@@ -29,7 +29,7 @@ import javax.servlet.ServletContextListener;
 /**
  * Listens for initialized and destroyed events on the Orchard Web
  * application context.
- * 
+ *
  * Currently, this just copies the Web app's initialization parameters
  * into the <code>OrchardProperties</code> map.
  *
@@ -63,12 +63,12 @@ public class OrchardWebAppContextListener implements ServletContextListener {
 			logger.log(Level.SEVERE, "Orchard WAR manifest attributes read failed", e);
 		}
 		logger.config(getOrchardFullVersionString());
-		logger.config(orc.Main.orcImplName() + " " + orc.Main.orcVersion()); 
+		logger.config(orc.Main.orcImplName() + " " + orc.Main.orcVersion());
 	}
 
 	private String getOrchardFullVersionString() {
 		return OrchardProperties.getProperty("war.manifest.Implementation-Title") + " " +
-			OrchardProperties.getProperty("war.manifest.Implementation-Version") + 
+			OrchardProperties.getProperty("war.manifest.Implementation-Version") +
 			" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision");
 	}
 

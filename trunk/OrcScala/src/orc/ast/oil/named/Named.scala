@@ -82,10 +82,10 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
-/* Match an expression with exactly one hole. 
+/* Match an expression with exactly one hole.
  * Matches as Module(f), where f is a function which takes
  * a hole-filling expression and returns this expression
- * with the hole filled. 
+ * with the hole filled.
  */
 object Module {
   def unapply(e: Expression): Option[Expression => Expression] = {
@@ -234,7 +234,7 @@ object Conversions {
 /* Special syntactic forms, which conceptually 'reverse' some of
  * the translations performed earlier in compilation, because
  * it is sometimes easier to work with the unencoded versions.
- * 
+ *
  * Each form is an object with an unapply (decode to special
  * form) and an apply (encode to canonical form) method. Thus,
  * they can be treated like case classes, except that construction
@@ -243,15 +243,15 @@ object Conversions {
  */
 
 /* A call with argument unfolding reversed.
- * 
+ *
  * Matching this pattern can take O(N^2) steps,
  * where N is the depth of a series of left-associative
  * nested pruning combinators. That is, it is of the form
  * f <x1< g1 <x2< g2 ... <xN< gN
- * 
+ *
  * The use cases for this pattern could be rewritten
  * to more complex and less maintainable O(N) solutions,
- * but I figured it wasn't worth it. -dkitchin 
+ * but I figured it wasn't worth it. -dkitchin
  */
 object FoldedCall {
 

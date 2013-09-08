@@ -32,9 +32,9 @@ object TupleConstructor extends TotalSite with TypedSite {
   }
 }
 
-/* 
+/*
  * Verifies that a Tuple t has a given number of elements.
- * If the check succeeds, the Some(t) is returned, 
+ * If the check succeeds, the Some(t) is returned,
  * else None.
  */
 object TupleArityChecker extends PartialSite2 with TypedSite {

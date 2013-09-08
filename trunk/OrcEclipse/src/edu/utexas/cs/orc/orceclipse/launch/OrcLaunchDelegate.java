@@ -216,7 +216,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 	/*
 	 * Derived from org.eclipse.jdt.internal.launching.StandardVMRunner.java,
-	 * Revision 1.56 (31 Mar 2009), trunk rev as of 20 Aug 2009 
+	 * Revision 1.56 (31 Mar 2009), trunk rev as of 20 Aug 2009
 	 */
 	@SuppressWarnings("rawtypes")
 	protected static String convertClassPath(final List cp) {

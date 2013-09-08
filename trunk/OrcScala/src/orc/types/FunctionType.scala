@@ -87,7 +87,7 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
   /* A function type may be treated as a callable type.
    * When performing type inference, we instead treat
    * function types structurally, to improve inference
-   * accuracy in some cases. 
+   * accuracy in some cases.
    */
   def call(callTypeArgs: List[Type], callArgTypes: List[Type]): Type = {
     if (typeFormals.size != callTypeArgs.size) {

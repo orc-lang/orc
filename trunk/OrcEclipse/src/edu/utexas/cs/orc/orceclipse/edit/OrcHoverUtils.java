@@ -53,7 +53,7 @@ public class OrcHoverUtils {
 
 	/*
 	 * Derived from org.eclipse.jdt.ui/JavadocHoverStyleSheet.css,
-	 * Revision 1.12 (24 Apr 2010), trunk rev as of 12 Dec 2010 
+	 * Revision 1.12 (24 Apr 2010), trunk rev as of 12 Dec 2010
 	 */
 	private static String getHoverHtmlHead() {
 		return "<html><head><style type=\"text/css\">\n" + //$NON-NLS-1$
@@ -97,7 +97,7 @@ public class OrcHoverUtils {
 	/**
 	 * Get an InformationControlCreator that creates a  BrowserInformationControl for use
 	 * in tool tips (hovers).
-	 * 
+	 *
 	 * @return a IInformationControlCreator singleton instance
 	 */
 	public static IInformationControlCreator getHoverControlCreator() {
@@ -165,7 +165,7 @@ public class OrcHoverUtils {
 
 	/**
 	 * Reformat IMP's hover text into HTML usable in a BrowserInformationControl
-	 * 
+	 *
 	 * @param impAnnotationText The HTML produced by IMP's hover text formatters
 	 * @return HTML, appropriately styled for use by the control returned by the getHoverControlCreator().createInformationControl method
 	 */

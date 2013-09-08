@@ -90,9 +90,9 @@ public class BarberShop extends JPanel {
 	public static Image monkeyImg = Toolkit.getDefaultToolkit().getImage(BarberShop.class.getResource("monkey.png"));
 
 	/**
-	 * Barber can be 
-	 * 	sleeping=0, 
-	 * 	cutting hair=1, 
+	 * Barber can be
+	 * 	sleeping=0,
+	 * 	cutting hair=1,
 	 * 	at register=2
 	 * @param bID
 	 * @param state

@@ -1,6 +1,6 @@
 # This file is in YAML format.  It lists all bundled third-party dependencies.
 # Each dependency includes the following information:
-# 
+#
 # $Id: licenses.yml 2129 2010-09-13 00:55:21Z jthywissen $
 #
 # files: list of incorporated files

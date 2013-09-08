@@ -60,7 +60,7 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 	 * In the case of <code>OrcProjectPropertyPage</code>, this must be a project.
 	 * A <code>ClassCastException</code> will result from setting an object that
 	 * does not implement {@link IProject}.
-	 * 
+	 *
 	 * @param element the project
 	 */
 	@Override

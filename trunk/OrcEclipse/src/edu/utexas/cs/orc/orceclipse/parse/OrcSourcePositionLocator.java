@@ -31,7 +31,7 @@ import scala.util.parsing.input.Positional;
 import edu.utexas.cs.orc.orceclipse.Activator;
 
 /**
- * Locates nodes in an AST, given offsets in a file 
+ * Locates nodes in an AST, given offsets in a file
  *
  * @author jthywiss
  */

@@ -552,10 +552,10 @@ function orcify(code, defaultConfig) {
 
 	// private members
 	var $code = $(code);
-	
+
 	var hiddenParents = $code.parents(":hidden")
 	hiddenParents.show()
-	
+
 	var $loading = $('<div class="orc-loading" style="display: none"/>');
 	var $widget = $('<div class="orc-wrapper" />');
 		//.width($code.width()+2);

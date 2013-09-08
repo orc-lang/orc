@@ -4,7 +4,7 @@
  -
  - This test verifies that the creation of a closure
  - as a value is strict in the variables in the enclosed
- - function's lexical scope. 
+ - function's lexical scope.
  - 
  - Created by dkitchin on Jul 28, 2010
  -}

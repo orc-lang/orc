@@ -26,12 +26,12 @@ import orc.test.TestUtils.OrcTestCase;
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
- * 
+ *
  * @see ExpectedOutput
  * @author quark, srosario
  */
 public class ExamplesTest {
-  
+
 	public static Test suite() {
 		return TestUtils.buildSuite(ExamplesTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
 	}

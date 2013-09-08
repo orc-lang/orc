@@ -25,12 +25,12 @@ import orc.error.runtime.NoSuchMemberException;
  * Dot-accessible sites should extend this class and declare their Orc-available
  * methods using <code>addMembers()</code>. The code is forward-compatible with many possible
  * optimizations on the field lookup strategy.
- * 
+ *
  * A dot site may also have a default behavior which allows it to behave like
- * a normal site. If its argument is not a message, it displays that 
+ * a normal site. If its argument is not a message, it displays that
  * default behavior, if implemented. If there is no default behavior, it
  * raises a type error.
- * 
+ *
  * @author dkitchin
  */
 public abstract class DotSite extends SiteAdaptor {

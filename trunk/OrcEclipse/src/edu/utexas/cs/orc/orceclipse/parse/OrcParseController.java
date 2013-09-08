@@ -236,7 +236,7 @@ public class OrcParseController extends ParseControllerBase {
 
 		final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(Activator.getInstance().getID() + ".parse.orcParseController", true); //$NON-NLS-1$
 		final CompilerOptions co = new CompilerOptions(config, compileLogger);
-		
+
 		compileLogger.beginProcessing(ic);
 		if (lexer == null) {
 			lexer = new OrcLexer(this);

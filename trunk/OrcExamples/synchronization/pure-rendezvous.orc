@@ -16,7 +16,7 @@ stop
 
 val group = PureRendezvous()
 
- group.send() | Rwait(1000) >> group.recv() 
+ group.send() | Rwait(1000) >> group.recv()
 
 {-
 OUTPUT:

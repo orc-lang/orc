@@ -10,9 +10,9 @@ val out = Channel()
 def compute(x) = x
 
 {- Base case: start a single compute server -}
-def net(1,in,out) =     
-  in.get() >x> 
-  compute(x) >y> 
+def net(1,in,out) =
+  in.get() >x>
+  compute(x) >y>
   out.put(y) >>
   net(1,in,out)
 

@@ -85,7 +85,7 @@ public class OAuthProviderSite extends SiteAdaptor {
 	public void callSite(final Args args, final Handle caller) throws TokenException {
 		try {
 			/**
-			 * This implementation of OAuthProvider 
+			 * This implementation of OAuthProvider
 			 */
 			final Job job = Job.getJobFromHandle(caller);
 			if (job == null) {

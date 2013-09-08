@@ -17,7 +17,7 @@ package orc.error.runtime;
  * A non-recoverable error at a token, which must result in halting the whole
  * engine. This extends TokenException because it simplifies error handling to
  * have a common superclass for token errors and exceptions.
- * 
+ *
  * @author quark
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions

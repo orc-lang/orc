@@ -52,11 +52,11 @@ public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 	@Override
 	protected InputStream getInitialContents() {
 		//TODO: Use a user-config'ed template, with variables.
-		final String contents = 
+		final String contents =
 			"{- " + getFileName() + " -- Orc program "+getFileName().replaceFirst("\\.orc$", "")+"\n" +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-			" - \n" +  //$NON-NLS-1$
+			" -\n" +  //$NON-NLS-1$
 			" - $" + "Id$\n" +  //$NON-NLS-1$ //$NON-NLS-2$
-			" - \n" +  //$NON-NLS-1$
+			" -\n" +  //$NON-NLS-1$
 			" - Created by " + System.getProperty("user.name") + " on " + DateFormat.getDateTimeInstance().format(new Date()) + "\n" +  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			" -}\n\n"; //$NON-NLS-1$
 		return new ByteArrayInputStream(contents.getBytes());

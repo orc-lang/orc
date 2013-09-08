@@ -283,10 +283,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
          * no type parameters. Thus, type argument inference will fail on many
          * common cases, such as list mapping, where one might hope that type
          * argument annotations would not be required.
-         * 
+         *
          * Mea culpa; I could not find a way to make this work for polymorphic
-         * calls and still be sure that it was correct.   
-         * 
+         * calls and still be sure that it was correct.
+         *
          * - dkitchin
          */
         case FunctionType(Nil, funArgTypes, _) => {
@@ -527,11 +527,11 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
               case orc.types.Constant => NoConstraints
               case Covariant => typeConstraints(V, s, t)
               case Contravariant => typeConstraints(V, t, s)
-              /* Note: 
-               * 
+              /* Note:
+               *
                * This generation of constraints for invariant type constructor positions
                * relies on the assumption that S <: T and T <: S together imply S = T
-               * 
+               *
                * In the presence of bounded polymorphism, a more creative solution is
                * needed, probably involving an addition = form (similar to the <: form)
                * of constraint generation.

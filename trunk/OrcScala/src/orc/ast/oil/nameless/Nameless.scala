@@ -62,9 +62,9 @@ sealed abstract class Expression extends NamelessAST
   with NamelessInfixCombinators
   with NamelessToNamed {
 
-  /* 
+  /*
    * Find the set of free vars for any given expression.
-   * Inefficient, but very easy to read, and this is only computed once per node. 
+   * Inefficient, but very easy to read, and this is only computed once per node.
    */
   lazy val freevars: Set[Int] = {
     this match {

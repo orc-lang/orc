@@ -193,7 +193,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 		}
 
 		private boolean currOffsetInRegion() {
-			// before EOF and in region 
+			// before EOF and in region
 			return currOffset < getParseController().getCurrentParseString().length() && currOffset < regionOfInterest.getOffset() + regionOfInterest.getLength();
 		}
 
@@ -256,7 +256,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			// COMMENT_MULTILINE,
 			new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
 
-	private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", "signal", "stop", "then", "type", "val", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$ 
+	private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", "signal", "stop", "then", "type", "val", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$
 
 	private static final String NEWLINE_CHARS = "\n\r\f\u0085\u2028\u2029"; //$NON-NLS-1$
 	private static final String WHITESPACE_CHARS = " \t" + NEWLINE_CHARS + "\u000B\u200E\u200F"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -283,8 +283,8 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	/**
 	 * Get the first token found at a given offset in the currently parsed string.
-	 * 
-	 * @param offset Character number at which to begin analyzing (zero-based) 
+	 *
+	 * @param offset Character number at which to begin analyzing (zero-based)
 	 * @return OrcToken of the found token
 	 */
 	public OrcToken getFirstTokenAt(final int offset) {
@@ -401,9 +401,9 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	/**
 	 * Returns an iterator over OrcTokens in the currently parsed string.
-	 * 
+	 *
 	 * This method skips whitespace, but returns comments.
-	 * 
+	 *
 	 * @return Iterator that returns tokens in the string
 	 * @see java.lang.Iterable#iterator()
 	 */
@@ -414,9 +414,9 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	/**
 	 * Returns an iterator over OrcTokens in the currently parsed string.
-	 * 
+	 *
 	 * This method skips whitespace, but returns comments.
-	 * 
+	 *
 	 * @param regionOfInterest Region of characters to scan (zero-based)
 	 * @return Iterator that returns tokens in the region
 	 * @see java.lang.Iterable#iterator()
@@ -427,7 +427,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	/**
 	 * Returns an iterator over OrcTokens in the currently parsed string.
-	 * 
+	 *
 	 * @param skipWhitespace Flag, true to skip over whitespace
 	 * @param skipComments Flag, true to skip over comments
 	 * @return Iterator that returns tokens in the string
@@ -439,7 +439,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	/**
 	 * Returns an iterator over OrcTokens in the currently parsed string.
-	 * 
+	 *
 	 * @param regionOfInterest Region of characters to scan (zero-based)
 	 * @param skipWhitespace Flag, true to skip over whitespace
 	 * @param skipComments Flag, true to skip over comments
@@ -451,7 +451,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 	}
 
 	/**
-	 * @param word String to check for being an Orc keyword 
+	 * @param word String to check for being an Orc keyword
 	 * @return true if a match for an Orc keyword
 	 */
 	public static boolean isKeyword(final String word) {

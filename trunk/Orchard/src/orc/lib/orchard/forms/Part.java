@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface Part<V> {
-	/** Render this form part to the given response using its printwriter. 
+	/** Render this form part to the given response using its printwriter.
 	 * @throws IOException */
 	public void render(PrintWriter out, Set<String> flags) throws IOException;
 

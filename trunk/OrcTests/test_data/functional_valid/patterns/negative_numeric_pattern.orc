@@ -7,4 +7,4 @@ OUTPUT:PERMUTABLE
 -}
 
 (-1 >-1> "ISuccess" ; "Fail") |
-(-2.3 >-2.3> "FSuccess" ; "Fail") 
+(-2.3 >-2.3> "FSuccess" ; "Fail")

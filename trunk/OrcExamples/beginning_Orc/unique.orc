@@ -19,11 +19,11 @@ def unique(c) =
   def loop() :: X
   def loop() =
     val x = c.get()
-    if seen.contains(x) then 
+    if seen.contains(x) then
       loop()
-    else 
+    else
       x | seen.add(x) >> loop()
-      
+
   loop()
 
 val c = Channel[Number]()

@@ -28,7 +28,7 @@ import orc.test.TestUtils.OrcTestCase;
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
- * 
+ *
  * @see ExpectedOutput
  * @author dkitchin
  */
@@ -36,15 +36,15 @@ public class TypedExamplesTest {
 
   public static Test suite() {
     OrcBindings bindings = new OrcBindings();
-    
+
     // Turn on typechecking
     bindings.typecheck_$eq(true);
-    
+
     return TestUtils.buildSuite(TypedExamplesTest.class.getSimpleName(), TypedExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
   }
 
   public static class TypedExamplesTestCase extends OrcTestCase {
       /* No overrides */
   }
-  
+
 }

@@ -30,7 +30,7 @@ operations do not cause a state change.
                  reset
 
 
-The state diagram can be minimized to two states: running, paused. State paused 
+The state diagram can be minimized to two states: running, paused. State paused
 comprises the previous initial and paused. The first state is paused.
 The transitions are:
  reset/pause always leaves the state in paused.
@@ -55,24 +55,24 @@ def class Stopwatch() =
   val running = Ref(false)
   val sem = Semaphore(1)
 
-  def start() = 
-    sem.acquire() >>  
+  def start() =
+    sem.acquire() >>
     ( if running? then signal
-      else (running := true >> laststart := Rtime()) 
+      else (running := true >> laststart := Rtime())
     ) >>
     sem.release()
 
   def pause() =
-    sem.acquire() >>  
+    sem.acquire() >>
     ( if running? then
         lastpause := lastpause? + Rtime() - laststart? >>
-        running := false 
+        running := false
       else signal
     ) >>
     sem.release() >> lastpause?
 
   def reset() =
-    sem.acquire() >>  
+    sem.acquire() >>
     running := false >> lastpause := 0 >>
     sem.release()
 

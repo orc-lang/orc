@@ -8,7 +8,7 @@
 
 {- 
 Source and sink are node identifiers.
-Cell is a mapping from from node identifiers 
+Cell is a mapping from from node identifiers
 to initially-empty write-once cells.
 Succ is a function which takes a node
 identifier and publishes the identifiers
@@ -19,15 +19,15 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >> (
 type Node = Integer
 type Distance = Number
 
-def path(source :: Node, 
-		 sink :: Node, 
-		 cell :: lambda(Node) :: Cell[List[Node]], 
+def path(source :: Node,
+		 sink :: Node,
+		 cell :: lambda(Node) :: Cell[List[Node]],
 		 succ :: lambda(Node) :: (Node,Distance)
 		 ) :: List[Node] =
   def run(n :: Node, p :: List[Node]) :: Bot =
     cell(n).write(p) >>
     succ(n) >(m,d)>
-    Vawait(d) >> 
+    Vawait(d) >>
     run(m,m:p)
   run(source, [source])
   ; reverse(cell(sink).read())

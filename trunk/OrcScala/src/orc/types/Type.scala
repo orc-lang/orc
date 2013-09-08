@@ -54,13 +54,13 @@ trait Type extends TypeInterface {
   }
 
   /* Default substitution:
-   * Assume there are no free type variables or children, 
+   * Assume there are no free type variables or children,
    * and return the type unchanged.
    */
   def subst(sigma: Map[TypeVariable, Type]): Type = { this }
 
   /* Default < relation:
-   * For all T, 
+   * For all T,
    *     T < T
    * and T < Top
    */
@@ -71,8 +71,8 @@ trait Type extends TypeInterface {
   /* Eliminate all variables X in this type for which V(X) is true.
    * Produce the least supertype of this type with such variables eliminated.
    * It is possible for elimination to fail if a variable occurs in
-   * an invariant position (or in both covariant and contravariant positions), 
-   * since neither Top nor Bot can be chosen in that case. 
+   * an invariant position (or in both covariant and contravariant positions),
+   * since neither Top nor Bot can be chosen in that case.
    */
   def elim(V: TypeVariable => Boolean)(implicit variance: Variance): Type = {
     this match {
@@ -158,7 +158,7 @@ trait Type extends TypeInterface {
 
   /* Default equality:
    * S = T  iff  S < T and T < S
-   * 
+   *
    * Note: this default equality will not hold if bounded polymorphism
    * is added to the system. In this case, make the equality method
    * abstract; types must supply their own equality.

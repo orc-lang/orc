@@ -14,12 +14,12 @@ def simulate(n :: String) =
   | Rwait(100) >> Vwait(2) >> n+": "+2
   | Rwait(200) >> Vwait(1) >> n+": "+4
   -- nested simulation
-  | Vclock(IntegerTimeOrder) >> Vawait(0) >> 
+  | Vclock(IntegerTimeOrder) >> Vawait(0) >>
       ( x >> Vwait(1) >> n+": "+1
       | Vwait(2) >> n+": "+0
       )
 
-  Vclock(IntegerTimeOrder) >> Vawait(0) >> 
+  Vclock(IntegerTimeOrder) >> Vawait(0) >>
 ( (Vclock(IntegerTimeOrder) >> Vawait(0) >> simulate("A"))
 | Vwait(1) >> (Vclock(IntegerTimeOrder) >> Vawait(0) >> simulate("B"))
 )

@@ -31,10 +31,10 @@ import org.jivesoftware.smack.packet.Message;
 
 /**
  * Orc support for the XMPP (Jabber, Google Talk) messaging protocol.
- * 
+ *
  * <p>For the most part, the API follows that of <a href="http://www.igniterealtime.org/projects/smack/">Smack</a>.
  * This example program should get you started:
- * 
+ *
  * <pre>
  * var (user, pass) = ("USER", "PASS")
  * var talkto = "USER@gmail.com"
@@ -47,16 +47,16 @@ import org.jivesoftware.smack.packet.Message;
  * chat.send("Are you there?") >>
  * chat.receive()
  * </pre>
- * 
+ *
  * <p>WARNING: to talk to someone you must appear in their buddy list.
  * Currently you will have to handle this manually before trying to talk to them
  * using Orc.
- * 
+ *
  * <p>
  * I wish I could just use our Java sites to generate this automatically, but
  * there are a few methods in the API which require asynchronous behavior and so
  * must be implemented as Orc sites.
- * 
+ *
  * @author quark
  */
 public class XMPPConnection extends EvalSite {
@@ -64,7 +64,7 @@ public class XMPPConnection extends EvalSite {
 	 * XMPP connection/session. Members include connect, disconnect, login, and
 	 * chat. The underlying methods are all synchronous and therefore most of
 	 * the site methods are threaded.
-	 * 
+	 *
 	 * <p>
 	 * For details on the methods, refer to the Smack javadoc.
 	 */
@@ -133,7 +133,7 @@ public class XMPPConnection extends EvalSite {
 	/**
 	 * Ongoing chat with a user. Members include send and receive, which
 	 * currently support only simple string messages.
-	 * 
+	 *
 	 * @author quark
 	 */
 	private static class ChatSite extends DotSite implements MessageListener {

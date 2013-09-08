@@ -25,7 +25,7 @@ public class OAuthProviderSite extends EvalSite {
 	public Object evaluate(final Args args) throws TokenException {
 		try {
 			/**
-			 * This implementation of OAuthProvider 
+			 * This implementation of OAuthProvider
 			 */
 			return new GuiOAuthProvider(
 			// force root-relative resource path

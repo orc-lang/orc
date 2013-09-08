@@ -20,7 +20,7 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
 import edu.utexas.cs.orc.orceclipse.Messages;
 
 /**
- * 
+ *
  *
  * @author jthywiss
  */

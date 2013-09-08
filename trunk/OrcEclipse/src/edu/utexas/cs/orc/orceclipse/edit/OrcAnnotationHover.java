@@ -73,7 +73,7 @@ public class OrcAnnotationHover extends AnnotationHoverBase implements IAnnotati
 			final Annotation annotation = annoIter.next();
 			final String annoText = annotation.getText();
 			if (annotation.getType().startsWith("org.eclipse.ui.workbench.texteditor.quickdiff") //$NON-NLS-1$
-					|| annoText == null || annoText.trim().isEmpty() 
+					|| annoText == null || annoText.trim().isEmpty()
 					|| annotationMessages.contains(annoText)) {
 				annoIter.remove();
 			} else {

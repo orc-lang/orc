@@ -61,9 +61,9 @@
 		<exclude name="**/.svn"/>
 	</fileset>
 
-	
-	<!-- ================================= 
-          target: wsgen              
+
+	<!-- =================================
+          target: wsgen
          ================================= -->
 <!--	<taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
 			<classpath>
@@ -93,16 +93,16 @@
 		</exec>
 	</target>
 
-	<!-- ================================= 
-          target: properties              
+	<!-- =================================
+          target: properties
          ================================= -->
 	<target name="properties" description="Copy properties files into place">
 		<copy file="orchard.properties" todir="build/classes/orc/orchard"/>
 		<copy file="oauth.jks" todir="build/classes/orc/orchard"/>
 	</target>
 
-	<!-- ================================= 
-          target: jaxws-json              
+	<!-- =================================
+          target: jaxws-json
          ================================= -->
 	<target name="jaxws-json" description="Build JAX-WS JSON JAR">
 		<jar destfile="lib/jaxws-json.jar" whenmanifestonly="fail" duplicate="fail" index="true">
@@ -114,8 +114,8 @@
 		</jar>
 	</target>
 
-	<!-- ================================= 
-          target: minify              
+	<!-- =================================
+          target: minify
          ================================= -->
 	<target name="minify" description="Minify JavaScript files">
 		<java jar="tools/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
@@ -164,8 +164,8 @@
 		<delete file="build/codemirror-extra-min.tmp"/>
 	</target>
 
-	<!-- ================================= 
-          target: war              
+	<!-- =================================
+          target: war
          ================================= -->
 	<target name="war" depends="wsgen,properties,jaxws-json,minify" description="Build orchard.war">
 		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
@@ -198,8 +198,8 @@
 		</war>
 	</target>
 
-	<!-- ================================= 
-          target: orchard-logging              
+	<!-- =================================
+          target: orchard-logging
          ================================= -->
 	<target name="orchard-logging" description="Build orchard-logging JAR">
 		<jar destfile="lib/orchard-logging.jar" whenmanifestonly="fail" duplicate="fail" index="true">
@@ -209,8 +209,8 @@
 		</jar>
 	</target>
 
-	<!-- ================================= 
-          target: demo-jar              
+	<!-- =================================
+          target: demo-jar
          ================================= -->
 	<target name="demo-jar" depends="war,orchard-logging" description="Build the demo JAR">
 		<war destfile="build/demo-root.war" duplicate="fail">
@@ -255,8 +255,8 @@
 		</jar>
 	</target>
 
-	<!-- ================================= 
-          target: zip              
+	<!-- =================================
+          target: zip
          ================================= -->
     <target name="zip" depends="demo-jar" description="Build orchard.zip for distribution">
     	<delete file="build/${target.name}.zip"/>
@@ -282,8 +282,8 @@
         </zip>
     </target>
 
-	<!-- ================================= 
-          target: demo-app              
+	<!-- =================================
+          target: demo-app
          ================================= -->
 	<!-- WARNING: This target requires UNIX's cp and tar utilities, for permission and symlink reasons. -->
 	<target name="demo-app" depends="demo-jar" description="Make a Mac OS X application">
@@ -345,14 +345,14 @@
 			<arg line="-zcf ${target.name}-app.tgz ${appname}.app"/>
 		</exec>
 	</target>
-	
-	<!-- ================================= 
-          target: all              
+
+	<!-- =================================
+          target: all
          ================================= -->
     <target name="all" depends="zip,demo-app" description="Build all targets"/>
 
-	<!-- ================================= 
-          target: clean              
+	<!-- =================================
+          target: clean
          ================================= -->
 	<target name="clean" description="Delete copied/built libs and build directory">
 		<delete file="lib/orc-${orc.version}.jar"/>

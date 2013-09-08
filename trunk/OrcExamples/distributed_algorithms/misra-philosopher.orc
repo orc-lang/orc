@@ -1,7 +1,7 @@
 {- misra-philosopher.orc
  -
  - The "hygenic solution to the diners problem", described in
- - K. M. Chandy and J. Misra. 1984. The drinking philosophers problem. 
+ - K. M. Chandy and J. Misra. 1984. The drinking philosophers problem.
  - ACM Trans. Program. Lang. Syst. 6, 4 (October 1984), 632-646.
  -}
 
@@ -37,11 +37,11 @@ def philosopher(name :: (Integer, Integer), mbox :: Channel[Message], missing ::
   def sendFork(p :: Xmitter) =
     missing.add(p) >>
     p(("fork", send))
- 
+
   def requestFork(p :: Xmitter) =
     clean.add(p) >>
     p(("request", send))
-  
+
   -- While thinking, start a timer which
   -- will tell us when we're hungry
   def digesting() :: Bot =
@@ -64,7 +64,7 @@ def philosopher(name :: (Integer, Integer), mbox :: Channel[Message], missing ::
   def hungry() :: Bot =
     def on(("fork", p) :: Message) =
       missing.remove(p :!: Xmitter) >>
-      ( 
+      (
         if missing.isEmpty() then
           Println(name + " eating") >>
           eating()

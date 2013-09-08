@@ -49,10 +49,10 @@ import org.mortbay.util.ajax.ContinuationSupport;
  *
  * HACK: We must explicitly declare every published web method in this class, we
  * can't simply inherit them. See CompilerService for a full explanation.
- * 
+ *
  * <p>TODO: develop a JSON binding which translates directly from Java types
  * rather than going through XML.
- * 
+ *
  * @author quark
  */
 @WebService
@@ -68,7 +68,7 @@ public class ExecutorService extends AbstractExecutorService {
 	 * FIXME: It turns out JAX-WS will catch the exception which Jetty uses to
 	 * escape from the request on suspend, so this doesn't work. I'm keeping it
 	 * here for future reference.
-	 * 
+	 *
 	 * @author quark
 	 */
 	@SuppressWarnings("unused")
@@ -110,7 +110,7 @@ public class ExecutorService extends AbstractExecutorService {
 	/**
 	 * If you don't explicitly pass a baseURI, it is assumed you are running in
 	 * a servlet container and one will be inferred.
-	 * 
+	 *
 	 * @param baseURI
 	 */
 	ExecutorService(final URI baseURI) {
@@ -145,21 +145,21 @@ public class ExecutorService extends AbstractExecutorService {
 		return super.submit(devKey, program);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public void finishJob(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InvalidJobException {
 		super.finishJob(devKey, job);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public void cancelJob(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InvalidJobException {
 		super.cancelJob(devKey, job);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public List<JobEvent> jobEvents(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InterruptedException, InvalidJobException {
@@ -172,28 +172,28 @@ public class ExecutorService extends AbstractExecutorService {
 		return super.jobs(devKey);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public String jobState(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InvalidJobException {
 		return super.jobState(devKey, job);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public void purgeJobEvents(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws RemoteException, InvalidJobException {
 		super.purgeJobEvents(devKey, job);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public void startJob(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job) throws InvalidJobStateException, RemoteException, InvalidJobException {
 		super.startJob(devKey, job);
 	}
 
-	/** Do-nothing override. 
+	/** Do-nothing override.
 	 * @throws InvalidJobException */
 	@Override
 	public void respondToPrompt(@WebParam(name = "devKey") final String devKey, @WebParam(name = "job") final String job, @WebParam(name = "promptID") final int promptID, @WebParam(name = "response") final String response) throws InvalidPromptException, RemoteException, InvalidJobException {

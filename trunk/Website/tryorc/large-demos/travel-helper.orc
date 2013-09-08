@@ -45,7 +45,7 @@ def weather(Trip(time, location)) =
   import class LocalDate = "org.joda.time.LocalDate"
   geo(location) >(lat, lon)>
   NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
- 
+
 {--
 Given a trip, return a list of event records during
 that trip. If no events are found or the location is
@@ -73,7 +73,7 @@ def events(Trip(time, location), term) =
       val xml("event", xml("start_time", start_time)) = ev
       val xml("event", xml("venue_name", venue_name)) = ev #
       {. title = title, url = url, start_time = start_time, venue_name = venue_name .}
-    ) 
+    )
   , events)
 
 {--

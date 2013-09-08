@@ -28,8 +28,8 @@ import org.eclipse.ui.IPerspectiveFactory;
  * the initial page layout.
  * <p>
  * This perspective is wholly defined by the <code>plugin.xml</code> file,
- * but a class is required. 
- * 
+ * but a class is required.
+ *
  * @author jthywiss
  */
 public class OrcPerspectiveFactory implements IPerspectiveFactory {

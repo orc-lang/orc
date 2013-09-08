@@ -7,7 +7,7 @@
  - as the token separator.  This simulates gibberish
  - input to the parser.  The tokens are randomized from a Map().
  - You can modify it to make it an actual program if a sequence pops up that
- - looks like it would make a good test case.  Another good way to 
+ - looks like it would make a good test case.  Another good way to
  - use it is to put the totalTokens at a really high number, then
  - examine the output to see if any interesting sequences appear.
  - 
@@ -47,7 +47,7 @@ def popList() =
    wordlist.put(19, "\t") >>
    wordlist.put(20, "\"")
 
-def randToken() = 
+def randToken() =
    val num = Random(wordlist.size())
    Print(wordlist.get(num) + " ") >> stop
 

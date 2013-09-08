@@ -31,12 +31,12 @@ import org.xml.sax.SAXException;
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
  * Each program is compiled, written to XML, subjected to validation against
- * an XML schema, and then read back as an AST. This second AST is run. 
+ * an XML schema, and then read back as an AST. This second AST is run.
  * Each program is given at most 10 seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
- * 
+ *
  * @see ExpectedOutput
  * @author quark, srosario, amshali, dkitchin, jthywiss
  */
@@ -69,7 +69,7 @@ public class XMLExamplesTest {
               final Validator validator = schema.newValidator();
               final StreamSource xmlsource = new StreamSource(new java.io.StringReader(xmlFromExpr.toString()));
               validator.validate(xmlsource);
-            } 
+            }
             catch (SAXException e) {
               throw new AssertionError("XML validation failed: " + e.getMessage());
             }

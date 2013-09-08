@@ -156,7 +156,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 				safeStartOffset,
 				safeEndOffset,
 				safeLineNumber,
-				exception				
+				exception
 		);
 	}
 

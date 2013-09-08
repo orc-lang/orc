@@ -32,15 +32,15 @@ public class OrcLaunchConfigurationTabGroup extends AbstractLaunchConfigurationT
 	 */
 	@Override
 	public void createTabs(final ILaunchConfigurationDialog dialog, final String mode) {
-		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { 
+		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
 				new OrcGeneralLaunchConfigurationTab(),
 				//new JavaMainTab(),
-				//new JavaArgumentsTab(), 
-				//new JavaJRETab(), 
+				//new JavaArgumentsTab(),
+				//new JavaJRETab(),
 				new OrcRuntimeClasspathTab(),
 				//new SourceLookupTab(),
 				//new EnvironmentTab(),
-				new CommonTab(), 
+				new CommonTab(),
 		};
 		setTabs(tabs);
 	}

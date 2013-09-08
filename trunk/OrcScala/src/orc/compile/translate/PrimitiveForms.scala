@@ -113,12 +113,12 @@ object PrimitiveForms {
 
   /*
    * Return a composite expression with the following behavior:
-   * 
+   *
    * If source publishes a value, bind that value to x, and then
    * execute target.
-   * 
+   *
    * If source halts without publishing a value, execute fail.
-   * 
+   *
    */
   def makeMatch(source: Expression, x: BoundVar, target: Expression, fail: Expression) = {
     fail match {

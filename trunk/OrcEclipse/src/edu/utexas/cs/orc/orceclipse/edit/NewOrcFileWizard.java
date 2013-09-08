@@ -81,7 +81,7 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
 
 	/**
 	 * Called when 'Finish' button is pressed in the wizard.  Creates
-	 * the file, and opens an editor on it. 
+	 * the file, and opens an editor on it.
 	 *
 	 * @return <code>true</code> to indicate the finish request
 	 *   was accepted, and <code>false</code> to indicate

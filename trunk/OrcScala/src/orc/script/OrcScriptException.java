@@ -26,7 +26,7 @@ import scala.util.parsing.input.Position;
 
 /**
  * A ScriptException proxy for an OrcException
- * 
+ *
  * @author jthywiss
  */
 @SuppressWarnings("serial")
@@ -37,7 +37,7 @@ public class OrcScriptException extends ScriptException {
 
   /**
    * Constructs an object of class OrcScriptException.
-   * 
+   *
    * @param e
    */
   public OrcScriptException(final OrcException e) {
