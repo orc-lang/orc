@@ -41,6 +41,8 @@ A reverse solidus (backslash) and its subsequent character are treated as follow
 <listitem><para><code>\n</code>: represents line feed (LF) (U+000A)</para></listitem>
 <listitem><para><code>\r</code>: represents carriage return (CR) (U+000D)</para></listitem>
 <listitem><para><code>\t</code>: represents character tabulation (HT) (U+0009)</para></listitem>
+<listitem><para><code>\u</code> followed by 4 hexadecimal digits: represents the character at the Unicode code point indicated by the four hexadecimal digits</para></listitem>
+<listitem><para><code>\u{</code> hexadecimal digits with space seperators <code>}</code>: represents the characters at the Unicode code points indicated by the hexadecimal digits, with multiple characters indicated by separating the hex digits by spaces (UTS 16 § 1.1 style)</para></listitem>
 <listitem><para><code>\\</code>: represents reverse solidus (backslash) (U+005C)</para></listitem>
 <listitem><para><code>\"</code>: represents quotation mark (U+0022)</para></listitem>
 <listitem><para><code>\</code> followed by any other character: represents that character</para></listitem>
