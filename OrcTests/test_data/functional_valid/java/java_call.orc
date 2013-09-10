@@ -80,11 +80,11 @@ OUTPUT:PERMUTABLE
 "2 pass"
 "3 pass"
 "4 pass"
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible servant in org.omg.CORBA.portable.ServantObject
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No public servant with 0 arguments in org.omg.CORBA.portable.ServantObject [[OrcWiki:NoSuchMethodException]]
 Error: orc.error.runtime.JavaException: java.lang.NoSuchFieldException: toString
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible TRUE in java.lang.Boolean
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No public TRUE with 0 arguments in java.lang.Boolean [[OrcWiki:NoSuchMethodException]]
 Error: orc.error.runtime.JavaException: java.lang.NoSuchFieldException: parseBoolean
-Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No accessible clone in java.lang.Boolean
+Error: orc.error.runtime.JavaException: java.lang.NoSuchMethodException: No public clone with 0 arguments in java.lang.Boolean [[OrcWiki:NoSuchMethodException]]
 "10 pass"
 "11 pass"
 "12 pass"
