@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Dec 13, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,6 +17,8 @@ package orc.types
 import java.lang.{ reflect => jvm }
 import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.NoSuchMemberException
+import orc.values.sites.OrcJavaCompatibility
+import java.lang.reflect.Modifier
 
 /**
   *
@@ -37,7 +39,7 @@ trait JavaType {
   }
 
   def findMethods(name: String, isStatic: Boolean): List[jvm.Method] = {
-    cl.getMethods().toList filter
+    OrcJavaCompatibility.getAccessibleMethods(cl).toList filter
       { m =>
         m.getName().equals(name) &&
           jvm.Modifier.isPublic(m.getModifiers()) &&
@@ -58,13 +60,17 @@ trait JavaType {
       case List(m) => {
         liftJavaMethod(m, javaContext)
       }
-      /*
-       * FIXME: Will we need to pick the most specific method at the call point?
-       *        We definitely can't pick it here; we don't know the call args yet.
-       *        If so, creating an overloaded type here is the wrong solution.
-       */
       case ms => {
-        OverloadedType(ms map { liftJavaMethod(_, javaContext) })
+        /* Since OverloadedType.call picks the first alternative that type checks,
+         * sort methods in most-to-least specific order. See JLS § 15.12.2.5
+         */
+        val mss = ms.sortWith({ (l, r) =>
+          l.getParameterTypes().length < r.getParameterTypes().length ||
+          OrcJavaCompatibility.isEqOrMoreSpecific(l, r) ||
+          (!Modifier.isAbstract(l.getModifiers()) && Modifier.isAbstract(r.getModifiers())) ||
+          OrcJavaCompatibility.isJavaSubtypeOf(l.getReturnType(),r.getReturnType())
+        })
+        OverloadedType(mss map { liftJavaMethod(_, javaContext) })
       }
     }
   }

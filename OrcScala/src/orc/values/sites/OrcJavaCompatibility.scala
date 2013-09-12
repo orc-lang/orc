@@ -21,6 +21,7 @@ import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
+import scala.collection.generic.Shrinkable
 
 /**
   * @author jthywiss, dkitchin
@@ -152,12 +153,13 @@ object OrcJavaCompatibility {
     * inherited public methods in public types.  Overridden methods are
     * excluded, leaving only the overriding method.  This methods is like
     * java.lang.Class.getMethods, except this handles public methods in
-    * inaccessible classes correctly.
+    * inaccessible classes correctly, and doesn't erroneously "inherit"
+    * overridden methods (per JLS § 6.4.3).
     */
-  private def getAccessibleMethods(typeToSearch: Class[_]): Seq[JavaMethod] = {
+  def getAccessibleMethods(typeToSearch: Class[_]): Seq[JavaMethod] = {
     val accessibleMethods = new ArrayBuffer[JavaMethod]()
-    if (Modifier.isPublic(typeToSearch.getModifiers())) accessibleMethods ++=
-      (typeToSearch.getDeclaredMethods() filter (m => Modifier.isPublic(m.getModifiers())))
+    if (Modifier.isPublic(typeToSearch.getModifiers()))
+      accessibleMethods ++= (typeToSearch.getDeclaredMethods() filter (m => Modifier.isPublic(m.getModifiers())))
 
     val accessibleInheritedMethods = new ArrayBuffer[JavaMethod]()
     /* All interfaces and their methods are always accessible */
@@ -166,7 +168,7 @@ object OrcJavaCompatibility {
 
     val superclass = typeToSearch.getSuperclass()
     if (superclass != null) {
-      val superMethods = getAccessibleMethods(superclass)
+      val superMethods = getAccessibleMethods(superclass).toBuffer
       /* If typeToSearch inherits an interface that has a method
        * that has been already implemented in a superclass, ignore
        * the interface's re-declaration of that method. */
@@ -183,11 +185,10 @@ object OrcJavaCompatibility {
     accessibleMethods
   }
 
-  private def removeEqSignature(methSeq: Traversable[JavaMethod], signatureToRemove: JavaMethod) {
-    methSeq filterNot (m =>
-      m.getReturnType == signatureToRemove.getReturnType &&
-        m.getName == signatureToRemove.getName &&
-        m.getParameterTypes.sameElements(signatureToRemove.getParameterTypes))
+  private def removeEqSignature(methSeq: Shrinkable[JavaMethod] with Traversable[JavaMethod], signatureToRemove: JavaMethod) {
+    methSeq --= (methSeq filter (m =>
+      m.getName == signatureToRemove.getName &&
+        m.getParameterTypes.sameElements(signatureToRemove.getParameterTypes)))
   }
 
   /** Given a formal param type and an actual arg type, determine if the method applies per JLS §15.12.2.2/3 rules */
@@ -328,7 +329,7 @@ object OrcJavaCompatibility {
   }
 
   /** Left is more or equally specific than right (per JLS §15.12.2.5) */
-  private def isEqOrMoreSpecific(left: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }, right: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }): Boolean = {
+  def isEqOrMoreSpecific(left: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }, right: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]] }): Boolean = {
     if (isSameArgumentTypes(left, right)) {
       left.getDeclaringClass().getClasses().contains(right.getDeclaringClass()) // An override is more specific than super
     } else {
@@ -337,7 +338,7 @@ object OrcJavaCompatibility {
   }
 
   /** Java subtyping per JLS §4.10 */
-  private def isJavaSubtypeOf(left: java.lang.Class[_], right: java.lang.Class[_]): Boolean = {
+  def isJavaSubtypeOf(left: java.lang.Class[_], right: java.lang.Class[_]): Boolean = {
     (left == right) || (right.isAssignableFrom(left)) || isPrimWidenable(left, right) ||
       (left.isArray && right.isArray && isJavaSubtypeOf(left.getComponentType, right.getComponentType))
   }
