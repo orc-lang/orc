@@ -17,6 +17,12 @@ import orc.Schedulable
 import orc.error.OrcException
 
 /** The interface that allows Schedulables to block on Blockers and receive a value when unblocked.
+  * 
+  * Blockables can be unblocked by any thread. This means that as soon as 
+  * the Blocker knows about the Blockable and the Blocker is running you
+  * must assume that it could unblock at any time. So in general, blocking
+  * should be the last action before returning to the scheduler. 
+  * 
   * @author amp
   */
 trait Blockable extends Schedulable {

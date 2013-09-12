@@ -15,9 +15,17 @@
 package orc.run.core
 import orc.OrcRuntime
 
-/** The trait for objects that can be blocked on.
-  * @author dkitchin
-  */
+/**
+ * The trait for objects that can be blocked on.
+ *  
+ * Blockers may unblock Blockables at any time in any thread. So as soon as you 
+ * block (for instance by calling PruningGroup.read or instantiating a SiteCallHandle) 
+ * on a Blocker you should assume you may be unblocked and running on another thread.
+ * 
+ * @see Blockable
+ *  
+ * @author dkitchin
+ */
 trait Blocker {
   /** Require that the blocker has a runtime reference because it will
     * always need one and making it consistent is nice.

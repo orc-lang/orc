@@ -40,6 +40,11 @@ import java.util.concurrent.atomic.AtomicInteger
   * unchanged. This confines the changes to the core runtime,
   * however it does mean that there are still parts of the code
   * where there is no way to represent stop.
+  * 
+  * Be careful when blocking because you may be unblocked 
+  * immediately in a different thread.
+  * 
+  * @see Blockable
   *
   * @author dkitchin
   */
@@ -81,6 +86,11 @@ class Token protected (
 
   /*
    * On creation: Add a token to its group if it is not halted or killed.
+   * 
+   * All initialization that must occure before run() executes must happen 
+   * before this point, because once the token is added to a group it may 
+   * run at any time.
+   * 
    */
   state match {
     case Publishing(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
@@ -132,21 +142,22 @@ class Token protected (
     * the thread currently running this token.
     */
   def kill() {
-    def collapseState(victimState: TokenState) {
+    def findHandle(victimState: TokenState): Option[CallHandle] = {
       victimState match {
-        case Suspending(s) => collapseState(s)
-        case Suspended(s) => collapseState(s)
-        case Blocked(handle: SiteCallHandle) => { handle.kill() }
-        case Live | Publishing(_) | Blocked(_) | Halted | Killed => {}
+        case Suspending(s) => findHandle(s)
+        case Suspended(s) => findHandle(s)
+        case Blocked(handle: SiteCallHandle) => Some(handle)
+        case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
     synchronized {
-      collapseState(state)
+      val handle = findHandle(state)
       if (setState(Killed)) {
         /* group.remove(this) conceptually runs here, but as an optimization,
          * this is unnecessary. Note that the current Group.remove implementation
          * relies on this optimization for correctness of the tokenCount. */
       }
+      handle foreach {_.kill}
     }
   }
 
@@ -451,13 +462,11 @@ class Token protected (
   //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
   //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
-  val runGuard = new AtomicInteger(0)
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
     try {
       if (group.isKilled()) { kill() }
-      assert(runGuard.getAndIncrement() == 0 || state == Killed, this.toString() + ".run() should be run on one thread at a time.  state=" + state)
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
@@ -471,8 +480,6 @@ class Token protected (
       case e: OrcException => this !! e
       case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
       case e: Throwable => { notifyOrc(CaughtEvent(e)); halt() }
-    } finally {
-      runGuard.decrementAndGet()
     }
   }
 

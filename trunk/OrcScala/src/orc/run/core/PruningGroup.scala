@@ -28,7 +28,6 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
     state match {
       case RightSideUnknown(waitlist) => {
         state = RightSidePublished(v)
-        t.kill()
         this.kill()
         for (w <- waitlist) { runtime.stage(w) }
       }
