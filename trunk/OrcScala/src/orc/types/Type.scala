@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 24, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -65,7 +65,11 @@ trait Type extends TypeInterface {
    * and T < Top
    */
   def <(that: Type): Boolean = {
-    (that eq this) || (that eq Top)
+    (that eq this) || (that match {
+      case Top => true
+      case JavaObjectType(cl, _) => cl isAssignableFrom classOf[java.lang.Object]
+      case _ => false
+    })
   }
 
   /* Eliminate all variables X in this type for which V(X) is true.
