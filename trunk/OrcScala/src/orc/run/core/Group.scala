@@ -76,7 +76,7 @@ trait Group extends GroupMember {
 
   def add(m: GroupMember) {
     synchronized {
-      if(!alive) {
+      if (!alive) {
         m.kill()
       }
       assert(!members.contains(m), s"Double Group.add of $m")

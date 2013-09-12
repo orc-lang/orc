@@ -87,11 +87,11 @@ class Logger(name: String) {
     ch.setLevel(Level.ALL)
     julLogger.addHandler(ch)
   }
-  
+
   @elidable(elidable.ASSERTION) @inline
   final def check(assertion: Boolean, message: => Any) {
     if (!assertion)
-      log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: "+ message))
+      log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: " + message))
   }
 
 }

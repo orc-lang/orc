@@ -40,10 +40,10 @@ import java.util.concurrent.atomic.AtomicInteger
   * unchanged. This confines the changes to the core runtime,
   * however it does mean that there are still parts of the code
   * where there is no way to represent stop.
-  * 
-  * Be careful when blocking because you may be unblocked 
+  *
+  * Be careful when blocking because you may be unblocked
   * immediately in a different thread.
-  * 
+  *
   * @see Blockable
   *
   * @author dkitchin
@@ -157,7 +157,7 @@ class Token protected (
          * this is unnecessary. Note that the current Group.remove implementation
          * relies on this optimization for correctness of the tokenCount. */
       }
-      handle foreach {_.kill}
+      handle foreach { _.kill }
     }
   }
 
