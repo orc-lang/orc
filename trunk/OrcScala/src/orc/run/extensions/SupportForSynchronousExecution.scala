@@ -39,7 +39,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
       runSyncThread = Thread.currentThread()
     }
     val doneSignal = new LatchingSignal()
-    def syncAction(event: OrcEvent): Unit = {
+    def syncAction(event: OrcEvent) {
       event match {
         case HaltedOrKilledEvent => { doneSignal.signal() }
         case _ => {}

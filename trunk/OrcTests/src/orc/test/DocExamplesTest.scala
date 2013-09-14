@@ -39,7 +39,7 @@ object DocExamplesTest extends ExamplesTest {
 
   class DocExamplesTestCase extends TestUtils.OrcTestCase {}
 
-  def extractAllExamples(sourcedir: File, targetdir: File): Unit = {
+  def extractAllExamples(sourcedir: File, targetdir: File) {
     val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
 
     for (f <- files) {
