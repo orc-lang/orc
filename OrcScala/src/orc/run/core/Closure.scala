@@ -80,7 +80,7 @@ class Closure(
     * Such a closure will have no references to any group.
     * This object is then passed to the continuation.
     */
-  private def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
+  private def enclose(bs: List[Binding])(k: List[Binding] => Unit) {
     def resolveBound(b: Binding)(k: Binding => Unit) =
       resolveOptional(b) {
         case Some(v) => k(BoundValue(v))
