@@ -240,6 +240,8 @@ object Typeloader extends SiteClassLoading {
         if (cl.isArray()) {
           val T = liftJavaType(cl.getComponentType(), jctx)
           ArrayType(T)
+        } else if (java.lang.Void.TYPE isAssignableFrom cl) {
+          SignalType
         } else if (java.lang.Boolean.TYPE isAssignableFrom cl) {
           BooleanType
         } else if (java.lang.Character.TYPE isAssignableFrom cl) {
