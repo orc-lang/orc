@@ -30,7 +30,7 @@ trait MatchAsts {
   *
   * Implemented using the FastMatch algorithm in:
   *
-  * Chawathe, S. S., Rajaraman, A., Garcia-Molina, H., and Widom, J. 1996.
+  * Chawathe, S. S.; Rajaraman, A.; Garcia-Molina, H.; and Widom, J. 1996.
   * Change detection in hierarchically structured information. In Proceedings
   * of the 1996 ACM SIGMOD International Conference on Management of Data
   * (Montreal, Quebec, Canada, 04–06 Jun 1996). ACM, 493–504.

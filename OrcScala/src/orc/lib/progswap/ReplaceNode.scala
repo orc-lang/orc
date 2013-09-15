@@ -80,8 +80,8 @@ case class ReplaceNode[A <: AST, B <: AST](oldNode: A, newNode: B) extends AstEd
     for (frame <- tokenCracker(token).getStack()) {
       Console.err.println("  " + frame)
       frame match {
-        case sf: SequenceFrame if (sf.node == oldNode) => SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression])
-        case ff: FunctionFrame if (ff.callpoint == oldNode) => SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression])
+        case sf: SequenceFrame if (sf.node == oldNode) => { Console.err.println(">>Updating SequenceFrame node"); SwappableASTs.setSequenceFrameNode(sf, newNode.asInstanceOf[Expression]) }
+        case ff: FunctionFrame if (ff.callpoint == oldNode) => { Console.err.println(">>Updating SequenceFrame callpoint"); SwappableASTs.setFunctionFrameCallpoint(ff, newNode.asInstanceOf[Expression]) }
         case _ => {}
       }
     }
