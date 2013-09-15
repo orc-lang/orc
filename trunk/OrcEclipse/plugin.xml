@@ -553,7 +553,7 @@
             class="edu.utexas.cs.orc.orceclipse.launch.OrcPosPatternMatchListener"
             id="edu.utexas.cs.orc.orceclipse.launch.orcPosPatternMatchListener"
             qualifier="\.((orc)|(inc))\:[0-9]+?\:[0-9]+?[\n\:]"
-            regex="((.+?\.((orc)|(inc))\:[0-9]+?\:[0-9]+?\:)|((?&lt;=\tcalled at ).+?\.orc\:[0-9]+?\:[0-9]+?\n))">
+            regex="((.+?\.((orc)|(inc))\:[0-9]+?\:[0-9]+?\:)|((?&lt;= at ).+?\.orc\:[0-9]+?\:[0-9]+?\n))">
          <enablement>
          </enablement>
       </consolePatternMatchListener>
