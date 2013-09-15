@@ -16,7 +16,8 @@ package orc.run.core
 
 import orc.OrcRuntime
 
-/** A join point for waiting on multiple strict parameters.
+/**
+  * A join point for waiting on multiple strict parameters.
   *
   * If any joined parameter halts, the join point halts.
   *
@@ -99,7 +100,7 @@ class JoinItem(source: Join, index: Int) extends Blockable {
 
   def blockOn(b: Blocker) { obstacle = Some(b) }
 
-  def run() { obstacle foreach { _.check(this) } }
+  def run() = { obstacle foreach { _.check(this) } }
 
 }
 

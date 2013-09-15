@@ -64,27 +64,30 @@ trait OrcRuntimeRequires extends InvocationBehavior
   */
 trait InvocationBehavior {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
   def quiescentWhileInvoked(v: AnyRef): Boolean = false
 }
 
 trait Schedulable extends Runnable {
-  /** A schedulable unit may declare itself nonblocking;
-    * the scheduler may exploit this information.
-    * It is assumed by default that a schedulable unit might block.
-    */
+  /* A schedulable unit may declare itself nonblocking;
+   * the scheduler may exploit this information.
+   * It is assumed by default that a schedulable unit might block.
+   */
   val nonblocking: Boolean = false
 
-  /** Invoked just before this schedulable unit is scheduled or staged.
-    * It is run in the thread that made the enqueueing call.
-    */
-  def onSchedule() { }
+  /*
+   * This method is invoked just before this schedulable unit
+   * is scheduled or staged.
+   * It is run in the thread that made the enqueueing call.
+   */
+  def onSchedule() {}
 
-  /** Invoked after this schedulable unit has been run by the scheduler and 
-    * has completed (successfully or not). It is run in the same thread that
-    * executed the unit.
-    */
-  def onComplete() { }
+  /*
+   * This method is invoked after this schedulable unit
+   * has been run by the scheduler and has completed (successfully or not).
+   * It is run in the same thread that executed the unit.
+   */
+  def onComplete() {}
 }
 
 /** An Orc runtime
@@ -112,7 +115,7 @@ trait Handle {
   def notifyOrc(event: OrcEvent): Unit
 
   def publish(v: AnyRef): Unit
-  def publish(): Unit = { publish(Signal) }
+  def publish() { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
 

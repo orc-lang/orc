@@ -2,7 +2,7 @@
 // VirtualClockGroup.scala -- Scala class VirtualClockGroup
 // Project OrcScala
 //
-// $Id$
+// $Id: VirtualClockGroup.scala 3268 2013-09-15 00:06:15Z jthywissen $
 //
 // Created by jthywiss on Jan 27, 2013.
 //
@@ -21,29 +21,23 @@ package orc.run.core
   */
 class VirtualClockGroup(val parentClock: Option[VirtualClock], parent: Group) extends Subgroup(parent) {
 
-Console.println(this+".<init>: Blocking "+parentClock)
-  /* Block parent Vclock progress */
+  /* Block Vclock progress */
   parentClock foreach { _.unsetQuiescent() }
 
   def publish(t: Token, v: Option[AnyRef]) {
-Console.println(this+".publish: Resetting clock on "+t+" to "+parentClock/*+(if (parentClock.isDefined) " readyCount="+parentClock.get.readyCount else "")*/)
     t.designateClock(parentClock)
     t.migrate(parent).publish(v)
   }
 
-  def onHalt() = synchronized {
-    /* Permit parent Vclock to progress */
-    if (!isKilled) { Console.println(this+".onHalt: Unblocking "+parentClock/*+(if (parentClock.isDefined) " readyCount="+parentClock.get.readyCount else "")*/); parentClock foreach { _.setQuiescent() } }
+  def onHalt() {
     parent.remove(this)
+    /* Permit Vclock to progress */
+    parentClock foreach { _.setQuiescent() }
   }
 
-  override def kill() = synchronized {
-    /* Permit parent Vclock to progress */
-    if (!isKilled) { Console.println(this+".kill: Unblocking "+parentClock/*+(if (parentClock.isDefined) " readyCount="+parentClock.get.readyCount else "")*/); parentClock foreach { _.setQuiescent() } }
-    super.kill()
+  override def kill() {
+    super.kill();
+    /* Permit Vclock to progress */
   }
-
-//  override def add(m: GroupMember) = synchronized { super.add(m); Console.println(this+".add "+m+": size="+this.inhabitants.size) }
-//  override def remove(m: GroupMember) = synchronized { super.remove(m); Console.println(this+".remove "+m+": size="+this.inhabitants.size) }
 
 }
