@@ -71,7 +71,6 @@ class Execution(
 
   def notifyOrc(event: OrcEvent) {
     try {
-      if (event == DumpState) dumpState()
       eventHandler(event)
     } catch {
       case e: InterruptedException => throw e
@@ -79,25 +78,4 @@ class Execution(
     }
   }
 
-  def dumpState() {
-    val sb = new StringBuilder()
-    sb.append("Orc execution state dump at ")
-    sb.append(String.format("%1$TF %1$TT.%1$TL %1$TZ", java.lang.Long.valueOf(System.currentTimeMillis())))
-    sb.append("\nToken states:\n")
-    inhabitants map { m =>
-      sb.append(m)
-      sb.append(" at ")
-      sb.append(m.sourcePosition)
-      sb.append(":\n")
-      sb.append(m.sourcePosition.longString)
-      val callPoints = m.getStack.toList collect { case f: FunctionFrame => f.callpoint.pos }
-      sb.append('\n')
-      callPoints map { p => sb.append("\tcalled at " + p + "\n") }
-      sb.append('\n')
-    }
-    val prefix = "# "
-    Console.err.println(prefix+sb.toString.stripLineEnd.replaceAll("\n", "\n"+prefix))
-  }
 }
-
-object DumpState extends OrcEvent 

@@ -97,19 +97,6 @@ class Token protected (
     case Halted | Killed => {}
   }
 
-  private val toStringRecusionGuard = new ThreadLocal[Boolean]()
-  override def toString = {
-    val recursing = toStringRecusionGuard.get
-    toStringRecusionGuard.set(true)
-    val s = if (recursing == null) {
-      super.toString + s"(state=$state, node=$node, group=$group, clock=$clock)"
-    } else {
-      super.toString
-    }
-    toStringRecusionGuard.remove()
-    s
-  }
-
   /** Change this token's state.
     *
     * Return true if the token's state was successfully set
@@ -131,10 +118,12 @@ class Token protected (
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
     clock foreach { _.unsetQuiescent() }
+    super.onSchedule()
   }
 
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
+    super.onComplete()
     clock foreach { _.setQuiescent() }
   }
 
@@ -196,10 +185,10 @@ class Token protected (
   def unblock() {
     state match {
       case Blocked(_) => {
-        if (setState(Live)) { runtime.stage(this) }
+        if (setState(Live)) { stage() }
       }
       case Suspending(Blocked(_: OtherwiseGroup)) => {
-        if (setState(Suspending(Live))) { runtime.stage(this) }
+        if (setState(Suspending(Live))) { stage() }
       }
       case Suspended(Blocked(_: OtherwiseGroup)) => {
         setState(Suspended(Live))
@@ -232,11 +221,13 @@ class Token protected (
     state match {
       case Suspending(prevState) => setState(prevState)
       case Suspended(prevState) => {
-        if (setState(prevState)) { runtime.stage(this) }
+        if (setState(prevState)) { stage() }
       }
       case Publishing(_) | Live | Blocked(_) | Halted | Killed => {}
     }
   }
+
+  def stage() = runtime.stage(this)
 
   protected def fork() = synchronized { (this, copy()) }
 
@@ -343,11 +334,11 @@ class Token protected (
 
       /* Move into the function body */
       move(d.body)
-      runtime.stage(this)
+      stage()
     }
   }
 
-  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]): Unit = {
+  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]) {
     (vc, actuals) match {
       case (`Vawait`, List(t)) => {
         clock match {
@@ -365,7 +356,7 @@ class Token protected (
     }
   }
 
-  protected def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
+  protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
@@ -381,7 +372,7 @@ class Token protected (
   /** Make a call.
     * The call target is resolved, but the parameters are not yet resolved.
     */
-  protected def makeCall(target: AnyRef, params: List[Binding]): Unit = {
+  protected def makeCall(target: AnyRef, params: List[Binding]) {
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)
@@ -459,7 +450,7 @@ class Token protected (
         join(new VirtualClockGroup(clock, group))
         designateClock(Some(new VirtualClock(ordering, runtime)))
         move(body)
-        runtime.stage(this)
+        stage()
       }
       case _ => {
         this !! (new ArgumentTypeMismatchException(0, "TotalSite", orderingArg.toString()))
@@ -523,7 +514,7 @@ class Token protected (
       case Sequence(left, right) => {
         push(SequenceFrame(right, stack))
         move(left)
-        runtime.stage(this)
+        stage()
       }
 
       case Prune(left, right) => {
@@ -560,7 +551,7 @@ class Token protected (
           bind(BoundClosure(c))
         }
         move(body)
-        runtime.stage(this)
+        stage()
       }
 
       case HasType(expr, _) => {
@@ -580,11 +571,11 @@ class Token protected (
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live | Blocked(_) => {
         setState(Publishing(v))
-        runtime.stage(this)
+        stage()
       }
       case Suspending(_) => {
         setState(Suspending(Publishing(v)))
-        runtime.stage(this)
+        stage()
       }
       case Suspended(_) => {
         setState(Suspended(Publishing(v)))

@@ -26,10 +26,6 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
 
   var invocationThread: Option[Thread] = None
 
-  /** If the site is NOT quiescentWhileInvoked, this is the clock to indicate
-    * the non-quiescence to.  Otherwise, keep no clock reference and let the
-    * VirtualClock group go quiescent.
-    */
   val governingClock = {
     if (caller.runtime.quiescentWhileInvoked(calledSite)) {
       None
@@ -62,15 +58,12 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
   /* When a site call handle is scheduled, notify its clock accordingly. */
   override def onSchedule() {
     governingClock foreach { _.unsetQuiescent() }
+    super.onSchedule()
   }
 
-  /* NOTE: We do NOT setQuiescent in onComplete. A site call is not
-   * "complete" until the caller token is reawakened. Completion of
-   * SiteCallHandle.run() indicates the call has been invoked, but
-   * the call may continue to be outstanding.  Instead, we override
-   * the setState method to look for completion of the site call.
+  /* NOTE: We do not override onComplete. A site call is not 'complete' until
+   * the listener token is reawakened. Instead, we override the setState method.
    */
-
   override def setState(newState: CallState): Boolean = {
     synchronized {
       val success = super.setState(newState)

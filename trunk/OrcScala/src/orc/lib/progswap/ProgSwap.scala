@@ -159,6 +159,7 @@ object ProgSwap extends Site with UntypedSite {
           }
         }
         // ALL tokens in the old tree MUST be covered by some edit operation.
+        // Assuming tokens not migrated belong to other ASTs.
         Console.err.println("AstEditScript did not migrate Token " + token + ", which is at node " + token.getNode());
       }
   }

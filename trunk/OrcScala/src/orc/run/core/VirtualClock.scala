@@ -27,7 +27,6 @@ trait VirtualClockOperation extends Site with SpecificArity
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
   override def toString() = "AwaitCallHandle(caller=" + caller + ")"
-  override def publish(v: AnyRef) { Console.println(this+".publish"); super.publish(v) }
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = isLive && caller.checkAlive()
 }
@@ -79,12 +78,9 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
   protected def run() {
     synchronized {
       if (readyCount == 0) {
-Console.println(this+".run: waiterQueue.length="+waiterQueue.length)
         dequeueMins() match {
           case Some((newTime, first :: rest)) => {
             currentTime = Some(newTime)
-Console.println(this+".run: dequeueMins time="+newTime)
-first.notifyOrc(DumpState)
             first.publish(true.asInstanceOf[AnyRef])
             rest foreach { _.publish(false.asInstanceOf[AnyRef]) }
           }
@@ -101,17 +97,14 @@ first.notifyOrc(DumpState)
       readyCount -= 1
       if (readyCount == 0) {
         runtime.stage(this)
-Console.println(this+".setQuiescent: clock staged, waiterQueue.length="+waiterQueue.length)
       }
     }
-//Console.println(this+".setQuiescent: readyCount="+readyCount)
   }
 
   def unsetQuiescent() {
     synchronized {
       readyCount += 1
     }
-//Console.println(this+".unsetQuiescent: readyCount="+readyCount)
   }
 
   def await(caller: Token, t: Time) {
@@ -120,20 +113,19 @@ Console.println(this+".setQuiescent: clock staged, waiterQueue.length="+waiterQu
       if (readyCount <= 0) {
         h !! new VirtualClockError("Virtual clock internal failure: await when readyCount = " + readyCount)
       }
-      Console.print(this+".await("+t+"): ");
       val order = currentTime map { ordering(t, _) } getOrElse 1
-      if (order == 1) { waiterQueue += ((h, t)) ; Console.print("enquing ") }
+      if (order == 1) waiterQueue += ((h, t))
       order
     }
     timeOrder match {
       // Awaiting a time that has already passed.
-      case -1 => { Console.println("halting"); caller.halt() }
+      case -1 => caller.halt()
 
       // Awaiting the current time.
-      case 0 => { Console.println("publishing false"); caller.publish(Some(false.asInstanceOf[AnyRef])) }
+      case 0 => caller.publish(Some(false.asInstanceOf[AnyRef]))
 
       // Awaiting a future time.
-      case 1 => { Console.println("blocking"); caller.blockOn(h) }
+      case 1 => caller.blockOn(h)
     }
   }
 
