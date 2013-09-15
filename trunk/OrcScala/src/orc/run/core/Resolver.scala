@@ -41,7 +41,7 @@ trait Resolver extends Blockable {
     *
     * Note that resolving a closure also encloses its context.
     */
-  protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit) {
+  protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
     b match {
       case BoundValue(v) =>
         k(Some(v))

@@ -64,7 +64,7 @@ trait OrcRuntimeRequires extends InvocationBehavior
   */
 trait InvocationBehavior {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
   def quiescentWhileInvoked(v: AnyRef): Boolean = false
 }
 
@@ -112,7 +112,7 @@ trait Handle {
   def notifyOrc(event: OrcEvent): Unit
 
   def publish(v: AnyRef): Unit
-  def publish() { publish(Signal) }
+  def publish(): Unit = { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
 

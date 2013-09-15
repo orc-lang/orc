@@ -347,7 +347,7 @@ class Token protected (
     }
   }
 
-  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]) {
+  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]): Unit = {
     (vc, actuals) match {
       case (`Vawait`, List(t)) => {
         clock match {
@@ -365,7 +365,7 @@ class Token protected (
     }
   }
 
-  protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
+  protected def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
@@ -381,7 +381,7 @@ class Token protected (
   /** Make a call.
     * The call target is resolved, but the parameters are not yet resolved.
     */
-  protected def makeCall(target: AnyRef, params: List[Binding]) {
+  protected def makeCall(target: AnyRef, params: List[Binding]): Unit = {
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)

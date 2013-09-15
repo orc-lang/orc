@@ -42,13 +42,13 @@ trait Blockable extends Schedulable {
 
   /** Called to wake up the blockable without providing any information. Just wake up to whatever you where doing.
     */
-  def awake() {
+  def awake(): Unit = {
     throw new AssertionError("Awake called on blockable that does not support awake without information (This is an interpreter bug).")
   }
 
   /** Called to wake up the blockable, but halt it immediately.
     */
-  def halt() {
+  def halt(): Unit = {
     throw new AssertionError("Halt called on non-haltable blockable (This is an interpreter bug).")
   }
 
@@ -72,7 +72,7 @@ trait Blockable extends Schedulable {
     *
     * The default implementation rethrows the exception.
     */
-  def awakeException(e: OrcException) {
+  def awakeException(e: OrcException): Unit = {
     throw e;
   }
 

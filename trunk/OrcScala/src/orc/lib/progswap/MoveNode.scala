@@ -31,8 +31,8 @@ case class MoveNode[A <: AST, B <: AST](movingNode: A, movedNode: B, oldParent: 
 
   def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Token) {}
+  def migrateClosures(token: Token): Unit = {}
 
-  def migrateFrameStack(token: Token) {}
+  def migrateFrameStack(token: Token): Unit = {}
 
 }
