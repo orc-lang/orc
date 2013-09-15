@@ -181,7 +181,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   }
 
   @throws(classOf[IllegalStateException])
-  def stageTask(task: Schedulable) {
+  def stageTask(task: Schedulable): Unit = {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
@@ -194,7 +194,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
 
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def executeTask(task: Schedulable) {
+  def executeTask(task: Schedulable): Unit = {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
@@ -202,11 +202,11 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     execute(task)
   }
 
-  override def beforeExecute(t: Thread, r: Runnable) {
+  override def beforeExecute(t: Thread, r: Runnable): Unit = {
     OrcThreadPoolExecutor.stagedTasks.set(Nil)
   }
 
-  override def afterExecute(r: Runnable, t: Throwable) {
+  override def afterExecute(r: Runnable, t: Throwable): Unit = {
     super.afterExecute(r, t)
     r match {
       case s: Schedulable => s.onComplete()

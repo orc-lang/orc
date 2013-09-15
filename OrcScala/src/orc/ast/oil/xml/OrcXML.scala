@@ -119,7 +119,7 @@ object OrcXML {
     xmlToAst(XML.load(source))
   }
 
-  def writeOilToStream(ast: Expression, dest: java.io.OutputStream) {
+  def writeOilToStream(ast: Expression, dest: java.io.OutputStream): Unit = {
     val writer = new java.io.OutputStreamWriter(dest)
     val node = astToXml(ast)
     val xml = Utility.serialize(node, preserveWhitespace = true, minimizeTags = MinimizeMode.Always).toString
