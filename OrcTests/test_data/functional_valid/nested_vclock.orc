@@ -8,32 +8,32 @@
 def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
 
 def simulate(n :: String) =
-  val x = Rwait(100)
+  val x = Rwait(20)
     stop
-  | Rwait(0) >> Vwait(3) >> n+": "+3
-  | Rwait(100) >> Vwait(2) >> n+": "+2
-  | Rwait(200) >> Vwait(1) >> n+": "+4
+  | Rwait(0)  >> Vwait(3) >> n+":    y "+Vtime()  >v> Println(v) >> stop
+  | Rwait(10) >> Vwait(2) >> n+":   x "+Vtime()   >v> Println(v) >> stop
+  | Rwait(30) >> Vwait(1) >> n+":     z "+Vtime() >v> Println(v) >> stop
   -- nested simulation
   | Vclock(IntegerTimeOrder) >> Vawait(0) >>
-      ( x >> Vwait(1) >> n+": "+1
-      | Vwait(2) >> n+": "+0
+      ( x >> Vwait(1) >> n+":  w "+Vtime() >v> Println(v) >> stop
+      | Vwait(2)      >> n+": v "+Vtime()  >v> Println(v) >> stop
       )
 
-  Vclock(IntegerTimeOrder) >> Vawait(0) >>
+Vclock(IntegerTimeOrder) >> Vawait(0) >>
 ( (Vclock(IntegerTimeOrder) >> Vawait(0) >> simulate("A"))
-| Vwait(1) >> (Vclock(IntegerTimeOrder) >> Vawait(0) >> simulate("B"))
-)
+| Vwait(1) >> (Vclock(IntegerTimeOrder) >> Vawait(0) >> simulate("     B"))
+) >> stop
 
 {-
 OUTPUT:
-"A: 0"
-"A: 1"
-"A: 2"
-"A: 3"
-"A: 4"
-"B: 0"
-"B: 1"
-"B: 2"
-"B: 3"
-"B: 4"
+A: v 2
+A:  w 3
+A:   x 2
+A:    y 3
+A:     z 4
+     B: v 2
+     B:  w 3
+     B:   x 2
+     B:    y 3
+     B:     z 4
 -}
