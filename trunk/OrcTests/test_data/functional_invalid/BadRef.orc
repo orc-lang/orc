@@ -1,4 +1,4 @@
-{- Parser19.orc
+{- BadRef.orc
  - 
  - Torture test for the Orc compiler
  -

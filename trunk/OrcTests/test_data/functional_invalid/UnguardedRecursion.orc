@@ -1,4 +1,4 @@
-{- Parser29.orc
+{- UnguardedRecursion.orc
  - 
  - Torture test for the Orc compiler
  -
