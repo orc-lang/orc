@@ -134,13 +134,13 @@ trait OrcRunner {
   * @author jthywiss
   */
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-  //TODO: Make more of these params configurable
-  math.max(4, Runtime.getRuntime().availableProcessors * 2),
-  if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
-  2000L, TimeUnit.MILLISECONDS,
-  //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
-  new LinkedBlockingQueue[Runnable](),
-  new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+    //TODO: Make more of these params configurable
+    math.max(4, Runtime.getRuntime().availableProcessors * 2),
+    if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
+    2000L, TimeUnit.MILLISECONDS,
+    //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
+    new LinkedBlockingQueue[Runnable](),
+    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 
@@ -272,13 +272,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             ifElapsed(120L, { shutdownNow() })
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
             ifElapsed(303000L, {
-              Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads, after trying for ~5 minutes\n" +
-                threadGroup.getName() + " thread dump: \n\n" +
-                (for (thread <- threadBuffer.view(0, threadGroup.enumerate(threadBuffer, false)))
-                  yield (
-                  '"' + thread.getName() + '"' + (if (thread.isDaemon()) "daemon " else "") + "prio=" + thread.getPriority() + " tid=" + thread.getId() + " " + thread.getState() + "\n" +
-                  (for (stackFrame <- thread.getStackTrace())
-                    yield "\tat " + stackFrame.toString() + "\n").mkString("") + "\n")).mkString(""))
+              Logger.severe(s"Orc shutdown was unable to terminate ${getPoolSize()} worker threads, after trying for ~5 minutes\n" +
+                threadGroupDump(threadGroup))
               giveUp = true
             })
 
@@ -362,6 +357,34 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     Logger.finest("taskCount = " + getTaskCount)
     Logger.finest("completedTaskCount = " + getCompletedTaskCount)
     Logger.finest("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
+  }
+  
+  def threadGroupDump(threadGroup: ThreadGroup): String = {
+    val threadBuffer = new Array[Thread](threadGroup.activeCount + 5)
+    val descendantThreads = threadBuffer.view(0, threadGroup.enumerate(threadBuffer, true))
+    val threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean
+    threadGroup.getName + " thread dump: \n\n" +
+    (for (thread <- descendantThreads)
+      yield {
+        val stackTrace = thread.getStackTrace
+        val ti = threadMXBean.getThreadInfo(thread.getId)
+        s"'${thread.getName}' ${if (thread.isDaemon) "daemon " else ""}prio=${thread.getPriority} tid=${thread.getId} ${thread.getState} " +
+          (if (ti.getLockName != null) " on " + ti.getLockName else "") +
+          (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
+          (if (ti.isSuspended) " (suspended)" else "") +
+          (if (ti.isInNative) " (in native)" else "") +
+          "\n" +
+          (for (i <- 0 until stackTrace.length)
+            yield s"\tat stackTrace[i]\n" +
+              (for {
+                mi <- ti.getLockedMonitors
+                if mi.getLockedStackDepth() == i
+              } yield {
+                s"\t-  locked  $mi\n"
+              }).mkString
+          ).mkString + "\n"
+      }
+    ).mkString
   }
 
 }
