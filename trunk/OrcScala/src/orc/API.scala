@@ -69,24 +69,21 @@ trait InvocationBehavior {
 }
 
 trait Schedulable extends Runnable {
-  /* A schedulable unit may declare itself nonblocking;
-   * the scheduler may exploit this information.
-   * It is assumed by default that a schedulable unit might block.
-   */
+  /** A schedulable unit may declare itself nonblocking;
+    * the scheduler may exploit this information.
+    * It is assumed by default that a schedulable unit might block.
+    */
   val nonblocking: Boolean = false
 
-  /*
-   * This method is invoked just before this schedulable unit
-   * is scheduled or staged.
-   * It is run in the thread that made the enqueueing call.
-   */
+  /** Invoked just before this schedulable unit is scheduled or staged.
+    * It is run in the thread that made the enqueueing call.
+    */
   def onSchedule() {}
 
-  /*
-   * This method is invoked after this schedulable unit
-   * has been run by the scheduler and has completed (successfully or not).
-   * It is run in the same thread that executed the unit.
-   */
+  /** Invoked after this schedulable unit has been run by the scheduler and 
+    * has completed (successfully or not). It is run in the same thread that
+    * executed the unit.
+    */
   def onComplete() {}
 }
 

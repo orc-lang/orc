@@ -16,8 +16,7 @@ package orc.run.core
 
 import orc.OrcRuntime
 
-/**
-  * A join point for waiting on multiple strict parameters.
+/** A join point for waiting on multiple strict parameters.
   *
   * If any joined parameter halts, the join point halts.
   *
@@ -26,7 +25,7 @@ import orc.OrcRuntime
   *
   * @author dkitchin
   */
-class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends Blocker {
+class Join(params: List[Binding], val waiter: Token, val runtime: OrcRuntime) extends Blocker {
 
   // TODO: Optimize the case where no parameter requires blocking.
 
@@ -35,6 +34,8 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
 
   val items = new Array[AnyRef](params.size)
   var state: JoinState = JoinInProgress(params.size)
+
+  override def toString = super.toString + s"(state=$state, waiter=$waiter)"
 
   def set(index: Int, arg: AnyRef) = synchronized {
     state match {
@@ -45,7 +46,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
       case JoinInProgress(1) => {
         items(index) = arg
         state = JoinComplete
-        runtime.stage(t)
+        runtime.stage(waiter)
       }
       case JoinHalted => {}
       case _ => throw new AssertionError("Erroneous state transformation in Join")
@@ -56,7 +57,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
     state match {
       case JoinInProgress(_) => {
         state = JoinHalted
-        runtime.stage(t)
+        runtime.stage(waiter)
       }
       case JoinHalted => {}
       case JoinComplete => throw new AssertionError("Erroneous state transformation in Join")
@@ -64,7 +65,7 @@ class Join(params: List[Binding], t: Blockable, val runtime: OrcRuntime) extends
   }
 
   def join() = {
-    t.blockOn(this)
+    waiter.blockOn(this)
     for ((param, i) <- params.view.zipWithIndex) {
       param match {
         case BoundValue(v) => set(i, v)
@@ -100,7 +101,15 @@ class JoinItem(source: Join, index: Int) extends Blockable {
 
   def blockOn(b: Blocker) { obstacle = Some(b) }
 
-  def run() = { obstacle foreach { _.check(this) } }
+  override def onSchedule() {
+    source.waiter.unsetQuiescent()
+  }
+
+  override def onComplete() {
+    source.waiter.setQuiescent()
+  }
+
+  def run() { obstacle foreach { _.check(this) } }
 
 }
 

@@ -56,7 +56,7 @@ class Closure(
 
   def lexicalContext = _lexicalContext
 
-  override def toString = synchronized { "Closure@" + ## + (code.body.pos, lexicalContext, state, stack) }
+  override def toString = synchronized { super.toString + (code.body.pos, lexicalContext, state, stack) }
 
   // FIXME: This should work but it produces duplicate versions of closures and I don't see why
   // we should do that. The resolution will be fast because the lexical context will already

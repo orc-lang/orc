@@ -24,6 +24,8 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   var state: PruningGroupState = RightSideUnknown(Nil)
 
+  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
+
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
       case RightSideUnknown(waitlist) => {

@@ -26,7 +26,7 @@ trait VirtualClockOperation extends Site with SpecificArity
 /** @author dkitchin
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
-  override def toString() = "AwaitCallHandle(caller=" + caller + ")"
+  override def toString() = super.toString + s"(caller=$caller)"
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = isLive && caller.checkAlive()
 }

@@ -24,6 +24,8 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
 
   t.blockOn(this)
 
+  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
+
   def publish(t: Token, v: Option[AnyRef]) {
     synchronized {
       state match {

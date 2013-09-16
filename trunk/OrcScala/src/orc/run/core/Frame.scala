@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -58,7 +58,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
     t.pop()
     t.bind(BoundValue(v.get))
     t.move(node)
-    t.stage()
+    t.runtime.stage(t)
   }
   override def toString = stringPrefix + "(" + node + ")"
 }
