@@ -14,27 +14,19 @@
 //
 package orc.test
 
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.InputStreamReader
-import java.util.concurrent.FutureTask
-import java.util.concurrent.Callable
-import java.util.concurrent.TimeUnit.SECONDS
+import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader }
 import java.util.concurrent.TimeoutException
-import java.util.concurrent.ExecutionException
-import javax.script.ScriptEngineManager
-import javax.script.ScriptEngine
+
+import orc.{ OrcEvent, OrcEventAction }
+import orc.error.OrcException
+import orc.lib.str.PrintEvent
+import orc.script.{ OrcBindings, OrcScriptEngine }
+import orc.util.SynchronousThreadExec
+import orc.values.Format
+
+import javax.script.{ ScriptEngine, ScriptEngineManager, ScriptException }
 import javax.script.Compilable
 import javax.script.ScriptContext.ENGINE_SCOPE
-import javax.script.ScriptException
-import orc.script.OrcBindings
-import orc.script.OrcScriptEngine
-import orc.OrcEvent
-import orc.OrcEventAction
-import orc.lib.str.PrintEvent
-import orc.values.Format
-import orc.error.OrcException
-import orc.util.SynchronousThreadExec
 
 /** A test harness for the standard Orc compiler and runtime
   * engine, as exposed through the JSR-223 interface.
@@ -65,7 +57,7 @@ object OrcForTesting {
   @throws(classOf[TimeoutException])
   def run(compiledScript: OrcScriptEngine#OrcCompiledScript, timeout: Long): String = {
     try {
-      val output = new StringBuilder()
+      val output = new StringBuffer()
       var lastError: Throwable = null
       val eventActions = new OrcEventAction() {
         override def published(value: AnyRef) {
