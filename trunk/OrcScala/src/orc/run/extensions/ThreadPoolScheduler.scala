@@ -358,24 +358,39 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     Logger.finest("completedTaskCount = " + getCompletedTaskCount)
     Logger.finest("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
   }
-  
+
   def threadGroupDump(threadGroup: ThreadGroup): String = {
     val threadBuffer = new Array[Thread](threadGroup.activeCount + 5)
     val descendantThreads = threadBuffer.view(0, threadGroup.enumerate(threadBuffer, true))
     val threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean
-    threadGroup.getName + " thread dump: \n\n" +
+    val deadlockIds = threadMXBean.findDeadlockedThreads()
+    (if (deadlockIds != null && deadlockIds.length > 0)
+      "DEADLOCK DETECTED among these threads in the JVM:\n" +
+      (for (tid <- deadlockIds)
+        yield {
+          val ti = threadMXBean.getThreadInfo(tid)
+          s"\t'${ti.getThreadName()}' tid=${tid} ${ti.getThreadState}" +
+            (if (ti.getLockName != null) " on " + ti.getLockName else "") +
+            (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
+            '\n'
+        }
+      ).mkString + "\n"
+    else
+      ""
+    ) +
+    threadGroup.getName + " thread dump:\n\n" +
     (for (thread <- descendantThreads)
       yield {
         val stackTrace = thread.getStackTrace
         val ti = threadMXBean.getThreadInfo(thread.getId)
-        s"'${thread.getName}' ${if (thread.isDaemon) "daemon " else ""}prio=${thread.getPriority} tid=${thread.getId} ${thread.getState} " +
+        s"'${thread.getName}' ${if (thread.isDaemon) "daemon " else ""}prio=${thread.getPriority} tid=${thread.getId} ${thread.getState}" +
           (if (ti.getLockName != null) " on " + ti.getLockName else "") +
           (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
           (if (ti.isSuspended) " (suspended)" else "") +
           (if (ti.isInNative) " (in native)" else "") +
           "\n" +
           (for (i <- 0 until stackTrace.length)
-            yield s"\tat stackTrace[i]\n" +
+            yield s"\tat ${stackTrace(i)}\n" +
               (for {
                 mi <- ti.getLockedMonitors
                 if mi.getLockedStackDepth() == i
