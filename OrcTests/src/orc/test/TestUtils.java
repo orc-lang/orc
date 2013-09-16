@@ -104,6 +104,10 @@ public final class TestUtils {
     }
 
 	public static void findOrcFiles(final File base, final LinkedList<File> files) {
+		if (base.isFile() && base.getPath().endsWith(".orc")) {
+			files.add(base);
+			return;
+		}
 		final File[] list = base.listFiles();
 		if (list == null) {
 			return;

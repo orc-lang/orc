@@ -14,17 +14,13 @@
 //
 package orc.run.extensions
 
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
 import java.util.logging.Level
-import orc.Handle
-import orc.OrcExecutionOptions
-import orc.run.Orc
-import orc.run.core.GroupMember
-import orc.Schedulable
 
+import orc.{OrcExecutionOptions, Schedulable}
+import orc.run.Orc
+
+/** A logger just for scheduling */
 object Logger extends orc.util.Logger("orc.run.scheduler")
 
 /** An Orc runtime engine extension which
@@ -142,7 +138,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   math.max(4, Runtime.getRuntime().availableProcessors * 2),
   if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
   2000L, TimeUnit.MILLISECONDS,
-  new LinkedBlockingQueue[Runnable],
+  //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
+  new LinkedBlockingQueue[Runnable](),
   new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")

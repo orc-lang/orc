@@ -20,8 +20,7 @@ import orc.types.Type
 import orc.types.SignalType
 import orc.types.TupleType
 
-/**
-  * Extend join, meet, and < to lists of types.
+/** Extend join, meet, and < to lists of types.
   *
   * @author dkitchin
   */

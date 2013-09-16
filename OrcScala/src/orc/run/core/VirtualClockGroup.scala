@@ -2,7 +2,7 @@
 // VirtualClockGroup.scala -- Scala class VirtualClockGroup
 // Project OrcScala
 //
-// $Id: VirtualClockGroup.scala 3268 2013-09-15 00:06:15Z jthywissen $
+// $Id$
 //
 // Created by jthywiss on Jan 27, 2013.
 //
@@ -21,23 +21,26 @@ package orc.run.core
   */
 class VirtualClockGroup(val parentClock: Option[VirtualClock], parent: Group) extends Subgroup(parent) {
 
-  /* Block Vclock progress */
+  /* Block parent Vclock progress */
   parentClock foreach { _.unsetQuiescent() }
+
+  override def toString = super.toString + s"(parentClock=$parentClock)"
 
   def publish(t: Token, v: Option[AnyRef]) {
     t.designateClock(parentClock)
     t.migrate(parent).publish(v)
   }
 
-  def onHalt() {
+  def onHalt() = synchronized {
+    /* Permit parent Vclock to progress */
+    if (!isKilled) parentClock foreach { _.setQuiescent() }
     parent.remove(this)
-    /* Permit Vclock to progress */
-    parentClock foreach { _.setQuiescent() }
   }
 
-  override def kill() {
-    super.kill();
-    /* Permit Vclock to progress */
+  override def kill() = synchronized {
+    /* Permit parent Vclock to progress */
+    if (!isKilled) parentClock foreach { _.setQuiescent() }
+    super.kill()
   }
 
 }
