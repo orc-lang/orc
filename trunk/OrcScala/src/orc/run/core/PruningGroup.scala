@@ -49,24 +49,32 @@ class PruningGroup(parent: Group) extends Subgroup(parent) with Blocker {
   }
 
   // Specific to PruningGroups
-  def read(t: Blockable) = synchronized {
-    state match {
-      case RightSidePublished(v) => t.awakeValue(v.get) // t.publish(Some(v))
-      case RightSideSilent => t.awakeStop() // t.publish(None)
-      case RightSideUnknown(waitlist) => {
-        t.blockOn(this)
-        state = RightSideUnknown(t :: waitlist)
+  def read(t: Blockable) = { 
+    // result encodes what calls to t.awake* should be made after releasing the lock
+    val result = synchronized {
+      state match {
+        case RightSidePublished(v) => Some(v) // t.publish(Some(v))
+        case RightSideSilent => Some(None) // t.publish(None)
+        case RightSideUnknown(waitlist) => {
+          t.blockOn(this)
+          state = RightSideUnknown(t :: waitlist)
+          None
+        }
       }
+    }
+    
+    result match {
+      case Some(Some(v)) => t.awakeValue(v)
+      case Some(None) => t.awakeStop()
+      case None => {}
     }
   }
 
   def check(t: Blockable) {
-    synchronized {
-      state match {
-        case RightSidePublished(v) => t.awakeValue(v.get) // t.publish(Some(v))
-        case RightSideSilent => t.awakeStop() // t.publish(None)
-        case RightSideUnknown(_) => { throw new AssertionError("Spurious check") }
-      }
+    synchronized { state } match {
+      case RightSidePublished(v) => t.awakeValue(v.get) // t.publish(Some(v))
+      case RightSideSilent => t.awakeStop() // t.publish(None)
+      case RightSideUnknown(_) => { throw new AssertionError("Spurious check") }
     }
   }
 
