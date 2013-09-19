@@ -8,7 +8,7 @@
 include "BoundedChannel.inc"
 
 val c = BChannel[Integer](2)
-  c.put(5) >> c.put(2) >> c.put(50) >> "yes"
+  c.put(5) >> c.put(2) >> c.put(50) >> Rwait(500) >> "yes"
 | Rwait(2000) >> c.get()
 | Rwait(4000) >> c.get() >> c.get()
 
