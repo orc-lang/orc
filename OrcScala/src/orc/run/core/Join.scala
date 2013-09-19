@@ -82,7 +82,7 @@ class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime
     }
   }
 
-  def check(t: Blockable) = { 
+  def check(t: Blockable) = {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
       case JoinHalted => t.awakeStop()
@@ -110,7 +110,7 @@ class JoinItem(source: Join, index: Int) extends Blockable {
   }
 
   def run() { obstacle foreach { _.check(this) } }
-  
+
   override def unsetQuiescent() {
     source.waiter.unsetQuiescent()
   }

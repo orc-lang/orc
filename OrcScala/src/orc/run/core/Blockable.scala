@@ -80,18 +80,16 @@ trait Blockable extends Schedulable {
     * Called only while executing on behalf of the blockable.
     */
   def blockOn(b: Blocker): Unit
-  
-  /** 
-   *  Called to set this blockable to be quiescent. This should be reentrant 
-   *  in the sense that calling this and unsetQuiescent in overlapping but matched
-   *  pairs should work as expected. 
-   */
+
+  /** Called to set this blockable to be quiescent. This should be reentrant
+    * in the sense that calling this and unsetQuiescent in overlapping but matched
+    * pairs should work as expected.
+    */
   def setQuiescent(): Unit
-  
-  /**
-   * Called make the blockable non-quiescent.
-   * 
-   * @see #setQuiescent()
-   */
+
+  /** Called make the blockable non-quiescent.
+    *
+    * @see #setQuiescent()
+    */
   def unsetQuiescent(): Unit
 }

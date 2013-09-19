@@ -32,15 +32,15 @@ class Closure(
   def defs = closureGroup._defs
 
   def code: Def = defs(index)
-  
+
   def context = closureGroup.context
-  
+
   def lexicalContext = closureGroup.lexicalContext
 
   def check(t: Blockable) = closureGroup.check(t, index)
 
   def read(t: Blockable) = closureGroup.read(t, index)
-  
+
   override val runtime = closureGroup.runtime
 
   override def toString = super.toString + (code.body.pos, closureGroup, index)
@@ -54,24 +54,21 @@ class ClosureGroup(
   with Blockable with Resolver {
   import ClosureGroup._
   import BlockableMapExtension._
-  
+
   def defs = _defs
   def lexicalContext = _lexicalContext
-  
-  /**
-   * Create all the closures. They forward most of their methods here.
-   */
+
+  /** Create all the closures. They forward most of their methods here.
+    */
   val closures = defs.indices.toList map { i => new Closure(i, this) }
-  
-  /**
-   * Stores the current version of the context. The initial value has BoundClosures for each closure,
-   * so they will still be resolved if this context is used.
-   */
+
+  /** Stores the current version of the context. The initial value has BoundClosures for each closure,
+    * so they will still be resolved if this context is used.
+    */
   private var _context: List[Binding] = closures.reverse.map { BoundClosure(_) } ::: lexicalContext
 
-  /**
-   * Get the context used by all of the closures in this group.
-   */
+  /** Get the context used by all of the closures in this group.
+    */
   def context = _context
   /* 
    * This should be safe without locking because the change is still atomic (pointer assignment)
@@ -80,7 +77,6 @@ class ClosureGroup(
    * of things.
    */
 
-  
   private var stack: List[Option[AnyRef] => Unit] = Nil
 
   private def pop() = {
@@ -96,23 +92,23 @@ class ClosureGroup(
 
   // waitlist is effectively the state of the blocker side.
   private var waitlist: List[Blockable] = Nil // This should be empty at any time state = Resolved
-  
+
   private var activeCount = 0
-  
+
   override def setQuiescent(): Unit = synchronized {
     assert(activeCount > 0)
     activeCount -= 1
-    if( activeCount == 0 ) {
+    if (activeCount == 0) {
       waitlist foreach { _.setQuiescent() }
     }
-  } 
+  }
   override def unsetQuiescent(): Unit = synchronized {
-    if( activeCount == 0 ) {
+    if (activeCount == 0) {
       waitlist foreach { _.unsetQuiescent() }
     }
     activeCount += 1
-    assert(activeCount > 0)    
-  } 
+    assert(activeCount > 0)
+  }
 
   /** Create a new Closure object whose lexical bindings are all resolved and replaced.
     * Such a closure will have no references to any group.
@@ -169,18 +165,17 @@ class ClosureGroup(
         case _ => {
           t.blockOn(closures(i))
           waitlist ::= t
-          if( activeCount > 0 ) {
+          if (activeCount > 0) {
             t.unsetQuiescent()
           }
           false
         }
       }
     }
-    
-    if(doawake)
+
+    if (doawake)
       t.awakeValue(closures(i))
   }
-
 
   //// Blockable Implementation
 
@@ -195,10 +190,9 @@ class ClosureGroup(
     assert(state != Resolved)
     state = Blocked(b)
   }
-  
 
   //// Schedulable Implementation to handle Vclock correctly
-  
+
   // We cannot just unset/set on all elements of waitlist because that structure may change at any time.
   override def onSchedule() {
     unsetQuiescent()
