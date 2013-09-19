@@ -129,7 +129,7 @@ class Token protected (
   override def setQuiescent() { clock foreach { _.setQuiescent() } }
 
   override def unsetQuiescent() { clock foreach { _.unsetQuiescent() } }
-  
+
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
     unsetQuiescent()
@@ -558,7 +558,7 @@ class Token protected (
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
         val closureGroup = new ClosureGroup(defs, lexicalContext, runtime)
         runtime.stage(closureGroup)
-        
+
         for (c <- closureGroup.closures) {
           bind(BoundClosure(c))
         }

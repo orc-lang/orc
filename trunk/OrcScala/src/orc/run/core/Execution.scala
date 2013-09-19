@@ -81,7 +81,7 @@ class Execution(
 
   def dumpState() {
     def printGroupMember(currMember: GroupMember, level: Int, sb: StringBuilder) {
-      for { i <- 1 until level*2 } sb.append(' ')
+      for { i <- 1 until level * 2 } sb.append(' ')
       currMember match {
         case t: Token => {
           /* Already dumped Token state, just print name/hashcode */
@@ -120,8 +120,8 @@ class Execution(
     printGroupMember(this, 1, sb)
     sb.append('\n')
     val prefix = "# "
-    Console.err.println(prefix+sb.toString.stripLineEnd.replaceAll("\n", "\n"+prefix))
+    Console.err.println(prefix + sb.toString.stripLineEnd.replaceAll("\n", "\n" + prefix))
   }
 }
 
-object DumpState extends OrcEvent 
+object DumpState extends OrcEvent

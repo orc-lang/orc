@@ -14,10 +14,10 @@
 //
 package orc.run.extensions
 
-import java.util.concurrent.{LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit}
+import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit }
 import java.util.logging.Level
 
-import orc.{OrcExecutionOptions, Schedulable}
+import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 
 /** A logger just for scheduling */
@@ -366,21 +366,17 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     val deadlockIds = threadMXBean.findDeadlockedThreads()
     (if (deadlockIds != null && deadlockIds.length > 0)
       "DEADLOCK DETECTED among these threads in the JVM:\n" +
-      (for (tid <- deadlockIds)
-        yield {
-          val ti = threadMXBean.getThreadInfo(tid)
-          s"\t'${ti.getThreadName()}' tid=${tid} ${ti.getThreadState}" +
-            (if (ti.getLockName != null) " on " + ti.getLockName else "") +
-            (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
-            '\n'
-        }
-      ).mkString + "\n"
+      (for (tid <- deadlockIds) yield {
+        val ti = threadMXBean.getThreadInfo(tid)
+        s"\t'${ti.getThreadName()}' tid=${tid} ${ti.getThreadState}" +
+          (if (ti.getLockName != null) " on " + ti.getLockName else "") +
+          (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
+          '\n'
+      }).mkString + "\n"
     else
-      ""
-    ) +
-    threadGroup.getName + " thread dump:\n\n" +
-    (for (thread <- descendantThreads)
-      yield {
+      "") +
+      threadGroup.getName + " thread dump:\n\n" +
+      (for (thread <- descendantThreads) yield {
         val stackTrace = thread.getStackTrace
         val ti = threadMXBean.getThreadInfo(thread.getId)
         s"'${thread.getName}' ${if (thread.isDaemon) "daemon " else ""}prio=${thread.getPriority} tid=${thread.getId} ${thread.getState}" +
@@ -391,15 +387,13 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
           "\n" +
           (for (i <- 0 until stackTrace.length)
             yield s"\tat ${stackTrace(i)}\n" +
-              (for {
-                mi <- ti.getLockedMonitors
-                if mi.getLockedStackDepth() == i
-              } yield {
-                s"\t-  locked  $mi\n"
-              }).mkString
-          ).mkString + "\n"
-      }
-    ).mkString
+            (for {
+              mi <- ti.getLockedMonitors
+              if mi.getLockedStackDepth() == i
+            } yield {
+              s"\t-  locked  $mi\n"
+            }).mkString).mkString + "\n"
+      }).mkString
   }
 
 }

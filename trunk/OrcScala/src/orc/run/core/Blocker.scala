@@ -17,13 +17,13 @@ import orc.OrcRuntime
 
 /** The trait for objects that can be blocked on.
   *
-  * Many subclasses of Blocker implement a read method (for example Closure and 
+  * Many subclasses of Blocker implement a read method (for example Closure and
   * PruningGroup). In addition to possibly blocking something on the Blocker,
   * read will also manipulate the Vclocks so that blocked tokens are not quiescent
-  * while the Blocker is running. This is important because the Blocker may serve 
+  * while the Blocker is running. This is important because the Blocker may serve
   * as a bridge from one non-quiescent token to another, so non-quiescence must
   * be maintained.
-  * 
+  *
   * Blockers may unblock Blockables at any time in any thread. So as soon as you
   * block (for instance by calling PruningGroup.read or instantiating a SiteCallHandle)
   * on a Blocker you should assume you may be unblocked and running on another thread.
