@@ -25,7 +25,7 @@ import orc.OrcRuntime
   *
   * @author dkitchin
   */
-class Join(params: List[Binding], val waiter: Token, val runtime: OrcRuntime) extends Blocker {
+class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends Blocker {
 
   // TODO: Optimize the case where no parameter requires blocking.
 
@@ -82,8 +82,8 @@ class Join(params: List[Binding], val waiter: Token, val runtime: OrcRuntime) ex
     }
   }
 
-  def check(t: Blockable) = synchronized {
-    state match {
+  def check(t: Blockable) = { 
+    synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
       case JoinHalted => t.awakeStop()
       case JoinComplete => t.awakeValue(items.toList) // The checking entity must expect a list
@@ -102,15 +102,21 @@ class JoinItem(source: Join, index: Int) extends Blockable {
   def blockOn(b: Blocker) { obstacle = Some(b) }
 
   override def onSchedule() {
-    source.waiter.unsetQuiescent()
+    unsetQuiescent()
   }
 
   override def onComplete() {
-    source.waiter.setQuiescent()
+    setQuiescent()
   }
 
   def run() { obstacle foreach { _.check(this) } }
-
+  
+  override def unsetQuiescent() {
+    source.waiter.unsetQuiescent()
+  }
+  override def setQuiescent() {
+    source.waiter.setQuiescent()
+  }
 }
 
 class JoinState

@@ -126,9 +126,9 @@ class Token protected (
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = state.isLive && group.checkAlive()
 
-  def setQuiescent() { clock foreach { _.setQuiescent() } }
+  override def setQuiescent() { clock foreach { _.setQuiescent() } }
 
-  def unsetQuiescent() { clock foreach { _.unsetQuiescent() } }
+  override def unsetQuiescent() { clock foreach { _.unsetQuiescent() } }
   
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
@@ -556,9 +556,10 @@ class Token protected (
          * of the defs in this lexical context.
          */
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-        for (i <- defs.indices) {
-          val c = new Closure(defs, i, lexicalContext, runtime)
-          runtime.stage(c)
+        val closureGroup = new ClosureGroup(defs, lexicalContext, runtime)
+        runtime.stage(closureGroup)
+        
+        for (c <- closureGroup.closures) {
           bind(BoundClosure(c))
         }
         move(body)

@@ -32,7 +32,7 @@ trait SwappableASTs extends Orc {
 object SwappableASTs {
   def setExecutionNode(e: Execution, node: Expression) { e._node = node }
   def setExecutionOptions(e: Execution, options: OrcExecutionOptions) { e._options = options }
-  def setClosureDef(c: Closure, defs: List[Def]) { c._defs = defs }
+  def setClosureDef(c: Closure, defs: List[Def]) { c.closureGroup._defs = defs }
   def setSequenceFrameNode(sf: SequenceFrame, node: Expression) { sf._node = node }
   def setFunctionFrameCallpoint(ff: FunctionFrame, callpoint: Expression) { ff._callpoint = callpoint }
 }
