@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -24,17 +24,41 @@
 			Certain algorithms can be succinctly expressed using virtual time.  (See the shortest path example.)
 		</para>
 		<para>
-			An Orc virtual clock is defined by three things:
+			An Orc virtual clock is created with four parameters, conceptually:
 			<itemizedlist>
-			<listitem><para>A set of point of time (for example, the integers)</para></listitem>
+			<listitem><para>A set of points of time (for example, the integers)</para></listitem>
 			<listitem><para>Equality and total ordering relations over this set (for example, = and &lt;)</para></listitem>
 			<listitem><para>Optionally, a parent clock</para></listitem>
-			</itemizedlist> 
+			<listitem><para>The scope (part of the program) over which it applies</para></listitem>
+			</itemizedlist>
+			(In an actual Orc program, only the total ordering relation is given as an actual argument to a <code>Vclock</code> call.
+			The other three parameters are implicit.)
 		</para>
+		<para>
+			During execution. a virtual clock tracks:
+			<itemizedlist>
+			<listitem><para>The current time</para></listitem>
+			<listitem><para>A priority queue of pending <code>Vawait</code> calls, in order of their awaited time, as given by the clock's total ordering relation.</para></listitem>
+			</itemizedlist>
+			When <code>Vawait</code> is called with a time value greater than the current time, that call is enqueued, and does not return until that time.
+			Virtual time advances when all execution in the clock's scope becomes <firstterm>quiescent</firstterm>, defined below.
+			Upon quiescence in a clock's scope, the clock's current time is updated to least time among its waiters, and all <code>Vawait</code> calls for that time return.
+		</para>
+		<section xml:id="ref.time.virtual.quiescence">
+			<title>Quiescence</title>
+			<para>
+				A region of code is <indexterm significance="preferred"><primary>quiescence</primary></indexterm><firstterm>quiescent</firstterm> when ....
+			</para>
+		</section>
 		<section xml:id="ref.time.virtual.Vclock">
 			<title>Vclock</title>
 			<para>
-				Vclock....
+				Executing <code>Vclock(timeOrder) >> e</code> executes the expression <code>e</code> with a virtual clock that has time values ordered by <code>timeOrder</code>.
+				A time ordering operates on a particular time value type, for example integers.
+				A time ordering is a site that takes two arguments, each of the time value type, and returns the value -1, 0, or 1 to indicate the first argument is less than, equal to, or greater than, respectively, the second argument.
+				Note that in the current version of Orc, the site must be a Java site; it cannot be defined in Orc.
+				(This limitation may be removed in a future Orc release.)
+				When the expression <code>e</code> publishes, ....
 			</para>
 		</section>
 		<section xml:id="ref.time.virtual.Vawait">
@@ -80,7 +104,7 @@ signal
 			</itemizedlist>
 			<itemizedlist>
 				<title>Related Tutorial Sections</title>
-				<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.timeout">Xxxxxx</olink></para></listitem>
+				<listitem><para><olink targetdoc="userguide" targetptr="ug.idioms.timeout">...are there any?...</olink></para></listitem>
 			</itemizedlist>
 		</section>
 
