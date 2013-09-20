@@ -8,11 +8,11 @@
 def Vwait(t :: Integer) = Vawait(t + (Vtime() :!: Integer))
 
 def simulate(n :: String) =
-  val x = Rwait(20)
+  val x = Rwait(100)
     stop
   | Rwait(0)  >> Vwait(3) >> n+":    y "+Vtime()  >v> Println(v) >> stop
-  | Rwait(10) >> Vwait(2) >> n+":   x "+Vtime()   >v> Println(v) >> stop
-  | Rwait(30) >> Vwait(1) >> n+":     z "+Vtime() >v> Println(v) >> stop
+  | Rwait(50) >> Vwait(2) >> n+":   x "+Vtime()   >v> Println(v) >> stop
+  | Rwait(150) >> Vwait(1) >> n+":     z "+Vtime() >v> Println(v) >> stop
   -- nested simulation
   | Vclock(IntegerTimeOrder) >> Vawait(0) >>
       ( x >> Vwait(1) >> n+":  w "+Vtime() >v> Println(v) >> stop
