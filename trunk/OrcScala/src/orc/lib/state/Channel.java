@@ -33,17 +33,13 @@ import orc.values.sites.compatibility.SiteAdaptor;
  */
 public class Channel extends EvalSite implements TypedSite {
 
-	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
-	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		if (args.size() == 0) {
-		  return new ChannelInstance();
-	    }
-	    else {
-	      throw new ArityMismatchException(0, args.size());
-	    }
+			return new ChannelInstance();
+		} else {
+			throw new ArityMismatchException(0, args.size());
+		}
 	}
 
 	@Override
@@ -51,12 +47,12 @@ public class Channel extends EvalSite implements TypedSite {
 		return ChannelType.getBuilder();
 	}
 
-	//	@Override
-	//	public Type type() throws TypeException {
-	//		final Type X = new TypeVariable(0);
-	//		final Type ChannelOfX = new ChannelType().instance(X);
-	//		return new ArrowType(ChannelOfX, 1);
-	//	}
+	// @Override
+	// public Type type() throws TypeException {
+	// final Type X = new TypeVariable(0);
+	// final Type ChannelOfX = new ChannelType().instance(X);
+	// return new ArrowType(ChannelOfX, 1);
+	// }
 
 	protected class ChannelInstance extends DotSite {
 
@@ -64,8 +60,8 @@ public class Channel extends EvalSite implements TypedSite {
 		protected final LinkedList<Handle> readers;
 		protected Handle closer;
 		/**
-		 * Once this becomes true, no new items may be put,
-		 * and gets on an empty channel die rather than blocking.
+		 * Once this becomes true, no new items may be put, and gets on an empty
+		 * channel die rather than blocking.
 		 */
 		protected boolean closed = false;
 
@@ -84,10 +80,12 @@ public class Channel extends EvalSite implements TypedSite {
 							if (closed) {
 								reader.halt();
 							} else {
+								reader.setQuiescent();
 								readers.addLast(reader);
 							}
 						} else {
-							// If there is an item available, pop it and return it.
+							// If there is an item available, pop it and return
+							// it.
 							reader.publish(object2value(contents.removeFirst()));
 							if (closer != null && contents.isEmpty()) {
 								closer.publish(signal());
@@ -110,11 +108,13 @@ public class Channel extends EvalSite implements TypedSite {
 							// If there are no waiting callers, queue this item.
 							contents.addLast(item);
 						} else {
-							// If there are callers waiting, give this item to the top caller.
+							// If there are callers waiting, give this item to
+							// the top caller.
 							final Handle receiver = readers.removeFirst();
 							receiver.publish(object2value(item));
 						}
-						// Since this is an asynchronous channel, a put call always returns.
+						// Since this is an asynchronous channel, a put call
+						// always returns.
 						writer.publish(signal());
 					}
 				}
@@ -157,29 +157,30 @@ public class Channel extends EvalSite implements TypedSite {
 			});
 			addMember("close", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Handle token) {
+				public void callSite(final Args args, final Handle caller) {
 					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
 						if (contents.isEmpty()) {
-							token.publish(signal());
+							caller.publish(signal());
 						} else {
-							closer = token;
+							closer = caller;
+							closer.setQuiescent();
 						}
 					}
 				}
 			});
 			addMember("closeD", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Handle token) {
+				public void callSite(final Args args, final Handle caller) {
 					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						token.publish(signal());
+						caller.publish(signal());
 					}
 				}
 			});

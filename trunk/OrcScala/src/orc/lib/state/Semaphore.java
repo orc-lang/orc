@@ -35,18 +35,17 @@ public class Semaphore extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-	  int initialValue = args.intArg(0);
+		final int initialValue = args.intArg(0);
 
-	  if (args.size() != 1) {
-	    throw new ArityMismatchException(1, args.size());
-	  }
+		if (args.size() != 1) {
+			throw new ArityMismatchException(1, args.size());
+		}
 
-	  if (initialValue >= 0) {
-	    return new SemaphoreInstance(initialValue);
-	  }
-	  else {
-	    throw new IllegalArgumentException("Semaphore requires a non-negative argument");
-	  }
+		if (initialValue >= 0) {
+			return new SemaphoreInstance(initialValue);
+		} else {
+			throw new IllegalArgumentException("Semaphore requires a non-negative argument");
+		}
 
 	}
 
@@ -75,6 +74,7 @@ public class Semaphore extends EvalSite implements TypedSite {
 				public void callSite(final Args args, final Handle waiter) {
 					synchronized (SemaphoreInstance.this) {
 						if (0 == n) {
+							waiter.setQuiescent();
 							waiters.offer(waiter);
 							if (!snoopers.isEmpty()) {
 								for (final Handle snooper : snoopers) {
@@ -121,6 +121,7 @@ public class Semaphore extends EvalSite implements TypedSite {
 				public void callSite(final Args args, final Handle snooper) throws TokenException {
 					synchronized (SemaphoreInstance.this) {
 						if (waiters.isEmpty()) {
+							snooper.setQuiescent();
 							snoopers.offer(snooper);
 						} else {
 							snooper.publish(signal());
@@ -130,12 +131,12 @@ public class Semaphore extends EvalSite implements TypedSite {
 			});
 			addMember("snoopD", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Handle token) throws TokenException {
+				public void callSite(final Args args, final Handle caller) throws TokenException {
 					synchronized (SemaphoreInstance.this) {
 						if (waiters.isEmpty()) {
-							token.halt();
+							caller.halt();
 						} else {
-							token.publish(signal());
+							caller.publish(signal());
 						}
 					}
 				}

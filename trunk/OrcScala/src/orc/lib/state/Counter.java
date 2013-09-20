@@ -30,6 +30,7 @@ import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
  * Factory for counters.
+ *
  * @author quark
  */
 @SuppressWarnings("hiding")
@@ -39,8 +40,8 @@ public class Counter extends EvalSite implements TypedSite {
 		final int init = args.size() == 0 ? 0 : args.intArg(0);
 
 		if (args.size() > 1) {
-		  // technically of arity 0 or 1
-		  throw new ArityMismatchException(1, args.size());
+			// technically of arity 0 or 1
+			throw new ArityMismatchException(1, args.size());
 		}
 
 		return new DotSite() {
@@ -84,6 +85,7 @@ public class Counter extends EvalSite implements TypedSite {
 							if (count == 0) {
 								caller.publish(signal());
 							} else {
+								caller.setQuiescent();
 								waiters.add(caller);
 							}
 						}
