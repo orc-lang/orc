@@ -90,6 +90,8 @@ If the given value is in the future, wait for it, and return <code>true</code>.
 If the given value is in the past, halt silently.
 If no virtual time has been established, initialize to the given value and return <code>true</code>.
 
+If a call to <code>Vawait</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
+
 The type <code>A</code> of the parameter is determined by the type accepted by the time value
 comparator supplied to the <code>Vclock</code> call that created the current virtual clock.
 --}
