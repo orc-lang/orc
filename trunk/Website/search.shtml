@@ -7,13 +7,20 @@
 	width: 800px;
 }
 </style>
-<div id="cse-search-results"></div>
-<script type="text/javascript">
-  var googleSearchIframeName = "cse-search-results";
-  var googleSearchFormName = "cse-search-box";
-  var googleSearchFrameWidth = 800;
-  var googleSearchDomain = "www.google.com";
-  var googleSearchPath = "/cse";
+
+<div id="cse-search-results">
+<script>
+  (function() {
+    var cx = '001989989275909646143:conqllya2xi';
+    var gcse = document.createElement('script');
+    gcse.type = 'text/javascript';
+    gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(gcse, s);
+  })();
 </script>
-<script type="text/javascript" src="https://www.google.com/afsonline/show_afs_search.js"></script>
+<gcse:searchresults-only></gcse:searchresults-only>
+</div>
 <!--#include virtual="/template/footer.shtml" -->
