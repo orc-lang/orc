@@ -22,14 +22,13 @@ import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
 
 /**
- * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
- * Each program is given at most 10 seconds to complete.
- * <p>
- * We look for one or more comment blocks formatted per
- * <code>ExampleOutput</code>'s specs.
+ * Repeatedly run the test specified as a path in the TEST environment variable.
+ * 
+ * You can setup the Eclipse run configuration to set this variable to the
+ * currently selected file. This makes for easy stress testing.
  *
- * @see ExpectedOutput
- * @author quark, srosario
+ * @see ExamplesTest
+ * @author amp
  */
 public class RepeatedSingleTest {
 
