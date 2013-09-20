@@ -13,7 +13,7 @@ This set of four lectures introduce Orc in a tutorial style.
 number of simple synchronization problems are solved.</p>
 
 <ul><li>
-<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/1-Calculus.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 1 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 234 kB)
+<a href="https://www.cs.utexas.edu/~misra/orc.dir/1-Calculus.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 1 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 234 kB)
 </li></ul>
 
 
@@ -24,7 +24,7 @@ language that embeds the Orc combinators. A number of useful sites are
 introduced and many example problems are solved.</p>
 
 <ul><li>
-<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/2-Language.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 2 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 253 kB)
+<a href="https://www.cs.utexas.edu/~misra/orc.dir/2-Language.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 2 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 253 kB)
 </li></ul>
 
 
@@ -34,7 +34,7 @@ introduced and many example problems are solved.</p>
 involved programming exercises illustrate their application.</p>
 
 <ul><li>
-<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/3-Idioms.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 3 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 433 kB)
+<a href="https://www.cs.utexas.edu/~misra/orc.dir/3-Idioms.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 3 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 433 kB)
 </li></ul>
 
 
@@ -45,7 +45,7 @@ permits creating sites in Orc. A number of examples illustrate the
 various ways in which classes can be used.</p>
 
 <ul><li>
-<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/4-Class.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 4 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 349 kB)
+<a href="https://www.cs.utexas.edu/~misra/orc.dir/4-Class.pdf" onclick="window.open(this.href,'_blank');return false;">Lecture 4 slides <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 349 kB)
 </li></ul>
 
 

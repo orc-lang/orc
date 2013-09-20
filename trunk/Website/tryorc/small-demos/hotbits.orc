@@ -2,7 +2,7 @@
    Make a request to the Fourmilab HotBits service
    to produce a sequence of 4 random bytes in hex.
 
-   See http://www.fourmilab.ch/hotbits/ for more info.
+   See https://www.fourmilab.ch/hotbits/ for more info.
 -}
 
 {- Returns a string of n random hexadecimal bytes -}

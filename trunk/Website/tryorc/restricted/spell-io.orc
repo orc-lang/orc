@@ -35,7 +35,7 @@ def spellCheck(word:words, i) =
   (i, word, suggs)
   | spellCheck(words, i+1)
 
-val url = "http://orc.csres.utexas.edu/test-data/Gutenberg_Through-the-Looking-Glass.zip"
+val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Through-the-Looking-Glass.zip"
     -- Orc project's cached copy; Gutenberg doesn't like robots.
     -- Original URL: http://www.gutenberg.org/files/12/12.zip
 
