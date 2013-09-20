@@ -22,13 +22,21 @@ def balance(Channel[InType], Channel[OutType], List[SiteType]) :: Bot
 def balance(in, out, ps) =
   def makeChannel(_ :: Top) = Channel[OutType]()
   val cs = map(makeChannel, ps)
+  
+  val inClosed = Cell[Signal]() -- Set when the in channel is closed
+  val runningProcesses = Counter(0) -- count is the number of processes currently running
+  
   def write(List[Channel[OutType]]) :: Bot
   def read(List[(SiteType,Channel[OutType])]) :: Bot
+  
   def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
+  
   def read((p,c):pcs) =
-    ( in.get() ; c.close() >> stop ) >x>
-    ( c.put(p(x)) >> stop | read(append(pcs, [(p,c)])) )
-  write(cs) | read(zip(ps,cs))
+    ( runningProcesses.inc() >> in.get() ; runningProcesses.dec() >> inClosed := signal >> stop ) >x>
+    ( c.put(p(x)) >> runningProcesses.dec() >> stop | read(append(pcs, [(p,c)])) )
+  
+  write(cs) | read(zip(ps,cs)) | 
+  inClosed? >> runningProcesses.onZero() >> map(lambda(c) = c.close(), cs) >> stop
 
 val in = Channel[InType]()
 val out = Channel[OutType]()
