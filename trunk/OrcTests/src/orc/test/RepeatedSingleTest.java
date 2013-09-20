@@ -2,7 +2,7 @@
 // ExamplesTest.java -- Java class ExamplesTest
 // Project OrcTests
 //
-// $Id: ExamplesTest.java 3261 2013-09-08 14:02:44Z jthywissen $
+// $Id$
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
