@@ -39,7 +39,8 @@ public class Ref extends EvalSite implements TypedSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 
-		// If we were passed an argument, store it in the ref as an initial value
+		// If we were passed an argument, store it in the ref as an initial
+		// value
 		if (args.size() == 1) {
 			return new RefInstance(args.getArg(0));
 		}
@@ -70,9 +71,9 @@ public class Ref extends EvalSite implements TypedSite {
 			 * reference is unassigned. If it is null, the reference has been
 			 * assigned.
 			 *
-			 * This allows the reference to contain a null value if needed, and
-			 * it also frees the memory associated with the read queue once the
-			 * reference has been assigned.
+			 * This allows the reference to contain a null value if
+			 * needed, and it also frees the memory associated with the read
+			 * queue once the reference has been assigned.
 			 */
 			this.readQueue = new LinkedList<Handle>();
 		}
@@ -113,6 +114,7 @@ public class Ref extends EvalSite implements TypedSite {
 					 * Add this caller to the read queue.
 					 */
 					if (readQueue != null) {
+						reader.setQuiescent();
 						readQueue.add(reader);
 					}
 					/* Otherwise, return the contents of the ref */
