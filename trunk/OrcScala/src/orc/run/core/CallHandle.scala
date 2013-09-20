@@ -36,21 +36,24 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallInProgress
+  protected var quiescent = false
 
   val runtime = caller.runtime
 
   /* Returns true if the state transition was made,
    * false otherwise (e.g. if the handle was already in a final state)
    */
-  protected def setState(newState: CallState): Boolean = {
-    synchronized {
-      if (isLive) {
-        state = newState
-        runtime.schedule(caller)
-        true
-      } else {
-        false
-      }
+  protected def setState(newState: CallState): Boolean = synchronized {
+    if (newState.isFinal && quiescent) {
+      quiescent = false
+      caller.unsetQuiescent()
+    }
+    if (isLive) {
+      state = newState
+      runtime.schedule(caller)
+      true
+    } else {
+      false
     }
   }
 
@@ -61,20 +64,27 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def callSitePosition = caller.sourcePosition
   def hasRight(rightName: String) = caller.options.hasRight(rightName)
 
-  def notifyOrc(event: orc.OrcEvent) {
-    synchronized {
-      if (isLive) {
-        caller.notifyOrc(event)
+  def notifyOrc(event: orc.OrcEvent) = synchronized {
+    if (isLive) {
+      caller.notifyOrc(event)
+    }
+  }
+
+  def setQuiescent() = synchronized {
+    state match {
+      case CallInProgress if !quiescent => {
+        quiescent = true
+        caller.setQuiescent()
       }
+      case CallWasKilled => {}
+      case _ => throw new AssertionError(s"Handle.setQuiescent in bad state: state=$state, quiescent=$quiescent")
     }
   }
 
   def isLive = synchronized { !state.isFinal }
 
-  def kill() {
-    synchronized {
-      setState(CallWasKilled)
-    }
+  def kill(): Unit = synchronized {
+    setState(CallWasKilled)
   }
 
   def check(t: Blockable) {

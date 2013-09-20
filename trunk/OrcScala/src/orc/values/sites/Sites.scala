@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -29,8 +29,6 @@ import orc.error.runtime.RightException
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
-  // BIG TODO: Remove this default value
-  val quiescentWhileInvoked: Boolean = false
 }
 
 trait Site extends OrcValue with SiteMetadata {

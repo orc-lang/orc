@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jan 24, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,13 +32,6 @@ trait SupportForJavaObjectInvocation extends InvocationBehavior {
         val successful = JavaCall(v, vs, h)
         if (!successful) { super.invoke(h, v, vs) }
       }
-    }
-  }
-
-  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
-    v match {
-      case v: OrcValue => super.quiescentWhileInvoked(v)
-      case _ => false
     }
   }
 

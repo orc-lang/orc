@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 8, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,10 +23,9 @@ import orc.values.sites.{ Site1, TypedSite }
 /** @author dkitchin
   */
 object Vclock extends Site1 with VirtualClockOperation with TypedSite {
+
   // Do not invoke directly.
   def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vclock")) }
-
-  override val quiescentWhileInvoked: Boolean = false
 
   lazy val orcType = {
     //val A = new TypeVariable()
@@ -35,4 +34,5 @@ object Vclock extends Site1 with VirtualClockOperation with TypedSite {
     /*TODO: This typing is a placeholder */
     new FunctionType(Nil, List(Top), SignalType) with StrictType
   }
+
 }
