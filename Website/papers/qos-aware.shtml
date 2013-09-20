@@ -369,16 +369,21 @@ simulateOrders(0, numSimulatedOrders)
 <!--
 	<div class="right">
 		<div class="sidenav">
-			<form action="search.shtml" id="cse-search-box">
-  <div>
-    <input type="hidden" name="cx" value="001989989275909646143:conqllya2xi" />
-    <input type="hidden" name="cof" value="FORID:9" />
-    <input type="hidden" name="ie" value="UTF-8" />
-    <input type="text" name="q" size="15" class="styled" />
-    <input type="submit" name="sa" value="Search" />
-  </div>
-</form>
-<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
+<div id="cse-search-box">
+<script>
+  (function() {
+    var cx = '001989989275909646143:conqllya2xi';
+    var gcse = document.createElement('script');
+    gcse.type = 'text/javascript';
+    gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(gcse, s);
+  })();
+</script>
+<gcse:searchbox-only></gcse:searchbox-only>
+</div>
 
 <h1>Get Started</h1>
 
