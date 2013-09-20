@@ -5,18 +5,16 @@
  - Created by amp on Sep 17, 2013 1:26:07 PM
  -}
 
+import class Thread = "java.lang.Thread"
+
 def test() = 
-  Channel[Integer]() >c>
-  (
-  Rwait(100) >> c.put(2) >> stop |
   Vclock(IntegerTimeOrder) >>
   Vawait(0) >>
   (
-  val x = c.get() >> 42
+  val x = Thread.sleep(100) >> 42
   def f() = x
     x >> Vawait(1) >> Println(1) >> stop
   | Vawait(2) >> Println(2) >> stop
-  )
   )
   
 test()

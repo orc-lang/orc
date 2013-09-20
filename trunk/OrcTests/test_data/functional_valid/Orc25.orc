@@ -8,7 +8,7 @@
 def VtimeI() = (Vtime() :!: Integer)
 
 Vclock(IntegerTimeOrder) >> Vawait(0) >>
-( Rwait(999) >> Vawait(VtimeI()+2) >> VtimeI() >x> Println("999:"+x) >> stop
+( Rwait(900) >> Vawait(VtimeI()+2) >> VtimeI() >x> Println("900:"+x) >> stop
 | Println("test") >> Println(VtimeI()) >> stop
 | Rwait(1000) >> Vawait(VtimeI()+3)  >> VtimeI() >x> Println("1000:"+x) >> stop
 )
@@ -17,13 +17,6 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >>
 OUTPUT:
 test
 0
-999:2
+900:2
 1000:5
--}
-{-
-OUTPUT:
-test
-0
-999:2
-1000:3
 -}
