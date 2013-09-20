@@ -3,7 +3,7 @@
  - Created by misra on Jul 9, 2010 10:33:45 AM
  -}
 
-include "http://orc.csres.utexas.edu/tryorc/small-demos/Stopwatch.inc"
+include "https://orc.csres.utexas.edu/tryorc/small-demos/Stopwatch.inc"
 val sw = Stopwatch()
 
 val (id,dd) = (3000,100)
