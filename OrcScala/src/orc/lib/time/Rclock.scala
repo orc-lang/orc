@@ -52,12 +52,12 @@ class Rtime(startTime: Long) extends TotalSite0 {
 /**
   */
 object Rwait extends Site1 {
-  override val quiescentWhileInvoked: Boolean = true
 
   def call(a: AnyRef, h: Handle) {
     a match {
       case delay: BigInt => {
         if (delay > 0) {
+          h.setQuiescent()
           h.notifyOrc(RwaitEvent(delay, h))
         } else if (delay == 0) {
           h.publish()

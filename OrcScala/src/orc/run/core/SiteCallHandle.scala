@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,18 +25,6 @@ import orc.error.OrcException
 class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
 
   var invocationThread: Option[Thread] = None
-
-  /** If the site is NOT quiescentWhileInvoked, this is the clock to indicate
-    * the non-quiescence to.  Otherwise, keep no clock reference and let the
-    * VirtualClock group go quiescent.
-    */
-  val governingClock = {
-    if (caller.runtime.quiescentWhileInvoked(calledSite)) {
-      None
-    } else {
-      caller.getClock()
-    }
-  }
 
   def run() {
     try {
@@ -61,7 +49,7 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
 
   /* When a site call handle is scheduled, notify its clock accordingly. */
   override def onSchedule() {
-    governingClock foreach { _.unsetQuiescent() }
+    caller.getClock() foreach { _.unsetQuiescent() }
   }
 
   /* NOTE: We do NOT setQuiescent in onComplete. A site call is not
@@ -71,25 +59,21 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
    * the setState method to look for completion of the site call.
    */
 
-  override def setState(newState: CallState): Boolean = {
-    synchronized {
-      val success = super.setState(newState)
-      /* If a successful transition was made,
-       * and the resulting state is final,
-       * notify the clock.
-       */
-      if (success && !isLive) {
-        governingClock foreach { _.setQuiescent() }
-      }
-      success
+  override def setState(newState: CallState): Boolean = synchronized {
+    val success = super.setState(newState)
+    /* If a successful transition was made,
+     * and the resulting state is final,
+     * notify the clock.
+     */
+    if (success && !isLive) {
+      caller.getClock() foreach { _.setQuiescent() }
     }
+    success
   }
 
-  override def kill() {
-    synchronized {
-      super.kill()
-      invocationThread foreach { _.interrupt() }
-    }
+  override def kill() = synchronized {
+    super.kill()
+    invocationThread foreach { _.interrupt() }
   }
 
 }

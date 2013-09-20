@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jan 24, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -24,6 +24,7 @@ import orc.error.runtime.JavaException
   * @author dkitchin
   */
 trait SupportForSiteInvocation extends InvocationBehavior {
+
   override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
     v match {
       case (s: Site) =>
@@ -38,10 +39,4 @@ trait SupportForSiteInvocation extends InvocationBehavior {
     }
   }
 
-  override def quiescentWhileInvoked(v: AnyRef): Boolean = {
-    v match {
-      case (s: Site) => s.quiescentWhileInvoked
-      case _ => super.quiescentWhileInvoked(v)
-    }
-  }
 }
