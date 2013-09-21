@@ -44,7 +44,7 @@ location is not recognized, halt.
 def weather(Trip(time, location)) =
   import class NOAAWeather = "orc.lib.net.NOAAWeather"
   import class LocalDate = "org.joda.time.LocalDate"
-  geo(location) >(lat, lon)>
+  geo(location) >(foundAddr, lat, lon)>
   NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
 
 {--

@@ -1,12 +1,12 @@
-{- spell-web.orc -- Orc program that fetches the Jabberwocky poem, then spell checks it using Bing's spell service
- -}
-
 {-
-In order to use Bing in this demo, you must have:
-1. a Azure database account with Bing dataset access
-2. in the classpath, /bing.properties (see bing.sample.propertiesin OrcSites)
+Download Lewis Carroll's "Alice Through the Looking Glass"
+from Project Gutenberg http://www.gutenberg.org,
+unzips it, finds the "JABBERWOCKY" poem, and sends
+the first few lines to Google to spell check.
+Prints out a list of corrections, with the number
+of the word, the misspelled word, and a list of
+suggested spellings.
 -}
-
 include "net.inc"
 
 import class InputStreamReader = "java.io.InputStreamReader"
@@ -14,7 +14,7 @@ import class BufferedReader = "java.io.BufferedReader"
 import class ZipInputStream = "java.util.zip.ZipInputStream"
 import class URL = "java.net.URL"
 
-val BingSpell = BingSpellFactoryPropertyFile("bing.properties")
+val BingSpell = BingSpellFactoryPropertyFile("orc/orchard/orchard.properties")
 
 def openURL(url) =
   URL(url) >url>
