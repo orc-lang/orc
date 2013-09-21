@@ -22,6 +22,8 @@ time through your "My Account" page on Google.
 
 ------------ Helper functions follow ---------
 
+include "net.inc"
+
 type Trip = Trip(_, _)
 
 {--
@@ -33,8 +35,7 @@ def extractLocation(description) =
   Ift(desc.startsWith("TRIP TO ")) >>
   desc.substring(8)
 
-import site Geocoder = "orc.lib.net.GoogleGeocoder"
-val geo = Geocoder("orc/orchard/orchard.properties")
+val geo = GoogleGeocoder("orc/orchard/orchard.properties")
 {--
 Given a trip, return a record representing
 the weather forecast for that trip.  If the
