@@ -1,8 +1,8 @@
 {-
-Download Lewis Carroll's "Alice Through the Looking Glass"
-from Project Gutenberg http://www.gutenberg.org,
-unzips it, finds the "JABBERWOCKY" poem, and sends
-the first few lines to Google to spell check.
+Download Geoffrey Chaucer's "The Canterbury Tales"
+from Project Gutenberg (cached at the Orc project)
+unzips it, finds the first poem ("Whan that Aprille..."),
+and send the first verse to Bing to spell check.
 Prints out a list of corrections, with the number
 of the word, the misspelled word, and a list of
 suggested spellings.
@@ -37,13 +37,13 @@ def spellCheck(word:words, i) =
     (i, word, suggs)
   | spellCheck(words, i+1)
 
-val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Through-the-Looking-Glass.zip"
+val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Canterbury-Tales.zip"
     -- Orc project's cached copy; Gutenberg doesn't like robots.
-    -- Original URL: http://www.gutenberg.org/files/12/12.zip
+    -- Original URL: http://www.gutenberg.org/files/22120/22120-8.zip
 
 BufferedReader(InputStreamReader(unzip(openURL(url)))) >reader>
-skipto(reader, "JABBERWOCKY") >>
+skipto(reader, "HERE BIGINNETH THE BOOK OF THE TALES OF CAUNTERBURY.") >>
 reader.readLine() >>
-map(lambda (_) = reader.readLine(), range(1, 5)) >lines>
+map(lambda (_) = reader.readLine(), range(1, 19)) >lines>
 unlines(lines).trim().split("\\s+") >words>
 spellCheck(arrayToList(words), 1)
