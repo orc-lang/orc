@@ -31,7 +31,23 @@ def class GoogleGeocoder(propFile :: String) =
   val MapsHTTP = KeyedHTTP(propFile, "google")
   def apply(address :: String) = 
     val response = ReadJSON(MapsHTTP("http://maps.googleapis.com/maps/api/geocode/json", {.address = address, sensor = false .}))
-    Ift(response.status = "OK") >>
-    response.results.head().geometry.location >{. lat = lattitude, lng = longitude .}> 
-    (lattitude, longitude)
+    if response.status = "OK"
+    then
+      response.results.head().formatted_address >returnedAddress> 
+      response.results.head().geometry.location >{. lat = lattitude, lng = longitude .}> 
+      (returnedAddress, lattitude, longitude)
+    else
+      Error("Google Maps Geocoding API failure: "+response.status)
+  stop
+
+def class GoogleGeocoderKeyless() =
+  def apply(address :: String) = 
+    val response = ReadJSON(HTTP("http://maps.googleapis.com/maps/api/geocode/json", {.address = address, sensor = false .}).get())
+    if response.status = "OK"
+    then
+      response.results.head().formatted_address >returnedAddress> 
+      response.results.head().geometry.location >{. lat = lattitude, lng = longitude .}> 
+      (returnedAddress, lattitude, longitude)
+    else
+      Error("Google Maps Geocoding API failure: "+response.status)
   stop
