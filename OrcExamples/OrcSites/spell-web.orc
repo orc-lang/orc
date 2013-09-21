@@ -1,4 +1,4 @@
-{- spell-web.orc -- Orc program that fetches the Jabberwocky poem, then spell checks it using Bing's spell service
+{- spell-web.orc -- Orc program that fetches Chaucer's Canterbury Tales, then spell checks part of it using Bing's spell service
  -}
 
 {-
@@ -37,13 +37,13 @@ def spellCheck(word:words, i) =
     (i, word, suggs)
   | spellCheck(words, i+1)
 
-val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Through-the-Looking-Glass.zip"
+val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Canterbury-Tales.zip"
     -- Orc project's cached copy; Gutenberg doesn't like robots.
-    -- Original URL: http://www.gutenberg.org/files/12/12.zip
+    -- Original URL: http://www.gutenberg.org/files/22120/22120-8.zip
 
 BufferedReader(InputStreamReader(unzip(openURL(url)))) >reader>
-skipto(reader, "JABBERWOCKY") >>
+skipto(reader, "HERE BIGINNETH THE BOOK OF THE TALES OF CAUNTERBURY.") >>
 reader.readLine() >>
-map(lambda (_) = reader.readLine(), range(1, 5)) >lines>
+map(lambda (_) = reader.readLine(), range(1, 19)) >lines>
 unlines(lines).trim().split("\\s+") >words>
 spellCheck(arrayToList(words), 1)
