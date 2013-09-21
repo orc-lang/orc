@@ -8,9 +8,8 @@ import class NOAAWeather = "orc.lib.net.NOAAWeather"
 
 val date = LocalDate().plusDays(1)
 
-GoogleGeocoderKeyless() >geo>
 Prompt("Address:") >addr>
-geo(addr) >(found, lat, lon)>
+GoogleGeocoder(addr) >(found, lat, lon)>
 Println("NOAA weather forcast for "+found+" on "+date+":") >>
 Println(NOAAWeather.getDailyForecast(lat, lon, date, 1)) >>
 stop
