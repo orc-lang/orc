@@ -54,14 +54,12 @@ load it as tryorc.shtml?mock
 	<li><span class="file"><a class="demo-link" href="tryorc/small-demos/kenken.orc">KenKen Helper</a></span></li>
 	</ul></li>
 <li class="closed"><span class="folder">Large Demos</span><ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/spell.orc">Spell-Check File</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/meeting.orc">Meeting Request</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/music-calendar.orc">Music Calendar</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/large-demos/travel-helper.orc">Travel Assistant</a></span></li>
 	</ul></li>
 <li class="closed" id="restricted_demos" style="display: none"><span class="folder">Restricted</span>
 	<ul>
-	<li><span class="file"><a class="demo-link" href="tryorc/restricted/spell-io.orc">Spell-Check Gutenberg</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email-meeting.orc">Meeting Request Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/email.orc">Send Email</a></span></li>
 	<li><span class="file"><a class="demo-link" href="tryorc/restricted/emailq.orc">Receive Email</a></span></li>
