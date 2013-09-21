@@ -24,7 +24,8 @@ Note: you can compute the "floored" square root of a number like this:
 Floor(sqrt(n))
 -}
 
-import class Set = "java.util.HashSet"
+import class Set = "java.util.Set"
+import class HashSet = "java.util.HashSet"
 import class Collections = "java.util.Collections"
 
 def primes(Number) :: List[Number]
@@ -37,7 +38,7 @@ def primes(n) =
     sieve(Floor(sqrt(n)), set) >ps>
     joinMap(remove, ps) >>
     2:filter(set.contains, candidates(n))
-  val set = Collections.synchronizedSet(Set[Number]())
+  val set = Collections.synchronizedSet[Number](HashSet[Number]())
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
 

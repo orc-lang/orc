@@ -32,11 +32,11 @@ def balance(in, out, ps) =
   def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
   
   def read((p,c):pcs) =
-    ( runningProcesses.inc() >> in.get() ; runningProcesses.dec() >> inClosed := signal >> stop ) >x>
+    ( runningProcesses.inc() >> in.get() ; runningProcesses.dec() >> inClosed.write(signal) >> stop ) >x>
     ( c.put(p(x)) >> runningProcesses.dec() >> stop | read(append(pcs, [(p,c)])) )
   
   write(cs) | read(zip(ps,cs)) | 
-  inClosed? >> runningProcesses.onZero() >> map(lambda(c) = c.close(), cs) >> stop
+  inClosed.read() >> runningProcesses.onZero() >> map(lambda(c :: Channel[OutType]) = c.close(), cs) >> stop
 
 val in = Channel[InType]()
 val out = Channel[OutType]()
