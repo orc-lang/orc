@@ -35,7 +35,6 @@ def extractLocation(description) =
   Ift(desc.startsWith("TRIP TO ")) >>
   desc.substring(8)
 
-val geo = GoogleGeocoder("orc/orchard/orchard.properties")
 {--
 Given a trip, return a record representing
 the weather forecast for that trip.  If the
@@ -44,7 +43,7 @@ location is not recognized, halt.
 def weather(Trip(time, location)) =
   import class NOAAWeather = "orc.lib.net.NOAAWeather"
   import class LocalDate = "org.joda.time.LocalDate"
-  geo(location) >(foundAddr, lat, lon)>
+  GoogleGeocoder(location) >(foundAddr, lat, lon)>
   NOAAWeather.getDailyForecast(lat, lon, time.toLocalDate(), 1)
 
 {--
