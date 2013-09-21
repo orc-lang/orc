@@ -27,14 +27,12 @@ def BingSpellFactoryPropertyFile(file :: String) =
 def BingSpellFactoryUsernameKey(user :: String, key :: String) =
   BingSpellFactoryConverter(BingSearchFactoryUsernameKey(user, key, "SpellingSuggestions"))
 
-def class GoogleGeocoder() =
-  def apply(address :: String) = 
-    val response = ReadJSON(HTTP("http://maps.googleapis.com/maps/api/geocode/json", {.address = address, sensor = false .}).get())
-    if response.status = "OK"
-    then
-      response.results.head().formatted_address >returnedAddress> 
-      response.results.head().geometry.location >{. lat = lattitude, lng = longitude .}> 
-      (returnedAddress, lattitude, longitude)
-    else
-      Error("Google Maps Geocoding API failure: "+response.status)
-  stop
+def GoogleGeocoder(address :: String) = 
+  val response = ReadJSON(HTTP("http://maps.googleapis.com/maps/api/geocode/json", {.address = address, sensor = false .}).get())
+  if response.status = "OK"
+  then
+    response.results.head().formatted_address >returnedAddress> 
+    response.results.head().geometry.location >{. lat = lattitude, lng = longitude .}> 
+    (returnedAddress, lattitude, longitude)
+  else
+    Error("Google Maps Geocoding API failure: "+response.status)
