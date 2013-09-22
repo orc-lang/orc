@@ -1,4 +1,4 @@
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide v2.0.2</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Orc User Guide v2.1.0</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link href="style.css" type="text/css" rel="stylesheet"><script type="text/javascript">
 // Expandable content script from flooble.com.
 // For more information please visit:
 // http://www.flooble.com/scripts/expand.php
@@ -15,10 +15,10 @@ function toggle(link, divId) {
 		d.style.display = 'none';
 	}
 }
-</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc User Guide v2.0.2"><div><div><div><h1 class="title"><a name="userguide"></a>
-	Orc User Guide v2.0.2
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div lang="en" class="book" title="Orc User Guide v2.1.0"><div><div><div><h1 class="title"><a name="userguide"></a>
+	Orc User Guide v2.1.0
 
-</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">http://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2011-05-12</p></div><div><p class="copyright">Copyright &copy; 2011 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
+</h1></div><div><div class="author"><h3 class="author"><span class="orgname">The University of Texas at Austin</span><div class="address"><p></p></div><code class="uri">https://orc.csres.utexas.edu/</code></h3></div></div><div><p class="pubdate">2013-09-21</p></div><div><p class="copyright">Copyright &copy; 2013 The University of Texas at Austin</p></div><div><div class="legalnotice" title="License and Grant Information"><a name="legalnotice"></a><p class="legalnotice-title"><b>License and Grant Information</b></p><p>
 			Use and redistribution of this file is governed by the license terms in
 			the LICENSE file found in the project's top-level directory and also
 			found at
@@ -41,11 +41,11 @@ management, and web service orchestration. Orc provides constructs to
 orchestrate the concurrent invocation of services while managing
 time-outs, priorities, and failures of services or communication.  To
 learn more about Orc and run your own Orc programs, visit the Web site:
-<a class="link" href="http://orc.csres.utexas.edu/" target="_top"><code class="code"><span class="hl-variable">http</span><span class="hl-operator">:</span><span class="hl-operator">/</span><span class="hl-operator">/</span><span class="hl-variable">orc</span>.<span class="hl-variable">csres</span>.<span class="hl-variable">utexas</span>.<span class="hl-variable">edu</span><span class="hl-operator">/</span></code></a>.
+<a class="link" href="https://orc.csres.utexas.edu/" target="_top"><code class="code"><span class="hl-variable">https</span><span class="hl-operator">:</span><span class="hl-operator">/</span><span class="hl-operator">/</span><span class="hl-variable">orc</span>.<span class="hl-variable">csres</span>.<span class="hl-variable">utexas</span>.<span class="hl-variable">edu</span><span class="hl-operator">/</span></code></a>.
 </p><p>
 Unless otherwise noted, all material in this document pertains to the
 Orc language implementation version
-2.0.2
+2.1.0
 .
 </p><p>
 This guide introduces the reader to the Orc programming language. It does not
@@ -1252,17 +1252,17 @@ continuation of <code class="code"><span class="hl-variable">u</span></code>, or
 separate expressions (in this case, the goal expression of <code class="code"><span class="hl-keyword">def</span> <span class="hl-variable">f</span></code>). To avoid this ambiguity, 
 Orc imposes the following syntactic constraint:
 </p><p><span class="emphasis"><em>An expression that follows a declaration begins with an alphanumeric symbol</em></span></p><p>To circumvent this restriction, if (x,y) is an expression that follows a declaration, 
-write it as <code class="code"><span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code>. Similarly, write <code class="code"><span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-operator">-</span><span class="hl-literal">3</span></code>, in case <code class="code"><span class="hl-operator">-</span><span class="hl-literal">3</span></code> is
+write it as <code class="code"># (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code>. Similarly, write <code class="code"># <span class="hl-operator">-</span><span class="hl-literal">3</span></code>, in case <code class="code"><span class="hl-operator">-</span><span class="hl-literal">3</span></code> is
 the goal expression in the above example.  Note that there are many solutions to this problem; for example
-using <code class="code"><span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> is also valid.</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;4.&nbsp;Programming Idioms"><div class="titlepage"><div><div><h2 class="title"><a name="ug.idioms"></a>Chapter&nbsp;4.&nbsp;Programming Idioms</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt></dl></div><p>
+using <code class="code"><span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> or <code class="code"><span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)</code> is also valid.</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;4.&nbsp;Programming Idioms"><div class="titlepage"><div><div><h2 class="title"><a name="ug.idioms"></a>Chapter&nbsp;4.&nbsp;Programming Idioms</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.idioms.channels">4.1. Channels</a></span></dt><dt><span class="section"><a href="#ug.idioms.lists">4.2. Lists</a></span></dt><dt><span class="section"><a href="#ug.idioms.streams">4.3. Streams</a></span></dt><dt><span class="section"><a href="#ug.idioms.mutable">4.4. Mutable References</a></span></dt><dt><span class="section"><a href="#ug.idioms.Table">4.5. Tables</a></span></dt><dt><span class="section"><a href="#ug.idioms.loops">4.6. Loops</a></span></dt><dt><span class="section"><a href="#ug.idioms.matching">4.7. Parallel Matching</a></span></dt><dt><span class="section"><a href="#ug.idioms.forkjoin">4.8. Fork-join</a></span></dt><dt><span class="section"><a href="#ug.idioms.seqjoin">4.9. Sequential Fork-Join</a></span></dt><dt><span class="section"><a href="#ug.idioms.prioritypoll">4.10. Priority Poll</a></span></dt><dt><span class="section"><a href="#ug.idioms.parallelor">4.11. Parallel Or</a></span></dt><dt><span class="section"><a href="#ug.idioms.timeout">4.12. Timeout</a></span></dt><dt><span class="section"><a href="#ug.idioms.priority">4.13. Priority</a></span></dt><dt><span class="section"><a href="#ug.idioms.metronome">4.14. Metronome</a></span></dt><dt><span class="section"><a href="#ug.idioms.routing">4.15. Routing</a></span></dt><dt><span class="section"><a href="#ug.idioms.fold">4.16. Fold</a></span></dt></dl></div><p>
 In this section we give Orc implementations of some standard idioms from
 concurrent and functional programming. 
 
 Despite the austerity of Orc's four combinators, we are able to encode a variety of idioms straightforwardly.
 </p><div class="section" title="4.1.&nbsp;Channels"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.idioms.channels"></a>4.1.&nbsp;Channels</h2></div></div></div><p>
 Orc has no communication primitives like pi-calculus
-channels<sup>[<a href="#ftn.N107FF" name="N107FF" class="footnote">1</a>]</sup>
-or Erlang mailboxes<sup>[<a href="#ftn.N10806" name="N10806" class="footnote">2</a>]</sup>. Instead, it makes use of sites
+channels<sup>[<a href="#ftn.N10802" name="N10802" class="footnote">1</a>]</sup>
+or Erlang mailboxes<sup>[<a href="#ftn.N10809" name="N10809" class="footnote">2</a>]</sup>. Instead, it makes use of sites
 to create channels of communication. 
 </p><p>
 The most frequently used of these sites is <code class="code"><span class="hl-variable">Channel</span></code>. When called, it
@@ -1408,7 +1408,7 @@ Write-once cells are very useful for concurrent programming, and they are often 
 than rewritable reference cells, since the value cannot be changed once it has been
 written. The use of write-once cells for concurrent programming is not a new idea;
 they have been studied extensively in the context of the 
-<a class="link" href="http://en.wikipedia.org/wiki/Oz_programming_language" target="_top">Oz programming language</a>.
+<a class="link" href="https://en.wikipedia.org/wiki/Oz_programming_language" target="_top">Oz programming language</a>.
 </p></div><div class="section" title="4.4.3.&nbsp;Syntax for manipulating references"><div class="titlepage"><div><div><h3 class="title"><a name="ug.idioms.mutable.syntax"></a>4.4.3.&nbsp;Syntax for manipulating references</h3></div></div></div><p>Orc provides syntactic sugar for reading and writing mutable storage:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><code class="code"><span class="hl-variable">x</span><span class="hl-operator">?</span></code> is equivalent to <code class="code"><span class="hl-variable">x</span>.<span class="hl-site">read</span>()</code>. This operator
 is of equal precedence with the dot operator and function application, so
 you can write things like <code class="code"><span class="hl-variable">x</span>.<span class="hl-variable">y</span><span class="hl-operator">?</span>.<span class="hl-variable">v</span><span class="hl-operator">?</span></code>. This operator is very similar
@@ -1662,7 +1662,7 @@ two <code class="code"><span class="hl-keyword">val</span></code> declarations, 
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="bold"><strong>F</strong></span>
 <span class="hl-keyword">val</span> <span class="hl-variable">y</span> <span class="hl-operator">=</span> <span class="bold"><strong>G</strong></span>
-   <span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
+   # (<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)
 </pre><p>
 </p><p>
 Fork-joins are a fundamental part of all Orc programs, since they are created by all nested expression
@@ -1880,7 +1880,7 @@ is published.
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="bold"><strong>F</strong></span>
 <span class="hl-keyword">val</span> <span class="hl-variable">y</span> <span class="hl-operator">=</span> <span class="bold"><strong>G</strong></span>
-<span class="hl-site">Let</span>( <span class="hl-variable">y</span> <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">x</span> )
+<span class="hl-site">Let</span>( <span class="hl-variable">x</span> <span class="hl-combinator">|</span> <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">y</span> )
 </pre><p>
 
 </p></div><div class="section" title="4.14.&nbsp;Metronome"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.idioms.metronome"></a>4.14.&nbsp;Metronome</h2></div></div></div><p>
@@ -1989,7 +1989,7 @@ it publishes a value, we will continue running it, ignoring its remaining
 publications.
 </p><pre class="programlisting">
 <span class="hl-keyword">val</span> <span class="hl-variable">r</span> <span class="hl-operator">=</span> <span class="hl-site">Cell</span>()
-<span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+#
    (<span class="bold"><strong>F</strong></span> <span class="hl-combinator">&lt;</span><span class="hl-variable">x</span><span class="hl-combinator">&lt;</span> <span class="hl-variable">c</span>.<span class="hl-site">read</span>()) <span class="hl-combinator">|</span> (<span class="bold"><strong>G</strong></span> <span class="hl-combinator">&gt;</span><span class="hl-variable">x</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">c</span>.<span class="hl-site">write</span>(<span class="hl-variable">x</span>))
 
 </pre></div><div class="section" title="4.15.3.&nbsp;Sequencing Otherwise"><div class="titlepage"><div><div><h3 class="title"><a name="ug.idioms.routing.newotherwise"></a>4.15.3.&nbsp;Sequencing Otherwise</h3></div></div></div><p>
@@ -2062,13 +2062,13 @@ result of the overall fold.
                     ( <span class="hl-variable">c</span>.<span class="hl-site">put</span>(<span class="hl-site">f</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>)) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">|</span> <span class="hl-site">combine</span>(<span class="hl-variable">m</span><span class="hl-operator">-</span><span class="hl-literal">1</span>))
 
   <span class="hl-site">xfer</span>(<span class="hl-variable">xs</span>) <span class="hl-combinator">&gt;</span><span class="hl-variable">n</span><span class="hl-combinator">&gt;</span> <span class="hl-site">combine</span>(<span class="hl-variable">n</span>)
-</pre></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N107FF" id="ftn.N107FF" class="para">1</a>] </sup>Robin Milner. 1999. <em class="citetitle">Communicating and Mobile Systems:
-The &#960;-Calculus</em>. Cambridge University Press, New York, NY, USA.</p></div><div class="footnote"><p><sup>[<a href="#N10806" id="ftn.N10806" class="para">2</a>] </sup>Joe Armstrong, Robert Virding, Claes Wikstr&ouml;m, and Mike Williams. 1996.
+</pre></div></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N10802" id="ftn.N10802" class="para">1</a>] </sup>Robin Milner. 1999. <em class="citetitle">Communicating and Mobile Systems:
+The &#960;-Calculus</em>. Cambridge University Press, New York, NY, USA.</p></div><div class="footnote"><p><sup>[<a href="#N10809" id="ftn.N10809" class="para">2</a>] </sup>Joe Armstrong, Robert Virding, Claes Wikstr&ouml;m, and Mike Williams. 1996.
 <em class="citetitle">Concurrent programming in ERLANG (2nd ed.)</em>. Prentice Hall,
 Englewood Cliffs, NJ, USA.</p></div></div></div><div lang="" class="chapter" title="Chapter&nbsp;5.&nbsp;Larger Examples"><div class="titlepage"><div><div><h2 class="title"><a name="ug.examples"></a>Chapter&nbsp;5.&nbsp;Larger Examples</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="section"><a href="#ug.examples.dining">5.1. Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.hygenic">5.2. Hygienic Dining Philosophers</a></span></dt><dt><span class="section"><a href="#ug.examples.rw">5.3. Readers-Writers</a></span></dt><dt><span class="section"><a href="#ug.examples.quicksort">5.4. Quicksort</a></span></dt><dt><span class="section"><a href="#ug.examples.meeting">5.5. Meeting Scheduler</a></span></dt></dl></div><p>
 In this section we show a few larger Orc programs to demonstrate programming techniques. 
 There are many more such examples available at the Orc Web site, on the
-<a class="link" href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab" target="_top">community wiki</a>.
+<a class="link" href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=WikiLab" target="_top">community wiki</a>.
 </p><div class="section" title="5.1.&nbsp;Dining Philosophers"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.examples.dining"></a>5.1.&nbsp;Dining Philosophers</h2></div></div></div><p>
 The dining philosophers problem is a well known and intensely studied problem
 in concurrent programming. Five philosophers sit around a circular table. Each
@@ -2079,7 +2079,7 @@ resumes thinking.  Without further refinement, this scenario allows deadlock;
 if all philosophers become hungry and pick up their left-hand forks
 simultaneously, no philosopher will be able to pick up her right-hand fork to
 eat.  Lehmann and Rabin's solution
-<sup>[<a href="#ftn.N10D2F" name="N10D2F" class="footnote">3</a>]</sup>, which we implement,
+<sup>[<a href="#ftn.N10D32" name="N10D32" class="footnote">3</a>]</sup>, which we implement,
 requires that each philosopher pick up her forks in a random order.  If the
 second fork is not immediately available, the philosopher must set down both
 forks and try again.  While livelock is still possible if all philosophers
@@ -2164,7 +2164,7 @@ activities using Orc's combinators.
 </p></div><div class="section" title="5.2.&nbsp;Hygienic Dining Philosophers"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.examples.hygenic"></a>5.2.&nbsp;Hygienic Dining Philosophers</h2></div></div></div><p>
 Here we implement a different solution to the Dining Philosophers problem,
 described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra
-<sup>[<a href="#ftn.N10D95" name="N10D95" class="footnote">4</a>]</sup>.
+<sup>[<a href="#ftn.N10D98" name="N10D98" class="footnote">4</a>]</sup>.
 Briefly, this algorithm efficiently and fairly solves the dining philosophers
 problem for philosophers connected in an arbitrary graph (as opposed to a
 simple ring).  The algorithm works by augmenting each fork with a clean/dirty
@@ -2298,7 +2298,7 @@ OUTPUT:EXAMPLE
 ...
 -}</span>
 </pre><p>
-Our implementation is based on the <a class="link" href="http://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
+Our implementation is based on the <a class="link" href="https://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
 concurrency.  An actor is a state machine which reacts to messages.  On
 receiving a message, an actor can send asynchronous messages to other actors,
 change its state, or create new actors.  Each actor is single-threaded and
@@ -2312,7 +2312,7 @@ message to an actor, you place it in the actor's mailbox, and to receive a
 message, the actor gets the next item from the mailbox.  The internal states of
 the actor are represented by functions: while an actor's thread of execution is
 evaluating a function, it is considered to be in the corresponding state.
-Because Orc implements <a class="link" href="http://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
+Because Orc implements <a class="link" href="https://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
 state transitions can be encoded as function calls without running out of stack
 space.
 </p><p>
@@ -2332,7 +2332,7 @@ philosopher receives a request for a fork, it knows who requested it and
 therefore which fork to relinquish.  Likewise when a philosopher receives a
 fork, it knows who sent it and therefore which fork was received.
 </p></div><div class="section" title="5.3.&nbsp;Readers-Writers"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.examples.rw"></a>5.3.&nbsp;Readers-Writers</h2></div></div></div><p>
-Here we present an Orc solution to the <a class="link" href="http://en.wikipedia.org/wiki/Readers-writers_problem" target="_top">readers-writers
+Here we present an Orc solution to the <a class="link" href="https://en.wikipedia.org/wiki/Readers-writers_problem" target="_top">readers-writers
 problem</a>.  Briefly, the readers-writers problem involves concurrent
 access to a mutable resource.  Multiple readers can access the resource
 concurrently, but writers must have exclusive access.  When readers and writers
@@ -2422,7 +2422,7 @@ To ensure that a writer has exclusive access, <code class="code"><span class="hl
 waits for <code class="code"><span class="hl-variable">c</span></code> to become zero again before granting any more requests.
 </p></div><div class="section" title="5.4.&nbsp;Quicksort"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.examples.quicksort"></a>5.4.&nbsp;Quicksort</h2></div></div></div><p>
 The original quicksort algorithm
-<sup>[<a href="#ftn.N10DFD" name="N10DFD" class="footnote">5</a>]</sup>
+<sup>[<a href="#ftn.N10E00" name="N10E00" class="footnote">5</a>]</sup>
 was designed for efficient execution on a uniprocessor.
 Encoding it as a functional program typically ignores its efficient
 rearrangement of the elements of an array.
@@ -2450,7 +2450,7 @@ the subarray and then recursively sorting the partitions.
     <span class="hl-keyword">def</span> <span class="hl-site">lr</span>(<span class="hl-variable">i</span>) <span class="hl-operator">=</span> <span class="hl-keyword">if</span> <span class="hl-variable">i</span> <span class="hl-operator">&lt;:</span> <span class="hl-variable">t</span> <span class="hl-operator">&amp;&amp;</span> <span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-operator">?</span> <span class="hl-operator">&lt;=</span> <span class="hl-variable">p</span> <span class="hl-keyword">then</span> <span class="hl-site">lr</span>(<span class="hl-variable">i</span><span class="hl-operator">+</span><span class="hl-literal">1</span>) <span class="hl-keyword">else</span> <span class="hl-variable">i</span>
     <span class="hl-keyword">def</span> <span class="hl-site">rl</span>(<span class="hl-variable">i</span>) <span class="hl-operator">=</span> <span class="hl-keyword">if</span> <span class="hl-site">a</span>(<span class="hl-variable">i</span>)<span class="hl-operator">?</span> <span class="hl-operator">:&gt;</span> <span class="hl-variable">p</span> <span class="hl-keyword">then</span> <span class="hl-site">rl</span>(<span class="hl-variable">i</span><span class="hl-operator">-</span><span class="hl-literal">1</span>) <span class="hl-keyword">else</span> <span class="hl-variable">i</span>
 
-    <span class="hl-keyword">signal</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span>
+    #
       (<span class="hl-site">lr</span>(<span class="hl-variable">s</span>), <span class="hl-site">rl</span>(<span class="hl-variable">t</span>)) <span class="hl-combinator">&gt;</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>')<span class="hl-combinator">&gt;</span>
       ( <span class="hl-site">Ift</span> (<span class="hl-variable">s</span>' <span class="hl-operator">+</span> <span class="hl-literal">1</span> <span class="hl-operator">&lt;:</span> <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">swap</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">part</span>(<span class="hl-variable">p</span>, <span class="hl-variable">s</span>'<span class="hl-operator">+</span><span class="hl-literal">1</span>, <span class="hl-variable">t</span>'<span class="hl-operator">-</span><span class="hl-literal">1</span>)
       <span class="hl-combinator">|</span> <span class="hl-site">Ift</span> (<span class="hl-variable">s</span>' <span class="hl-operator">+</span> <span class="hl-literal">1</span> <span class="hl-operator">=</span> <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">swap</span>(<span class="hl-variable">s</span>', <span class="hl-variable">t</span>') <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-variable">s</span>'
@@ -2564,9 +2564,9 @@ This program may be extended to add more sophisticated features, such as a
 quorum (to select a meeting as soon as some subset of invitees responds) or
 timeouts (to remind invitees if they don't respond in a timely manner).  These
 modifications are local and do not affect the overall structure of the program.
-For complete details, see <a class="link" href="http://orc.csres.utexas.edu/tryorc.shtml" target="_top">examples on our Web site</a>.
-</p></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N10D2F" id="ftn.N10D2F" class="para">3</a>] </sup>Daniel Lehmann and Michael O. Rabin. 1981. On the advantages 
+For complete details, see <a class="link" href="https://orc.csres.utexas.edu/tryorc.shtml" target="_top">examples on our Web site</a>.
+</p></div><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N10D32" id="ftn.N10D32" class="para">3</a>] </sup>Daniel Lehmann and Michael O. Rabin. 1981. On the advantages 
 of free choice: a symmetric and fully distributed solution to the dining
 philosophers problem. In <em class="citetitle">Proceedings of the 8th ACM SIGPLAN-SIGACT
 Symposium on Principles of Programming Languages</em> (POPL '81). ACM,
-New York, NY, USA, 133-138.</p></div><div class="footnote"><p><sup>[<a href="#N10D95" id="ftn.N10D95" class="para">4</a>] </sup>K. Mani Chandy and Jayadev Misra. 1984. The drinking philosophers problem. <em class="citetitle">ACM Trans. Program. Lang. Syst.</em> 6, 4 (October 1984), 632-646.</p></div><div class="footnote"><p><sup>[<a href="#N10DFD" id="ftn.N10DFD" class="para">5</a>] </sup>C. A. R. Hoare. 1961. Algorithm 63: Partition, Algorithm 64: Quicksort, and Algorithm 65: Find. <em class="citetitle">Commun. ACM</em> 4, 7 (July 1961), 321-322.</p></div></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script></body></html>
+New York, NY, USA, 133-138.</p></div><div class="footnote"><p><sup>[<a href="#N10D98" id="ftn.N10D98" class="para">4</a>] </sup>K. Mani Chandy and Jayadev Misra. 1984. The drinking philosophers problem. <em class="citetitle">ACM Trans. Program. Lang. Syst.</em> 6, 4 (October 1984), 632-646.</p></div><div class="footnote"><p><sup>[<a href="#N10E00" id="ftn.N10E00" class="para">5</a>] </sup>C. A. R. Hoare. 1961. Algorithm 63: Partition, Algorithm 64: Quicksort, and Algorithm 65: Find. <em class="citetitle">Commun. ACM</em> 4, 7 (July 1961), 321-322.</p></div></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script></body></html>

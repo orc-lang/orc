@@ -44,14 +44,14 @@ Unpack the ZIP in the location of you choice.
 
 Run the orc.OrchardDemo class, with the command:
 
-    java -cp <path-to-Orc>/orc-2.0.2.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.0.2.jar:<path-to-OrcSites>/lib/\*:orchard-2.0.2-demo.jar:lib/\* orc.OrchardDemo
+    java -cp <path-to-Orc>/orc-2.1.0.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.1.0.jar:<path-to-OrcSites>/lib/\*:orchard-2.1.0-demo.jar:lib/\* orc.OrchardDemo
 
 This will open your default browser to a demo page running in an an
 embedded HTTP/servlet server on your workstation, port 8080.
 
 Alternatively, you can run the class orc.Orchard, with:
 
-    java -cp <path-to-Orc>/orc-2.0.2.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.0.2.jar:<path-to-OrcSites>/lib/\*:orchard-2.0.2-demo.jar:lib/\* orc.Orchard
+    java -cp <path-to-Orc>/orc-2.1.0.jar:<path-to-Orc>/lib/\*:<path-to-OrcSites>/orc-sites-2.1.0.jar:<path-to-OrcSites>/lib/\*:orchard-ß-demo.jar:lib/\* orc.Orchard
 
 and it will run as a standalone Orchard Web application (servlet) in
 an embedded HTTP/servlet server on your workstation, port 8081.

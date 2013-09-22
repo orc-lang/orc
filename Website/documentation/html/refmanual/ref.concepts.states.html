@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.3.&nbsp;Expression States</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence"><link rel="next" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.3.&nbsp;Expression States</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.1.0"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence"><link rel="next" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
 // Expandable content script from flooble.com.
 // For more information please visit:
 // http://www.flooble.com/scripts/expand.php
@@ -38,9 +38,9 @@ function toggle(link, divId) {
 		halted. A call is ready if all its arguments have <a class="link" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation">deflated</a> to
 		values, so that a call can be made. A call is blocked if either (1)
 		the caller can not make the call because not all argument values are
-		bound (since site calls are strict); this is an <a name="N42C6A" class="indexterm"></a><em class="firstterm">internally blocked</em>
+		bound (since site calls are strict); this is an <a name="N42DA0" class="indexterm"></a><em class="firstterm">internally blocked</em>
 		call, or (2) the caller is waiting for the response after having
-		called the site; this is an <a name="N42C70" class="indexterm"></a><em class="firstterm">externally blocked</em> call. A site call is
+		called the site; this is an <a name="N42DA6" class="indexterm"></a><em class="firstterm">externally blocked</em> call. A site call is
 		halted if the caller has already received a response or the site has
 		indicated that it will never send a response. A site call is killed if
 		it is part of <em class="replaceable"><code>G</code></em> in
@@ -70,23 +70,22 @@ function toggle(link, divId) {
 		If some site call in this set is ready, the expression is ready;
 		if all calls are blocked, the expression is blocked, and if all calls
 		are halted the expression is halted.
-	</p><div class="section" title="8.3.1.&nbsp;Ready"><div class="titlepage"><div><div><h3 class="title"><a name="N42CB0"></a>8.3.1.&nbsp;Ready</h3></div></div></div><p>
-			A site call is <a name="N42CB5" class="indexterm"></a><em class="firstterm">ready</em> if all its argument
+	</p><div class="section" title="8.3.1.&nbsp;Ready"><div class="titlepage"><div><div><h3 class="title"><a name="N42DE6"></a>8.3.1.&nbsp;Ready</h3></div></div></div><p>
+			A site call is <a name="N42DEB" class="indexterm"></a><em class="firstterm">ready</em> if all its argument
 			variables are bound to values, so that a call can be made. An
 			expression is ready if some site call in its set of associated
 			site calls is ready.
 		</p></div><div class="section" title="8.3.2.&nbsp;Blocked"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.block"></a>8.3.2.&nbsp;Blocked</h3></div></div></div><p>
-			A site call is <a name="N42CC2" class="indexterm"></a><em class="firstterm">blocked</em> if (1) the call can not be made because some
+			A site call is <a name="N42DF8" class="indexterm"></a><em class="firstterm">blocked</em> if (1) the call can not be made because some
 			argument of the call is unbound, the call is then internally blocked,
 			or (2) the caller is waiting for a response, the call is then
 			externally blocked. An expression is blocked if its set of associated
 			site calls are all blocked. All component expressions of a blocked
 			expression are blocked. A blocked expression stays blocked unless (1)
 			an internally blocked site call is made ready by the bindings of its
-			arguments, or (2) it is halted, or (3) killed. A halted
-			expression never makes site calls nor publishes any value.
+			arguments, or (2) it is halted, or (3) killed.
 		</p></div><div class="section" title="8.3.3.&nbsp;Halted"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.halt"></a>8.3.3.&nbsp;Halted</h3></div></div></div><p>
-			A site call is <a name="N42CD0" class="indexterm"></a><em class="firstterm">halted</em> if (1) it was internally blocked and one of its
+			A site call is <a name="N42E06" class="indexterm"></a><em class="firstterm">halted</em> if (1) it was internally blocked and one of its
 			arguments will never be bound because the expression that computes its
 			value has been halted or killed, or (2) it was externally blocked and
 			either a response has been received or an indication that there never
@@ -96,7 +95,7 @@ function toggle(link, divId) {
 			killed. A halted expression never makes site calls nor publishes any
 			value.
 		</p></div><div class="section" title="8.3.4.&nbsp;Killed"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.states.kill"></a>8.3.4.&nbsp;Killed</h3></div></div></div><p>
-			Expression <em class="replaceable"><code>G</code></em> is <a name="N42CE1" class="indexterm"></a><em class="firstterm">killed</em> in
+			Expression <em class="replaceable"><code>G</code></em> is <a name="N42E17" class="indexterm"></a><em class="firstterm">killed</em> in
 			<em class="replaceable"><code>F</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code><em class="replaceable"><code>G</code></em>
 			if <em class="replaceable"><code>G</code></em> has published. All component
 			expressions of a killed expression are killed. A killed expression
