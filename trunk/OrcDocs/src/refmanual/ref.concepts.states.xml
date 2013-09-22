@@ -3,7 +3,7 @@
 
      $Id$
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -96,8 +96,7 @@
 			site calls are all blocked. All component expressions of a blocked
 			expression are blocked. A blocked expression stays blocked unless (1)
 			an internally blocked site call is made ready by the bindings of its
-			arguments, or (2) it is halted, or (3) killed. A halted
-			expression never makes site calls nor publishes any value.
+			arguments, or (2) it is halted, or (3) killed.
 		</para>
 	</section>
 

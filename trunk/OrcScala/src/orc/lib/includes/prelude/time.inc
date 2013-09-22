@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -12,7 +12,7 @@
 --
 
 {--
-Real time.
+Real and virtual time.
 --}
 
 {--
@@ -88,7 +88,7 @@ Wait until the current virtual time is equal to the given value.
 If the current time is presently the given value, return <code>false</code> immediately.
 If the given value is in the future, wait for it, and return <code>true</code>.
 If the given value is in the past, halt silently.
-If no virtual time has been established, initialize to the given value and return <code>true</code>.
+If no virtual time has been established, treat the given value as a future time.
 
 If a call to <code>Vawait</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
@@ -101,7 +101,7 @@ import site Vawait = "orc.lib.time.Vawait"
 @site Vtime[A]() :: A
 
 Return the current virtual time.
-If none has been established, then halt silently.
+If none has been established or if called outside the scope of any clock, then halt silently.
 
 The type <code>A</code> of the return value is determined by the type accepted by the time value
 comparator supplied to the <code>Vclock</code> call that created the current virtual clock.
