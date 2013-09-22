@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ref.expressions.literal.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Literal Value -->
+	<section xml:id="ref.expressions.literal" xmlns="http://docbook.org/ns/docbook">
+		<title>Literal Value</title>
+
+    <para>
+    A literal value may occur on its own as an expression. 
+    Execution of a literal value immediately <link linkend="ref.concepts.publish">publishes</link> that value and then <link linkend="ref.concepts.states.halt">halts</link>.
+    </para>
+    
+		<section xml:id="ref.expressions.literal.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.literal"/>
+		    </productionset>
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.literal.type">
+		  <title>Type</title>
+		  <para>
+		    The type for each literal value is given in the <link linkend="ref.data">Data Values</link> chapter.		     
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.literal.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.expressions.literal.examples.magritte">
+		  <title>String Literal as Expression</title>
+<programlisting language="orc-demo"><![CDATA[
+{-
+  https://en.wikipedia.org/wiki/The_Treachery_of_Images
+-}
+
+"ceci n'est pas une |"
+
+{-
+OUTPUT:
+"ceci n'est pas une |"
+-}
+]]></programlisting>
+		  </example>
+		  
+		  
+	  </section>
+		
+		<section xml:id="ref.expressions.literal.links">
+		  <title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.data">Data Values</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.values">Literal Values</olink></para></listitem>
+		</itemizedlist>
+
+	  </section>
+	</section>

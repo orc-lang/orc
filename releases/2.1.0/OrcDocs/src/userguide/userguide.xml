@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- userguide.xml - DocBook source for the Orc user guide
+
+     $Id$
+
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<book xml:id="userguide" version="5.0" xml:lang="en"
+	xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<title>
+	Orc User Guide v<xi:include href="../../VERSION" parse="text" />
+</title>
+
+<xi:include href="../metainfo.xml" />
+
+<preface xml:id="ug.preface">
+<title>Preface</title>
+	
+<para>
+Orc is a programming language designed to make distributed and
+concurrent programs simple and intuitive to write. Orc expresses
+orchestration, a type of structured concurrency. It emphasizes the
+flow of control and gives a global view of a concurrent system. Orc
+is well-suited for task orchestration, a form of
+concurrent programming with applications in workflow, business process
+management, and web service orchestration. Orc provides constructs to
+orchestrate the concurrent invocation of services while managing
+time-outs, priorities, and failures of services or communication.  To
+learn more about Orc and run your own Orc programs, visit the Web site:
+<link xlink:href="https://orc.csres.utexas.edu/"><code>https://orc.csres.utexas.edu/</code></link>.
+</para>
+
+<para>
+Unless otherwise noted, all material in this document pertains to the
+Orc language implementation version
+<xi:include href="../../VERSION" parse="text"/>.
+</para>
+
+<para>
+This guide introduces the reader to the Orc programming language. It does not
+cover every detail of the language; see the <olink targetdoc="refmanual" targetptr="refmanual">Reference Manual</olink>
+for comprehensive and authoritative documentation of all language features.
+</para>
+
+<para>
+Chapter 1 introduces the essential concepts of Orc, such as communication
+with external services, and building complex orchestrations from simpler
+programs using the four concurrency combinators. Data structures and function
+definitions are also discussed.
+</para>
+
+<para>
+Chapter 2 discusses some additional features of Orc that extend 
+the basic syntax. These are useful for creating practical Orc programs, but 
+they are not essential to the understanding of the language.
+</para>
+
+<para>
+Chapters 3 through 5 turn our attention to how the language is used in practice, 
+with guidelines on style and programming methodology, 
+explanations of some common concurrency patterns,
+and larger example programs. 
+</para>
+
+</preface>
+
+<!-- Chapters -->
+<xi:include href="ug.introduction.xml"/>
+<xi:include href="ug.additional.xml"/>
+<xi:include href="ug.style.xml"/>
+<xi:include href="ug.idioms.xml"/>
+<xi:include href="ug.examples.xml"/>
+		
+</book>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
+<meta name="description" content="description"/>
+<meta name="keywords" content="keywords"/> 
+<meta name="author" content="author"/> 
+<link rel="stylesheet" type="text/css" href="/template/default.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="/orc-misc.css" media="screen" />
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+<title>Orc Language</title>
+</head>
+
+<body>
+
+<div class="container">
+	<div class="left">
+		<div class="header-background">
+			<div class="header">
+				<div class="title">
+					<h1><img src="/indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
+				</div>
+
+				<div class="navigation">
+					<!--#include virtual="/navigation.shtml" -->
+					<div class="clearer"><span></span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="main">
+			<div class="content">
+

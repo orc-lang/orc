@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.combinators.pruning.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- Pruning Combinator -->
+   <section xml:id="ref.combinators.pruning" xmlns="http://docbook.org/ns/docbook">
+      <title>Pruning Combinator</title>
+      
+      <!-- Index pointers for unwritten terms -->
+	  <indexterm><primary>pruning combinator</primary></indexterm>
+	  
+		  <para>
+		  <variablelist>
+		  	<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
+			<listitem>
+			 <para>
+			  	The execution of <replaceable>F</replaceable><code> &lt;</code><replaceable>x</replaceable><code>&lt; </code><replaceable>G</replaceable> 
+			  	starts by executing <replaceable>F</replaceable> and <replaceable>G</replaceable> in parallel. Whenever
+				<replaceable>F</replaceable> <indexterm><primary>publish</primary></indexterm><link linkend="ref.concepts.publish">publishes</link> a value, that value is published by the entire execution. When <replaceable>G</replaceable> publishes its first value, that
+				value is bound to <replaceable>x</replaceable> in <replaceable>F</replaceable>, and then the execution of <replaceable>G</replaceable> is immediately <indexterm><primary>kill</primary></indexterm><link linkend="ref.concepts.states.kill">killed</link>. 
+				A killed expression cannot call any <link linkend="ref.sites">sites</link> or publish any values. During the execution of <replaceable>F</replaceable>, 
+				any part of the execution that depends on <replaceable>x</replaceable> 
+				will be <link linkend="ref.concepts.states.block">blocked</link> until <replaceable>x</replaceable> is bound (to
+				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value, those parts remain blocked forever.
+			  </para>
+			</listitem>
+			</varlistentry>
+			<varlistentry><term><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable></term>
+			<listitem>
+			  <para>
+				The pruning combinator may include a full <link linkend="ref.patterns">pattern</link> <replaceable>P</replaceable> instead of just a variable name. Any value published
+				by <replaceable>G</replaceable> is matched against the pattern <replaceable>P</replaceable>. If this match is successful, then <replaceable>G</replaceable> is killed and all of the bindings
+				of pattern <replaceable>P</replaceable> are made in <replaceable>F</replaceable>. Otherwise, the published value is simply ignored and <replaceable>G</replaceable> continues to execute.
+			  </para>
+			</listitem>
+			</varlistentry>
+			<varlistentry><term><replaceable>F</replaceable><code><![CDATA[ << ]]></code><replaceable>G</replaceable></term>
+			<listitem>
+			 <para>
+				This is equivalent to using a <link linkend="ref.patterns.wildcard">wildcard pattern</link>, <replaceable>F</replaceable><code><![CDATA[ <_< ]]></code><replaceable>G</replaceable>.  <replaceable>G</replaceable> continues to execute 
+				until it publishes a value.  Any value published by <replaceable>G</replaceable> will match the pattern. After the successful match, 
+				<replaceable>G</replaceable> is killed, but no bindings are made in <replaceable>F</replaceable>.
+				No part of execution of <replaceable>F</replaceable> is suspended by the pruning combinator since there is no variable to be bound.
+			 </para>
+			</listitem>
+			</varlistentry>
+			</variablelist>
+		  </para>	
+      
+	  <section xml:id="ref.combinators.pruning.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.pruning"/>
+		    </productionset>
+		  </para>
+		  <para><emphasis role="strong">Combinator Precedence Level</emphasis>: 
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.sequential">sequential</olink> >
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.parallel">parallel</olink> > 
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.pruning">pruning</olink> >
+			  <olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.otherwise">otherwise</olink>
+			        [<link linkend="ref.syntax.precedence">Full Table</link>]
+			  </para>
+	  </section>
+	  
+	  <section xml:id="ref.combinators.pruning.identities">
+		  <title>Notable Identities</title>	  
+			  <para>
+			  <informaltable tabstyle="identitylist" frame="none" pgwide="0"><tgroup align="left" cols="4" colsep="0" rowsep="0">
+			    <colspec align="right" colwidth="10*"/>
+			    <colspec align="center" colwidth="1*"/>
+			    <colspec align="left" colwidth="10*"/>
+			    <colspec align="right" colwidth="7*"/>
+				<tbody>
+				  <row>
+				    <entry><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
+				    <entry> = </entry>
+				    <entry><code>(</code><replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable><code>)</code><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>H</replaceable></entry>
+				    <entry>  (Left Associative)</entry>
+				  </row>
+				</tbody>
+				
+				</tgroup></informaltable>
+			  </para>
+      </section>
+	  
+	  <section xml:id="ref.combinators.pruning.type">
+	    <title>Type</title>
+			<para>
+				The type of <replaceable>F</replaceable><code> &lt;</code><replaceable>P</replaceable><code>&lt; </code><replaceable>G</replaceable> 
+				is the type of <replaceable>F</replaceable> in the <link linkend="ref.types.context">context</link> Γ<subscript>G</subscript>, 
+				where Γ<subscript>G</subscript> is the result of matching the pattern <replaceable>P</replaceable> against the type of <replaceable>G</replaceable>.
+			</para>
+
+		</section>
+	  
+	  <section xml:id="ref.combinators.pruning.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.combinators.pruning.examples.exclusive"><title>Exclusive Publication</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Simulate a coin toss by publishing either "heads" or "tails" arbitrarily -}
+
+x <x< ("heads" | "tails")
+
+{-
+OUTPUT:
+"heads"
+-}
+{-
+OUTPUT:
+"tails"
+-}
+]]></programlisting>
+		  </example>
+
+		  <example xml:id="ref.combinators.pruning.examples.printfirst"><title>Print First Result</title>
+<programlisting language="orc-demo"><![CDATA[
+include "search.inc"
+
+{- Query Google and Yahoo for a search result
+   Print out the result that arrives first; ignore the other result
+-}
+
+Println(result) <result< ( Google("cupcake") | Yahoo("cupcake") )
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.combinators.pruning.examples.patternpub"><title>Pattern Publication</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Publish either 9 or 25, but not 16. -}
+
+x*x <(x,true)< ( (3,true) | (4,false) | (5,true) )
+
+{-
+OUTPUT:
+9
+-}
+{-
+OUTPUT:
+25
+-}
+]]></programlisting>
+		  </example>
+		  
+		  <example xml:id="ref.combinators.pruning.examples.timed"><title>Timed Termination</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Print all publications of the metronome function for 90 msec 
+   (after the execution of metronome starts). 
+   Then kill metronome.  Note that metronome(20) publishes a
+   signal every 20 msec.
+-}
+
+stop << (metronome(20) >x> Println(x) >> stop | Rwait(90) )
+
+{-
+OUTPUT:
+signal
+signal
+signal
+signal
+signal
+-}
+]]></programlisting>		  
+		  </example>
+		  		  
+	  </section>
+	  
+	  <section xml:id="ref.combinators.pruning.links">
+		  <title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.concepts.publish">Publication</link></para></listitem>
+			<listitem><para><link linkend="ref.patterns">Patterns</link></para></listitem>
+			<listitem><para><link linkend="ref.declarations.val"><code>val</code> Declaration</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.block">Blocking</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.kill">Killing</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.states.halt">Halting</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.deflate">Deflation</link></para></listitem>
+		</itemizedlist>
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.complex.combinators.pruning">Pruning Combinator</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.structures.patterns">Patterns</olink></para></listitem>
+			<listitem><para><olink targetdoc="userguide" targetptr="ug.introduction.simple.sites">Sites</olink></para></listitem>
+		</itemizedlist>
+
+	  </section>
+   </section>

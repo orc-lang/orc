@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.7.&nbsp;Records</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.1.0"><link rel="up" href="ref.data.html" title="Chapter&nbsp;1.&nbsp;Data Values"><link rel="prev" href="ref.data.tuple.html" title="1.6.&nbsp;Tuples"><link rel="next" href="ref.data.datatype.html" title="1.8.&nbsp;Algebraic Data Types"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.data.tuple.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.data.html">Chapter&nbsp;1.&nbsp;Data Values</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.data.datatype.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.data.tuple.html">1.6.&nbsp;Tuples</a>&nbsp;</td><th align="center" width="60%">1.7.&nbsp;Records</th><td align="right" width="20%"><a href="ref.data.datatype.html">1.8.&nbsp;Algebraic Data Types</a>&nbsp;</td></tr></table></div><div class="section" title="1.7.&nbsp;Records"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.record"></a>1.7.&nbsp;Records</h2></div></div></div><p>
+A <a name="N40809" class="indexterm"></a><em class="firstterm">record</em> is an unordered finite map from <a name="N40810" class="indexterm"></a>keys to values. 
+The empty record is written as <code class="code">{. .}</code>. 
+</p><div class="section" title="1.7.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.syntax"></a>1.7.1.&nbsp;Syntax</h3></div></div></div><p>
+    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[5]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.expression.record"><a class="link" href="ref.data.record.html" title="1.7.&nbsp;Records">Record</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code">{.</code> <a href="ref.syntax.EBNF.html#ebnf.key">Key</a> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <a href="ref.syntax.EBNF.html#ebnf.expression">Expression</a>  <code class="code">,</code> <span class="bold"><strong>&hellip;</strong></span> <code class="code">,</code>  <a href="ref.syntax.EBNF.html#ebnf.key">Key</a> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <a href="ref.syntax.EBNF.html#ebnf.expression">Expression</a> <code class="code">.}</code>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+  </p></div><div class="section" title="1.7.2.&nbsp;Constructors"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.constructors"></a>1.7.2.&nbsp;Constructors</h3></div></div></div><p>
+A record is constructed from a comma-separated sequence of bindings enclosed by dotted braces. Each binding
+associates a key with an expression.
+</p><p>
+The record expression <code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>n</sub></code></em> <code class="code">.}</code> 
+<a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publishes</a> the record <code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>v<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>v<sub>n</sub></code></em> <code class="code">.}</code>
+only if each expression <em class="replaceable"><code>E<sub>i</sub></code></em> <a class="link" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation">deflates</a> to value <em class="replaceable"><code>v<sub>i</sub></code></em>. 
+Otherwise, it <a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halts</a> <a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">silently</a>.
+</p><p>Duplicate bindings for the same key are allowed, but only the rightmost binding will
+be used in the resulting record value.</p></div><div class="section" title="1.7.3.&nbsp;Operations"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.operations"></a>1.7.3.&nbsp;Operations</h3></div></div></div><p>Notable record operations include:
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+Publish the value bound to key <em class="replaceable"><code>k</code></em> in record <em class="replaceable"><code>r</code></em> (a <a name="N408A3" class="indexterm"></a><a class="link" href="ref.expressions.dot.html" title="2.5.&nbsp;Dot Access">dot access</a>): <em class="replaceable"><code>r</code></em><code class="code">.</code><em class="replaceable"><code>k</code></em>
+</p></li><li class="listitem"><p>
+<a name="N408B4" class="indexterm"></a>Extend a record <em class="replaceable"><code>r</code></em> with new entries : <em class="replaceable"><code>r</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span> </code><em class="replaceable"><code>s</code></em> 
+</p></li></ul></div><p>
+</p><p>
+A record extension <em class="replaceable"><code>r</code></em><code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span> </code><em class="replaceable"><code>s</code></em> publishes a new record with all of the bindings of <em class="replaceable"><code>s</code></em>, 
+plus all of the bindings in <em class="replaceable"><code>r</code></em> which do not bind keys mentioned in <em class="replaceable"><code>s</code></em>. 
+In other words, <em class="replaceable"><code>s</code></em> overrides <em class="replaceable"><code>r</code></em>. 
+Record extension is associative, but not commutative.
+The expression 
+<code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>n</sub></code></em> <code class="code">.}</code> 
+is equivalent to the expression
+<code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>0</sub></code></em> <code class="code">.}</code> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span></code> &hellip; <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span></code> <code class="code">{.</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>E<sub>n</sub></code></em> <code class="code">.}</code>.
+</p></div><div class="section" title="1.7.4.&nbsp;Special Keys"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.specialkeys"></a>1.7.4.&nbsp;Special Keys</h3></div></div></div><p>
+There are two record keys that have special meanings:
+</p><p> 
+</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+If a record has a binding for the <a name="N4093A" class="indexterm"></a><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">apply</span></code> key, then the record may be <a class="link" href="ref.expressions.call.html#ref.expressions.call.record" title="2.4.4.&nbsp;Record Application">called like a site or function</a>.
+</p></li><li class="listitem"><p>
+If a record has a binding for the <a name="N40947" class="indexterm"></a><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">unapply</span></code> key, then the record may be <a class="link" href="ref.patterns.call.html" title="5.6.&nbsp;Call Pattern">used in a call pattern</a>.
+</p></li></ul></div><p>
+</p></div><div class="section" title="1.7.5.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.type"></a>1.7.5.&nbsp;Type</h3></div></div></div><p>
+The type of a record value <code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>v<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <em class="replaceable"><code>v<sub>n</sub></code></em> <code class="code">.}</code>
+where <em class="replaceable"><code>v<sub>i</sub></code></em> has type <em class="replaceable"><code>T<sub>i</sub></code></em>,
+is a record type, written <code class="code">{.</code> <em class="replaceable"><code>K<sub>0</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span></code> <em class="replaceable"><code>T<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>K<sub>n</sub></code></em> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span></code> <em class="replaceable"><code>T<sub>n</sub></code></em> <code class="code">.}</code>.
+</p></div><div class="section" title="1.7.6.&nbsp;Java calls"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.javacalls"></a>1.7.6.&nbsp;Java calls</h3></div></div></div><p>Orc records do not correspond to any Java value, so if a record is passed to Java code, it will be as a <code class="code">java.lang.Object</code> of a type not specified here.</p></div><div class="section" title="1.7.7.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.examples"></a>1.7.7.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.record.examples.vecnorm_link" onclick="toggle(this, 'ref.data.record.examples.vecnorm_content')">
+					&minus;
+				</a><span class="exampleCaption">Normalizing Vectors</span></div><div class="exampleBody" id="ref.data.record.examples.vecnorm_content"><pre class="orc">
+<span class="hl-comment">{- Normalize a given integer vector using records -}</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">magnitude</span>(<span class="hl-variable">v</span>) <span class="hl-operator">=</span> 
+  (<span class="hl-variable">v</span>.<span class="hl-variable">x</span> <span class="hl-operator">*</span> <span class="hl-variable">v</span>.<span class="hl-variable">x</span> <span class="hl-operator">+</span> 
+   <span class="hl-variable">v</span>.<span class="hl-variable">y</span> <span class="hl-operator">*</span> <span class="hl-variable">v</span>.<span class="hl-variable">y</span> <span class="hl-operator">+</span> 
+   <span class="hl-variable">v</span>.<span class="hl-variable">z</span> <span class="hl-operator">*</span> <span class="hl-variable">v</span>.<span class="hl-variable">z</span>) <span class="hl-operator">**</span> <span class="hl-literal">0.5</span>
+  
+<span class="hl-keyword">def</span> <span class="hl-site">norm</span>(<span class="hl-variable">v</span>) <span class="hl-operator">=</span> 
+  <span class="hl-keyword">val</span> <span class="hl-variable">m</span> <span class="hl-operator">=</span> <span class="hl-site">magnitude</span>(<span class="hl-variable">v</span>)
+  {. <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="hl-variable">v</span>.<span class="hl-variable">x</span> <span class="hl-operator">/</span> <span class="hl-variable">m</span>, 
+     <span class="hl-variable">y</span> <span class="hl-operator">=</span> <span class="hl-variable">v</span>.<span class="hl-variable">y</span> <span class="hl-operator">/</span> <span class="hl-variable">m</span>, 
+     <span class="hl-variable">z</span> <span class="hl-operator">=</span> <span class="hl-variable">v</span>.<span class="hl-variable">z</span> <span class="hl-operator">/</span> <span class="hl-variable">m</span> .}
+     
+<span class="hl-keyword">val</span> <span class="hl-variable">velocity</span> <span class="hl-operator">=</span> {. <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="hl-literal">3.0</span>, <span class="hl-variable">y</span> <span class="hl-operator">=</span> <span class="hl-literal">0.0</span>, <span class="hl-variable">z</span> <span class="hl-operator">=</span> <span class="hl-literal">4.0</span> .}      
+<span class="hl-site">norm</span>(<span class="hl-variable">velocity</span>) 
+
+<span class="hl-comment">{-
+OUTPUT:
+{. x = 0.6, y = 0, z = 0.8 .}
+-}</span>
+
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.record.examples.vecnorm_link'), 'ref.data.record.examples.vecnorm_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.record.examples.recexp_link" onclick="toggle(this, 'ref.data.record.examples.recexp_content')">
+					&minus;
+				</a><span class="exampleCaption">Record Extension</span></div><div class="exampleBody" id="ref.data.record.examples.recexp_content"><pre class="orc">
+<span class="hl-comment">{- Add an alpha field to an rgb color record -}</span>
+
+<span class="hl-keyword">val</span> <span class="hl-variable">rgb</span> <span class="hl-operator">=</span> {. <span class="hl-variable">red</span> <span class="hl-operator">=</span> <span class="hl-literal">60</span>, <span class="hl-variable">green</span> <span class="hl-operator">=</span> <span class="hl-literal">230</span>, <span class="hl-variable">blue</span> <span class="hl-operator">=</span> <span class="hl-literal">5</span> .}
+<span class="hl-keyword">val</span> <span class="hl-variable">rgba</span> <span class="hl-operator">=</span> <span class="hl-variable">rgb</span> <span class="hl-operator">+</span> {. <span class="hl-variable">alpha</span> <span class="hl-operator">=</span> <span class="hl-literal">128</span> .}
+<span class="hl-variable">rgba</span>.<span class="hl-variable">alpha</span>
+
+<span class="hl-comment">{-
+OUTPUT:
+128
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.record.examples.recexp_link'), 'ref.data.record.examples.recexp_content');
+</script></div><div class="section" title="1.7.8.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.record.links"></a>1.7.8.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.patterns.record.html" title="5.5.&nbsp;Record Pattern">Record pattern</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.dot.html" title="2.5.&nbsp;Dot Access">Dot access</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.records" class="olink">Records</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

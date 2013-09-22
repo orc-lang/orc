@@ -1,0 +1,70 @@
+<!--#include virtual="/template/header.shtml" -->
+
+<h1>Quick Start to Developing the Orc Language Toolset</h1>
+
+<h2>Install Prerequisites</h2>
+<ol>
+<li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
+<!--<li><a href="https://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
+<li><a href="https://www.eclipse.org/downloads/">Eclipse</a> 3.7 or later. These
+instructions assume version 3.7.2, but other versions should behave similarly.
+"Eclipse Classic" is sufficient, but any Eclipse package with the JDT can be used.</li>
+<li><a href="https://www.eclipse.org/subversive/">Subversive</a>. You may also use
+	<a href="http://subclipse.tigris.org">Subclipse</a>, or
+	<a href="https://code.google.com/p/orc/source/checkout">check out the
+	project manually</a> with the client of your choice.
+</li>
+<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.10.1.
+Note that the Scala Eclipse plug in <a href="https://www.assembla.com/spaces/scala-ide/wiki/Setup">works better with a modified eclipse.ini</a>.</li>
+<li>A Subversion distribution that includes the <code>svnversion</code> command.  Most UNIX systems (including Mac OS X),
+Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,
+require one to install a <a href="https://subversion.apache.org/packages.html">Subversion client</a>.</li>
+</ol>
+
+<h2>Check out Orc</h2>
+
+<p>Use the method of your choice to check out
+<tt>https://orc.googlecode.com/svn/trunk/OrcScala</tt> and import it into the
+Eclipse project <tt>OrcScala</tt>. Here is how to accomplish this using Subversive:</p>
+<ol>
+<li>Launch Eclipse</li>
+<li>Go to <b>File -&gt; New -&gt; Project ...</b></li>
+<li>Open <b>SVN</b>, choose <b>Checkout Projects from SVN</b>, and click <b>Next&nbsp;&gt;</b></li>
+<li>Choose <b>Create a new repository location</b> and click <b>Next&nbsp;&gt;</b></li>
+<li>Enter for the <b>URL</b>: <tt>https://orc.googlecode.com/svn</tt></li>
+<li>Select <b>trunk -> OrcScala</b> and click <b>Finish</b>.</li>
+<li><i>Warning: Do not change the project name (from <tt>OrcScala</tt>) or
+the project will not build correctly.</i></li>
+</ol>
+
+<h2>Running Orc Programs: Alternative 1</h2>
+<p>Install the <a href="download.shtml#eclipse">Orc Eclipse plug-in</a>.  In the Orc Run Configuration
+settings, go to Alternative Orc Runtime Engine and add <tt>build/orc-*.jar</tt> and
+<tt>lib/scala-library.jar</tt> in your <tt>OrcScala</tt> project to the class path.
+Note that adding the Scala library (as it is represented in the OrcScala class path) will not work.</p>
+
+<h2>Running Orc Programs: Alternative 2</h2>
+<ol>
+<li>Within Eclipse, open the Orc program you wish to run.</li>
+<li>Go to <b>Run -&gt; Run Configurations...</b></li>
+<li>Right-click <b>Scala Application</b> and select <b>New</b></li>
+<li>Fill out the Main form as follows:
+	<dl class="aligned">
+	<dt>Name</dt><dd><tt>Orc</tt></dd>
+	<dt>Project</dt><dd><tt>OrcScala</tt></dd>
+	<dt>Main class</dt><dd><tt>orc.Main</tt></dd>
+	</dl></li>
+<li>Click the <b>Arguments</b> tab and fill out the form as follows:
+	<dl>
+	<dt>Program arguments</dt><dd><tt>"${selected_resource_loc}"</tt></dd>
+	</dl></li>
+<li>Click <b>Apply</b></li>
+</ol>
+
+<p>You only have to perform the above steps once. Then whenever you want to run an Orc program:</p>
+<ol>
+<li>Select the program source file in Eclipse (you can open it or simply select it in the Package Explorer or Navigator).</li>
+<li>Go to <b>Run -&gt; Run ...</b>, select <b>Orc</b>, and click <b>Run</b> (after doing this once, you can use the dropdown menu of the "run" icon in the toolbar as a shortcut).</li>
+</ol>
+
+<!--#include virtual="/template/footer.shtml" -->

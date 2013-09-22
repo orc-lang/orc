@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.7.&nbsp;include: Include Orc File</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.1.0"><link rel="up" href="ref.declarations.html" title="Chapter&nbsp;4.&nbsp;Declarations"><link rel="prev" href="ref.declarations.type.html" title="4.6.&nbsp;type: Declare Type"><link rel="next" href="ref.patterns.html" title="Chapter&nbsp;5.&nbsp;Patterns"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.declarations.type.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.declarations.html">Chapter&nbsp;4.&nbsp;Declarations</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.patterns.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.declarations.type.html">4.6.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code>:  Declare Type</a>&nbsp;</td><th align="center" width="60%">4.7.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code>:  Include Orc File</th><td align="right" width="20%"><a href="ref.patterns.html">Chapter&nbsp;5.&nbsp;Patterns</a>&nbsp;</td></tr></table></div><div class="section" title="4.7.&nbsp;include: Include Orc File"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.include"></a>4.7.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code>:  Include Orc File</h2></div></div></div><p>
+It is often convenient to group related declarations into units that can be
+shared between programs. The <code class="code"><a name="N420A0" class="indexterm"></a><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code> declaration offers a simple
+way to do this. It names a source file containing a sequence of Orc declarations;
+those declarations are incorporated into the program as if they had textually
+replaced the include declaration. An include declaration may occur wherever any other
+declaration occurs, even in a nested scope. An included file may itself contain 
+<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code> declarations.  Included files may come from local files, any
+URI recognized by the Java library (http, https, ftp, etc.), and include resources
+found in the Orc JAR files.
+			</p><div class="section" title="4.7.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.include.syntax"></a>4.7.1.&nbsp;Syntax</h3></div></div></div><p>
+	    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[28]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.declaration.include"><a class="link" href="ref.declarations.include.html" title="4.7.&nbsp;include: Include Orc File">DeclareInclude</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code> <a href="ref.syntax.EBNF.html#ebnf.filename">FileName</a>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+	  </p></div><div class="section" title="4.7.2.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.include.examples"></a>4.7.2.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.include.examples.fold_link" onclick="toggle(this, 'ref.declarations.include.examples.fold_content')">
+					&minus;
+				</a><span class="exampleCaption">fold.inc,used below</span></div><div class="exampleBody" id="ref.declarations.include.examples.fold_content"><pre class="programlisting">
+<span class="hl-comment">{- Contents of fold.inc -}</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,[],<span class="hl-variable">s</span>) <span class="hl-operator">=</span> <span class="hl-variable">s</span>
+<span class="hl-keyword">def</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">h</span><span class="hl-operator">:</span><span class="hl-variable">t</span>,<span class="hl-variable">s</span>) <span class="hl-operator">=</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-variable">t</span>,<span class="hl-site">f</span>(<span class="hl-variable">h</span>,<span class="hl-variable">s</span>))
+
+<span class="hl-keyword">def</span> <span class="hl-site">foldr</span>(<span class="hl-variable">f</span>,<span class="hl-variable">l</span>,<span class="hl-variable">s</span>) <span class="hl-operator">=</span> <span class="hl-site">foldl</span>(<span class="hl-variable">f</span>,<span class="hl-site">rev</span>(<span class="hl-variable">l</span>),<span class="hl-variable">s</span>)
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.include.examples.fold_link'), 'ref.declarations.include.examples.fold_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.include.examples.include_link" onclick="toggle(this, 'ref.declarations.include.examples.include_content')">
+					&minus;
+				</a><span class="exampleCaption">Include a separate file</span></div><div class="exampleBody" id="ref.declarations.include.examples.include_content"><pre class="programlisting">
+<span class="hl-comment">{- This is the same as inserting the contents of fold.inc here -}</span>
+<span class="hl-keyword">include</span> <span class="hl-literal">"fold.inc"</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">L</span>) <span class="hl-operator">=</span> <span class="hl-site">foldl</span>(<span class="hl-keyword">lambda</span>(<span class="hl-variable">a</span>,<span class="hl-variable">b</span>) <span class="hl-operator">=</span> <span class="hl-variable">a</span><span class="hl-operator">+</span><span class="hl-variable">b</span>, <span class="hl-variable">L</span>, <span class="hl-literal">0</span>)
+
+<span class="hl-site">sum</span>([<span class="hl-literal">1</span>,<span class="hl-literal">2</span>,<span class="hl-literal">3</span>])
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.include.examples.include_link'), 'ref.declarations.include.examples.include_content');
+</script></div><div class="section" title="4.7.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.include.links"></a>4.7.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.declarations.html" title="Chapter&nbsp;4.&nbsp;Declarations">Declarations</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.import" class="olink">Importing Resources</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>
