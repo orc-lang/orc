@@ -295,6 +295,9 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val newArg = typeCheckExpr(arg, t)
             (newArg, t)
           }
+          if (funArgTypes.size != args.size) {
+            throw new ArgumentArityException(funArgTypes.size, args.size)
+          }
           ((args zip funArgTypes) map check).unzip
         }
         case _ => (args map typeSynthExpr).unzip
