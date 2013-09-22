@@ -12,7 +12,7 @@
 <feature
       id="edu.utexas.cs.orc.orceclipse"
       label="Orc Eclipse plug-in"
-      version="2.0.2.qualifier"
+      version="2.1.0.qualifier"
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 
@@ -27,7 +27,7 @@ reserved.
    </copyright>
 
    <license url="http://orc.csres.utexas.edu/license.shtml">
-Orc License [An instance of the OSI Simplified BSD License]
+      Orc License [An instance of the OSI Simplified BSD License]
 --
 Copyright (c) 2013 The University of Texas at Austin. All rights
 reserved.

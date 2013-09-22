@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.2.&nbsp;Hygienic Dining Philosophers</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.0.2"><link rel="up" href="ug.examples.html" title="Chapter&nbsp;5.&nbsp;Larger Examples"><link rel="prev" href="ug.examples.dining.html" title="5.1.&nbsp;Dining Philosophers"><link rel="next" href="ug.examples.rw.html" title="5.3.&nbsp;Readers-Writers"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>5.2.&nbsp;Hygienic Dining Philosophers</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.1.0"><link rel="up" href="ug.examples.html" title="Chapter&nbsp;5.&nbsp;Larger Examples"><link rel="prev" href="ug.examples.dining.html" title="5.1.&nbsp;Dining Philosophers"><link rel="next" href="ug.examples.rw.html" title="5.3.&nbsp;Readers-Writers"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
 // Expandable content script from flooble.com.
 // For more information please visit:
 // http://www.flooble.com/scripts/expand.php
@@ -19,7 +19,7 @@ function toggle(link, divId) {
 </script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ug.examples.dining.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ug.examples.html">Chapter&nbsp;5.&nbsp;Larger Examples</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ug.examples.rw.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ug.examples.dining.html">5.1.&nbsp;Dining Philosophers</a>&nbsp;</td><th align="center" width="60%">5.2.&nbsp;Hygienic Dining Philosophers</th><td align="right" width="20%"><a href="ug.examples.rw.html">5.3.&nbsp;Readers-Writers</a>&nbsp;</td></tr></table></div><div class="section" title="5.2.&nbsp;Hygienic Dining Philosophers"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.examples.hygenic"></a>5.2.&nbsp;Hygienic Dining Philosophers</h2></div></div></div><p>
 Here we implement a different solution to the Dining Philosophers problem,
 described in "The Drinking Philosophers Problem", by K. M. Chandy and J. Misra
-<sup>[<a href="#ftn.N40D65" name="N40D65" class="footnote">4</a>]</sup>.
+<sup>[<a href="#ftn.N40D68" name="N40D68" class="footnote">4</a>]</sup>.
 Briefly, this algorithm efficiently and fairly solves the dining philosophers
 problem for philosophers connected in an arbitrary graph (as opposed to a
 simple ring).  The algorithm works by augmenting each fork with a clean/dirty
@@ -153,7 +153,7 @@ OUTPUT:EXAMPLE
 ...
 -}</span>
 </pre><p>
-Our implementation is based on the <a class="link" href="http://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
+Our implementation is based on the <a class="link" href="https://en.wikipedia.org/wiki/Actor_model" target="_top">actor model</a> of
 concurrency.  An actor is a state machine which reacts to messages.  On
 receiving a message, an actor can send asynchronous messages to other actors,
 change its state, or create new actors.  Each actor is single-threaded and
@@ -167,7 +167,7 @@ message to an actor, you place it in the actor's mailbox, and to receive a
 message, the actor gets the next item from the mailbox.  The internal states of
 the actor are represented by functions: while an actor's thread of execution is
 evaluating a function, it is considered to be in the corresponding state.
-Because Orc implements <a class="link" href="http://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
+Because Orc implements <a class="link" href="https://en.wikipedia.org/wiki/Tail_call" target="_top">tail-call optimization</a>,
 state transitions can be encoded as function calls without running out of stack
 space.
 </p><p>
@@ -186,4 +186,4 @@ the fork.  Every message sent includes the sender's address.  Therefore when a
 philosopher receives a request for a fork, it knows who requested it and
 therefore which fork to relinquish.  Likewise when a philosopher receives a
 fork, it knows who sent it and therefore which fork was received.
-</p><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N40D65" id="ftn.N40D65" class="para">4</a>] </sup>K. Mani Chandy and Jayadev Misra. 1984. The drinking philosophers problem. <em class="citetitle">ACM Trans. Program. Lang. Syst.</em> 6, 4 (October 1984), 632-646.</p></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>
+</p><div class="footnotes"><br><hr align="left" width="100"><div class="footnote"><p><sup>[<a href="#N40D68" id="ftn.N40D68" class="para">4</a>] </sup>K. Mani Chandy and Jayadev Misra. 1984. The drinking philosophers problem. <em class="citetitle">ACM Trans. Program. Lang. Syst.</em> 6, 4 (October 1984), 632-646.</p></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>
