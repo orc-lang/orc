@@ -27,7 +27,9 @@ us</a> if you are interested in obtaining an account.</p>
 <h3>Eclipse Users</h3>
 
 <p>Click on the links below for instructions on how to download and install the Orc plugin for Eclipse.
-	We provide instructions for the following operating systems: </p>
+	We provide instructions for the following operating systems:<br/>
+	NOTE: The Orc plug-in is currently supported on <b>Eclipse version 3.7 (Indigo)</b>.
+    Disregard the references to 3.6 in the instructions below -- we'll update those files soon.</p>
 
 <ul>
 	<li><a href="documentation/installation_instructions/Orc_install_mac.pdf">Mac OS X</a></li>
