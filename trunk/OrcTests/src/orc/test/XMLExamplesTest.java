@@ -49,7 +49,7 @@ public class XMLExamplesTest {
         @Override
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
-            final OrcScriptEngine.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
+            final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
             final Expression expr = getAstRoot(compiledScript);
 
             // AST -> XML
@@ -79,25 +79,25 @@ public class XMLExamplesTest {
 
             // Execution
             setAstRoot(compiledScript, exprFromXml);
-            final String actual = OrcForTesting.run(compiledScript, 10L);
+            final String actual = OrcForTesting.run(compiledScript, TESTING_TIMEOUT);
             if (!expecteds.contains(actual)) {
                 throw new AssertionError("Unexpected output:\n" + actual);
             }
         }
     }
 
-	static Expression getAstRoot(final OrcScriptEngine.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+	static Expression getAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
 		// Violate access controls of OrcCompiledScript.astRoot field
-		final Field astRootField = compiledScript.getClass().getDeclaredField("astRoot");
-		astRootField.setAccessible(true);
-		return (Expression) astRootField.get(compiledScript);
+		final Field codeField = compiledScript.getClass().getDeclaredField("code");
+		codeField.setAccessible(true);
+		return (Expression) codeField.get(compiledScript);
 	}
 
-	static void setAstRoot(final OrcScriptEngine.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+	static void setAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
 		// Violate access controls of OrcCompiledScript.astRoot field
-		final Field astRootField = compiledScript.getClass().getDeclaredField("astRoot");
-		astRootField.setAccessible(true);
-		astRootField.set(compiledScript, astRoot);
+        final Field codeField = compiledScript.getClass().getDeclaredField("code");
+        codeField.setAccessible(true);
+        codeField.set(compiledScript, astRoot);
 	}
 
 }

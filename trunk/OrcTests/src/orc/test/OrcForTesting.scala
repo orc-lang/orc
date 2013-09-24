@@ -37,14 +37,14 @@ object OrcForTesting {
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
-  def compile(filename: String, options: OrcBindings): OrcScriptEngine#OrcCompiledScript = {
+  def compile(filename: String, options: OrcBindings): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     try {
       options.filename = filename
       engine.setBindings(options, ENGINE_SCOPE)
       val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
-      engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+      engine.compile(reader).asInstanceOf[OrcScriptEngine[AnyRef]#OrcCompiledScript]
     } catch {
       case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
     } finally {
@@ -55,7 +55,7 @@ object OrcForTesting {
 
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
-  def run(compiledScript: OrcScriptEngine#OrcCompiledScript, timeout: Long): String = {
+  def run(compiledScript: OrcScriptEngine[AnyRef]#OrcCompiledScript, timeout: Long): String = {
     try {
       val output = new StringBuffer()
       var lastError: Throwable = null
