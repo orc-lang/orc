@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcStringInputContext;
@@ -58,7 +59,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
 			options.additionalIncludes_$eq(orchardAdditionalIncludes);
 			final List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
 			final CompileLogger cl = new OrchardCompileLogger(compileMsgs);
-			final orc.ast.oil.nameless.Expression result = getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
+			final Expression result = (Expression) getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
 			if (result == null || cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
 				if (compileMsgs.isEmpty()) {
 					final InvalidProgramException e = new InvalidProgramException("Compilation failed");

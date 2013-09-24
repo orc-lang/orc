@@ -28,7 +28,12 @@ public final class TestUtils {
 	}
 
 	abstract public static class OrcTestCase extends TestCase {
-	    protected String suiteName;
+	    /**
+	     * The timeout to use for testing. This provides a central location to change it.
+	     */
+	    public static final long TESTING_TIMEOUT = 15L;
+	    
+        protected String suiteName;
 	    protected File orcFile;
 	    protected ExpectedOutput expecteds;
 	    protected OrcBindings bindings;
@@ -49,7 +54,7 @@ public final class TestUtils {
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
             try {
-                final String actual = OrcForTesting.compileAndRun(orcFile.getPath(), 10L, bindings);
+                final String actual = OrcForTesting.compileAndRun(orcFile.getPath(), TESTING_TIMEOUT, bindings);
                 if (!expecteds.contains(actual)) {
                     throw new AssertionError("Unexpected output:\n" + actual);
                 }

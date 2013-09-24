@@ -31,6 +31,7 @@ import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
 import orc.compile.translate.TranslateVclock
+import orc.OrcCompilerRequires
 
 /** Represents a configuration state for a compiler.
   */
@@ -81,17 +82,14 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   }
 }
 
-/** An instance of CoreOrcCompiler is a particular Orc compiler configuration,
-  * which is a particular Orc compiler implementation, in a JVM instance.
-  * Note, however, that an CoreOrcCompiler instance is not specialized for
-  * a single Orc program; in fact, multiple compilations of different programs,
-  * with different options set, may be in progress concurrently within a
-  * single CoreOrcCompiler instance.
-  *
-  * @author jthywiss
-  */
-abstract class CoreOrcCompiler extends OrcCompiler {
-
+/**
+ * A mix-in that provides the phases used by the standard compiler. They are in a 
+ * mix-in so that they can be used in other compilers that do not use the same output 
+ * type as the standard orc compiler.
+ */
+trait CoreOrcCompilerPhases {
+  this: OrcCompilerRequires =>
+  
   ////////
   // Definition of the phases of the compiler
   ////////
@@ -109,7 +107,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         val ic = openInclude(fileName, null, co.options)
         co.compileLogger.beginDependency(ic);
         try {
-          OrcIncludeParser(ic, co, CoreOrcCompiler.this) match {
+          OrcIncludeParser(ic, co, CoreOrcCompilerPhases.this) match {
             case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
             case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
           }
@@ -117,7 +115,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
           co.compileLogger.endDependency(ic);
         }
       }
-      val progAst = OrcProgramParser(source, co, CoreOrcCompiler.this) match {
+      val progAst = OrcProgramParser(source, co, CoreOrcCompilerPhases.this) match {
         case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
         case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
@@ -229,30 +227,26 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       ast
     }
   }
+}
 
-  ////////
-  // Compose phases into a compiler
-  ////////
-
-  val phases =
-    parse.timePhase >>>
-    translate.timePhase >>>
-    vClockTrans.timePhase >>>
-    noUnboundVars.timePhase >>>
-    fractionDefs.timePhase >>>
-    typeCheck.timePhase >>>
-    removeUnusedDefs.timePhase >>>
-    removeUnusedTypes.timePhase >>>
-    noUnguardedRecursion.timePhase >>>
-    deBruijn.timePhase >>>
-    outputOil
-
+/** An instance of PhasedOrcCompiler is a particular Orc compiler configuration,
+  * which is a particular Orc compiler implementation, in a JVM instance.
+  * Note, however, that an CoreOrcCompiler instance is not specialized for
+  * a single Orc program; in fact, multiple compilations of different programs,
+  * with different options set, may be in progress concurrently within a
+  * single CoreOrcCompiler instance.
+  *
+  * @author jthywiss, amp
+  */
+abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
+  val phases : CompilerPhase[CompilerOptions,OrcInputContext,E]
+  
   ////////
   // Compiler methods
   ////////
 
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
     //Logger.config(options)
     Logger.config("Begin compile " + options.filename)
     compileLogger.beginProcessing(source)
@@ -271,15 +265,42 @@ abstract class CoreOrcCompiler extends OrcCompiler {
 
 }
 
-/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces.
+/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces 
+ *  and specifies that compilation will finish with named.
   *
   * @author jthywiss
   */
-class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
+class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression] 
+                            with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression] 
+                            with CoreOrcCompilerPhases {
+  ////////
+  // Compose phases into a compiler
+  ////////
+
+  val phases =
+    parse.timePhase >>>
+    translate.timePhase >>>
+    vClockTrans.timePhase >>>
+    noUnboundVars.timePhase >>>
+    fractionDefs.timePhase >>>
+    typeCheck.timePhase >>>
+    removeUnusedDefs.timePhase >>>
+    removeUnusedTypes.timePhase >>>
+    noUnguardedRecursion.timePhase >>>
+    deBruijn.timePhase >>>
+    outputOil
+}
+
+/**
+ * A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders 
+ * and the file system).
+ */
+trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassLoading {
   @throws(classOf[IOException])
-  override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  abstract override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
+    // FIXME: This will break cases where the compiler is used to compile code that needs different class paths. 
     SiteClassLoading.initWithClassPathStrings(options.classPath)
-    super.apply(source, options, compileLogger, progress)
+    super.apply(source, options, compileLogger, progress) // This will call apply in the subCLASS of OrcCompiler
   }
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
@@ -290,7 +311,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   }
 
   @throws(classOf[IOException])
-  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): orc.ast.oil.nameless.Expression = {
+  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
     this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   }
 

@@ -49,13 +49,10 @@ object Main {
 
       val compiledOrc =
         if (options.runOil) {
-          /* Read precompiled OIL */
-          val ast = OrcXML.readOilFromStream(stream)
-          engine.asInstanceOf[OrcScriptEngine].loadDirectly(ast)
+          engine.asInstanceOf[OrcScriptEngine[AnyVal]].loadDirectly(stream)
         } else {
-          /* Read and compile Orc source */
           val reader = new InputStreamReader(stream, "UTF-8")
-          engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+          engine.compile(reader).asInstanceOf[OrcScriptEngine[AnyVal]#OrcCompiledScript]
         }
 
       if (options.compileOnly) {
@@ -172,4 +169,10 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   IntOpt(() => maxTokens, maxTokens = _, ' ', "max-tokens", usage = "Terminate the program if more than this many tokens to be created. Default=infinity.")
 
   IntOpt(() => maxSiteThreads, maxSiteThreads = _, ' ', "max-site-threads", usage = "Limit the number of simultaneously outstanding site calls to this number. Default=infinity.")
+
+  StringOpt(() => backend.toString, s =>
+    backend = BackendType.fromStringOption(s) match {
+      case Some(b) => b
+      case None => throw new IllegalArgumentException(s"The backend '$s' does not exist or is not supported.")
+    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed value: Token. Default is 'Token'")
 }

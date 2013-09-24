@@ -29,10 +29,9 @@ import scala.util.parsing.input.Position
 
 /** The interface from a caller to the Orc compiler
   */
-trait OrcCompilerProvides {
+trait OrcCompilerProvides[+E] {
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
-  def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E
 }
 
 /** The interface from the Orc compiler to its environment
@@ -46,7 +45,7 @@ trait OrcCompilerRequires {
 
 /** An Orc compiler
   */
-trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
+trait OrcCompiler[+E] extends OrcCompilerProvides[E] with OrcCompilerRequires
 
 /** The interface from a caller to an Orc runtime
   */
@@ -163,6 +162,8 @@ trait OrcCommonOptions {
   def classPath_=(newVal: java.util.List[String])
   def logLevel: String
   def logLevel_=(newVal: String)
+  def backend: BackendType
+  def backend_=(newVal: BackendType)
 }
 
 trait OrcCompilationOptions extends OrcCommonOptions {
