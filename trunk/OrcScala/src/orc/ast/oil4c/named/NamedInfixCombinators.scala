@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.ast.oil.named
+package orc.ast.oil4c.named
 
 // Infix combinator constructors
 trait NamedInfixCombinators {
@@ -28,11 +28,11 @@ trait NamedInfixCombinators {
       def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
     }
 
-  def <<|(g: Expression) = LateBind(this, new BoundVar(), g)
+  def <<(g: Expression) = Prune(this, new BoundVar(), g)
 
   def <(x: BoundVar) =
     new {
-      def <|(g: Expression) = LateBind(NamedInfixCombinators.this, x, g)
+      def <(g: Expression) = Prune(NamedInfixCombinators.this, x, g)
     }
 
   def ow(g: Expression) = Otherwise(this, g)
@@ -57,16 +57,13 @@ object > {
   def unapply(p: (Expression, BoundVar)) = Some(p)
 }
 
-object <| {
+object < {
   def unapply(e: Expression) = {
     e match {
-      case LateBind(f, x, g) => Some(((f, x), g))
+      case Prune(f, x, g) => Some(((f, x), g))
       case _ => None
     }
   }
-}
-
-object < {
   def unapply(p: (Expression, BoundVar)) = Some(p)
 }
 

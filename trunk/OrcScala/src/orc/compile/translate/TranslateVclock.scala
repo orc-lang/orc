@@ -14,7 +14,7 @@
 //
 package orc.compile.translate
 
-import orc.ast.oil.named.{ VtimeZone, Stop, Sequence, NamedASTTransform, Constant, Call, BoundVar, BoundTypevar }
+import orc.ast.oil4c.named.{ VtimeZone, Stop, Sequence, NamedASTTransform, Constant, Call, BoundVar, BoundTypevar }
 import orc.error.compiletime.{ InvalidVclockUse, IncorrectVclockCall, ContinuableSeverity, CompilationException }
 import orc.error.OrcExceptionExtension.extendOrcException
 import orc.lib.time.Vclock

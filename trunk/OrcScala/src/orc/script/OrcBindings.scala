@@ -49,6 +49,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def disableRecursionCheck_=(newVal: Boolean) = putBoolean("orc.disableRecursionCheck", newVal)
   def echoOil: Boolean = getBoolean("orc.echoOil", false)
   def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
+  def echoIR: Int = getInt("orc.echoIR", 0)
+  def echoIR_=(newVal: Int) = putInt("orc.echoIR", newVal)
   def oilOutputFile: Option[File] = {
     getString("orc.oilOutputFile", "") match {
       case "" => None

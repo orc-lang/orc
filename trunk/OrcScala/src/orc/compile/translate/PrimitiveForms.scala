@@ -17,11 +17,11 @@ package orc.compile.translate
 
 import scala.language.reflectiveCalls
 
-import orc.ast.oil.named._
-import orc.ast.oil.named.Conversions._
+import orc.ast.oil4c.named._
+import orc.ast.oil4c.named.Conversions._
 import orc.lib.builtin._
 import orc.lib.builtin.structured._
-import orc.ast.oil._
+import orc.ast.oil4c._
 import orc.ast.ext
 import orc.values.{ Signal, Field }
 import orc.values.sites.Site

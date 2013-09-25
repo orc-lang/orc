@@ -17,7 +17,7 @@ package orc.compile.translate
 
 import orc.ast.ext._
 import orc.error.OrcExceptionExtension._
-import orc.ast.oil.named
+import orc.ast.oil4c.named
 import orc.compile.translate.PrimitiveForms._
 import scala.collection.immutable._
 import orc.error.compiletime._

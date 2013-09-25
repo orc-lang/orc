@@ -20,9 +20,9 @@ import scala.collection.mutable
 import scala.language.reflectiveCalls
 
 import orc.ast.ext
-import orc.ast.oil._
-import orc.ast.oil.named._
-import orc.ast.oil.named.Conversions._
+import orc.ast.oil4c._
+import orc.ast.oil4c.named._
+import orc.ast.oil4c.named.Conversions._
 import orc.compile.translate.ClassForms.makeClassBody
 import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
