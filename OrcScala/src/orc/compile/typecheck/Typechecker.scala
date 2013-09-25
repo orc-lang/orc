@@ -16,8 +16,8 @@
 package orc.compile.typecheck
 
 import scala.language.reflectiveCalls
-import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
+import orc.ast.oil4c.{ named => syntactic }
+import orc.ast.oil4c.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }

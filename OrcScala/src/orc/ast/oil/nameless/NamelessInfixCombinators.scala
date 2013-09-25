@@ -22,7 +22,7 @@ trait NamelessInfixCombinators {
   // Infix combinator constructors
   def ||(g: Expression) = Parallel(this, g)
   def >>(g: Expression) = Sequence(this, g)
-  def <<(g: Expression) = Prune(this, g)
+  def <<|(g: Expression) = LateBind(this, g)
   def ow(g: Expression) = Otherwise(this, g)
 }
 
@@ -45,10 +45,10 @@ object >> {
     }
 }
 
-object << {
+object <<| {
   def unapply(e: Expression) =
     e match {
-      case Prune(l, r) => Some((l, r))
+      case LateBind(l, r) => Some((l, r))
       case _ => None
     }
 }

@@ -12,7 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named
+package orc.ast.oil4c.named
 
 import orc.ast.oil.named._
 import scala.collection.mutable._
@@ -56,8 +56,7 @@ class PrettyPrint {
       }
       case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case LateBind(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "<| " + reduce(right) + ")"
-      case Limit(f) => "limit(" + reduce(f) + ")"
+      case Prune(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "< " + reduce(right) + ")"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {

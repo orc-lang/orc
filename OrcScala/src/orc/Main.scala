@@ -154,6 +154,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   UnitOpt(() => echoOil, () => echoOil = true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
 
+  IntOpt(() => echoIR, echoIR = _, ' ', "echo-ir", usage = "Write selected program intermetiate representations to the stdout. The argument is a bitmask. So, 0 means echo nothing, or -1 means echo all.")
+
   FileOpt(() => oilOutputFile.getOrElse(null), f => oilOutputFile = Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
   UnitOpt(() => runOil, () => runOil = true, ' ', "run-oil", usage = "Attempt to parse the given program as an OIL file and run it. This performs no compilation steps.")

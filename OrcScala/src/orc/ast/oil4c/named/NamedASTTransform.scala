@@ -12,7 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named
+package orc.ast.oil4c.named
 
 import scala.language.reflectiveCalls
 
@@ -94,8 +94,7 @@ trait NamedASTTransform extends NamedASTFunction {
         }
         case left || right => recurse(left) || recurse(right)
         case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
-        case left < x <| right => transform(left, x :: context, typecontext) < x <| recurse(right)
-        case Limit(f) => Limit(recurse(f))
+        case left < x < right => transform(left, x :: context, typecontext) < x < recurse(right)
         case left ow right => recurse(left) ow recurse(right)
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }

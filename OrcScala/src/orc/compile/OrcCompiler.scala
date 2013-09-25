@@ -32,6 +32,10 @@ import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
 import orc.compile.translate.TranslateVclock
 import orc.OrcCompilerRequires
+import orc.ast.ext
+import orc.ast.oil4c.{ named => named4c }
+import orc.ast.oil.{ named => named5c }
+import orc.compile.translate.SplitPrune
 
 /** Represents a configuration state for a compiler.
   */
@@ -82,14 +86,13 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   }
 }
 
-/**
- * A mix-in that provides the phases used by the standard compiler. They are in a 
- * mix-in so that they can be used in other compilers that do not use the same output 
- * type as the standard orc compiler.
- */
+/** A mix-in that provides the phases used by the standard compiler. They are in a
+  * mix-in so that they can be used in other compilers that do not use the same output
+  * type as the standard orc compiler.
+  */
 trait CoreOrcCompilerPhases {
   this: OrcCompilerRequires =>
-  
+
   ////////
   // Definition of the phases of the compiler
   ////////
@@ -123,7 +126,7 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val translate = new CompilerPhase[CompilerOptions, orc.ast.ext.Expression, orc.ast.oil.named.Expression] {
+  val translate = new CompilerPhase[CompilerOptions, ext.Expression, named4c.Expression] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -132,12 +135,12 @@ trait CoreOrcCompilerPhases {
       }
   }
 
-  val vClockTrans = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val vClockTrans = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "vClockTrans"
     override def apply(co: CompilerOptions) = new TranslateVclock(co.reportProblem)(_)
   }
 
-  val noUnboundVars = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val noUnboundVars = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "noUnboundVars"
     override def apply(co: CompilerOptions) = { ast =>
       for (x <- ast.unboundvars) {
@@ -150,22 +153,22 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val fractionDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val fractionDefs = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "fractionDefs"
     override def apply(co: CompilerOptions) = { FractionDefs(_) }
   }
 
-  val removeUnusedDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val removeUnusedDefs = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedDefs"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedDefs(ast) }
   }
 
-  val removeUnusedTypes = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val removeUnusedTypes = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedTypes"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedTypes(ast) }
   }
 
-  val typeCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val typeCheck = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "typeCheck"
     override def apply(co: CompilerOptions) = { ast =>
       if (co.options.typecheck) {
@@ -180,11 +183,11 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) =
       { ast =>
-        def warn(e: orc.ast.oil.named.Expression) = {
+        def warn(e: named4c.Expression) = {
           co.reportProblem(UnguardedRecursionException() at e)
         }
         if (!co.options.disableRecursionCheck) {
@@ -194,9 +197,32 @@ trait CoreOrcCompilerPhases {
       }
   }
 
-  val deBruijn = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.nameless.Expression] {
+  val splitPrune = new CompilerPhase[CompilerOptions, named4c.Expression, named5c.Expression] {
+    val phaseName = "splitPrune"
+    override def apply(co: CompilerOptions) = { ast =>
+      val translator = new SplitPrune(co.reportProblem)
+      translator(ast)
+    }
+  }
+
+  val deBruijn = new CompilerPhase[CompilerOptions, named5c.Expression, orc.ast.oil.nameless.Expression] {
     val phaseName = "deBruijn"
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
+  }
+
+  def outputIR[A](irNumber: Int) = new CompilerPhase[CompilerOptions, A, A] {
+    val phaseName = s"Output IR #$irNumber"
+    override def apply(co: CompilerOptions) = { ast =>
+      val irMask = 1 << (irNumber-1)
+      val echoIR = co.options.echoIR
+      if ((echoIR & irMask) == irMask) {
+        println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
+        println(ast)
+        println(s"============ End dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
+      }
+
+      ast
+    }
   }
 
   // Generate XML for the AST and echo it to console; useful for testing.
@@ -239,8 +265,8 @@ trait CoreOrcCompilerPhases {
   * @author jthywiss, amp
   */
 abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
-  val phases : CompilerPhase[CompilerOptions,OrcInputContext,E]
-  
+  val phases: CompilerPhase[CompilerOptions, OrcInputContext, E]
+
   ////////
   // Compiler methods
   ////////
@@ -265,36 +291,38 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
 
 }
 
-/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces 
- *  and specifies that compilation will finish with named.
+/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
+  * and specifies that compilation will finish with named.
   *
   * @author jthywiss
   */
-class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression] 
-                            with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression] 
-                            with CoreOrcCompilerPhases {
+class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression]
+  with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression]
+  with CoreOrcCompilerPhases {
   ////////
   // Compose phases into a compiler
   ////////
 
   val phases =
     parse.timePhase >>>
-    translate.timePhase >>>
-    vClockTrans.timePhase >>>
-    noUnboundVars.timePhase >>>
-    fractionDefs.timePhase >>>
-    typeCheck.timePhase >>>
-    removeUnusedDefs.timePhase >>>
-    removeUnusedTypes.timePhase >>>
-    noUnguardedRecursion.timePhase >>>
-    deBruijn.timePhase >>>
-    outputOil
+      translate.timePhase >>>
+      vClockTrans.timePhase >>>
+      noUnboundVars.timePhase >>>
+      fractionDefs.timePhase >>>
+      typeCheck.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
+      outputIR(1) >>>
+      splitPrune.timePhase >>>
+      removeUnusedDefs.timePhase >>>
+      removeUnusedTypes.timePhase >>>
+      outputIR(2) >>>
+      deBruijn.timePhase >>>
+      outputOil
 }
 
-/**
- * A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders 
- * and the file system).
- */
+/** A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders
+  * and the file system).
+  */
 trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassLoading {
   @throws(classOf[IOException])
   abstract override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {

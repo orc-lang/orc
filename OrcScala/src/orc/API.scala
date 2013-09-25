@@ -179,6 +179,8 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def disableRecursionCheck_=(newVal: Boolean)
   def echoOil: Boolean
   def echoOil_=(newVal: Boolean)
+  def echoIR: Int
+  def echoIR_=(newVal: Int)
   def oilOutputFile: Option[File]
   def oilOutputFile_=(newVal: Option[File])
   def compileOnly: Boolean

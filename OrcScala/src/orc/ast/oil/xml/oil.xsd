@@ -65,6 +65,14 @@
     <xs:attributeGroup ref="ast" />
   </xs:complexType>
 
+  <!--  Unary Combinators (AST)  -->
+  <xs:complexType name="unary_combinator">
+    <xs:sequence>
+      <xs:element name="expr" type="exp" />
+    </xs:sequence>
+    <xs:attributeGroup ref="ast" />
+  </xs:complexType>
+
   <!--  Binding combinator (AST)  -->
   <xs:complexType name="binding_combinator">
     <xs:sequence>
@@ -173,8 +181,11 @@
         <!--  f >> g  -->
         <xs:element name="sequence" type="binding_combinator" />
 
-        <!--  f << g  -->
-        <xs:element name="prune" type="binding_combinator" />
+        <!--  f <<| g  -->
+        <xs:element name="latebind" type="binding_combinator" />
+
+        <!--  limit(f)  -->
+        <xs:element name="limit" type="unary_combinator" />
 
         <!--  f ; g  -->
         <xs:element name="otherwise" type="combinator" />
