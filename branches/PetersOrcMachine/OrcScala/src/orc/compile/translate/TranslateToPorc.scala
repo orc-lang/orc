@@ -12,7 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.compile.translate
 
 import orc.ast.porc
 import orc.ast.porc._
@@ -23,6 +23,8 @@ import orc.values.Format
 import orc.Handle
 import orc.PublishedEvent
 import orc.lib.builtin.MakeResilients
+import orc.ast.oil.named._
+import orc.ast.oil.named
 
 /**
   *
@@ -216,7 +218,7 @@ object TranslateToPorc {
   def translate(e: Expression)(implicit ctx: TranslationContext): porc.Expr = {
     import ctx.{p => P}
     e -> {
-      case Stop() => Unit()
+      case named.Stop() => Unit()
       case f || g => {
         val gCl = new porc.Var("g")
         let((gCl, Lambda(List(), translate(g)(ctx)))) {
@@ -352,14 +354,14 @@ object TranslateToPorc {
           }
         }
       }
-      case Call(target : BoundVar, args, _) if ctx.isRecursive(target) => {
+      case named.Call(target : BoundVar, args, _) if ctx.isRecursive(target) => {
         val g = new porc.Var("g")
         CheckKilled() :::
         let((g, lambda() { SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P) })) {
           Spawn(g)
         }
       }      
-      case Call(target : BoundVar, args, _) => {
+      case named.Call(target : BoundVar, args, _) => {
         // TODO: Is this correct? This seems to force the target, but not force anything bound in it's closure.
         val pp = new porc.Var("pp")
         val x = new porc.Var("x")
@@ -368,7 +370,7 @@ object TranslateToPorc {
           Force(List(ctx(target)), pp)
         } 
       }
-      case Call(c@Constant(_), args, _) => {
+      case named.Call(c@Constant(_), args, _) => {
         SiteCall(argumentToPorc(c, ctx), args.map(argumentToPorc(_, ctx)), P)
       }
       
@@ -412,7 +414,7 @@ object TranslateToPorc {
         })
       }*/
       
-      case Call(target, args, _) => {
+      case named.Call(target, args, _) => {
         SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P)
       }
       case DeclareDefs(defs, body) => {

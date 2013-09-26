@@ -59,7 +59,9 @@ val c = Cell()
    <od:siteprop propname="idempotent"/>
 </od:sitepropset>
 
-Read a value from the cell. If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+Read a value from the cell.
+If the cell does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+If a call to <code>read</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method cell[A].readD() :: A
 
@@ -100,7 +102,9 @@ Rwait(1000) >> r := 5 >> stop
 Create a rewritable storage location initialized to the provided value.
 
 @method ref[A].read() :: A
-Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+Read the value of the ref.
+If the ref does not yet have a value, <link linkend="ref.concepts.states.block">block</link> until it receives one.
+If a call to <code>read</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method ref[A].readD() :: A
 Read the value of the ref. If the ref does not yet have a value, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
@@ -166,6 +170,7 @@ lock.release()]]></programlisting>
 
 If the semaphore's value is greater than <code>0</code>, decrement the semaphore and return a <link linkend="ref.data.signal">signal</link>.
 If the semaphore's value is <code>0</code>, <link linkend="ref.concepts.states.block">block</link> until it becomes greater than <code>0</code>.
+If a call to <code>acquire</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method semaphore.acquireD() :: Signal
 
@@ -195,6 +200,7 @@ increment the value beyond that with which the semaphore was constructed.
 
 If any calls to <code>acquire</code> are <link linkend="ref.concepts.states.block">blocked</link>, return a <link linkend="ref.data.signal">signal</link>.
 Otherwise, <link linkend="ref.concepts.states.block">block</link> until some call to <code>acquire</code> <link linkend="ref.concepts.states.block">blocks</link>.
+If a call to <code>snoop</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method semaphore.snoopD() :: Signal
 
@@ -234,6 +240,7 @@ val b = Channel()
 Get an item from the channel. If the channel is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
 linkend="ref.stdlib.state.Channel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If a call to <code>get</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method channel[A].getD() :: A
 
@@ -264,6 +271,7 @@ This has the effect of immediately causing any <link linkend="ref.concepts.state
 <code>get</code> to <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. In addition, any subsequent calls to <code>put</code>
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If a call to <code>close</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 When the channel is empty, return a <link linkend="ref.data.signal">signal</link>.
 
@@ -334,6 +342,7 @@ val c = BoundedChannel(1)
 Get an item from the channel. If the channel is open and no items are available,
 <link linkend="ref.concepts.states.block">block</link> until one becomes available. If the channel is <link
 linkend="ref.stdlib.state.BoundedChannel.close">closed</link> and no items are available, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If a call to <code>get</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method boundedChannel[A].getD() :: A
 
@@ -351,6 +360,7 @@ Get an item from the channel. If no items are available, <link linkend="ref.conc
 
 Put an item in the channel. If no slots are open, <link linkend="ref.concepts.states.block">block</link> until one becomes open.
 If the channel is <link linkend="ref.stdlib.state.BoundedChannel.close">closed</link>, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
+If a call to <code>put</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method boundedChannel[A].putD(A) :: Signal
 
@@ -374,6 +384,7 @@ This has the effect of immediately causing any <link linkend="ref.concepts.state
 will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>, and once the channel becomes empty, any subsequent calls to
 <code>get</code> will <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>. Note that any <link linkend="ref.concepts.states.block">blocked</link> calls to <code>put</code>
 initiated prior to closing the channel may still be allowed to return as usual.
+If a call to <code>close</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method boundedChannel[A].closeD() :: Signal
 
@@ -547,6 +558,7 @@ the counter and return a <link linkend="ref.data.signal">signal</link>.
 
 If the counter is at zero, return a <link linkend="ref.data.signal">signal</link>. Otherwise,
 <link linkend="ref.concepts.states.block">block</link> until the counter reaches zero.
+If a call to <code>onZero</code> blocks, it becomes <link linkend="ref.time.virtual.quiescence">quiescent</link>.
 
 @method counter.value() :: Integer
 

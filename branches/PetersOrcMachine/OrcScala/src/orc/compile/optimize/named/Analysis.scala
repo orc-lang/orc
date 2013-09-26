@@ -12,11 +12,13 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.compile.optimize.named
 
-import orc.values.sites.Site
+import orc.ast.oil.named._
 import scala.collection.mutable
+import orc.ast.oil.named.in
 import orc.values.Field
+import orc.values.sites.Site
 
 case class Range(mini : Int, maxi : Option[Int]) {
   assert(mini >= 0)
@@ -442,7 +444,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
 
 
 object Analysis {
-  def count(t : Orc5CAST, p : (Expression => Boolean)) : Int = {
+  def count(t : NamedAST, p : (Expression => Boolean)) : Int = {
     val cs = t.subtrees
     (t match {
       case e : Expression if p(e) => 1
@@ -457,7 +459,7 @@ object Analysis {
   val limitCost = 3
   val callCost = 1
   
-  def cost(t : Orc5CAST) : Int = {
+  def cost(t : NamedAST) : Int = {
     val cs = t.subtrees
     (t match {
       case _ : LateBind => latebindCost

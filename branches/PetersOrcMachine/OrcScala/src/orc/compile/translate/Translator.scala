@@ -19,9 +19,9 @@ import scala.collection.immutable.{HashMap, List, Map, Nil}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
 import orc.ast.ext
-import orc.ast.oil._
-import orc.ast.oil.named._
-import orc.ast.oil.named.Conversions._
+import orc.ast.oil4c._
+import orc.ast.oil4c.named._
+import orc.ast.oil4c.named.Conversions._
 import orc.compile.translate.ClassForms._
 import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
@@ -132,18 +132,21 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ext.Val(p, f), body) => {
         convert(ext.Pruning(body, Some(p), f))
       }
-      case ext.Declare(ext.SiteImport(name, sitename), body) => {
+      case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
           val site = Constant(OrcSiteForm.resolve(sitename))
+          site.pushDownPosition(si.pos)
           convert(body)(context + { (name, site) }, typecontext)
         } catch {
           case oe: OrcException => throw oe at e
         }
       }
-      case ext.Declare(ext.ClassImport(name, classname), body) => {
+      case ext.Declare(ci @ ext.ClassImport(name, classname), body) => {
         try {
           val u = new BoundTypevar(Some(name))
+          u.pushDownPosition(ci.pos)
           val site = Constant(JavaSiteForm.resolve(classname))
+          site.pushDownPosition(ci.pos)
           val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
           DeclareType(u, ClassType(classname), newbody)
         } catch {
@@ -195,7 +198,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         /*
          * There is a special case for datatypes with a single constructor. Instead of
          * using a tuple pattern we simply have a variable for the single constructor.
-         * 
+         *
          * This matches the type generated in Datatypes.scala.
          */
         val p = if(names.size == 1) ext.VariablePattern(names.head)
@@ -262,8 +265,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val newdefs = for ((n, d) <- defsMap) yield {
       d ->> d.convert(namesMap(n), recursiveContext, typecontext)
     }
-    
-    
+
+
 
     (newdefs.toList, namesMap)
   }
@@ -396,11 +399,11 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           val y = new BoundVar()
           val p = ext.TuplePattern(args)
           val C = context(name)
-          
+
           if (withinAsPattern) {
             reportProblem(CallPatternWithinAsPattern() at pat)
           }
-          
+
           { makeUnapply(C, focus) > y > _ } compose unravel(p, y)
         }
         case ext.AsPattern(p, name) => {

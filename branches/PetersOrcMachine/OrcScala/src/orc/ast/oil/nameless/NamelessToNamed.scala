@@ -40,10 +40,11 @@ trait NamelessToNamed {
         val x = new BoundVar()
         named.Sequence(recurse(left), x, namelessToNamed(right, x :: context, typecontext))
       }
-      case left << right => {
+      case left <<| right => {
         val x = new BoundVar()
-        named.Prune(namelessToNamed(left, x :: context, typecontext), x, recurse(right))
+        named.LateBind(namelessToNamed(left, x :: context, typecontext), x, recurse(right))
       }
+      case Limit(f) => named.Limit(recurse(f))
       case left ow right => named.Otherwise(recurse(left), recurse(right))
       case DeclareDefs(openvars, defs, body) => {
         val opennames = openvars map context

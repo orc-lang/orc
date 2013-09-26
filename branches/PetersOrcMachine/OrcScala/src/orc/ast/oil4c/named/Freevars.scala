@@ -2,7 +2,7 @@
 // Freevars.scala -- Scala traits hasVars, hasFreeVars, hasFreeTypeVars, hasUnboundVars, hasUnboundTypeVars
 // Project OrcScala
 //
-// $Id: Freevars.scala 2933 2011-12-15 16:26:02Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 13, 2010.
 //
@@ -12,24 +12,23 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil4c.named
 
 /** @author dkitchin
   */
-
 trait hasVars
   extends hasFreeVars
   with hasFreeTypeVars
   with hasUnboundVars
-  with hasUnboundTypeVars { self: Orc5CAST => }
+  with hasUnboundTypeVars { self: NamedAST => }
 
 trait hasFreeVars {
-  self: Orc5CAST =>
+  self: NamedAST =>
 
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val freevars: Set[BoundVar] = {
     val varset = new scala.collection.mutable.HashSet[BoundVar]()
-    val collect = new Orc5CASTTransform {
+    val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
         case x: BoundVar => (if (context contains x) {} else { varset += x }); x
       }
@@ -41,12 +40,12 @@ trait hasFreeVars {
 }
 
 trait hasFreeTypeVars {
-  self: Orc5CAST =>
+  self: NamedAST =>
 
   /* Note: As is evident from the type, UnboundTypevars are not included in this set */
   lazy val freetypevars: Set[BoundTypevar] = {
     val varset = new scala.collection.mutable.HashSet[BoundTypevar]()
-    val collect = new Orc5CASTTransform {
+    val collect = new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
         case u: BoundTypevar => if (typecontext contains u) {} else { varset += u }; u
       }
@@ -58,12 +57,12 @@ trait hasFreeTypeVars {
 }
 
 trait hasUnboundVars {
-  self: Orc5CAST =>
+  self: NamedAST =>
 
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val unboundvars: Set[UnboundVar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundVar]()
-    val collect = new Orc5CASTTransform {
+    val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
         case x: UnboundVar => varset += x; x
       }
@@ -74,12 +73,12 @@ trait hasUnboundVars {
 }
 
 trait hasUnboundTypeVars {
-  self: Orc5CAST =>
+  self: NamedAST =>
 
   /* Note: As is evident from the type, UnboundVars are not included in this set */
   lazy val unboundtypevars: Set[UnboundTypevar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundTypevar]()
-    val collect = new Orc5CASTTransform {
+    val collect = new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
         case u: UnboundTypevar => varset += u; u
       }

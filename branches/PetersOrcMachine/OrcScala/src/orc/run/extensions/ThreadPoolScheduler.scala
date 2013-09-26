@@ -14,17 +14,13 @@
 //
 package orc.run.extensions
 
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit }
 import java.util.logging.Level
-import orc.Handle
-import orc.OrcExecutionOptions
-import orc.run.Orc
-import orc.run.core.GroupMember
-import orc.Schedulable
 
+import orc.{ OrcExecutionOptions, Schedulable }
+import orc.run.Orc
+
+/** A logger just for scheduling */
 object Logger extends orc.util.Logger("orc.run.scheduler")
 
 /** An Orc runtime engine extension which
@@ -79,20 +75,20 @@ trait OrcWithThreadPoolScheduler extends Orc {
     executorLock synchronized {
       if (executor != null) {
         executor.shutdownRunner(
-            { () => executorLock synchronized { executor = ShutdownScheduler} }, 
-            { () => executorLock synchronized { executor = null } })
+          { () => executorLock synchronized { executor = ShutdownScheduler } },
+          { () => executorLock synchronized { executor = null } })
       }
     }
   }
 
   object ShutdownScheduler extends OrcRunner {
-    def startupRunner() = 
+    def startupRunner() =
       throw new IllegalStateException("Cannot start a shutting down scheduler")
 
-    def stageTask(task: Schedulable) = 
+    def stageTask(task: Schedulable) =
       { /* Silently discard task */ }
 
-    def executeTask(task: Schedulable) = 
+    def executeTask(task: Schedulable) =
       { /* Silently discard task */ }
 
     def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit) =
@@ -138,12 +134,13 @@ trait OrcRunner {
   * @author jthywiss
   */
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-  //TODO: Make more of these params configurable
-  math.max(4, Runtime.getRuntime().availableProcessors * 2),
-  if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
-  2000L, TimeUnit.MILLISECONDS,
-  new LinkedBlockingQueue[Runnable],
-  new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+    //TODO: Make more of these params configurable
+    math.max(4, Runtime.getRuntime().availableProcessors * 2),
+    if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
+    2000L, TimeUnit.MILLISECONDS,
+    //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
+    new LinkedBlockingQueue[Runnable](),
+    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 
@@ -181,7 +178,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   }
 
   @throws(classOf[IllegalStateException])
-  def stageTask(task: Schedulable): Unit = {
+  def stageTask(task: Schedulable) {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
@@ -194,7 +191,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
 
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
-  def executeTask(task: Schedulable): Unit = {
+  def executeTask(task: Schedulable) {
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
@@ -202,11 +199,11 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     execute(task)
   }
 
-  override def beforeExecute(t: Thread, r: Runnable): Unit = {
+  override def beforeExecute(t: Thread, r: Runnable) {
     OrcThreadPoolExecutor.stagedTasks.set(Nil)
   }
 
-  override def afterExecute(r: Runnable, t: Throwable): Unit = {
+  override def afterExecute(r: Runnable, t: Throwable) {
     super.afterExecute(r, t)
     r match {
       case s: Schedulable => s.onComplete()
@@ -275,7 +272,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             ifElapsed(120L, { shutdownNow() })
             // Wait 5.05 min for all running workers to shutdown (5 min for TCP timeout)
             ifElapsed(303000L, {
-              Logger.severe("Orc shutdown was unable to terminate " + getPoolSize() + " worker threads")
+              Logger.severe(s"Orc shutdown was unable to terminate ${getPoolSize()} worker threads, after trying for ~5 minutes\n" +
+                threadGroupDump(threadGroup))
               giveUp = true
             })
 
@@ -359,6 +357,43 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     Logger.finest("taskCount = " + getTaskCount)
     Logger.finest("completedTaskCount = " + getCompletedTaskCount)
     Logger.finest("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
+  }
+
+  def threadGroupDump(threadGroup: ThreadGroup): String = {
+    val threadBuffer = new Array[Thread](threadGroup.activeCount + 5)
+    val descendantThreads = threadBuffer.view(0, threadGroup.enumerate(threadBuffer, true))
+    val threadMXBean = java.lang.management.ManagementFactory.getThreadMXBean
+    val deadlockIds = threadMXBean.findDeadlockedThreads()
+    (if (deadlockIds != null && deadlockIds.length > 0)
+      "DEADLOCK DETECTED among these threads in the JVM:\n" +
+      (for (tid <- deadlockIds) yield {
+        val ti = threadMXBean.getThreadInfo(tid)
+        s"\t'${ti.getThreadName()}' tid=${tid} ${ti.getThreadState}" +
+          (if (ti.getLockName != null) " on " + ti.getLockName else "") +
+          (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
+          '\n'
+      }).mkString + "\n"
+    else
+      "") +
+      threadGroup.getName + " thread dump:\n\n" +
+      (for (thread <- descendantThreads) yield {
+        val stackTrace = thread.getStackTrace
+        val ti = threadMXBean.getThreadInfo(thread.getId)
+        s"'${thread.getName}' ${if (thread.isDaemon) "daemon " else ""}prio=${thread.getPriority} tid=${thread.getId} ${thread.getState}" +
+          (if (ti.getLockName != null) " on " + ti.getLockName else "") +
+          (if (ti.getLockOwnerName != null) s" owned by '${ti.getLockOwnerName}' tid=${ti.getLockOwnerId()}" else "") +
+          (if (ti.isSuspended) " (suspended)" else "") +
+          (if (ti.isInNative) " (in native)" else "") +
+          "\n" +
+          (for (i <- 0 until stackTrace.length)
+            yield s"\tat ${stackTrace(i)}\n" +
+            (for {
+              mi <- ti.getLockedMonitors
+              if mi.getLockedStackDepth() == i
+            } yield {
+              s"\t-  locked  $mi\n"
+            }).mkString).mkString + "\n"
+      }).mkString
   }
 
 }

@@ -1,5 +1,5 @@
 //
-// Resolver.scala -- Scala class/trait/object Resolver
+// Resolver.scala -- Scala trait Resolver
 // Project OrcScala
 //
 // $Id$
@@ -15,12 +15,11 @@
 package orc.run.core
 
 /**
- * 
- *
- * @author amp
- */
+  *
+  * @author amp
+  */
 trait Resolver extends Blockable {
-  
+
   /** Attempt to resolve a binding to a value.
     * When the binding resolves to v, call k(v).
     * (If it is already resolved, k is called immediately)
@@ -42,7 +41,7 @@ trait Resolver extends Blockable {
     *
     * Note that resolving a closure also encloses its context.
     */
-  protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit): Unit = {
+  protected def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit) {
     b match {
       case BoundValue(v) =>
         k(Some(v))
@@ -57,10 +56,9 @@ trait Resolver extends Blockable {
       }
     }
   }
-  
-  /**
-   * Store a continuation that will be run when this resolver is unblocked with a value.
-   * None means stop. Some(v) means the value v.
-   */
-  protected def pushContinuation(k : (Option[AnyRef] => Unit)) : Unit
+
+  /** Store a continuation that will be run when this resolver is unblocked with a value.
+    * None means stop. Some(v) means the value v.
+    */
+  protected def pushContinuation(k: (Option[AnyRef] => Unit)): Unit
 }

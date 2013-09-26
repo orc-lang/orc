@@ -33,7 +33,7 @@ trait Guarding {
         if (context contains target) {
           unguardedRecursion(this); false
         } else {
-          /* This is a liberal approximation and will generate false negatives. 
+          /* This is a liberal approximation and will generate false negatives.
            * Not all calls are truly guarding; only calls to sites or to guarded
            * functions or closures are actually guarding. However, since this
            * is just a sanity check, not a safety guarantee, it seems appropriate
@@ -52,7 +52,7 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case left < x < right => {
+      case left < x <| right => {
         val l = check(left)
         val r = check(right)
         l && r

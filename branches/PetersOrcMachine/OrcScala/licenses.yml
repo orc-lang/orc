@@ -1,6 +1,6 @@
 # This file is in YAML format.  It lists all bundled third-party dependencies.
 # Each dependency includes the following information:
-# 
+#
 # $Id$
 #
 # files: list of incorporated files

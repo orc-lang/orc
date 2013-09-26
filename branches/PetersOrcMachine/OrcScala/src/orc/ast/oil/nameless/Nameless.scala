@@ -33,7 +33,8 @@ sealed abstract class NamelessAST extends AST {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
     case Sequence(left, right) => List(left, right)
-    case Prune(left, right) => List(left, right)
+    case LateBind(left, right) => List(left, right)
+    case Limit(f) => List(f)
     case left ow right => List(left, right)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -62,9 +63,9 @@ sealed abstract class Expression extends NamelessAST
   with NamelessInfixCombinators
   with NamelessToNamed {
 
-  /* 
+  /*
    * Find the set of free vars for any given expression.
-   * Inefficient, but very easy to read, and this is only computed once per node. 
+   * Inefficient, but very easy to read, and this is only computed once per node.
    */
   lazy val freevars: Set[Int] = {
     this match {
@@ -74,7 +75,8 @@ sealed abstract class Expression extends NamelessAST
       case Call(target, args, typeArgs) => target.freevars ++ (args flatMap { _.freevars })
       case f || g => f.freevars ++ g.freevars
       case f >> g => f.freevars ++ shift(g.freevars, 1)
-      case f << g => shift(f.freevars, 1) ++ g.freevars
+      case f <<| g => shift(f.freevars, 1) ++ g.freevars
+      case Limit(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
@@ -93,7 +95,7 @@ sealed abstract class Expression extends NamelessAST
     * The binding is None if the variable at that depth is to remain unchanged.
     */
   def subst(ctx: List[Option[AnyRef]]): Expression = {
-    this match {
+    this -> {
       case Stop() => Stop()
       case Constant(v) => Constant(v)
       case Variable(i) =>
@@ -110,7 +112,8 @@ sealed abstract class Expression extends NamelessAST
       }
       case f || g => f.subst(ctx) || g.subst(ctx)
       case f >> g => f.subst(ctx) >> g.subst(None :: ctx)
-      case f << g => f.subst(None :: ctx) << g.subst(ctx)
+      case f <<| g => f.subst(None :: ctx) <<| g.subst(ctx)
+      case Limit(f) => Limit(f.subst(ctx))
       case f ow g => f.subst(ctx) ow g.subst(ctx)
       case DeclareDefs(openvars, defs, body) => {
         val newctx = (for (_ <- defs) yield None).toList ::: ctx
@@ -138,7 +141,8 @@ case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
-case class Prune(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+case class LateBind(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+case class Limit(f: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName

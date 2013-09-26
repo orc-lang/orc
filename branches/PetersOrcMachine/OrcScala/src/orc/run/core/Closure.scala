@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,69 +19,102 @@ import orc.Schedulable
 import orc.OrcRuntime
 import orc.util.BlockableMapExtension
 
-/** 
- * A closure that both resolves itself and represents the closure itself. This should
- * be scheduled when it is created.
- * 
- * @author dkitchin, amp
- */
+/** A closure that both resolves itself and represents the closure itself. This should
+  * be scheduled when it is created.
+  *
+  * @author dkitchin, amp
+  */
 class Closure(
-    private[run] var _defs: List[Def], 
-    pos: Int, 
-    private var _lexicalContext: List[Binding], 
-    override val runtime: OrcRuntime) 
-      extends Schedulable 
-        with Blocker with Blockable with Resolver {
-  import Closure._
+  index: Int,
+  val closureGroup: ClosureGroup)
+  extends Blocker {
+
+  def defs = closureGroup._defs
+
+  def code: Def = defs(index)
+
+  def context = closureGroup.context
+
+  def lexicalContext = closureGroup.lexicalContext
+
+  def check(t: Blockable) = closureGroup.check(t, index)
+
+  def read(t: Blockable) = closureGroup.read(t, index)
+
+  override val runtime = closureGroup.runtime
+
+  override def toString = super.toString + (code.body.pos, closureGroup, index)
+}
+
+class ClosureGroup(
+  private[run] var _defs: List[Def],
+  private var _lexicalContext: List[Binding],
+  val runtime: OrcRuntime)
+  extends Schedulable
+  with Blockable with Resolver {
+  import ClosureGroup._
   import BlockableMapExtension._
-  
-  private var stack : List[Option[AnyRef] => Unit] = Nil
-  
+
+  def defs = _defs
+  def lexicalContext = _lexicalContext
+
+  /** Create all the closures. They forward most of their methods here.
+    */
+  val closures = defs.indices.toList map { i => new Closure(i, this) }
+
+  /** Stores the current version of the context. The initial value has BoundClosures for each closure,
+    * so they will still be resolved if this context is used.
+    */
+  private var _context: List[Binding] = closures.reverse.map { BoundClosure(_) } ::: lexicalContext
+
+  /** Get the context used by all of the closures in this group.
+    */
+  def context = _context
+  /* 
+   * This should be safe without locking because the change is still atomic (pointer assignment)
+   * and getting the old version doesn't actually hurt anything. It just slows down the 
+   * evaluation of the token that got it because it will have to resolve the future versions
+   * of things.
+   */
+
+  private var stack: List[Option[AnyRef] => Unit] = Nil
+
   private def pop() = {
     val top = stack.head
     stack = stack.tail
     top
   }
-  private def push(k : (Option[AnyRef] => Unit)) = stack = k :: stack
-  protected def pushContinuation(k : (Option[AnyRef] => Unit)) = push(k)
+  private def push(k: (Option[AnyRef] => Unit)) = stack = k :: stack
+  protected def pushContinuation(k: (Option[AnyRef] => Unit)) = push(k)
 
   // State is used for the blocker side
-  private var state : ClosureState = Started
-  
+  private var state: ClosureState = Started
+
   // waitlist is effectively the state of the blocker side.
-  private var waitlist : List[Blockable] = Nil // This should be empty at any time state = Resolved
-  
-  def defs = _defs
+  private var waitlist: List[Blockable] = Nil // This should be empty at any time state = Resolved
 
-  def code: Def = defs(pos)
-  
-  def lexicalContext = _lexicalContext
-  
-  override def toString = synchronized { "Closure@" + ## + (code.body.pos, lexicalContext, state, stack) }
+  private var activeCount = 0
 
-  // FIXME: This should work but it produces duplicate versions of closures and I don't see why 
-  // we should do that. The resolution will be fast because the lexical context will already 
-  // have been resolved. But still.
-
-  // This is a lazy val because it the data in the returned object always has 
-  // the same meaning even if it is mutable. So we can safely reuse the result.
-  lazy val context: List[Binding] = synchronized {
-    val fs =
-      for (i <- defs.indices) yield {
-        val c = new Closure(defs, i, lexicalContext, runtime)
-        runtime.stage(c)
-        // TODO: Check if lexialContext has any futures or closures that are not resolved. if not we can make a BoundValue instead.
-        //This does not explain the crashes however.
-        BoundClosure(c)
-      }
-    fs.toList.reverse ::: lexicalContext
+  override def setQuiescent(): Unit = synchronized {
+    assert(activeCount > 0)
+    activeCount -= 1
+    if (activeCount == 0) {
+      waitlist foreach { _.setQuiescent() }
+    }
   }
-  
+  override def unsetQuiescent(): Unit = synchronized {
+    if (activeCount == 0) {
+      waitlist foreach { _.unsetQuiescent() }
+    }
+    activeCount += 1
+    assert(activeCount > 0)
+  }
+
   /** Create a new Closure object whose lexical bindings are all resolved and replaced.
     * Such a closure will have no references to any group.
     * This object is then passed to the continuation.
     */
-  private def enclose(bs: List[Binding])(k: List[Binding] => Unit): Unit = {
+  private def enclose(bs: List[Binding])(k: List[Binding] => Unit) {
     def resolveBound(b: Binding)(k: Binding => Unit) =
       resolveOptional(b) {
         case Some(v) => k(BoundValue(v))
@@ -90,67 +123,89 @@ class Closure(
     bs.blockableMap(resolveBound)(k)
   }
 
-  
-  /**
-   * Execute the resolution process of this Closure. This should be called by the scheduler.
-   */
+  /** Execute the resolution process of this Closure. This should be called by the scheduler.
+    */
   def run() = synchronized {
     state match {
       case Started => {
         // Start the resolution process
-        enclose(_lexicalContext){ newContext => 
-          assert(stack.size == 0) // Check for a bug that existed before and was non-deterministic
-          //assert(_lexicalContext.size == newContext.size) // FIXME: Silly debugging check
-          _lexicalContext = newContext
-          state = Resolved
-          waitlist foreach runtime.stage
-          waitlist = Nil
+        enclose(_lexicalContext) { newContext =>
+          // Have to synchronize again because this is really 
+          // a callback that will be called some time later.
+          synchronized {
+            assert(stack.size == 0) // Check for a bug that existed before and was non-deterministic
+            _lexicalContext = newContext
+            _context = closures.reverse.map { BoundValue(_) } ::: lexicalContext
+            state = Resolved
+            waitlist foreach runtime.stage
+            //waitlist = Nil
+          }
         }
       }
       case Blocked(b) => {
         b.check(this)
       }
-      case Resolved => throw new Error("Closure scheduled in bad state: " + state)
+      case Resolved => throw new AssertionError("Closure scheduled in bad state: " + state)
     }
   }
-  
+
   //// Blocker Implementation
-  
-  def check(t: Blockable) = synchronized {
-    state match {
-      case Resolved => t.awakeValue(this)
-      case _ => throw new Error("Closure.check called in bad state: " + state)
+
+  def check(t: Blockable, i: Int) = {
+    synchronized { state } match {
+      case Resolved => t.awakeValue(closures(i))
+      case _ => throw new AssertionError("Closure.check called in bad state: " + state)
     }
   }
-  
-  def read(t: Blockable) = synchronized {
-    state match {
-     case Resolved => t.awakeValue(this)
-     case _ => {
-        t.blockOn(this)
-        waitlist ::= t
+
+  def read(t: Blockable, i: Int) = {
+    val doawake = synchronized {
+      state match {
+        case Resolved => true
+        case _ => {
+          t.blockOn(closures(i))
+          waitlist ::= t
+          if (activeCount > 0) {
+            t.unsetQuiescent()
+          }
+          false
+        }
       }
     }
+
+    if (doawake)
+      t.awakeValue(closures(i))
   }
 
   //// Blockable Implementation
-  
-  private def handleValue(v : Option[AnyRef]) {
+
+  private def handleValue(v: Option[AnyRef]) {
     pop()(v) // Pop and call the old top of the stack on the value. The pop happens first. That's important.
   }
-  
-  def awakeValue(v : AnyRef) = handleValue(Some(v))
+
+  def awakeValue(v: AnyRef) = handleValue(Some(v))
   def awakeStop() = handleValue(None)
-  
-  def blockOn(b : Blocker) {
+
+  def blockOn(b: Blocker) {
     assert(state != Resolved)
     state = Blocked(b)
   }
+
+  //// Schedulable Implementation to handle Vclock correctly
+
+  // We cannot just unset/set on all elements of waitlist because that structure may change at any time.
+  override def onSchedule() {
+    unsetQuiescent()
+  }
+
+  override def onComplete() {
+    setQuiescent()
+  }
 }
 
-object Closure {
+object ClosureGroup {
   sealed trait ClosureState
-  case class Blocked(blocker : Blocker) extends ClosureState
+  case class Blocked(blocker: Blocker) extends ClosureState
   case object Resolved extends ClosureState
   case object Started extends ClosureState
 }

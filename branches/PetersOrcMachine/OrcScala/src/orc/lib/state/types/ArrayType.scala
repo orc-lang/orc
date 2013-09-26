@@ -18,10 +18,8 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
-  *
   * @author dkitchin
   */
-
 object ArrayType extends SimpleTypeConstructor("Array", Invariant) {
 
   def getBuilder: Type = {

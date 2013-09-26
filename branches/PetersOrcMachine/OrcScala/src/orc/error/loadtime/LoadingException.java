@@ -19,7 +19,7 @@ import orc.error.OrcException;
  * Exceptions generated while creating an execution
  * graph from a portable representation, in preparation
  * for execution.
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions

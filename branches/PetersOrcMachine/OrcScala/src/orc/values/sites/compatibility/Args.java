@@ -26,7 +26,7 @@ import orc.values.Field;
 
 /**
  * Container for arguments to a site.
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial")
@@ -48,7 +48,7 @@ public class Args implements Serializable {
 	/**
 	 * Helper function to, assuming the argument is an Orc field, retrieve the
 	 * field's name
-	 * 
+	 *
 	 * @return
 	 * @throws ArityMismatchException
 	 * @throws ArgumentTypeMismatchException
@@ -71,7 +71,7 @@ public class Args implements Serializable {
 	/**
 	 * Helper function to retrieve the nth element as an object (starting from
 	 * 0), with error checking
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 * @throws InsufficientArgsException
@@ -87,7 +87,7 @@ public class Args implements Serializable {
 	/**
 	 * Return the entire tuple as an object array. Please don't mutate the
 	 * array.
-	 * 
+	 *
 	 * @return
 	 */
 	public Object[] asArray() {
@@ -96,7 +96,7 @@ public class Args implements Serializable {
 
 	/**
 	 * Helper function for integers
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
@@ -117,7 +117,7 @@ public class Args implements Serializable {
 
 	/**
 	 * Helper function for longs
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
@@ -155,7 +155,7 @@ public class Args implements Serializable {
 
 	/**
 	 * Helper function for booleans
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
@@ -177,7 +177,7 @@ public class Args implements Serializable {
 	 * Helper function for strings. Note that this requires a strict String
 	 * type. If you don't care whether the argument is really a string, use
 	 * valArg(n).toString().
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 * @throws ArgumentTypeMismatchException
@@ -235,7 +235,7 @@ public class Args implements Serializable {
 
 	/**
 	 * Dispatch a binary operator based on the widest type of two numbers.
-	 * 
+	 *
 	 * @param <T>
 	 * @param a
 	 * @param b
@@ -305,7 +305,7 @@ public class Args implements Serializable {
 
 	/**
 	 * Dispatch a unary operator based on the type of a number.
-	 * 
+	 *
 	 * @param <T>
 	 * @param a
 	 * @param op

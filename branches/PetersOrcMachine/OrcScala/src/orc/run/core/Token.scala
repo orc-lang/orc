@@ -15,7 +15,7 @@
 package orc.run.core
 
 import orc.{ Schedulable, OrcRuntime, OrcEvent, CaughtEvent }
-import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, Prune, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
+import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, LateBind, Limit, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
 import orc.error.runtime.{ TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException }
 import orc.error.OrcException
 import orc.lib.time.{ Vtime, Vclock, Vawait }
@@ -23,6 +23,8 @@ import orc.util.BlockableMapExtension.addBlockableMapToList
 import orc.values.sites.TotalSite
 import orc.values.{ Signal, OrcRecord, Field }
 import orc.ast.oil.nameless.VtimeZone
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -39,6 +41,11 @@ import orc.ast.oil.nameless.VtimeZone
   * however it does mean that there are still parts of the code
   * where there is no way to represent stop.
   *
+  * Be careful when blocking because you may be unblocked
+  * immediately in a different thread.
+  *
+  * @see Blockable
+  *
   * @author dkitchin
   */
 class Token protected (
@@ -53,6 +60,8 @@ class Token protected (
   var functionFramesPushed: Int = 0
 
   val runtime: OrcRuntime = group.runtime
+
+  def sourcePosition = node.pos
 
   val options = group.root.options
 
@@ -77,10 +86,26 @@ class Token protected (
 
   /*
    * On creation: Add a token to its group if it is not halted or killed.
+   * 
+   * All initialization that must occure before run() executes must happen 
+   * before this point, because once the token is added to a group it may 
+   * run at any time.
+   * 
    */
   state match {
     case Publishing(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
     case Halted | Killed => {}
+  }
+
+  private val toStringRecusionGuard = new ThreadLocal[Object]()
+  override def toString = {
+    try {
+      val recursing = toStringRecusionGuard.get
+      toStringRecusionGuard.set(java.lang.Boolean.TRUE)
+      super.toString + (if (recursing eq null) s"(state=$state, node=$node, group=$group, clock=$clock)" else "")
+    } finally {
+      toStringRecusionGuard.remove()
+    }
   }
 
   /** Change this token's state.
@@ -91,7 +116,7 @@ class Token protected (
     * Return false if the token's state was already Killed.
     */
   protected def setState(newState: TokenState): Boolean = synchronized {
-    /* 
+    /*
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
@@ -101,20 +126,18 @@ class Token protected (
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = state.isLive && group.checkAlive()
 
-  //@volatile
-  //var scheduledBy: Throwable = null //FIXME: Remove "scheduledBy" debug facility
+  override def setQuiescent() { clock foreach { _.setQuiescent() } }
+
+  override def unsetQuiescent() { clock foreach { _.unsetQuiescent() } }
+
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
-    //scheduledBy = new Throwable("Task scheduled by")
-    //if (runtime.asInstanceOf[OrcWithThreadPoolScheduler].executor.asInstanceOf[OrcThreadPoolExecutor].getQueue().contains(this) && !group.isKilled()) Console.err.println("Token scheduled, in queue, && group alive! state="+state+"\n"+scheduledBy.toString())
-    clock foreach { _.unsetQuiescent() }
-    super.onSchedule()
+    unsetQuiescent()
   }
 
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
-    super.onComplete()
-    clock foreach { _.setQuiescent() }
+    setQuiescent()
   }
 
   /** Pass an event to this token's enclosing group.
@@ -132,21 +155,22 @@ class Token protected (
     * the thread currently running this token.
     */
   def kill() {
-    def collapseState(victimState: TokenState) {
+    def findHandle(victimState: TokenState): Option[CallHandle] = {
       victimState match {
-        case Suspending(s) => collapseState(s)
-        case Suspended(s) => collapseState(s)
-        case Blocked(handle: SiteCallHandle) => { handle.kill() }
-        case Live | Publishing(_) | Blocked(_) | Halted | Killed => {}
+        case Suspending(s) => findHandle(s)
+        case Suspended(s) => findHandle(s)
+        case Blocked(handle: SiteCallHandle) => Some(handle)
+        case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
     synchronized {
-      collapseState(state)
+      val handle = findHandle(state)
       if (setState(Killed)) {
         /* group.remove(this) conceptually runs here, but as an optimization,
          * this is unnecessary. Note that the current Group.remove implementation
          * relies on this optimization for correctness of the tokenCount. */
       }
+      handle foreach { _.kill }
     }
   }
 
@@ -174,10 +198,10 @@ class Token protected (
   def unblock() {
     state match {
       case Blocked(_) => {
-        if (setState(Live)) { stage() }
+        if (setState(Live)) { runtime.stage(this) }
       }
       case Suspending(Blocked(_: OtherwiseGroup)) => {
-        if (setState(Suspending(Live))) { stage() }
+        if (setState(Suspending(Live))) { runtime.stage(this) }
       }
       case Suspended(Blocked(_: OtherwiseGroup)) => {
         setState(Suspended(Live))
@@ -210,13 +234,11 @@ class Token protected (
     state match {
       case Suspending(prevState) => setState(prevState)
       case Suspended(prevState) => {
-        if (setState(prevState)) { stage() }
+        if (setState(prevState)) { runtime.stage(this) }
       }
       case Publishing(_) | Live | Blocked(_) | Halted | Killed => {}
     }
   }
-
-  def stage() = runtime.stage(this)
 
   protected def fork() = synchronized { (this, copy()) }
 
@@ -323,11 +345,11 @@ class Token protected (
 
       /* Move into the function body */
       move(d.body)
-      stage()
+      runtime.stage(this)
     }
   }
 
-  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]): Unit = {
+  protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]) {
     (vc, actuals) match {
       case (`Vawait`, List(t)) => {
         clock match {
@@ -341,11 +363,11 @@ class Token protected (
           case None => halt()
         }
       }
-      case _ => throw new ArityMismatchException(vc.arity, actuals.size)
+      case _ => this !! new ArityMismatchException(vc.arity, actuals.size)
     }
   }
 
-  protected def siteCall(s: AnyRef, actuals: List[AnyRef]): Unit = {
+  protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
@@ -361,7 +383,7 @@ class Token protected (
   /** Make a call.
     * The call target is resolved, but the parameters are not yet resolved.
     */
-  protected def makeCall(target: AnyRef, params: List[Binding]): Unit = {
+  protected def makeCall(target: AnyRef, params: List[Binding]) {
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)
@@ -383,9 +405,9 @@ class Token protected (
                 resolveOptional(param) {
                   /* apply isn't allowed to supersede other member accesses */
                   case Some(Field(f)) => siteCall(r, List(Field(f)))
-                  /* 
+                  /*
                    * The resolved arg is ignored and the apply member is retried on the parameters.
-                   * The arg is ignored even if it is halted, since the apply member might be a function. 
+                   * The arg is ignored even if it is halted, since the apply member might be a function.
                    */
                   case _ => makeCall(entries("apply"), params)
                 }
@@ -403,7 +425,7 @@ class Token protected (
                 /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
                 pushContinuation({
                   case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
-                  case Some(_) => throw new Error("Join resulted in a non-list")
+                  case Some(_) => throw new AssertionError("Join resulted in a non-list")
                   case None => halt()
                 })
 
@@ -433,13 +455,13 @@ class Token protected (
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.
           val i = orderingSite.evaluate(List(x, y)).asInstanceOf[Int]
-          assert(i == -1 || i == 0 || i == 1, "Vclock time comparator "+orderingSite.name+" did not return -1/0/1")
+          assert(i == -1 || i == 0 || i == 1, "Vclock time comparator " + orderingSite.name + " did not return -1/0/1")
           i
         }
         join(new VirtualClockGroup(clock, group))
         designateClock(Some(new VirtualClock(ordering, runtime)))
         move(body)
-        stage()
+        runtime.stage(this)
       }
       case _ => {
         this !! (new ArgumentTypeMismatchException(0, "TotalSite", orderingArg.toString()))
@@ -447,9 +469,9 @@ class Token protected (
     }
   }
 
-  def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
-    testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
-      testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
+  //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
+  //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
+  //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
@@ -483,8 +505,8 @@ class Token protected (
       case Call(target, args, _) => {
         val params = args map lookup
         lookup(target) match {
-          /* 
-           * Allow a def to be called with an open context. 
+          /*
+           * Allow a def to be called with an open context.
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
            */
           case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
@@ -503,17 +525,24 @@ class Token protected (
       case Sequence(left, right) => {
         push(SequenceFrame(right, stack))
         move(left)
-        stage()
+        runtime.stage(this)
       }
 
-      case Prune(left, right) => {
+      case LateBind(left, right) => {
         val (l, r) = fork()
-        val pg = new PruningGroup(group)
+        val pg = new LateBindGroup(group)
         l.bind(BoundFuture(pg))
         r.join(pg)
         l.move(left)
         r.move(right)
         runtime.stage(l, r)
+      }
+
+      case Limit(expr) => {
+        val g = new LimitGroup(group)
+        join(g)
+        move(expr)
+        runtime.stage(this)
       }
 
       case Otherwise(left, right) => {
@@ -534,23 +563,24 @@ class Token protected (
          * of the defs in this lexical context.
          */
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-        for (i <- defs.indices) {
-          val c = new Closure(defs, i, lexicalContext, runtime)
-          runtime.stage(c)
+        val closureGroup = new ClosureGroup(defs, lexicalContext, runtime)
+        runtime.stage(closureGroup)
+
+        for (c <- closureGroup.closures) {
           bind(BoundClosure(c))
         }
         move(body)
-        stage()
+        runtime.stage(this)
       }
 
       case HasType(expr, _) => {
         move(expr)
-        run()
+        eval(this.node)
       }
 
       case DeclareType(_, expr) => {
         move(expr)
-        run()
+        eval(this.node)
       }
     }
   }
@@ -560,11 +590,11 @@ class Token protected (
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live | Blocked(_) => {
         setState(Publishing(v))
-        stage()
+        runtime.stage(this)
       }
       case Suspending(_) => {
         setState(Suspending(Publishing(v)))
-        stage()
+        runtime.stage(this)
       }
       case Suspended(_) => {
         setState(Suspended(Publishing(v)))

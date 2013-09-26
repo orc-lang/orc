@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Aug 19, 2009.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,17 +18,17 @@ package orc.error.compiletime;
 import java.io.PrintWriter;
 
 import orc.ast.AST;
-
+import orc.compile.parse.OrcInputContext;
 import scala.util.parsing.input.Position;
 
 /**
- * A CompileMessageRecorder that writes messages to a PrintWriter (such
- * as one for stderr).
+ * A CompileMessageRecorder that writes messages to a PrintWriter (such as one
+ * for stderr).
  *
  * @author jthywiss
  */
 public class PrintWriterCompileLogger implements CompileLogger {
-	private PrintWriter outWriter;
+	private final PrintWriter outWriter;
 
 	private Severity maxSeverity = Severity.UNKNOWN;
 
@@ -45,10 +45,10 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileLogger#beginProcessing(java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#beginProcessing(OrcInputContext)
 	 */
 	@Override
-	public void beginProcessing(final String filename) {
+	public void beginProcessing(final OrcInputContext inputContext) {
 		if (outWriter == null) {
 			throw new NullPointerException("Cannot use a options with a null stderr");
 		}
@@ -56,10 +56,26 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	}
 
 	/* (non-Javadoc)
-	 * @see orc.error.compiletime.CompileLogger#endProcessing(java.lang.String)
+	 * @see orc.error.compiletime.CompileLogger#endProcessing(OrcInputContext)
 	 */
 	@Override
-	public void endProcessing(final String filename) {
+	public void endProcessing(final OrcInputContext inputContext) {
+		// Nothing needed
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileLogger#beginDependency(OrcInputContext)
+	 */
+	@Override
+	public void beginDependency(final OrcInputContext inputContext) {
+		// Nothing needed
+	}
+
+	/* (non-Javadoc)
+	 * @see orc.error.compiletime.CompileLogger#endDependency(OrcInputContext)
+	 */
+	@Override
+	public void endDependency(final OrcInputContext inputContext) {
 		// Nothing needed
 	}
 
@@ -67,12 +83,12 @@ public class PrintWriterCompileLogger implements CompileLogger {
 	 * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
 	 */
 	@Override
-	public void recordMessage(final Severity severity, final int code, final String message, Position location, final AST astNode, final Throwable exception) {
+	public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode, final Throwable exception) {
 
 		maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
 		if (location != null) {
-			outWriter.println(location.toString() + ": " + message + (exception instanceof CompilationException ? " [[OrcWiki:"+exception.getClass().getSimpleName()+"]]" : ""));
+			outWriter.println(location.toString() + ": " + message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : ""));
 			outWriter.println(location.longString());
 		} else {
 			outWriter.println("<undefined position>: " + message);

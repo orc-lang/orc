@@ -12,10 +12,8 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.compile.optimize
-
-import scala.language.postfixOps
-import orc.ast.oil.named.{BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTransform}
+package orc.compile.optimize.named
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTransform }
 
 /** Removes unused definitions from the OIL AST.
   *

@@ -16,6 +16,7 @@
 package orc.script;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -31,36 +32,49 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
+import orc.Backend;
+import orc.BackendType;
+import orc.Runtime;
+import orc.Compiler;
 import orc.OrcEvent;
 import orc.OrcEventAction;
-import orc.compile.StandardOrcCompiler;
+import orc.StandardBackend;
+import orc.TokenInterpreterBackend;
 import orc.error.OrcException;
+import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;
-import orc.run.StandardOrcRuntime;
+
+/* TODO:
+ * Generalize types to allow different backends
+ * Set up appropriate checks to choose the right backend throughout. But ideally it will 
+ * be as simple as just instantiating the right Compiler and Runtime. This will require new
+ * traits for interfacing to unknown compilers and backends.
+ */
 
 /**
  * @author jthywiss
  */
-public class OrcScriptEngine extends AbstractScriptEngine implements Compilable {
+public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implements Compilable {
 
   private OrcScriptEngineFactory factory;
-  private StandardOrcCompiler    compiler;
-  private StandardOrcRuntime     executor;
+  private Backend<CompiledCode>  _backend;
+  private Runtime<CompiledCode>  _executor;
+  private BackendType backendType;
 
   /**
    * Constructs an object of class OrcScriptEngine using a
    * <code>SimpleScriptContext</code> as its default <code>ScriptContext</code>.
    */
   public OrcScriptEngine() {
-    super();
+    this(new OrcBindings());
   }
 
   /**
    * Constructs an object of class OrcScriptEngine using the specified
    * <code>Bindings</code> as the <code>ENGINE_SCOPE</code>
    * <code>Bindings</code>.
-   * 
+   *
    * @param n
    */
   public OrcScriptEngine(final Bindings n) {
@@ -68,15 +82,15 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   }
 
   public class OrcCompiledScript extends CompiledScript {
-    private final orc.ast.oil.nameless.Expression astRoot;
+    private final CompiledCode code;
 
     /**
      * Constructs an object of class OrcCompiledScript.
-     * 
+     *
      * @param oilAstRoot Root node of the OIL AST from the compilation
      */
-    /* default-access */OrcCompiledScript(final orc.ast.oil.nameless.Expression oilAstRoot) {
-      this.astRoot = oilAstRoot;
+    /* default-access */OrcCompiledScript(final CompiledCode _code) {
+      this.code = _code;
     }
 
     /*
@@ -140,7 +154,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
      * This, like <code>eval</code>, runs synchronously. Instead of returning a
      * list of publications, <code>run</code> calls the <code>publish</code>
      * method of the given <code>OrcEventAction</code> object.
-     * 
+     *
      * @param ctx A <code>ScriptContext</code> that is used in the same way as
      *          the <code>ScriptContext</code> passed to the <code>eval</code>
      *          methods of <code>ScriptEngine</code>.
@@ -153,11 +167,11 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
       Logger.julLogger().entering(getClass().getCanonicalName(), "run");
       // We make the assumption that the standard runtime implements SupportForSynchronousExecution.
       // JSR 223 requires the eval methods to run synchronously.
-      final StandardOrcRuntime exec = OrcScriptEngine.this.getExecutor();
+      final Runtime<CompiledCode> exec = OrcScriptEngine.this.getExecutor();
       ctx.setAttribute("context", ctx, ScriptContext.ENGINE_SCOPE); // Required by JSR-223 §SCR.4.3.4.1.2
       // TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
       try {
-        exec.runSynchronous(astRoot, pubAct.asFunction(), asOrcBindings(ctx.getBindings(ScriptContext.ENGINE_SCOPE)));
+        exec.runSynchronous(code, pubAct.asFunction());
       } catch (final InterruptedException e) {
         Thread.currentThread().interrupt();
       } catch (final OrcException e) {
@@ -172,7 +186,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
     /**
      * Convenience method for <code>run(getEngine().getContext(), pubAct)</code>
      * .
-     * 
+     *
      * @param pubAct A <code>OrcEventAction</code> that receives publish
      *          messages for each published value from the script.
      * @throws ScriptException if an error occurs.
@@ -210,7 +224,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   public CompiledScript compile(final Reader script) throws ScriptException {
     Logger.julLogger().entering(getClass().getCanonicalName(), "compile", script);
     try {
-      final orc.ast.oil.nameless.Expression result = getCompiler().apply(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
+      final CompiledCode result = getCompiler().compile(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
       if (result == null) {
         throw new ScriptException("Compilation failed");
       } else {
@@ -270,7 +284,7 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   /**
    * Set the <code>ScriptEngineFactory</code> instance to which this
    * <code>ScriptEngine</code> belongs.
-   * 
+   *
    * @param factory The <code>ScriptEngineFactory</code>
    */
   void setFactory(final OrcScriptEngineFactory owningFactory) {
@@ -278,36 +292,55 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   }
 
   /**
+   * @return The <code>Backend</code> which this <code>OrcScriptEngine</code> 
+   * uses to compile and rune the Orc script.
+   */
+  @SuppressWarnings("unchecked")
+  Backend<CompiledCode> getBackend() {
+    synchronized (this) {
+      OrcBindings b = asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE));
+      BackendType k = b.backend();
+      if (_backend == null) {
+        backendType = k;
+        if(k == TokenInterpreterBackend.it())
+          _backend = (Backend<CompiledCode>)new StandardBackend();
+        else
+          throw new IllegalArgumentException("Unknown backend: " + b.backend());      
+      } else {
+        if(k != backendType) {
+          throw new UnsupportedOperationException("Backend change after creation is not supported");
+        }
+      }
+    }
+    return _backend;
+  }
+
+  /**
    * @return The <code>StandardOrcCompiler</code> which this
    *         <code>OrcScriptEngine</code> uses to compile the Orc script.
    */
-  StandardOrcCompiler getCompiler() {
-    synchronized (this) {
-      if (compiler == null) {
-        compiler = new StandardOrcCompiler();
-      }
-    }
-    return compiler;
+  Compiler<CompiledCode> getCompiler() {
+    return getBackend().compiler();
   }
 
   /**
    * @return The <code>StandardOrcRuntime</code> which this
    *         <code>OrcScriptEngine</code> uses to run the Orc script.
    */
-  StandardOrcRuntime getExecutor() {
+  Runtime<CompiledCode> getExecutor() {
     synchronized (this) {
-      if (executor == null) {
-        executor = new StandardOrcRuntime("Orc");
+      if (_executor == null) {
+        _executor = getBackend().createRuntime(asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)));
       }
     }
-    return executor;
+    return _executor;
   }
 
   /**
    * Takes an unknown <code>Bindings</code> and makes an instance of
    * <code>OrcBindings</code>. Copies if needed; returns the argument unchanged
    * if it's already an <code>OrcBindings</code>.
-   * 
+   *
    * @param b The unknown <code>Bindings</code>
    * @return An <code>OrcBindings</code>
    */
@@ -320,11 +353,11 @@ public class OrcScriptEngine extends AbstractScriptEngine implements Compilable 
   }
 
   /**
-   * Pass an AST directly, skipping compilation. Used when loading OIL rather
-   * than compiling from source.
+   * Provide an input stream to load the compiled code from. The code will be deserialized by
+   * the backend.
    */
-  public OrcCompiledScript loadDirectly(final orc.ast.oil.nameless.Expression oilAstRoot) {
-    return new OrcCompiledScript(oilAstRoot);
+  public OrcCompiledScript loadDirectly(final InputStream in) throws LoadingException {
+    return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
   }
 
 }

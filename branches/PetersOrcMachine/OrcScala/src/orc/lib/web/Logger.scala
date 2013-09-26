@@ -1,10 +1,10 @@
 //
-// _package.scala -- Scala class/trait/object _package
+// Logger.scala -- Scala object Logger
 // Project OrcScala
 //
 // $Id$
 //
-// Created by amp on Jun 1, 2013.
+// Created by jthywiss on Aug 24, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
@@ -12,12 +12,10 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named
+package orc.lib.web
 
-/**
+/** Logger for the orc.lib.web subsystem
   *
-  * @author amp
+  * @author jthywiss
   */
-package object orc5c {
-  implicit val reflectiveCalls = language.reflectiveCalls
-}
+object Logger extends orc.util.Logger("orc.lib.web")

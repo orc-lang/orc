@@ -20,9 +20,9 @@ import orc.HaltedOrKilledEvent
 import orc.OrcExecutionOptions
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.ExecutionException
+import orc.util.LatchingSignal
 
 /**
-  *
   * @author dkitchin
   */
 trait SupportForSynchronousExecution extends OrcRuntime {
@@ -38,17 +38,17 @@ trait SupportForSynchronousExecution extends OrcRuntime {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()
     }
-    val done: scala.concurrent.SyncVar[Unit] = new scala.concurrent.SyncVar()
-    def syncAction(event: OrcEvent): Unit = {
+    val doneSignal = new LatchingSignal()
+    def syncAction(event: OrcEvent) {
       event match {
-        case HaltedOrKilledEvent => { done.put({}) }
+        case HaltedOrKilledEvent => { doneSignal.signal() }
         case _ => {}
       }
       k(event)
     }
     try {
       this.run(node, syncAction, options)
-      done.get
+      doneSignal.await()
     } finally {
       // Important: runSyncThread must be null before calling stop
       synchronized {

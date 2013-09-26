@@ -20,8 +20,7 @@ import orc.error.compiletime.typing.UncallableTypeException
 
 object EmptyRecordType extends RecordType(Map[String, Type]())
 
-/**
-  * Semantic type of records.
+/** Semantic type of records.
   *
   * @author dkitchin
   */

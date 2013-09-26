@@ -49,13 +49,10 @@ object Main {
 
       val compiledOrc =
         if (options.runOil) {
-          /* Read precompiled OIL */
-          val ast = OrcXML.readOilFromStream(stream)
-          engine.asInstanceOf[OrcScriptEngine].loadDirectly(ast)
+          engine.asInstanceOf[OrcScriptEngine[AnyVal]].loadDirectly(stream)
         } else {
-          /* Read and compile Orc source */
           val reader = new InputStreamReader(stream, "UTF-8")
-          engine.compile(reader).asInstanceOf[OrcScriptEngine#OrcCompiledScript]
+          engine.compile(reader).asInstanceOf[OrcScriptEngine[AnyVal]#OrcCompiledScript]
         }
 
       if (options.compileOnly) {
@@ -104,11 +101,11 @@ object Main {
     testOrcLogRecord.setLoggerName(orcLogger.getName())
     def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
       for (handler <- checkLogger.getHandlers()) {
-            if (handler.isLoggable(testLogRecord))
-              return true
+        if (handler.isLoggable(testLogRecord))
+          return true
       }
       if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
-        return willLog(checkLogger.getParent(), testLogRecord) 
+        return willLog(checkLogger.getParent(), testLogRecord)
       } else {
         return false
       }
@@ -118,7 +115,7 @@ object Main {
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
       orcLogger.addHandler(logHandler)
-      orcLogger.warning("No log handler found for 'orc' "+logLevel+" log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
+      orcLogger.warning("No log handler found for 'orc' " + logLevel + " log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
     }
     orcLogger.config(orcImplName + " " + orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)
@@ -157,6 +154,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   UnitOpt(() => echoOil, () => echoOil = true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
 
+  IntOpt(() => echoIR, echoIR = _, ' ', "echo-ir", usage = "Write selected program intermetiate representations to the stdout. The argument is a bitmask. So, 0 means echo nothing, or -1 means echo all.")
+
   FileOpt(() => oilOutputFile.getOrElse(null), f => oilOutputFile = Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
   UnitOpt(() => runOil, () => runOil = true, ' ', "run-oil", usage = "Attempt to parse the given program as an OIL file and run it. This performs no compilation steps.")
@@ -172,4 +171,10 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   IntOpt(() => maxTokens, maxTokens = _, ' ', "max-tokens", usage = "Terminate the program if more than this many tokens to be created. Default=infinity.")
 
   IntOpt(() => maxSiteThreads, maxSiteThreads = _, ' ', "max-site-threads", usage = "Limit the number of simultaneously outstanding site calls to this number. Default=infinity.")
+
+  StringOpt(() => backend.toString, s =>
+    backend = BackendType.fromStringOption(s) match {
+      case Some(b) => b
+      case None => throw new IllegalArgumentException(s"The backend '$s' does not exist or is not supported.")
+    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed value: Token. Default is 'Token'")
 }

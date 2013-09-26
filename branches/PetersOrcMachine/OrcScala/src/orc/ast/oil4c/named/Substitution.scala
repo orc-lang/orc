@@ -2,7 +2,7 @@
 // Substitution.scala -- Scala trait Substitution
 // Project OrcScala
 //
-// $Id: Substitution.scala 2933 2011-12-15 16:26:02Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 13, 2010.
 //
@@ -12,20 +12,16 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil4c.named
 
 /** Direct substitutions on named ASTs.
   *
   * @author dkitchin
   */
-
-trait Substitution[X <: Orc5CAST] {
-  self: Orc5CAST =>
+trait Substitution[X <: NamedAST] {
+  self: NamedAST =>
 
   def subst(a: Argument, x: Argument): X = Substitution(a, x)(this).asInstanceOf[X]
-
-  def substAll(subs : collection.Map[Argument, Argument]): X = Substitution.allArgs(subs)(this).asInstanceOf[X]
-  
   def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this).asInstanceOf[X]
 
   def substAll(sublist: List[(Argument, String)]): X = {
@@ -55,7 +51,7 @@ trait Substitution[X <: Orc5CAST] {
 object Substitution {
 
   def apply(a: Argument, x: Argument) =
-    new Orc5CASTTransform {
+    new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
         case `x` => a
         case y: Argument => y
@@ -63,7 +59,7 @@ object Substitution {
     }
 
   def apply(t: Type, u: Typevar) =
-    new Orc5CASTTransform {
+    new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
         case `u` => t
         case w: Typevar => w
@@ -71,7 +67,7 @@ object Substitution {
     }
 
   def allArgs(subs: scala.collection.Map[Argument, Argument]) =
-    new Orc5CASTTransform {
+    new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
         case x: Var => {
           if (subs.isDefinedAt(x)) { subs(x) } else { x }
@@ -80,7 +76,7 @@ object Substitution {
     }
 
   def allTypes(subs: scala.collection.Map[Typevar, Type]) =
-    new Orc5CASTTransform {
+    new NamedASTTransform {
       override def onType(typecontext: List[BoundTypevar]) = {
         case u: Typevar => {
           if (subs.isDefinedAt(u)) { subs(u) } else { u }
@@ -90,13 +86,12 @@ object Substitution {
 
 }
 
-/*
 trait ContextualSubstitution {
   self: Expression =>
 
   def subst(subContext: Map[String, Argument], subTypeContext: Map[String, Type]): Expression = {
     val transform =
-      new Orc5CASTTransform {
+      new NamedASTTransform {
         override def onArgument(unusedContext: List[BoundVar]) = {
           case x @ UnboundVar(s) => subContext.getOrElse(s, x)
         }
@@ -108,4 +103,3 @@ trait ContextualSubstitution {
   }
 
 }
-*/

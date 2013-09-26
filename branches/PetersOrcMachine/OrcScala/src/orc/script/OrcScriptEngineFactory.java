@@ -187,7 +187,9 @@ public class OrcScriptEngineFactory implements ScriptEngineFactory {
 	 */
 	@Override
 	public ScriptEngine getScriptEngine() {
-		final OrcScriptEngine engine = new OrcScriptEngine();
+	    // This is a bit of a hack. This is instantiating the type in OrcScriptEngine, 
+	    // only because it allows OrcScriptEngine to be written more safely.
+		final OrcScriptEngine<?> engine = new OrcScriptEngine<Object>();
 		engine.setFactory(this);
 		return engine;
 	}

@@ -17,10 +17,9 @@ package orc.script
 
 import java.util.Map
 import java.io.File
-
 import javax.script.SimpleBindings
-
 import orc.OrcOptions
+import orc.BackendType
 
 /** An extended implementation of <code>javax.script.Bindings</code>
   * with type-specific get and put methods.
@@ -50,6 +49,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def disableRecursionCheck_=(newVal: Boolean) = putBoolean("orc.disableRecursionCheck", newVal)
   def echoOil: Boolean = getBoolean("orc.echoOil", false)
   def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
+  def echoIR: Int = getInt("orc.echoIR", 0)
+  def echoIR_=(newVal: Int) = putInt("orc.echoIR", newVal)
   def oilOutputFile: Option[File] = {
     getString("orc.oilOutputFile", "") match {
       case "" => None
@@ -61,6 +62,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
   def runOil: Boolean = getBoolean("orc.runOil", false)
   def runOil_=(newVal: Boolean) = putBoolean("orc.runOil", newVal)
+  def backend: BackendType = BackendType.fromString(getString("orc.backend", "Token"))
+  def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 
   // Execution options
   def classPath: java.util.List[String] = getPathList("orc.classPath", List())

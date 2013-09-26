@@ -18,7 +18,6 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
-  *
   * @author dkitchin
   */
 object CounterType extends RecordType(

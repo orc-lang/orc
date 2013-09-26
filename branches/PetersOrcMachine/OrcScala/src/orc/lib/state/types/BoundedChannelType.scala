@@ -1,12 +1,12 @@
 //
-// ChannelType.scala -- Scala object ChannelType
+// BoundedChannelType.scala -- Scala object BoundedChannelType
 // Project OrcScala
 //
 // $Id$
 //
 // Created by dkitchin on Dec 1, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,10 +19,8 @@ import orc.error.compiletime.typing._
 import orc.lib.builtin.structured.ListType
 
 /**
-  *
   * @author dkitchin
   */
-
 object BoundedChannelType extends SimpleTypeConstructor("BoundedChannel", Invariant) {
 
   def getBuilder: Type = {

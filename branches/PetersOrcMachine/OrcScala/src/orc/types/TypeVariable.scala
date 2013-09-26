@@ -14,16 +14,18 @@
 //
 package orc.types
 
+import orc.ast.hasOptionalVariableName
+
 /**
   *
   * @author dkitchin
   */
 class TypeVariable(val optionalVariableName: Option[String] = None) extends Type {
 
-  def this(u: orc.ast.oil.named.BoundTypevar) = {
+  def this(u: hasOptionalVariableName) = {
     this(u.optionalVariableName)
   }
-
+  
   def this(x: TypeVariable) = {
     this(x.optionalVariableName)
   }

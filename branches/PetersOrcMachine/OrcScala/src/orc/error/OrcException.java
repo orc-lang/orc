@@ -24,7 +24,7 @@ import scala.util.parsing.input.Position;
  * Though sites written in Java will sometimes produce Java-level exceptions,
  * those exceptions are wrapped in a subclass of OrcException to localize and
  * isolate failures (see TokenException, JavaException).
- * 
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") // We don't care about serialization compatibility of Orc Exceptions
@@ -86,12 +86,12 @@ public abstract class OrcException extends Exception {
 	}
 
 	/**
-	 * This returns a string with, as applicable and available, position, 
+	 * This returns a string with, as applicable and available, position,
 	 * exception class name, detailed message, the line of source code with
 	 * a caret, Orc stack trace, Java stack trace, etc.
-	 * 
+	 *
 	 * Various subclasses change the format as appropriate.
-	 * 
+	 *
 	 * @return String, ending with newline
 	 */
 	public String getMessageAndDiagnostics() {
@@ -113,7 +113,7 @@ public abstract class OrcException extends Exception {
 	public Position getPosition() {
 		return position;
 	}
-	
+
 	public void resetPosition(final Position newpos) {
 		position = newpos;
 	}
@@ -124,5 +124,5 @@ public abstract class OrcException extends Exception {
 		}
 		return this;
 	}
-	
+
 }

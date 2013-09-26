@@ -27,6 +27,7 @@ import orc.values.OrcRecord
 import orc.run.extensions.RwaitEvent
 import orc.values.sites.HaltedException
 import orc.values.sites.DirectSite
+import scala.util.parsing.input.NoPosition
 
 // Value is an alias for AnyRef. It exists to make this code more self documenting.
 
@@ -73,6 +74,9 @@ sealed abstract class Expr {
     
     Logger.finer(s"Site call started: $callable $arguments")
     val handle = new Handle {
+      def callSitePosition: scala.util.parsing.input.Position = NoPosition  
+      def setQuiescent(): Unit = {} // Ignore as we don't support virtual time
+
       def notifyOrc(event: OrcEvent) {
         event match {
           case PublishedEvent(v) => println(s"publication: ${Format.formatValue(v)}")

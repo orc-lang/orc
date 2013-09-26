@@ -30,7 +30,8 @@ import orc.values.sites.compatibility.PartialSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 /**
- * Factory for counters. 
+ * Factory for counters.
+ *
  * @author quark
  */
 @SuppressWarnings("hiding")
@@ -38,12 +39,12 @@ public class Counter extends EvalSite implements TypedSite, DirectSite {
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
 		final int init = args.size() == 0 ? 0 : args.intArg(0);
-		
-		if (args.size() > 1) { 
-		  // technically of arity 0 or 1
-		  throw new ArityMismatchException(1, args.size()); 
+
+		if (args.size() > 1) {
+			// technically of arity 0 or 1
+			throw new ArityMismatchException(1, args.size());
 		}
-		
+
 		return new DotSite() {
 			protected int count = init;
 			protected final LinkedList<Handle> waiters = new LinkedList<Handle>();
@@ -85,6 +86,7 @@ public class Counter extends EvalSite implements TypedSite, DirectSite {
 							if (count == 0) {
 								caller.publish(signal());
 							} else {
+								caller.setQuiescent();
 								waiters.add(caller);
 							}
 						}

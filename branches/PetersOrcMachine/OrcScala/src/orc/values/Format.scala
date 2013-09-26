@@ -14,8 +14,7 @@
 //
 package orc.values
 
-/**
-  * Format values (given as Scala's type AnyRef)
+/** Format values (given as Scala's type AnyRef)
   *
   * A value which can be written in an Orc program is formatted as a string which
   * the parser would parse as an expression evaluating to that value.

@@ -124,7 +124,7 @@ abstract class JavaProxy extends Site {
   * @author jthywiss
   */
 case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends JavaProxy with TypedSite with HasFields {
-  // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.  
+  // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.
 
   override lazy val name = javaClass.getName()
 

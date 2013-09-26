@@ -1,8 +1,8 @@
 //
-// Transformation.scala -- Scala traits Orc5CASTFunction and NamedASTTransform and object EmptyFunction
+// Transformation.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
 // Project OrcScala
 //
-// $Id: NamedASTTransform.scala 3197 2013-04-24 22:17:43Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 12, 2010.
 //
@@ -12,19 +12,19 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil4c.named
 
 import scala.language.reflectiveCalls
 
 /** @author dkitchin
   */
-trait Orc5CASTFunction {
+trait NamedASTFunction {
   def apply(a: Argument): Argument
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Def): Def
 
-  def apply(ast: Orc5CAST): Orc5CAST = {
+  def apply(ast: NamedAST): NamedAST = {
     ast match {
       case a: Argument => this(a)
       case e: Expression => this(e)
@@ -33,9 +33,9 @@ trait Orc5CASTFunction {
     }
   }
 
-  def andThen(g: Orc5CASTFunction): Orc5CASTFunction = {
+  def andThen(g: NamedASTFunction): NamedASTFunction = {
     val f = this
-    new Orc5CASTFunction {
+    new NamedASTFunction {
       def apply(a: Argument): Argument = g(f(a))
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
@@ -50,7 +50,7 @@ object EmptyFunction extends PartialFunction[Any, Nothing] {
   def apply(x: Any): Nothing = throw new AssertionError("EmptyFunction is undefined for all inputs.")
 }
 
-trait Orc5CASTTransform extends Orc5CASTFunction {
+trait NamedASTTransform extends NamedASTFunction {
   def apply(a: Argument): Argument = transform(a, Nil)
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
@@ -65,7 +65,7 @@ trait Orc5CASTTransform extends Orc5CASTFunction {
   def onDef(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Def, Def] = EmptyFunction
 
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
-    new Orc5CASTFunction {
+    new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
@@ -74,13 +74,7 @@ trait Orc5CASTTransform extends Orc5CASTFunction {
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
     val pf = onArgument(context)
-    if (pf isDefinedAt a) {
-      val v = pf(a)
-      a.pushDownPosition(v.pos)
-      // We are replacing an argument, do not transfer variable name
-      v
-    } else 
-      a
+    if (pf isDefinedAt a) { a -> pf } else a
   }
 
   def transform(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): Expression = {
@@ -100,9 +94,8 @@ trait Orc5CASTTransform extends Orc5CASTFunction {
         }
         case left || right => recurse(left) || recurse(right)
         case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
-        case left < x <| right => transform(left, x :: context, typecontext) < x <| recurse(right)
+        case left < x < right => transform(left, x :: context, typecontext) < x < recurse(right)
         case left ow right => recurse(left) ow recurse(right)
-        case Limit(f) => Limit(recurse(f))
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }

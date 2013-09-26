@@ -18,10 +18,8 @@ import orc.InvocationBehavior
 import orc.run.extensions._
 
 /**
-  *
   * @author dkitchin
   */
-
 /* The first behavior in the trait list will be tried last */
 trait StandardInvocationBehavior extends InvocationBehavior
   with ErrorOnUndefinedInvocation

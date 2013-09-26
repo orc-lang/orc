@@ -119,7 +119,7 @@ object OrcXML {
     xmlToAst(XML.load(source))
   }
 
-  def writeOilToStream(ast: Expression, dest: java.io.OutputStream): Unit = {
+  def writeOilToStream(ast: Expression, dest: java.io.OutputStream) {
     val writer = new java.io.OutputStreamWriter(dest)
     val node = astToXml(ast)
     val xml = Utility.serialize(node, preserveWhitespace = true, minimizeTags = MinimizeMode.Always).toString
@@ -172,11 +172,15 @@ object OrcXML {
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </sequence>
-      case Prune(left, right) =>
-        <prune>
+      case LateBind(left, right) =>
+        <latebind>
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
-        </prune>
+        </latebind>
+      case Limit(e) =>
+        <limit>
+          <expr>{ toXML(e) }</expr>
+        </limit>
       case Otherwise(left, right) =>
         <otherwise>
           <left>{ toXML(left) }</left>
@@ -340,8 +344,10 @@ object OrcXML {
         Parallel(fromXML(left), fromXML(right))
       case <sequence><left>{ left }</left><right>{ right }</right></sequence> =>
         Sequence(fromXML(left), fromXML(right))
-      case <prune><left>{ left }</left><right>{ right }</right></prune> =>
-        Prune(fromXML(left), fromXML(right))
+      case <latebind><left>{ left }</left><right>{ right }</right></latebind> =>
+        LateBind(fromXML(left), fromXML(right))
+      case <limit><expr>{ expr }</expr></limit> =>
+        Limit(fromXML(expr))
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {

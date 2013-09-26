@@ -115,32 +115,46 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   def multiLineCommentBody: Parser[Any] =
     """(?s).*?(?=((\{-)|(-\})))""".r ~
-      ("-}"
-        | "{-" ~ multiLineCommentBody ~ multiLineCommentBody)
+      ( "-}"
+      | "{-" ~ multiLineCommentBody ~ multiLineCommentBody
+      )
 
   override val whitespace: Parser[Any] =
-    rep(("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
-      | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
-      | "{-" ~ multiLineCommentBody
-      | '{' ~ '-' ~ err("unclosed comment"))
+    rep( ("[" + Pattern.quote(unicodeWhitespaceChars) + "]+").r
+       | ("--[^" + Pattern.quote(unicodeNewlineChars) + "]*").r
+       | "{-" ~ multiLineCommentBody
+       | '{' ~ '-' ~ err("unclosed comment")
+       )
 
   val numberLit: Parser[String] =
     """([0-9]+)([.][0-9]+)?([Ee][+-]?([0-9]+))?""".r
 
   val stringLit: Parser[String] =
-    '\"' ~> (('\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
-      | ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r)*) <~ '\"' ^^ { _.mkString }
+    '\"' ~>
+      (( """\\u[0-9A-Fa-f]{4}""".r ^^ { unicodeEscape(_) }
+      |  """\\u\{[0-9A-Fa-f]{1,6}( +[0-9A-Fa-f]{1,6})*\}""".r ^^ { unicodeEscape(_) }
+      |  '\\' ~> chrExcept(EofCh) ^^ { case 'f' => "\f"; case 'n' => "\n"; case 'r' => "\r"; case 't' => "\t"; case c => c.toString }
+      |  ("[^\\\\\"" + Pattern.quote(unicodeNewlineChars) + "]+").r
+      )*) <~ '\"' ^^ { _.mkString }
+
+  def unicodeEscape(es: String) = {
+    if (es.charAt(2) != '{')
+      new String(Character.toChars(Integer.parseInt(es.substring(2), 16)))
+    else
+      (es.substring(3).init.split(" ") map { s => new String(Character.toChars(Integer.parseInt(s, 16))) }).mkString
+  }
 
   override val token: Parser[Token] = (whitespace?) ~>
-    (identifier ^^ { processIdent(_) }
-      | '_' ^^^ Keyword("_")
-      | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
-      | "(0-)" ^^^ Identifier("0-")
-      | numberLit ^^ { numberToken(_) }
-      | stringLit ^^ { StringLit(_) }
-      | '\"' ~> err("unclosed string literal")
-      | // Must be after other alternatives that a delim could be a prefix of
-      delimOperRegex ^^ { Keyword(_) }
-      | EofCh ^^^ EOF)
+    ( identifier ^^ { processIdent(_) }
+    | '_' ^^^ Keyword("_")
+    | '(' ~> operRegex <~ ')' ^^ { Identifier(_) }
+    | "(0-)" ^^^ Identifier("0-")
+    | numberLit ^^ { numberToken(_) }
+    | stringLit ^^ { StringLit(_) }
+    | '\"' ~> err("unclosed string literal")
+    | // Must be after other alternatives that a delim could be a prefix of
+    delimOperRegex ^^ { Keyword(_) }
+    | EofCh ^^^ EOF
+    )
 
 }

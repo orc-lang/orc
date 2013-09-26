@@ -37,18 +37,18 @@ trait SiteClassLoading {
 object SiteClassLoading {
   /*
    * N.B. -- Given that:
-   *  1) Classes are identified by the combination of their loading 
+   *  1) Classes are identified by the combination of their loading
    *     class loader and their name.
    *  2) URLClassLoader cannot change its class path once constructed.
    *  3) Classes cannot be unloaded from a JVM.
    * We have the following alternatives:
-   *  1) Permit arbitrary class loaders to be created here, and 
+   *  1) Permit arbitrary class loaders to be created here, and
    *     possibly end up with multiply loaded classes.
-   *  2) Allow only additional (stacked) class loaders to be created 
+   *  2) Allow only additional (stacked) class loaders to be created
    *     here, which precludes reducing the class path after startup.
    * We've chosen 2, because 1 would violate singletons' invariant.
    *
-   * That said, even though the design permits it, we'll disallow 
+   * That said, even though the design permits it, we'll disallow
    * double-inits for now, because they're probably a mistake.
    */
 

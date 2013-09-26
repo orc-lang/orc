@@ -12,7 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil.named
 
 import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable.ArrayBuffer
@@ -139,7 +139,7 @@ object Bindings {
     def variable: BoundVar
 
     val ctx: TransformContext
-    val ast: Orc5CAST
+    val ast: NamedAST
     
     override def toString = s"$productPrefix($variable)" //${ast.toString.take(50).replace('\n', ' ')}
   }
@@ -169,8 +169,25 @@ object Bindings {
   }
 }
 
-case class WithContext[+E <: Orc5CAST](e: E, ctx: TransformContext)
+
+/**
+ * WithContext represents a node paired with the context in which it should be 
+ * viewed. Some infix notation is provided for working with them.
+ */
+case class WithContext[+E <: NamedAST](e: E, ctx: TransformContext)
 object WithContext {
+  import scala.language.implicitConversions
+  
   @inline
-  implicit def withoutContext[E <: Orc5CAST](e: WithContext[E]): E = e.e
+  implicit def withoutContext[E <: NamedAST](e: WithContext[E]): E = e.e
 }
+
+trait WithContextInfixCombinator {
+  self: NamedAST =>
+  def in(ctx: TransformContext): WithContext[this.type] = WithContext(this, ctx)
+}
+
+object in {
+  def unapply[E <: NamedAST](c: WithContext[E]): Option[(E, TransformContext)] = Some((c.e, c.ctx))
+}
+

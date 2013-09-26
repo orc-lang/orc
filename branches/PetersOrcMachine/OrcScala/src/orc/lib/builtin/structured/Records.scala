@@ -13,7 +13,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-/* 
+/*
  * Input to a RecordConstructor is a sequence of pairs.
  * Each pair is a (field, site) mapping.
  * Example: ( (.x,Site(x)), (.y, Site(y)), (.z, Site(z)) )
