@@ -2,7 +2,7 @@
 // PrettyPrint.scala -- Scala class PrettyPrint
 // Project OrcScala
 //
-// $Id$
+// $Id: PrettyPrint.scala 3182 2013-02-19 01:23:40Z jthywissen $
 //
 // Created by dkitchin on Jun 7, 2010.
 //
@@ -14,15 +14,15 @@
 //
 package orc.ast.oil.named
 
-import orc.ast.oil.named._
 import scala.collection.mutable._
 import orc.values.Format
+import orc.values.sites.Site
+import orc.compile.optimize.named.ExpressionAnalysisProvider
 
 /** Nicer printing for named OIL syntax trees.
   *
   * @author dkitchin
   */
-
 class PrettyPrint {
 
   val vars: Map[BoundVar, String] = new HashMap()
@@ -43,8 +43,11 @@ class PrettyPrint {
 
   def brack(l: List[NamedAST]): String = "[" + commasep(l) + "]"
   def paren(l: List[NamedAST]): String = "(" + commasep(l) + ")"
-
-  def reduce(ast: NamedAST): String =
+  
+  def tag(ast: NamedAST, s: String) : String = s
+  
+  def reduce(ast: NamedAST): String = {
+    tag(ast, 
     ast match {
       case Stop() => "stop"
       case Call(target, args, typeargs) => {
@@ -57,11 +60,12 @@ class PrettyPrint {
       }
       case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case Prune(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "< " + reduce(right) + ")"
+      case LateBind(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "<| " + reduce(right) + ")"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
+      case Limit(expr) => "limit(" + reduce(expr) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
-        val name = f.optionalVariableName.getOrElse(lookup(f))
+        val name = f.optionalVariableName.getOrElse(lookup(f)) // "@" + f.##.toString
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
           (returntype match {
             case Some(t) => " :: " + reduce(t)
@@ -69,13 +73,13 @@ class PrettyPrint {
           }) +
           "\n" +
           "def " + name + paren(formals) + " = " + reduce(body) +
-          "\n"
+          "#\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
       case Constant(v) => Format.formatValue(v)
-      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
+      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) //+ "@" + x.##.toString
       case UnboundVar(s) => "?" + s
       case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
       case UnboundTypevar(s) => "?" + s
@@ -98,6 +102,6 @@ class PrettyPrint {
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
       case _ => "???"
-    }
-
+    })
+  }
 }

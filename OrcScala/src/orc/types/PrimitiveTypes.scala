@@ -30,7 +30,7 @@ object IntegerType extends Type {
 }
 
 /* A dependent type, usually used to index into tuples. */
-// TODO: Allow join 
+// TODO: Allow join
 case class IntegerConstantType(i: scala.math.BigInt) extends Type {
 
   override def toString = IntegerType.toString

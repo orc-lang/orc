@@ -94,7 +94,8 @@ trait NamedASTTransform extends NamedASTFunction {
         }
         case left || right => recurse(left) || recurse(right)
         case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
-        case left < x < right => transform(left, x :: context, typecontext) < x < recurse(right)
+        case left < x <| right => transform(left, x :: context, typecontext) < x <| recurse(right)
+        case Limit(f) => Limit(recurse(f))
         case left ow right => recurse(left) ow recurse(right)
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }

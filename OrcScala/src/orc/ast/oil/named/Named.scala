@@ -21,7 +21,7 @@ import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 
-sealed abstract class NamedAST extends AST with NamedToNameless {
+sealed abstract class NamedAST extends AST with NamedToNameless with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 
@@ -29,7 +29,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
     case Sequence(left, x, right) => List(left, x, right)
-    case Prune(left, x, right) => List(left, x, right)
+    case LateBind(left, x, right) => List(left, x, right)
+    case Limit(f) => List(f)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -70,8 +71,9 @@ case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Ty
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class Prune(left: Expression, x: BoundVar, right: Expression) extends Expression
+case class LateBind(left: Expression, x: BoundVar, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class Limit(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
@@ -82,10 +84,10 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
-/* Match an expression with exactly one hole. 
+/* Match an expression with exactly one hole.
  * Matches as Module(f), where f is a function which takes
  * a hole-filling expression and returns this expression
- * with the hole filled. 
+ * with the hole filled.
  */
 object Module {
   def unapply(e: Expression): Option[Expression => Expression] = {
@@ -178,51 +180,22 @@ class BoundTypevar(optionalName: Option[String] = None) extends Typevar with has
 }
 
 object Conversions {
-
-  /** Given (e1, ... , en) and f, return:
-    *
-    * f(x1, ... , xn) <x1< e1
-    *               ...
-    *                <xn< en
-    *
-    * As an optimization, if any e is already an argument, no << binder is generated for it.
-    */
-  def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
-
-    def expand(es: List[Expression]): (List[Argument], Expression => Expression) =
-      es match {
-        case (a: Argument) :: rest => {
-          val (args, bindRest) = expand(rest)
-          (a :: args, bindRest)
-        }
-        case g :: rest => {
-          val (args, bindRest) = expand(rest)
-          val x = new BoundVar()
-          (x :: args, bindRest(_) < x < g)
-        }
-        case Nil => (Nil, e => e)
-      }
-
-    val (args, bind) = expand(es)
-    bind(makeCore(args))
-  }
-
   /** Given an expression of the form:
     *
-    * E <x1< e1
+    * E <x1<| e1
     * ...
-    *  <xn< en
+    *  <xn<| en
     *
-    * where E is not a prune,
+    * where E is not a latebind,
     * return E and (x1,e1), ... , (xn,en)
     *
     * If E is not of this form,
     * return E and Nil.
     */
-  def partitionPrune(expr: Expression): (List[(Argument, Expression)], Expression) = {
+  def partitionLatebind(expr: Expression): (List[(Argument, Expression)], Expression) = {
     expr match {
-      case left < x < right => {
-        val (bindings, core) = partitionPrune(left)
+      case left < x <| right => {
+        val (bindings, core) = partitionLatebind(left)
         ((x, right) :: bindings, core)
       }
       case _ => (Nil, expr)
@@ -231,70 +204,3 @@ object Conversions {
 
 }
 
-/* Special syntactic forms, which conceptually 'reverse' some of
- * the translations performed earlier in compilation, because
- * it is sometimes easier to work with the unencoded versions.
- * 
- * Each form is an object with an unapply (decode to special
- * form) and an apply (encode to canonical form) method. Thus,
- * they can be treated like case classes, except that construction
- * instantiates an entire subtree rather than a single class,
- * and similarly, deconstruction matches an entire subtree.
- */
-
-/* A call with argument unfolding reversed.
- * 
- * Matching this pattern can take O(N^2) steps,
- * where N is the depth of a series of left-associative
- * nested pruning combinators. That is, it is of the form
- * f <x1< g1 <x2< g2 ... <xN< gN
- * 
- * The use cases for this pattern could be rewritten
- * to more complex and less maintainable O(N) solutions,
- * but I figured it wasn't worth it. -dkitchin 
- */
-object FoldedCall {
-
-  def unapply(expr: Expression): Option[(Expression, List[Expression], Option[List[Type]])] = {
-    Conversions.partitionPrune(expr) match {
-      case (Nil, Call(target, args, typeArgs)) => Some((target, args, typeArgs))
-      case (bindings, Call(target, args, typeArgs)) => {
-        val exprMap = bindings.toMap
-        if ((exprMap.keySet) subsetOf (args.toSet)) {
-          val targetExpression = exprMap.getOrElse(target, target)
-          val argExpressions = args map { arg => exprMap.getOrElse(arg, arg) }
-          Some((targetExpression, argExpressions, typeArgs))
-        } else {
-          None
-        }
-      }
-      case _ => None
-    }
-  }
-
-  def apply(targetExpression: Expression, argExpressions: List[Expression], typeArgs: Option[List[Type]]): Expression = {
-    Conversions.unfold(targetExpression :: argExpressions, { x => Call(x.head, x.tail, typeArgs) })
-  }
-
-}
-
-/* An anonymous function with lambda translation reversed. */
-object FoldedLambda {
-
-  def unapply(expr: Expression): Option[(List[BoundVar], Expression, List[BoundTypevar], Option[List[Type]], Option[Type])] = {
-    expr match {
-      case DeclareDefs(List(Def(m, formals, body, typeFormals, argTypes, returnType)), n: BoundVar) if (m eq n) => {
-        Some((formals, body, typeFormals, argTypes, returnType))
-      }
-      case _ => None
-    }
-  }
-
-  /* FoldedLambda can only be constructed with full type annotations */
-  def apply(formals: List[BoundVar], body: Expression, typeFormals: List[BoundTypevar], argTypes: Option[List[Type]], returnType: Option[Type]): Expression = {
-    val dummyName = new BoundVar()
-    val dummyDef = Def(dummyName, formals, body, typeFormals, argTypes, returnType)
-    DeclareDefs(List(dummyDef), dummyName)
-  }
-
-}

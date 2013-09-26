@@ -1,5 +1,5 @@
 //
-// Browse.scala -- Scala class/trait/object Browse
+// Browse.scala -- Scala object Browse
 // Project OrcScala
 //
 // $Id$
@@ -28,12 +28,10 @@ import orc.error.runtime.ArgumentTypeMismatchException
 
 import java.net.URL
 
-/**
-  * Open a new browser window or tab for the specified URL.
+/** Open a new browser window or tab for the specified URL.
   *
   * @author dkitchin
   */
-
 case class BrowseEvent(val url: URL) extends OrcEvent
 
 object Browse extends Site1 with TypedSite {

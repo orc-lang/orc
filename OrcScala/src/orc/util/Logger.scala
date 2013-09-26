@@ -17,6 +17,7 @@ package orc.util
 import java.util.logging.Level 
 import scala.annotation.elidable
 import scala.annotation.elidable._
+import scala.annotation.elidable
 
 /** A Scala wrapper around java.util.logging.Logger
   * <p>
@@ -57,42 +58,42 @@ class Logger(name: String) {
   lazy val julLogger: java.util.logging.Logger = java.util.logging.Logger.getLogger(name)
 
   //TODO: LogRecord caller and method will be wrong -- need to write our own inferCaller and use
-  final def log(level: Level, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg)
-  //final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, param1)
-  final def log(level: Level, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, params)
-  final def log(level: Level, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, thrown)
-  final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg)
-  final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, param1)
-  final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, params)
-  final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, thrown)
-  final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg)
-  final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, param1)
-  final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, params)
-  final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, thrown)
-  @elidable(FINER)
+  @inline final def log(level: Level, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg)
+  //@inline final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, param1)
+  @inline final def log(level: Level, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, params)
+  @inline final def log(level: Level, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, thrown)
+  @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg)
+  @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, param1)
+  @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, params)
+  @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, thrown)
+  @inline final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, param1)
+  @inline final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, params)
+  @inline final def logrb(level: Level, sourceClass: => String, sourceMethod: => String, bundleName: => String, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.logrb(level, sourceClass, sourceMethod, bundleName, msg, thrown)
+  @inline @elidable(FINER)
   final def entering(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod)
+  //@inline @elidable(FINER)
   //final def entering(sourceClass: => String, sourceMethod: => String, param1: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, param1)
-  @elidable(FINER)
+  @inline @elidable(FINER)
   final def entering(sourceClass: => String, sourceMethod: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.entering(sourceClass, sourceMethod, params)
-  @elidable(FINER)
+  @inline @elidable(FINER)
   final def exiting(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod)
-  @elidable(FINER)
+  @inline @elidable(FINER)
   final def exiting(sourceClass: => String, sourceMethod: => String, result: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod, result)
-  @elidable(FINER)
+  @inline @elidable(FINER)
   final def throwing(sourceClass: => String, sourceMethod: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.throwing(sourceClass, sourceMethod, thrown)
-  @elidable(SEVERE)
+  @inline @elidable(SEVERE)
   final def severe(msg: => String): Unit = if (julLogger.isLoggable(Level.SEVERE)) julLogger.severe(msg)
-  @elidable(WARNING)
+  @inline @elidable(WARNING)
   final def warning(msg: => String): Unit = if (julLogger.isLoggable(Level.WARNING)) julLogger.warning(msg)
-  @elidable(INFO)
+  @inline @elidable(INFO)
   final def info(msg: => String): Unit = if (julLogger.isLoggable(Level.INFO)) julLogger.info(msg)
-  @elidable(CONFIG)
+  @inline @elidable(CONFIG)
   final def config(msg: => String): Unit = if (julLogger.isLoggable(Level.CONFIG)) julLogger.config(msg)
-  @elidable(FINE)
+  @inline @elidable(FINE)
   final def fine(msg: => String): Unit = if (julLogger.isLoggable(Level.FINE)) julLogger.fine(msg)
-  @elidable(FINER)
+  @inline @elidable(FINER)
   final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.finer(msg)
-  @elidable(FINEST)
+  @inline @elidable(FINEST)
   final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) julLogger.finest(msg)
 
   def logAllToStderr() {
@@ -101,4 +102,11 @@ class Logger(name: String) {
     ch.setLevel(Level.ALL)
     julLogger.addHandler(ch)
   }
+
+  @elidable(elidable.ASSERTION) @inline
+  final def check(assertion: Boolean, message: => Any) {
+    if (!assertion)
+      log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: " + message))
+  }
+
 }

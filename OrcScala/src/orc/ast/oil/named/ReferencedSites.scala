@@ -12,7 +12,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil.named
 
 import orc.values.sites.Site
 
@@ -21,11 +21,11 @@ import orc.values.sites.Site
   * @author amp
   */
 trait ReferencedSites {
-  self: Orc5CAST =>
+  self: NamedAST =>
 
   lazy val referencedSites: Set[Site] = {
     val set = new scala.collection.mutable.HashSet[Site]()
-    val collect = new Orc5CASTTransform {
+    val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
         case x@Constant(s : Site) => set += s; x
       }

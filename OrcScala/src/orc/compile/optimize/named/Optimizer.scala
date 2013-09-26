@@ -12,17 +12,19 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.compile.optimize.named
 
-import orc.lib.builtin.GetField
+import orc.compile.Logger
 import orc.values.OrcRecord
-import orc.values.Field
+import orc.lib.builtin.GetField
 import orc.lib.builtin.ProjectClosure
 import orc.lib.builtin.ProjectUnapply
+import orc.ast.oil.named._
+import Bindings.{DefBound, RecursiveDefBound, SeqBound}
+import orc.values.Field
 import orc.lib.builtin.GetElem
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
-import orc.values.Signal
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {

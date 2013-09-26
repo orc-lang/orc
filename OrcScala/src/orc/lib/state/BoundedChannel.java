@@ -27,29 +27,23 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
-
 import scala.collection.JavaConversions;
 
 /**
- * A bounded cchannel.
- * With a bound of zero, behaves as a synchronous channel.
- * 
+ * A bounded channel. With a bound of zero, behaves as a synchronous channel.
+ *
  * @author quark
  */
 public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 
-	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
-	 */
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-	  
-	  if (args.size() == 1) {
-	    return new ChannelInstance(args.intArg(0));
-	  }
-	  else {
-	    throw new ArityMismatchException(1, args.size());
-	  }
+
+		if (args.size() == 1) {
+			return new ChannelInstance(args.intArg(0));
+		} else {
+			throw new ArityMismatchException(1, args.size());
+		}
 	}
 
 	@Override
@@ -59,7 +53,7 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 
 	protected class ChannelInstance extends DotSite {
 
-		protected final LinkedList<Object> Channel;
+		protected final LinkedList<Object> contents;
 		protected final LinkedList<Handle> readers;
 		protected final LinkedList<Handle> writers;
 		protected Handle closer;
@@ -69,7 +63,7 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 
 		ChannelInstance(final int bound) {
 			open = bound;
-			Channel = new LinkedList<Object>();
+			contents = new LinkedList<Object>();
 			readers = new LinkedList<Handle>();
 			writers = new LinkedList<Handle>();
 		}
@@ -80,21 +74,22 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (ChannelInstance.this) {
-						if (Channel.isEmpty()) {
+						if (contents.isEmpty()) {
 							if (closed) {
 								reader.halt();
 							} else {
+								reader.setQuiescent();
 								readers.addLast(reader);
 							}
 						} else {
-							reader.publish(object2value(Channel.removeFirst()));
+							reader.publish(object2value(contents.removeFirst()));
 							if (writers.isEmpty()) {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
 								writer.publish(signal());
 							}
-							if (closer != null && Channel.isEmpty()) {
+							if (closer != null && contents.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -106,17 +101,17 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 				@Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (ChannelInstance.this) {
-						if (Channel.isEmpty()) {
+						if (contents.isEmpty()) {
 							reader.halt();
 						} else {
-							reader.publish(object2value(Channel.removeFirst()));
+							reader.publish(object2value(contents.removeFirst()));
 							if (writers.isEmpty()) {
 								++open;
 							} else {
 								final Handle writer = writers.removeFirst();
 								writer.publish(signal());
 							}
-							if (closer != null && Channel.isEmpty()) {
+							if (closer != null && contents.isEmpty()) {
 								closer.publish(signal());
 								closer = null;
 							}
@@ -136,10 +131,11 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 							reader.publish(object2value(item));
 							writer.publish(signal());
 						} else if (open == 0) {
-							Channel.addLast(item);
+							contents.addLast(item);
+							writer.setQuiescent();
 							writers.addLast(writer);
 						} else {
-							Channel.addLast(item);
+							contents.addLast(item);
 							--open;
 							writer.publish(signal());
 						}
@@ -160,7 +156,7 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 						} else if (open == 0) {
 							writer.halt();
 						} else {
-							Channel.addLast(item);
+							contents.addLast(item);
 							--open;
 							writer.publish(signal());
 						}
@@ -172,10 +168,10 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 				public Object evaluate(final Args args) throws TokenException {
 					synchronized (ChannelInstance.this) {
 						// restore open slots
-						open += Channel.size() - writers.size();
+						open += contents.size() - writers.size();
 						// collect all values in a list
-						final Object out = JavaConversions.collectionAsScalaIterable(Channel).toList();
-						Channel.clear();
+						final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
+						contents.clear();
 						// resume all writers
 						for (final Handle writer : writers) {
 							writer.publish(signal());
@@ -199,7 +195,7 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 			addMember("getBound", new EvalSite() {
 				@Override
 				public Object evaluate(final Args args) throws TokenException {
-					return BigInteger.valueOf(open + Channel.size() - writers.size());
+					return BigInteger.valueOf(open + contents.size() - writers.size());
 				}
 			});
 			addMember("isClosed", new EvalSite() {
@@ -210,29 +206,30 @@ public class BoundedChannel extends EvalSite implements TypedSite, DirectSite {
 			});
 			addMember("close", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Handle token) {
+				public void callSite(final Args args, final Handle caller) {
 					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						if (Channel.isEmpty()) {
-							token.publish(signal());
+						if (contents.isEmpty()) {
+							caller.publish(signal());
 						} else {
-							closer = token;
+							closer = caller;
+							closer.setQuiescent();
 						}
 					}
 				}
 			});
 			addMember("closeD", new SiteAdaptor() {
 				@Override
-				public void callSite(final Args args, final Handle token) {
+				public void callSite(final Args args, final Handle caller) {
 					synchronized (ChannelInstance.this) {
 						closed = true;
 						for (final Handle reader : readers) {
 							reader.halt();
 						}
-						token.publish(signal());
+						caller.publish(signal());
 					}
 				}
 			});

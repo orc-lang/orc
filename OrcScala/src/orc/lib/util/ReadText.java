@@ -25,7 +25,7 @@ import orc.values.sites.compatibility.EvalSite;
 /**
  * Read an InputStreamReader into a String. Reads all remaining characters from
  * the stream, and closes it.
- * 
+ *
  * @author quark
  */
 public class ReadText extends EvalSite {

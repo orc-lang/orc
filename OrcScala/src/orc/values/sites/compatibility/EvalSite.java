@@ -23,7 +23,7 @@ import scala.Some;
 import scala.Tuple2;
 
 /**
- * 
+ *
  *
  * @author jthywiss
  */

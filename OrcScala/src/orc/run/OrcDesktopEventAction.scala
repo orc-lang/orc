@@ -22,10 +22,8 @@ import orc.lib.str.PrintEvent
 import orc.lib.web.BrowseEvent
 
 /**
-  *
   * @author dkitchin
   */
-
 class OrcDesktopEventAction extends OrcEventAction with OrcDesktopActions
 
 trait OrcDesktopActions extends OrcEventAction {

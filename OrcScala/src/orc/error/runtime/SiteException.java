@@ -16,8 +16,8 @@ package orc.error.runtime;
 /**
  * Any exception occurring in a well-formed, well-typed
  * site call. These are semantic exceptions from within
- * the site computation itself. 
- * 
+ * the site computation itself.
+ *
  * @author dkitchin
  */
 @SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions

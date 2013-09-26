@@ -14,7 +14,7 @@
 //
 package orc.compile.typecheck
 
-import orc.ast.oil.{ named => syntactic }
+import orc.ast.oil4c.{ named => syntactic }
 import orc.types._
 import orc.values.sites.SiteClassLoading
 import orc.compile.typecheck.Typechecker._
@@ -130,7 +130,7 @@ object Typeloader extends SiteClassLoading {
         }
 
         /* Find the variance of X in this datatype by a search.
-         * 
+         *
          * We assume that variances are linearly independent, i.e.
          * that the variances of formals besides X cannot affect
          * the variance of X.
@@ -240,6 +240,8 @@ object Typeloader extends SiteClassLoading {
         if (cl.isArray()) {
           val T = liftJavaType(cl.getComponentType(), jctx)
           ArrayType(T)
+        } else if (java.lang.Void.TYPE isAssignableFrom cl) {
+          SignalType
         } else if (java.lang.Boolean.TYPE isAssignableFrom cl) {
           BooleanType
         } else if (java.lang.Character.TYPE isAssignableFrom cl) {
@@ -359,7 +361,7 @@ object Typeloader extends SiteClassLoading {
         for ((k, t) <- entries) {
           if (!newEntries.isEmpty) {
             reify(t) match {
-              case Some(u) => newEntries = newEntries map {_ + ((k,u))}
+              case Some(u) => newEntries = newEntries map { _ + ((k, u)) }
               case None => newEntries = None
             }
           }

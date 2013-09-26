@@ -16,8 +16,7 @@ package orc.types
 
 import orc.error.compiletime.typing.UncallableTypeException
 
-/**
-  * Type instances, type constructors, variances
+/** Type instances, type constructors, variances
   *
   * @author dkitchin
   */

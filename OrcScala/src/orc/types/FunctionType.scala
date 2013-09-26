@@ -18,12 +18,10 @@ import orc.error.compiletime.typing.ArgumentArityException
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.util.TypeListEnrichment._
 
-/**
-  * The semantic type of functions.
+/** The semantic type of functions.
   *
   * @author dkitchin
   */
-
 case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[Type], val returnType: Type) extends CallableType {
 
   val arity = argTypes.size
@@ -68,8 +66,7 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
     case _ => false
   }
 
-  /**
-    * Given two function types,
+  /** Given two function types,
     * [X] S -> R
     * [Y] T -> U
     *
@@ -90,7 +87,7 @@ case class FunctionType(val typeFormals: List[TypeVariable], val argTypes: List[
   /* A function type may be treated as a callable type.
    * When performing type inference, we instead treat
    * function types structurally, to improve inference
-   * accuracy in some cases. 
+   * accuracy in some cases.
    */
   def call(callTypeArgs: List[Type], callArgTypes: List[Type]): Type = {
     if (typeFormals.size != callTypeArgs.size) {

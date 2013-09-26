@@ -17,8 +17,7 @@ package orc.util
 
 import scala.language.implicitConversions
 
-/**
-  * Adds the partialMap method to Lists.
+/** Adds the partialMap method to Lists.
   *
   * xs.partialMap(f) returns a new list where each element
   * x of xs is mapped to:

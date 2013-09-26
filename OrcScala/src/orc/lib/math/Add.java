@@ -105,10 +105,10 @@ public class Add extends EvalSite implements TypedSite, DirectSite {
 	@Override
 	public Type orcType() {
 		return Types.overload(
-		    Types.function(Types.integer(), Types.integer(), Types.integer()), 
+		    Types.function(Types.integer(), Types.integer(), Types.integer()),
 		    Types.function(Types.number(), Types.number(), Types.number()),
 		    new RecordExtensorType(),
-		    Types.function(Types.string(), Types.top(), Types.string()), 
+		    Types.function(Types.string(), Types.top(), Types.string()),
 		    Types.function(Types.top(), Types.string(), Types.string()));
 	}
 

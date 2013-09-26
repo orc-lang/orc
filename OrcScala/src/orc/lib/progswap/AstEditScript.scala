@@ -48,7 +48,7 @@ object AstEditScript {
   //
   //  /**
   //   * Mindless test implementation -- for two OIL ASTs of the same shape,
-  //   * traverse both in lock-step and replace each old node with the 
+  //   * traverse both in lock-step and replace each old node with the
   //   * corresponding new node.
   //   */
   //  def r(script: AstEditScript, oldNode: NamelessAST, newNode: NamelessAST): AstEditScript = {

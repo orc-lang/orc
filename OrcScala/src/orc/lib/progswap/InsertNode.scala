@@ -28,8 +28,8 @@ case class InsertNode[A <: AST, B <: AST](newNode: B, oldParent: A, newParent: B
 
   def migrateToken(token: Token): Boolean = { false }
 
-  def migrateClosures(token: Token): Unit = {}
+  def migrateClosures(token: Token) {}
 
-  def migrateFrameStack(token: Token): Unit = {}
+  def migrateFrameStack(token: Token) {}
 
 }

@@ -1,5 +1,5 @@
 //
-// OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandradOrcCompiler
+// OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandardOrcCompiler
 // Project OrcScala
 //
 // $Id$
@@ -18,7 +18,6 @@ package orc.compile
 import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer, FileOutputStream }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
 import orc.{ OrcCompilationOptions, OrcCompiler }
-import orc.compile.optimize._
 import orc.compile.parse.{ OrcNetInputContext, OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
 import orc.compile.translate.Translator
 import orc.compile.typecheck.Typechecker
@@ -31,13 +30,21 @@ import scala.collection.JavaConversions._
 import scala.compat.Platform.currentTime
 import orc.ast.oil.xml.OrcXML
 import orc.compile.translate.TranslateVclock
+import orc.OrcCompilerRequires
+import orc.ast.ext
+import orc.ast.oil4c.{ named => named4c }
+import orc.ast.oil.{ named => named5c }
+import orc.compile.translate.SplitPrune
+import orc.compile.optimize.FractionDefs
+import orc.compile.optimize.named.RemoveUnusedDefs
+import orc.compile.optimize.named.RemoveUnusedTypes
 
 /** Represents a configuration state for a compiler.
   */
-class CompilerOptions(val options: OrcCompilationOptions, val logger: CompileLogger) {
+class CompilerOptions(val options: OrcCompilationOptions, val compileLogger: CompileLogger) {
 
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
-    logger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
+    compileLogger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
   }
 
 }
@@ -81,16 +88,12 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   }
 }
 
-/** An instance of CoreOrcCompiler is a particular Orc compiler configuration,
-  * which is a particular Orc compiler implementation, in a JVM instance.
-  * Note, however, that an CoreOrcCompiler instance is not specialized for
-  * a single Orc program; in fact, multiple compilations of different programs,
-  * with different options set, may be in progress concurrently within a
-  * single CoreOrcCompiler instance.
-  *
-  * @author jthywiss
+/** A mix-in that provides the phases used by the standard compiler. They are in a
+  * mix-in so that they can be used in other compilers that do not use the same output
+  * type as the standard orc compiler.
   */
-abstract class CoreOrcCompiler extends OrcCompiler {
+trait CoreOrcCompilerPhases {
+  this: OrcCompilerRequires =>
 
   ////////
   // Definition of the phases of the compiler
@@ -100,20 +103,24 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     val phaseName = "parse"
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
-      val options = co.options
       val topLevelSourcePos = source.reader.pos
-      var includeFileNames = options.additionalIncludes
-      if (options.usePrelude) {
+      var includeFileNames = co.options.additionalIncludes
+      if (co.options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
       }
       val includeAsts = for (fileName <- includeFileNames) yield {
-        val ic = openInclude(fileName, null, options)
-        OrcIncludeParser(ic, options, CoreOrcCompiler.this) match {
-          case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
-          case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+        val ic = openInclude(fileName, null, co.options)
+        co.compileLogger.beginDependency(ic);
+        try {
+          OrcIncludeParser(ic, co, CoreOrcCompilerPhases.this) match {
+            case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
+            case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+          }
+        } finally {
+          co.compileLogger.endDependency(ic);
         }
       }
-      val progAst = OrcProgramParser(source, options, CoreOrcCompiler.this) match {
+      val progAst = OrcProgramParser(source, co, CoreOrcCompilerPhases.this) match {
         case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
         case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
       }
@@ -121,7 +128,7 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
-  val translate = new CompilerPhase[CompilerOptions, orc.ast.ext.Expression, orc.ast.oil.named.Expression] {
+  val translate = new CompilerPhase[CompilerOptions, ext.Expression, named4c.Expression] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -130,12 +137,12 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       }
   }
 
-  val vClockTrans = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val vClockTrans = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "vClockTrans"
     override def apply(co: CompilerOptions) = new TranslateVclock(co.reportProblem)(_)
   }
 
-  val noUnboundVars = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val noUnboundVars = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "noUnboundVars"
     override def apply(co: CompilerOptions) = { ast =>
       for (x <- ast.unboundvars) {
@@ -148,29 +155,29 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
-  val fractionDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val fractionDefs = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "fractionDefs"
     override def apply(co: CompilerOptions) = { FractionDefs(_) }
   }
 
-  val removeUnusedDefs = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val removeUnusedDefs = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedDefs"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedDefs(ast) }
   }
 
-  val removeUnusedTypes = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val removeUnusedTypes = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedTypes"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedTypes(ast) }
   }
 
-  val typeCheck = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val typeCheck = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "typeCheck"
     override def apply(co: CompilerOptions) = { ast =>
       if (co.options.typecheck) {
         val typechecker = new Typechecker(co.reportProblem)
         val (newAst, programType) = typechecker.typecheck(ast)
         val typeReport = "Program type checks as " + programType.toString
-        co.logger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
+        co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
         newAst
       } else {
         ast
@@ -178,11 +185,11 @@ abstract class CoreOrcCompiler extends OrcCompiler {
     }
   }
 
-  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.named.Expression] {
+  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) =
       { ast =>
-        def warn(e: orc.ast.oil.named.Expression) = {
+        def warn(e: named4c.Expression) = {
           co.reportProblem(UnguardedRecursionException() at e)
         }
         if (!co.options.disableRecursionCheck) {
@@ -192,9 +199,32 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       }
   }
 
-  val deBruijn = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.oil.nameless.Expression] {
+  val splitPrune = new CompilerPhase[CompilerOptions, named4c.Expression, named5c.Expression] {
+    val phaseName = "splitPrune"
+    override def apply(co: CompilerOptions) = { ast =>
+      val translator = new SplitPrune(co.reportProblem)
+      translator(ast)
+    }
+  }
+
+  val deBruijn = new CompilerPhase[CompilerOptions, named5c.Expression, orc.ast.oil.nameless.Expression] {
     val phaseName = "deBruijn"
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
+  }
+
+  def outputIR[A](irNumber: Int) = new CompilerPhase[CompilerOptions, A, A] {
+    val phaseName = s"Output IR #$irNumber"
+    override def apply(co: CompilerOptions) = { ast =>
+      val irMask = 1 << (irNumber-1)
+      val echoIR = co.options.echoIR
+      if ((echoIR & irMask) == irMask) {
+        println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
+        println(ast)
+        println(s"============ End dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
+      }
+
+      ast
+    }
   }
 
   // Generate XML for the AST and echo it to console; useful for testing.
@@ -225,33 +255,29 @@ abstract class CoreOrcCompiler extends OrcCompiler {
       ast
     }
   }
+}
 
-  ////////
-  // Compose phases into a compiler
-  ////////
-
-  val phases =
-    parse.timePhase >>>
-    translate.timePhase >>>
-    vClockTrans.timePhase >>>
-    noUnboundVars.timePhase >>>
-    fractionDefs.timePhase >>>
-    typeCheck.timePhase >>>
-    removeUnusedDefs.timePhase >>>
-    removeUnusedTypes.timePhase >>>
-    noUnguardedRecursion.timePhase >>>
-    deBruijn.timePhase >>>
-    outputOil
+/** An instance of PhasedOrcCompiler is a particular Orc compiler configuration,
+  * which is a particular Orc compiler implementation, in a JVM instance.
+  * Note, however, that an CoreOrcCompiler instance is not specialized for
+  * a single Orc program; in fact, multiple compilations of different programs,
+  * with different options set, may be in progress concurrently within a
+  * single CoreOrcCompiler instance.
+  *
+  * @author jthywiss, amp
+  */
+abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
+  val phases: CompilerPhase[CompilerOptions, OrcInputContext, E]
 
   ////////
   // Compiler methods
   ////////
 
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
     //Logger.config(options)
     Logger.config("Begin compile " + options.filename)
-    compileLogger.beginProcessing(options.filename)
+    compileLogger.beginProcessing(source)
     try {
       val result = phases(new CompilerOptions(options, compileLogger))(source)
       if (compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal()) null else result
@@ -260,22 +286,51 @@ abstract class CoreOrcCompiler extends OrcCompiler {
         compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
         null
     } finally {
-      compileLogger.endProcessing(options.filename)
+      compileLogger.endProcessing(source)
       Logger.config("End compile " + options.filename)
     }
   }
 
 }
 
-/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces.
+/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
+  * and specifies that compilation will finish with named.
   *
   * @author jthywiss
   */
-class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
+class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression]
+  with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression]
+  with CoreOrcCompilerPhases {
+  ////////
+  // Compose phases into a compiler
+  ////////
+
+  val phases =
+    parse.timePhase >>>
+      translate.timePhase >>>
+      vClockTrans.timePhase >>>
+      noUnboundVars.timePhase >>>
+      fractionDefs.timePhase >>>
+      typeCheck.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
+      outputIR(1) >>>
+      splitPrune.timePhase >>>
+      removeUnusedDefs.timePhase >>>
+      removeUnusedTypes.timePhase >>>
+      outputIR(2) >>>
+      deBruijn.timePhase >>>
+      outputOil
+}
+
+/** A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders
+  * and the file system).
+  */
+trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassLoading {
   @throws(classOf[IOException])
-  override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): orc.ast.oil.nameless.Expression = {
+  abstract override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
+    // FIXME: This will break cases where the compiler is used to compile code that needs different class paths. 
     SiteClassLoading.initWithClassPathStrings(options.classPath)
-    super.apply(source, options, compileLogger, progress)
+    super.apply(source, options, compileLogger, progress) // This will call apply in the subCLASS of OrcCompiler
   }
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
@@ -286,7 +341,7 @@ class StandardOrcCompiler() extends CoreOrcCompiler with SiteClassLoading {
   }
 
   @throws(classOf[IOException])
-  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): orc.ast.oil.nameless.Expression = {
+  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
     this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   }
 

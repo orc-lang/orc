@@ -39,7 +39,7 @@ trait Group extends GroupMember {
   private var alive = true
 
   /** An expensive walk-to-root check for alive state */
-  override def checkAlive(): Boolean = alive
+  override def checkAlive(): Boolean = synchronized { alive }
 
   def publish(t: Token, v: Option[AnyRef]): Unit
   def onHalt(): Unit
@@ -59,7 +59,7 @@ trait Group extends GroupMember {
     }
   }
 
-  /* 
+  /*
    * Note: This is a local live check.
    * A global check requires a linear-time
    * ascension of the group tree.
@@ -76,7 +76,10 @@ trait Group extends GroupMember {
 
   def add(m: GroupMember) {
     synchronized {
-      assert(!members.contains(m), "Double Group.add of " + m)
+      if (!alive) {
+        m.kill()
+      }
+      assert(!members.contains(m), s"Double Group.add of $m")
       members += m
     }
     m match {
@@ -91,7 +94,7 @@ trait Group extends GroupMember {
   def remove(m: GroupMember) {
     synchronized {
       members -= m
-      if (members.isEmpty) { onHalt }
+      if (members.isEmpty) { onHalt() }
     }
     m match {
       /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.

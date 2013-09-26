@@ -19,8 +19,7 @@ import orc.lib.builtin.structured.ListType
 import orc.lib.builtin.structured.OptionType
 import orc.compile.typecheck.Typeloader
 
-/**
-  * Type-building interface for Java sites to build instances of
+/** Type-building interface for Java sites to build instances of
   * orc.types.Type
   *
   * @author dkitchin

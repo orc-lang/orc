@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,13 +25,13 @@ import orc.error.runtime.ExecutionException
 import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
+import scala.util.parsing.input.Position
 
 /** The interface from a caller to the Orc compiler
   */
-trait OrcCompilerProvides {
+trait OrcCompilerProvides[+E] {
   @throws(classOf[IOException])
-  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): Expression
-  def refineOil(oilAstRoot: Expression): Expression = oilAstRoot
+  def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E
 }
 
 /** The interface from the Orc compiler to its environment
@@ -45,7 +45,7 @@ trait OrcCompilerRequires {
 
 /** An Orc compiler
   */
-trait OrcCompiler extends OrcCompilerProvides with OrcCompilerRequires
+trait OrcCompiler[+E] extends OrcCompilerProvides[E] with OrcCompilerRequires
 
 /** The interface from a caller to an Orc runtime
   */
@@ -63,29 +63,25 @@ trait OrcRuntimeRequires extends InvocationBehavior
   */
 trait InvocationBehavior {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]): Unit = { h.halt }
-  def quiescentWhileInvoked(v: AnyRef): Boolean = false
+  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
 }
 
 trait Schedulable extends Runnable {
-  /* A schedulable unit may declare itself nonblocking;
-   * the scheduler may exploit this information.
-   * It is assumed by default that a schedulable unit might block.
-   */
+  /** A schedulable unit may declare itself nonblocking;
+    * the scheduler may exploit this information.
+    * It is assumed by default that a schedulable unit might block.
+    */
   val nonblocking: Boolean = false
 
-  /* 
-   * This method is invoked just before this schedulable unit
-   * is scheduled or staged.
-   * It is run in the thread that made the enqueueing call. 
-   */
+  /** Invoked just before this schedulable unit is scheduled or staged.
+    * It is run in the thread that made the enqueueing call.
+    */
   def onSchedule() {}
 
-  /*
-   * This method is invoked after this schedulable unit 
-   * has been run by the scheduler and has completed (successfully or not).
-   * It is run in the same thread that executed the unit.
-   */
+  /** Invoked after this schedulable unit has been run by the scheduler and 
+    * has completed (successfully or not). It is run in the same thread that
+    * executed the unit.
+    */
   def onComplete() {}
 }
 
@@ -112,12 +108,14 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 trait Handle {
 
   def notifyOrc(event: OrcEvent): Unit
+  def setQuiescent(): Unit
 
   def publish(v: AnyRef): Unit
-  def publish(): Unit = { publish(Signal) }
+  def publish() { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit
 
+  def callSitePosition: Position
   def hasRight(rightName: String): Boolean
 
   def isLive: Boolean
@@ -164,6 +162,8 @@ trait OrcCommonOptions {
   def classPath_=(newVal: java.util.List[String])
   def logLevel: String
   def logLevel_=(newVal: String)
+  def backend: BackendType
+  def backend_=(newVal: BackendType)
 }
 
 trait OrcCompilationOptions extends OrcCommonOptions {
@@ -179,6 +179,8 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def disableRecursionCheck_=(newVal: Boolean)
   def echoOil: Boolean
   def echoOil_=(newVal: Boolean)
+  def echoIR: Int
+  def echoIR_=(newVal: Int)
   def oilOutputFile: Option[File]
   def oilOutputFile_=(newVal: Option[File])
   def compileOnly: Boolean

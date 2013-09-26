@@ -12,12 +12,18 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.ast.oil.named.orc5c
+package orc.ast.oil.named
 
-trait ContextualTransform extends Orc5CASTFunction {
+import Bindings.ArgumentBound
+import Bindings.DefBound
+import Bindings.LateBound
+import Bindings.RecursiveDefBound
+import Bindings.SeqBound
+
+trait ContextualTransform extends NamedASTFunction {
   import Bindings._
   
-  def order[E <: Orc5CAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E
+  def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E
   
   def apply(a: Argument): Argument = transform(a)(TransformContext())
   def apply(e: Expression): Expression = transform(e)(TransformContext())
@@ -39,7 +45,7 @@ trait ContextualTransform extends Orc5CASTFunction {
   def onDef(implicit ctx: TransformContext): PartialFunction[Def, Def] = EmptyFunction
 
   def recurseWithContext(implicit ctx: TransformContext) =
-    new Orc5CASTFunction {
+    new NamedASTFunction {
       def apply(a: Argument) = transform(a)
       def apply(e: Expression) = transform(e)
       def apply(t: Type) = transform(t)
@@ -235,18 +241,18 @@ trait ContextualTransform extends Orc5CASTFunction {
 
 object ContextualTransform {
   trait NonDescending extends ContextualTransform {
-    def order[E <: Orc5CAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
+    def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       e ->> pf.applyOrElse(e, descend)
     }
   }
   trait Pre extends ContextualTransform {
-    def order[E <: Orc5CAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
+    def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       val e1 = e ->> pf.lift(e).getOrElse(e)
       e1 ->> descend(e1)
     }
   }
   trait Post extends ContextualTransform {
-    def order[E <: Orc5CAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
+    def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       val e1 = e ->> descend(e)
       e1 ->> pf.lift(e1).getOrElse(e1)
     }

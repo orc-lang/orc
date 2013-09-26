@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,7 +40,11 @@ public class Random extends PartialSite implements TypedSite {
 			return BigInteger.valueOf(rnd.nextInt());
 		}
 
-		if (!(args.getArg(0) instanceof Number) || args.longArg(0) > Integer.MAX_VALUE || args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE || ((Number) args.getArg(0)).doubleValue() <= 0.0) {
+		if (!(args.getArg(0) instanceof Number) ||
+		    args.longArg(0) > Integer.MAX_VALUE ||
+		    args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE ||
+		    ((Number) args.getArg(0)).doubleValue() <= 0.0 ||
+		    ((Number) args.getArg(0)).doubleValue() != Math.rint(((Number) args.getArg(0)).doubleValue()) ) {
 			throw new IllegalArgumentException("Random's argument must be an integer strictly between 0 and 2**31");
 		}
 

@@ -23,12 +23,10 @@ import orc.Handle
 import orc.OrcEvent
 import orc.values.Format.formatValue
 
-/**
-  * Display a value on the console or equivalent output device.
+/** Display a value on the console or equivalent output device.
   *
   * @author dkitchin
   */
-
 case class PrintEvent(val text: String) extends OrcEvent
 
 abstract class PrintSite extends Site1 with TypedSite {

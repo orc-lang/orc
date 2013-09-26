@@ -18,10 +18,8 @@ import orc.types._
 import orc.error.compiletime.typing._
 
 /**
-  *
   * @author dkitchin
   */
-
 object RefType extends SimpleTypeConstructor("Ref", Invariant) {
 
   def getBuilder: Type = {

@@ -18,12 +18,14 @@ package orc.ast.oil.named
   *
   * @author dkitchin
   */
-
 trait Substitution[X <: NamedAST] {
   self: NamedAST =>
 
+
   def subst(a: Argument, x: Argument): X = Substitution(a, x)(this).asInstanceOf[X]
   def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this).asInstanceOf[X]
+
+  def substAll(subs : collection.Map[Argument, Argument]): X = Substitution.allArgs(subs)(this).asInstanceOf[X]
 
   def substAll(sublist: List[(Argument, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Argument, Argument]()

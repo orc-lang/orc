@@ -14,7 +14,7 @@
 //
 package orc.ast.porc
 
-import orc.ast.oil.named.orc5c.EmptyFunction
+import orc.ast.oil.named.EmptyFunction
 
 trait ContextualTransform {  
   def order[E <: PorcAST](pf: WithContext[E] => Option[E], descend: WithContext[E] => E)(e: WithContext[E]): E

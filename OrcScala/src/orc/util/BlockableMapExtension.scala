@@ -35,8 +35,8 @@ import scala.language.implicitConversions
 object BlockableMapExtension {
 
   class ListWithBlockableMap[X](xs: List[X]) {
-    def blockableMap[Y](f: X => (Y => Unit) => Unit)(k: List[Y] => Unit): Unit = {
-      def walk(xs: List[X], ys: List[Y]): Unit = {
+    def blockableMap[Y](f: X => (Y => Unit) => Unit)(k: List[Y] => Unit) {
+      def walk(xs: List[X], ys: List[Y]) {
         xs match {
           case z :: zs => f(z) { y: Y => walk(zs, y :: ys) }
           case Nil => k(ys.reverse)

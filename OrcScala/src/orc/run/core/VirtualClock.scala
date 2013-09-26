@@ -15,24 +15,21 @@
 package orc.run.core
 
 import scala.collection.mutable
-import orc.{Schedulable, OrcRuntime}
+import orc.{ Schedulable, OrcRuntime }
 import orc.error.runtime.VirtualClockError
-import orc.values.sites.{SpecificArity, Site}
-
+import orc.values.sites.{ SpecificArity, Site }
 
 /** @author dkitchin
   */
 trait VirtualClockOperation extends Site with SpecificArity
 
-
 /** @author dkitchin
   */
 class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
-  override def toString() = "AwaitCallHandle(caller=" + caller + ")"
+  override def toString() = super.toString + s"(caller=$caller)"
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = isLive && caller.checkAlive()
 }
-
 
 /** @author dkitchin
   */
@@ -88,7 +85,7 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
             rest foreach { _.publish(false.asInstanceOf[AnyRef]) }
           }
           case None => {}
-          case x => throw new VirtualClockError("Virtual clock internal failure (dequeueMins return not matched): "+x)
+          case x => throw new VirtualClockError("Virtual clock internal failure (dequeueMins return not matched): " + x)
         }
       }
     }

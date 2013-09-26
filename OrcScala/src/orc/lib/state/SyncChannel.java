@@ -33,9 +33,6 @@ import orc.values.sites.compatibility.SiteAdaptor;
 @SuppressWarnings("hiding")
 public class SyncChannel extends EvalSite implements TypedSite {
 
-	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.SiteAdaptor#callSite(java.lang.Object[], orc.Handle, orc.runtime.values.GroupCell, orc.OrcRuntime)
-	 */
 	@Override
 	public Object evaluate(final Args args) {
 		return new SyncChannelInstance();
@@ -80,6 +77,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 				// If there are no waiting senders, put this caller on the queue
 				if (senderQueue.isEmpty()) {
+					receiver.setQuiescent();
 					receiverQueue.addLast(receiver);
 				}
 				// If there is a waiting sender, both sender and receiver return
@@ -101,12 +99,15 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
 				final Object item = args.getArg(0);
 
-				// If there are no waiting receivers, put this sender on the queue
+				// If there are no waiting receivers, put this sender on the
+				// queue
 				if (receiverQueue.isEmpty()) {
+					sender.setQuiescent();
 					senderQueue.addLast(new SenderItem(sender, item));
 				}
 
-				// If there is a waiting receiver, both receiver and sender return
+				// If there is a waiting receiver, both receiver and sender
+				// return
 				else {
 					final Handle receiver = receiverQueue.removeFirst();
 

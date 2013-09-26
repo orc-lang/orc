@@ -19,10 +19,8 @@ import orc.error.compiletime.typing._
 import orc.lib.builtin.structured.ListType
 
 /**
-  *
   * @author dkitchin
   */
-
 object ChannelType extends SimpleTypeConstructor("Channel", Invariant) {
 
   def getBuilder: Type = {

@@ -31,7 +31,8 @@ trait NamedToNameless {
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))
       case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
-      case left < x < right => nameless.Prune(namedToNameless(left, x :: context, typecontext), toExp(right))
+      case left < x <| right => nameless.LateBind(namedToNameless(left, x :: context, typecontext), toExp(right))
+      case Limit(f) => nameless.Limit(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
@@ -74,7 +75,7 @@ trait NamedToNameless {
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
+      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
     }
   }
 
