@@ -23,12 +23,12 @@ import orc.values.Format
 import orc.types.UnaryCallableType
 import orc.types.FunctionType
 import orc.types.Type
-import orc.run.extensions.InstanceEvent
+//import orc.run.extensions.InstanceEvent
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.core.Closure
 
 // MakeSite site
-
+/*
 object MakeSite extends TotalSite1 with TypedSite {
   override def name = "MakeSite"
   def eval(arg: AnyRef) = {
@@ -49,11 +49,12 @@ object MakeSite extends TotalSite1 with TypedSite {
 
   override val effectFree = true
 }
+*/
 
 class UnimplementedMakeSitePart(override val name: String) extends TotalSite1 with TypedSite {
   def eval(arg: AnyRef) = {
     arg match {
-      case c: Closure => ???
+      case c: Closure => throw new Error(s"$name should never actually be called. The compiler should remove all calls.")
       case _ => throw new ArgumentTypeMismatchException(0, "Closure", arg.getClass().getCanonicalName())
     }
   }
@@ -70,12 +71,39 @@ class UnimplementedMakeSitePart(override val name: String) extends TotalSite1 wi
   override val effectFree = true
 }
 
-class MakeResilient(val n: Int) extends UnimplementedMakeSitePart(s"MakeResilient$n")
+sealed class MakeResilient(val n: Int) extends UnimplementedMakeSitePart(s"MakeResilient$n")
 
+class MakeResilient0 extends MakeResilient(0)
+class MakeResilient1 extends MakeResilient(1)
+class MakeResilient2 extends MakeResilient(2)
+class MakeResilient3 extends MakeResilient(3)
+class MakeResilient4 extends MakeResilient(4)
+class MakeResilient5 extends MakeResilient(5)
+class MakeResilient6 extends MakeResilient(6)
+class MakeResilient7 extends MakeResilient(7)
+class MakeResilient8 extends MakeResilient(8)
+class MakeResilient9 extends MakeResilient(9)
+class MakeResilient10 extends MakeResilient(10)
+class MakeResilient11 extends MakeResilient(11)
+class MakeResilient12 extends MakeResilient(12)
+class MakeResilient13 extends MakeResilient(13)
+class MakeResilient14 extends MakeResilient(14)
+class MakeResilient15 extends MakeResilient(15)
+class MakeResilient16 extends MakeResilient(16)
+class MakeResilient17 extends MakeResilient(17)
+class MakeResilient18 extends MakeResilient(18)
+class MakeResilient19 extends MakeResilient(19)
+class MakeResilient20 extends MakeResilient(20)
+class MakeResilient21 extends MakeResilient(21)
+class MakeResilient22 extends MakeResilient(22)
+
+/*
 object MakeResilients {
   val sites = 0 to 22 map (new MakeResilient(_))
 }
+*/
 
+/*
 // Standalone class execution
 
 class RunLikeSite(closure: Closure) extends UntypedSite {
@@ -87,3 +115,5 @@ class RunLikeSite(closure: Closure) extends UntypedSite {
   }
 
 }
+
+*/

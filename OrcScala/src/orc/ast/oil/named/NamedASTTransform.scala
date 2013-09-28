@@ -110,6 +110,7 @@ trait NamedASTTransform extends NamedASTFunction {
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
         case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
+        case Resilient(f) => Resilient(recurse(f))
       }
     }
   }

@@ -27,7 +27,7 @@ object GenerateMakeX extends App {
   val out = new PrintStream(outputFile)
   
   out.println("""--
--- makex.inc -- Orc standard prelude include, generated MakeString and MakeSingleValued defs
+-- makex.inc -- Orc standard prelude include, generated MakeResilient, MakeStrict, and MakeSingleValued definitions
 -- Project OrcScala
 --
 -- This file is overwritten at every rebuild. See OrcScala/src/orc/lib/generated/GenerateMakeX.scala.
@@ -38,32 +38,50 @@ object GenerateMakeX extends App {
 -- the LICENSE file found in the project's top-level directory and also found at
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
+
 """)
+
+  // Generate MakeSingleValued
+  for(n <- 0 to MaximumArity) {
+    out.println(s"""import site MakeResilient$n = "orc.lib.builtin.MakeResilient$n"""")
+  }
+  
+  out.println()
   
   // Generate MakeSingleValued
-  out.println(s"""
+  out.print(s"""
 def MakeSingleValued0[T](f :: lambda() :: T) = 
   lambda() :: T = y <y< f()
 """)
   for(n <- 1 to MaximumArity) {
     def vars(pre: String) = 1 to n map {i => pre + i} mkString ", "
     def typedvars(pre: String, tpre: String) = 1 to n map {i => s"$pre$i :: $tpre$i"} mkString ", "
-    out.println(s"""
+    out.print(s"""
 def MakeSingleValued$n[${vars("A")}, T](f :: lambda(${vars("A")}) :: T) = 
   lambda(${typedvars("x", "A")}) :: T = y <y< f(${vars("x")})
 """)
   }
   
   // Generate MakeStrict
-    out.println(s"""
+  out.print(s"""
 def MakeStrict0[T](f :: lambda() :: T) = f
 """)
   for(n <- 1 to MaximumArity) {
     def vars(pre: String) = 1 to n map {i => pre + i} mkString ", "
     def typedvars(pre: String, tpre: String) = 1 to n map {i => s"$pre$i :: $tpre$i"} mkString ", "
-    out.println(s"""
+    out.print(s"""
 def MakeStrict$n[${vars("A")}, T](f :: lambda(${vars("A")}) :: T) = 
   lambda(${typedvars("x", "A")}) :: T = (${vars("x")}) >(${vars("y")})> f(${vars("y")})
+""")
+  }
+  
+  // Generate MakeSite
+  for(n <- 0 to MaximumArity) {
+    def vars(pre: String) = 1 to n map {i => pre + i} mkString ", "
+    def typedvars(pre: String, tpre: String) = 1 to n map {i => s"$pre$i :: $tpre$i"} mkString ", "
+    out.print(s"""
+def MakeSite$n[${vars("A")}${if(n > 0) "," else ""} T](f :: lambda(${vars("A")}) :: T) = 
+  MakeStrict$n(MakeSingleValued$n(MakeResilient$n(f)))
 """)
   }
   

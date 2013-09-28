@@ -67,6 +67,7 @@ trait NamelessToNamed {
         named.HasType(recurse(body), namelessToNamed(expectedType, typecontext))
       }
       case VtimeZone(timeOrder, body) => named.VtimeZone(namelessToNamed(timeOrder, context), recurse(body))
+      case Resilient(f) => named.Resilient(recurse(f))
       case Hole(holeContext, holeTypeContext) => {
         val newHoleContext = holeContext mapValues { namelessToNamed(_, context) }
         val newHoleTypeContext = holeTypeContext mapValues { namelessToNamed(_, typecontext) }

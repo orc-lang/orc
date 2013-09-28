@@ -295,4 +295,5 @@ class StructurePairSite(
 
 trait HasFields extends Site {
   def getField(f: Field): Option[AnyRef]
+  //def hasField(f: Field): Boolean
 }

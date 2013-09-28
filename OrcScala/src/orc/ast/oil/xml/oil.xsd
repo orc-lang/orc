@@ -271,6 +271,9 @@
           </xs:complexType>
         </xs:element>
 
+        <!--  resilient(f)  -->
+        <xs:element name="resilient" type="unary_combinator" />
+
         <!-- A hole in an expression -->
         <xs:element name="hole">
           <xs:complexType>

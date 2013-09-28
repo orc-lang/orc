@@ -25,6 +25,9 @@ import orc.values.{ Signal, OrcRecord, Field }
 import orc.ast.oil.nameless.VtimeZone
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import orc.ast.oil.nameless.Resilient
+import orc.run.Logger
+import orc.lib.builtin.ProjectClosure
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -172,6 +175,7 @@ class Token protected (
       }
       handle foreach { _.kill }
     }
+    //Logger.info(s"Killed token: $this ($group)")
   }
 
   /** Make this token block on some resource.
@@ -184,7 +188,7 @@ class Token protected (
     state match {
       case Live => setState(Blocked(blocker))
       case Killed => {}
-      case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state)
+      case s => throw new AssertionError(s"Only live tokens may be blocked: state=$s (now $state)")
     }
   }
 
@@ -207,7 +211,7 @@ class Token protected (
         setState(Suspended(Live))
       }
       case Killed => {}
-      case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state=" + state) }
+      case s => { throw new AssertionError(s"unblock on a Token that is not Blocked/Killed: state=$s (not $state)") }
     }
   }
 
@@ -557,6 +561,13 @@ class Token protected (
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
+      
+      case Resilient(expr) => {
+        val g = new ResilientGroup(group)
+        join(g)
+        move(expr)
+        runtime.stage(this)
+      }
 
       case decldefs @ DeclareDefs(openvars, defs, body) => {
         /* Closure compaction: Bind only the free variables
@@ -615,6 +626,7 @@ class Token protected (
       case Suspended(_) => throw new AssertionError("halt on a suspended Token")
       case Halted | Killed => {}
     }
+    //Logger.info(s"Halted token: $this ($group)")
   }
 
   def !!(e: OrcException) {

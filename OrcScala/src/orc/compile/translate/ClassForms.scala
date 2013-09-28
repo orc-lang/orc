@@ -19,7 +19,6 @@ import orc.lib.builtin
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 import orc.lib.builtin.MakeResilient
-import orc.lib.builtin.MakeResilients
 
 /**
   * @author dkitchin
@@ -54,7 +53,7 @@ object ClassForms {
   }
   
   def makeMakeSite(f: ext.Expression, arity: Int): ext.Expression = {
-    val fResilient = new ext.Call(new ext.Constant(MakeResilients.sites(arity)), List(ext.Args(None, List(f))))
+    val fResilient = new ext.Call(new ext.Variable(s"MakeResilient$arity"), List(ext.Args(None, List(f))))
     val fSingle = new ext.Call(new ext.Variable(s"MakeSingleValued$arity"), List(ext.Args(None, List(fResilient))))
     new ext.Call(new ext.Variable(s"MakeStrict$arity"), List(ext.Args(None, List(fSingle))))
   }

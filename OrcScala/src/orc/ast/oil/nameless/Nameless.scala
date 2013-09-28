@@ -38,6 +38,7 @@ sealed abstract class NamelessAST extends AST {
     case left ow right => List(left, right)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
+    case Resilient(f) => List(f)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
     case Def(_, _, body, argtypes, returntype) => {
@@ -82,6 +83,7 @@ sealed abstract class Expression extends NamelessAST
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
       case VtimeZone(timeOrder, body) => timeOrder.freevars ++ body.freevars
+      case Resilient(f) => f.freevars
       // Free variable determination will probably be incorrect on an expression with holes
       case Hole(_, _) => {
         Set.empty
@@ -127,6 +129,7 @@ sealed abstract class Expression extends NamelessAST
       case HasType(body, t) => HasType(body.subst(ctx), t)
       case DeclareType(t, body) => DeclareType(t, body.subst(ctx))
       case VtimeZone(timeOrder, body) => VtimeZone(timeOrder.subst(ctx).asInstanceOf[Argument], body.subst(ctx))
+      case Resilient(f) => Resilient(f.subst(ctx))
       case Hole(holeContext, holeTypeContext) => {
         Hole(holeContext mapValues { _.subst(ctx).asInstanceOf[Argument] }, holeTypeContext)
       }
@@ -149,11 +152,14 @@ case class DeclareType(t: Type, body: Expression) extends Expression with hasOpt
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+case class Resilient(body: Expression) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
 case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
+  
+  override def toString = s"Variable($index, $optionalVariableName)"
 }
 case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
   optionalVariableName = Some(name)

@@ -87,63 +87,7 @@ class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
       ast
     }
   }
-  
-  def optimize = new CompilerPhase[CompilerOptions, Expression, Expression] {
-    import orc.compile.optimize.named._
-    val phaseName = "optimize"
-    override def apply(co: CompilerOptions) = { ast =>
-      println("====================================== optimizing" )
-   
-      def opt(prog : Expression, pass : Int) : Expression = {
-        import orc.ast.oil.named._
-        //println("--------------------- pass " + pass )
-        val stats = Map(
-            "limits" -> Analysis.count(prog, {
-              case Limit(_) => true
-              case _ => false
-            }),
-            "late-binds" -> Analysis.count(prog, {
-              case f < x <| g => true
-              case _ => false
-            }),
-            "stops" -> Analysis.count(prog, {
-              case Stop() => true
-              case _ => false
-            }),
-            "parallels" -> Analysis.count(prog, {
-              case f || g => true
-              case _ => false
-            }),
-            "sequences" -> Analysis.count(prog, {
-              case f > x > g => true
-              case _ => false
-            }),
-            "otherwises" -> Analysis.count(prog, {
-              case f ow g => true
-              case _ => false
-            }),
-            "nodes" -> Analysis.count(prog, (_ => true)),
-            "cost" -> Analysis.cost(prog)
-          )
-        val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        Logger.info(s"Orc5C Optimization Pass $pass: $s")
-        val analyzer = new ExpressionAnalyzer
-        //println(new PrettyPrintWithAnalysis(analyzer).reduce(prog))
-        //println("----------------")
-        val opts = Optimizer.basicOpts ++ (if( pass > 1 ) Optimizer.secondOpts else List())
-        val prog1 = Optimizer(opts)(prog, analyzer)
-        Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
-        if(prog1 == prog && pass > 1)
-          prog1
-        else {
-          opt(prog1, pass+1)
-        }
-      }
-      
-      opt(ast, 1)
-    }
-  }
-  
+    
   val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.porc.Expr] {
     import orc.ast.oil.named._
     val phaseName = "translate5C"
@@ -236,12 +180,10 @@ class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
     outputAnalysedAST >>> 
     outputIR(3) >>> 
     translatePorc >>> 
-    //porcAnalysis >>>
     outputIR(4) >>>
     optimizePorc >>>
     outputIR(5) >>>
     translatePorcEval >>>
-    //outputAST >>>
     evalPorc
 }
 

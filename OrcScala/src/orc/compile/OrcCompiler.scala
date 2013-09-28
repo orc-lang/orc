@@ -38,6 +38,7 @@ import orc.compile.translate.SplitPrune
 import orc.compile.optimize.FractionDefs
 import orc.compile.optimize.named.RemoveUnusedDefs
 import orc.compile.optimize.named.RemoveUnusedTypes
+import orc.compile.translate.TranslateMakeResilient
 
 /** Represents a configuration state for a compiler.
   */
@@ -140,7 +141,7 @@ trait CoreOrcCompilerPhases {
   val vClockTrans = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "vClockTrans"
     override def apply(co: CompilerOptions) = new TranslateVclock(co.reportProblem)(_)
-  }
+  }  
 
   val noUnboundVars = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "noUnboundVars"
@@ -204,6 +205,68 @@ trait CoreOrcCompilerPhases {
     override def apply(co: CompilerOptions) = { ast =>
       val translator = new SplitPrune(co.reportProblem)
       translator(ast)
+    }
+  }
+
+  val makeResilientTrans = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
+    val phaseName = "vClockTrans"
+    override def apply(co: CompilerOptions) = new TranslateMakeResilient(co.reportProblem)(_)
+  }
+
+  def optimize = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
+    import orc.compile.optimize.named._
+    import named5c._
+    val phaseName = "optimize"
+    override def apply(co: CompilerOptions) = { ast =>
+      val maxPasses = 10
+      
+      def opt(prog : Expression, pass : Int) : Expression = {
+        def logAnalysis() = {
+          val stats = Map(
+            "limits" -> Analysis.count(prog, {
+              case Limit(_) => true
+              case _ => false
+            }),
+            "late-binds" -> Analysis.count(prog, {
+              case f < x <| g => true
+              case _ => false
+            }),
+            "stops" -> Analysis.count(prog, {
+              case Stop() => true
+              case _ => false
+            }),
+            "parallels" -> Analysis.count(prog, {
+              case f || g => true
+              case _ => false
+            }),
+            "sequences" -> Analysis.count(prog, {
+              case f > x > g => true
+              case _ => false
+            }),
+            "otherwises" -> Analysis.count(prog, {
+              case f ow g => true
+              case _ => false
+            }),
+            "nodes" -> Analysis.count(prog, (_ => true)),
+            "cost" -> Analysis.cost(prog))
+          val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+          s"Orc5C Optimization Pass $pass: $s"
+        }
+
+        Logger.info(logAnalysis())
+        
+        val analyzer = new ExpressionAnalyzer
+        val opts = Optimizer.basicOpts ++ (if( pass > 1 ) Optimizer.secondOpts else List())
+        val prog1 = Optimizer(opts)(prog, analyzer)
+
+        if((prog1 == prog && pass > 1) || pass > maxPasses)
+          prog1
+        else {
+          opt(prog1, pass+1)
+        }
+      }
+      
+      opt(ast, 1)
     }
   }
 
@@ -291,35 +354,6 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
     }
   }
 
-}
-
-/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
-  * and specifies that compilation will finish with named.
-  *
-  * @author jthywiss
-  */
-class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression]
-  with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression]
-  with CoreOrcCompilerPhases {
-  ////////
-  // Compose phases into a compiler
-  ////////
-
-  val phases =
-    parse.timePhase >>>
-      translate.timePhase >>>
-      vClockTrans.timePhase >>>
-      noUnboundVars.timePhase >>>
-      fractionDefs.timePhase >>>
-      typeCheck.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
-      outputIR(1) >>>
-      splitPrune.timePhase >>>
-      removeUnusedDefs.timePhase >>>
-      removeUnusedTypes.timePhase >>>
-      outputIR(2) >>>
-      deBruijn.timePhase >>>
-      outputOil
 }
 
 /** A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders
