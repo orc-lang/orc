@@ -23,54 +23,22 @@ import orc.run.core.Execution
 import orc.run.core.Group
 import orc.run.core.Closure
 import orc.run.core.Token
+import orc.run.core.ResilientGroup
 
 /**
   * @author dkitchin
   */
-case class InstanceEvent(c: Closure, args: List[AnyRef], caller: Handle) extends OrcEvent
+case class ResilientKilledEvent(g: ResilientGroup) extends OrcEvent
 
 trait SupportForClasses extends Orc {
-
   override def installHandlers(host: Execution) {
     val thisHandler = {
-      case InstanceEvent(closure, args, caller) => {
-        val node = Call(Constant(closure), args map Constant, Some(Nil)).pushDownPosition(caller.callSitePosition)
-        val exec = new ClassExecution(caller, host)
-        val t = new Token(node, exec)
-        schedule(t)
+      case ResilientKilledEvent(g) => {
+        host.add(g)
       }
     }: PartialFunction[OrcEvent, Unit]
 
     host.installHandler(thisHandler)
     super.installHandlers(host)
   }
-
-  class ClassExecution(caller: Handle, host: Group) extends Subgroup(host) {
-
-    var listener: Option[Handle] = Some(caller)
-
-    override def publish(t: Token, v: Option[AnyRef]) = synchronized {
-      listener match {
-        case Some(l) => {
-          listener = None
-          l.publish(v.get)
-        }
-        case None => {}
-      }
-      t.halt()
-    }
-
-    override def onHalt = synchronized {
-      listener match {
-        case Some(l) => {
-          listener = None
-          l.halt
-        }
-        case None => {}
-      }
-      host.remove(this)
-    }
-
-  }
-
 }

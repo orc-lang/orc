@@ -135,8 +135,12 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
     }
   }
   
+  // FIXME: The way this interacts with ProjectClosure means that a static apply method on a class will shadow the constructor.
   def getField(f: OrcField) = {
-    Some(new JavaStaticMemberProxy(javaClass, f.field))
+    if(hasMember(f.field))
+      Some(new JavaStaticMemberProxy(javaClass, f.field))
+    else
+      None
   }
 
   def orcType = liftJavaClassType(javaClass)
@@ -185,12 +189,16 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
     if (memberName.equals("length") && submemberName.equals("read") && javaClass.isArray())
       return Some(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
 
-    val javaField = javaClass.getField(memberName)
-    Some(submemberName match {
-      case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
-      case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
-      case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
-    })
+    //try {
+      val javaField = javaClass.getField(memberName)
+      Some(submemberName match {
+        case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
+        case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
+        case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
+      })
+    //} catch {
+    //  case _ : NoSuchFieldException => None
+    //}
   }
 }
 

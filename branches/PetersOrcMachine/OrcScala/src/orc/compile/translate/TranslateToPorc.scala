@@ -22,7 +22,6 @@ import orc.values.Signal
 import orc.values.Format
 import orc.Handle
 import orc.PublishedEvent
-import orc.lib.builtin.MakeResilients
 import orc.ast.oil.named._
 import orc.ast.oil.named
 
@@ -175,11 +174,12 @@ object TranslateToPorc {
     (List(f), code)
   }
   
-  val porcImplementedSites : Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)] = Map() ++ {
+  val porcImplementedSites : Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)] = Map() 
+  /*++ {
     MakeResilients.sites.zipWithIndex.map({ pair => val (s, i) = pair
       s -> ((p : porc.Var) => makeMakeResilient(i, p) )
     }).toMap
-  }
+  }*/
     
   val porcImplementedSiteDefs = {
     for ((s, b) <- porcImplementedSites) yield {

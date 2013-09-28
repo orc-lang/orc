@@ -210,6 +210,10 @@ object OrcXML {
           <timeorder>{ toXML(timeOrder) }</timeorder>
           <body>{ toXML(body) }</body>
         </vtimezone>
+      case Resilient(e) =>
+        <resilient>
+          <expr>{ toXML(e) }</expr>
+        </resilient>
       case Hole(context, typecontext) =>
         <hole>
           <context>
@@ -381,6 +385,8 @@ object OrcXML {
       }
       case <vtimezone><timeorder>{ timeOrder }</timeorder><body>{ body }</body></vtimezone> =>
         VtimeZone(argumentFromXML(timeOrder), fromXML(body))
+      case <resilient><expr>{ expr }</expr></resilient> =>
+        Resilient(fromXML(expr))        
       case <hole><context>{ ctx @ _* }</context><typecontext>{ typectx @ _* }</typecontext></hole> => {
         val context = HashMap.empty ++ {
           for (b @ <binding>{ a }</binding> <- ctx) yield ((b \ "@name").text, argumentFromXML(a))

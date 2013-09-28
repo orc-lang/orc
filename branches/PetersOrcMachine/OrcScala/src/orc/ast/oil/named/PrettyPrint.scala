@@ -78,6 +78,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
+      case Resilient(expr) => "resilient(" + reduce(expr) + ")"
       case Constant(v) => Format.formatValue(v)
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x)) //+ "@" + x.##.toString
       case UnboundVar(s) => "?" + s

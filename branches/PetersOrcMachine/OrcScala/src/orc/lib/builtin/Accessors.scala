@@ -28,6 +28,8 @@ import orc.types.Type
 import orc.error.compiletime.typing.ExpectedType
 import orc.values.OrcValue
 import orc.values.OrcRecord
+import orc.values.Field
+import orc.values.OrcRecord
 
 /**
   *
@@ -46,7 +48,6 @@ object GetField extends PartialSite2 with DirectPartialSite {
         throw new ArgumentTypeMismatchException(0, "value with field support", v.getClass().getCanonicalName())
       case _ => // Otherwise we are some java thing so call into Java handlers
         Some(new JavaMemberProxy(v, field.field))
-        // TODO: Concider lifting this check into Porc.
     }
   }
 
@@ -93,6 +94,11 @@ object ProjectClosure extends TotalSite1 with DirectTotalSite {
   override def name = "ProjectClosure"
   def eval(v: AnyRef) = {
     v match {
+      // FIXME: For now only records can be called via their apply method.
+      /*case v: HasFields if v.getField(Field("apply")).isDefined => 
+        eval(v.getField(Field("apply")).get)*/
+      /*case v: HasFields if v.getField(Field("apply")).isDefined => 
+        v.getField(Field("apply")).get*/
       case v: OrcRecord if v.entries.contains("apply") => 
         eval(v.entries("apply"))
       case _ => v // TODO: Should this check if it is a real callable?
@@ -100,10 +106,10 @@ object ProjectClosure extends TotalSite1 with DirectTotalSite {
   }
  
   /*
-  def orcType() = new BinaryCallableType {
-    def call(vT: Type, fT: Type): Type = {
-      (vT, fT) match {
-        case (tT: TupleType, _) => tT.call(fT)
+  def orcType() = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        case t:RecordType => tT.call(fT)
         case _ => throw new ArgumentTypecheckingException(0, ExpectedType("a tuple type"), vT)
       }
     }
@@ -122,7 +128,7 @@ object ProjectUnapply extends TotalSite1 with DirectTotalSite {
     v match {
       case v: OrcRecord if v.entries.contains("unapply") => 
         eval(v.entries("unapply"))
-      case _: HasFields => eval(GetField.eval(v, Field("unapply")))
+      //case _: HasFields => eval(GetField.eval(v, Field("unapply")))
       case _ => v
     }
   }

@@ -15,7 +15,7 @@
 Metalanguage operations.
 --}
 
-{--
+{-
 @site MakeSite[A](A) :: A
 
 This site promotes an Orc <link linkend="ref.data.closure">closure</link> to a site;
@@ -36,5 +36,5 @@ def foo(...) = ...
 val Foo = MakeSite(foo)]]></programlisting>
 
 The typing of <code>MakeSite</code> enforces the additional condition that the type A is a <link linkend="ref.data.closure.type">function type</link>.
---}
 import site MakeSite = "orc.lib.builtin.MakeSite"
+-}

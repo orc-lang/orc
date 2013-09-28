@@ -293,6 +293,9 @@ object Optimizer {
   
   val InlineDef = OptFull("inline-def") { (e, a) =>
     import a.ImplicitResults._
+    
+    // FIXME: This needs to handle type arguments of the def being inlined
+    
     e match {
       case CallAt((f: BoundVar) in ctx, args, _, _) => ctx(f) match {
         case Bindings.DefBound(dctx, _, d) => {
