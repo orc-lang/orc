@@ -35,7 +35,7 @@ public class Dictionary extends EvalSite {
 
 		@Override
 		public Object evaluate(final Args args) throws TokenException {
-			return getField((Field)args.getArg(0)).get();
+			return getField((Field)args.getArg(0));
 		}
 
 		@Override
@@ -43,16 +43,20 @@ public class Dictionary extends EvalSite {
 			return map.toString();
 		}
 
-		@Override
-        synchronized public Option<Object> getField(Field f) {
-		  final String field = f.field();
+        @Override
+        synchronized public Object getField(Field f) {
+          final String field = f.field();
           RefInstance out = map.get(field);
           if (out == null) {
               out = new RefInstance();
               map.put(field, out);
           }
-          return new Some<Object>(out);
-		}
+          return out;
+        }
+        @Override
+        synchronized public boolean hasField(Field f) {
+          return true;
+        }
 	}
 
 	@Override

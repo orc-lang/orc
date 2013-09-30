@@ -317,22 +317,6 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       case _: StrictType if argTypes contains Bot => {
         (syntacticTypeArgs, Bot)
       }
-      case RecordType(entries) => {
-        argTypes match {
-          /* If this is a field access, check the call as normal. */
-          case List(_: FieldType) => {
-            typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
-          }
-          /* If this is not a field access, try to use an 'apply' member. */
-          case _ => {
-            if (entries contains "apply") {
-              typeCall(syntacticTypeArgs, entries("apply"), argTypes, checkReturnType, callPoint)
-            } else {
-              typeCoreCall(syntacticTypeArgs, targetType, argTypes, checkReturnType, callPoint)
-            }
-          }
-        }
-      }
       case OverloadedType(alternatives) => {
         var failure = new OverloadedTypeException()
         def tryAlternatives(alts: List[Type]): (Option[List[syntactic.Type]], Type) =

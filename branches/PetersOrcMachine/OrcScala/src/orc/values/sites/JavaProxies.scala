@@ -33,6 +33,7 @@ import java.lang.reflect.{ Field => JavaField }
 import java.lang.reflect.Modifier
 import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
+import orc.error.runtime.NoSuchMemberException
 
 /** Transforms an Orc site call to an appropriate Java invocation
   *
@@ -130,7 +131,6 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
 
   override def call(args: List[AnyRef], h: Handle) {
     args match {
-      //case List(OrcField(memberName)) => h.publish(new JavaStaticMemberProxy(javaClass, memberName))
       case _ => h.publish(invoke(null, "<init>", args))
     }
   }
@@ -138,9 +138,12 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
   // FIXME: The way this interacts with ProjectClosure means that a static apply method on a class will shadow the constructor.
   def getField(f: OrcField) = {
     if(hasMember(f.field))
-      Some(new JavaStaticMemberProxy(javaClass, f.field))
+      new JavaStaticMemberProxy(javaClass, f.field)
     else
-      None
+      throw new NoSuchMemberException(this, f.field)
+  }
+  def hasField(f: OrcField) = {
+    hasMember(f.field)
   }
 
   def orcType = liftJavaClassType(javaClass)
@@ -182,23 +185,28 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
     }
   }
 
-  def getField(f: OrcField): Option[AnyRef] = {
+  def getField(f: OrcField): AnyRef = {
     val submemberName = f.field
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
     if (memberName.equals("length") && submemberName.equals("read") && javaClass.isArray())
-      return Some(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
+      return new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]])
 
-    //try {
-      val javaField = javaClass.getField(memberName)
-      Some(submemberName match {
-        case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
-        case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
-        case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
-      })
-    //} catch {
-    //  case _ : NoSuchFieldException => None
-    //}
+    val javaField = javaClass.getField(memberName)
+    submemberName match {
+      case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
+      case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
+      case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
+    }
+  }
+  def hasField(f: OrcField) = {
+    // FIXME: This will be slow, a better implementation should replace it.
+    try {
+      getField(f)
+      true
+    } catch {
+      case _ : NoSuchFieldException => false
+    }
   }
 }
 
@@ -274,11 +282,17 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
   
   def getField(f: OrcField) = {
     f match {
-      case OrcField("read") => Some(new JavaArrayDerefSite(theArray, index))
-      case OrcField("readnb") => Some(new JavaArrayDerefSite(theArray, index))
-      case OrcField("write") => Some(new JavaArrayAssignSite(theArray, index))
+      case OrcField("read") => new JavaArrayDerefSite(theArray, index)
+      case OrcField("readnb") => new JavaArrayDerefSite(theArray, index)
+      case OrcField("write") => new JavaArrayAssignSite(theArray, index)
       case OrcField(fieldname) => throw new NoSuchMethodException(fieldname + " in Ref") //A "white lie"
     }
+  }
+  
+  private val fields = Set(OrcField("read"), OrcField("readnb"), OrcField("write"))
+  
+  def hasField(f: OrcField) = {
+    fields.contains(f)
   }
 }
 

@@ -217,9 +217,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
                         (f.immediateHalt && f.silent)
       case f < x <| g => (f.immediateHalt && g.immediateHalt)
       case LimitAt(f) => f.immediateHalt || f.immediatePublish
-      case CallAt(target, List(Constant(f : Field)), _, _) => { // TODO: Verify the correctness of this.
-        target.immediateHalt
-      }
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
         (target match {
@@ -260,9 +257,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f > x > g => (f.immediatePublish && g.immediatePublish)
       case f < x <| g => f.immediatePublish 
       case LimitAt(f) => f.immediatePublish
-      case CallAt(target, List(Constant(f : Field)), _, _) => { // TODO: Verify the correctness of this.
-        target.immediatePublish
-      }
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
 
@@ -295,9 +289,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     import ImplicitResults._
     e match {
       case Stop() in _ => Range(0,0)
-      case CallAt(target, List(Constant(f : Field)), _, _) => { // TODO: Verify the correctness of this.
-        target.publications.limitTo(1)
-      }
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
         (target match {
@@ -416,9 +407,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     import ImplicitResults._
     e match {
       case Stop() in _ => true
-      case CallAt(target, List(Constant(f : Field)), _, _) => { // TODO: Verify the correctness of this.
-        target.effectFree
-      }
       case CallAt(target in _, args, _, _) => (target match {
         case Constant(s : Site) => s.effectFree
         case _ => false

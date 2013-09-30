@@ -14,28 +14,22 @@
 //
 package orc.lib.builtin
 
+import orc.error.compiletime.typing.{ArgumentTypecheckingException, ExpectedType}
+import orc.error.runtime.{ArgumentTypeMismatchException, NoSuchMemberException}
+import orc.types.{BinaryCallableType, FieldType, HasFieldsType, RecordType, TupleType, Type, UnaryCallableType}
+import orc.values.{Field, OrcRecord, OrcTuple, OrcValue}
 import orc.values.sites._
-import orc.values.OrcRecord
-import orc.values.Field
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.NoSuchMemberException
-import orc.types.UnaryCallableType
-import orc.types.BinaryCallableType
-import orc.values.OrcTuple
-import orc.types.TupleType
-import orc.error.compiletime.typing.ArgumentTypecheckingException
-import orc.types.Type
-import orc.error.compiletime.typing.ExpectedType
-import orc.values.OrcValue
-import orc.values.OrcRecord
-import orc.values.Field
-import orc.values.OrcRecord
+import orc.types.HasFieldsType
+import orc.types.IntegerType
+import orc.types.IntegerConstantType
+import orc.types.JavaObjectType
+import orc.types.NumberType
 
 /**
   *
   * @author amp
   */
-object GetField extends PartialSite2 with DirectPartialSite {
+object GetField extends PartialSite2 with DirectPartialSite with TypedSite {
   override def name = "GetField"
   def eval(v: AnyRef, f: AnyRef) = {
     val field = f match {
@@ -43,7 +37,7 @@ object GetField extends PartialSite2 with DirectPartialSite {
       case _ => throw new ArgumentTypeMismatchException(1, "Field", f.getClass().getCanonicalName())
     }
     v match {
-      case v: HasFields => v.getField(field)
+      case v: HasFields => Some(v.getField(field))
       case _: OrcValue => 
         throw new ArgumentTypeMismatchException(0, "value with field support", v.getClass().getCanonicalName())
       case _ => // Otherwise we are some java thing so call into Java handlers
@@ -51,21 +45,31 @@ object GetField extends PartialSite2 with DirectPartialSite {
     }
   }
 
-  /*TODO: There needs to be a type here. I think this will require a HasFields type.
   def orcType() = new BinaryCallableType {
     def call(vT: Type, fT: Type): Type = {
       (vT, fT) match {
-        case (_, fT) if  => throw new ArgumentTypecheckingException(0, ExpectedType("a function type"), g)
-        case f: FunctionType => f
+        case (hfT : HasFieldsType, f : FieldType) => hfT.getField(f)
+        case (hfT : HasFieldsType, _) => 
+          throw new ArgumentTypecheckingException(1, ExpectedType("field"), fT)
+          
+        // Special cases for numeric types allowing access to java fields
+        case (`IntegerType` | IntegerConstantType(_), _) => {
+          call(JavaObjectType(classOf[java.math.BigInteger]), fT)
+        }
+        case (`NumberType`, _) => {
+          call(JavaObjectType(classOf[java.math.BigDecimal]), fT)
+        }
+        
+        case (_, _) => 
+          throw new ArgumentTypecheckingException(0, ExpectedType("with fields"), vT)
       }
     }
   }
-  */
 
   override val effectFree = true
 }
 
-object GetElem extends PartialSite2 with DirectPartialSite {
+object GetElem extends PartialSite2 with DirectPartialSite with TypedSite {
   override def name = "GetElem"
   def eval(v: AnyRef, i: AnyRef) = {
     val index = i match {
@@ -90,31 +94,30 @@ object GetElem extends PartialSite2 with DirectPartialSite {
   override val effectFree = true
 }
 
-object ProjectClosure extends TotalSite1 with DirectTotalSite {
+object ProjectClosure extends TotalSite1 with DirectTotalSite with TypedSite {
   override def name = "ProjectClosure"
   def eval(v: AnyRef) = {
     v match {
-      // FIXME: For now only records can be called via their apply method.
-      /*case v: HasFields if v.getField(Field("apply")).isDefined => 
-        eval(v.getField(Field("apply")).get)*/
-      /*case v: HasFields if v.getField(Field("apply")).isDefined => 
-        v.getField(Field("apply")).get*/
-      case v: OrcRecord if v.entries.contains("apply") => 
-        eval(v.entries("apply"))
+      case c: JavaClassProxy => {
+        // Don't let a static apply shadow the constructor
+        c
+      }
+      case v: HasFields if v.hasField(Field("apply")) => eval(v.getField(Field("apply")))
+      /*case v: OrcRecord if v.entries.contains("apply") => 
+        eval(v.entries("apply"))*/
       case _ => v // TODO: Should this check if it is a real callable?
     }
   }
  
-  /*
   def orcType() = new UnaryCallableType {
     def call(argType: Type): Type = {
       argType match {
-        case t:RecordType => tT.call(fT)
-        case _ => throw new ArgumentTypecheckingException(0, ExpectedType("a tuple type"), vT)
+        //case t:RecordType if t.entries.contains("apply") => call(t.entries("apply"))
+        case t:HasFieldsType if t.hasField(FieldType("apply")) => call(t.getField(FieldType("apply")))
+        case _ => argType
       }
     }
   }
-  */
 
   override val effectFree = true
   override val immediatePublish = true
@@ -122,27 +125,26 @@ object ProjectClosure extends TotalSite1 with DirectTotalSite {
 }
 
 
-object ProjectUnapply extends TotalSite1 with DirectTotalSite {
+object ProjectUnapply extends TotalSite1 with DirectTotalSite with TypedSite {
   override def name = "ProjectUnapply"
   def eval(v: AnyRef) = {
     v match {
-      case v: OrcRecord if v.entries.contains("unapply") => 
-        eval(v.entries("unapply"))
-      //case _: HasFields => eval(GetField.eval(v, Field("unapply")))
+      /*case v: OrcRecord if v.entries.contains("unapply") => 
+        eval(v.entries("unapply"))*/
+      case v: HasFields if v.hasField(Field("unapply")) => eval(v.getField(Field("unapply")))
       case _ => v
     }
   }
  
-  /*
-  def orcType() = new BinaryCallableType {
-    def call(vT: Type, fT: Type): Type = {
-      (vT, fT) match {
-        case (tT: TupleType, _) => tT.call(fT)
-        case _ => throw new ArgumentTypecheckingException(0, ExpectedType("a tuple type"), vT)
+  def orcType() = new UnaryCallableType {
+    def call(argType: Type): Type = {
+      argType match {
+        //case t:RecordType if t.entries.contains("unapply") => call(t.entries("unapply"))
+        case t:HasFieldsType if t.hasField(FieldType("unapply")) => call(t.getField(FieldType("unapply")))
+        case _ => argType
       }
     }
   }
-  */
 
   override val effectFree = true
   override val immediatePublish = true

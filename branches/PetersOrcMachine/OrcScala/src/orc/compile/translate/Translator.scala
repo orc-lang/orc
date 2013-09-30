@@ -237,7 +237,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           target match {
             case c@Constant(s: Site) if !s.isInstanceOf[HasFields] => Call(c, as, newtypeargs)
             case v: BoundVar if boundDefs.contains(v) => Call(v, as, newtypeargs)
-            // TODO: It would be nice to avoid the call for defs as well, but that is not possible without adding information to the context.
             case _ => Call(Constant(builtin.ProjectClosure), List(target), None) > f > Call(f, as, newtypeargs)
           }
         })
