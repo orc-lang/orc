@@ -20,12 +20,13 @@ import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.NoSuchMemberException
+import orc.error.runtime.UncallableValueException
 
 /** The type of a Java object.
   *
   * @author dkitchin
   */
-case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType {
+case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType with HasFieldsType {
 
   override def toString = Option(cl.getCanonicalName).getOrElse(cl.getName)
 
@@ -56,19 +57,20 @@ case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_]
   }
 
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
-    argTypes match {
-      case List(FieldType(name)) => {
-        if (typeArgs.size > 0) {
-          throw new TypeArgumentArityException(0, typeArgs.size)
-        }
-        typeOfMember(name, false, javaContext)
-      }
-      case _ => {
-        typeOfMember("apply", false, javaContext) match {
-          case ct: CallableType => ct.call(typeArgs, argTypes)
-          case _ => throw new UncallableTypeException(this)
-        }
-      }
+    throw new UncallableValueException(this);
+  }
+  
+  def getField(f: FieldType): Type = {
+    typeOfMember(f.f, false, javaContext)
+  }
+ 
+  def hasField(f: FieldType): Boolean = {
+    try {
+      typeOfMember(f.f, false, javaContext)
+      true
+    } catch {
+      case _ : NoSuchMemberException =>
+        false
     }
   }
 

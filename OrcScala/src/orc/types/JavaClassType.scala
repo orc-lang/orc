@@ -20,12 +20,13 @@ import orc.compile.typecheck.Typeloader._
 import orc.error.NotYetImplementedException
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.NoMatchingConstructorException
+import orc.error.compiletime.typing.NoSuchMemberException
 
 /** The type of a Java class, providing constructors and static members.
   *
   * @author dkitchin
   */
-case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType {
+case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType with HasFieldsType {
 
   override def toString = "(class " + Option(cl.getCanonicalName).getOrElse(cl.getName) + ")"
 
@@ -50,42 +51,45 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
   }
 
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
-    argTypes match {
-      // Static member access
-      case List(FieldType(name)) => {
-        if (typeArgs.size > 0) {
-          throw new TypeArgumentArityException(0, typeArgs.size)
-        }
-        typeOfMember(name, true, javaContext)
+    // Static member access is via getField
+    // Constructor call
+    val formals = cl.getTypeParameters()
+    if (formals.size != typeArgs.size) {
+      throw new TypeArgumentArityException(formals.size, typeArgs.size)
+    } else {
+      val newJavaContext = javaContext ++ (formals zip typeArgs)
+      def valid(ctor: jvm.Constructor[_]): Boolean = {
+        val ctorFormals = ctor.getGenericParameterTypes()
+        jvm.Modifier.isPublic(ctor.getModifiers()) &&
+          ctorFormals.size == argTypes.size &&
+          {
+            val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
+            (argTypes corresponds orcFormals) { _ < _ }
+          }
       }
-      // Constructor call
-      case _ => {
-        val formals = cl.getTypeParameters()
-        if (formals.size != typeArgs.size) {
-          throw new TypeArgumentArityException(formals.size, typeArgs.size)
+      if (cl.getConstructors() exists valid) {
+        if (formals.isEmpty) {
+          liftJavaType(cl)
         } else {
-          val newJavaContext = javaContext ++ (formals zip typeArgs)
-          def valid(ctor: jvm.Constructor[_]): Boolean = {
-            val ctorFormals = ctor.getGenericParameterTypes()
-            jvm.Modifier.isPublic(ctor.getModifiers()) &&
-              ctorFormals.size == argTypes.size &&
-              {
-                val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
-                (argTypes corresponds orcFormals) { _ < _ }
-              }
-          }
-          if (cl.getConstructors() exists valid) {
-            if (formals.isEmpty) {
-              liftJavaType(cl)
-            } else {
-              liftJavaTypeOperator(cl).operate(typeArgs)
-            }
-          } else {
-            throw new NoMatchingConstructorException()
-          }
+          liftJavaTypeOperator(cl).operate(typeArgs)
         }
+      } else {
+        throw new NoMatchingConstructorException()
       }
     }
   }
-
+  
+  def getField(f: FieldType): Type = {
+    typeOfMember(f.f, true, javaContext)
+  }
+ 
+  def hasField(f: FieldType): Boolean = {
+    try {
+      typeOfMember(f.f, true, javaContext)
+      true
+    } catch {
+      case _ : NoSuchMemberException =>
+        false
+    }
+  }
 }

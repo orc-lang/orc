@@ -50,12 +50,17 @@ abstract class SiteAdaptor extends Site {
 }
 
 abstract class FieldSiteAdapter extends SiteAdaptor with HasFields {
-  def getField(f: Field): Option[AnyRef] = {
-    Some(getField(f.field))
+  def getField(f: Field): AnyRef = {
+    getField(f.field)
+  }
+  def hasField(f: Field): Boolean = {
+    hasField(f.field)
   }
   
   @throws(classOf[TokenException])
   def getField(f: String): Object
+  @throws(classOf[TokenException])
+  def hasField(f: String): Boolean
 }
 
 object SiteAdaptor {

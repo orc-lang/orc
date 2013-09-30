@@ -65,15 +65,20 @@ public abstract class DotSite extends FieldSiteAdapter {
 		}
 	}
 	
-	@Override
-	public Object getField(final String f) throws TokenException {
+    @Override
+    public Object getField(final String f) throws TokenException {
       final Object m = getMember(f);
       if (m != null) {
           return m;
       } else {
           throw new NoSuchMemberException(this, f);
-      }	  
-	}
+      }   
+    }
+    @Override
+    public boolean hasField(final String f) throws TokenException {
+      final Object m = getMember(f);
+      return m != null;
+    }
 	
 	Object getMember(final String f) {
 		return methodMap.get(f);

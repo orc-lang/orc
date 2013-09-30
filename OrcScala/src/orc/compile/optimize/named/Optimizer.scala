@@ -339,11 +339,11 @@ object Optimizer {
     case (CallAt(Constant(GetField) in _, List(Constant(r : OrcRecord), Constant(f: Field)), ctx, _), a) if r.entries.contains(f.field) => 
       Constant(r.getField(f))
     case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
-      Constant(r.getField(Field("apply")).get)
+      Constant(r.getField(Field("apply")))
     case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
       v
     case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
-      Constant(r.getField(Field("unapply")).get)
+      Constant(r.getField(Field("unapply")))
   }
   
   val TupleElim = OptFull("tuple-elim") { (e, a) =>

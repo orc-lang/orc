@@ -48,6 +48,8 @@ class UnboundTypeException(val typeName: String) extends TypeException("Type " +
 
 class UncallableTypeException(val t: Type) extends TypeException("Type " + t + " cannot be called as a site or function.") with SeverityError
 
+class TypeHasNoFieldsException(val t: Type) extends TypeException("Type " + t + " does not have fields.") with SeverityError
+
 class UnrepresentableTypeException(val t: Type) extends TypeException(t.toString() + " has no concrete representation.") with SeverityError
 
 class TypeArgumentInferenceFailureException() extends TypeException("Could not infer missing type arguments; please add explicit type arguments") with SeverityError

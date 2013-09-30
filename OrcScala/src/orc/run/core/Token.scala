@@ -404,42 +404,23 @@ class Token protected (
 
           /* One parameter. May need to block. No need to join. */
           case List(param) => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => {
-                resolveOptional(param) {
-                  /* apply isn't allowed to supersede other member accesses */
-                  case Some(Field(f)) => siteCall(r, List(Field(f)))
-                  /*
-                   * The resolved arg is ignored and the apply member is retried on the parameters.
-                   * The arg is ignored even if it is halted, since the apply member might be a function.
-                   */
-                  case _ => makeCall(entries("apply"), params)
-                }
-              }
-              case s => resolve(param) { arg: AnyRef => siteCall(s, List(arg)) }
-            }
+            resolve(param) { arg: AnyRef => siteCall(target, List(arg)) }
           }
 
           /* Multiple parameters. May need to join. */
           case _ => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
-              case s => {
+            /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
+            pushContinuation({
+              case Some(args: List[_]) => siteCall(target, args.asInstanceOf[List[AnyRef]])
+              case Some(_) => throw new AssertionError("Join resulted in a non-list")
+              case None => halt()
+            })
 
-                /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
-                pushContinuation({
-                  case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
-                  case Some(_) => throw new AssertionError("Join resulted in a non-list")
-                  case None => halt()
-                })
+            /* Create a join over the parameters. */
+            val j = new Join(params, this, runtime)
 
-                /* Create a join over the parameters. */
-                val j = new Join(params, this, runtime)
-
-                /* Perform the join. */
-                j.join()
-              }
-            }
+            /* Perform the join. */
+            j.join()
           }
         }
       }

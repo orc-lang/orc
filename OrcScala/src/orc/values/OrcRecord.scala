@@ -22,6 +22,7 @@ import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 import orc.values.sites.HasFields
 import orc.values.sites.DirectPartialSite
+import orc.error.runtime.UncallableValueException
 
 /**
   *
@@ -35,12 +36,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasF
 
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
 
-  override def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(f : Field) => getField(f)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
+  override def evaluate(args: List[AnyRef]) = throw new UncallableValueException(this)
 
   override def toOrcSyntax() = {
     val formattedEntries =
@@ -66,11 +62,14 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasF
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
   
-  def getField(field: Field): Option[AnyRef] = {
+  def getField(field: Field): AnyRef = {
     entries.get(field.field) match {
-      case v@Some(_) => v
+      case Some(v) => v
       case None => throw new NoSuchMemberException(this, name)
     }
+  }
+  def hasField(field: Field): Boolean = {
+    entries.contains(field.field) 
   }
 
 }
