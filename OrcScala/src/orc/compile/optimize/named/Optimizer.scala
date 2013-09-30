@@ -74,15 +74,17 @@ case class Optimizer(opts : Seq[Optimization]) {
 object Optimizer {
   import WithContext._
   
+  //Logger.logAllToStderr()
+  
   object Pars {
-    private def pars(p: Expression): Set[Expression] = {
+    private def pars(p: Expression): List[Expression] = {
       p match {
         case f || g => pars(f) ++ pars(g)
-        case e => Set(e)
+        case e => List(e)
       }
     }
-    def unapply(e: Expression): Option[Set[Expression]] = Some(pars(e))
-    def unapply(e: WithContext[Expression]): Option[(Set[Expression], TransformContext)] = {
+    def unapply(e: Expression): Option[List[Expression]] = Some(pars(e))
+    def unapply(e: WithContext[Expression]): Option[(List[Expression], TransformContext)] = {
       Some(pars(e.e), e.ctx)
     }
     
@@ -202,8 +204,8 @@ object Optimizer {
     case (f < x <| g, a) if a(f).forces(x) && a(g).publishesAtMost(1) && Analysis.cost(g) <= flattenThreshold => g > x > f
   }
   val LateBindElim = Opt("late-bind-elim") {
-    case (f < x <| g, a) if a(f).strictOn(x) && a(g).publishesAtMost(1) => g > x > f
-    //FIXME: Unsound if g does not publish: case (f < x <| g, a) if a(g).immediatePublish && a(g).publishesAtMost(1) => g > x > f
+    case (f < x <| g, a) if a(f).strictOn(x) && a(g).publications <= 1 => g > x > f
+    case (f < x <| g, a) if a(g).immediatePublish && (a(g).publications only 1) => g > x > f
     case ((Stop() in _) < x <| g, a) => g > x > Stop()
   }
   val StopEquiv = Opt("stop-equiv") {
@@ -264,7 +266,8 @@ object Optimizer {
   val ConstProp = Opt("constant-propogation") {
     case (g < x <| ((y : Argument) in _), a) => g.e.subst(y, x)
     case (((y : Constant) in _) > x > g, a) => g.e.subst(y, x)
-    case (((y : Argument) in ctx) > x > g, a) if a(y in ctx).immediatePublish => g.subst(y, x) // FIXME: This may not be triggering in every case that it should.
+    case (((y : Argument) in ctx) > x > g, a) if a(y in ctx).immediatePublish => g.subst(y, x) 
+    // FIXME: This may not be triggering in every case that it should.
   }
 
   val LiftUnrelated = Opt("lift-unrelated") {
@@ -294,10 +297,8 @@ object Optimizer {
   val InlineDef = OptFull("inline-def") { (e, a) =>
     import a.ImplicitResults._
     
-    // FIXME: This needs to handle type arguments of the def being inlined
-    
     e match {
-      case CallAt((f: BoundVar) in ctx, args, _, _) => ctx(f) match {
+      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
         case Bindings.DefBound(dctx, _, d) => {
           def cost = Analysis.cost(d.body)
           val bodyfree = d.body.freevars
@@ -314,8 +315,15 @@ object Optimizer {
           //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
           if ( recursive || Analysis.cost(d.body) > costThreshold || !ctxsCompat)
             None // No inlining of recursive functions or large functions.
-          else
-            Some(d.body.substAll(((d.formals: List[Argument]) zip args).toMap))
+          else {
+            val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
+            val typeSubst = targs match {
+              case Some(as) => (d.typeformals:List[Typevar]) zip as
+              case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
+            }
+            val newBody = bodyWithValArgs.substAllTypes(typeSubst.toMap)
+            Some(newBody)
+          }
         }
         case _ => None
       }

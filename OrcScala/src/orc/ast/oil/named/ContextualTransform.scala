@@ -81,6 +81,7 @@ trait ContextualTransform extends NamedASTFunction {
         case e@(left < x <| right) => transform(left)(ctx + LateBound(ctx, e.asInstanceOf[LateBind])) < x <| recurse(right)
         case left ow right => recurse(left) ow recurse(right)
         case Limit(f) => Limit(recurse(f))
+        case Resilient(f) => Resilient(recurse(f))
         case e@DeclareDefs(defs, body) => {
           val newctxrec = ctx extendBindings (defs map { RecursiveDefBound(ctx, e, _) })
           val newdefs = defs map { transform(_)(newctxrec) }
