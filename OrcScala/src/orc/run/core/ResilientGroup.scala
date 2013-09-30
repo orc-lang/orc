@@ -15,17 +15,25 @@
 package orc.run.core
 
 import orc.run.Logger
+import orc.OrcEvent
+import orc.CaughtEvent
 
 /** A ResilientGroup is the group associated with the expression resilient(e).
   * It overrides the kill method and prevents it's children from being killed.
   *
   * @author amp
   */
-class ResilientGroup(private var parent: Group) extends Subgroup(parent) {
+class ResilientGroup(private val parent: Group) extends Group {
   var wasKilled = false
- 
+  
+  override val runtime = parent.runtime
+
+  override val root = parent.root
+  
+  parent.add(this)
+  root.add(this)
+
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
-    //Logger.info(s"$this publishing $v from $t ($wasKilled)")
     if (wasKilled) {
       t.halt()
     } else {
@@ -35,17 +43,28 @@ class ResilientGroup(private var parent: Group) extends Subgroup(parent) {
   }
 
   def onHalt() = synchronized {
-    //Logger.info(s"$this halted. $wasKilled")
     parent.remove(this)
+    root.remove(this)
   }
 
   override def kill() = synchronized {
-    //Logger.info(s"$this being killed. Marking and continuing.")
     wasKilled = true
-    root.add(this)
     parent.remove(this)
-    parent = root
   }
 
   override def checkAlive(): Boolean = !isKilled()
+
+  def notifyOrc(event: OrcEvent) = synchronized { parent }.notifyOrc(event)
+
+  def run() {
+    try {
+      if (synchronized { parent.isKilled() }) { kill() }
+    } catch {
+      case e: InterruptedException => Thread.currentThread().interrupt()
+      case e: Throwable => { notifyOrc(CaughtEvent(e)) }
+    }
+  }
+
+  override def toString = s"${super.toString}($parent, $root, $wasKilled)"
 }
+

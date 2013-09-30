@@ -27,7 +27,7 @@ import orc.lib.builtin.MakeResilient
 class TranslateMakeResilient(val reportProblem: CompilationException with ContinuableSeverity => Unit) extends NamedASTTransform {
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
-    case Call(Constant(mr: MakeResilient), List(f), None) => 
+    case Call(Constant(mr: MakeResilient), List(f), None | Some(List())) => 
       val arity = mr.n
       val f1 = new BoundVar()
       val formals = (1 to arity) map (_ => new BoundVar()) toList
