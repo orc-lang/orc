@@ -102,7 +102,12 @@ class PrettyPrint {
           }
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
-      case _ => "???"
+      case RecordType(entries) =>  {
+        val ks = entries.keys.toList
+        val entryStrings = ks map { k => k + " :: " + entries(k) }
+        entryStrings.mkString("{. ", ", ", " .}")
+      }
+      case _ => ast.getClass().toString()
     })
   }
 }

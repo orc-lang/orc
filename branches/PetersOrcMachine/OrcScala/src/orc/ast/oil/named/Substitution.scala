@@ -39,6 +39,7 @@ trait Substitution[X <: NamedAST] {
 
   def subst(t: Type, u: Typevar): X = Substitution(t, u)(this).asInstanceOf[X]
   def subst(t: Typevar, s: String): X = Substitution(t, UnboundTypevar(s))(this).asInstanceOf[X]
+  def substAllTypes(subs : collection.Map[Typevar, Type]): X = Substitution.allTypes(subs)(this).asInstanceOf[X]
   def substAllTypes(sublist: List[(Type, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Typevar, Type]()
     for ((t, s) <- sublist) {

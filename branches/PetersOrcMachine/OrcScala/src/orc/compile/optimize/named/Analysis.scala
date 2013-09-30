@@ -118,7 +118,16 @@ trait AnalysisResults {
   def strictOnSet : Set[Var]
   
   /**
-   * Does this expression force the variable <code>x</code> before performing any visible action other than halting?
+   * Does this expression always halt immediate without publishing if 
+   * the variable <code>y</code> halts?
+   */
+  def haltsWith(x : Var) = haltsWithSet(x)
+  def haltsWithSet : Set[Var]
+  // FIXME: How to haltsWith and forces relate?
+  
+  /**
+   * Does this expression force the variable <code>x</code> before performing any visible 
+   * action other than halting?
    * Specifically is <code>x</code> forced before the expression has side effects or publishes.
    */
   def forces(x : Var) = forcesSet(x)
@@ -146,7 +155,8 @@ case class AnalysisResultsConcrete(
   publications: Range, 
   strictOnSet: Set[Var],
   forcesSet: Set[Var],
-  effectFree: Boolean
+  effectFree: Boolean,
+  haltsWithSet: Set[Var] = Set()
     ) extends AnalysisResults {
   if( immediatePublish && !publishesAtLeast(1) )
     assert(publishesAtLeast(1), "immediatePublish must imply at least one publication") 
@@ -236,13 +246,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case HasType(b, _) in ctx => this(b)(ctx).immediateHalt
       case Constant(_) in _ => true
       case (v : BoundVar) in ctx => ctx(v) match {
-        case Bindings.SeqBound(_, _) 
-           | Bindings.DefBound(_, _, _) 
-           | Bindings.RecursiveDefBound(_, _, _) => true
+        case Bindings.SeqBound(_, _) => true
         case b : Bindings.LateBound => {
           b.valueExpr.immediateHalt
         }
         case _ => false
+        // FIXME: There should be cases for Bindings.DefBound(_, _, _) | Bindings.RecursiveDefBound(_, _, _)
       }
       case _ => false
     }
@@ -273,13 +282,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case HasType(b, _) in ctx => this(b)(ctx).immediatePublish
       case Constant(_) in _ => true
       case (v : BoundVar) in ctx => ctx(v) match {
-        case Bindings.SeqBound(_, _) 
-           | Bindings.DefBound(_, _, _) 
-           | Bindings.RecursiveDefBound(_, _, _) => true
+        case Bindings.SeqBound(_, _) => true
         case b : Bindings.LateBound => {
           b.valueExpr.immediatePublish
         }
         case _ => false
+        // FIXME: There should be cases for Bindings.DefBound(_, _, _) | Bindings.RecursiveDefBound(_, _, _)
       }
       case _ => false
     }
@@ -337,7 +345,15 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     e match {
       case Stop() in _ => Set()
       case CallAt(target in _, args, _, ctx) => (target match {
-        case Constant(s : Site) => (args collect { case v : Var => v }).toSet // Somehow this is not catching references to some variables
+        case Constant(s : Site) => {
+          val vars = (args collect { case v : Var => v })
+          val mayStops = vars filter { v => !((v in ctx).publications > 0) }
+          mayStops match {
+            case List() => vars.toSet
+            case List(v) => Set(v)
+            case _ => Set()
+          }
+        }
         case v : BoundVar => {
           val callstr = ctx(v) match {
             case Bindings.DefBound(ctx, _, d) => d in ctx match {
@@ -369,12 +385,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Constant(_) in _ => Set()
       case (v : BoundVar) in ctx => {
         ctx(v) match {
-          case Bindings.DefBound(ctx2, _, d) =>  d in ctx match {
+          /*case Bindings.DefBound(ctx2, _, d) => d in ctx match {
               case DefAt(name in _, formals, body, _, _, _, _) => {
                 assert(name == v)
                 ((body.freevars -- formals) + v).collect{case v : Var => v}
               }
-            }
+            }*/
           case _ => Set(v)
         }
       }
