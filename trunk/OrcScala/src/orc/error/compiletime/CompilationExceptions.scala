@@ -146,7 +146,7 @@ case class UnguardedRecursionException() extends SyntacticException("Unguarded r
   */
 case class IncludeFileException(val includeFileName: String, cause: Throwable)
   extends CompilationException("Problem including " + includeFileName + (if (cause == null) "" else ": " + cause.toString()), cause)
-  with SeverityError
+  with SeverityFatal
 
 /** Indicate a problem with site resolution. Ideally
   * this would be a loadtime error, but currently site
