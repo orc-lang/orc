@@ -42,6 +42,7 @@ public class OrcParserTest {
         final byte[] buffer = new byte[(int) new File(filePath).length()];
         final BufferedInputStream f = new BufferedInputStream(new FileInputStream(filePath));
         f.read(buffer);
+        f.close();
         return new String(buffer);
     }
 

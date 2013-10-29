@@ -99,6 +99,7 @@ public class ElizaMain {
                     s = in.readLine();
                     if (s == null) break;
                 }
+                in.close();
             } catch (IOException e) {
                 System.out.println("Problem reading test file.");
                 return 1;

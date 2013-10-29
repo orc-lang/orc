@@ -79,6 +79,7 @@ public class ExpectedOutput {
                 oneOutput = new StringBuilder();
             }
         }
+        r.close();
     }
 
     public boolean contains(final String actual) {
