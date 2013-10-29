@@ -24,8 +24,8 @@ trait ContextualTransform {
   def apply(c: SiteDef): SiteDef = transformSiteDef(c in TransformContext())
   
   def apply(c: PorcAST): PorcAST = c match {
-    case c: Expr => this(c)
     case c: Value => this(c)
+    case c: Expr => this(c)
     case c: SiteDef => this(c)
   }
 

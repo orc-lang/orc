@@ -40,8 +40,9 @@ class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expre
       removeUnusedTypes.timePhase >>>
       makeResilientTrans.timePhase >>>
       outputIR(2) >>>
-      //optimize.timePhase >>>
-      //outputIR(3) >>>      
+      optimize.timePhase >>>
+      removeUnusedTypes.timePhase >>>      
+      outputIR(3) >>>      
       deBruijn.timePhase >>>
       outputOil
 }

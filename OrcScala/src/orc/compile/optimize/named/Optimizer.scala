@@ -25,6 +25,7 @@ import orc.values.Field
 import orc.lib.builtin.GetElem
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
+import orc.compile.CompilerOptions
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -46,7 +47,7 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
   *
   * @author amp
   */
-case class Optimizer(opts : Seq[Optimization]) {
+case class Optimizer(co: CompilerOptions) {
   def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression]) : Expression = {
     val trans = new ContextualTransform.Pre {
       override def onExpressionCtx = {
@@ -68,6 +69,214 @@ case class Optimizer(opts : Seq[Optimization]) {
     }
     
     trans(e)
+  }
+
+  import Optimizer._
+
+  /*val Test = Opt("Test") {
+    case (e@IndependantLateBinds(f, lbs), a) => println(s"Test: $f \n<<|\n $lbs\n........"); e
+  }*/
+
+  val LateBindReorder = Opt("late-bind-reorder") {
+    case (IndependantLateBinds(f, lbs), a) if lbs.exists(p => a(f).strictOn(p._1)) => {
+      val lbs1 = lbs.sortBy(p => !a(f).strictOn(p._1))
+      LateBinds(f, lbs1.map(p => (p._1, p._2.e)))
+    }
+  }
+  
+  val flattenThreshold = co.options.optimizationFlags("5c:late-bind-flatten-threshold").asInt(5)
+
+  val LateBindElimFlatten = Opt("late-bind-elim-flatten") {
+    case (f < x <| g, a) if a(f).forces(x) && a(g).publishesAtMost(1) && Analysis.cost(g) <= flattenThreshold => g > x > f
+  }
+  val LateBindElim = Opt("late-bind-elim") {
+    case (f < x <| g, a) if a(f).strictOn(x) && a(g).publications <= 1 => g > x > f
+    case (f < x <| g, a) if a(g).immediatePublish && (a(g).publications only 1) => g > x > f
+    case ((Stop() in _) < x <| g, a) => g > x > Stop()
+  }
+  val StopEquiv = Opt("stop-equiv") {
+    case (f, a) if f != Stop() && a(f).silent && a(f).effectFree && a(f).immediateHalt => Stop()
+  }
+  val SeqElim = Opt("seq-elim") {
+    case (f > x > g, a) if a(f).silent => f
+    case (f > x > g, a) if a(f).effectFree && a(f).immediatePublish && (a(f).publications only 1) && a(f).immediateHalt && !g.freevars.contains(x) => g
+  }
+  val SeqExp = Opt("seq-expansion") {
+    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
+      // This doesn't really eliminate any code and I cannot think of a case where 
+      val (sil, nsil) = fs.partition(f => a(f in ctx).silent)
+      (sil.isEmpty, nsil.isEmpty) match {
+        case (false, false) => (Pars(nsil) > x > g) || Pars(sil)
+        case (false, true) => Pars(sil)
+        case (true, false) => e
+      }
+    }
+    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => f.isInstanceOf[Constant]) => {
+      val cs = fs.collect{ case c : Constant => c }
+      val es = fs.filter(f => !f.isInstanceOf[Constant])
+      (cs.isEmpty, es.isEmpty) match {
+        case (false, false) => (Pars(es) > x > g.e) || Pars(cs.map(g.e.subst(_, x)))
+        case (false, true) => Pars(cs.map(g.e.subst(_, x)))
+        case (true, false) => e.e
+      }
+    }
+  }
+  
+  val SeqReassoc = Opt("seq-reassoc") {
+    case (Seqs(ss, en), a) if ss.size > 1 => {
+      Seqs(ss, en) 
+    }
+  }
+  val DefSeqNorm = Opt("def-seq-norm") {
+    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (e.freevars & defs.map(_.name).toSet).isEmpty  => {
+       DeclareDefs(defs, b > x > e)
+    }
+  }
+  
+  
+  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
+    e match {
+      case f > x > y if x == y.e => Some(f)
+      case _ => None
+    }
+  }
+
+  val ParElim = OptSimple("par-elim") {
+    case (Stop() in _) || g => g.e
+    case f || (Stop() in _) => f.e
+  }
+  val OWElim = Opt("otherwise-elim") {
+    case (f ow g, a) if a(f).talkative => f.e
+    case ((Stop() in _) ow g, a) => g.e
+  }
+  val ConstProp = Opt("constant-propogation") {
+    case (g < x <| ((y : Argument) in _), a) => g.e.subst(y, x)
+    case (((y : Constant) in _) > x > g, a) => g.e.subst(y, x)
+    case (((y : Argument) in ctx) > x > g, a) if a(y in ctx).immediatePublish => g.subst(y, x) 
+    // FIXME: This may not be triggering in every case that it should.
+  }
+
+  val LiftUnrelated = Opt("lift-unrelated") {
+    case (e@(Pars(es, ctx) < x <| g), a) if es.exists(!_.freevars.contains(x)) => {
+      val (f, h) = es.partition(_.freevars.contains(x))
+      (f.isEmpty, h.isEmpty) match {
+        case (false, false) => (Pars(f) < x <| g) || Pars(h)
+        case (true, false) => (g >> Stop()) || Pars(h)
+        case (false, true) => e
+      }
+    }
+  }
+  
+  val LimitElim = Opt("limit-elim") {
+    case (LimitAt(f), a) if a(f).publishesAtMost(1) && a(f).effectFree => f
+  }
+  val LimitCompChoice = Opt("limit-compiler-choice") {
+    case (LimitAt(Pars(fs, ctx)), a) if fs.size > 1 && fs.exists(f => a(f in ctx).immediatePublish) => {
+      // This could even be smarter and pick the "best" or "fastest" expression.
+      val Some(f1) = fs.find(f => a(f in ctx).immediatePublish)
+      Limit(f1)
+    }    
+  }
+  
+  val inlineCostThreshold = co.options.optimizationFlags("5c:inline-threshold").asInt(15)
+  
+  val InlineDef = OptFull("inline-def") { (e, a) =>
+    import a.ImplicitResults._
+    
+    e match {
+      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
+        case Bindings.DefBound(dctx, _, d) => {
+          def cost = Analysis.cost(d.body)
+          val bodyfree = d.body.freevars
+          def recursive = bodyfree.contains(d.name)
+          def ctxsCompat = {
+            def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable) && b.variable != d.name
+            val ctxTrimed = ctx.bindings.filter(isRelevant)
+            val dctxTrimed = dctx.bindings.filter(isRelevant)
+            ctxTrimed == dctxTrimed
+          }
+          //if (cost > costThreshold) 
+          //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
+          //if( !ctxsCompat ) 
+          //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
+          if ( recursive || Analysis.cost(d.body) > inlineCostThreshold || !ctxsCompat)
+            None // No inlining of recursive functions or large functions.
+          else {
+            val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
+            val typeSubst = targs match {
+              case Some(as) => (d.typeformals:List[Typevar]) zip as
+              case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
+            }
+            val newBody = bodyWithValArgs.substAllTypes(typeSubst.toMap)
+            Some(newBody)
+          }
+        }
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+  
+  val DefElim = Opt("def-elim") {
+    case (DeclareDefsAt(defs, ctx, b), a) if (b.freevars & defs.map(_.name).toSet).isEmpty => b
+  }
+  
+  def isClosureBinding(b: Bindings.Binding) = {
+    import Bindings._
+    b match {
+      case DefBound(_,_,_) | RecursiveDefBound(_,_,_) => true
+      case _ => false
+    } 
+  }
+  
+  val AccessorElim = Opt("accessor-elim") {
+    case (CallAt(Constant(GetField) in _, List(Constant(r : OrcRecord), Constant(f: Field)), ctx, _), a) if r.entries.contains(f.field) => 
+      Constant(r.getField(f))
+    case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
+      Constant(r.getField(Field("apply")))
+    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
+      v
+    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
+      Constant(r.getField(Field("unapply")))
+  }
+  
+  val TupleElim = OptFull("tuple-elim") { (e, a) =>
+    import a.ImplicitResults._, Bindings._
+    e match {
+      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size && (args(i) in tctx).immediatePublish => Some(args(i))
+          case _ => None
+        }
+      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) > x > e if (v in ctx).immediatePublish && !e.freevars.contains(x) => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
+          case _ => None
+        }
+      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
+        val i = bi.intValue
+        ctx(v) match {
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
+          case _ => None
+        }
+      case _ => None
+    }
+  }
+
+  val allOpts = List(
+      SeqReassoc,
+      DefSeqNorm, TupleElim, AccessorElim, DefElim, 
+      LateBindReorder, LiftUnrelated, 
+      LimitCompChoice, LimitElim, ConstProp, 
+      StopEquiv, LateBindElim, ParElim, OWElim, 
+      SeqExp, SeqElim, SeqElimVar,
+      InlineDef, LateBindElimFlatten
+        )
+
+  val opts = allOpts.filter{ o =>
+    co.options.optimizationFlags(s"5c:${o.name}").asBool()
   }
 }
 
@@ -188,201 +397,5 @@ object Optimizer {
       }
     }
   }
-  
-  /*val Test = Opt("Test") {
-    case (e@IndependantLateBinds(f, lbs), a) => println(s"Test: $f \n<<|\n $lbs\n........"); e
-  }*/
-
-  val LateBindReorder = Opt("late-bind-reorder") {
-    case (IndependantLateBinds(f, lbs), a) if lbs.exists(p => a(f).strictOn(p._1)) => {
-      val lbs1 = lbs.sortBy(p => !a(f).strictOn(p._1))
-      LateBinds(f, lbs1.map(p => (p._1, p._2.e)))
-    }
-  }
-  val flattenThreshold = 5
-  val LateBindElimFlatten = Opt("late-bind-elim-flatten") {
-    case (f < x <| g, a) if a(f).forces(x) && a(g).publishesAtMost(1) && Analysis.cost(g) <= flattenThreshold => g > x > f
-  }
-  val LateBindElim = Opt("late-bind-elim") {
-    case (f < x <| g, a) if a(f).strictOn(x) && a(g).publications <= 1 => g > x > f
-    case (f < x <| g, a) if a(g).immediatePublish && (a(g).publications only 1) => g > x > f
-    case ((Stop() in _) < x <| g, a) => g > x > Stop()
-  }
-  val StopEquiv = Opt("stop-equiv") {
-    case (f, a) if f != Stop() && a(f).silent && a(f).effectFree && a(f).immediateHalt => Stop()
-  }
-  val SeqElim = Opt("seq-elim") {
-    case (f > x > g, a) if a(f).silent => f
-    case (f > x > g, a) if a(f).effectFree && a(f).immediatePublish && (a(f).publications only 1) && a(f).immediateHalt && !g.freevars.contains(x) => g
-  }
-  val SeqExp = Opt("seq-expansion") {
-    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
-      // This doesn't really eliminate any code and I cannot think of a case where 
-      val (sil, nsil) = fs.partition(f => a(f in ctx).silent)
-      (sil.isEmpty, nsil.isEmpty) match {
-        case (false, false) => (Pars(nsil) > x > g) || Pars(sil)
-        case (false, true) => Pars(sil)
-        case (true, false) => e
-      }
-    }
-    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => f.isInstanceOf[Constant]) => {
-      val cs = fs.collect{ case c : Constant => c }
-      val es = fs.filter(f => !f.isInstanceOf[Constant])
-      (cs.isEmpty, es.isEmpty) match {
-        case (false, false) => (Pars(es) > x > g.e) || Pars(cs.map(g.e.subst(_, x)))
-        case (false, true) => Pars(cs.map(g.e.subst(_, x)))
-        case (true, false) => e.e
-      }
-    }
-  }
-  
-  val SeqReassoc = Opt("seq-reassoc") {
-    case (Seqs(ss, en), a) if ss.size > 1 => {
-      Seqs(ss, en) 
-    }
-  }
-  val DefSeqNorm = Opt("def-seq-norm") {
-    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (e.freevars & defs.map(_.name).toSet).isEmpty  => {
-       DeclareDefs(defs, b > x > e)
-    }
-  }
-  
-  
-  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
-    e match {
-      case f > x > y if x == y.e => Some(f)
-      case _ => None
-    }
-  }
-
-  val ParElim = OptSimple("par-elim") {
-    case (Stop() in _) || g => g.e
-    case f || (Stop() in _) => f.e
-  }
-  val OWElim = Opt("otherwise-elim") {
-    case (f ow g, a) if a(f).talkative => f.e
-    case ((Stop() in _) ow g, a) => g.e
-  }
-  val ConstProp = Opt("constant-propogation") {
-    case (g < x <| ((y : Argument) in _), a) => g.e.subst(y, x)
-    case (((y : Constant) in _) > x > g, a) => g.e.subst(y, x)
-    case (((y : Argument) in ctx) > x > g, a) if a(y in ctx).immediatePublish => g.subst(y, x) 
-    // FIXME: This may not be triggering in every case that it should.
-  }
-
-  val LiftUnrelated = Opt("lift-unrelated") {
-    case (e@(Pars(es, ctx) < x <| g), a) if es.exists(!_.freevars.contains(x)) => {
-      val (f, h) = es.partition(_.freevars.contains(x))
-      (f.isEmpty, h.isEmpty) match {
-        case (false, false) => (Pars(f) < x <| g) || Pars(h)
-        case (true, false) => (g >> Stop()) || Pars(h)
-        case (false, true) => e
-      }
-    }
-  }
-  
-  val LimitElim = Opt("limit-elim") {
-    case (LimitAt(f), a) if a(f).publishesAtMost(1) && a(f).effectFree => f
-  }
-  val LimitCompChoice = Opt("limit-compiler-choice") {
-    case (LimitAt(Pars(fs, ctx)), a) if fs.size > 1 && fs.exists(f => a(f in ctx).immediatePublish) => {
-      // This could even be smarter and pick the "best" or "fastest" expression.
-      val Some(f1) = fs.find(f => a(f in ctx).immediatePublish)
-      Limit(f1)
-    }    
-  }
-  
-  val costThreshold = 15
-  
-  val InlineDef = OptFull("inline-def") { (e, a) =>
-    import a.ImplicitResults._
-    
-    e match {
-      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
-        case Bindings.DefBound(dctx, _, d) => {
-          def cost = Analysis.cost(d.body)
-          val bodyfree = d.body.freevars
-          def recursive = bodyfree.contains(d.name)
-          def ctxsCompat = {
-            def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable) && b.variable != d.name
-            val ctxTrimed = ctx.bindings.filter(isRelevant)
-            val dctxTrimed = dctx.bindings.filter(isRelevant)
-            ctxTrimed == dctxTrimed
-          }
-          //if (cost > costThreshold) 
-          //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
-          //if( !ctxsCompat ) 
-          //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
-          if ( recursive || Analysis.cost(d.body) > costThreshold || !ctxsCompat)
-            None // No inlining of recursive functions or large functions.
-          else {
-            val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
-            val typeSubst = targs match {
-              case Some(as) => (d.typeformals:List[Typevar]) zip as
-              case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
-            }
-            val newBody = bodyWithValArgs.substAllTypes(typeSubst.toMap)
-            Some(newBody)
-          }
-        }
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-  
-  val DefElim = Opt("def-elim") {
-    case (DeclareDefsAt(defs, ctx, b), a) if (b.freevars & defs.map(_.name).toSet).isEmpty => b
-  }
-  
-  def isClosureBinding(b: Bindings.Binding) = {
-    import Bindings._
-    b match {
-      case DefBound(_,_,_) | RecursiveDefBound(_,_,_) => true
-      case _ => false
-    } 
-  }
-  
-  val AccessorElim = Opt("accessor-elim") {
-    case (CallAt(Constant(GetField) in _, List(Constant(r : OrcRecord), Constant(f: Field)), ctx, _), a) if r.entries.contains(f.field) => 
-      Constant(r.getField(f))
-    case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
-      Constant(r.getField(Field("apply")))
-    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
-      v
-    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
-      Constant(r.getField(Field("unapply")))
-  }
-  
-  val TupleElim = OptFull("tuple-elim") { (e, a) =>
-    import a.ImplicitResults._, Bindings._
-    e match {
-      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
-        val i = bi.intValue
-        ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size && (args(i) in tctx).immediatePublish => Some(args(i))
-          case _ => None
-        }
-      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) > x > e if (v in ctx).immediatePublish && !e.freevars.contains(x) => 
-        val i = bi.intValue
-        ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
-          case _ => None
-        }
-      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
-        val i = bi.intValue
-        ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
-          case _ => None
-        }
-      case _ => None
-    }
-  }
-  
-  val basicOpts = List(SeqReassoc, DefSeqNorm, TupleElim, AccessorElim, DefElim, LateBindReorder, LiftUnrelated, LimitCompChoice, LimitElim, ConstProp, StopEquiv, LateBindElim, ParElim, OWElim, SeqExp, SeqElim, SeqElimVar)
-  val secondOpts = List(InlineDef, LateBindElimFlatten)
-  
-  // This optimization makes mandelbrot slightly slower. I'm not sure why. I think it will be a useful optimization in some cases anyway. It may be that when instruction dispatch is faster removing parallelism will be more effective.
-  val flatteningOpts = List(LateBindElimFlatten)
 }
 

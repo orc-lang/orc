@@ -155,6 +155,8 @@ case class LambdaArgumentBound(ctx: TransformContext, ast: Lambda, variable: Var
 
 final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext)
 object WithContext {
+  import scala.language.implicitConversions
+  
   @inline
   implicit def withoutContext[E <: PorcAST](e: WithContext[E]): E = e.e
 }
