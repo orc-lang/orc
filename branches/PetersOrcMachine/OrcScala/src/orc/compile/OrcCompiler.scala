@@ -158,17 +158,32 @@ trait CoreOrcCompilerPhases {
 
   val fractionDefs = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
     val phaseName = "fractionDefs"
-    override def apply(co: CompilerOptions) = { FractionDefs(_) }
+    override def apply(co: CompilerOptions) = { ast => 
+      if(co.options.optimizationFlags("fraction-defs").asBool())
+        FractionDefs(ast)
+      else
+        ast
+    }
   }
 
   val removeUnusedDefs = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedDefs"
-    override def apply(co: CompilerOptions) = { ast => RemoveUnusedDefs(ast) }
+    override def apply(co: CompilerOptions) = { ast => 
+      if(co.options.optimizationFlags("remove-unused-defs").asBool())
+        RemoveUnusedDefs(ast) 
+      else
+        ast
+    }
   }
 
   val removeUnusedTypes = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "removeUnusedTypes"
-    override def apply(co: CompilerOptions) = { ast => RemoveUnusedTypes(ast) }
+    override def apply(co: CompilerOptions) = { ast => 
+      if(co.options.optimizationFlags("remove-unused-types").asBool())
+        RemoveUnusedTypes(ast)
+      else
+        ast
+    }
   }
 
   val typeCheck = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
@@ -213,12 +228,13 @@ trait CoreOrcCompilerPhases {
     override def apply(co: CompilerOptions) = new TranslateMakeResilient(co.reportProblem)(_)
   }
 
-  def optimize = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
+  lazy val optimize = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     import orc.compile.optimize.named._
     import named5c._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
-      val maxPasses = 10
+      //println(co.options.optimizationFlags)
+      val maxPasses = co.options.optimizationFlags("5c:max-passes").asInt(8)
       
       def opt(prog : Expression, pass : Int) : Expression = {
         def logAnalysis() = {
@@ -253,11 +269,10 @@ trait CoreOrcCompilerPhases {
           s"Orc5C Optimization Pass $pass: $s"
         }
 
-        Logger.info(logAnalysis())
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
         
         val analyzer = new ExpressionAnalyzer
-        val opts = Optimizer.basicOpts ++ (if( pass > 1 ) Optimizer.secondOpts else List())
-        val prog1 = Optimizer(opts)(prog, analyzer)
+        val prog1 = Optimizer(co)(prog, analyzer)
 
         if((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -266,7 +281,10 @@ trait CoreOrcCompilerPhases {
         }
       }
       
-      opt(ast, 1)
+      if(co.options.optimizationFlags("5c").asBool())
+        opt(ast, 1)
+      else
+        ast
     }
   }
 
@@ -291,7 +309,7 @@ trait CoreOrcCompilerPhases {
   }
 
   // Generate XML for the AST and echo it to console; useful for testing.
-  val outputOil = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] {
+  lazy val outputOil = new CompilerPhase[CompilerOptions, orc.ast.oil.nameless.Expression, orc.ast.oil.nameless.Expression] {
     val phaseName = "outputOil"
     override def apply(co: CompilerOptions) = { ast =>
 
