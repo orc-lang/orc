@@ -16,6 +16,7 @@ package orc.test;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -31,7 +32,7 @@ public final class TestUtils {
 	    /**
 	     * The timeout to use for testing. This provides a central location to change it.
 	     */
-	    public static final long TESTING_TIMEOUT = 15L;
+	    public static final long TESTING_TIMEOUT = 20L;
 	    
         protected String suiteName;
 	    protected File orcFile;
@@ -70,6 +71,10 @@ public final class TestUtils {
     }
 
     public static TestSuite buildSuite(final String suitename, Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
+        return buildSuite(suitename, testCaseClass, bindings, true, examplePaths);
+    }
+
+    public static TestSuite buildSuite(final String suitename, Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, boolean ignoreNoExpected, final File... examplePaths) {
         final TestSuite suite = new TestSuite(suitename);
         for (final File examplePath : examplePaths) {
             final LinkedList<File> files = new LinkedList<File>();
@@ -83,7 +88,7 @@ public final class TestUtils {
                     throw new AssertionError(e);
                 }
                 // skip tests with no expected output
-                if (expecteds.isEmpty()) {
+                if (expecteds.isEmpty() && ignoreNoExpected) {
                     continue;
                 }
                 if (nestedSuite == null) {
@@ -108,7 +113,7 @@ public final class TestUtils {
         return suite;
     }
 
-	public static void findOrcFiles(final File base, final LinkedList<File> files) {
+	public static void findOrcFiles(final File base, final List<File> files) {
 		if (base.isFile() && base.getPath().endsWith(".orc")) {
 			files.add(base);
 			return;

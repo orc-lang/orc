@@ -33,7 +33,7 @@ import orc.test.TestUtils.OrcTestCase;
 public class RepeatedSingleTest {
 
 	public static Test suite() {
-		Test t = TestUtils.buildSuite(RepeatedSingleTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), new File(System.getenv("TEST")));
+		Test t = TestUtils.buildSuite(RepeatedSingleTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), true, new File(System.getenv("TEST")));
 		return new RepeatedTest(t, 500);
 	}
 
