@@ -40,16 +40,19 @@ object OrcForTesting {
   def compile(filename: String, options: OrcBindings): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
+    var reader : InputStreamReader = null
     try {
       options.filename = filename
       engine.setBindings(options, ENGINE_SCOPE)
-      val reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
+      reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
       engine.compile(reader).asInstanceOf[OrcScriptEngine[AnyRef]#OrcCompiledScript]
     } catch {
       case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
     } finally {
-      Console.out.flush();
-      Console.err.flush();
+      if(reader != null)
+        reader.close()
+      Console.out.flush()
+      Console.err.flush()
     }
   }
 
