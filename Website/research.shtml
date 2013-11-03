@@ -46,7 +46,7 @@
 
 <ul>
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/kitchin_dissertation_20136.pdf">Orchestration and Atomicity</a>
-	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/99999">hdl</a> -->
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/21166">hdl</a>
 	<a class="bibtex" href="papers/kitchin_dissertation_20136.bib">BibTeX</a>
 	<br />
 	David Kitchin<br />
