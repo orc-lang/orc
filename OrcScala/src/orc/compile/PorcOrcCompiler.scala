@@ -23,12 +23,13 @@ import java.io.OutputStreamWriter
 import orc.ast.porc.TranslateToPorcEval
 import orc.compile.translate.TranslateToPorc
 import orc.ast.oil.named.Expression
+import orc.error.compiletime.CompileLogger
 
 /**
   * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
   * @author amp
   */
-class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
+class PorcOrcCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
   with StandardOrcCompilerEnvInterface[orc.run.porc.Expr]
   with CoreOrcCompilerPhases {
   
@@ -116,7 +117,7 @@ class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
-      println("====================================== optimizing" )
+      val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
    
       def opt(prog : Expr, pass : Int) : Expr = {
         //println("--------------------- pass " + pass )
@@ -129,30 +130,36 @@ class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
             "cost" -> Analysis.cost(prog)
           )
         val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        orc.ast.porc.Logger.info(s"Porc Optimization Pass $pass: $s")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc Optimization Pass $pass: $s")
         /*println("-------==========")
         println(prog)
         println("-------==========")
         */
         val analyzer = new Analyzer
-        val prog1 = Optimizer(Optimizer.opts)(prog, analyzer)
+        val prog1 = Optimizer(co)(prog, analyzer)
         orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
-        if(prog1 == prog && pass > 1)
+        if(prog1 == prog || pass > maxPasses)
           prog1
         else {
           opt(prog1, pass+1)
         }
       }
       
-      opt(ast, 1)
+      if(co.options.optimizationFlags("porc").asBool())
+        opt(ast, 1)
+      else
+        ast
     }
   }
   
   val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.run.porc.Expr] {
     val phaseName = "translatePorcEval"
-    override def apply(co: CompilerOptions) = { ast => TranslateToPorcEval(ast) }
+    override def apply(co: CompilerOptions) = { ast => 
+      TranslateToPorcEval(ast)
+    }
   }
-  val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Expr, orc.run.porc.Expr] {
+  
+  /*lazy val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Expr, orc.run.porc.Expr] {
     import orc.run.porc._
     val phaseName = "evalPorc"
     override def apply(co: CompilerOptions) = { ast => 
@@ -160,34 +167,33 @@ class TestCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
       interp.start(ast)
       ast
     }
-  }
-  
-  
+  }*/
+
   override val phases =
     parse.timePhase >>>
-    translate.timePhase >>>
-    vClockTrans.timePhase >>>
-    noUnboundVars.timePhase >>>
-    fractionDefs.timePhase >>>
-    typeCheck.timePhase >>>
-    noUnguardedRecursion.timePhase >>>
-    outputIR(1) >>>
-    splitPrune.timePhase >>>
-    removeUnusedDefs.timePhase >>>
-    removeUnusedTypes.timePhase >>>
-    outputIR(2) >>>
-    optimize >>>
-    outputAnalysedAST >>> 
-    outputIR(3) >>> 
-    translatePorc >>> 
-    outputIR(4) >>>
-    optimizePorc >>>
-    outputIR(5) >>>
-    translatePorcEval >>>
-    evalPorc
+      translate.timePhase >>>
+      vClockTrans.timePhase >>>
+      noUnboundVars.timePhase >>>
+      fractionDefs.timePhase >>>
+      outputIR(1) >>>
+      typeCheck.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
+      splitPrune.timePhase >>>
+      removeUnusedDefs.timePhase >>>
+      removeUnusedTypes.timePhase >>>
+      makeResilientTrans.timePhase >>>
+      outputIR(2) >>>
+      optimize.timePhase >>>
+      removeUnusedTypes.timePhase >>>
+      outputIR(3) >>>
+      translatePorc >>>
+      outputIR(4) >>>
+      optimizePorc >>>
+      outputIR(5) >>>
+      translatePorcEval
 }
 
-object TestCompiler {
+object PorcOrcCompiler {
   import orc.Main._
   
   def main(args: Array[String]) {
@@ -197,7 +203,7 @@ object TestCompiler {
 
       setupLogging(options)
 
-      val compiler = new TestCompiler()
+      val compiler = new PorcOrcCompiler()
 
       val stream = new FileInputStream(options.filename)
       val reader = new InputStreamReader(stream, "UTF-8")

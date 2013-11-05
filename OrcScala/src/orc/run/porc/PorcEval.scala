@@ -28,6 +28,8 @@ import orc.run.extensions.RwaitEvent
 import orc.values.sites.HaltedException
 import orc.values.sites.DirectSite
 import scala.util.parsing.input.NoPosition
+import orc.CaughtEvent
+import orc.error.runtime.JavaException
 
 // Value is an alias for AnyRef. It exists to make this code more self documenting.
 
@@ -64,7 +66,9 @@ sealed abstract class Expr {
   final case object CallHalt extends CallResult
   final case object CallNotImmediate extends CallResult
   */
-  
+
+  // TODO: Implement notifying site calls when they are killed. I need to register a special kill handler.
+
   final protected def invokeExternal(callable: AnyRef, arguments: List[AnyRef], pc: Closure, ctx: Context, interp: InterpreterContext): Unit = {
     val t = ctx.terminator
     val hc = ctx.counter.haltHandler
@@ -73,61 +77,14 @@ sealed abstract class Expr {
     ctx.counter.increment() // We are spawning a process effectively
     
     Logger.finer(s"Site call started: $callable $arguments")
-    val handle = new Handle {
-      def callSitePosition: scala.util.parsing.input.Position = NoPosition  
-      def setQuiescent(): Unit = {} // Ignore as we don't support virtual time
-
-      def notifyOrc(event: OrcEvent) {
-        event match {
-          case PublishedEvent(v) => println(s"publication: ${Format.formatValue(v)}")
-          case PrintEvent(s) => print(s)
-          case RwaitEvent(d, h) => interp.engine.registerDelayed(d.toLong, () => h.publish())
-          case _ =>
-            Logger.severe(event.toString)
-        }
-      }
+    val handle = new PorcHandle(pc, hc, t, ctx, interp)
     
-      // FIXME: It would be much better to be able to make the call directly here. However 
-      // that would require differentiating calls in the same thread and those in other threads. 
-      // AND it would require a counter to prevent the stack from overflowing in deep recursion.
-      def publish(v: AnyRef) {
-        Logger.finer(s"Site call published: $callable $arguments -> $v")
-        /*if(startingThread == Thread.currentThread) {
-          result = CallValue(v)
-        } else*/
-        InterpreterContext.current.schedule(pc, List(v), halt = hc)
-      }
-      def halt {
-        Logger.finer(s"Site call halted: $callable $arguments")
-        /*if(startingThread == Thread.currentThread) {
-          result = CallHalt
-        } else*/
-        InterpreterContext.current.schedule(hc)
-      }
-      
-      def !!(e: OrcException) {
-        Logger.severe(s"ORC EXCEPTION: $e") 
-        halt
-      }
-    
-      def hasRight(rightName: String): Boolean = {
-        true // FIXME: TEMPORARY HACK
-      }
-    
-      def isLive: Boolean = {
-        !t.isKilled
-      }
+    if(t.addKillHandler(Closure(KillCallHandle(handle), ctx))) {
+      interp.invoke(handle, callable, arguments)
+    } else {
+      hc.body.eval(hc.ctx, interp)
     }
-    
-    /*callable match {
-      // TODO: Lift this check into a projection function.
-      case r : OrcRecord if r.entries.contains("apply") && (arguments.size != 1 || arguments.size == 1 && !arguments(0).isInstanceOf[orc.values.Field]) =>
-        Logger.warning(s"Using ugly record call hack: $r $arguments")
-        invokeExternal(ctx, interp, r.entries("apply"), arguments, pc, hc)
-      case _ =>
-    */
-    // TODO: Some checks in the invoke implementation could be lifted into Porc code.
-    interp.invoke(handle, callable, arguments)
+      
     
     /*
     result match {
@@ -152,16 +109,17 @@ sealed abstract class Expr {
       val j = new Join(fs) {
         def halt() {
           Logger.finer(s"Future halted: calling $hb")
-          InterpreterContext.current.schedule(hb)
+          InterpreterContext.current(interp).schedule(hb)
         }
         def bound(nvs: Map[Int, AnyRef]) {
           val args = vs.zipWithIndex.map { p =>
             nvs.getOrElse(p._2, p._1)
           }
           Logger.finer(s"Future bound: calling $bb ($args)")
-          InterpreterContext.current.schedule(bb, args, halt = hb)
+          InterpreterContext.current(interp).schedule(bb, args, halt = hb)
         }
       }
+      ctx.terminator.addKillHandler(Closure(KillJoin(j), ctx))
       for ((_, f) <- fs) {
         f.addBlocked(j)
       }
@@ -236,7 +194,8 @@ case class SiteCall(target: Value, arguments: List[Value], pArg: Value) extends 
       case v =>
         Logger.finer(s"sitecall: $target $arguments { $v }" )
         val args = (0 until arguments.size) map {x => Var(x, None)} toList
-        val bb = Closure(ExternalCall(v, args, Var(args.size, None)), Context(List(dereference(pArg, ctx)), ctx.terminator, ctx.counter, ctx.oldCounter))
+        val bb = Closure(ExternalCall(v, args, Var(args.size, None)), 
+            ctx.copy(valueStack = List(dereference(pArg, ctx))))
         
         val vs = dereferenceSeq(arguments, ctx)
         forceFutures(vs, bb, ctx, interp)
@@ -253,8 +212,12 @@ case class DirectSiteCall(target: Value, arguments: List[Value]) extends Expr {
       s.directcall(dereferenceSeq(arguments, ctx))
     } catch {
       case e:HaltedException => throw e
-      case e:Exception => {
-        Logger.severe(s"ORC EXCEPTION: $e") 
+      case e:OrcException => {
+        ctx.eventHandler(CaughtEvent(e))
+        throw new HaltedException
+      }
+      case e:Throwable => {
+        ctx.eventHandler(CaughtEvent(new JavaException(e)))
         throw new HaltedException
       }
     }
@@ -378,8 +341,13 @@ case class AddKillHandler(u: Value, m: Value) extends Expr {
 }
 case object CallKillHandlers extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"Calling kill handlers: ${ctx.terminator} ${ctx.terminator.killHandlers}")
-    ctx.terminator.killHandlers.foreach(c => c.body.eval(c.ctx, interp))
+    val khs = ctx.terminator.killHandlers
+    Logger.finest(s"Calling kill handlers: ${ctx.terminator} ${khs}")
+    khs.foreach(c => try {
+      c.body.eval(c.ctx, interp)
+    } catch {
+      case _: KilledException => () // Ignore killed exceptions and go on to the next handler
+    })
     Unit
   }
 }
@@ -473,6 +441,21 @@ case class ExternalCall(site: AnyRef, arguments: List[Value], p: Value) extends 
   def eval(ctx: Context, interp: InterpreterContext) = {
     val pc = dereference(p, ctx).asInstanceOf[Closure]
     invokeExternal(site, arguments map { x => dereference(x, ctx) }, pc, ctx, interp)
+    Unit
+  }
+}
+
+case class KillCallHandle(h: PorcHandle) extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    Logger.finer(s"Killing call handle: $h")
+    h.kill()
+    Unit
+  }
+}
+case class KillJoin(j: Join) extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    Logger.finer(s"Killing join: $j")
+    j.kill()
     Unit
   }
 }

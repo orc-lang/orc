@@ -113,6 +113,9 @@ class PrettyPrint {
 
       case v:Product if v.productArity == 0 => v.productPrefix
 
+      case KillCallHandle(h) => rd"KillCallHandle $h"
+      case KillJoin(h) => rd"KillJoin $h"
+
       case _ => ???
     }
   }

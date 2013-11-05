@@ -373,30 +373,9 @@ object TranslateToPorc {
       case named.Call(c@Constant(_), args, _) => {
         SiteCall(argumentToPorc(c, ctx), args.map(argumentToPorc(_, ctx)), P)
       }
-      
-      // Handle "magic" sites.
-      /*case Call(Constant(MakeStrict), List(f : BoundVar), _) if (ctx site f).isDefined  => {
-        val Some(SiteInfo(arity, _)) = ctx site f
-        
-        val fStrict = new porc.Var(f.optionalVariableName map (_ ++ "Strict"))
-        val formals = for(i <- 0 to arity) yield new porc.Var(s"x$i_")
-        val formals2 = for(i <- 0 to arity) yield new porc.Var(s"y$i_")
-        val p1 = new porc.Var("P")
-        val ff = new porc.Var("ff")
-        Site(SiteDef(fStrict, formals, p1, {
-          let((ff, lambda(formals2: _*)(SiteCall(f, formals2, p1)))) {
-            Force(formals, ff)
-          }
-        }), {
-          P(fStrict)
-        })
-      }
-      case Call(Constant(MakeSingleValued), List(f : BoundVar), _) if (ctx site f).isDefined  => {
-        val Some(SiteInfo(arity, _)) = ctx site f
-        val formals = for(i <- 0 to arity) yield new BoundVar(Some(s"x$i"))
-        val fSingle = new BoundVar()
-        translate(DeclareDefs(List(Def(fSingle, formals, Limit(Call(f, formals, None)), None, None)), f))
-      }
+            
+      // TODO: Implement resilient.
+      /*
       case Call(Constant(MakeResilient), List(f : BoundVar), _) if (ctx site f).isDefined  => {
         val Some(SiteInfo(arity, _)) = ctx site f
         
@@ -414,6 +393,7 @@ object TranslateToPorc {
         })
       }*/
       
+
       case named.Call(target, args, _) => {
         SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P)
       }

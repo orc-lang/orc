@@ -34,6 +34,8 @@ import javax.script.ScriptException;
 
 import orc.Backend;
 import orc.BackendType;
+import orc.PorcBackend;
+import orc.PorcInterpreterBackend;
 import orc.Runtime;
 import orc.Compiler;
 import orc.OrcEvent;
@@ -44,13 +46,6 @@ import orc.error.OrcException;
 import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;
-
-/* TODO:
- * Generalize types to allow different backends
- * Set up appropriate checks to choose the right backend throughout. But ideally it will 
- * be as simple as just instantiating the right Compiler and Runtime. This will require new
- * traits for interfacing to unknown compilers and backends.
- */
 
 /**
  * @author jthywiss
@@ -295,7 +290,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
    * @return The <code>Backend</code> which this <code>OrcScriptEngine</code> 
    * uses to compile and rune the Orc script.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "cast" })
   Backend<CompiledCode> getBackend() {
     synchronized (this) {
       OrcBindings b = asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE));
@@ -304,6 +299,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         backendType = k;
         if(k == TokenInterpreterBackend.it())
           _backend = (Backend<CompiledCode>)new StandardBackend();
+        else if(k == PorcInterpreterBackend.it())
+          _backend = (Backend<CompiledCode>)new PorcBackend();
         else
           throw new IllegalArgumentException("Unknown backend: " + b.backend());      
       } else {

@@ -176,7 +176,7 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
     backend = BackendType.fromStringOption(s) match {
       case Some(b) => b
       case None => throw new IllegalArgumentException(s"The backend '$s' does not exist or is not supported.")
-    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed value: Token. Default is 'Token'")
+    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed value: Token, Porc. Default is 'Token'")
 
   StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator=",", 
       usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")

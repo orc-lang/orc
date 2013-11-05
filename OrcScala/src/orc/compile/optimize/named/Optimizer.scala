@@ -43,6 +43,10 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
   def apply(e : WithContext[Expression], analysis : ExpressionAnalysisProvider[Expression]) : Option[Expression] = f(e, analysis)
 }
 
+// TODO: Experiment with pushing sequence operators inside other combinators.
+// TODO: "inlining" of >>-lhs into the source of the publication when the publication is a constant. Possibly through layers of other combinators.
+// TODO: Implement compile time evaluation of select sites.
+
 /**
   *
   * @author amp

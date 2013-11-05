@@ -16,3 +16,14 @@ fraction-defs
 5c:late-bind-elim-flatten
 5c:late-bind-flatten-threshold=5
 5c:max-passes=10
+porc
+porc:eta-reduce
+porc:var-let-elim 
+porc:let-elim 
+porc:site-elim 
+porc:onhalted-elim
+porc:inline-let
+porc:let-inline-expansion-threshold=10
+porc:specialize-sitecall
+porc:force-elim
+porc:max-passes=8

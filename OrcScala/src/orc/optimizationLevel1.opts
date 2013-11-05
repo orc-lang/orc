@@ -12,3 +12,11 @@ fraction-defs
 5c:accessor-elim
 5c:tuple-elim
 5c:max-passes=5
+porc
+porc:eta-reduce
+porc:var-let-elim 
+porc:let-elim 
+porc:site-elim 
+porc:onhalted-elim
+porc:specialize-sitecall
+porc:max-passes=5
