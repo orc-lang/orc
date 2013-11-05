@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
+import orc.OrcEvent
+import orc.OrcExecutionOptions
 
 /**
   *
@@ -36,7 +38,7 @@ class Interpreter {
   private var threads: IndexedSeq[InterpreterThread] = IndexedSeq()
 
   // spawn 2 threads per core (currently do not worry about blocked threads)
-  val nthreads = if(false) 1 else processors * 2
+  val nthreads = if(true) 1 else processors * 2
   
   threads = for(_ <- 1 to nthreads) yield {
     new InterpreterThread(this)
@@ -50,15 +52,13 @@ class Interpreter {
     t.start()
   }
 
-  InterpreterContext.default = threads(0).ctx
-
-  Logger.logAllToStderr()
+  //Logger.logAllToStderr()
   
-  def start(e: Expr) : ExecutionHandle = {
+  def start(e: Expr, k: OrcEvent => Unit, options: OrcExecutionOptions) : ExecutionHandle = {
     // Insert the initial program state into one of the threads.
     val initCounter = new Counter()
     
-    threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null)), Nil)
+    threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null, k, options)), Nil)
     
     new ExecutionHandle(initCounter)
   }
@@ -103,7 +103,7 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
   private var running = true
   
   override def run() {
-    InterpreterContext.current = ctx
+    InterpreterContext current_= ctx
     
     while(running) {
       ctx.dequeue() match {

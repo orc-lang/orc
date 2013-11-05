@@ -116,6 +116,8 @@ trait ContextualTransform {
     order[Value](callHandler, {
       case (n @ OrcValue(_)) in _ => n
       //case (n @ Tuple(vs)) in ctx => Tuple(vs.map(v => transformValue(v in ctx)))
+      case (v @ Unit()) in _ => v 
+      case (v @ Bool(_)) in _ => v 
       case (v: Var) in ctx => v
     })(expr)
   }

@@ -32,7 +32,8 @@ import orc.progress.NullProgressMonitor
 sealed trait BackendType
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
-    "token" -> TokenInterpreterBackend)
+    "token" -> TokenInterpreterBackend,
+    "porc" -> PorcInterpreterBackend)
 
   def fromString(s: String) = {
     fromStringOption(s).getOrElse(TokenInterpreterBackend)
@@ -46,6 +47,10 @@ object BackendType {
   */
 case object TokenInterpreterBackend extends BackendType {
   override val toString = "Token"
+  def it = this
+}
+case object PorcInterpreterBackend extends BackendType {
+  override val toString = "Porc"
   def it = this
 }
 

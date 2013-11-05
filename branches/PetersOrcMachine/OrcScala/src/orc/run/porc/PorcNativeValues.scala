@@ -17,7 +17,7 @@ package orc.run.porc
 final class Flag {
   @volatile
   var _value = false
-  
+
   @inline
   def set() = {
     Logger.finest(s"Flag set $this")
@@ -35,21 +35,21 @@ object Future {
 
 final class Future {
   import Future._
-  
+
   var _state = Unbound
   var _value: AnyRef = null
   var _blocked: List[Join] = Nil
-  
+
   def value = {
     assert(_state == Bound)
     _value
   }
 
   def bind(v: AnyRef) = synchronized {
-    if(_state == Unbound) {
+    if (_state == Unbound) {
       _state = Bound
       _value = v
-     Logger.finest(s"$this bound to $v")
+      Logger.finest(s"$this bound to $v")
       for (j <- _blocked) {
         j.bindFuture()
       }
@@ -57,16 +57,16 @@ final class Future {
     }
   }
   def halt() = synchronized {
-    if(_state == Unbound) {
+    if (_state == Unbound) {
       Logger.finest(s"$this halted")
       _state = Halt
-      for(j <- _blocked) {
+      for (j <- _blocked) {
         j.haltFuture()
       }
       _blocked = null
     }
   }
-  def addBlocked(j : Join) = synchronized {
+  def addBlocked(j: Join) = synchronized {
     Logger.finest(s"${j} blocked on $this")
     _state match {
       case Unbound => {
@@ -80,19 +80,21 @@ final class Future {
 
 abstract class Join(fs: Map[Int, Future]) {
   var nToBind = fs.size // Less than 0 means halted
-  
-  def bindFuture() = synchronized { 
+
+  def bindFuture() = synchronized {
     nToBind -= 1
-    if(nToBind == 0) {
+    if (nToBind == 0) {
       bound(fs.mapValues(_.value))
     }
   }
-  def haltFuture() = synchronized { 
-    if(nToBind > 0) {
+  def haltFuture() = synchronized {
+    if (nToBind > 0) {
       nToBind = -1
       halt()
     }
   }
+
+  def kill() = haltFuture()
 
   def halt(): Unit
   def bound(nvs: Map[Int, AnyRef]): Unit

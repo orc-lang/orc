@@ -16,6 +16,7 @@ package orc.ast.porc
 
 import orc.values.sites.{Site => OrcSite}
 import orc.values.sites.DirectSite
+import orc.compile.CompilerOptions
 
 trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -34,7 +35,7 @@ case class OptFull(name : String)(f : (WithContext[Expr], AnalysisProvider[PorcA
   *
   * @author amp
   */
-case class Optimizer(opts : Seq[Optimization]) {
+case class Optimizer(co: CompilerOptions) {
   def apply(e : Expr, analysis : AnalysisProvider[PorcAST]) : Expr = {
     val trans = new ContextualTransform.Pre {
       override def onExpr = {
@@ -57,27 +58,12 @@ case class Optimizer(opts : Seq[Optimization]) {
     
     trans(e)
   }
-}
-
-object Optimizer {
-  object <::: {
-    def unapply(e: WithContext[PorcAST]) = e match {
-      case Sequence(l) in ctx =>
-         Some(Sequence(l.init) in ctx, l.last in ctx)
-      case _ => None
-    }
-  }
-  object :::> {
-    def unapply(e: WithContext[PorcAST]) = e match {
-      case Sequence(e :: l) in ctx =>
-         Some(e, Sequence(l) in ctx)
-      case _ => None
-    }
-  }
   
-  val letInlineThreshold = 30
-  val letInlineCodeExpansionThreshold = 30
-  val referenceThreshold = 5
+  import Optimizer._
+
+  val letInlineThreshold = co.options.optimizationFlags("porc:let-inline-threshold").asInt(30)
+  val letInlineCodeExpansionThreshold = co.options.optimizationFlags("porc:let-inline-expansion-threshold").asInt(30)
+  val referenceThreshold = co.options.optimizationFlags("porc:let-inline-ref-threshold").asInt(5)
   
   val InlineLet = OptFull("inline-let") { (e, a) =>
     import a.ImplicitResults._
@@ -103,7 +89,84 @@ object Optimizer {
       case _ => None
     }
   }
+
+  val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
+
+  val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case SpawnIn((t: Var) in ctx) => ctx(t) match {
+        case LetBound(dctx, Let(`t`, Lambda(_,b), _)) => {
+          val c = Analysis.cost(b)
+          if( c <= spawnCostInlineThreshold )
+            Some(t())
+            else
+              None
+        }
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+
+  /*
+  This may not be needed because site inlining is already done in Orc5C
   
+  val siteInlineThreshold = 50
+  val siteInlineCodeExpansionThreshold = 50
+  val siteInlineTinySize = 12
+   
+  val InlineSite = OptFull("inline-site") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case SiteCallIn((t:Var) in ctx, args, _) => ctx(t) match {
+        case SiteBound(dctx, Site(_,k), d) => {
+          def recursive = d.body.freevars.contains(d.name)
+          lazy val compat = ctx.compatibleForSite(d.body)(dctx)
+          lazy val size = Analysis.cost(d.body)
+          def smallEnough = size <= siteInlineThreshold
+          lazy val referencedN = Analysis.count(k, {
+            case SiteCall(`t`, _) => true
+            case _ => false
+          })
+          def tooMuchExpansion = (referencedN-1)*size > siteInlineCodeExpansionThreshold && size > siteInlineTinySize
+          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
+          if ( recursive || !smallEnough || !compat || tooMuchExpansion )
+            None // No inlining of recursive functions or large functions.
+          else
+            Some(d.body.substAll(((d.arguments: List[Var]) zip args).toMap))
+        }
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+   */
+
+  val allOpts = List(SpecializeSiteCall, InlineSpawn, EtaReduce, ForceElim, VarLetElim, 
+        InlineLet, LetElim, SiteElim, OnHaltedElim)
+
+  val opts = allOpts.filter{ o =>
+    co.options.optimizationFlags(s"porc:${o.name}").asBool()
+  }
+}
+
+object Optimizer {
+  object <::: {
+    def unapply(e: WithContext[PorcAST]) = e match {
+      case Sequence(l) in ctx =>
+         Some(Sequence(l.init) in ctx, l.last in ctx)
+      case _ => None
+    }
+  }
+  object :::> {
+    def unapply(e: WithContext[PorcAST]) = e match {
+      case Sequence(e :: l) in ctx =>
+         Some(e, Sequence(l) in ctx)
+      case _ => None
+    }
+  }
+    
   val EtaReduce = Opt("eta-reduce") {
     case (LambdaIn(formals, _, CallIn(t, args, _)), a) if args.toList == formals.toList => t
   }
@@ -124,27 +187,8 @@ object Optimizer {
     case (ForceIn(args, ctx, b), a) if args.forall(v => a(v in ctx).isNotFuture) => b(args: _*)
     // FIXME: Add form that removes the variables that are not futures but leaves the futures.
   }
-
-  val spawnCostInlineThreshold = 30
-
-  val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case SpawnIn((t: Var) in ctx) => ctx(t) match {
-        case LetBound(dctx, Let(`t`, Lambda(_,b), _)) => {
-          val c = Analysis.cost(b)
-          if( c <= spawnCostInlineThreshold )
-            Some(t())
-            else
-              None
-        }
-        case _ => None
-      }
-      case _ => None
-    }
-  }
   
-  val ExternalSiteCall = Opt("external-sitecall") {
+  val SpecializeSiteCall = Opt("specialize-sitecall") {
     case (SiteCallIn(OrcValue(s: OrcSite) in _, args, p, ctx), a) => 
       import PorcInfixNotation._ 
       val pp = new Var("pp")
@@ -182,46 +226,10 @@ object Optimizer {
         CheckKilled() ::: impl
   }
   
-  val OnHaltedElim = Opt("onHalted-elim") {
+  val OnHaltedElim = Opt("onhalted-elim") {
     case (TryOnHaltedIn(LetIn(x, v, TryOnHaltedIn(b, h1)), h2), a) if h1.e == h2.e =>
       TryOnHalted(Let(x, v, b), h2)
     case (TryOnHaltedIn(s <::: TryOnHaltedIn(b, h1), h2), a) if h1.e == h2.e =>
       TryOnHalted(s ::: b, h2)
   }
-
-  val opts = List(ExternalSiteCall, InlineSpawn, EtaReduce, ForceElim, VarLetElim, InlineLet, LetElim, SiteElim, OnHaltedElim)
-
-  /*
-  This may not be needed because site inlining is already done in Orc5C
-  
-  val siteInlineThreshold = 50
-  val siteInlineCodeExpansionThreshold = 50
-  val siteInlineTinySize = 12
-   
-  val InlineSite = OptFull("inline-site") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case SiteCallIn((t:Var) in ctx, args, _) => ctx(t) match {
-        case SiteBound(dctx, Site(_,k), d) => {
-          def recursive = d.body.freevars.contains(d.name)
-          lazy val compat = ctx.compatibleForSite(d.body)(dctx)
-          lazy val size = Analysis.cost(d.body)
-          def smallEnough = size <= siteInlineThreshold
-          lazy val referencedN = Analysis.count(k, {
-            case SiteCall(`t`, _) => true
-            case _ => false
-          })
-          def tooMuchExpansion = (referencedN-1)*size > siteInlineCodeExpansionThreshold && size > siteInlineTinySize
-          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
-          if ( recursive || !smallEnough || !compat || tooMuchExpansion )
-            None // No inlining of recursive functions or large functions.
-          else
-            Some(d.body.substAll(((d.arguments: List[Var]) zip args).toMap))
-        }
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-*/
 }
