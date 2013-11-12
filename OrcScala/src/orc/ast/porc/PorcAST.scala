@@ -19,14 +19,39 @@ import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.values.sites
 import orc.ast.PrecomputeHashcode
+import java.util.logging.Level
 
 /**
-  *
   * @author amp
   */
 sealed abstract class PorcAST extends AST with Product with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
+
+  var number: Option[Int] = None
+
+  /** Assign numbers in depth first order stating at 0.
+    */
+  def assignNumbers() {
+    assignNumbersStartingAt(0)
+  }
+
+  /** Assign numbers starting at n and returning the
+    */
+  private def assignNumbersStartingAt(n: Int): Int = {
+    if (Logger.isLoggable(Level.FINE)) {
+      number match {
+        case Some(oldN) => 
+          if (n != oldN) 
+            Logger.fine("Reassigning PorcAST instruction number to something different. This may be a problem or at least confusing.")
+        case None => ()
+      }
+    }
+    number = Some(n)
+
+    val children = subtrees collect { case c: PorcAST => c }
+    children.foldRight(n + 1)(_.assignNumbersStartingAt(_))
+  }
 }
 
 // ==================== CORE ===================
@@ -50,11 +75,11 @@ class Var(optionalName: Option[String] = None) extends Value with hasOptionalVar
       Some(Var.getNextVariableName())
   }
 
-  def this(s : String) = this(Some(Var.getNextVariableName(s)))
+  def this(s: String) = this(Some(Var.getNextVariableName(s)))
 
   override def productIterator = Nil.iterator
   // Members declared in scala.Equals   
-  def canEqual(that: Any): Boolean = that.isInstanceOf[Var]      
+  def canEqual(that: Any): Boolean = that.isInstanceOf[Var]
   // Members declared in scala.Product   
   def productArity: Int = 0
   def productElement(n: Int): Any = ???
@@ -69,7 +94,6 @@ object Var {
     s"`$s$nextVar"
   }
 }
-
 
 case class Call(target: Value, argument: List[Value]) extends Expr
 case class Let(x: Var, v: Expr, body: Expr) extends Expr
@@ -125,7 +149,6 @@ case class Halted() extends Expr
 case class TryOnHalted(body: Expr, handler: Expr) extends Expr
 
 case class AddKillHandler(t: Value, v: Value) extends Expr
-case class CallKillHandlers() extends Expr
 
 // ==================== FUTURE ===================
 

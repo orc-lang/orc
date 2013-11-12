@@ -15,14 +15,20 @@
 package orc.ast.porc
 
 import orc.run.{porc => pe}
+import scala.collection.mutable
+import orc.ast.hasOptionalVariableName
 
 /**
   *
   * @author amp
   */
 object TranslateToPorcEval {
-  def apply(ast: Expr): pe.Expr = translate(ast)(TranslationContext(Nil))
-  
+  def apply(ast: Expr): (pe.Expr, pe.PorcDebugTable) = {
+    val translator = new TranslateToPorcEval()
+    val e = translator.translate(ast)(TranslationContext(Nil))
+    (e, pe.PorcDebugTable(translator.debugTable.toMap))
+  }
+ 
   case class TranslationContext(
       variables: List[Var]) {
     def +(v: Var) = this.copy(variables = v :: variables)
@@ -34,11 +40,16 @@ object TranslateToPorcEval {
       i
     }
   }
+}
 
+private class TranslateToPorcEval {
+  import TranslateToPorcEval._
+  
+  val debugTable = mutable.Map[Int, pe.PorcPosition]();
+  
   def translate(ast: Value)(implicit ctx: TranslationContext): pe.Value = {
     translateVarVar(ast)
   }
-
 
   def translate(d: SiteDef)(implicit ctx: TranslationContext): pe.SiteDef = {
     val bT = translate(d.body)(ctx ++ d.arguments + d.pArg)
@@ -46,7 +57,7 @@ object TranslateToPorcEval {
   }
   
   def translate(ast: Expr)(implicit ctx: TranslationContext): pe.Expr = {
-    ast match {
+    val e: pe.Expr = ast match {
       case Let(x, v, b) => pe.Let(translate(v), translate(b)(ctx + x))
       case Site(l, b) => pe.Site(l.map(d => translate(d)(ctx ++ l.map(_.name))), translate(b)(ctx ++ l.map(_.name)))
       case Lambda(arguments, body) => pe.Lambda(arguments.size, translate(body)(ctx ++ arguments))
@@ -63,7 +74,7 @@ object TranslateToPorcEval {
       
       case If(b, t, e) => pe.If(translateVarVar(b), translate(t), translate(e))
       
-      case CallCounterHalt() => pe.CallCounterHalt
+      case CallCounterHalt() => pe.CallCounterHalt()
       case CallParentCounterHalt() => pe.CallParentCounterHalt
 
       case NewCounter(k) => pe.NewCounter(translate(k))
@@ -77,7 +88,6 @@ object TranslateToPorcEval {
       case SetKill() => pe.SetKill
       case CheckKilled() => pe.CheckKilled
       case AddKillHandler(u, m) => pe.AddKillHandler(translateVarVar(u), translateVarVar(m))
-      case CallKillHandlers() => pe.CallKillHandlers
       case Killed() => pe.Killed
       case TryOnKilled(body, handler) => pe.TryOnKilled(translate(body), translate(handler))
       case IsKilled(t) => pe.IsKilled(translateVarVar(t))
@@ -98,11 +108,23 @@ object TranslateToPorcEval {
       case v : Value => pe.ValueExpr(translateVarVar(v))
       case _ => throw new NotImplementedError(s"$ast")
     }
+    
+    debugTable += (e.identityHashCode -> pe.PorcPosition(ast.pos, ast.number.getOrElse(-1), ast match {
+      case v : hasOptionalVariableName => v.optionalVariableName
+      case _ => None
+    }))
+    
+    e
   }
   
   def translateVarVar(v: Value)(implicit ctx: TranslationContext): pe.Value = {
     v match {
-      case v : Var => pe.Var(ctx(v), v.optionalVariableName)
+      case v : Var => {
+        val e = pe.Var(ctx(v))
+        // This cannot work if things get optimized at all 
+        debugTable += (e.identityHashCode -> pe.PorcPosition(v.pos, v.number.getOrElse(-1), v.optionalVariableName))
+        e
+      }
       case Unit() => scala.Unit
       case Bool(v) => v : java.lang.Boolean
       case OrcValue(v) => v

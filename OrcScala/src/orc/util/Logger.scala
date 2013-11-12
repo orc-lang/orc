@@ -108,5 +108,9 @@ class Logger(name: String) {
     if (!assertion)
       log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: " + message))
   }
+  
+  @inline def isLoggable(l: Level): Boolean = {
+    julLogger.isLoggable(l)
+  }
 
 }

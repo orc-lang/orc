@@ -48,7 +48,7 @@ trait ReferencesRegisters {
          | SetKill() in _ 
          | Killed() in _ 
          | CheckKilled() in _ 
-         | CallKillHandlers() in _) => foundTerminator = true; e
+         ) => foundTerminator = true; e
       }
     })(this)
     foundTerminator

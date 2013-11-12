@@ -29,8 +29,8 @@ import orc.error.compiletime.CompileLogger
   * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
   * @author amp
   */
-class PorcOrcCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
-  with StandardOrcCompilerEnvInterface[orc.run.porc.Expr]
+class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
+  with StandardOrcCompilerEnvInterface[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
   with CoreOrcCompilerPhases {
   
   def traversalTest[A] = new CompilerPhase[CompilerOptions, Expression, Expression] {
@@ -92,7 +92,11 @@ class PorcOrcCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
   val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.porc.Expr] {
     import orc.ast.oil.named._
     val phaseName = "translate5C"
-    override def apply(co: CompilerOptions) = { ast => TranslateToPorc.orc5cToPorc(ast) }
+    override def apply(co: CompilerOptions) = { ast => 
+      val e = TranslateToPorc.orc5cToPorc(ast)
+      e.assignNumbers()
+      e
+    }
   }
   
   /*val porcAnalysis = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr,orc.ast.porc.Expr] {
@@ -145,14 +149,17 @@ class PorcOrcCompiler extends PhasedOrcCompiler[orc.run.porc.Expr]
         }
       }
       
-      if(co.options.optimizationFlags("porc").asBool())
+      val e = if(co.options.optimizationFlags("porc").asBool())
         opt(ast, 1)
       else
         ast
+      
+      e.assignNumbers()
+      e
     }
   }
   
-  val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.run.porc.Expr] {
+  val translatePorcEval = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, (orc.run.porc.Expr, orc.run.porc.PorcDebugTable)] {
     val phaseName = "translatePorcEval"
     override def apply(co: CompilerOptions) = { ast => 
       TranslateToPorcEval(ast)

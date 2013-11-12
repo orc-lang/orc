@@ -20,12 +20,12 @@ import orc.values.Format
   *
   * @author amp
   */
-class PrettyPrint {
+class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
   def indent(i: Int) = " " * i
   
   def reduceVal(v: Value) = {
     v match {
-      case v: Var => s"[${v.index}${v.optionalName.map(x => s", $x").getOrElse("")}]"
+      case v: Var => s"[${v.index}]"
       case _ => Format.formatValue(v)
     }
   }
@@ -54,7 +54,7 @@ class PrettyPrint {
     }
     
     val ind = indent(i)
-    ast match {
+    val s = ast match {
       case ValueExpr(v) => reduceVal(v)
       
       case Let(v, b) => rd"let ${reduce(v, i+3)} in\n$ind$b"
@@ -88,7 +88,7 @@ class PrettyPrint {
       case RestoreCounter(a, b) => rd"restoreCounter {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
       case SetCounterHalt(v) => rd"setCounterHalt $v"
       case DecrCounter => "decrCounter"
-      case CallCounterHalt => "callCounterHalt"
+      case CallCounterHalt() => "callCounterHalt"
       case CallParentCounterHalt => "callParentCounterHalt"
 
       case NewTerminator(k) => rd"terminator in\n$ind$k"
@@ -97,7 +97,6 @@ class PrettyPrint {
       case Killed => "killed"
       case CheckKilled => "checkKilled"
       case AddKillHandler(u, m) => rd"addKillHandler $u $m"
-      case CallKillHandlers => "callKillHandlers"
       case IsKilled(t) => rd"isKilled $t"
 
       case NewFuture => "newFuture"
@@ -113,10 +112,9 @@ class PrettyPrint {
 
       case v:Product if v.productArity == 0 => v.productPrefix
 
-      case KillCallHandle(h) => rd"KillCallHandle $h"
-      case KillJoin(h) => rd"KillJoin $h"
-
       case _ => ???
     }
+    
+    debugTable.get(ast).map(_.instructionNumber + ": ").getOrElse("") + s
   }
 }
