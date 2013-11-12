@@ -96,6 +96,7 @@ private class TranslateToPorcEval {
       
       case NewFuture() => pe.NewFuture
       case Force(vs, a) => pe.Force(vs map {x => translate(x)}, translateVarVar(a))
+      case Resolve(f, a) => pe.Resolve(translate(f), translateVarVar(a))
       case Bind(f, v) => pe.Bind(translateVarVar(f), translateVarVar(v))
       case Stop(f) => pe.Stop(translateVarVar(f))
       

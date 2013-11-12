@@ -42,7 +42,7 @@ object KilledException extends KilledException
 
 // ==================== Values ===================
 case class Var(index: Int) extends Value {
-  def identityHashCode = System.identityHashCode(this)  
+  def identityHashCode = System.identityHashCode(this)
 }
 //case object Unit
 
@@ -52,7 +52,7 @@ case class Var(index: Int) extends Value {
 
 sealed abstract class Expr {
   def identityHashCode = System.identityHashCode(this)
-  
+
   def prettyprint() = (new PrettyPrint()).reduce(this)
   def prettyprint(i: InterpreterContext) = (new PrettyPrint(i.engine.debugTable)).reduce(this)
   override def toString() = prettyprint()
@@ -134,8 +134,29 @@ sealed abstract class Expr {
         }
       } else {
         Logger.finer(s"Future killed immediately: calling $hb")
-        interp.schedule(hb)        
+        interp.schedule(hb)
       }
+    }
+  }
+  
+  final protected def resolveFuture(f: Future, bb: Closure, ctx: Context, interp: InterpreterContext): Unit = {
+    ctx.counter.increment() // We are now spawning something that will call the halt handler
+    val hb = ctx.counter.haltHandler
+    val j = new Join(Map(0 -> f), ctx.terminator) {
+      def halt() {
+        Logger.finer(s"Future resolved: calling $bb")
+        InterpreterContext.current(interp).schedule(bb, halt = hb)
+      }
+      def bound(nvs: Map[Int, AnyRef]) {
+        halt()
+      }
+    }
+    Logger.finer(s"resolve started: $j")
+    if (ctx.terminator.addTerminable(j)) {
+      f.addBlocked(j)
+    } else {
+      Logger.finer(s"Future killed immediately: calling $hb")
+      interp.schedule(bb, halt = hb)
     }
   }
 }
@@ -261,7 +282,7 @@ case class Spawn(target: Value) extends Expr {
 case class NewCounter(k: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     val c = new Counter()
-    Logger.finest(s"NewCounter ${c}: ${prettyprint(interp).replace('\n',' ').substring(0, 35)}")
+    Logger.finest(s"NewCounter ${c}: ${prettyprint(interp).replace('\n', ' ').substring(0, 35)}")
     ctx.counter.increment()
     k.eval(ctx.copy(counter = c, oldCounter = ctx.counter), interp)
   }
@@ -412,6 +433,15 @@ case class Force(futures: List[Value], boundBranch: Value) extends Expr {
     val vs = futures map { x => dereference(x, ctx) }
     val bb = dereference(boundBranch, ctx).asInstanceOf[Closure]
     forceFutures(vs, bb, ctx, interp)
+    Unit
+  }
+}
+case class Resolve(future: Value, boundBranch: Value) extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    Logger.finest("resolve: " + prettyprint(interp))
+    val f = dereference(future, ctx).asInstanceOf[Future]
+    val bb = dereference(boundBranch, ctx).asInstanceOf[Closure]
+    resolveFuture(f, bb, ctx, interp)
     Unit
   }
 }
