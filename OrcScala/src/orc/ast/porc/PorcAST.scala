@@ -154,6 +154,7 @@ case class AddKillHandler(t: Value, v: Value) extends Expr
 
 case class NewFuture() extends Expr
 case class Force(futures: List[Value], bound: Value) extends Expr
+case class Resolve(future: Value, bound: Value) extends Expr
 case class Bind(future: Var, value: Value) extends Expr
 case class Stop(future: Var) extends Expr
 

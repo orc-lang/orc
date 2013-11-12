@@ -101,6 +101,7 @@ class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
 
       case NewFuture => "newFuture"
       case Force(vs, b) => rd"force (${vs.map(reduceVal).mkString(", ")}) $b"
+      case Resolve(f, b) => rd"resolve $f $b"
       case Bind(f, v) => rd"bind $f $v"
       case Stop(f) => rd"stop $f"
       

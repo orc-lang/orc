@@ -92,6 +92,7 @@ class PrettyPrint {
 
       case NewFuture() => "newFuture"
       case Force(vs, b) => rd"force (${vs.map(reduce(_, i)).mkString(", ")}) $b"
+      case Resolve(f, b) => rd"resolve $f $b"
       case Bind(f, v) => rd"bind $f $v"
       case Stop(f) => rd"stop $f"
       
