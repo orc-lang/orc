@@ -33,21 +33,23 @@ import orc.ast.porc.TranslateToPorcEval
   *
   * @author amp
   */
-class PorcBackend extends Backend[RunExpr] {
-  lazy val compiler: Compiler[RunExpr] = new PorcOrcCompiler() with Compiler[RunExpr] {
+class PorcBackend extends Backend[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)] {
+  type CodeType = (orc.run.porc.Expr, orc.run.porc.PorcDebugTable)
+  
+  lazy val compiler: Compiler[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)] = new PorcOrcCompiler() with Compiler[CodeType] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions, 
-        compileLogger: CompileLogger, progress: ProgressMonitor): RunExpr = 
+        compileLogger: CompileLogger, progress: ProgressMonitor): CodeType = 
       this(source, options, compileLogger, progress)
   }
   
-  val serializer: Option[CodeSerializer[RunExpr]] = None
+  val serializer: Option[CodeSerializer[CodeType]] = None
   
-  def createRuntime(options: OrcExecutionOptions): Runtime[RunExpr] = new Interpreter() with Runtime[RunExpr] {
-    def run(code: RunExpr,k: orc.OrcEvent => Unit): Unit = {
-      start(code, k, options)      
+  def createRuntime(options: OrcExecutionOptions): Runtime[CodeType] = new Interpreter() with Runtime[CodeType] {
+    def run(code: CodeType,k: orc.OrcEvent => Unit): Unit = {
+      start(code._1, k, options, code._2)      
     }
-    def runSynchronous(code: RunExpr,k: orc.OrcEvent => Unit): Unit = {
-      val h = start(code, k, options)  
+    def runSynchronous(code: CodeType,k: orc.OrcEvent => Unit): Unit = {
+      val h = start(code._1, k, options, code._2)  
       h.waitForHalt()
     }
     def stop(): Unit = kill()

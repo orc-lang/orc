@@ -27,16 +27,15 @@ import scala.util.parsing.input.NoPosition
 import orc.run.extensions.RwaitEvent
 import orc.error.OrcException
 import orc.CaughtEvent
+import orc.util.StackUtils
 
 final case class Closure(body: Expr, var ctx: Context) {
   override def toString = s"Clos(${body.toString.replace('\n', ' ').take(100)})"
 }
 
-final class PorcHandle(private var pc: Closure, private var hc: Closure, private var terminator: Terminator, ctx: Context, private var interp: InterpreterContext) extends Handle {
-  // TODO: It would probably be faster to use an atomic boolean.
-  
+final class PorcHandle(private var pc: Closure, private var hc: Closure, private var terminator: Terminator, ctx: Context, private var interp: InterpreterContext) extends Handle with Terminable {
   def kill() = synchronized {
-    if (isLive) {
+    if (terminator != null) {
       InterpreterContext.current(interp).schedule(hc)
       clear()
     }
@@ -61,21 +60,25 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
   def publish(v: AnyRef): Unit = synchronized {
     if (!isLive) return ;
 
-    //Logger.finer(s"Site call published: $callable $arguments -> $v")
-    /*if(startingThread == Thread.currentThread) {
+    if (terminator.removeTerminable(this)) {
+      Logger.finer(s"Site call published: -> $v   $this")
+      /*if(startingThread == Thread.currentThread) {
           result = CallValue(v)
         } else*/
-    InterpreterContext.current(interp).schedule(pc, List(v), halt = hc)
+      InterpreterContext.current(interp).schedule(pc, List(v), halt = hc)
+    }
     clear()
   }
   def halt: Unit = synchronized {
     if (!isLive) return ;
 
-    //Logger.finer(s"Site call halted: $callable $arguments")
-    /*if(startingThread == Thread.currentThread) {
+    if (terminator.removeTerminable(this)) {
+      Logger.finer(s"Site call halted. $this")
+      /*if(startingThread == Thread.currentThread) {
           result = CallHalt
         } else*/
-    InterpreterContext.current(interp).schedule(hc)
+      InterpreterContext.current(interp).schedule(hc)
+    }
     clear()
   }
 
@@ -102,53 +105,118 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
   }
 }
 
+/** An object that can be terminated by terminators. They should use identity equality to
+  * allow terminators to support removal correctly.
+  */
+trait Terminable {
+  def kill(): Unit
+}
+
 final class Terminator {
   // Fields are public to allow inlining by the scala compiler, however they should not be directly accessed. 
 
-  val _isKilled = new AtomicBoolean(false)
-  def isKilled = _isKilled.get()
-  def setIsKilled(): Boolean = _isKilled.getAndSet(true) == false
+  /** The collection of kill handlers. Null means this terminator has been killed.
+    */
+  var killHandlers = new ArrayList[Closure]()
+
+  /** Similar to _killHandlers for terminables. They are called directly
+    * (with the terminator lock held, instead of being handled in callKillHandlers).
+    */
+  var terminables = new ArrayList[Terminable]()
 
   Logger.fine(s"created $this")
 
-  var _killHandlers = new ArrayList[Closure]()
-  def addKillHandler(kh: Closure) = _killHandlers synchronized {
-    if(_killHandlers == null) {
+  /** Is this terminator in the killed state?
+    */
+  @inline def isKilled = synchronized {
+    killHandlers == null
+  }
+
+  /** Kill this terminator and return the kill handlers if this is the first time it has been killed.
+    */
+  def setIsKilled(): Option[Seq[Closure]] = {
+    import collection.JavaConversions._
+
+    val r = this.synchronized {
+      val khs = killHandlers
+      if (khs != null) {
+        killHandlers = null
+
+        Some(khs.toSeq)
+      } else {
+        None
+      }
+    }
+
+    if (r.isDefined) {
+      // FIXME: Does thos actually need the defensive copy?
+      for (t <- Seq() ++ terminables) {
+        t.kill()
+      }
+
+      terminables = null
+    }
+
+    r
+  }
+
+  /** Add a kill handler if this is not killed. Return true if the handler was added,
+    * false if this is already killed.
+    */
+  def addKillHandler(kh: Closure) = synchronized {
+    if (isKilled) {
       false
     } else {
-      _killHandlers.add(kh)
+      killHandlers.add(kh)
       true
     }
   }
-  def killHandlers() = _killHandlers synchronized {
-    assert(isKilled)
-    import collection.JavaConversions._
-    val ret = _killHandlers.toList
-    _killHandlers = null
-    ret
+
+  /** Add a terminable to the list that will be called on kill. If the terminator
+    * will be called return true. If not, return false. This second case occures
+    * if this terminator is already killed.
+    */
+  def addTerminable(t: Terminable): Boolean = synchronized {
+    if (!isKilled) {
+      terminables.add(t)
+      true
+    } else {
+      false
+    }
+  }
+  /** Remove a terminable and return true if it was there before. This will return
+    * false if the terminator has already COMPLETED it's kill on this terminable.
+    * To simplify logic in the terminables during the kill processing this will
+    * still return true.
+    */
+  def removeTerminable(t: Terminable): Boolean = synchronized {
+    if (terminables != null)
+      terminables.remove(t) // Returns true if the element was present in the list
+    else
+      false
   }
 }
 
 final class Counter {
-  private[porc] val _count: AtomicInteger = new AtomicInteger(1)
+  private[porc] val count: AtomicInteger = new AtomicInteger(1)
 
   Logger.fine(s"created $this")
 
   def increment() {
-    val v = _count.get()
+    val v = count.get()
     if (v <= 0) {
       assert(v > 0, "Resurrecting old Counter")
     }
-    Logger.finer(s"incr $this ($v)")
-    _count.incrementAndGet()
+    Logger.finer(s"incr $this ($v)") //:\n${StackUtils.getStack()}
+    count.incrementAndGet()
   }
   def decrementAndTestZero() = {
-    val v = _count.get()
+    val v = count.get()
     if (v <= 0) {
       assert(v > 0, "Uberkilling old Counter")
     }
-    Logger.finer(s"decr $this ($v)")
-    if (_count.decrementAndGet() == 0) {
+    Logger.finer(s"decr $this (${v - 1})") //:\n${StackUtils.getStack()}
+    if (count.decrementAndGet() == 0) {
       synchronized {
         notifyAll()
       }
@@ -174,7 +242,7 @@ final class Counter {
   */
 
   private[porc] def waitZero() {
-    while (_count.get() != 0) synchronized { wait() }
+    while (count.get() != 0) synchronized { wait() }
   }
 }
 
@@ -214,6 +282,9 @@ final class InterpreterContext(val engine: Interpreter) extends StandardInvocati
 
   // TODO: This needs to be a special dequeue implementation.
   val queue = new LinkedBlockingDeque[(Closure, List[AnyRef], Closure)]()
+
+  def positionOf(e: Expr) = engine.debugTable(e)
+  def positionOf(e: Var) = engine.debugTable(e)
 }
 
 object InterpreterContext {

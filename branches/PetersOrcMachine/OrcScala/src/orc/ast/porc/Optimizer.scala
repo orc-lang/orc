@@ -60,6 +60,8 @@ case class Optimizer(co: CompilerOptions) {
   }
   
   import Optimizer._
+  
+  // FIXME: Some inlining is occuring that makes code execute in the wrong terminator.
 
   val letInlineThreshold = co.options.optimizationFlags("porc:let-inline-threshold").asInt(30)
   val letInlineCodeExpansionThreshold = co.options.optimizationFlags("porc:let-inline-expansion-threshold").asInt(30)

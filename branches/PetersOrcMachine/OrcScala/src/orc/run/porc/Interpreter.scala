@@ -36,6 +36,8 @@ class Interpreter {
   
   private val processors = Runtime.getRuntime().availableProcessors()
   private var threads: IndexedSeq[InterpreterThread] = IndexedSeq()
+  
+  var debugTable = PorcDebugTable()
 
   // spawn 2 threads per core (currently do not worry about blocked threads)
   val nthreads = if(true) 1 else processors * 2
@@ -54,9 +56,11 @@ class Interpreter {
 
   //Logger.logAllToStderr()
   
-  def start(e: Expr, k: OrcEvent => Unit, options: OrcExecutionOptions) : ExecutionHandle = {
+  def start(e: Expr, k: OrcEvent => Unit, options: OrcExecutionOptions, exprDebugTable: PorcDebugTable = PorcDebugTable()) : ExecutionHandle = {
     // Insert the initial program state into one of the threads.
     val initCounter = new Counter()
+    
+    debugTable ++= exprDebugTable
     
     threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null, k, options)), Nil)
     
@@ -115,8 +119,8 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
           } catch {
             case _ : KilledException => ()
           }
-          Logger.fine(s"Executing halt $halt")
           if( halt != null ) {
+            Logger.fine(s"Executing halt $halt")
             try {
               halt.body.eval(halt.ctx, ctx)
             } catch {

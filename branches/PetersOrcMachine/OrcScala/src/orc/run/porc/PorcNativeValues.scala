@@ -78,19 +78,23 @@ final class Future {
   }
 }
 
-abstract class Join(fs: Map[Int, Future]) {
+abstract class Join(fs: Map[Int, Future], terminator: Terminator) extends Terminable {
   var nToBind = fs.size // Less than 0 means halted
 
   def bindFuture() = synchronized {
     nToBind -= 1
     if (nToBind == 0) {
-      bound(fs.mapValues(_.value))
+      Logger.finest(s"Completed join $this")
+      if(terminator.removeTerminable(this))
+        bound(fs.mapValues(_.value))
     }
   }
   def haltFuture() = synchronized {
     if (nToBind > 0) {
+      Logger.finest(s"Halting join $this")
       nToBind = -1
-      halt()
+      if(terminator.removeTerminable(this))
+        halt()
     }
   }
 

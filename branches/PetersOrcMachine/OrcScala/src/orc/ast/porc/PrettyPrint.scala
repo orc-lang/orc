@@ -21,7 +21,7 @@ import orc.values.Format
   * @author amp
   */
 class PrettyPrint {
-  def tag(ast: PorcAST, s: String) : String = s
+  def tag(ast: PorcAST, s: String) : String = s"${ast.number.map(_+": ").getOrElse("")}$s"
   
   def indent(i: Int) = " " * i
   
@@ -88,7 +88,6 @@ class PrettyPrint {
       case Killed() => "killed"
       case CheckKilled() => "checkKilled"
       case AddKillHandler(u, m) => rd"addKillHandler $u $m"
-      case CallKillHandlers() => "callKillHandlers"
       case IsKilled(t) => rd"isKilled $t"
 
       case NewFuture() => "newFuture"

@@ -89,7 +89,7 @@ object TranslateToPorc {
       SetCounterHalt(topH) :::
       let((noopP, Lambda(List(x), Unit())),
           (topP, Lambda(List(x), ExternalCall(printSite, List(x), noopP)))) {
-            sp :::
+            TryOnKilled(sp, Unit()) :::
             topH()
           }
     }
@@ -241,9 +241,12 @@ object TranslateToPorc {
             val b = new porc.Var("b")
             let((h1, lambda(){
               restoreCounter {
+                TryOnKilled(
                 let((b, ReadFlag(hasPublished))) {
                   If(b, Unit(), translate(g))
-                } :::
+                },
+                CallCounterHalt() ::: 
+                Killed()) :::
                 CallCounterHalt()
               }{
                 Unit()
@@ -333,9 +336,7 @@ object TranslateToPorc {
             val b = new porc.Var("b")
             let((killHandler, lambda() {
               let((b, SetKill())) {
-                If(b,
-                  CallKillHandlers(),
-                  Unit())
+                  Unit()
               }
             })) {
               val p1 = new porc.Var("p'")
@@ -344,7 +345,7 @@ object TranslateToPorc {
               let((p1, lambda(xv) {
                 let((b, SetKill())) {
                   If(b,
-                      CallKillHandlers() ::: P(xv) ::: Killed(),
+                      P(xv) ::: Killed(),
                       Killed())
                 }
               })) {
