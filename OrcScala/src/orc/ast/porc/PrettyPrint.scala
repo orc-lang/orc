@@ -23,7 +23,14 @@ import orc.values.Format
 class PrettyPrint {
   def tag(ast: PorcAST, s: String) : String = s"${ast.number.map(_+": ").getOrElse("")}$s"
   
-  def indent(i: Int) = " " * i
+  def indent(i: Int, n: Option[Int] = None) = {
+    n match {
+      case None => " " * i
+      case Some(n) => 
+        val sn = n.toString
+        sn + ": " + (" " * (i - sn.size - 2))
+    }
+  }
   
   def reduce(ast: PorcAST, i: Int = 0): String = {
     implicit class RecursiveReduce(val sc: StringContext) {
@@ -84,7 +91,7 @@ class PrettyPrint {
 
       case NewTerminator(k) => rd"terminator in\n$ind$k"
       case GetTerminator() => "getTerminator"
-      case SetKill() => "setKill"
+      case Kill(a, b) => rd"kill {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
       case Killed() => "killed"
       case CheckKilled() => "checkKilled"
       case AddKillHandler(u, m) => rd"addKillHandler $u $m"

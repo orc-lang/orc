@@ -93,7 +93,7 @@ class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
 
       case NewTerminator(k) => rd"terminator in\n$ind$k"
       case GetTerminator => "getTerminator"
-      case SetKill => "setKill"
+      case Kill(a, b) => rd"kill {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
       case Killed => "killed"
       case CheckKilled => "checkKilled"
       case AddKillHandler(u, m) => rd"addKillHandler $u $m"
@@ -116,6 +116,6 @@ class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
       case _ => ???
     }
     
-    debugTable.get(ast).map(_.instructionNumber + ": ").getOrElse("") + s
+    debugTable.get(ast).filter(_.instructionNumber > 0).map(_.instructionNumber + ": ").getOrElse("") + s
   }
 }

@@ -120,7 +120,7 @@ object Analysis {
     (t match {
       case _ : Spawn => spawnCost
       case _ : Force => forceCost
-      case _ : SetKill => killCost
+      case _ : Kill => killCost
       case _ : Let | _ : Site => closureCost
       case _ : Call => callCost
       case _ : ExternalCall | _ : SiteCall => externalCallCost

@@ -25,8 +25,9 @@ import orc.PublishedEvent
 import orc.ast.oil.named._
 import orc.ast.oil.named
 
-/**
-  * @author amp
+import java.util.concurrent.atomic.AtomicBoolean
+
+/** @author amp
   */
 object TranslateToPorc {
   import PorcInfixNotation._
@@ -94,6 +95,7 @@ object TranslateToPorc {
     }
   }
 
+  /*
   def makeMakeResilient(n: Int, p: porc.Var) = {
     import porc._
 
@@ -172,6 +174,7 @@ object TranslateToPorc {
         p(f1))
     (List(f), code)
   }
+  */
 
   val porcImplementedSites: Map[OrcSite, (porc.Var) => (List[porc.Var], porc.Expr)] = Map()
   /*++ {
@@ -307,20 +310,10 @@ object TranslateToPorc {
                       TryOnKilled({
                         translate(g)(ctx setP p1)
                       }, {
-                        restoreCounter {
-                          DecrCounter() :::
-                            porc.Stop(x1)
-                        } {
-                          Unit()
-                        } :::
+                        h1() :::
                           Killed()
                       }) :::
-                        restoreCounter {
-                          DecrCounter() :::
-                            porc.Stop(x1)
-                        } {
-                          Unit()
-                        }
+                        h1()
                     }
                 }
               }
@@ -334,19 +327,17 @@ object TranslateToPorc {
             val killHandler = new porc.Var("kH")
             val b = new porc.Var("b")
             let((killHandler, lambda() {
-              let((b, SetKill())) {
-                Unit()
-              }
+              Kill(Unit(), Unit())
             })) {
               val p1 = new porc.Var("p'")
               val xv = new porc.Var("xv")
               AddKillHandler(t, killHandler) :::
                 let((p1, lambda(xv) {
-                  let((b, SetKill())) {
-                    If(b,
-                      P(xv) ::: Killed(),
-                      Killed())
-                  }
+                  Kill({
+                    P(xv)
+                  }, {
+                    Killed()
+                  })
                 })) {
                   TryOnKilled(translate(f)(ctx setP p1), Unit())
                 }
@@ -374,24 +365,73 @@ object TranslateToPorc {
         SiteCall(argumentToPorc(c, ctx), args.map(argumentToPorc(_, ctx)), P)
       }
 
-      // TODO: Implement resilient.
-      /*
-      case Call(Constant(MakeResilient), List(f : BoundVar), _) if (ctx site f).isDefined  => {
-        val Some(SiteInfo(arity, _)) = ctx site f
-        
-        val fResilient = new porc.Var(f.optionalVariableName map (_ ++ "Resilient"))
-        val formals = for(i <- 0 to arity) yield new porc.Var(s"x$i_")
-        val p1 = new porc.Var("P")
-        val ff = new porc.Var("ff")
+      case Resilient(body) => {
+        //let t = T in
         val t = new porc.Var("T")
-        Site(SiteDef(fResilient, formals, p1, {
-          let((t, lambda(formals2: _*)(SiteCall(f, formals2, p1)))) {
-            Force(formals, ff)
+        let((t, GetTerminator())) {
+          // terminator in
+          NewTerminator {
+            //let kH = lambda (). callCounterHalt in
+            val kH = new porc.Var("kH")
+            val enclosingHalted = new porc.Var("enclosingHalted")
+            // Called when surrounding scope is killed. Called even if encosed scope has already halted.
+            let((enclosingHalted, DirectSiteCall(OrcValue(newAtomicFlagSite), List())),
+              (kH, lambda() {
+                val tmp = new porc.Var()
+                let((tmp, DirectSiteCall(OrcValue(setAtomicFlagSite), List(enclosingHalted)))) {
+                  // Called when enclosed scope halts. Halts if enclosing scope has not been killed.
+                  If(tmp, CallCounterHalt(), Unit())
+                }
+              })) {
+                //addKillHandler t kH
+                AddKillHandler(t, kH) :::
+                  //counter in
+                  NewCounter {
+                    //let h' = lambda (). restoreCounter 
+                    //         (if (isKilled t) unit callCounterHalt)
+                    //         (unit) in
+                    val h1 = new porc.Var("h'")
+                    let((h1, lambda() {
+                      restoreCounter {
+                        val tmp = new porc.Var()
+                        let((tmp, DirectSiteCall(OrcValue(setAtomicFlagSite), List(enclosingHalted)))) {
+                          // Called when enclosed scope halts. Halts if enclosing scope has not been killed.
+                          If(tmp, CallCounterHalt(), Unit())
+                        }
+                      } {
+                        Unit()
+                      }
+                    })) {
+                      val caughtKilled = new porc.Var("caughtKilled")
+                      val p2 = new porc.Var("p2_")
+                      val x = new porc.Var("x")
+                      SetCounterHalt(h1) :::
+                        let((caughtKilled, NewFlag()),
+                          //    let p' = lambda (x).
+                          //               try P(x) onKilled (setFlag caughtKilled; unit) in
+                          (p2, lambda(x) {
+                            TryOnKilled({
+                              P(x)
+                            }, {
+                              SetFlag(caughtKilled) :::
+                                Unit()
+                            })
+                          })) {
+                            val b = new porc.Var("b")
+                            // body;
+                            translate(body)(ctx setP p2) :::
+                              // let b = readFlag caughtKilled in
+                              let((b, ReadFlag(caughtKilled))) {
+                                h1() :::
+                                  If(b, Killed(), Unit())
+                              }
+                          }
+                    }
+                  }
+              }
           }
-        }), {
-          P(fResilient)
-        })
-      }*/
+        }
+      }
 
       case named.Call(target, args, _) => {
         SiteCall(argumentToPorc(target, ctx), args.map(argumentToPorc(_, ctx)), P)
@@ -437,6 +477,9 @@ object TranslateToPorc {
           }
         }
       }
+
+      case VtimeZone(_, _) => throw new IllegalArgumentException("The Porc compiler does not support VTime. (Yet)")
+
       case _ => throw new Error(s"Unable to handle expression $e")
     }
 
@@ -448,5 +491,28 @@ object TranslateToPorc {
       case Constant(s: OrcSite) if ctx.sites.contains(s) => ctx(s)
       case Constant(c) => porc.OrcValue(c)
     }
+  }
+
+  // XXX: It might be better to lift these out to the top level as user level sites.
+  // Creating a new one way flag. It is set once and never cleared.
+  val newAtomicFlagSite = new orc.values.sites.TotalSite with orc.values.sites.DirectTotalSite {
+    override val name = "NewAtomicFlag"
+    def evaluate(args: List[AnyRef]) = {
+      new AtomicBoolean(false)
+    }
+    override val immediateHalt = true
+    override val immediatePublish = true
+    override val publications = (1, Some(1))
+  }
+  // Returns true if you are the first to set it
+  val setAtomicFlagSite = new orc.values.sites.TotalSite with orc.values.sites.DirectTotalSite {
+    override val name = "SetAtomicFlag"
+    def evaluate(args: List[AnyRef]) = {
+      val a = args.head.asInstanceOf[AtomicBoolean]
+      !a.getAndSet(true): java.lang.Boolean
+    }
+    override val immediateHalt = true
+    override val immediatePublish = true
+    override val publications = (1, Some(1))
   }
 }

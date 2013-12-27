@@ -38,26 +38,33 @@ sealed abstract class PorcAST extends AST with Product with WithContextInfixComb
 
   /** Assign numbers starting at n and returning the
     */
-  private def assignNumbersStartingAt(n: Int): Int = {
-    if (Logger.isLoggable(Level.FINE)) {
+  protected[porc] def assignNumbersStartingAt(n: Int): Int = {
+    /*if (Logger.isLoggable(Level.FINE)) {
       number match {
         case Some(oldN) => 
           if (n != oldN) 
             Logger.fine("Reassigning PorcAST instruction number to something different. This may be a problem or at least confusing.")
         case None => ()
       }
-    }
+    }*/
     number = Some(n)
 
-    val children = subtrees collect { case c: PorcAST => c }
-    children.foldRight(n + 1)(_.assignNumbersStartingAt(_))
+    val children = subtrees.collect { case c: PorcAST => c }.toSeq
+    children.reverse.foldRight(n + 1)(_.assignNumbersStartingAt(_))
+  }
+}
+
+trait UnnumberedPorcAST extends PorcAST {
+  override protected[porc] def assignNumbersStartingAt(n: Int): Int = {
+    val children = subtrees.collect { case c: PorcAST => c }.toSeq
+    children.reverse.foldRight(n)(_.assignNumbersStartingAt(_))
   }
 }
 
 // ==================== CORE ===================
 sealed abstract class Expr extends PorcAST with FreeVariables with ReferencesRegisters with Substitution[Expr] with Product with PrecomputeHashcode with PorcInfixExpr
 
-sealed abstract class Value extends Expr with PorcInfixValue //with Substitution[Value]
+sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST //with Substitution[Value]
 case class OrcValue(value: AnyRef) extends Value
 /*case class Tuple(values: List[Value]) extends Value
 object Tuple {
@@ -97,7 +104,7 @@ object Var {
 
 case class Call(target: Value, argument: List[Value]) extends Expr
 case class Let(x: Var, v: Expr, body: Expr) extends Expr
-case class Sequence(es: List[Expr]) extends Expr
+case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST
 object Sequence {
   /*def apply(es: Seq[Expr]): Sequence = {
     new Sequence((es.flatMap {
@@ -138,7 +145,12 @@ case class CallParentCounterHalt() extends Expr
 
 case class NewTerminator(e: Expr) extends Expr
 case class GetTerminator() extends Expr
-case class SetKill() extends Expr
+case class Kill(before: Expr, after: Expr) extends Expr
+object Kill {
+  /*def apply(before: Expr)(after: Expr): Kill = {
+    Kill(before, after)
+  }*/
+}
 case class Killed() extends Expr
 case class CheckKilled() extends Expr
 case class TryOnKilled(body: Expr, handler: Expr) extends Expr

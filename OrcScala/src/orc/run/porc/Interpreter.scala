@@ -29,6 +29,8 @@ class Interpreter {
   class ExecutionHandle(c: Counter) {
     def waitForHalt() {
       c.waitZero()
+      Thread.sleep(2000) 
+      // FIXME: This allows other threads to finish. This should be replaced by a real way to register an additional counter to wait on.
     }
   }
   
@@ -111,8 +113,8 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
     
     while(running) {
       ctx.dequeue() match {
-        case Some((clos, args, halt)) =>
-          val ectx = clos.ctx.pushValues(args)
+        case Some(ScheduleItem(clos, args, halt, trace)) =>
+          val ectx = clos.ctx.pushValues(args).setTrace(trace)
           Logger.fine(s"Executing $clos $args")
           try {
             clos.body.eval(ectx, ctx)
@@ -122,7 +124,7 @@ final class InterpreterThread(val interp: Interpreter) extends Thread {
           if( halt != null ) {
             Logger.fine(s"Executing halt $halt")
             try {
-              halt.body.eval(halt.ctx, ctx)
+              halt.body.eval(halt.ctx.setTrace(trace), ctx)
             } catch {
               case _ : KilledException => ()
             }
