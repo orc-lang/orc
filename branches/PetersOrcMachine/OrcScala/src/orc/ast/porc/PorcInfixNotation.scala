@@ -194,12 +194,28 @@ object IsKilledIn {
   }
 }
 
+object KillIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (n@Kill(ze, no)) in ctx =>
+      val bodyctx = ctx.setTerminator(n)
+      Some(ze in bodyctx, no in bodyctx)
+    case _ => None
+  }
+}
+
 
 // ==================== FUTURE ===================
 
 object ForceIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case Force(f, b) in ctx => Some(f, ctx, b in ctx)
+    case _ => None
+  }
+}
+
+object ResolveIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case Resolve(f, b) in ctx => Some(f in ctx, b in ctx)
     case _ => None
   }
 }

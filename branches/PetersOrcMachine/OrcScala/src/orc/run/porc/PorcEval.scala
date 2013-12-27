@@ -55,9 +55,16 @@ sealed abstract class Expr {
 
   def prettyprint() = (new PrettyPrint()).reduce(this)
   def prettyprint(i: InterpreterContext) = (new PrettyPrint(i.engine.debugTable)).reduce(this)
-  override def toString() = prettyprint()
+  override def toString = prettyprint()
+  def toStringShort = {
+    val s = toString
+    val i = s.indexOf('\n')
+    s.substring(0, if (i < 0) s.length else i)
+  }
 
   def eval(ctx: Context, interp: InterpreterContext): Value
+
+  def pushTraceFrame(ctx: Context) = ctx.pushTracePosition(this)
 
   val HaltedException = new HaltedException()
 
@@ -84,7 +91,7 @@ sealed abstract class Expr {
     //val startingThread = Thread.currentThread
     ctx.counter.increment() // We are spawning a process effectively
 
-    val handle = new PorcHandle(pc, hc, t, ctx, interp)
+    val handle = new PorcHandle(pc, hc, t, pushTraceFrame(ctx), interp)
     Logger.finer(s"Site call started: $callable $arguments   $handle")
 
     if (t.addTerminable(handle)) {
@@ -114,17 +121,18 @@ sealed abstract class Expr {
     } else {
       ctx.counter.increment() // We are now spawning something that will call the halt handler
       val hb = ctx.counter.haltHandler
+      val tr = ctx.trace + this
       val j = new Join(fs, ctx.terminator) {
         def halt() {
           Logger.finer(s"Future halted: calling $hb")
-          InterpreterContext.current(interp).schedule(hb)
+          InterpreterContext.current(interp).schedule(hb, trace = tr)
         }
         def bound(nvs: Map[Int, AnyRef]) {
           val args = vs.zipWithIndex.map { p =>
             nvs.getOrElse(p._2, p._1)
           }
           Logger.finer(s"Future bound: calling $bb ($args)")
-          InterpreterContext.current(interp).schedule(bb, args, halt = hb)
+          InterpreterContext.current(interp).schedule(bb, args, halt = hb, trace = tr)
         }
       }
       Logger.finer(s"force started: $j")
@@ -134,29 +142,35 @@ sealed abstract class Expr {
         }
       } else {
         Logger.finer(s"Future killed immediately: calling $hb")
-        interp.schedule(hb)
+        interp.schedule(hb, trace = tr)
       }
     }
   }
-  
-  final protected def resolveFuture(f: Future, bb: Closure, ctx: Context, interp: InterpreterContext): Unit = {
-    ctx.counter.increment() // We are now spawning something that will call the halt handler
-    val hb = ctx.counter.haltHandler
-    val j = new Join(Map(0 -> f), ctx.terminator) {
-      def halt() {
-        Logger.finer(s"Future resolved: calling $bb")
-        InterpreterContext.current(interp).schedule(bb, halt = hb)
-      }
-      def bound(nvs: Map[Int, AnyRef]) {
-        halt()
-      }
-    }
-    Logger.finer(s"resolve started: $j")
-    if (ctx.terminator.addTerminable(j)) {
-      f.addBlocked(j)
-    } else {
-      Logger.finer(s"Future killed immediately: calling $hb")
-      interp.schedule(bb, halt = hb)
+
+  final protected def resolveFuture(v: Value, bb: Closure, ctx: Context, interp: InterpreterContext): Unit = {
+    v match {
+      case f: Future =>
+        ctx.counter.increment() // We are now spawning something that will call the halt handler
+        val hb = ctx.counter.haltHandler
+        val tr = ctx.trace + this
+        val j = new Join(Map(0 -> f), ctx.terminator) {
+          def halt() {
+            Logger.finer(s"Future resolved: calling $bb")
+            InterpreterContext.current(interp).schedule(bb, halt = hb, trace = tr)
+          }
+          def bound(nvs: Map[Int, AnyRef]) {
+            halt()
+          }
+        }
+        Logger.finer(s"resolve started: $j")
+        if (ctx.terminator.addTerminable(j)) {
+          f.addBlocked(j)
+        } else {
+          Logger.finer(s"Future killed immediately.")
+          j.halt()
+        }
+      case _ =>
+        Call(bb, Nil).eval(pushTraceFrame(ctx), interp)
     }
   }
 }
@@ -172,13 +186,13 @@ case class Call(target: Value, arguments: List[Value]) extends Expr {
     val clos = dereference(target, ctx).asInstanceOf[Closure]
     Logger.finer(s"closcall: $target $arguments { ${clos} }: ${prettyprint(interp)}")
     val ctx1 = clos.ctx.pushValues(arguments.map(dereference(_, ctx)))
-    clos.body.eval(ctx1, interp)
+    clos.body.eval(ctx1.copy(trace = ctx.trace + this), interp)
   }
 }
 case class Let(v: Expr, body: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    val ctx1 = ctx.pushValue(v.eval(ctx, interp))
-    body.eval(ctx1, interp)
+    val ctx1 = ctx.pushValue(v.eval(pushTraceFrame(ctx), interp))
+    body.eval(pushTraceFrame(ctx1), interp)
   }
 }
 
@@ -223,7 +237,7 @@ case class SiteCall(target: Value, arguments: List[Value], pArg: Value) extends 
         val ctx1 = clos.ctx.pushValues(arguments.map(dereference(_, ctx)))
           .pushValue(dereference(pArg, ctx))
           .copy(terminator = ctx.terminator, counter = ctx.counter, oldCounter = ctx.oldCounter)
-        clos.body.eval(ctx1, interp)
+        clos.body.eval(ctx1.copy(trace = ctx.trace + this), interp)
       case v =>
         Logger.finer(s"sitecall: $target $arguments { $v }: ${prettyprint(interp)}")
         val args = (0 until arguments.size) map { x => Var(x) } toList
@@ -260,9 +274,9 @@ case class DirectSiteCall(target: Value, arguments: List[Value]) extends Expr {
 case class If(b: Value, thn: Expr, els: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     if (dereference(b, ctx).asInstanceOf[java.lang.Boolean]) {
-      thn.eval(ctx, interp)
+      thn.eval(pushTraceFrame(ctx), interp)
     } else {
-      els.eval(ctx, interp)
+      els.eval(pushTraceFrame(ctx), interp)
     }
   }
 }
@@ -274,7 +288,7 @@ case class Spawn(target: Value) extends Expr {
     val clos = dereference(target, ctx).asInstanceOf[Closure]
     Logger.finer(s"Spawning: $target ${ctx.counter} { $clos }: ${prettyprint(interp)}")
     ctx.counter.increment()
-    interp.schedule(clos, List(), halt = ctx.counter.haltHandler)
+    interp.schedule(clos, List(), halt = ctx.counter.haltHandler, trace = ctx.trace + this)
     Unit
   }
 }
@@ -284,17 +298,17 @@ case class NewCounter(k: Expr) extends Expr {
     val c = new Counter()
     Logger.finest(s"NewCounter ${c}: ${prettyprint(interp).replace('\n', ' ').substring(0, 35)}")
     ctx.counter.increment()
-    k.eval(ctx.copy(counter = c, oldCounter = ctx.counter), interp)
+    k.eval(pushTraceFrame(ctx.copy(counter = c, oldCounter = ctx.counter)), interp)
   }
 }
 
 case class RestoreCounter(zeroBranch: Expr, nonzeroBranch: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"RestoreCounter ${ctx.counter}: ${prettyprint(interp)}")
+    Logger.finest(s"RestoreCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
     if (ctx.counter.decrementAndTestZero())
-      zeroBranch.eval(ctx.copy(counter = ctx.oldCounter, oldCounter = null), interp)
+      zeroBranch.eval(pushTraceFrame(ctx.copy(counter = ctx.oldCounter, oldCounter = null)), interp)
     else
-      nonzeroBranch.eval(ctx.copy(counter = null, oldCounter = null), interp)
+      nonzeroBranch.eval(pushTraceFrame(ctx.copy(counter = null, oldCounter = null)), interp)
   }
 }
 case class SetCounterHalt(haltCont: Value) extends Expr {
@@ -306,7 +320,7 @@ case class SetCounterHalt(haltCont: Value) extends Expr {
 }
 case object DecrCounter extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"DecrCounter ${ctx.counter}: ${prettyprint(interp)}")
+    Logger.finest(s"DecrCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
     val iz = ctx.counter.decrementAndTestZero()
     assert(!iz)
     Unit
@@ -315,16 +329,16 @@ case object DecrCounter extends Expr {
 case class CallCounterHalt() extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     val h = ctx.counter.haltHandler
-    Logger.finer(s"Calling counter halt: ${ctx.counter}, $h: ${prettyprint(interp)}")
-    Call(h, List()).eval(ctx, interp)
+    //Logger.finer(s"Calling counter halt: ${ctx.counter}, $h: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
+    Call(h, List()).eval(pushTraceFrame(ctx), interp)
     Unit
   }
 }
 case object CallParentCounterHalt extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     val h = ctx.oldCounter.haltHandler
-    Logger.finer(s"Calling parent counter halt: ${ctx.counter}, parent ${ctx.oldCounter}, $h")
-    Call(h, List()).eval(ctx, interp)
+    //Logger.finer(s"Calling parent counter halt: ${ctx.counter}, parent ${ctx.oldCounter}, $h:\n${ctx.trace.toString(interp)}")
+    Call(h, List()).eval(pushTraceFrame(ctx), interp)
     Unit
   }
 }
@@ -333,7 +347,7 @@ case class NewTerminator(k: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     CheckKilled.eval(ctx, interp)
     val t = new Terminator()
-    k.eval(ctx.copy(terminator = t), interp)
+    k.eval(pushTraceFrame(ctx.copy(terminator = t)), interp)
   }
 }
 case object GetTerminator extends Expr {
@@ -341,35 +355,59 @@ case object GetTerminator extends Expr {
     ctx.terminator
   }
 }
-case object SetKill extends Expr {
+/*case class SetKill extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     ctx.terminator.setIsKilled() match {
       case Some(khs) => {
-        Logger.finest(s"Killed terminator ${ctx.terminator}, calling kill handlers: ${khs}")
+        Logger.finest(s"Killed terminator ${ctx.terminator}, calling kill handlers: ${khs}:\n${ctx.trace.toString(interp)}")
         khs.foreach(c => try {
-          c.body.eval(c.ctx, interp)
+          c.body.eval(c.ctx.copy(trace = ctx.trace + this), interp)
         } catch {
           case _: KilledException => () // Ignore killed exceptions and go on to the next handler
         })
         true: java.lang.Boolean
       }
       case None => {
-        Logger.finest(s"Already killed terminator ${ctx.terminator}")
+        Logger.finest(s"Already killed terminator ${ctx.terminator}:\n${ctx.trace.toString(interp)}")
         false: java.lang.Boolean
       }
     }
   }
+}*/
+
+case class Kill(before: Expr, after: Expr) extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    ctx.terminator.setIsKilled() match {
+      case Some(khs) => {
+        Logger.finest(s"Killed terminator ${ctx.terminator}, calling kill handlers: ${khs}:\n${ctx.trace.toString(interp)}")
+        try {
+          before.eval(pushTraceFrame(ctx.copy(terminator = null)), interp)
+        } finally {
+          khs.foreach(c => try {
+            c.body.eval(c.ctx.copy(trace = ctx.trace + this), interp)
+          } catch {
+            case _: KilledException => () // Ignore killed exceptions and go on to the next handler
+          })
+        }
+      }
+      case None => {
+        Logger.finest(s"Already killed terminator ${ctx.terminator}:\n${ctx.trace.toString(interp)}")
+      }
+    }
+    after.eval(pushTraceFrame(ctx.copy(terminator = null)), interp)
+  }
 }
+
 case object Killed extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.fine("Throwing killed exception")
+    //Logger.fine(s"Throwing killed exception:\n${ctx.trace.toString(interp)}")
     throw KilledException
   }
 }
 case object CheckKilled extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     if (ctx.terminator.isKilled) {
-      Logger.fine("Throwing killed exception")
+      //Logger.fine(s"Throwing killed exception:\n${ctx.trace.toString(interp)}")
       throw KilledException
     }
     Unit
@@ -388,10 +426,10 @@ case class AddKillHandler(u: Value, m: Value) extends Expr {
 case class TryOnKilled(e: Expr, f: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     try {
-      e.eval(ctx, interp)
+      e.eval(pushTraceFrame(ctx), interp)
     } catch {
       case _: KilledException =>
-        f.eval(ctx, interp)
+        f.eval(pushTraceFrame(ctx), interp)
     }
   }
 }
@@ -404,7 +442,7 @@ case class IsKilled(t: Value) extends Expr {
 
 case object Halted extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.fine("Throwing halted exception")
+    //Logger.fine(s"Throwing halted exception:\n${ctx.trace.toString(interp)}")
     throw HaltedException
   }
 }
@@ -412,10 +450,10 @@ case object Halted extends Expr {
 case class TryOnHalted(e: Expr, f: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     try {
-      e.eval(ctx, interp)
+      e.eval(pushTraceFrame(ctx), interp)
     } catch {
       case _: HaltedException =>
-        f.eval(ctx, interp)
+        f.eval(pushTraceFrame(ctx), interp)
     }
   }
 }
@@ -439,7 +477,7 @@ case class Force(futures: List[Value], boundBranch: Value) extends Expr {
 case class Resolve(future: Value, boundBranch: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     Logger.finest("resolve: " + prettyprint(interp))
-    val f = dereference(future, ctx).asInstanceOf[Future]
+    val f = dereference(future, ctx)
     val bb = dereference(boundBranch, ctx).asInstanceOf[Closure]
     resolveFuture(f, bb, ctx, interp)
     Unit
@@ -447,12 +485,14 @@ case class Resolve(future: Value, boundBranch: Value) extends Expr {
 }
 case class Bind(future: Value, value: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
+    Logger.fine(s"Binding future: $future := $value\n${ctx.trace.toString(interp)}")
     dereference(future, ctx).asInstanceOf[Future].bind(dereference(value, ctx))
     Unit
   }
 }
 case class Stop(future: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
+    Logger.fine(s"Stopping future: $future\n${ctx.trace.toString(interp)}")
     dereference(future, ctx).asInstanceOf[Future].halt()
     Unit
   }
@@ -482,7 +522,7 @@ case class ReadFlag(flag: Value) extends Expr {
 
 case class ExternalCall(site: AnyRef, arguments: List[Value], p: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest("ExternalCall: " + prettyprint(interp))
+    Logger.finest(s"ExternalCall: ${prettyprint(interp)}\n${ctx.trace.toString(interp)}")
     val pc = dereference(p, ctx).asInstanceOf[Closure]
     invokeExternal(site, arguments map { x => dereference(x, ctx) }, pc, ctx, interp)
     Unit

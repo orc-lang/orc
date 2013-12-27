@@ -30,7 +30,7 @@ import orc.CaughtEvent
 import orc.util.StackUtils
 
 final case class Closure(body: Expr, var ctx: Context) {
-  override def toString = s"Clos(${body.toString.replace('\n', ' ').take(100)})"
+  override def toString = s"Clos(${body.toStringShort})"
 }
 
 final class PorcHandle(private var pc: Closure, private var hc: Closure, private var terminator: Terminator, ctx: Context, private var interp: InterpreterContext) extends Handle with Terminable {
@@ -65,7 +65,7 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
       /*if(startingThread == Thread.currentThread) {
           result = CallValue(v)
         } else*/
-      InterpreterContext.current(interp).schedule(pc, List(v), halt = hc)
+      InterpreterContext.current(interp).schedule(pc, List(v), halt = hc, trace = ctx.trace)
     }
     clear()
   }
@@ -77,7 +77,7 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
       /*if(startingThread == Thread.currentThread) {
           result = CallHalt
         } else*/
-      InterpreterContext.current(interp).schedule(hc)
+      InterpreterContext.current(interp).schedule(hc, trace = ctx.trace)
     }
     clear()
   }
@@ -128,7 +128,7 @@ final class Terminator {
 
   /** Is this terminator in the killed state?
     */
-  @inline def isKilled = synchronized {
+  def isKilled = synchronized {
     killHandlers == null
   }
 
@@ -205,24 +205,29 @@ final class Counter {
   def increment() {
     val v = count.get()
     if (v <= 0) {
-      assert(v > 0, "Resurrecting old Counter")
+      Logger.info(s"Resurrecting old Counter $this ($v)")
+      assert(false)
+    } else {
+      Logger.finer(s"incr $this ($v)") //:\n${StackUtils.getStack()}
+      count.incrementAndGet()
     }
-    Logger.finer(s"incr $this ($v)") //:\n${StackUtils.getStack()}
-    count.incrementAndGet()
   }
   def decrementAndTestZero() = {
     val v = count.get()
     if (v <= 0) {
-      assert(v > 0, "Uberkilling old Counter")
-    }
-    Logger.finer(s"decr $this (${v - 1})") //:\n${StackUtils.getStack()}
-    if (count.decrementAndGet() == 0) {
-      synchronized {
-        notifyAll()
-      }
-      true
-    } else {
+      Logger.info(s"Uberkilling old Counter $this ($v)")
+      assert(false)
       false
+    } else {
+      Logger.finer(s"decr $this (${v - 1})") //:\n${StackUtils.getStack()}
+      if (count.decrementAndGet() == 0) {
+        synchronized {
+          notifyAll()
+        }
+        true
+      } else {
+        false
+      }
     }
   }
 
@@ -251,11 +256,16 @@ final class Counter {
   */
 final case class Context(valueStack: List[AnyRef], terminator: Terminator,
   counter: Counter, oldCounter: Counter, eventHandler: OrcEvent => Unit,
-  options: OrcExecutionOptions) {
+  options: OrcExecutionOptions, trace: Trace = Trace()) {
   def pushValue(v: Value) = copy(valueStack = v :: valueStack)
   def pushValues(vs: Seq[Value]) = copy(valueStack = vs.foldRight(valueStack)(_ :: _))
   @inline def getValue(i: Int) = valueStack(i)
   @inline def apply(i: Int) = getValue(i)
+
+  def pushTracePosition(e: Expr) = {
+    setTrace(trace + e)
+  }
+  def setTrace(t: Trace) = copy(trace = t)
 
   override def toString = {
     s"Context(terminator = $terminator, counter = $counter, oldCounter = $oldCounter, \n" ++
@@ -266,22 +276,26 @@ final case class Context(valueStack: List[AnyRef], terminator: Terminator,
   }
 }
 
+final case class ScheduleItem(closure: Closure, args: List[AnyRef], halt: Closure, trace: Trace = Trace())
+
 final class InterpreterContext(val engine: Interpreter) extends StandardInvocationBehavior {
-  def schedule(clos: Closure, args: List[AnyRef] = Nil, halt: Closure = null) {
-    queue.add((clos, args, halt))
+  def schedule(clos: Closure, args: List[AnyRef] = Nil, halt: Closure = null, trace: Trace = Trace()) {
+    schedule(ScheduleItem(clos, args, halt, trace))
   }
-  def schedule(t: (Closure, List[AnyRef], Closure)) {
+  def schedule(t: ScheduleItem) {
     queue.add(t)
   }
-  def dequeue(): Option[(Closure, List[AnyRef], Closure)] = {
-    Option(queue.poll())
+  def dequeue(): Option[ScheduleItem] = {
+    val t = queue.poll()
+    Option(t)
   }
-  def steal(): Option[(Closure, List[AnyRef], Closure)] = {
-    Option(queue.pollLast())
+  def steal(): Option[ScheduleItem] = {
+    val t = queue.pollLast()
+    Option(t)
   }
 
   // TODO: This needs to be a special dequeue implementation.
-  val queue = new LinkedBlockingDeque[(Closure, List[AnyRef], Closure)]()
+  val queue = new LinkedBlockingDeque[ScheduleItem]()
 
   def positionOf(e: Expr) = engine.debugTable(e)
   def positionOf(e: Var) = engine.debugTable(e)

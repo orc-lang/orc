@@ -22,7 +22,14 @@ import scala.util.parsing.input.NoPosition
   *
   * @author amp
   */
-case class PorcPosition(position: Position, instructionNumber: Int, variableName: Option[String])
+case class PorcPosition(position: Position, instructionNumber: Int, variableName: Option[String]) {
+  override def toString = {
+    s"$position" + (if(instructionNumber >= 0) " (Inst #$instructionNumber)" else "")
+  }
+  def debugString = {
+    s"#$instructionNumber"
+  }
+}
 
 class PorcDebugTable(private val debugMap: Map[Int, PorcPosition]) {
   def apply(e: Expr) = debugMap.getOrElse(e.identityHashCode, PorcDebugTable.defaultPosition)

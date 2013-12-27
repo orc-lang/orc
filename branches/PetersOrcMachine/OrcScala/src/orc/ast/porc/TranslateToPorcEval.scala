@@ -85,7 +85,7 @@ private class TranslateToPorcEval {
 
       case NewTerminator(k) => pe.NewTerminator(translate(k))
       case GetTerminator() => pe.GetTerminator
-      case SetKill() => pe.SetKill
+      case Kill(a, b) => pe.Kill(translate(a), translate(b))
       case CheckKilled() => pe.CheckKilled
       case AddKillHandler(u, m) => pe.AddKillHandler(translateVarVar(u), translateVarVar(m))
       case Killed() => pe.Killed

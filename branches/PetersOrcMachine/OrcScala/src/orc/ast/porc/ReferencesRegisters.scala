@@ -26,6 +26,8 @@ trait ReferencesRegisters {
       override def onExpr = {
       case e@(LambdaIn(_, _, _) 
          | SiteCallIn(_, _, _, _) 
+         | ForceIn(_, _, _) 
+         | ResolveIn(_, _) 
          | SpawnIn(_)
          | NewCounterIn(_) 
          | RestoreCounterIn(_, _) 
@@ -43,9 +45,12 @@ trait ReferencesRegisters {
       override def onExpr = {
       case e@(LambdaIn(_, _, _) 
          | SiteCallIn(_, _, _, _) 
+         | ExternalCallIn(_, _, _, _) 
+         | ForceIn(_, _, _) 
+         | ResolveIn(_, _) 
          //| NewTerminatorIn() in _ // TODO: In theory this actually blocks T references. I think
          | GetTerminator() in _ 
-         | SetKill() in _ 
+         | Kill(_,_) in _ 
          | Killed() in _ 
          | CheckKilled() in _ 
          ) => foundTerminator = true; e
