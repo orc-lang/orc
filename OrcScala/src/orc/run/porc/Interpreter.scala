@@ -20,17 +20,34 @@ import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.OrcEvent
 import orc.OrcExecutionOptions
+import java.util.concurrent.ConcurrentLinkedQueue
+
+case class ResilientCounterEvent(c: Counter) extends OrcEvent
 
 /**
   *
   * @author amp
   */
 class Interpreter {
-  class ExecutionHandle(c: Counter) {
+  class ExecutionHandle(initialElements: Counter*) {
+    import scala.collection.JavaConversions._
+    
+    // FIXME: This holds references to counters for an unbounded amount of time. It might be better to allow them to remove themselves when they zero. This could even be converted to a counter in that case. 
+    val counters = new ConcurrentLinkedQueue[Counter]
+    counters.addAll(initialElements)
+    
     def waitForHalt() {
-      c.waitZero()
-      Thread.sleep(2000) 
-      // FIXME: This allows other threads to finish. This should be replaced by a real way to register an additional counter to wait on.
+      while(!counters.isEmpty()) {
+        val c = counters.poll()
+        Logger.fine(s"Waiting on counter: $c")
+        c.waitZero()
+        Logger.fine(s"Counter zeroed: $c")
+      }
+    }
+    
+    def addCounter(c: Counter) {
+      Logger.fine(s"Adding counter: $c")
+      counters.offer(c)
     }
   }
   
@@ -41,8 +58,9 @@ class Interpreter {
   
   var debugTable = PorcDebugTable()
 
-  // spawn 2 threads per core (currently do not worry about blocked threads)
-  val nthreads = if(true) 1 else processors * 2
+  // FIXME: Blocked threads are not replaced. I need a facility that marks blocked threads and spawns new ones. 
+  // spawn 4 threads per core (currently do not worry about blocked threads)
+  val nthreads = if(false) 1 else processors * 4
   
   threads = for(_ <- 1 to nthreads) yield {
     new InterpreterThread(this)
@@ -62,11 +80,19 @@ class Interpreter {
     // Insert the initial program state into one of the threads.
     val initCounter = new Counter()
     
+    val executionHandle = new ExecutionHandle(initCounter)
+    def eventHandler(e: OrcEvent) = e match {
+      case ResilientCounterEvent(c) =>
+        executionHandle.addCounter(c)
+      case _ =>
+        k(e)
+    }
+    
     debugTable ++= exprDebugTable
     
-    threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null, k, options)), Nil)
+    threads(0).ctx.schedule(Closure(e, Context(Nil, new Terminator(), initCounter, null, eventHandler, options)), Nil)
     
-    new ExecutionHandle(initCounter)
+    executionHandle
   }
   
   def kill() {

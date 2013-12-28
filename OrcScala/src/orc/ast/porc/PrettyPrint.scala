@@ -88,6 +88,7 @@ class PrettyPrint {
       case DecrCounter() => "decrCounter"
       case CallCounterHalt() => "callCounterHalt"
       case CallParentCounterHalt() => "callParentCounterHalt"
+      case MakeCounterTopLevel() => "makeCounterTopLevel"
 
       case NewTerminator(k) => rd"terminator in\n$ind$k"
       case GetTerminator() => "getTerminator"
