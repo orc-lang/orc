@@ -343,6 +343,14 @@ case object CallParentCounterHalt extends Expr {
   }
 }
 
+case object MakeCounterTopLevel extends Expr {
+  def eval(ctx: Context, interp: InterpreterContext) = {
+    val c = ctx.counter
+    ctx.eventHandler(ResilientCounterEvent(c))
+    Unit
+  }
+}
+
 case class NewTerminator(k: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     CheckKilled.eval(ctx, interp)

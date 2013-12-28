@@ -391,6 +391,7 @@ object TranslateToPorc {
                     //         (if (isKilled t) unit callCounterHalt)
                     //         (unit) in
                     val h1 = new porc.Var("h'")
+                    MakeCounterTopLevel() :::
                     let((h1, lambda() {
                       restoreCounter {
                         val tmp = new porc.Var()

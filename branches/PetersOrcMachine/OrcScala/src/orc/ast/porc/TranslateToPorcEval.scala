@@ -76,6 +76,7 @@ private class TranslateToPorcEval {
       
       case CallCounterHalt() => pe.CallCounterHalt()
       case CallParentCounterHalt() => pe.CallParentCounterHalt
+      case MakeCounterTopLevel() => pe.MakeCounterTopLevel
 
       case NewCounter(k) => pe.NewCounter(translate(k))
       //case NewCounterDisconnected(k) => pe.NewCounterDisconnected(translate(k))

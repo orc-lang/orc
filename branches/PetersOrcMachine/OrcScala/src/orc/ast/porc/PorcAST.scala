@@ -143,6 +143,8 @@ case class SetCounterHalt(haltCont: Var) extends Expr
 case class CallCounterHalt() extends Expr
 case class CallParentCounterHalt() extends Expr
 
+case class MakeCounterTopLevel() extends Expr
+
 case class NewTerminator(e: Expr) extends Expr
 case class GetTerminator() extends Expr
 case class Kill(before: Expr, after: Expr) extends Expr

@@ -34,6 +34,7 @@ trait ReferencesRegisters {
          | SetCounterHaltIn(_)
          | CallCounterHalt() in _
          | CallParentCounterHalt() in _
+         | MakeCounterTopLevel() in _
          | DecrCounter() in _) => foundCounter = true; e
       }
     })(this)
