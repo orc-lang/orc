@@ -104,7 +104,14 @@ object Var {
 
 case class Call(target: Value, argument: List[Value]) extends Expr
 case class Let(x: Var, v: Expr, body: Expr) extends Expr
-case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST
+case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST {
+  //assert(!es.isEmpty)
+  
+  def simplify = es match {
+    case List(e) => e
+    case _ => this
+  }
+}
 object Sequence {
   /*def apply(es: Seq[Expr]): Sequence = {
     new Sequence((es.flatMap {

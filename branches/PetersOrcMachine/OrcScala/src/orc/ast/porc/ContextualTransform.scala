@@ -22,11 +22,19 @@ trait ContextualTransform {
   def apply(c: Expr): Expr = transformExpr(c in TransformContext())
   def apply(c: Value): Value = transformValue(c in TransformContext())
   def apply(c: SiteDef): SiteDef = transformSiteDef(c in TransformContext())
+  def apply(c: WithContext[Expr]): Expr = transformExpr(c)
+  def apply(c: WithContext[Value]): Value = transformValue(c)
+  def apply(c: WithContext[SiteDef]): SiteDef = transformSiteDef(c)
   
   def apply(c: PorcAST): PorcAST = c match {
     case c: Value => this(c)
     case c: Expr => this(c)
     case c: SiteDef => this(c)
+  }
+  def apply(c: WithContext[PorcAST]): PorcAST = c match {
+    case c@((_: Value) in _) => this(c)
+    case c@((_: Expr) in _) => this(c)
+    case c@((_: SiteDef) in _) => this(c)
   }
 
   def onExpr: PartialFunction[WithContext[Expr], Expr] = EmptyFunction

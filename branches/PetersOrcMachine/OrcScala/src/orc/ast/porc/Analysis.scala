@@ -19,7 +19,8 @@ import orc.values.Field
 
 case class AnalysisResults(
     isNotFuture: Boolean,
-    doesNotThrowHalt: Boolean
+    doesNotThrowHalt: Boolean,
+    cost: Int
     ) {
 }
 
@@ -30,12 +31,12 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   
   object ImplicitResults {
     import scala.language.implicitConversions
-    @inline implicit def expressionCtxWithResults(e : WithContext[E]): AnalysisResults = apply(e) 
+    implicit def expressionCtxWithResults(e : WithContext[E]): AnalysisResults = apply(e) 
   }
   
   def withDefault : AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false))
+      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue))
       def get(e: WithContext[E]) : Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -62,7 +63,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   
   
   def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(nonFuture(e), nonHalt(e))
+    AnalysisResults(nonFuture(e), nonHalt(e), cost(e))
   }
   
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -93,7 +94,32 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     }
   }
   
-  // TODO: Add analysis detecting properties of a closures only use site and using that to specify it's arguments properties.
+  val closureCost = 5
+  val spawnCost = 4
+  val forceCost = 3
+  val killCost = 2
+  val callkillhandlersCost = 5
+  val callCost = 1
+  val externalCallCost = 5
+  val atomicOperation = 2
+  
+  def cost(e : WithContext[PorcAST]): Int = {
+    import ImplicitResults._
+    
+    val cs = e.subtrees
+    (e.e match {
+      case _ : Spawn => spawnCost
+      case _ : Force | _ : Resolve => forceCost
+      case _ : Kill => killCost
+      case _ : Lambda | _ : Site => closureCost
+      case _ : Call => callCost
+      case _ : ExternalCall | _ : SiteCall => externalCallCost
+      case _ : RestoreCounter | _ : CheckKilled | _ : CallCounterHalt | 
+        _: DecrCounter | _:MakeCounterTopLevel | _: IsKilled =>
+        atomicOperation
+      case _ => 0
+    }) + (cs.map( _.cost ).sum)
+  }
 }
 
 
@@ -106,27 +132,4 @@ object Analysis {
     }) +
     (cs.map( count(_, p) ).sum)
   }
-  
-  val closureCost = 5
-  val spawnCost = 4
-  val forceCost = 3
-  val killCost = 2
-  val callkillhandlersCost = 5
-  val callCost = 1
-  val externalCallCost = 5
-  
-  def cost(t : PorcAST) : Int = {
-    val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
-    (t match {
-      case _ : Spawn => spawnCost
-      case _ : Force => forceCost
-      case _ : Kill => killCost
-      case _ : Let | _ : Site => closureCost
-      case _ : Call => callCost
-      case _ : ExternalCall | _ : SiteCall => externalCallCost
-      case _ => 0
-    }) +
-    (cs.map( cost(_) ).sum)
-  }
-
 }

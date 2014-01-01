@@ -25,10 +25,6 @@ import orc.compile.translate.TranslateToPorc
 import orc.ast.oil.named.Expression
 import orc.error.compiletime.CompileLogger
 
-/**
-  * A little compiler driver PURELY for testing. It has some awful hacks to avoid having to duplicate code.
-  * @author amp
-  */
 class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
   with StandardOrcCompilerEnvInterface[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
   with CoreOrcCompilerPhases {
@@ -117,29 +113,28 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
     }
   }*/
   
-  def optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.ast.porc.Expr] {
+  val optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.ast.porc.Expr] {
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
    
       def opt(prog : Expr, pass : Int) : Expr = {
-        //println("--------------------- pass " + pass )
+        val analyzer = new Analyzer
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
             "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
             "closures" -> Analysis.count(prog, _.isInstanceOf[Let]),
             "sites" -> Analysis.count(prog, _.isInstanceOf[Site]),
             "nodes" -> Analysis.count(prog, (_ => true)),
-            "cost" -> Analysis.cost(prog)
+            "cost" -> analyzer(prog in TransformContext()).cost
           )
         val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc Optimization Pass $pass: $s")
-        /*println("-------==========")
-        println(prog)
-        println("-------==========")
-        */
-        val analyzer = new Analyzer
+        //println("-------==========")
+        //println(prog)
+        //println("-------==========")
+        
         val prog1 = Optimizer(co)(prog, analyzer)
         orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
         if(prog1 == prog || pass > maxPasses)
@@ -166,16 +161,6 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
     }
   }
   
-  /*lazy val evalPorc = new CompilerPhase[CompilerOptions, orc.run.porc.Expr, orc.run.porc.Expr] {
-    import orc.run.porc._
-    val phaseName = "evalPorc"
-    override def apply(co: CompilerOptions) = { ast => 
-      val interp = new Interpreter()
-      interp.start(ast)
-      ast
-    }
-  }*/
-
   override val phases =
     parse.timePhase >>>
       translate.timePhase >>>
@@ -193,9 +178,9 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
       optimize.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(3) >>>
-      translatePorc >>>
+      translatePorc.timePhase >>>
       outputIR(4) >>>
-      optimizePorc >>>
+      optimizePorc.timePhase >>>
       outputIR(5) >>>
       translatePorcEval
 }
