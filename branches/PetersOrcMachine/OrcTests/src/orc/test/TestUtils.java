@@ -14,12 +14,15 @@
 package orc.test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import orc.error.OrcException;
 import orc.error.compiletime.CompilationException;
 import orc.script.OrcBindings;
 
@@ -55,13 +58,24 @@ public final class TestUtils {
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
             try {
-                final String actual = OrcForTesting.compileAndRun(orcFile.getPath(), TESTING_TIMEOUT, bindings);
+                final String actual = compileAndRun();
                 if (!expecteds.contains(actual)) {
                     throw new AssertionError("Unexpected output:\n" + actual);
                 }
             } catch (CompilationException ce) {
                 throw new AssertionError(ce.getMessageAndDiagnostics());
             }
+        }
+
+        /**
+         * Compile and run the ord program. This is can be overloaded in subclasses to allow special handling of compiler errors.
+         * @throws TimeoutException 
+         * @throws OrcException 
+         * @throws FileNotFoundException 
+         * @throws ClassNotFoundException 
+         */
+        protected String compileAndRun() throws ClassNotFoundException, FileNotFoundException, OrcException, TimeoutException {
+          return OrcForTesting.compileAndRun(orcFile.getPath(), TESTING_TIMEOUT, bindings);
         }
 
         @Override
