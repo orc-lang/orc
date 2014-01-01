@@ -34,7 +34,7 @@ trait PorcInfixValue {
 }
 trait PorcInfixExpr {
   this: Expr =>
-  def :::(f: Expr): Sequence = Sequence(List(f, this))
+  def :::(f: Expr): Sequence = Sequence(f, this)
 }
 
 object PorcInfixNotation {

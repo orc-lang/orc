@@ -18,6 +18,7 @@ import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
+import scala.ref.WeakReference
 
 /** The context in which analysis is occuring.
   */
@@ -32,68 +33,69 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
   }
   def +(b: Binding): TransformContext = {
     normalize(ExtendBindings(ArrayBuffer(b), this))
-  }  
-  
+  }
+
   def enclosingTerminator: Option[PorcAST]
   def setTerminator(n: PorcAST): TransformContext = {
     normalize(SetCounterTerminator(enclosingCounter, Some(n), this))
   }
-  
+
   def enclosingCounter: Option[PorcAST]
   def setCounter(n: PorcAST): TransformContext = {
     normalize(SetCounterTerminator(Some(n), enclosingTerminator, this))
   }
-  
+
   def setCounterTerminator(n: PorcAST): TransformContext = {
     normalize(SetCounterTerminator(Some(n), Some(n), this))
   }
-  
+
   // TODO: add enclosing exception context, this will not effect compatibility since it is always dynamic anyway
-  
+
   def compatibleFor(e: Expr)(o: TransformContext): Boolean = {
     val fc = e.referencesCounter
     val ft = e.referencesTerminator
     compatibleForSite(e)(o) &&
-    (!fc || enclosingCounter == o.enclosingCounter) &&
-    (!ft || enclosingTerminator == o.enclosingTerminator)
-  } 
+      (!fc || enclosingCounter == o.enclosingCounter) &&
+      (!ft || enclosingTerminator == o.enclosingTerminator)
+  }
   def compatibleForSite(e: Expr)(o: TransformContext): Boolean = {
     val fv = e.freevars
-    bindings.filter(b => fv.contains(b.variable)) == o.bindings.filter(b => fv.contains(b.variable)) 
-  } 
-  
+    bindings.filter(b => fv.contains(b.variable)) == o.bindings.filter(b => fv.contains(b.variable))
+  }
+
   def size: Int
   def bindings: Set[Binding]
 }
 
-object TransformContext {  
-  def apply():TransformContext = Empty
-  
-  val cache = mutable.Map[TransformContext, TransformContext]()
+object TransformContext {
+  def apply(): TransformContext = Empty
+
+  val cache = mutable.WeakHashMap[TransformContext, WeakReference[TransformContext]]()
 
   // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
     cache.get(c).getOrElse {
-      cache += c -> c
-      c
-    }
+      val wc = WeakReference(c)
+      cache += c -> wc
+      wc
+    }()
   }
-  
+
   object Empty extends TransformContext {
     def apply(v: Var) = throw new NoSuchElementException(v.toString)
     def contains(e: Var): Boolean = false
 
-    def canEqual(that: Any): Boolean = that.isInstanceOf[this.type] 
-    def productArity: Int = 0 
-    def productElement(n: Int): Any = ??? 
+    def canEqual(that: Any): Boolean = that.isInstanceOf[this.type]
+    def productArity: Int = 0
+    def productElement(n: Int): Any = ???
 
     def enclosingTerminator = None
     def enclosingCounter = None
-    
+
     def size = 0
     def bindings: Set[Binding] = Set()
   }
-  
+
   case class ExtendBindings(nbindings: ArrayBuffer[Binding], prev: TransformContext) extends TransformContext {
     def apply(v: Var) = nbindings.find(_.variable == v).getOrElse(prev(v))
     def contains(v: Var): Boolean = nbindings.find(_.variable == v).isDefined || prev.contains(v)
@@ -153,10 +155,29 @@ case class LambdaArgumentBound(ctx: TransformContext, ast: Lambda, variable: Var
   assert(ast.arguments.contains(variable))
 }
 
-final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext)
+final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
+  def subtrees: Iterable[WithContext[PorcAST]] = this match {
+    case LetIn(x, v, b) => Seq(v, b)
+    case SiteIn(l, ctx, b) => l.map(_ in ctx).toSeq :+ b
+    case SiteDefIn(n, args, p, _, b) => Seq(b)
+
+    case CallIn(t, a, ctx) => Seq(t) ++ a.map(_ in ctx)
+    case SiteCallIn(t, a, p, ctx) => Seq(t, p in ctx) ++ a.map(_ in ctx)
+    case DirectSiteCallIn(t, a, ctx) => Seq(t) ++ a.map(_ in ctx)
+
+    case LambdaIn(args, ctx, b) => Seq(b)
+
+    case NewCounterIn(e) => Seq(e)
+    case RestoreCounterIn(a, b) => Seq(a, b)
+    case NewTerminatorIn(k) => Seq(k)
+    case KillIn(a, b) => Seq(a, b)
+
+    case e in ctx => e.subtrees.collect { case e : PorcAST => e in ctx }
+  }
+}
 object WithContext {
   import scala.language.implicitConversions
-  
+
   @inline
   implicit def withoutContext[E <: PorcAST](e: WithContext[E]): E = e.e
 }
