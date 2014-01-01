@@ -37,7 +37,7 @@ public class OptimizedExamplesTest {
   public static Test suite() {
     OrcBindings bindings = new OrcBindings();
 
-    // Turn on typechecking
+    // Turn on optimization
     bindings.optimizationLevel_$eq(3);
 
     return TestUtils.buildSuite(OptimizedExamplesTest.class.getSimpleName(), OptimizedExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
