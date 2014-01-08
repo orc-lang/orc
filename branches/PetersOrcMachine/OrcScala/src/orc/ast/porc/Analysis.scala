@@ -16,11 +16,13 @@ package orc.ast.porc
 
 import scala.collection.mutable
 import orc.values.Field
+import orc.values.sites.{Site => OrcSite}
 
 case class AnalysisResults(
     isNotFuture: Boolean,
     doesNotThrowHalt: Boolean,
-    cost: Int
+    cost: Int,
+    fastTerminating: Boolean
     ) {
 }
 
@@ -36,7 +38,7 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   
   def withDefault : AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue))
+      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue, false))
       def get(e: WithContext[E]) : Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -63,7 +65,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   
   
   def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(nonFuture(e), nonHalt(e), cost(e))
+    AnalysisResults(nonFuture(e), nonHalt(e), cost(e), fastTerminating(e))
   }
   
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -87,10 +89,54 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     e match {
       case (_:OrcValue | _:Bool | _:Unit | _:Var) in _ => true
       case LambdaIn(_, _, _) => true
+      
+      case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
+        case LetBound(dctx, l) => 
+          val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
+          b.doesNotThrowHalt
+        case _ => false
+      }
+      
+      case IfIn(p, t, e) => t.doesNotThrowHalt && e.doesNotThrowHalt
+      case TryOnHaltedIn(b, h) => h.doesNotThrowHalt
+      case TryOnKilledIn(b, h) => b.doesNotThrowHalt && h.doesNotThrowHalt
       case SequenceIn(l, ctx) => l forall (e => (e in ctx).doesNotThrowHalt)
       case LetIn(_, v, b) => v.doesNotThrowHalt && b.doesNotThrowHalt
+      case KillIn(b, a) => b.doesNotThrowHalt && a.doesNotThrowHalt
+      case RestoreCounterIn(b, a) => b.doesNotThrowHalt && a.doesNotThrowHalt
+      case NewCounterIn(b) => b.doesNotThrowHalt
+      case NewTerminatorIn(b) => b.doesNotThrowHalt
       case (NewFlag() | NewFuture()) in _ => true
       case _ => false
+    }
+  }
+  
+  def fastTerminating(e : WithContext[PorcAST]): Boolean = {
+    import ImplicitResults._
+    e match {
+      case DirectSiteCallIn(OrcValue(t:OrcSite) in _, _, _) if !t.immediateHalt => false
+      case SiteCallIn((t: Var) in ctx, _, _, _) => ctx(t) match {
+        case RecursiveSiteBound(_, _, _) => false
+        case _ => true
+      }
+      case KillIn(b, a) => false
+
+      case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
+        case LetBound(dctx, l) => 
+          val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
+          b.fastTerminating
+        case _ => false
+      }
+      
+      case IfIn(p, t, e) => t.fastTerminating && e.fastTerminating
+      case TryOnHaltedIn(b, h) => b.fastTerminating && h.fastTerminating
+      case TryOnKilledIn(b, h) => b.fastTerminating && h.fastTerminating
+      case LetIn(_, v, b) => v.fastTerminating && b.fastTerminating
+      case SequenceIn(l, ctx) => l forall (e => (e in ctx).fastTerminating)
+      case RestoreCounterIn(b, a) => b.fastTerminating && a.fastTerminating
+      case NewCounterIn(b) => b.fastTerminating
+      case NewTerminatorIn(b) => b.fastTerminating
+      case _ => true
     }
   }
   

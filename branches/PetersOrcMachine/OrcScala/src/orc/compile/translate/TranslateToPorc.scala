@@ -449,9 +449,20 @@ object TranslateToPorc {
         val sitedefs = for (Def(name, formals, body, _, _, _) <- defs) yield {
           val newformals = for (x <- formals) yield x ->> new porc.Var()
           val p1 = new porc.Var("P")
+          val p2 = new porc.Var("P'")
+          val v1 = new porc.Var("v")
+          val pp = new porc.Var("pp")
           SiteDef(newnames(name),
             newformals, p1,
-            translate(body)(ctxdefs ++ (formals zip newformals) setP p1))
+            let((p2, lambda(v1) {
+              let((pp, lambda() {
+                p1 (v1)
+                    })) {
+                Spawn(pp)
+              }      
+            })) {            
+            translate(body)(ctxdefs ++ (formals zip newformals) setP p2)
+          })
         }
         Site(sitedefs, translate(body)(ctx1))
       }

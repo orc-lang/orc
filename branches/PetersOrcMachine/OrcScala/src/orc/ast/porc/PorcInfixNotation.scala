@@ -63,6 +63,14 @@ object LambdaIn {
   }
 }
 
+object IfIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (l@If(p, t, e)) in ctx =>
+      Some(p in ctx, t in ctx, e in ctx)
+    case _ => None
+  }
+}
+
 object SequenceIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case Sequence(l) in ctx =>
