@@ -16,6 +16,7 @@
 package orc.lib.generated
 
 import java.io.PrintStream
+import java.io.File
 
 object GenerateMakeX extends App {
   val MaximumArity = 22
@@ -24,7 +25,7 @@ object GenerateMakeX extends App {
   
   println("Generating code in: " + outputFile)
   
-  val out = new PrintStream(outputFile)
+  val out = new PrintUpdateStream(new File(outputFile))
   
   out.println("""--
 -- makex.inc -- Orc standard prelude include, generated MakeResilient, MakeStrict, and MakeSingleValued definitions
