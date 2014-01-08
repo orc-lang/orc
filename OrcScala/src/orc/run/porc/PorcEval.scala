@@ -50,6 +50,10 @@ case class Var(index: Int) extends Value {
 
 // ==================== CORE ===================
 
+object Expr {
+  val HaltedException = new HaltedException()
+}
+
 sealed abstract class Expr {
   def identityHashCode = System.identityHashCode(this)
 
@@ -65,8 +69,6 @@ sealed abstract class Expr {
   def eval(ctx: Context, interp: InterpreterContext): Value
 
   def pushTraceFrame(ctx: Context) = ctx.pushTracePosition(this)
-
-  val HaltedException = new HaltedException()
 
   final protected def dereference(v: AnyRef, ctx: Context): AnyRef = v match {
     case Var(i) => ctx(i)
@@ -175,6 +177,8 @@ sealed abstract class Expr {
   }
 }
 
+
+
 case class ValueExpr(v: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     v
@@ -191,8 +195,14 @@ case class Call(target: Value, arguments: List[Value]) extends Expr {
 }
 case class Let(v: Expr, body: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    val ctx1 = ctx.pushValue(v.eval(pushTraceFrame(ctx), interp))
-    body.eval(pushTraceFrame(ctx1), interp)
+    try {
+      val ctx1 = ctx.pushValue(v.eval(pushTraceFrame(ctx), interp))
+      body.eval(pushTraceFrame(ctx1), interp)
+    } catch {
+      case e: StackOverflowError =>
+        //Logger.severe(s"StackOverflowError: ${ctx.trace.toString(interp)}")
+        throw e
+    }
   }
 }
 
@@ -261,11 +271,11 @@ case class DirectSiteCall(target: Value, arguments: List[Value]) extends Expr {
       case e: HaltedException => throw e
       case e: OrcException => {
         ctx.eventHandler(CaughtEvent(e))
-        throw new HaltedException
+        throw Expr.HaltedException
       }
       case e: Throwable => {
         ctx.eventHandler(CaughtEvent(new JavaException(e)))
-        throw new HaltedException
+        throw Expr.HaltedException
       }
     }
   }
@@ -395,6 +405,9 @@ case class Kill(before: Expr, after: Expr) extends Expr {
             c.body.eval(c.ctx.copy(trace = ctx.trace + this), interp)
           } catch {
             case _: KilledException => () // Ignore killed exceptions and go on to the next handler
+            case e: StackOverflowError =>
+              //Logger.severe(s"StackOverflowError: ${ctx.trace.toString(interp)}")
+              throw e
           })
         }
       }
@@ -451,7 +464,7 @@ case class IsKilled(t: Value) extends Expr {
 case object Halted extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     //Logger.fine(s"Throwing halted exception:\n${ctx.trace.toString(interp)}")
-    throw HaltedException
+    throw Expr.HaltedException
   }
 }
 

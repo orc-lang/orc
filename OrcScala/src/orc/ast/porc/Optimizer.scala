@@ -134,7 +134,7 @@ case class Optimizer(co: CompilerOptions) {
         case LetBound(dctx, l @ Let(`t`, Lambda(_, _), _)) => {
           val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
           val c = b.cost
-          if (c <= spawnCostInlineThreshold)
+          if (c <= spawnCostInlineThreshold && b.fastTerminating)
             Some(t())
           else
             None
@@ -298,6 +298,12 @@ object Optimizer {
     e match {
       case TryOnHaltedIn(LetStackIn(bindings, TryOnHaltedIn(b, h1)), h2) if h1.e == h2.e =>
         Some(TryOnHalted(LetStack(bindings, b), h2))
+      /*case TryOnHaltedIn(LetStackIn(bindings, core), h2) =>
+        Logger.info(s"Failed to match: ${bindings.collect { case (x, v) => (x.map(_.e), v.e) }}\ncore: ${core.e}\nh: ${h2.e}")
+        None
+      case TryOnHaltedIn(_, _) =>
+        Logger.info(s"Failed to match: ${e.e}")
+        None*/
       case _ => None
     }
   }
