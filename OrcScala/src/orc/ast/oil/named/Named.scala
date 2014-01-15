@@ -127,10 +127,21 @@ case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
 class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
-
-  optionalVariableName = optionalName
+  optionalVariableName = optionalName match {
+    case Some(n) => Some(n)
+    case None =>
+      Some(Var.getNextVariableName())
+  }
 
   def productIterator = optionalVariableName.toList.iterator
+}
+object Var {
+  private var nextVar: Int = 0
+  def getNextVariableName(): String = getNextVariableName("v")
+  def getNextVariableName(s: String): String = synchronized {
+    nextVar += 1
+    s"`$s$nextVar"
+  }
 }
 
 sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])

@@ -178,6 +178,7 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
       optimize.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(3) >>>
+      //outputAnalysedAST >>>
       translatePorc.timePhase >>>
       outputIR(4) >>>
       optimizePorc.timePhase >>>

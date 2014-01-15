@@ -57,6 +57,8 @@ object RecordConstructor extends TotalSite with TypedSite with DirectTotalSite {
     }
   }
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 
 object RecordMatcher extends PartialSite with TypedSite with DirectPartialSite  {
