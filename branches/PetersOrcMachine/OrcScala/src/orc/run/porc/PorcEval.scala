@@ -91,7 +91,7 @@ sealed abstract class Expr {
     val hc = ctx.counter.haltHandler
     //var result: CallResult = CallNotImmediate
     //val startingThread = Thread.currentThread
-    ctx.counter.increment() // We are spawning a process effectively
+    ctx.counter.incrementOrKill() // We are spawning a process effectively
 
     val handle = new PorcHandle(pc, hc, t, pushTraceFrame(ctx), interp)
     Logger.finer(s"Site call started: $callable $arguments   $handle")
@@ -297,7 +297,7 @@ case class Spawn(target: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     val clos = dereference(target, ctx).asInstanceOf[Closure]
     Logger.finer(s"Spawning: $target ${ctx.counter} { $clos }: ${prettyprint(interp)}")
-    ctx.counter.increment()
+    ctx.counter.incrementOrKill()
     interp.schedule(clos, List(), halt = ctx.counter.haltHandler, trace = ctx.trace + this)
     Unit
   }
