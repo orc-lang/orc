@@ -27,6 +27,8 @@ import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.compile.CompilerOptions
 
+import orc.types
+
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -44,7 +46,6 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
 }
 
 // TODO: Experiment with pushing sequence operators inside other combinators.
-// TODO: "inlining" of >>-lhs into the source of the publication when the publication is a constant. Possibly through layers of other combinators.
 // TODO: Implement compile time evaluation of select sites.
 
 /**
@@ -61,7 +62,7 @@ case class Optimizer(co: CompilerOptions) {
               case None => e
               case Some(e2) =>
                 if (e.e != e2) {
-                  Logger.finer(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
+                  Logger.fine(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
                   e2 in e.ctx
                 } else
                   e
@@ -105,6 +106,24 @@ case class Optimizer(co: CompilerOptions) {
     case (f > x > g, a) if a(f).silent => f
     case (f > x > g, a) if a(f).effectFree && a(f).immediatePublish && (a(f).publications only 1) && a(f).immediateHalt && !g.freevars.contains(x) => g
   }
+  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case f > x > y if x == y.e => Some(f)
+      case ((x: Var) in _) > y > f if f strictOn y => Some(f.subst(x, y))
+      case _ => None
+    }
+  }
+
+  /*
+  val SeqRHSInline= OptFull("seq-rhs-inline") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case f > x > g if g strictOn x => 
+      case _ => None
+    }
+  } 
+  */
   val SeqExp = Opt("seq-expansion") {
     case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
       // This doesn't really eliminate any code and I cannot think of a case where 
@@ -136,15 +155,7 @@ case class Optimizer(co: CompilerOptions) {
        DeclareDefs(defs, b > x > e)
     }
   }
-  
-  
-  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
-    e match {
-      case f > x > y if x == y.e => Some(f)
-      case _ => None
-    }
-  }
-
+ 
   val ParElim = OptSimple("par-elim") {
     case (Stop() in _) || g => g.e
     case f || (Stop() in _) => f.e
@@ -265,6 +276,28 @@ case class Optimizer(co: CompilerOptions) {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
           case _ => None
         }
+        /*
+      case CallAt(Constant(TupleConstructor) in _, args, _, ctx) 
+              if args.size > 0 && args.forall(_.isInstanceOf[BoundVar]) =>
+        def lookup(v: BoundVar) = ctx(v) match {
+          case SeqBound(tctx, Call(Constant(GetElem), List(v: BoundVar, Constant(bi: BigInt)), _) > `v` > _) => 
+            Some((v, bi))
+          case _ => None
+        }
+        
+        val vars = args.flatMap { 
+          case v: BoundVar => lookup(v)
+          case _ => None
+        }
+
+        vars.groupBy(_._1).toSeq match {
+          case Seq((tv, inds)) => 
+            e.typeOf(tv).runtimeType match {
+              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv)
+              case _ => None
+            }
+        }
+        */
       case _ => None
     }
   }
@@ -329,7 +362,7 @@ object Optimizer {
         case e => (Nil, e)
       }
     }
-    //def unapply(e: Expression): Option[(Expression, List[(BoundVar, Expression)])] = Some(latebinds(e))
+
     def unapply(e: WithContext[Expression]): Option[(List[(WithContext[Expression], BoundVar)], WithContext[Expression])] = {
       Some(seqsAt(e))
     }

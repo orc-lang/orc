@@ -27,6 +27,8 @@ object NoneConstructor extends TotalSite0 with TypedSite with DirectTotalSite {
   def eval() = None
   def orcType() = SimpleFunctionType(OptionType(Bot))
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 object NoneExtractor extends PartialSite1 with TypedSite with DirectPartialSite {
   override def name = "None.unapply"
@@ -50,6 +52,8 @@ object SomeConstructor extends TotalSite1 with TypedSite with DirectTotalSite {
     new FunctionType(List(X), List(X), OptionType(X))
   }
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 object SomeExtractor extends PartialSite1 with TypedSite with DirectPartialSite {
   override def name = "Some.unapply"

@@ -28,6 +28,8 @@ object NilConstructor extends TotalSite0 with TypedSite with DirectTotalSite {
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 object NilExtractor extends PartialSite1 with TypedSite with DirectPartialSite {
   override def name = "Nil.unapply"
@@ -55,6 +57,8 @@ object ConsConstructor extends TotalSite2 with TypedSite with DirectTotalSite {
     FunctionType(List(X), List(X, ListType(X)), ListType(X))
   }
   override val effectFree = true
+  override val immediatePublish = true
+  override val publications = (1, Some(1))
 }
 object ConsExtractor extends PartialSite1 with TypedSite with DirectPartialSite {
   override def name = "Cons.unapply"

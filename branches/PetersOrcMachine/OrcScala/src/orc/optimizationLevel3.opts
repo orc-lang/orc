@@ -2,9 +2,13 @@ remove-unused-defs
 remove-unused-types
 fraction-defs
 5c
+5c:late-bind-reorder
+5c:def-seq-norm
+5c:seq-reassoc
 5c:late-bind-elim
 5c:stop-equiv
 5c:seq-elim
+5c:seq-elim-var
 5c:par-elim
 5c:otherwise-elim
 5c:constant-propogation
