@@ -28,6 +28,7 @@ import orc.run.extensions.RwaitEvent
 import orc.error.OrcException
 import orc.CaughtEvent
 import orc.util.StackUtils
+import orc.run.porc.KilledException
 
 final case class Closure(body: Expr, var ctx: Context) {
   override def toString = s"Clos(${body.toStringShort})"
@@ -202,16 +203,35 @@ final class Counter {
 
   Logger.fine(s"created $this")
 
+  def incrementOrKill() {
+    if(!incrementInt()) {
+      throw KilledException
+    }
+  }
+  
   def increment() {
+    if(!incrementInt()) {
+      throw new AssertionError("Incrementing zero counter")
+    }
+  }
+  
+  /** Increment the counter if it is positive and return true. If 
+   *  it is zero return false and do not increment.
+    */
+  private def incrementInt() = {
     val v = count.get()
     if (v <= 0) {
-      Logger.info(s"Resurrecting old Counter $this ($v)")
-      assert(false)
+      Logger.fine(s"Incr on dead Counter $this ($v)")
+      false
     } else {
       Logger.finer(s"incr $this ($v)") //:\n${StackUtils.getStack()}
       count.incrementAndGet()
+      true
     }
   }
+  
+  /** Decrement the counter and return true if it reached zero.
+   */
   def decrementAndTestZero() = {
     val v = count.get()
     if (v <= 0) {
