@@ -454,15 +454,16 @@ object TranslateToPorc {
           val pp = new porc.Var("pp")
           SiteDef(newnames(name),
             newformals, p1,
-            let((p2, lambda(v1) {
+            /*let((p2, lambda(v1) {
               let((pp, lambda() {
                 p1 (v1)
                     })) {
                 Spawn(pp)
               }      
-            })) {            
-            translate(body)(ctxdefs ++ (formals zip newformals) setP p2)
-          })
+            })) {*/            
+            translate(body)(ctxdefs ++ (formals zip newformals) setP p1)
+            //}
+          )
         }
         Site(sitedefs, translate(body)(ctx1))
       }

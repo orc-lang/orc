@@ -32,7 +32,8 @@ case class Trace(frames: Seq[Expr] = List()) {
   }
 }
 
-object Trace {
+object Trace extends Trace(Nil) {
+  
   /*private val currentLocalTrace = new ThreadLocal[Trace]()
   def current_=(v: Trace) = currentLocalTrace.set(v)
   def current: Trace = {

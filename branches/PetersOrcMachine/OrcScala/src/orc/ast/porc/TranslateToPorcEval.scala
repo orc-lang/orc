@@ -58,7 +58,8 @@ private class TranslateToPorcEval {
   
   def translate(ast: Expr)(implicit ctx: TranslationContext): pe.Expr = {
     val e: pe.Expr = ast match {
-      case Let(x, v, b) => pe.Let(translate(v), translate(b)(ctx + x))
+      case Let(x, v, b) => 
+        pe.Let(translate(v), translate(b)(ctx + x))
       case Site(l, b) => pe.Site(l.map(d => translate(d)(ctx ++ l.map(_.name))), translate(b)(ctx ++ l.map(_.name)))
       case Lambda(arguments, body) => pe.Lambda(arguments.size, translate(body)(ctx ++ arguments))
 

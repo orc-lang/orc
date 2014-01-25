@@ -57,7 +57,7 @@ class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
     val s = ast match {
       case ValueExpr(v) => reduceVal(v)
       
-      case Let(v, b) => rd"let ${reduce(v, i+3)} in\n$ind$b"
+      //case Let(v, b) => rd"let ${reduce(v, i+3)} in\n$ind$b"
       case Site(l, b) => {
         def reduceDef(ast: SiteDef, i: Int = 0): String = {
           val SiteDef(name, arity, body) = ast
@@ -75,7 +75,12 @@ class PrettyPrint(debugTable: PorcDebugTable = PorcDebugTable()) {
       
       //case Project(n, v) => rd"project_$n $v"
       
-      case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
+      //case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
+      case LetSequence(vs) => s"seq:\n$ind" + vs.map({
+        case (e, false) => reduce(e, i)
+        case (v, true) => rd"let ${reduce(v, i+3)} in"
+        }).mkString(s";\n$ind")
+      
       
       case If(b, t, e) => rd"if $b then\n${indent(i+2)}${reduce(t, i+2)}\n${ind}else\n${indent(i+2)}${reduce(e, i+2)}"
       case TryOnKilled(b, h) => rd"try\n${indent(i+2)}${reduce(b, i+2)}\n${ind}onKilled\n${indent(i+2)}${reduce(h, i+2)}"
