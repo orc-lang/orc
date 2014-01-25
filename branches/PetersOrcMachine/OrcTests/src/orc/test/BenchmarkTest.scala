@@ -31,13 +31,15 @@ import java.text.SimpleDateFormat
 import java.io.OutputStreamWriter
 import java.io.FileOutputStream
 import orc.util.SynchronousThreadExec
+import orc.PorcInterpreterBackend
+import orc.TokenInterpreterBackend
 
 /** @author amp
   */
 object BenchmarkTest {
-  val BENCHMARKING_TIMEOUT = 120L
-  val N_RUNS = 14
-  val N_DROP = 4
+  val BENCHMARKING_TIMEOUT = 180L
+  val N_RUNS = 15
+  val N_DROP = 6
   val INCLUDE_COMPTIME = false
 
   case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double) {
@@ -52,9 +54,10 @@ object BenchmarkTest {
     }
   }
 
-  private def makeBindings(opt: Int): orc.script.OrcBindings = {
+  private def makeBindings(opt: Int, backend: BackendType): orc.script.OrcBindings = {
     val b = new OrcBindings()
     b.optimizationLevel = opt
+    b.backend = backend
     b
   }
 
@@ -75,7 +78,8 @@ object BenchmarkTest {
       (testname, file)
     }
 
-    val configs = List(0, 1, 3).map(makeBindings)
+    val configs = for (opt <- List(0, 1, 3); backend <- List(TokenInterpreterBackend, PorcInterpreterBackend))
+      yield makeBindings(opt, backend)
 
     dataout.write("Test," + configs.map(c => {
       val cname = s"${c.backend.toString.head}-O${c.optimizationLevel}"
@@ -88,6 +92,7 @@ object BenchmarkTest {
       val results = for (bindings <- configs) yield {
         runTest(testname, file, bindings)
       }
+      println(s"$testname," + results.map(_.toString(INCLUDE_COMPTIME)).mkString(",") + "\n")
       dataout.write(s"$testname," + results.map(_.toString(INCLUDE_COMPTIME)).mkString(",") + "\n")
       dataout.flush()
     }
@@ -100,7 +105,7 @@ object BenchmarkTest {
       new ExpectedOutput(file);
     } catch {
       case e: IOException =>
-        throw new AssertionError(e);
+        throw new AssertionError(e)
     }
     expecteds.shouldBenchmark()
   }
@@ -108,20 +113,29 @@ object BenchmarkTest {
   def runTest(testname: String, file: File, bindings: OrcBindings) = {
     println(s"\n==== Benchmarking $testname ${bindings.backend} -O${bindings.optimizationLevel} ====");
     try {
+      var timedout = 0
 
       val times = for (i <- 0 until N_RUNS) yield {
-        // A tiny pause because there seems like their might be a race somehow.
-        //Thread.sleep(10)
         SynchronousThreadExec("Benchmark $testname $i", {
           print(s"$i:")
           val (compTime, code) = time {
             compileCode(file, bindings)
           }
-          val (runTime, _) = time {
-            runCode(code)
+          if (timedout > N_RUNS / 3) {
+            println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
+            (compTime, BENCHMARKING_TIMEOUT.toDouble)
+          } else {
+            val (runTime: Double, _) = time {
+              try {
+                runCode(code)
+              } catch {
+                case _: TimeoutException =>
+                  timedout += 1
+              }
+            }
+            println(s" compile $compTime, run $runTime")
+            (compTime, runTime)
           }
-          println(s" compile $compTime, run $runTime")
-          (compTime, runTime)
         })
       }
 
@@ -131,7 +145,7 @@ object BenchmarkTest {
       val (avgCompTime, sdCompTime) = medianAverage(compTimes)
       val (avgRunTime, sdRunTime) = medianAverage(runTimes)
 
-      //println(s">'$testname','${bindings.backend}',${bindings.optimizationLevel},$avgCompTime,$sdCompTime,$avgRunTime,$sdRunTime,'${bindings.optimizationFlags}'")
+      println(s">'$testname','${bindings.backend}',${bindings.optimizationLevel},$avgCompTime,$sdCompTime,$avgRunTime,$sdRunTime,'${bindings.optimizationFlags}'")
 
       TimeData(avgCompTime, sdCompTime, avgRunTime, sdRunTime);
     } catch {
