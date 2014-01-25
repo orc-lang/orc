@@ -151,7 +151,7 @@ final class Terminator {
 
     if (r.isDefined) {
       // FIXME: Does thos actually need the defensive copy?
-      for (t <- Seq() ++ terminables) {
+      for (t <- this.synchronized { Seq() ++ terminables }) {
         t.kill()
       }
 
@@ -276,7 +276,7 @@ final class Counter {
   */
 final case class Context(valueStack: List[AnyRef], terminator: Terminator,
   counter: Counter, oldCounter: Counter, eventHandler: OrcEvent => Unit,
-  options: OrcExecutionOptions, trace: Trace = Trace()) {
+  options: OrcExecutionOptions, trace: Trace = Trace) {
   def pushValue(v: Value) = copy(valueStack = v :: valueStack)
   def pushValues(vs: Seq[Value]) = copy(valueStack = vs.foldRight(valueStack)(_ :: _))
   @inline def getValue(i: Int) = valueStack(i)
@@ -285,7 +285,7 @@ final case class Context(valueStack: List[AnyRef], terminator: Terminator,
   def pushTracePosition(e: Expr) = {
     setTrace(trace + e)
   }
-  def setTrace(t: Trace) = copy(trace = t)
+  def setTrace(t: Trace) = this //copy(trace = t)
 
   override def toString = {
     s"Context(terminator = $terminator, counter = $counter, oldCounter = $oldCounter, \n" ++

@@ -193,11 +193,11 @@ case class Call(target: Value, arguments: List[Value]) extends Expr {
     clos.body.eval(ctx1.copy(trace = ctx.trace + this), interp)
   }
 }
-case class Let(v: Expr, body: Expr) extends Expr {
+/*case class Let(v: Expr, body: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     try {
-      val ctx1 = ctx.pushValue(v.eval(pushTraceFrame(ctx), interp))
-      body.eval(pushTraceFrame(ctx1), interp)
+      val ctx1 = ctx.pushValue(v.eval((ctx), interp))
+      body.eval((ctx1), interp)
     } catch {
       case e: StackOverflowError =>
         //Logger.severe(s"StackOverflowError: ${ctx.trace.toString(interp)}")
@@ -212,6 +212,42 @@ case class Sequence(es: List[Expr]) extends Expr {
     var v: Value = null
     for (e <- es) {
       v = e.eval(ctx, interp)
+    }
+    v
+  }
+}*/
+
+object Let {
+  def apply(v: Expr, body: Expr) = {
+    body match {
+      case LetSequence(vs) => LetSequence((v, true) +: vs)
+      case _ => LetSequence(Array((v, true), (body, false)))
+    }
+  }
+}
+object Sequence {
+  def apply(es: List[Expr]) = {
+    val last = es.lastOption match {
+      case Some(LetSequence(vs)) => vs.toSeq
+      case Some(e) => List((e, false))
+      case None => Nil
+    }
+    LetSequence((es.init.map((_, false)) ++ last).toArray)
+  }
+}
+
+case class LetSequence(vs: Array[(Expr, Boolean)]) extends Expr {
+  def eval(initctx: Context, interp: InterpreterContext) = {
+    assert(vs.size != 0)
+    var v: Value = null
+    var ctx = initctx
+    var i = 0
+    while(i < vs.length) {
+      val (e, bound) = vs(i)
+      v = e.eval(ctx, interp)
+      if(bound)
+        ctx = ctx.pushValue(v)
+      i += 1
     }
     v
   }
@@ -314,11 +350,11 @@ case class NewCounter(k: Expr) extends Expr {
 
 case class RestoreCounter(zeroBranch: Expr, nonzeroBranch: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"RestoreCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
+    //Logger.finest(s"RestoreCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
     if (ctx.counter.decrementAndTestZero())
-      zeroBranch.eval(pushTraceFrame(ctx.copy(counter = ctx.oldCounter, oldCounter = null)), interp)
+      zeroBranch.eval((ctx.copy(counter = ctx.oldCounter, oldCounter = null)), interp)
     else
-      nonzeroBranch.eval(pushTraceFrame(ctx.copy(counter = null, oldCounter = null)), interp)
+      nonzeroBranch.eval((ctx.copy(counter = null, oldCounter = null)), interp)
   }
 }
 case class SetCounterHalt(haltCont: Value) extends Expr {
@@ -330,7 +366,7 @@ case class SetCounterHalt(haltCont: Value) extends Expr {
 }
 case object DecrCounter extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"DecrCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
+    //Logger.finest(s"DecrCounter ${ctx.counter}: ${prettyprint(interp)}:\n${ctx.trace.toString(interp)}")
     val iz = ctx.counter.decrementAndTestZero()
     assert(!iz)
     Unit
@@ -397,7 +433,7 @@ case class Kill(before: Expr, after: Expr) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
     ctx.terminator.setIsKilled() match {
       case Some(khs) => {
-        Logger.finest(s"Killed terminator ${ctx.terminator}, calling kill handlers: ${khs}:\n${ctx.trace.toString(interp)}")
+        //Logger.finest(s"Killed terminator ${ctx.terminator}, calling kill handlers: ${khs}:\n${ctx.trace.toString(interp)}")
         try {
           before.eval(pushTraceFrame(ctx.copy(terminator = null)), interp)
         } finally {
@@ -506,14 +542,14 @@ case class Resolve(future: Value, boundBranch: Value) extends Expr {
 }
 case class Bind(future: Value, value: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.fine(s"Binding future: $future := $value\n${ctx.trace.toString(interp)}")
+    //Logger.fine(s"Binding future: $future := $value\n${ctx.trace.toString(interp)}")
     dereference(future, ctx).asInstanceOf[Future].bind(dereference(value, ctx))
     Unit
   }
 }
 case class Stop(future: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.fine(s"Stopping future: $future\n${ctx.trace.toString(interp)}")
+    //Logger.fine(s"Stopping future: $future\n${ctx.trace.toString(interp)}")
     dereference(future, ctx).asInstanceOf[Future].halt()
     Unit
   }
@@ -543,7 +579,7 @@ case class ReadFlag(flag: Value) extends Expr {
 
 case class ExternalCall(site: AnyRef, arguments: List[Value], p: Value) extends Expr {
   def eval(ctx: Context, interp: InterpreterContext) = {
-    Logger.finest(s"ExternalCall: ${prettyprint(interp)}\n${ctx.trace.toString(interp)}")
+    //Logger.finest(s"ExternalCall: ${prettyprint(interp)}\n${ctx.trace.toString(interp)}")
     val pc = dereference(p, ctx).asInstanceOf[Closure]
     invokeExternal(site, arguments map { x => dereference(x, ctx) }, pc, ctx, interp)
     Unit

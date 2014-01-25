@@ -78,7 +78,7 @@ object TransformContext {
       val wc = WeakReference(c)
       cache += c -> wc
       wc
-    }()
+    }.get.getOrElse(c)
   }
 
   object Empty extends TransformContext {
