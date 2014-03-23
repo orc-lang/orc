@@ -19,6 +19,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
 import scala.ref.WeakReference
+import orc.util.SingletonCache
 
 /** The context in which analysis is occuring.
   */
@@ -70,15 +71,16 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
 object TransformContext {
   def apply(): TransformContext = Empty
 
-  val cache = mutable.WeakHashMap[TransformContext, WeakReference[TransformContext]]()
+  val cache = new SingletonCache[TransformContext]()
+  //mutable.WeakHashMap[TransformContext, WeakReference[TransformContext]]()
 
   // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
-    cache.get(c).getOrElse {
-      val wc = WeakReference(c)
-      cache += c -> wc
-      wc
-    }.get.getOrElse(c)
+    cache.normalize(c)
+  }
+  
+  def clear() {
+    cache.clear()
   }
 
   object Empty extends TransformContext {

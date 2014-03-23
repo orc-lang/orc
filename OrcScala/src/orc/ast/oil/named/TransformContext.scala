@@ -18,6 +18,7 @@ import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
+import orc.util.SingletonCache
 
 /** The context in which analysis is occuring.
   */
@@ -78,14 +79,15 @@ object TransformContext {
   
   def apply():TransformContext = Empty
   
-  val cache = mutable.Map[TransformContext, TransformContext]()
+  val cache = new SingletonCache[TransformContext]()
 
   // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
-    cache.get(c).getOrElse {
-      cache += c -> c
-      c
-    }
+    cache.normalize(c)
+  }
+  
+  def clear() {
+    cache.clear()
   }
   
   object Empty extends TransformContext {
