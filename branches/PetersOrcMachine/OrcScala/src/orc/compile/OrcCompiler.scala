@@ -281,10 +281,14 @@ trait CoreOrcCompilerPhases {
         }
       }
       
-      if(co.options.optimizationFlags("5c").asBool())
+      val e = if(co.options.optimizationFlags("5c").asBool())
         opt(ast, 1)
       else
         ast
+        
+      TransformContext.clear()
+
+      e
     }
   }
 

@@ -149,6 +149,7 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
       else
         ast
       
+      TransformContext.clear()
       e.assignNumbers()
       e
     }
