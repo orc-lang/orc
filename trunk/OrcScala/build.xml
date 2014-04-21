@@ -80,6 +80,13 @@
 			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC"/>
 		</tstamp>
 		<delete file="build/classes/orc/version.properties" quiet="true"/>
+		<fail message="Scala compilation failed">
+			<condition>
+				<not>
+					<available file="build/classes/orc"/>
+				</not>
+			</condition>
+		</fail>
 		<propertyfile file="build/classes/orc/version.properties" comment="version.properties -- Orc versioning information -- Automatically built -- ** Do NOT commit to repository **">
 			<entry key="orc.title" value="${orc.title}"/>
 			<entry key="orc.version" value="${orc.version}"/>
