@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -41,9 +41,9 @@ object FractionDefs extends NamedASTTransform {
     * sub-list has references to definitions in the mutually recursive
     * sub-lists that follow it.
     */
-  def fraction(decls: List[Def]): LinkedList[List[Def]] = {
+  def fraction(decls: List[Def]): Seq[List[Def]] = {
     if (decls.size == 1)
-      return new LinkedList(decls, LinkedList.empty)
+      return Seq(decls)
 
     val nodes = for (d <- decls) yield new Node(d)
     val g = new Graph(nodes)
@@ -70,7 +70,7 @@ object FractionDefs extends NamedASTTransform {
     /* Do a second DFS, on the complement of the original graph
        * (i.e, do a backward DFS). The result is a topologically
        * sorted collection of mutually recursive definitions */
-    val forest: LinkedList[List[Node[Def]]] = g.depthSearch(Direction.Backward)
+    val forest: Seq[List[Node[Def]]] = g.depthSearch(Direction.Backward)
     // Extract the Defs from the Nodes.
     forest map { _ map { _.elem } }
   }
