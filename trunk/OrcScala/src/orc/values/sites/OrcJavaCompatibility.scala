@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Dec 8, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -35,7 +35,7 @@ object OrcJavaCompatibility {
     case i: java.lang.Short => BigInt(i.shortValue)
     case i: java.lang.Integer => BigInt(i.intValue)
     case i: java.lang.Long => BigInt(i.longValue)
-    case f: java.lang.Float => BigDecimal(f.floatValue)
+    case f: java.lang.Float => BigDecimal(f.floatValue.toDouble)
     case f: java.lang.Double => BigDecimal(f.doubleValue)
     case s: java.lang.String => s
     case b: java.lang.Boolean => b

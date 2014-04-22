@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,7 +14,6 @@
 //
 package orc.util
 
-import scala.collection.mutable.LinkedList
 
 /**
   *
@@ -27,7 +26,7 @@ class Graph[T](var nodes: List[Node[T]]) {
     to.precs = from :: to.precs
   }
 
-  def depthSearch(dir: Direction.Value): LinkedList[List[Node[T]]] = {
+  def depthSearch(dir: Direction.Value): Seq[List[Node[T]]] = {
     var time = 0
 
     def search(node: Node[T], tree: List[Node[T]]): List[Node[T]] = {
@@ -47,10 +46,10 @@ class Graph[T](var nodes: List[Node[T]]) {
     }
 
     clear
-    var forest: LinkedList[List[Node[T]]] = LinkedList.empty
+    var forest: Seq[List[Node[T]]] = Seq.empty
     for (n <- nodes) {
       n.startTime match {
-        case None => { forest = new LinkedList(search(n, Nil), forest) }
+        case None => { forest = search(n, Nil) +: forest }
         case Some(i) => {}
       }
     }

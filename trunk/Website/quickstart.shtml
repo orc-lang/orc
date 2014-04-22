@@ -40,7 +40,7 @@ the project will not build correctly.</i></li>
 <h2>Running Orc Programs: Alternative 1</h2>
 <p>Install the <a href="download.shtml#eclipse">Orc Eclipse plug-in</a>.  In the Orc Run Configuration
 settings, go to Alternative Orc Runtime Engine and add <tt>build/orc-*.jar</tt> and
-<tt>lib/scala-library.jar</tt> in your <tt>OrcScala</tt> project to the class path.
+<tt>lib/*.jar</tt> in your <tt>OrcScala</tt> project to the class path.
 Note that adding the Scala library (as it is represented in the OrcScala class path) will not work.</p>
 
 <h2>Running Orc Programs: Alternative 2</h2>

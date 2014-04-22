@@ -4,7 +4,7 @@
 
 	 $Id$
 
-	 Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+	 Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 
 	 Use and redistribution of this file is governed by the license terms in
 	 the LICENSE file found in the project's top-level directory and also found at
@@ -95,6 +95,8 @@
 			<arg value="${orc.orcdoc-out.dir}"/>
 			<classpath>
 				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.11-1.0.1.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.11-1.0.1.jar"/>
 				<pathelement location="${orc.location.OrcDocgen}/build"/>
 			</classpath>
 		</java>

@@ -4,7 +4,7 @@
 //
 // $Id$
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -474,10 +474,10 @@ public final class Job implements JobMBean {
 
 	@Override
 	public int getTokenCount() {
-		if (engine.roots().size() != 1 || engine.roots().head().get().isEmpty()) {
+		if (engine.roots().size() != 1 || engine.roots().keys().nextElement().get().isEmpty()) {
 			return -1;
 		}
-		return engine.roots().head().get().get().tokenCount().get();
+		return engine.roots().keys().nextElement().get().get().tokenCount().get();
 	}
 
 }

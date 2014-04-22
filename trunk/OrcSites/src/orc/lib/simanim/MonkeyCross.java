@@ -191,6 +191,7 @@ public class MonkeyCross extends JPanel {
 		g2d.scale(ss, ss);
 		while (ii.hasNext()) {
 			num = ii.next();
+            if (num == null) throw new AssertionError();
 			g2d.scale(1 / sclDif, 1 / sclDif);
 			g2d.translate(-lSize * xTrans, -lSize * yTrans);
 			paintMonkey(g2d, num);
@@ -206,6 +207,7 @@ public class MonkeyCross extends JPanel {
 		g2d.scale(ss, ss);
 		while (ii.hasNext()) {
 			num = ii.next();
+            if (num == null) throw new AssertionError();
 			g2d.scale(1 / sclDif, 1 / sclDif);
 			g2d.translate(lSize * xTrans, -lSize * yTrans);
 			paintMonkey(g2d, num);

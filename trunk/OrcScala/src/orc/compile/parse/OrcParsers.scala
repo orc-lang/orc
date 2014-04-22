@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -288,6 +288,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
       (_, _) match {
         case (e, "::" ~ t) => TypeAscription(e, t)
         case (e, ":!:" ~ t) => TypeAssertion(e, t)
+        case _ => throw new AssertionError("Internal parser failure (Failed ascription match)")
       }
     }
     | parseDeclaration ~ (parseExpression | failExpecting("after declaration, expression")) -> Declare
