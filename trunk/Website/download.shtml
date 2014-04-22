@@ -26,16 +26,41 @@ us</a> if you are interested in obtaining an account.</p>
 <a id="eclipse"></a>
 <h3>Eclipse Users</h3>
 
-<p>Click on the links below for instructions on how to download and install the Orc plugin for Eclipse.
-	We provide instructions for the following operating systems:<br/>
-	NOTE: The Orc plug-in is currently supported on <b>Eclipse version 3.7 (Indigo)</b>.
-    Disregard the references to 3.6 in the instructions below -- we'll update those files soon.</p>
+<p>To use the Orc plug-in for Eclipse, you will need <a href="http://www.eclipse.org/downloads/">Eclipse</a> and Java installed on your workstation.  Only the Eclipse Standard package is needed.</p>
 
-<ul>
-	<li><a href="documentation/installation_instructions/Orc_install_mac.pdf">Mac OS X</a></li>
-	<li><a href="documentation/installation_instructions/Orc_install_linux.pdf">Linux</a></li>
-	<li><a href="documentation/installation_instructions/Orc_install_windows.pdf">Windows</a></li>
-</ul>
+<h4>Install the Orc plug-in for Eclipse</h4>
+
+<ol>
+<li>Open Eclipse</li>
+<li>Choose <i>Eclipse Marketplace</i> from the <i>Help</i> menu.</li>
+<li>In the window that appears, type <i>Orc</i> in the <i>Find</i> text box, and press the <i>Go</i> button.</li>
+<li>In the “Orc Eclipse Plug-in” entry, press the <i>Install</i> button.</li>
+<li>Click <i>Confirm &gt;</i>, then agree to the terms of the license agreement, then click <i>Finish</i>.</li>
+<li>Allow the installation of unsigned content when prompted by clicking <i>OK</i>.</li>
+<li>When installation is finished and Eclipse asks to restart, click <i>Yes</i>.</li>
+<li>Confirm installation by choosing <i>Window</i> → <i>Open Perspective</i> → <i>Other...</i> If Orc is in the listing, the plugin has been successfully installed.</li>
+<li>(recommended) In Eclipse Preferences, expand the <i>Install/Update</i> category, and select <i>Automatic Updates</i>. Select the checkbox labeled “Automatically find new updates and notify me”.</li>
+</ol>
+
+<h4>Create and run an Orc program</h4>
+
+<ol>
+<li>Open Eclipse</li>
+<li>Choose <i>File</i> → <i>New</i> → <i>Other...</i> → <i>New Orc Project</i></li>
+<li>Name the project, click <i>Next &gt;</i>, then click <i>Finish</i>.</li>
+<li>If prompted, allow Eclipse to open the Orc perspective.</li>
+<li>Right-click on the project folder, then choose <i>New</i> → <i>New Orc File</i>.</li>
+<li>In the window that appears, select the project folder as the parent folder, then type the desired name of the new file in the “File Name:” text box. Click <i>Finish</i>.</li>
+<li>For testing purposes, under the comments in the new file type “1 | 2” (without the quotes).</li>
+<li>Click the <i>Run</i> button (white arrow in green circle). If prompted, save the changes to the file. The console output should be the following:<br/>
+<pre>
+1
+2
+</pre></li>
+<li>To run Orc programs in the future, simply click the <i>Run</i> button. Note the Orc program must be in the active editor or highlighted in the active navigator.</li>
+</ol>
+
+
 
 <a id="cmdline"></a>
 <h3>Command Line Users</h3>
