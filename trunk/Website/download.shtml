@@ -34,24 +34,24 @@ us</a> if you are interested in obtaining an account.</p>
 <li>Open Eclipse</li>
 <li>Choose <i>Eclipse Marketplace</i> from the <i>Help</i> menu.</li>
 <li>In the window that appears, type <i>Orc</i> in the <i>Find</i> text box, and press the <i>Go</i> button.</li>
-<li>In the “Orc Eclipse Plug-in” entry, press the <i>Install</i> button.</li>
+<li>In the &#x201C;Orc Eclipse Plug-in&#x201D; entry, press the <i>Install</i> button.</li>
 <li>Click <i>Confirm &gt;</i>, then agree to the terms of the license agreement, then click <i>Finish</i>.</li>
 <li>Allow the installation of unsigned content when prompted by clicking <i>OK</i>.</li>
 <li>When installation is finished and Eclipse asks to restart, click <i>Yes</i>.</li>
-<li>Confirm installation by choosing <i>Window</i> → <i>Open Perspective</i> → <i>Other...</i> If Orc is in the listing, the plugin has been successfully installed.</li>
-<li>(recommended) In Eclipse Preferences, expand the <i>Install/Update</i> category, and select <i>Automatic Updates</i>. Select the checkbox labeled “Automatically find new updates and notify me”.</li>
+<li>Confirm installation by choosing <i>Window</i> &#x2192; <i>Open Perspective</i> &#x2192; <i>Other...</i> If Orc is in the listing, the plugin has been successfully installed.</li>
+<li>(recommended) In Eclipse Preferences, expand the <i>Install/Update</i> category, and select <i>Automatic Updates</i>. Select the checkbox labeled &#x201C;Automatically find new updates and notify me&#x201D;.</li>
 </ol>
 
 <h4>Create and run an Orc program</h4>
 
 <ol>
 <li>Open Eclipse</li>
-<li>Choose <i>File</i> → <i>New</i> → <i>Other...</i> → <i>New Orc Project</i></li>
+<li>Choose <i>File</i> &#x2192; <i>New</i> &#x2192; <i>Other...</i> &#x2192; <i>New Orc Project</i></li>
 <li>Name the project, click <i>Next &gt;</i>, then click <i>Finish</i>.</li>
 <li>If prompted, allow Eclipse to open the Orc perspective.</li>
-<li>Right-click on the project folder, then choose <i>New</i> → <i>New Orc File</i>.</li>
-<li>In the window that appears, select the project folder as the parent folder, then type the desired name of the new file in the “File Name:” text box. Click <i>Finish</i>.</li>
-<li>For testing purposes, under the comments in the new file type “1 | 2” (without the quotes).</li>
+<li>Right-click on the project folder, then choose <i>New</i> &#x2192; <i>New Orc File</i>.</li>
+<li>In the window that appears, select the project folder as the parent folder, then type the desired name of the new file in the &#x201C;File Name:&#x201D; text box. Click <i>Finish</i>.</li>
+<li>For testing purposes, under the comments in the new file type &#x201C;1 | 2&#x201D; (without the quotes).</li>
 <li>Click the <i>Run</i> button (white arrow in green circle). If prompted, save the changes to the file. The console output should be the following:<br/>
 <pre>
 1
