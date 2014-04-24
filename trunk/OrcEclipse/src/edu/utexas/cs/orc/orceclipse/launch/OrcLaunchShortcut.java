@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Aug 5, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -157,17 +157,12 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
 	 * @param mode Launch mode
 	 * @return A new launch config suitable for this file
 	 */
-	@SuppressWarnings("deprecation")
 	protected ILaunchConfiguration createConfiguration(final IFile file, final String mode) {
 		ILaunchConfiguration config = null;
 		ILaunchConfigurationWorkingCopy wc = null;
 		try {
 			final ILaunchConfigurationType configType = OrcLaunchDelegate.getLaunchConfigType();
-			// RATIONALE FOR CALLING DEPRECATED METHOD:
-			// generateUniqueLaunchConfigurationNameFrom was replaced
-			// in Eclipse 3.6, but we'll use it until we're ready to
-			// break all pre-3.6 users.
-			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateUniqueLaunchConfigurationNameFrom(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
+			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateLaunchConfigurationName(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
 			OrcLaunchDelegate.setDefaults(wc);
 			config = wc.doSave();
 		} catch (final CoreException e) {
