@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on 04 Aug 2009.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,6 +22,7 @@ import java.util.Map;
 
 import orc.Main;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -65,6 +66,8 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
  */
 @SuppressWarnings("restriction")
 public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
+	private IProject[] referencedProjectsInBuildOrder;
+	private IResource currentLaunchOrcProg;
 
 	/**
 	 * Launch configuration extension type ID for an Orc Program Launch configuration
@@ -86,13 +89,53 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		// So, do nothing here
 	}
 
+	/**
+	 * @return The Orc program we'll attempt to launch
+	 */
+	protected IResource orcProgToLaunch() {
+		return SelectedResourceManager.getDefault().getSelectedResource();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate#preLaunchCheck(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.core.runtime.IProgressMonitor)
+	 */
+	@Override
+	public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+		referencedProjectsInBuildOrder = null;
+		currentLaunchOrcProg = orcProgToLaunch();
+		if (currentLaunchOrcProg != null) {
+			referencedProjectsInBuildOrder = computeReferencedBuildOrder(new IProject[]{currentLaunchOrcProg
+					.getProject()});
+		} else {
+			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
+			return false;
+		}
+		// do generic launch checks
+		return super.preLaunchCheck(configuration, mode, monitor);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate#getBuildOrder(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String)
+	 */
+	@Override
+	protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) throws CoreException {
+		return referencedProjectsInBuildOrder;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate#getProjectsForProblemSearch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String)
+	 */
+	@Override
+	protected IProject[] getProjectsForProblemSearch(ILaunchConfiguration configuration, String mode) throws CoreException {
+		return referencedProjectsInBuildOrder;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.debug.core.model.ILaunchConfigurationDelegate#launch(org.eclipse.debug.core.ILaunchConfiguration, java.lang.String, org.eclipse.debug.core.ILaunch, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
 	public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
-
-		if (SelectedResourceManager.getDefault().getSelectedResource() == null) {
+		if (currentLaunchOrcProg == null) {
 			StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
 			return;
 		}
@@ -112,10 +155,9 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		try {
 			monitorNN.subTask(Messages.OrcLaunchDelegate_VerifyingLaunchAttributes);
 
-			final IResource orcProgToLaunch = SelectedResourceManager.getDefault().getSelectedResource();
 			OrcConfigSettings orcConfig;
-			orcConfig = new OrcConfigSettings(orcProgToLaunch.getProject(), configuration);
-			orcConfig.filename_$eq(orcProgToLaunch.getRawLocation().toFile().toString());
+			orcConfig = new OrcConfigSettings(currentLaunchOrcProg.getProject(), configuration);
+			orcConfig.filename_$eq(currentLaunchOrcProg.getRawLocation().toFile().toString());
 
 			final String mainTypeName = "orc.Main"; //$NON-NLS-1$
 			final IVMRunner runner = getVMRunner(configuration, mode);
@@ -126,7 +168,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 				workingDirName = launchConfigWorkingDir.getAbsolutePath();
 			} else {
 				// Default to dir of launched file
-				workingDirName = orcProgToLaunch.getParent().getLocation().toOSString();
+				workingDirName = currentLaunchOrcProg.getParent().getLocation().toOSString();
 			}
 
 			// Environment variables
