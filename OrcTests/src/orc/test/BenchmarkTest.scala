@@ -34,14 +34,27 @@ import orc.util.SynchronousThreadExec
 import orc.PorcInterpreterBackend
 import orc.TokenInterpreterBackend
 
+case class BenchmarkConfig(cpus: Seq[Int], backend: BackendType, optLevel: Int, output: File, tests: Int = Int.MaxValue,
+  timeout: Long = 180L, nRuns: Int = 12, nDroppedRuns: Int = 4, outputCompileTime: Boolean = false,
+  outputHeader: Boolean = true) {
+  def name = s"$backend -O$optLevel on ${cpus.size} cpus"
+
+  def asArguments: Seq[String] = Seq[String](
+    "-o", output.getAbsolutePath(),
+    "-p", cpus.mkString(","),
+    "-B", backend.toString,
+    "-O", optLevel.toString,
+    "-#", tests.toString,
+    "-t", timeout.toString,
+    "-r", nRuns.toString,
+    "-d", nDroppedRuns.toString) ++
+    (if (outputCompileTime) Seq("-C") else Seq()) ++
+    (if (outputHeader) Seq() else Seq("-H"))
+}
+
 /** @author amp
   */
 object BenchmarkTest {
-  val BENCHMARKING_TIMEOUT = 180L
-  val N_RUNS = 15
-  val N_DROP = 6
-  val INCLUDE_COMPTIME = false
-
   case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double) {
     override def toString: String = {
       productIterator.mkString(",")
@@ -63,39 +76,99 @@ object BenchmarkTest {
 
   val dateFormatter = new SimpleDateFormat("yyyy-MM-dd.HH-mm-ss")
 
+  lazy val pid = try {
+    new File("/proc/self").getCanonicalFile().getName().toInt
+  } catch {
+    case _: NumberFormatException => throw new UnsupportedOperationException("Getting the PID is only supported on Linux. Extend with additional platforms if you need to run it elsewhere.")
+  }
+
   def main(args: Array[String]) {
-    val datafile = new File(s"benchmark-${dateFormatter.format(new Date())}.csv")
-    val dataout = new OutputStreamWriter(new FileOutputStream(datafile))
+    def processArgs(args: Seq[String], conf: BenchmarkConfig): BenchmarkConfig = args match {
+      case "-p" +: arg +: rest =>
+        val cpus = arg.split(",").toSeq.flatMap({ s =>
+          if (s contains "-") {
+            val vs = s.split("-")
+            (vs(0).toInt to vs(1).toInt)
+          } else {
+            Seq(s.toInt)
+          }
+        })
+        processArgs(rest, conf.copy(cpus = cpus))
+      case "-c" +: arg +: rest =>
+        processArgs(rest, conf.copy(cpus = 0 until arg.toInt))
+      case "-#" +: arg +: rest =>
+        processArgs(rest, conf.copy(tests = arg.toInt))
+      case "-B" +: b +: rest =>
+        processArgs(rest, conf.copy(backend = BackendType.fromString(b)))
+      case "-O" +: o +: rest =>
+        processArgs(rest, conf.copy(optLevel = o.toInt))
+      case "-t" +: arg +: rest =>
+        processArgs(rest, conf.copy(timeout = arg.toLong))
+      case "-r" +: arg +: rest =>
+        processArgs(rest, conf.copy(nRuns = arg.toInt))
+      case "-d" +: arg +: rest =>
+        processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
+      case "-C" +: rest =>
+        processArgs(rest, conf.copy(outputCompileTime = true))
+      case "-H" +: rest =>
+        processArgs(rest, conf.copy(outputHeader = false))
+      case "-o" +: arg +: rest =>
+        processArgs(rest, conf.copy(output = new File(arg).getAbsoluteFile()))
+      case b if b.size == 0 =>
+        conf
+    }
+
+    implicit val config = processArgs(args, BenchmarkConfig(0 to 128, TokenInterpreterBackend, 0,
+      new File(s"benchmark-${dateFormatter.format(new Date())}.csv")))
+
+    // generate a single row for the configuration.
+
+    // script runs repeatedly for scaling measurements and other variation.
+
+    val dataout = new OutputStreamWriter(new FileOutputStream(config.output, true))
 
     val path = new File("test_data/performance")
     val files = new ArrayList[File]()
     TestUtils.findOrcFiles(path, files);
-    val tests = for (file <- files.toSeq if isFileBenchmarked(file)) yield {
+    val alltests = for (file <- files.toSeq.reverse if isFileBenchmarked(file)) yield {
       val testname = if (file.toString().startsWith(path.getPath() + File.separator))
         file.toString().substring(path.getPath().length() + 1)
       else file.toString();
 
       (testname, file)
     }
+    val tests = alltests.take(config.tests)
 
-    val configs = for (opt <- List(0, 1, 3); backend <- List(TokenInterpreterBackend, PorcInterpreterBackend))
-      yield makeBindings(opt, backend)
+    {
+      import scala.sys.process._
+      s"taskset -a -c -p ${config.cpus.mkString(",")} $pid".!
+    }
 
-    dataout.write("Test," + configs.map(c => {
-      val cname = s"${c.backend.toString.head}-O${c.optimizationLevel}"
-      (if (INCLUDE_COMPTIME) s"$cname Comp. Avg,$cname Comp. Std," else "") +
-        s"$cname Run Avg,$cname Run Std"
-    }).mkString(",") + "\n")
-    dataout.flush()
+    // makeBindings(3, TokenInterpreterBackend),
 
-    for ((testname, file) <- tests) yield {
-      val results = for (bindings <- configs) yield {
-        runTest(testname, file, bindings)
-      }
-      println(s"$testname," + results.map(_.toString(INCLUDE_COMPTIME)).mkString(",") + "\n")
-      dataout.write(s"$testname," + results.map(_.toString(INCLUDE_COMPTIME)).mkString(",") + "\n")
+    def write(s: String) = {
+      println("Data> " + s)
+      Console.out.flush()
+      dataout.write(s)
       dataout.flush()
     }
+
+    if (config.outputHeader) {
+      write("Config," + tests.map(c => {
+        val cname = c._1
+        (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
+          s"$cname Run Avg,$cname Run Stdev"
+      }).mkString(",") + "\n")
+    }
+
+    write(s"${config.name}")
+
+    for ((testname, file) <- tests) yield {
+      val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
+      write("," + result.toString(config.outputCompileTime))
+    }
+
+    write("\n")
 
     dataout.close()
   }
@@ -110,20 +183,22 @@ object BenchmarkTest {
     expecteds.shouldBenchmark()
   }
 
-  def runTest(testname: String, file: File, bindings: OrcBindings) = {
+  def runTest(testname: String, file: File, bindings: OrcBindings)(implicit config: BenchmarkConfig) = {
     println(s"\n==== Benchmarking $testname ${bindings.backend} -O${bindings.optimizationLevel} ====");
     try {
       var timedout = 0
 
-      val times = for (i <- 0 until N_RUNS) yield {
+      val times = for (i <- 0 until config.nRuns) yield {
         SynchronousThreadExec("Benchmark $testname $i", {
           print(s"$i:")
+          System.gc()
           val (compTime, code) = time {
             compileCode(file, bindings)
           }
-          if (timedout > N_RUNS / 3) {
+          System.gc()
+          if (timedout > config.nRuns / 3) {
             println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            (compTime, BENCHMARKING_TIMEOUT.toDouble)
+            (compTime, config.timeout.toDouble)
           } else {
             val (runTime: Double, _) = time {
               try {
@@ -156,15 +231,32 @@ object BenchmarkTest {
 
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
-  def runCode(code: OrcScriptEngine[AnyRef]#OrcCompiledScript) = {
-    OrcForTesting.run(code, BENCHMARKING_TIMEOUT);
+  def runCode(code: OrcScriptEngine[AnyRef]#OrcCompiledScript)(implicit config: BenchmarkConfig) = {
+    OrcForTesting.run(code, config.timeout);
   }
 
+  val compiledCodeCache = collection.mutable.Map[(File, OrcBindings), OrcScriptEngine[AnyRef]#OrcCompiledScript]()
+  
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
-  def compileCode(orcFile: File, bindings: OrcBindings): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
-    OrcForTesting.compile(orcFile.getPath(), bindings);
+  def compileCode(orcFile: File, bindings: OrcBindings)(implicit config: BenchmarkConfig): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
+    lazy val code = OrcForTesting.compile(orcFile.getPath(), bindings)
+    if (!config.outputCompileTime) {
+      // Use cache since we are not timing compile
+      val key = (orcFile, bindings)
+      if (compiledCodeCache.isDefinedAt(key)) {
+        println(s"Using cached compiled code for $orcFile.")
+        OrcForTesting.importScript(orcFile.getPath(), bindings, compiledCodeCache(key))
+      } else {
+        println(s"Compiling code for $orcFile and inserting in the cache.")
+        compiledCodeCache(key) = code
+        code
+      }
+    } else {
+      // We are timing compile so don't use cache
+      code
+    }
   }
 
   def time[A](f: => A): (Double, A) = {
@@ -174,10 +266,10 @@ object BenchmarkTest {
     ((stop - start) / 1000000000.0, v)
   }
 
-  def medianAverage(times: Seq[Double]) = {
-    assert(N_DROP % 2 == 0)
-    val medians = if (times.size > N_DROP)
-      times.sorted.drop(N_DROP / 2).dropRight(N_DROP / 2)
+  def medianAverage(times: Seq[Double])(implicit config: BenchmarkConfig) = {
+    assert(config.nDroppedRuns % 2 == 0)
+    val medians = if (times.size > config.nDroppedRuns)
+      times.sorted.drop(config.nDroppedRuns / 2).dropRight(config.nDroppedRuns / 2)
     else
       times
 

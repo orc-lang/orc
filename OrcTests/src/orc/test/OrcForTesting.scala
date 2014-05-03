@@ -55,6 +55,18 @@ object OrcForTesting {
       Console.err.flush()
     }
   }
+  
+  def importScript(filename: String, options: OrcBindings, script: OrcScriptEngine[AnyRef]#OrcCompiledScript): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
+    val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[OrcScriptEngine[AnyRef]]
+    if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
+    try {
+      options.filename = filename
+      engine.setBindings(options, ENGINE_SCOPE)
+      engine.importLoaded(script)
+    } catch {
+      case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
+    }
+  }
 
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
