@@ -118,12 +118,16 @@ sealed abstract class Expr {
 
   final protected def forceFutures(vs: List[Value], bb: Closure, ctx: Context, interp: InterpreterContext): Unit = {
     val fs = vs.zipWithIndex.collect { case (f: Future, i) => (i, f) }.toMap
+    val hb = ctx.counter.haltHandler
+    val tr = ctx.trace + this
+    
     if (fs.isEmpty) {
-      Call(bb, vs).eval(ctx, interp)
+      // TODO: Optimize to only trampoline when the stack is tall.
+      //Call(bb, vs).eval(ctx, interp)
+      ctx.counter.increment() // We are now spawning something that will call the halt handler
+      interp.schedule(bb, vs, halt = hb, trace = tr)
     } else {
       ctx.counter.increment() // We are now spawning something that will call the halt handler
-      val hb = ctx.counter.haltHandler
-      val tr = ctx.trace + this
       val j = new Join(fs, ctx.terminator) {
         def halt() {
           Logger.finer(s"Future halted: calling $hb")
@@ -150,11 +154,12 @@ sealed abstract class Expr {
   }
 
   final protected def resolveFuture(v: Value, bb: Closure, ctx: Context, interp: InterpreterContext): Unit = {
+    val hb = ctx.counter.haltHandler
+    val tr = ctx.trace + this
+    
     v match {
       case f: Future =>
         ctx.counter.increment() // We are now spawning something that will call the halt handler
-        val hb = ctx.counter.haltHandler
-        val tr = ctx.trace + this
         val j = new Join(Map(0 -> f), ctx.terminator) {
           def halt() {
             Logger.finer(s"Future resolved: calling $bb")
@@ -172,7 +177,10 @@ sealed abstract class Expr {
           j.halt()
         }
       case _ =>
-        Call(bb, Nil).eval(pushTraceFrame(ctx), interp)
+        // TODO: Optimize to only trampoline when the stack is tall.
+        //Call(bb, Nil).eval(pushTraceFrame(ctx), interp)
+        ctx.counter.increment() // We are now spawning something that will call the halt handler
+        interp.schedule(bb, Nil, halt = hb, trace = tr)
     }
   }
 }
