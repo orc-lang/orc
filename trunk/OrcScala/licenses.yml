@@ -15,7 +15,7 @@
 # notes: any notes about why the dependency is needed
 ---
 
-files: [scala-library.jar, scala-reflect.jar, scala-xml_2.11-1.0.1.jar, scala-parser-combinators_2.11-1.0.1.jar]
+files: [scala-library.jar, scala-reflect.jar, scala-xml_2.11-1.0.2.jar, scala-parser-combinators_2.11-1.0.1.jar]
 project: Scala
 version: 2.11.0
 url: http://www.scala-lang.org/
