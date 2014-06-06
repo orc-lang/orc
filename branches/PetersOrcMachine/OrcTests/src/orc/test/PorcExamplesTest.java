@@ -44,7 +44,7 @@ import static org.junit.Assume.assumeNoException;
  * @author dkitchin
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ PorcExamplesTest.PorcUnoptExamplesTest.class, PorcExamplesTest.PorcOptimizedExamplesTest.class })
+@Suite.SuiteClasses({ PorcExamplesTest.PorcOptimizedExamplesTest.class, PorcExamplesTest.PorcUnoptExamplesTest.class })
 public class PorcExamplesTest {
   public static class PorcOrcTestCase extends OrcTestCase {
     /**
@@ -71,7 +71,7 @@ public class PorcExamplesTest {
     public static Test suite() {
       OrcBindings optbindings = new OrcBindings();
       optbindings.backend_$eq(PorcInterpreterBackend.it());
-      optbindings.optimizationLevel_$eq(3);
+      optbindings.optimizationLevel_$eq(1);
 
       return TestUtils.buildSuite(PorcOptimizedExamplesTest.class.getSimpleName(), ExamplesTestCase.class, optbindings, new File("test_data"), new File("../OrcExamples"));
     }

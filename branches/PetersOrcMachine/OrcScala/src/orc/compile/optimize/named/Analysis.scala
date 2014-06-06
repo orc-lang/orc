@@ -212,6 +212,19 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   }
   def get(e : Expression)(implicit ctx: TransformContext) = Some(this(e))
   
+  // TODO: Recursive functions could be handled by thinking of these functions as recursive relations on the analysis result.
+  // These recursive relations could either be solve in place as we go or reified and then solved using any technique.
+
+  // TODO: The analysis I am doing is flow-sensative and outward-context-sensative in that functions are 
+  //       analyzed for each call site and that result used at that site. However no information flow 
+  //       inward from the call site to allow optimization inside the function body. A conscious decision 
+  //       should be made as to what sensativities we want.
+   
+  
+  // TODO: All these analyses are really flow analyses of one form or another. This should use a consistant 
+  //       framework for them. However because we have no goto all flow control is through functions which
+  //       means flow analyses MUST occur across function boundries.
+  
   def analyze(e : WithContext[Expression]) : AnalysisResults = {
     AnalysisResultsConcrete(immediateHalt(e), immediatePublish(e), publications(e), strictOn(e), forces(e), effectFree(e))
   }
@@ -246,7 +259,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case HasType(b, _) in ctx => this(b)(ctx).immediateHalt
       case Constant(_) in _ => true
       case (v : BoundVar) in ctx => ctx(v) match {
-        case Bindings.SeqBound(_, _) => true
+        case Bindings.SeqBound(_, _) 
+           | Bindings.DefBound(_, _, _) 
+           | Bindings.RecursiveDefBound(_, _, _) => true 
         case b : Bindings.LateBound => {
           b.valueExpr.immediateHalt
         }
@@ -282,7 +297,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case HasType(b, _) in ctx => this(b)(ctx).immediatePublish
       case Constant(_) in _ => true
       case (v : BoundVar) in ctx => ctx(v) match {
-        case Bindings.SeqBound(_, _) => true
+        case Bindings.SeqBound(_, _) 
+           | Bindings.DefBound(_, _, _) 
+           | Bindings.RecursiveDefBound(_, _, _) => true
         case b : Bindings.LateBound => {
           b.valueExpr.immediatePublish
         }

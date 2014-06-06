@@ -1,43 +1,117 @@
 //
-// EvalContext.scala -- Scala class/trait/object EvalContext
+// RuntimeContext.scala -- Scala class/trait/object RuntimeContext
 // Project OrcScala
 //
 // $Id$
 //
-// Created by amp on Jun 14, 2013.
+// Created by amp on May 21, 2014.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.run.porc
+package orc.run.compiled
 
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.ArrayList
 import orc.run.StandardInvocationBehavior
 import java.util.concurrent.LinkedBlockingDeque
-import orc.OrcEvent
-import orc.OrcExecutionOptions
 import orc.Handle
-import scala.util.parsing.input.NoPosition
+import orc.OrcEvent
 import orc.run.extensions.RwaitEvent
+import orc.values.sites.HaltedException
 import orc.error.OrcException
 import orc.CaughtEvent
-import orc.util.StackUtils
+import orc.run.compiled.OrcModuleInstance
+import java.util.ArrayList
+import java.util.concurrent.atomic.AtomicInteger
 import orc.run.porc.KilledException
+import orc.run.porc.TerminableHandler
+import scala.util.parsing.input.NoPosition
 
-final case class Closure(body: Expr, var ctx: Context) {
-  override def toString = s"Clos(${body.toStringShort})"
+/** @author amp
+  */
+trait RuntimeContext extends StandardInvocationBehavior {
+  type Action = () => Unit
+
+  @inline
+  def schedule(p: Action, h: Action): Unit = {
+    schedule(() => {
+      try {
+        p()
+      } catch {
+        case _: KilledException => ()
+      }
+      try {
+        h()
+      } catch {
+        case _: KilledException => ()
+      }
+    })
+  }
+  def schedule(f: Action): Unit = {
+    queue.add(f)
+  }
+  def dequeue(): Option[Action] = {
+    val t = queue.poll()
+    Option(t)
+  }
+  def steal(): Option[Action] = {
+    val t = queue.pollLast()
+    Option(t)
+  }
+
+  val runtime: Runtime
+
+  // TODO: This needs to be a special dequeue implementation.
+  val queue = new LinkedBlockingDeque[Action]()
 }
 
-final class PorcHandle(private var pc: Closure, private var hc: Closure, private var terminator: Terminator, ctx: Context, private var interp: InterpreterContext) extends Handle with Terminable {
+final class RuntimeThread(val runtime: Runtime) extends Thread with RuntimeContext {
+  private[compiled] var otherContexts: Seq[RuntimeContext] = Nil
+
+  @volatile
+  private var running = true
+
+  override def run() {
+    while (running) {
+      dequeue() match {
+        case Some(f) =>
+          f()
+        case None =>
+          // steal work
+          // TODO: Steal more than one item to amortize the cost
+          otherContexts.find(c => !c.queue.isEmpty()) flatMap { _.steal } match {
+            case Some(t) => {
+              //println("Stealing work.")
+              schedule(t)
+            }
+            case None => {
+              // Wait a little while and see if more work has appeared
+              runtime.waitForWork()
+            }
+          }
+      }
+    }
+  }
+
+  def kill() = {
+    running = false
+  }
+}
+
+final class CallHandle(pc: (AnyRef) => Unit, hc: () => Unit,
+  terminator: Terminator, moduleInstance: OrcModuleInstance) extends Handle with Terminable {
+  final protected def ctx: RuntimeContext = {
+    Thread.currentThread() match {
+      case ctx: RuntimeContext => ctx
+      case _ => moduleInstance.defaultContext
+    }
+  }
+
   def kill() = synchronized {
     if (terminator != null) {
-      InterpreterContext.current(interp).schedule(hc)
+      ctx.schedule(hc)
       clear()
     }
   }
@@ -48,9 +122,8 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
   def notifyOrc(event: OrcEvent): Unit = synchronized {
     event match {
       // TODO: There are problably other events I need to handle
-      case RwaitEvent(d, h) => interp.engine.registerDelayed(d.toLong, () => h.publish())
-      case _ =>
-        ctx.eventHandler(event)
+      case RwaitEvent(d, h) => ctx.runtime.registerDelayed(d.toLong, () => h.publish())
+      case _ => moduleInstance.eventHandler(event)
       //Logger.severe(event.toString)
     }
   }
@@ -66,7 +139,7 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
       /*if(startingThread == Thread.currentThread) {
           result = CallValue(v)
         } else*/
-      InterpreterContext.current(interp).schedule(pc, List(v), halt = hc, trace = ctx.trace)
+      ctx.schedule(() => pc(v), hc)
     }
     clear()
   }
@@ -78,7 +151,7 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
       /*if(startingThread == Thread.currentThread) {
           result = CallHalt
         } else*/
-      InterpreterContext.current(interp).schedule(hc, trace = ctx.trace)
+      ctx.schedule(hc)
     }
     clear()
   }
@@ -91,7 +164,7 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
   }
 
   def hasRight(rightName: String): Boolean = {
-    ctx.options.hasRight(rightName)
+    moduleInstance.options.hasRight(rightName)
   }
 
   def isLive: Boolean = {
@@ -99,33 +172,13 @@ final class PorcHandle(private var pc: Closure, private var hc: Closure, private
   }
 
   private def clear(): Unit = {
+    /*
     terminator = null
     interp = null
     hc = null
     pc = null
+    */
   }
-}
-
-/** An object that can be terminated by terminators. They should use identity equality to
-  * allow terminators to support removal correctly.
-  */
-trait Terminable {
-  def kill(): Unit
-}
-
-abstract class TerminableHandler {
-  /** Add a terminable to the list that will be called on kill. If the terminator
-    * will be called return true. If not, return false. This second case occures
-    * if this terminator is already killed.
-    */
-  def addTerminable(t: Terminable): Boolean
-  
-  /** Remove a terminable and return true if it was there before. This will return
-    * false if the terminator has already COMPLETED it's kill on this terminable.
-    * To simplify logic in the terminables during the kill processing this will
-    * still return true.
-    */
-  def removeTerminable(t: Terminable): Boolean
 }
 
 final class Terminator extends TerminableHandler {
@@ -133,7 +186,7 @@ final class Terminator extends TerminableHandler {
 
   /** The collection of kill handlers. Null means this terminator has been killed.
     */
-  var killHandlers = new ArrayList[Closure]()
+  var killHandlers = new ArrayList[() => Unit]()
 
   /** Similar to _killHandlers for terminables. They are called directly
     * (with the terminator lock held, instead of being handled in callKillHandlers).
@@ -150,7 +203,7 @@ final class Terminator extends TerminableHandler {
 
   /** Kill this terminator and return the kill handlers if this is the first time it has been killed.
     */
-  def setIsKilled(): Option[Seq[Closure]] = {
+  def setIsKilled(): Option[Seq[() => Unit]] = {
     import collection.JavaConversions._
 
     val r = this.synchronized {
@@ -179,7 +232,7 @@ final class Terminator extends TerminableHandler {
   /** Add a kill handler if this is not killed. Return true if the handler was added,
     * false if this is already killed.
     */
-  def addKillHandler(kh: Closure) = synchronized {
+  def addKillHandler(kh: () => Unit) = synchronized {
     if (isKilled) {
       false
     } else {
@@ -214,24 +267,24 @@ final class Terminator extends TerminableHandler {
 }
 
 final class Counter {
-  private[porc] val count: AtomicInteger = new AtomicInteger(1)
+  private[compiled] val count: AtomicInteger = new AtomicInteger(1)
 
   Logger.fine(s"created $this")
 
   def incrementOrKill() {
-    if(!incrementInt()) {
+    if (!incrementInt()) {
       throw KilledException
     }
   }
-  
+
   def increment() {
-    if(!incrementInt()) {
+    if (!incrementInt()) {
       throw new AssertionError("Incrementing zero counter")
     }
   }
-  
-  /** Increment the counter if it is positive and return true. If 
-   *  it is zero return false and do not increment.
+
+  /** Increment the counter if it is positive and return true. If
+    * it is zero return false and do not increment.
     */
   private def incrementInt() = {
     val v = count.get()
@@ -244,9 +297,9 @@ final class Counter {
       true
     }
   }
-  
+
   /** Decrement the counter and return true if it reached zero.
-   */
+    */
   def decrementAndTestZero() = {
     val v = count.get()
     if (v <= 0) {
@@ -267,7 +320,7 @@ final class Counter {
   }
 
   @volatile
-  var haltHandler: Closure = null
+  var haltHandler: () => Unit = null
   /*
   def haltHandler = synchronized {
     assert(_haltHandler != null)
@@ -283,65 +336,7 @@ final class Counter {
 
   def waitZero() {
     synchronized {
-      while (count.get() != 0) wait() 
+      while (count.get() != 0) wait()
     }
-  }
-}
-
-/** A store that encodes the state of a process in the interpreter.
-  * @author amp
-  */
-final case class Context(valueStack: List[AnyRef], terminator: Terminator,
-  counter: Counter, oldCounter: Counter, eventHandler: OrcEvent => Unit,
-  options: OrcExecutionOptions, trace: Trace = Trace) {
-  def pushValue(v: Value) = copy(valueStack = v :: valueStack)
-  def pushValues(vs: Seq[Value]) = copy(valueStack = vs.foldRight(valueStack)(_ :: _))
-  @inline def getValue(i: Int) = valueStack(i)
-  @inline def apply(i: Int) = getValue(i)
-
-  def pushTracePosition(e: Expr) = {
-    setTrace(trace + e)
-  }
-  def setTrace(t: Trace) = this //copy(trace = t)
-
-  override def toString = {
-    s"Context(terminator = $terminator, counter = $counter, oldCounter = $oldCounter, \n" ++
-      valueStack.zipWithIndex.flatMap { v =>
-        val v1s = if (v._1 == null) "null" else v._1.toString.replace('\n', ' ')
-        s"${v._2}: $v1s\n"
-      } ++ ")"
-  }
-}
-
-final case class ScheduleItem(closure: Closure, args: List[AnyRef], halt: Closure, trace: Trace = Trace())
-
-final class InterpreterContext(val engine: Interpreter) extends StandardInvocationBehavior {
-  def schedule(clos: Closure, args: List[AnyRef] = Nil, halt: Closure = null, trace: Trace = Trace()) {
-    schedule(ScheduleItem(clos, args, halt, trace))
-  }
-  def schedule(t: ScheduleItem) {
-    queue.add(t)
-  }
-  def dequeue(): Option[ScheduleItem] = {
-    val t = queue.poll()
-    Option(t)
-  }
-  def steal(): Option[ScheduleItem] = {
-    val t = queue.pollLast()
-    Option(t)
-  }
-
-  // TODO: This needs to be a special dequeue implementation.
-  val queue = new LinkedBlockingDeque[ScheduleItem]()
-
-  def positionOf(e: Expr) = engine.debugTable(e)
-  def positionOf(e: Var) = engine.debugTable(e)
-}
-
-object InterpreterContext {
-  private val currentInterpreterContext = new ThreadLocal[InterpreterContext]()
-  def current_=(v: InterpreterContext) = currentInterpreterContext.set(v)
-  def current(ctx: InterpreterContext): InterpreterContext = {
-    Option(currentInterpreterContext.get()) getOrElse ctx
   }
 }
