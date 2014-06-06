@@ -24,67 +24,12 @@ import orc.ast.porc.TranslateToPorcEval
 import orc.compile.translate.TranslateToPorc
 import orc.ast.oil.named.Expression
 import orc.error.compiletime.CompileLogger
+import orc.ast.porc.ScalaCodeGen
+import orc.run.compiled.ScalaRuntimeCompiler
+import orc.OrcCompilerRequires
 
-class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
-  with StandardOrcCompilerEnvInterface[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
-  with CoreOrcCompilerPhases {
-  
-  def traversalTest[A] = new CompilerPhase[CompilerOptions, Expression, Expression] {
-    val phaseName = "traversalTest"
-    override def apply(co: CompilerOptions) = { ast =>
-      import orc.ast.oil.named._
-      /*val ts = List(
-        new ContextualTransform.Pre {
-          override def onExpression(implicit ctx: TransformContext) = {
-            case e @ Limit(_) => println(s"$e in $ctx"); e
-          }
-        },
-        new ContextualTransform.NonDescending {
-          override def onExpression(implicit ctx: TransformContext) = {
-            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
-          }
-        },
-        new ContextualTransform.Post {
-          override def onExpression(implicit ctx: TransformContext) = {
-            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
-          }
-        }
-        )*/
-      object boundTo {
-        def unapply(v : BoundVar)(implicit ctx: TransformContext): Option[(BoundVar, Bindings.Binding)] = {
-          if(ctx.contains(v)) {
-            Some((v, ctx(v)))
-          } else
-            None
-        }
-      }
-      val ts = List(
-        new ContextualTransform.Pre {
-          override def onArgument(implicit ctx: TransformContext) = {
-            case e@(v boundTo b) => println(s"$v $b ${ctx.size}"); e
-          }
-        }
-        )
-      for(t <- ts) {
-        println(s"====================== $t")
-        t(ast)
-      }
-      ast
-    }
-  }
-  
-  def outputAnalysedAST = new CompilerPhase[CompilerOptions, Expression, Expression] {
-    import orc.compile.optimize.named._
-    import orc.ast.oil.named._
-    val phaseName = "outputAnalysedAST"
-    override def apply(co: CompilerOptions) = { ast =>
-      println("====================================== Analysed" )
-      val analyzer = new ExpressionAnalyzer
-      println(new PrettyPrintWithAnalysis(analyzer).reduce(ast in TransformContext()))
-      ast
-    }
-  }
-    
+trait CorePorcCompilerPhases {
+  this: OrcCompilerRequires =>
   val translatePorc = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orc.ast.porc.Expr] {
     import orc.ast.oil.named._
     val phaseName = "translate5C"
@@ -160,7 +105,70 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
     override def apply(co: CompilerOptions) = { ast => 
       TranslateToPorcEval(ast)
     }
+  }    
+}
+
+class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
+  with StandardOrcCompilerEnvInterface[(orc.run.porc.Expr, orc.run.porc.PorcDebugTable)]
+  with CoreOrcCompilerPhases
+  with CorePorcCompilerPhases {
+  
+  def traversalTest[A] = new CompilerPhase[CompilerOptions, Expression, Expression] {
+    val phaseName = "traversalTest"
+    override def apply(co: CompilerOptions) = { ast =>
+      import orc.ast.oil.named._
+      /*val ts = List(
+        new ContextualTransform.Pre {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); e
+          }
+        },
+        new ContextualTransform.NonDescending {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
+          }
+        },
+        new ContextualTransform.Post {
+          override def onExpression(implicit ctx: TransformContext) = {
+            case e @ Limit(_) => println(s"$e in $ctx"); HasType(e, Bot())
+          }
+        }
+        )*/
+      object boundTo {
+        def unapply(v : BoundVar)(implicit ctx: TransformContext): Option[(BoundVar, Bindings.Binding)] = {
+          if(ctx.contains(v)) {
+            Some((v, ctx(v)))
+          } else
+            None
+        }
+      }
+      val ts = List(
+        new ContextualTransform.Pre {
+          override def onArgument(implicit ctx: TransformContext) = {
+            case e@(v boundTo b) => println(s"$v $b ${ctx.size}"); e
+          }
+        }
+        )
+      for(t <- ts) {
+        println(s"====================== $t")
+        t(ast)
+      }
+      ast
+    }
   }
+  
+  def outputAnalysedAST = new CompilerPhase[CompilerOptions, Expression, Expression] {
+    import orc.compile.optimize.named._
+    import orc.ast.oil.named._
+    val phaseName = "outputAnalysedAST"
+    override def apply(co: CompilerOptions) = { ast =>
+      println("====================================== Analysed" )
+      val analyzer = new ExpressionAnalyzer
+      println(new PrettyPrintWithAnalysis(analyzer).reduce(ast in TransformContext()))
+      ast
+    }
+  }
+    
   
   override val phases =
     parse.timePhase >>>
@@ -177,13 +185,15 @@ class PorcOrcCompiler extends PhasedOrcCompiler[(orc.run.porc.Expr, orc.run.porc
       makeResilientTrans.timePhase >>>
       outputIR(2) >>>
       optimize.timePhase >>>
+      removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(3) >>>
-      //outputAnalysedAST >>>
+      outputAnalysedAST >>>
       translatePorc.timePhase >>>
       outputIR(4) >>>
       optimizePorc.timePhase >>>
       outputIR(5) >>>
+      //printScala >>>
       translatePorcEval
 }
 

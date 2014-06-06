@@ -40,6 +40,8 @@ import orc.Runtime;
 import orc.Compiler;
 import orc.OrcEvent;
 import orc.OrcEventAction;
+import orc.ScalaBackend;
+import orc.ScalaCompilerBackend;
 import orc.StandardBackend;
 import orc.TokenInterpreterBackend;
 import orc.error.OrcException;
@@ -301,6 +303,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
           _backend = (Backend<CompiledCode>)new StandardBackend();
         else if(k == PorcInterpreterBackend.it())
           _backend = (Backend<CompiledCode>)new PorcBackend();
+        else if(k == ScalaCompilerBackend.it())
+          _backend = (Backend<CompiledCode>)new ScalaBackend();
         else
           throw new IllegalArgumentException("Unknown backend: " + b.backend());      
       } else {

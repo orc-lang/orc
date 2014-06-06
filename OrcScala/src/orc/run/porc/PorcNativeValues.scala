@@ -78,7 +78,7 @@ final class Future {
   }
 }
 
-abstract class Join(fs: Map[Int, Future], terminator: Terminator) extends Terminable {
+abstract class Join(fs: Map[Int, Future], terminator: TerminableHandler) extends Terminable {
   var nToBind = fs.size // Less than 0 means halted
 
   def bindFuture() = synchronized {

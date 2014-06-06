@@ -97,6 +97,7 @@ case class Optimizer(co: CompilerOptions) {
   val LateBindElim = Opt("late-bind-elim") {
     case (f < x <| g, a) if a(f).strictOn(x) && a(g).publications <= 1 => g > x > f
     case (f < x <| g, a) if a(g).immediatePublish && (a(g).publications only 1) => g > x > f
+    case (f < x <| g, a) if !(f.freevars contains x) => f || (g >> Stop()) 
     case ((Stop() in _) < x <| g, a) => g > x > Stop()
   }
   val StopEquiv = Opt("stop-equiv") {

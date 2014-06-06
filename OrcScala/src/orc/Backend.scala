@@ -33,7 +33,8 @@ sealed trait BackendType
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
     "token" -> TokenInterpreterBackend,
-    "porc" -> PorcInterpreterBackend)
+    "porc" -> PorcInterpreterBackend,
+    "scala" -> ScalaCompilerBackend)
 
   def fromString(s: String) = {
     fromStringOption(s).getOrElse(TokenInterpreterBackend)
@@ -51,6 +52,10 @@ case object TokenInterpreterBackend extends BackendType {
 }
 case object PorcInterpreterBackend extends BackendType {
   override val toString = "Porc"
+  def it = this
+}
+case object ScalaCompilerBackend extends BackendType {
+  override val toString = "Scala"
   def it = this
 }
 
