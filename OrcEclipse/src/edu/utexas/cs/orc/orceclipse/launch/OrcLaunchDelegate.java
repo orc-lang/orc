@@ -43,7 +43,7 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.eclipse.osgi.baseadaptor.BaseData;
-import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
+import org.eclipse.osgi.baseadaptor.loader.BaseClassLoader;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.BundleException;
 
@@ -231,8 +231,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	}
 
 	private String[] getAbsoluteClasspathForClass(final Class<Main> classOfInterest) {
-		//FIXME: Is this possible without using the internal OSGi BaseData and DefaultClassLoader classes?
-		final BaseData basedata = ((DefaultClassLoader) classOfInterest.getClassLoader()).getClasspathManager().getBaseData();
+		//FIXME: Is this possible without using the restricted/discouraged OSGi BaseData and BaseClassLoader classes?
+		final BaseData basedata = ((BaseClassLoader) classOfInterest.getClassLoader()).getClasspathManager().getBaseData();
 		String[] classpath = null;
 		try {
 			classpath = basedata.getClassPath();
