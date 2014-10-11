@@ -1,18 +1,10 @@
-%% This BibTeX bibliography file was created using BibDesk.
-%% http://bibdesk.sourceforge.net/
-
-
-%% Created for John Thywissen at 2013-11-03 11:30:14 -0600 
-
-
-%% Saved with string encoding Unicode (UTF-8) 
-
 
 
 @phdthesis{Kitchin2013,
 	Author = {Kitchin, David},
-	Date-Modified = {2013-11-03 17:30:12 +0000},
-	Keywords = {orchestration, concurrency, transactions, transactional memory, atomicity, coatomicity, Orc, Ora, MVCC},
+	Date-Added = {2014-10-11 21:58:49 +0000},
+	Date-Modified = {2014-10-11 21:58:49 +0000},
+	Keywords = {Orc; orchestration; concurrency; programming languages; semantics},
 	Month = aug,
 	School = {The University of Texas at Austin},
 	Title = {Orchestration and Atomicity},
@@ -26,4 +18,5 @@ Sites are numerous and diverse, they can have nontrivial semantics, and many of 
 
 The use of language-level transactions, especially in the context of transactional memory, has been explored as an alternative to locks. Inspired by this approach, I have developed Ora, an extension of Orc with a new 'atomic' combinator, which executes an Orc expression transactionally. I show how the specification of 'atomic' can be formalized in a novel way. Rather than describing a transaction as being equivalent to some uninterrupted sequence of operations, I show how the essence of transactional execution can be described in terms of two constraints on the causal order of events, without ever requiring a global sequencing of events. These two constraints are called 'atomicity' and 'coatomicity'. I show how these are separate concerns from 'consistency', which governs only the invariants of shared state.
 
-Ora allows unlimited concurrent activity within a transaction, as well as unbounded nesting of transactions. It also allows the transactional use of semaphores and asynchronous channels. I have developed an algorithm that extends the standard approach of multiversion concurrency control (MVCC) to allow unbounded parallelism and unbounded nesting while maintaining the properties of atomicity, coatomicity, and consistency for shared memory as well as for semaphores and channels.}}
+Ora allows unlimited concurrent activity within a transaction, as well as unbounded nesting of transactions. It also allows the transactional use of semaphores and asynchronous channels. I have developed an algorithm that extends the standard approach of multiversion concurrency control (MVCC) to allow unbounded parallelism and unbounded nesting while maintaining the properties of atomicity, coatomicity, and consistency for shared memory as well as for semaphores and channels.},
+	Bdsk-Url-1 = {http://hdl.handle.net/2152/21166}}
