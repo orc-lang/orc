@@ -20,7 +20,7 @@
 	<a class="bibtex" href="papers/forte09.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, William Cook, and Jayadev Misra<br />
-	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp. 1–25, 2009.</li>
+	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp. 1&#x2013;25, 2009.</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-1-84882-912-1_11">DOI</a>
@@ -34,7 +34,7 @@
 	<a class="bibtex" href="papers/structured_interacting_computations_2008.bib">BibTeX</a>
 	<br />
 	William Cook, and Jayadev Misra<br />
-	<span class="venue">Proceedings of Software-Intensive Systems</span>, Springer Verlag, LNCS 5380, pp. 139–145, 2008.</li>
+	<span class="venue">Proceedings of Software-Intensive Systems</span>, Springer Verlag, LNCS 5380, pp. 139&#x2013;145, 2008.</li>
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10270-006-0012-1">DOI</a>
 	<a class="bibtex" href="papers/OrcJSSM.bib">BibTeX</a>
