@@ -23,6 +23,7 @@
 	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/978-1-84882-912-1_11">DOI</a>
 	<a class="bibtex" href="papers/qs.bib">BibTeX</a>
 	<br />
 	David Kitchin, Adrian Quark, and Jayadev Misra<br />
@@ -98,7 +99,7 @@
 
 <ul>
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/kitchin_dissertation_20136.pdf">Orchestration and Atomicity</a>
-	<!-- <a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/99999">hdl</a> -->
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://hdl.handle.net/2152/21166">hdl</a>
 	<a class="bibtex" href="papers/kitchin_dissertation_20136.bib">BibTeX</a>
 	<br />
 	David Kitchin<br />
@@ -111,7 +112,7 @@
 	<li><a onclick="window.open(this.href,'_blank');return false;" href="papers/QoS-Aware-Orchestration.pdf" class="paper">QoS-aware Management of Monotonic Service Orchestrations</a>
 	(<a href="http://link.springer.com/article/10.1007/s10703-013-0191-7">published version</a>)
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="http://dx.doi.org/10.1007/s10703-013-0191-7">DOI</a>
-	<!-- <a class="bibtex" href="papers/QoS-Aware-Orchestration.bib">BibTeX</a> -->
+	<a class="bibtex" href="papers/QoS-Aware-Orchestration.bib">BibTeX</a>
 	<br />
 	Albert Benveniste, Claude Jard, Ajay Kattepur, Sidney Rosario, and John A. Thywissen<br />
 	In <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://link.springer.com/journal/10703/">Formal Methods in System Design</a>, 2013</li>
