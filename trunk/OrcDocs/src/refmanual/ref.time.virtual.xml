@@ -60,10 +60,10 @@
 				Note that expressions blocked on variables are quiescent.
 				This normally is the intuitive behavior: for example, <code>x &lt;x&lt; Q()</code> is quiescent if the call to <code>Q</code> is.
 				However, if the right side of a pruning combinator is not in the clock's scope, then blocking on a variable bound by the pruning combinator will be quiescent.
-				This might be surprising: Suppose <code>val x = </code><replaceable>F</replaceable> is followed by <code>Vclock(IntegerTimeOrdering) >> x</code>.
+				This might be surprising: Suppose <code>val x = </code><replaceable>F</replaceable> is followed by <code>Vclock(IntegerTimeOrder) >> x</code>.
 				The virtual clock scope <code>x</code> will be quiescent if executed before <replaceable>F</replaceable> has published and <code>x</code> has a bound value.
 				To avoid this, use the Orc <olink targetdoc="userguide" targetptr="ug.idioms.forkjoin">join idiom</olink>.
-				Before calling <code>Vclock</code>, join all potentially-unbound variables used inside the clock scope, like so: <code>(x, y, z) >> Vclock(IntegerTimeOrdering) >> x + y + z</code>.
+				Before calling <code>Vclock</code>, join all potentially-unbound variables used inside the clock scope, like so: <code>(x, y, z) >> Vclock(IntegerTimeOrder) >> x + y + z</code>.
 			</para>
 		</section>
 		<section xml:id="ref.time.virtual.Vclock">
