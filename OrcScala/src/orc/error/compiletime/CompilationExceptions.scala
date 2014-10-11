@@ -113,7 +113,7 @@ case class NonclassDefInClassContext()
 /** Call to the Vclock quasi-site (in a sequential combinator) that is malformed
   */
 case class IncorrectVclockCall()
-  extends SyntacticException("Vclock calls should be of the form: Vclock(SomeOrdering) >> e")
+  extends SyntacticException("Vclock calls should be of the form: Vclock(SomeTimeOrder) >> e")
   with SeverityError
 
 /** Use of the Vclock quasi-site in an invalid location
