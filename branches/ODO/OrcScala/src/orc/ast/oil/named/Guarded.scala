@@ -52,7 +52,7 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case left < x < right => {
+      case left < x <| right => {
         val l = check(left)
         val r = check(right)
         l && r
@@ -62,6 +62,7 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
+      case Limit(body) => check(body)
       case DeclareDefs(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

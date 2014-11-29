@@ -33,9 +33,7 @@ import orc.ast.oil.xml.OrcXML
 import orc.compile.translate.TranslateVclock
 import orc.OrcCompilerRequires
 import orc.ast.ext
-import orc.ast.oil4c.{ named => named4c }
-import orc.ast.oil.{ named => named5c }
-import orc.compile.translate.SplitPrune
+import orc.ast.oil.named
 
 /** Represents a configuration state for a compiler.
   */
@@ -126,7 +124,7 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val translate = new CompilerPhase[CompilerOptions, ext.Expression, named4c.Expression] {
+  val translate = new CompilerPhase[CompilerOptions, ext.Expression, named.Expression] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -135,12 +133,12 @@ trait CoreOrcCompilerPhases {
       }
   }
 
-  val vClockTrans = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val vClockTrans = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "vClockTrans"
     override def apply(co: CompilerOptions) = new TranslateVclock(co.reportProblem)(_)
   }
 
-  val noUnboundVars = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val noUnboundVars = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "noUnboundVars"
     override def apply(co: CompilerOptions) = { ast =>
       for (x <- ast.unboundvars) {
@@ -153,22 +151,22 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val fractionDefs = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val fractionDefs = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "fractionDefs"
     override def apply(co: CompilerOptions) = { FractionDefs(_) }
   }
 
-  val removeUnusedDefs = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
+  val removeUnusedDefs = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "removeUnusedDefs"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedDefs(ast) }
   }
 
-  val removeUnusedTypes = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
+  val removeUnusedTypes = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "removeUnusedTypes"
     override def apply(co: CompilerOptions) = { ast => RemoveUnusedTypes(ast) }
   }
 
-  val typeCheck = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val typeCheck = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "typeCheck"
     override def apply(co: CompilerOptions) = { ast =>
       if (co.options.typecheck) {
@@ -183,11 +181,11 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) =
       { ast =>
-        def warn(e: named4c.Expression) = {
+        def warn(e: named.Expression) = {
           co.reportProblem(UnguardedRecursionException() at e)
         }
         if (!co.options.disableRecursionCheck) {
@@ -197,15 +195,7 @@ trait CoreOrcCompilerPhases {
       }
   }
 
-  val splitPrune = new CompilerPhase[CompilerOptions, named4c.Expression, named5c.Expression] {
-    val phaseName = "splitPrune"
-    override def apply(co: CompilerOptions) = { ast =>
-      val translator = new SplitPrune(co.reportProblem)
-      translator(ast)
-    }
-  }
-
-  val deBruijn = new CompilerPhase[CompilerOptions, named5c.Expression, orc.ast.oil.nameless.Expression] {
+  val deBruijn = new CompilerPhase[CompilerOptions, named.Expression, orc.ast.oil.nameless.Expression] {
     val phaseName = "deBruijn"
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
   }
@@ -305,17 +295,17 @@ class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expre
 
   val phases =
     parse.timePhase >>>
+      outputIR(1) >>>
       translate.timePhase >>>
       vClockTrans.timePhase >>>
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      outputIR(1) >>>
-      splitPrune.timePhase >>>
+      outputIR(2) >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
-      outputIR(2) >>>
+      outputIR(3) >>>
       deBruijn.timePhase >>>
       outputOil
 }

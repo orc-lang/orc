@@ -8,7 +8,7 @@ def countdown(0) = signal
 def countdown(i) = Println(i) >> Rwait(500) >> countdown(i-1)
 val Countdown = MakeSite(countdown)
 
-Let(Rwait(250) >> true | Countdown(4)) -- | Rwait(750) >> false
+{| Rwait(250) >> true | Countdown(4) |} -- | Rwait(750) >> false
 
 
 {-

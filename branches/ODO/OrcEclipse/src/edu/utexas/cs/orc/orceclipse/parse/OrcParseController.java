@@ -95,7 +95,7 @@ public class OrcParseController extends ParseControllerBase {
 			return orcFences;
 		}
 
-		private static String[][] orcFences = { { "(", ")" }, { "[", "]" }, { "{", "}" }, { "{-", "-}" }, }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+		private static String[][] orcFences = { { "(", ")" }, { "[", "]" }, { "{", "}" }, { "{-", "-}" },  { "{|", "|}" }, }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$
 
 		/**
 		 * Not used. Orc doesn't have multi-component identifiers at present.

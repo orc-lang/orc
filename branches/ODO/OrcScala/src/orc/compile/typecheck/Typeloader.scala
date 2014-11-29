@@ -14,7 +14,7 @@
 //
 package orc.compile.typecheck
 
-import orc.ast.oil4c.{ named => syntactic }
+import orc.ast.oil.{ named => syntactic }
 import orc.types._
 import orc.values.sites.SiteClassLoading
 import orc.compile.typecheck.Typechecker._

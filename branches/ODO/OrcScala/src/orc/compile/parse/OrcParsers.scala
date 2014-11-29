@@ -233,6 +233,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | RecordOf("=", parseExpression) -> RecordExpr
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
     { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
+    | ("{|" ~> parseExpression <~ "|}") -> Trim
     | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -267,11 +268,8 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseParallelExpression =
     rep1sep(parseSequentialExpression, "|") -> { _ reduceLeft Parallel }
 
-  val parsePruningExpression =
-    parseParallelExpression leftInterleave parsePruningCombinator apply Pruning
-
   val parseOtherwiseExpression =
-    rep1sep(parsePruningExpression, ";") -> { _ reduceLeft Otherwise }
+    rep1sep(parseParallelExpression, ";") -> { _ reduceLeft Otherwise }
 
   val parseAscription = (
     ("::" ~ parseType)

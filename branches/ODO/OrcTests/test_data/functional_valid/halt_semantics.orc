@@ -7,11 +7,11 @@
 
 def blockForever() = Channel[Top]().get()
 
-val result = (
+val result = {|
   val x = blockForever()
   val y = stop
   x+y ; y+x ; true
-)
+|}
 result
 
 {-

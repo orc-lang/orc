@@ -16,8 +16,8 @@
 package orc.compile.typecheck
 
 import scala.language.reflectiveCalls
-import orc.ast.oil4c.{ named => syntactic }
-import orc.ast.oil4c.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
+import orc.ast.oil.{ named => syntactic }
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, <|, >, Limit, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }
@@ -91,10 +91,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newRight, typeRight) = typeSynthExpr(right)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
             (newLeft > x > newRight, typeRight)
           }
-          case left < x < right => {
+          case left < x <| right => {
             val (newRight, typeRight) = typeSynthExpr(right)
             val (newLeft, typeLeft) = typeSynthExpr(left)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-            (newLeft < x < newRight, typeLeft)
+            (newLeft < x <| newRight, typeLeft)
+          }
+          case Limit(body) => {
+            val (newBody, typeBody) = typeSynthExpr(body)
+            (Limit(newBody), typeBody)
           }
           case DeclareDefs(defs, body) => {
             val (newDefs, defBindings) = typeDefs(defs)
@@ -157,10 +161,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
         }
-        case left < x < right => {
+        case left < x <| right => {
           val (newRight, typeRight) = typeSynthExpr(right)
           val newLeft = typeCheckExpr(left, T)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-          newLeft < x < newRight
+          newLeft < x <| newRight
         }
         case FoldedLambda(formals, body, typeFormals, None, None) => {
           T match {

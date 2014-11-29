@@ -17,7 +17,7 @@ package orc.compile.translate
 
 import orc.util.OptionMapExtension._
 import orc.ast.ext._
-import orc.ast.oil4c.named
+import orc.ast.oil.named
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 

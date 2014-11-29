@@ -38,7 +38,7 @@ case class PrefixOperator(op: String, arg: Expression) extends Expression
 case class InfixOperator(left: Expression, op: String, right: Expression) extends Expression
 case class Sequential(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
-case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
+case class Trim(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Lambda(
   typeformals: Option[List[String]] = None,

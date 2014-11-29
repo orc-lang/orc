@@ -12,14 +12,16 @@ def qs(a) =
   val less = filter(lambda(x :: A) = x <: pivot, a)
   val equal = filter(lambda(x :: A) = x = pivot, a)
   val greater = filter(lambda(x :: A) = x :> pivot, a)
-  if length(a) :> 1 then (append(le, g) <le< append(qs(less), equal) <g< qs(greater))
+  if length(a) :> 1 then (append(append(qs(less), equal), qs(greater)))
   else a
 
 def makeNRandomInt(Integer) :: List[Integer]
 def makeNRandomInt(0) = []
 def makeNRandomInt(n) = Random(100):makeNRandomInt(n-1)
 
-x = y <(x, y)< (qs(l), sort(l)) <l< makeNRandomInt(100)
+val l = makeNRandomInt(100)
+val (x, y) = (qs(l), sort(l)) 
+x = y 
 
 {-
 OUTPUT:

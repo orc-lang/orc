@@ -294,11 +294,11 @@ computation.
 def por(List[lambda () :: Boolean]) :: Boolean
 def por([]) = false
 def por(p:ps) =
-  Let(
+  {|
     val b1 = p()
     val b2 = por(ps)
     Ift(b1) >> true | Ift(b2) >> true | (b1 || b2)
-  )
+  |}
 
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
@@ -311,11 +311,11 @@ computation.
 def pand(List[lambda () :: Boolean]) :: Boolean
 def pand([]) = true
 def pand(p:ps) =
-  Let(
+  {|
     val b1 = p()
     val b2 = pand(ps)
     Iff(b1) >> false | Iff(b2) >> false | (b1 && b2)
-  )
+  |}
 
 {--
 @def collect[A](lambda () :: A) :: List[A]

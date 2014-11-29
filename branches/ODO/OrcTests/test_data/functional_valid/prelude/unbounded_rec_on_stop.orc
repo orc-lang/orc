@@ -8,7 +8,7 @@
  -}
 
 def haltsQuickly(lambda() :: Top) :: String
-def haltsQuickly(s) = x <x< ((s() >> "Published" ; "Halted") | Rwait(100) >> "Timedout")
+def haltsQuickly(s) = {| (s() >> "Published" ; "Halted") | Rwait(100) >> "Timedout" |}
 
 haltsQuickly(lambda () = sortUnique(stop)) |
 haltsQuickly(lambda () = sort(stop))
