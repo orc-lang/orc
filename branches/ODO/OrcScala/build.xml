@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- build.xml - Ant buildfile (tasks for project build)
+     Project OrcScala
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<project name="orc" default="all" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+
+	<property file="build.properties"/>
+	<property file="googlecode.properties"/>
+	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
+    <property name="junit.output.dir" value="build/tests/reports"/>
+
+	<!-- Try to locate Scala in the current Eclipse build -->
+    <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
+
+	<fileset id="orc.runtime.jars" dir="lib" description="JARs needed by Orc in its classpath at runtime">
+		<include name="*.jar"/>
+	</fileset>
+
+	<!-- Optional build-local.xml -->
+	<property file="build-local.xml"/>
+
+	<path id="orc.classpath" description="Build-time classpath">
+        <pathelement location="build/classes"/>
+		<fileset refid="orc.runtime.jars"/>
+		<pathelement location="${scala.compiler.jar}"/>
+        <fileset dir="tools" includes="*.jar"/>
+    </path>
+
+	<path id="orc.tests.classpath" description="Test run classpath">
+        <pathelement location="build/classes"/>
+		<fileset refid="orc.runtime.jars"/>
+	    <pathelement location="${orc.location.OrcTests}/build"/>
+	    <fileset dir="${orc.location.OrcTests}/tools" includes="*.jar"/>
+    </path>
+
+	<!-- =================================
+          target: compile
+         ================================= -->
+	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
+	<target name="compile" depends="version" description="Compile Scala and Java file to class files">
+		<taskdef resource="scala/tools/ant/antlib.xml">
+			<classpath>
+				<pathelement location="${scala.compiler.jar}"/>
+		        <path refid="orc.classpath""/>
+			</classpath>
+		</taskdef>
+		<mkdir dir="build/classes"/>
+        <scalac destdir="build/classes" target="jvm-1.5" deprecation="yes" optimise="yes" unchecked="yes" addparams="-g -Yclosure-elim -Ydead-code -Yinline">
+            <src path="src"/>
+            <src path="test"/>
+            <classpath refid="orc.classpath"/>
+        </scalac>
+		<javac destdir="build/classes" source="${ant.build.javac.source}" target="${ant.build.javac.target}" deprecation="yes" optimize="on" debug="true">
+            <src path="src"/>
+            <src path="test"/>
+            <classpath refid="orc.classpath"/>
+        </javac>
+	</target>
+	-->
+
+	<!-- =================================
+          target: version
+         ================================= -->
+	<target name="version" description="Build version.properites">
+		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<tstamp>
+			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC"/>
+		</tstamp>
+		<delete file="build/classes/orc/version.properties" quiet="true"/>
+		<fail message="Scala compilation failed">
+			<condition>
+				<not>
+					<available file="build/classes/orc"/>
+				</not>
+			</condition>
+		</fail>
+		<propertyfile file="build/classes/orc/version.properties" comment="version.properties -- Orc versioning information -- Automatically built -- ** Do NOT commit to repository **">
+			<entry key="orc.title" value="${orc.title}"/>
+			<entry key="orc.version" value="${orc.version}"/>
+			<entry key="orc.vendor" value="${orc.vendor}"/>
+			<entry key="orc.url" value="${orc.url}"/>
+			<entry key="orc.copyright-year" value="${orc.copyright-year}"/>
+			<entry key="orc.svn-revision" value="${svnversion}"/>
+			<entry key="orc.build.date" value="${build.date}Z"/>
+			<entry key="orc.build.user" value="${user.name}"/>
+			<entry key="orc.build.java.version" value="${java.version}"/>
+			<entry key="orc.build.java.vendor" value="${java.vendor}"/>
+			<entry key="orc.build.os.name" value="${os.name}"/>
+			<entry key="orc.build.os.arch" value="${os.arch}"/>
+			<entry key="orc.build.os.version" value="${os.version}"/>
+		</propertyfile>
+	</target>
+
+	<!-- =================================
+          target: test
+         ================================= -->
+	<!--  DISABLED in preference to JUnit runner in Eclipse
+	<target name="test" depends="version" description="Execute JUnit tests">
+        <mkdir dir="${junit.output.dir}"/>
+		<junit fork="yes" printsummary="withOutAndErr" haltonfailure="on">
+            <formatter type="xml"/>
+            <test name="orc.test.OrcParserTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.ExamplesTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.XMLExamplesTest" todir="${junit.output.dir}"/>
+            <test name="orc.test.TypedExamplesTest" todir="${junit.output.dir}"/>
+		    <test name="orc.test.DocExamplesTest" todir="${junit.output.dir}"/>
+            <classpath refid="orc.tests.classpath"/>
+		</junit>
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+	</target>
+	-->
+
+	<!-- =================================
+          target: copy-resources
+         ================================= -->
+	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
+	<target name="copy-resources" description="Copy non-compiled resources to build">
+		<copy todir="build/classes" includeEmptyDirs="false">
+		    <fileset dir="src">
+				<exclude name="**/*.scala"/>
+				<exclude name="**/*.java"/>
+		    </fileset>
+		</copy>
+	</target>
+	-->
+
+	<!-- =================================
+          target: jar
+         ================================= -->
+	<target name="jar" depends="version" description="Build orc-*.jar">
+		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
+			<manifest>
+				<attribute name="Main-Class" value="${orc.main-class}"/>
+				<attribute name="Implementation-Title" value="${orc.title}"/>
+				<attribute name="Implementation-Version" value="${orc.version}"/>
+				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+				<attribute name="SVN-Revision" value="${svnversion}"/>
+				<attribute name="Built-Date" value="${build.date}"/>
+				<attribute name="Built-By" value="${user.name}"/>
+				<section name="orc">
+					<attribute name="Implementation-Title" value="${orc.title}"/>
+					<attribute name="Implementation-Version" value="${orc.version}"/>
+					<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
+					<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
+					<attribute name="Specification-Title" value="${orc.title}"/>
+					<attribute name="Specification-Version" value="${orc.version}"/>
+					<attribute name="Specification-Vendor" value="${orc.vendor}"/>
+				</section>
+			</manifest>
+			<exclude name="orc/test/**"/>
+		</jar>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: windows-setup
+         - - - - - - - - - - - - - - - - - -->
+	<target name="windows-setup">
+		<copy file="SETUP.BAT" todir="build">
+			<filterset><filter token="orc.jar" value="${target.name}.jar"/></filterset>
+		</copy>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: javadoc
+         - - - - - - - - - - - - - - - - - -->
+	<target name="javadoc">
+		<delete dir="build/javadoc" followsymlinks="no" includeemptydirs="true"/>
+		<javadoc destdir="build/javadoc"
+				author="true"
+				access="protected"
+				source="1.6"
+				sourcepath="src"
+				splitindex="true"
+				windowtitle="Orc ${orc.version}"
+				doctitle="Orc ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+		<zip zipfile="build/${target.name}-doc.zip" basedir="build/javadoc" duplicate="fail"/>
+	</target>
+
+	<!-- =================================
+          target: build
+         ================================= -->
+    <target name="build" depends="version,jar,javadoc" description="Build all targets"/>
+
+	<!-- - - - - - - - - - - - - - - - - -
+          target: zip
+         - - - - - - - - - - - - - - - - - -->
+	<target name="zip" depends="jar,windows-setup">
+    	<delete file="build/${target.name}.zip"/>
+		<zip zipfile="build/${target.name}.zip" duplicate="fail">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="${target.name}.jar"/>
+				<include name="SETUP.BAT"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}/lib" refid="orc.runtime.jars"/>
+			<zipfileset prefix="${target.name}" dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="licenses.yml"/>
+				<include name="licenses/**"/>
+				<include name="doc/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+			</zipfileset>
+			<zipfileset prefix="${target.name}/examples" dir="${orc.location.OrcExamples}">
+				<include name="**"/>
+				<exclude name="OrcSites/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name=".*"/>
+				<exclude name="**/.*/*"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<!-- =================================
+          target: package
+         ================================= -->
+	<target name="package" depends="zip" description="Package for distribution">
+	</target>
+
+	<!-- =================================
+          target: all
+         ================================= -->
+    <target name="all" depends="build,package" description="Build all targets"/>
+
+	<!-- =================================
+          target: upload
+         ================================= -->
+	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
+			classpath="tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}.zip"
+			targetfilename="${target.name}.zip"
+			summary="Core Orc interpreter."
+			labels="Featured, Type-Archive, OpSys-All"/>
+		<gcupload
+			username="${orc.googlecode.username}"
+			password="${orc.googlecode.password}"
+			projectname="orc"
+			filename="build/${target.name}-doc.zip"
+			targetfilename="${target.name}-doc.zip"
+			summary="Javadoc documentation for core Orc interpreter."
+			labels="Type-Docs, OpSys-All"/>
+	</target>
+
+	<!-- =================================
+          target: clean
+         ================================= -->
+	<target name="clean" description="Delete build directory">
+		<exec executable="rm" osfamily="unix" failonerror="false"> <!-- Try this, because Ant is confused by the symlinks in here -->
+			<arg line="-rf"/>
+			<arg value="build/${target.name}-app"/>
+		</exec>
+		<delete dir="build" followsymlinks="no" includeemptydirs="true"/>
+	</target>
+</project>
