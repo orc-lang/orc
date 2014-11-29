@@ -46,7 +46,7 @@ Return the total number of milliseconds that have passed
 since this program began executing.
 Ranges from 0 to <code language="java">Long.MAX_VALUE</code>.
 --}
-val (Rwait, Rtime) = (r.wait, r.time) <r< Rclock()
+val (Rwait, Rtime) = val r = Rclock() # (r.wait, r.time)
 
 {--
 @def metronome(Integer) :: Signal
@@ -63,7 +63,7 @@ If it does become bound to a value v, publish Some(v).
 If instead the timeout is reached, publish None().
 -}
 def timeout[A](A, Integer) :: Option[A]
-def timeout(x, t) = Let(Some(x) | Rwait(t) >> None())
+def timeout(x, t) = {| Some(x) | Rwait(t) >> None() |}
 
 
 {-

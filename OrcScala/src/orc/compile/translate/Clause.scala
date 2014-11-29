@@ -17,7 +17,7 @@ package orc.compile.translate
 
 import orc.ast.ext._
 import orc.error.OrcExceptionExtension._
-import orc.ast.oil4c.named
+import orc.ast.oil.named
 import orc.compile.translate.PrimitiveForms._
 import scala.collection.immutable._
 import orc.error.compiletime._
@@ -134,7 +134,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
               val g = new named.BoundVar()
               val b = new named.BoundVar()
               val newGuard = convertInContext(guard).subst(g, x)
-              newSource > g > ((callIft(b) < b < newGuard) >> g)
+              newSource > g > ((callIft(b) < b <| named.Limit(newGuard)) >> g)
             }
             case None => newSource
           }

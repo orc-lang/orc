@@ -8,8 +8,8 @@
 def u() = Println("U ran")
 def v() = Println("V ran")
 def f() = Println("F ran") >> stop
-def g() = Println("G ran") >> stop
-Let(u(),v()) >> (f() | g())
+def g() = Println("G ran") >> stop #
+(u(),v()) >> (f() | g())
 
 {-
 OUTPUT:

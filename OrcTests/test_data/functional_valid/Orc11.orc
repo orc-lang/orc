@@ -5,7 +5,7 @@
  - Created by Brian on Jun 3, 2010 12:43:53 PM
  -}
 
-def picknum() = x <x< ( 1 | 2 )
+def picknum() = {| 1 | 2 |}
 picknum()
 
 {-

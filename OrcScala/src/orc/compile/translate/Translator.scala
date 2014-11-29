@@ -20,9 +20,9 @@ import scala.collection.mutable
 import scala.language.reflectiveCalls
 
 import orc.ast.ext
-import orc.ast.oil4c._
-import orc.ast.oil4c.named._
-import orc.ast.oil4c.named.Conversions._
+import orc.ast.oil._
+import orc.ast.oil.named._
+import orc.ast.oil.named.Conversions._
 import orc.compile.translate.ClassForms.makeClassBody
 import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
@@ -94,22 +94,17 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newr = convert(r)(context ++ dcontext, typecontext)
         source(newl) > x > target(newr)
       }
-      case ext.Pruning(l, None, r) => convert(l) << convert(r)
-      case ext.Pruning(l, Some(ext.VariablePattern(name)), r) => {
-        val x = new BoundVar(Some(name))
-        val newl = convert(l)(context + ((name, x)), typecontext)
-        val newr = convert(r)
-        newl < x < newr
-      }
-      case ext.Pruning(l, Some(p), r) => {
+      case ext.Declare(ext.Val(p, f), body) => {
+        // Handle graft
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
-        val newl = convert(l)(context ++ dcontext, typecontext)
-        val newr = convert(r)
-        target(newl) < x < source(newr)
+        val newbody = convert(body)(context ++ dcontext, typecontext)
+        val newf = convert(f)
+        target(newbody) < x <| source(newf)
       }
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
+      case ext.Trim(e) => Limit(convert(e))
 
       case lambda: ext.Lambda => {
         val lambdaName = new BoundVar()
@@ -128,9 +123,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val (newdefs, dcontext) = convertDefs(defs)
         val newbody = convert(body)(context ++ dcontext, typecontext)
         DeclareDefs(newdefs, newbody)
-      }
-      case ext.Declare(ext.Val(p, f), body) => {
-        convert(ext.Pruning(body, Some(p), f))
       }
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
@@ -209,7 +201,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
         val makeSites = makeDatatype(d, typeformals.size, constructors, this)
 
-        DeclareType(d, variantType, target(newbody) < x < source(makeSites))
+        DeclareType(d, variantType, target(newbody) < x <| source(makeSites))
       }
 
       case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)

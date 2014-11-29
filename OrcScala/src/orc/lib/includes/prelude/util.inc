@@ -244,11 +244,11 @@ def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
   val out = Channel[A]()
   val c = Counter(n)
-  Let(
+  {|
     f() >x>
     Ift(c.dec() >> out.put(x) >> false
        ; out.closeD() >> true)
-  ) >> stop | repeat(out.get)
+  |} >> stop | repeat(out.get)
 
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
@@ -262,7 +262,7 @@ thunk and releases the semaphore.
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
-    Let(f()) >x>
+    {| f() |} >x>
     s.release() >>
     x
     ; s.release() >> stop
