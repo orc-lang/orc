@@ -31,8 +31,8 @@ trait NamedToNameless {
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
       case left || right => nameless.Parallel(toExp(left), toExp(right))
       case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
-      case left < x <| right => nameless.LateBind(namedToNameless(left, x :: context, typecontext), toExp(right))
-      case Limit(f) => nameless.Limit(toExp(f))
+      case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
+      case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }

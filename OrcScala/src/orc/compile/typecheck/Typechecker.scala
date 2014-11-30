@@ -17,7 +17,7 @@ package orc.compile.typecheck
 
 import scala.language.reflectiveCalls
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, <, <|, >, Limit, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
+import orc.ast.oil.named.{ Expression, Stop, Hole, Call, ||, ow, >, Graft, Trim, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
 import orc.types._
 import orc.error.compiletime.typing._
 import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }
@@ -91,14 +91,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newRight, typeRight) = typeSynthExpr(right)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
             (newLeft > x > newRight, typeRight)
           }
-          case left < x <| right => {
-            val (newRight, typeRight) = typeSynthExpr(right)
-            val (newLeft, typeLeft) = typeSynthExpr(left)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-            (newLeft < x <| newRight, typeLeft)
+          case Graft(x, value, body) => {
+            val (newValue, typeValue) = typeSynthExpr(value)
+            val (newBody, typeBody) = typeSynthExpr(body)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+            (Graft(x, newValue, newBody), typeBody)
           }
-          case Limit(body) => {
+          case Trim(body) => {
             val (newBody, typeBody) = typeSynthExpr(body)
-            (Limit(newBody), typeBody)
+            (Trim(newBody), typeBody)
           }
           case DeclareDefs(defs, body) => {
             val (newDefs, defBindings) = typeDefs(defs)
@@ -161,10 +161,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
         }
-        case left < x <| right => {
-          val (newRight, typeRight) = typeSynthExpr(right)
-          val newLeft = typeCheckExpr(left, T)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-          newLeft < x <| newRight
+        case Graft(x, value, body) => {
+          val (newValue, typeValue) = typeSynthExpr(value)
+          val newBody = typeCheckExpr(body, T)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+          Graft(x, newValue, newBody)
+        }
+        case Trim(body) => {
+          val newBody = typeCheckExpr(body, T)
+          Trim(newBody)
         }
         case FoldedLambda(formals, body, typeFormals, None, None) => {
           T match {

@@ -33,8 +33,8 @@ sealed abstract class NamelessAST extends AST {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
     case Sequence(left, right) => List(left, right)
-    case LateBind(left, right) => List(left, right)
-    case Limit(f) => List(f)
+    case Graft(value, body) => List(value, body)
+    case Trim(f) => List(f)
     case left ow right => List(left, right)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -75,8 +75,8 @@ sealed abstract class Expression extends NamelessAST
       case Call(target, args, typeArgs) => target.freevars ++ (args flatMap { _.freevars })
       case f || g => f.freevars ++ g.freevars
       case f >> g => f.freevars ++ shift(g.freevars, 1)
-      case f <<| g => shift(f.freevars, 1) ++ g.freevars
-      case Limit(f) => f.freevars
+      case Graft(g, f) => shift(f.freevars, 1) ++ g.freevars
+      case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
@@ -112,8 +112,8 @@ sealed abstract class Expression extends NamelessAST
       }
       case f || g => f.subst(ctx) || g.subst(ctx)
       case f >> g => f.subst(ctx) >> g.subst(None :: ctx)
-      case f <<| g => f.subst(None :: ctx) <<| g.subst(ctx)
-      case Limit(f) => Limit(f.subst(ctx))
+      case Graft(g, f) => Graft(g.subst(ctx), f.subst(None :: ctx))
+      case Trim(f) => Trim(f.subst(ctx))
       case f ow g => f.subst(ctx) ow g.subst(ctx)
       case DeclareDefs(openvars, defs, body) => {
         val newctx = (for (_ <- defs) yield None).toList ::: ctx
@@ -141,8 +141,9 @@ case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
-case class LateBind(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
-case class Limit(f: Expression) extends Expression
+// Note: recommend reading Graft(f, g) as "graft f into g".
+case class Graft(value: Expression, body: Expression) extends Expression with hasOptionalVariableName
+case class Trim(f: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName

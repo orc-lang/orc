@@ -29,8 +29,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
     case Sequence(left, x, right) => List(left, x, right)
-    case LateBind(left, x, right) => List(left, x, right)
-    case Limit(f) => List(f)
+    case Graft(x, value, body) => List(x, value, body)
+    case Trim(f) => List(f)
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -71,9 +71,10 @@ case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Ty
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class LateBind(left: Expression, x: BoundVar, right: Expression) extends Expression
+// Note: recommend reading Graft(x, f, g) as "graft x to f in g".
+case class Graft(x: BoundVar, value: Expression, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class Limit(expr: Expression) extends Expression
+case class Trim(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
@@ -200,7 +201,7 @@ object Conversions {
         case g :: rest => {
           val (args, bindRest) = expand(rest)
           val x = new BoundVar()
-          (x :: args, bindRest(_) < x <| g)
+          (x :: args, e => Graft(x, g, bindRest(e)))
         }
         case Nil => (Nil, e => e)
       }
@@ -223,9 +224,9 @@ object Conversions {
     */
   def partitionLatebind(expr: Expression): (List[(Argument, Expression)], Expression) = {
     expr match {
-      case left < x <| right => {
-        val (bindings, core) = partitionLatebind(left)
-        ((x, right) :: bindings, core)
+      case Graft(x, value, body) => {
+        val (bindings, core) = partitionLatebind(body)
+        ((x, value) :: bindings, core)
       }
       case _ => (Nil, expr)
     }

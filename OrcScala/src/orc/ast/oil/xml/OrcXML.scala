@@ -172,15 +172,15 @@ object OrcXML {
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </sequence>
-      case LateBind(left, right) =>
-        <latebind>
-          <left>{ toXML(left) }</left>
-          <right>{ toXML(right) }</right>
-        </latebind>
-      case Limit(e) =>
-        <limit>
+      case Graft(value, body) =>
+        <graft>
+          <left>{ toXML(value) }</left>
+          <right>{ toXML(body) }</right>
+        </graft>
+      case Trim(e) =>
+        <trim>
           <expr>{ toXML(e) }</expr>
-        </limit>
+        </trim>
       case Otherwise(left, right) =>
         <otherwise>
           <left>{ toXML(left) }</left>
@@ -344,10 +344,10 @@ object OrcXML {
         Parallel(fromXML(left), fromXML(right))
       case <sequence><left>{ left }</left><right>{ right }</right></sequence> =>
         Sequence(fromXML(left), fromXML(right))
-      case <latebind><left>{ left }</left><right>{ right }</right></latebind> =>
-        LateBind(fromXML(left), fromXML(right))
-      case <limit><expr>{ expr }</expr></limit> =>
-        Limit(fromXML(expr))
+      case <graft><left>{ value }</left><right>{ body }</right></graft> =>
+        Graft(fromXML(value), fromXML(body))
+      case <trim><expr>{ expr }</expr></trim> =>
+        Trim(fromXML(expr))
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {

@@ -100,11 +100,11 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val (source, dcontext, target) = convertPattern(p, x)
         val newbody = convert(body)(context ++ dcontext, typecontext)
         val newf = convert(f)
-        target(newbody) < x <| source(newf)
+        Graft(x, source(newf), target(newbody))
       }
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
-      case ext.Trim(e) => Limit(convert(e))
+      case ext.Trim(e) => Trim(convert(e))
 
       case lambda: ext.Lambda => {
         val lambdaName = new BoundVar()
@@ -201,7 +201,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
         val makeSites = makeDatatype(d, typeformals.size, constructors, this)
 
-        DeclareType(d, variantType, target(newbody) < x <| source(makeSites))
+        DeclareType(d, variantType, Graft(x, source(makeSites), target(newbody)))
       }
 
       case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)

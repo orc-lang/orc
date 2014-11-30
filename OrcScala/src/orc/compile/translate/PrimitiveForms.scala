@@ -102,13 +102,13 @@ object PrimitiveForms {
   def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ((callIft(b) >> trueBranch) || (callIff(b) >> falseBranch)) < b <| test
+    Graft(b, test, (callIft(b) >> trueBranch) || (callIff(b) >> falseBranch))
   }
 
   def makeConditionalFalseOnHalt(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ((callIft(b) >> trueBranch) < b <| test) ow falseBranch
+    Graft(b, test, (callIft(b) >> trueBranch)) ow falseBranch
   }
 
   /*

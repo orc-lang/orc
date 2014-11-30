@@ -15,7 +15,7 @@
 package orc.run.core
 
 import orc.{ Schedulable, OrcRuntime, OrcEvent, CaughtEvent }
-import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, LateBind, Limit, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
+import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, Graft, Trim, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
 import orc.error.runtime.{ TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException }
 import orc.error.OrcException
 import orc.lib.time.{ Vtime, Vclock, Vawait }
@@ -528,17 +528,17 @@ class Token protected (
         runtime.stage(this)
       }
 
-      case LateBind(left, right) => {
-        val (l, r) = fork()
+      case Graft(value, body) => {
+        val (v, b) = fork()
         val pg = new LateBindGroup(group)
-        l.bind(BoundFuture(pg))
-        r.join(pg)
-        l.move(left)
-        r.move(right)
-        runtime.stage(l, r)
+        b.bind(BoundFuture(pg))
+        v.join(pg)
+        v.move(value)
+        b.move(body)
+        runtime.stage(v, b)
       }
 
-      case Limit(expr) => {
+      case Trim(expr) => {
         val g = new LimitGroup(group)
         join(g)
         move(expr)
