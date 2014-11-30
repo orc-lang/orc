@@ -181,11 +181,11 @@
         <!--  f >> g  -->
         <xs:element name="sequence" type="binding_combinator" />
 
-        <!--  f <<| g  -->
-        <xs:element name="latebind" type="binding_combinator" />
+        <!--  val f # g  -->
+        <xs:element name="graft" type="binding_combinator" />
 
-        <!--  limit(f)  -->
-        <xs:element name="limit" type="unary_combinator" />
+        <!--  {| f |}  -->
+        <xs:element name="trim" type="unary_combinator" />
 
         <!--  f ; g  -->
         <xs:element name="otherwise" type="combinator" />

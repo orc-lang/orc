@@ -134,7 +134,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
               val g = new named.BoundVar()
               val b = new named.BoundVar()
               val newGuard = convertInContext(guard).subst(g, x)
-              newSource > g > ((callIft(b) < b <| named.Limit(newGuard)) >> g)
+              newSource > g > (named.Graft(b, named.Trim(newGuard), callIft(b)) >> g)
             }
             case None => newSource
           }

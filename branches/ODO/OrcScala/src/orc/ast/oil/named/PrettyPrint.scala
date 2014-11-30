@@ -56,8 +56,8 @@ class PrettyPrint {
       }
       case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case LateBind(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "<| " + reduce(right) + ")"
-      case Limit(f) => "limit(" + reduce(f) + ")"
+      case Graft(x, value, body) => "(val " + reduce(x) + " = " + reduce(value) + " # " + reduce(body) + ")"
+      case Trim(f) => "{| " + reduce(f) + " |}"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {

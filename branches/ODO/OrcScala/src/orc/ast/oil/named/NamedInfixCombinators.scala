@@ -28,13 +28,6 @@ trait NamedInfixCombinators {
       def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
     }
 
-  def <<|(g: Expression) = LateBind(this, new BoundVar(), g)
-
-  def <(x: BoundVar) =
-    new {
-      def <|(g: Expression) = LateBind(NamedInfixCombinators.this, x, g)
-    }
-
   def ow(g: Expression) = Otherwise(this, g)
 }
 
@@ -54,19 +47,6 @@ object > {
       case _ => None
     }
   }
-  def unapply(p: (Expression, BoundVar)) = Some(p)
-}
-
-object <| {
-  def unapply(e: Expression) = {
-    e match {
-      case LateBind(f, x, g) => Some(((f, x), g))
-      case _ => None
-    }
-  }
-}
-
-object < {
   def unapply(p: (Expression, BoundVar)) = Some(p)
 }
 
