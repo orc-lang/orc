@@ -93,6 +93,9 @@ object DefGroup {
 sealed abstract class SiteDeclaration extends NamedDeclaration
 case class SiteImport(name: String, sitename: String) extends SiteDeclaration
 case class ClassImport(name: String, classname: String) extends SiteDeclaration
+case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends SiteDeclaration
+case class SiteSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends SiteDeclaration
+
 
 sealed abstract class TypeDeclaration extends NamedDeclaration
 case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration

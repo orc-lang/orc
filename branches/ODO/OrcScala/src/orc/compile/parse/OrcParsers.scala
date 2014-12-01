@@ -372,9 +372,13 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseDefDeclaration: Parser[DefDeclaration] = (
     parseDefCore -> Def
 
-    | (Identifier("class") ~> parseDefCore) -> DefClass
+    | (Keyword("class") ~> parseDefCore) -> DefClass
 
     | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
+
+  val parseSiteDeclaration: Parser[SiteDeclaration] = (
+    parseDefCore -> Site
+    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> SiteSig)
 
   val parseDeclaration: Parser[Declaration] = (
     (
@@ -382,10 +386,12 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
 
       | "def" ~> parseDefDeclaration
+      
+      | "site" ~> parseSiteDeclaration
 
-      | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
+      | "import" ~> Keyword("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
 
-      | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
+      | "import" ~> Keyword("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
 
       | !@(("include" ~> stringLit).into(performInclude))
 
