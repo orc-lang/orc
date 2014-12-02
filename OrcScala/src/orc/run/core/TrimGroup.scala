@@ -1,5 +1,5 @@
 //
-// LimitGroup.scala -- Group representing limits in Orc 5C
+// TrimGroup.scala -- Group representing limits in Orc 5C
 // Project OrcScala
 //
 // $Id$
@@ -14,11 +14,11 @@
 //
 package orc.run.core
 
-/** A LimitGroup is the group associated with the expression limit(e)
+/** A TrimGroup is the group associated with the expression {| e |}
   *
   * @author amp
   */
-class LimitGroup(parent: Group) extends Subgroup(parent) {
+class TrimGroup(parent: Group) extends Subgroup(parent) {
   var isFinished = false
 
   def publish(t: Token, v: Option[AnyRef]) = synchronized {

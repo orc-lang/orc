@@ -530,7 +530,7 @@ class Token protected (
 
       case Graft(value, body) => {
         val (v, b) = fork()
-        val pg = new LateBindGroup(group)
+        val pg = new GraftGroup(group)
         b.bind(BoundFuture(pg))
         v.join(pg)
         v.move(value)
@@ -539,7 +539,7 @@ class Token protected (
       }
 
       case Trim(expr) => {
-        val g = new LimitGroup(group)
+        val g = new TrimGroup(group)
         join(g)
         move(expr)
         runtime.stage(this)
