@@ -22,7 +22,7 @@ sealed trait Binding
 case class BoundValue(v: AnyRef) extends Binding
 
 /**  */
-case class BoundFuture(g: LateBindGroup) extends Binding
+case class BoundFuture(g: GraftGroup) extends Binding
 
 /**  */
 case class BoundClosure(c: Closure) extends Binding

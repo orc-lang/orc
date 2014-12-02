@@ -1,5 +1,5 @@
 //
-// PruningGroup.scala -- Scala class PruningGroup
+// GraftGroup.scala -- Scala class PruningGroup
 // Project OrcScala
 //
 // $Id$
@@ -16,21 +16,21 @@ package orc.run.core
 
 import orc.Schedulable
 
-/** A LateBindGroup is the group associated with expression g in (f <x<| g).
+/** A GraftGroup is the group associated with expression g in val x = g # f.
   *
   * @author dkitchin, amp
   */
-class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
+class GraftGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
-  var state: LateBindGroupState = RightSideUnknown(Nil)
+  var state: GraftGroupState = ValueUnknown(Nil)
 
   override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
 
   // Publishing is idempotent
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
-      case RightSideUnknown(waitlist) => {
-        state = RightSidePublished(v)
+      case ValueUnknown(waitlist) => {
+        state = ValuePublished(v)
         for (w <- waitlist) { runtime.stage(w) }
       }
       case _ => {}
@@ -41,28 +41,28 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   def onHalt() = synchronized {
     state match {
-      case RightSideUnknown(waitlist) => {
-        state = RightSideSilent
+      case ValueUnknown(waitlist) => {
+        state = ValueSilent
         parent.remove(this)
         for (w <- waitlist) { runtime.stage(w) }
       }
-      case RightSidePublished(_) => {
+      case ValuePublished(_) => {
         parent.remove(this)
       }
       case _ => {}
     }
   }
 
-  // Specific to PruningGroups
+  // Specific to GraftGroups
   def read(t: Blockable) = {
     // result encodes what calls to t.awake* should be made after releasing the lock
     val result = synchronized {
       state match {
-        case RightSidePublished(v) => Some(v)
-        case RightSideSilent => Some(None)
-        case RightSideUnknown(waitlist) => {
+        case ValuePublished(v) => Some(v)
+        case ValueSilent => Some(None)
+        case ValueUnknown(waitlist) => {
           t.blockOn(this)
-          state = RightSideUnknown(t :: waitlist)
+          state = ValueUnknown(t :: waitlist)
           None
         }
       }
@@ -77,16 +77,16 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   def check(t: Blockable) {
     synchronized { state } match {
-      case RightSidePublished(v) => t.awakeValue(v.get)
-      case RightSideSilent => t.awakeStop()
-      case RightSideUnknown(_) => { throw new AssertionError("Spurious check") }
+      case ValuePublished(v) => t.awakeValue(v.get)
+      case ValueSilent => t.awakeStop()
+      case ValueUnknown(_) => { throw new AssertionError("Spurious check") }
     }
   }
 
 }
 
 /** Possible states of a PruningGroup */
-class LateBindGroupState
-case class RightSideUnknown(waitlist: List[Schedulable]) extends LateBindGroupState
-case class RightSidePublished(v: Option[AnyRef]) extends LateBindGroupState
-case object RightSideSilent extends LateBindGroupState
+class GraftGroupState
+case class ValueUnknown(waitlist: List[Schedulable]) extends GraftGroupState
+case class ValuePublished(v: Option[AnyRef]) extends GraftGroupState
+case object ValueSilent extends GraftGroupState
