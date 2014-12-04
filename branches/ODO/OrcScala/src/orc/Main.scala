@@ -27,6 +27,11 @@ import orc.util.CmdLineUsageException
 import orc.util.PrintVersionAndMessageException
 import orc.run.OrcDesktopEventAction
 import orc.ast.oil.xml.OrcXML
+import java.util.logging.LogRecord
+import java.io.StringWriter
+import java.io.PrintWriter
+import java.util.logging.SimpleFormatter
+import java.util.logging.Formatter
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -120,6 +125,30 @@ object Main {
     orcLogger.config(orcImplName + " " + orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)
     //TODO: orcLogger.config(options.printAllTheOptions...)
+
+    val includeStackTracesWithEveryLogMessage = false
+    if(includeStackTracesWithEveryLogMessage) {
+      for (handler <- orcLogger.getHandlers()) {
+        val oldFormatter = handler.getFormatter()
+        val formatter = new Formatter() {
+          override def format(record: LogRecord) = {
+            val tid = record.getThreadID()
+            val stack = {
+              val frames = (Thread.currentThread().getStackTrace().toVector.drop(2)
+                    .dropWhile(!_.getClassName().startsWith("orc"))
+                    .takeWhile(_.getMethodName() != "runWorker"))
+              val sb = new scala.collection.mutable.StringBuilder()
+              for(frame <- frames) {
+                sb ++= "\tat " + frame + "\n"
+              }
+              sb.toString
+            }
+            oldFormatter.format(record).stripSuffix("\n") + s" tid=$tid\n$stack"
+          }
+        }
+        handler.setFormatter(formatter)
+      }
+    }
   }
 
   def printException(e: Throwable, err: PrintStream, showJavaStackTrace: Boolean) {
