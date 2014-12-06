@@ -363,9 +363,7 @@ class Token protected (
       // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
       
       val env = (params map BoundValue) ::: s.context
-      
-      Logger.fine(s"Calling OrcSite ${s.code.optionalVariableName} $s with env $env")
-      
+           
       // Build a token that is in a group nested inside the declaration context.
       val t = new Token(s.code.body, 
           env=env, 
@@ -562,7 +560,7 @@ class Token protected (
       case Graft(value, body) => {
         val (v, b) = fork()
         val pg = new GraftGroup(group)
-        b.bind(BoundFuture(pg))
+        b.bind(BoundFuture(pg.future))
         v.join(pg)
         v.move(value)
         b.move(body)
@@ -632,7 +630,6 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
-    Logger.finer("Publishing in token: " + this + " " + v)
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live => {
@@ -645,7 +642,6 @@ class Token protected (
           // If we are blocking then publish in a copy of this token.
           // This is needed to allow blockers to publish more than once.
           val nt = copy(state=Publishing(v))
-          Logger.finer(s"Cloning $nt")
           runtime.stage(nt)
         } else {
           // However "publishing" stop is handled the old way.
@@ -669,7 +665,6 @@ class Token protected (
   def publish() { publish(Some(Signal)) }
 
   override def halt() {
-    Logger.finer("Halting token: " + this)
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
         setState(Halted)

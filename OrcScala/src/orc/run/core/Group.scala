@@ -22,6 +22,12 @@ import orc.error.runtime.TokenLimitReachedError
 /** A Group is a structure associated with dynamic instances of an expression,
   * tracking all of the executions occurring within that expression.
   * Different combinators make use of different Group subclasses.
+  * 
+  * Groups are not allowed to maintian references to values. This is required
+  * because OrcSites have odd GC behavior and if a cycle through a group and 
+  * an OrcSite the OrcSiteCallTaget may never be collected. Token members of
+  * the group can hold references to values, however it's important that when 
+  * the group halts or is killed there are no remaining references to members. 
   *
   * @author dkitchin
   */
@@ -55,7 +61,8 @@ trait Group extends GroupMember {
         /* Optimization: assume Tokens do not remove themselves from Groups */
         if (root.options.maxTokens > 0 && m.isInstanceOf[Token]) root.tokenCount.decrementAndGet()
       }
-      // TODO: members.clear() ?  Only needed for Tokens
+      // This is required to prevent persistent references to values from groups.
+      members.clear()
     }
   }
 

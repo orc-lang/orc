@@ -20,18 +20,27 @@ import orc.Schedulable
   *
   * @author dkitchin, amp
   */
-class GraftGroup(parent: Group) extends Subgroup(parent) with Blocker {
+class GraftGroup(parent: Group) extends Subgroup(parent) {
 
-  var state: GraftGroupState = ValueUnknown(Nil)
+  var state: GraftGroupState = ValueUnknown
 
-  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
+  override def toString = super.toString + s"(state=${state})"
+  
+  private var _future = new Future(runtime)
+  
+  def future = {
+    assert(_future ne null)
+    _future
+  }
 
   // Publishing is idempotent
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
-      case ValueUnknown(waitlist) => {
-        state = ValuePublished(v)
-        for (w <- waitlist) { runtime.stage(w) }
+      case ValueUnknown => {
+        state = ValuePublished
+        // There should be no situations in which v is None. Just let it crash if it's not.
+        _future.bind(v.get)
+        _future = null
       }
       case _ => {}
     }
@@ -41,52 +50,22 @@ class GraftGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   def onHalt() = synchronized {
     state match {
-      case ValueUnknown(waitlist) => {
+      case ValueUnknown => {
         state = ValueSilent
         parent.remove(this)
-        for (w <- waitlist) { runtime.stage(w) }
+        _future.stop()
+        _future = null
       }
-      case ValuePublished(_) => {
+      case ValuePublished => {
         parent.remove(this)
       }
       case _ => {}
     }
   }
-
-  // Specific to GraftGroups
-  def read(t: Blockable) = {
-    // result encodes what calls to t.awake* should be made after releasing the lock
-    val result = synchronized {
-      state match {
-        case ValuePublished(v) => Some(v)
-        case ValueSilent => Some(None)
-        case ValueUnknown(waitlist) => {
-          t.blockOn(this)
-          state = ValueUnknown(t :: waitlist)
-          None
-        }
-      }
-    }
-
-    result match {
-      case Some(Some(v)) => t.awakeTerminalValue(v)
-      case Some(None) => t.awakeStop()
-      case None => {}
-    }
-  }
-
-  def check(t: Blockable) {
-    synchronized { state } match {
-      case ValuePublished(v) => t.awakeTerminalValue(v.get)
-      case ValueSilent => t.awakeStop()
-      case ValueUnknown(_) => { throw new AssertionError("Spurious check") }
-    }
-  }
-
 }
 
 /** Possible states of a PruningGroup */
 class GraftGroupState
-case class ValueUnknown(waitlist: List[Schedulable]) extends GraftGroupState
-case class ValuePublished(v: Option[AnyRef]) extends GraftGroupState
+case object ValueUnknown extends GraftGroupState
+case object ValuePublished extends GraftGroupState
 case object ValueSilent extends GraftGroupState
