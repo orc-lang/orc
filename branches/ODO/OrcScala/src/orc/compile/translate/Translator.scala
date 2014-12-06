@@ -112,9 +112,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareCallables(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {
-        var capThunk = ext.Lambda(None, Nil, None, None, makeClassBody(b, reportProblem))
-        convert(ext.Call(
-          ext.Call(ext.Constant(builtin.MakeSite), List(ext.Args(None, List(capThunk)))), List(ext.Args(None, Nil))))
+        convert(makeClassBody(b, reportProblem))
       }
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))

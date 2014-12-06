@@ -27,7 +27,7 @@ type Matrix[A] =
 .}
 
 
-def Matrix[A](List[Bounds]) :: Matrix[A]
+site Matrix[A](List[Bounds]) :: Matrix[A]
 
 def class Matrix([]) =
   val Mat = Array[A](1)

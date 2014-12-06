@@ -44,7 +44,7 @@ object ClassForms {
     val dNames = defNames.distinct
     val members =
       for (d <- dNames) yield {
-        val call = new ext.Call(new ext.Constant(builtin.MakeSite), List(ext.Args(None, List(new ext.Variable(d)))))
+        val call = new ext.Variable(d)
         (d, call)
       }
     val classRecord = new ext.RecordExpr(members.toList)

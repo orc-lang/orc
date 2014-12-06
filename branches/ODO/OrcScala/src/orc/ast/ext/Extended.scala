@@ -69,7 +69,7 @@ sealed abstract class CallableDeclaration extends NamedDeclaration {
 }
 object CallableDeclaration {
   def isSiteDeclaration(decl: CallableDeclaration) = decl match {
-    case _ : Def | _ : DefSig | _ : DefClass => false
+    case _ : Def | _ : DefSig => false
     case _ => true
   }
 }
@@ -103,8 +103,9 @@ object CallableSig {
   }
 }
 
+// DefClass is considered a Site
 case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends CallableDeclaration {
-  def sameKindAs(decl: CallableDeclaration): Boolean = !CallableDeclaration.isSiteDeclaration(decl)
+  def sameKindAs(decl: CallableDeclaration): Boolean = CallableDeclaration.isSiteDeclaration(decl)
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): DefClass = {
     DefClass(name, typeformals, formals, returntype, guard, body)
   }
