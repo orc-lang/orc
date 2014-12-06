@@ -63,7 +63,7 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
-      case DeclareDefs(defs, body) => {
+      case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }
         check(body)

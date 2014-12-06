@@ -186,7 +186,7 @@ object OrcXML {
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </otherwise>
-      case DeclareDefs(unclosedVars, defs, body: Expression) =>
+      case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
           <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
           <defs>{ defs map toXML }</defs>
@@ -284,6 +284,22 @@ object OrcXML {
             }
           }
         </definition>
+      case Site(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
+        <sitedefinition typearity={ typeFormalArity.toString } arity={ arity.toString }>
+          <body>{ toXML(body) }</body>
+          {
+            argTypes match {
+              case Some(ts) => <argtypes>{ ts map toXML }</argtypes>
+              case None => Nil
+            }
+          }
+          {
+            returnType match {
+              case Some(t) => <returntype>{ toXML(t) }</returntype>
+              case None => Nil
+            }
+          }
+        </sitedefinition>
       case _ => throw new AssertionError("Invalid Node for XML conversion!")
     }
   }
@@ -359,7 +375,7 @@ object OrcXML {
         }
         val t2 = for (d <- defs) yield defFromXML(d)
         val t3 = fromXML(body)
-        DeclareDefs(t1, t2.toList, t3)
+        DeclareCallables(t1, t2.toList, t3)
       }
       case <call><target>{ target }</target><args>{ args @ _* }</args>{ maybeTypeargs @ _* }</call> => {
         val t1 = argumentFromXML(target)
@@ -406,20 +422,27 @@ object OrcXML {
   }
 
   @throws(classOf[OilParsingException])
-  def defFromXML(xml: scala.xml.Node): Def = {
+  def defFromXML(xml: scala.xml.Node): Callable = {
+    def buildCallable(d: scala.xml.Node, body: scala.xml.Node, rest: Seq[scala.xml.Node], constructor: (Int, Int, Expression, Option[List[Type]], Option[Type]) => Callable) = {
+      val typeFormalArity = (d \ "@typearity").text.toInt
+      val arity = (d \ "@arity").text.toInt
+      val argTypes = rest \ "argtypes" match {
+        case <argtypes>{ argTypes @ _* }</argtypes> => Some(argTypes.toList map typeFromXML)
+        case _ => None
+      }
+      val returnType = rest \ "returntype" match {
+        case <returntype>{ returnType }</returntype> => Some(typeFromXML(returnType))
+        case _ => None
+      }
+      constructor(typeFormalArity, arity, fromXML(body), argTypes, returnType)      
+    }
+    
     xml --> {
       case d @ <definition><body>{ body }</body>{ rest @ _* }</definition> => {
-        val typeFormalArity = (d \ "@typearity").text.toInt
-        val arity = (d \ "@arity").text.toInt
-        val argTypes = rest \ "argtypes" match {
-          case <argtypes>{ argTypes @ _* }</argtypes> => Some(argTypes.toList map typeFromXML)
-          case _ => None
-        }
-        val returnType = rest \ "returntype" match {
-          case <returntype>{ returnType }</returntype> => Some(typeFromXML(returnType))
-          case _ => None
-        }
-        Def(typeFormalArity, arity, fromXML(body), argTypes, returnType)
+        buildCallable(d, body, rest, Def)
+      }
+      case d @ <sitedefinition><body>{ body }</body>{ rest @ _* }</sitedefinition> => {
+        buildCallable(d, body, rest, Site)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc definition")
     }

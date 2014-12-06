@@ -33,7 +33,7 @@ object ClassForms {
     defNames: List[String],
     reportProblem: CompilationException with ContinuableSeverity => Unit): ext.Expression = {
     body match {
-      case ext.Declare(decl: ext.DefDeclaration, e) => {
+      case ext.Declare(decl: ext.CallableDeclaration, e) => {
         return new ext.Declare(decl, makeClassBody(e, decl.name :: defNames, reportProblem))
       }
       case ext.Declare(decl, e) => {

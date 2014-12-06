@@ -22,6 +22,7 @@ import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 
 case class AggregateDef(clauses: List[Clause],
+  kindSample: Option[CallableDeclaration],
   typeformals: Option[List[String]],
   argtypes: Option[List[Type]],
   returntype: Option[Type])(implicit translator: Translator) extends orc.ast.AST {
@@ -44,40 +45,43 @@ case class AggregateDef(clauses: List[Clause],
       case (Some(x), Some(y)) => reportCollision; Some(x)
     }
 
-  def +(defn: DefDeclaration): AggregateDef =
+  def +(defn: CallableDeclaration): AggregateDef =
     defn -> {
-      case Def(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
+      case Callable(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
+        assert(this.kindSample.isEmpty || (defn sameKindAs this.kindSample.get))
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
         val newclause = defn ->> Clause(newformals, maybeGuard, body)
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
-        val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+        val result = AggregateDef(clauses ::: List(newclause), Some(defn), newTypeFormals, newArgTypes, newReturnType)
         result takeEarlierPos this
       }
       case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
       }
-      case DefSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
+      case CallableSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
+        assert(this.kindSample.isEmpty || (defn sameKindAs this.kindSample.get))
         val newTypeFormals = unifyList(typeformals, maybeTypeFormals, reportProblem(RedundantTypeParameters() at defn))
         val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
-        val result = AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
+        val result = AggregateDef(clauses, Some(defn), newTypeFormals, newArgTypes, newReturnType)
         result takeEarlierPos this
       }
     }
 
   def +(lambda: Lambda): AggregateDef = {
+    assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals)
     val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
     val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
+    val result = AggregateDef(clauses ::: List(newclause), Some(Def(null,null,null,null,null,null)), newTypeFormals, newArgTypes, newReturnType)
     result takeEarlierPos this
   }
 
-  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {
+  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Callable = {
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)
@@ -87,7 +91,12 @@ case class AggregateDef(clauses: List[Clause],
 
     val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, translator)
 
-    named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
+    kindSample.get match {
+      case _ : Def | _ : DefSig | _ : DefClass =>
+        named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
+      case _ : Site | _ : SiteSig =>
+        named.Site(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
+    }
   }
 
   def ClassCheck {
@@ -124,9 +133,9 @@ object AggregateDef {
     }
   }
 
-  def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None)
+  def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None, None)
 
-  def apply(defn: DefDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
+  def apply(defn: CallableDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
   def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }

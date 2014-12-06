@@ -40,7 +40,10 @@ trait Blocker {
 
   /** When a Blockable blocked on this resource is scheduled,
     * it performs this check to observe any changes in
-    * the state of this resource.
+    * the state of this resource. Blockables that call this, should 
+    * assume they may have been rescheduled when this returns, however
+    * during the execution of check the Blockable may assume it has 
+    * not yet been rescheduled.
     *
     * This should call Blockable#awake(AnyRef) to notify the
     * Blockable.

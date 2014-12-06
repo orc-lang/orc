@@ -15,6 +15,7 @@
 package orc.run.core
 import orc.Schedulable
 import orc.error.OrcException
+import orc.run.Logger
 
 /** The interface that allows Schedulables to block on Blockers and receive a value when unblocked.
   *
@@ -47,22 +48,57 @@ trait Blockable extends Schedulable {
   }
 
   /** Called to wake up the blockable, but halt it immediately.
+    *  
+    * This may be called after a called to awakeNonterminalValue, but during the same
+    * invokation of check. Once this is called the blockable may reschedule
+    * itself.
+    * 
+    * This function should not block and should try to be fairly fast.
     */
   def halt() {
     throw new AssertionError("Halt called on non-haltable blockable (This is an interpreter bug).")
+  }
+  
+  /** Called by the blocker from within its check method to notify the
+    * Blockable that it has been unblocked and to provide the single 
+    * value that it might was waiting on. This must only be called while
+    * executing on behalf of the Blockable.
+    * 
+    * Semantically this is equivalent to "awakeNonterminalValue(v); halt();", however
+    * for implementation reasons it is a separate primitive. Specifically,
+    * There are cases in Token where awakeNonterminalValue would trigger an illegal
+    * copy. This method must be used for all awakes from argument blockers:
+    * Closure, and GraftGroup.
+    */
+  def awakeTerminalValue(v: AnyRef) {
+    awakeNonterminalValue(v)
+    halt()
   }
 
   /** Called by the blocker from within its check method to notify the
     * Blockable that it has been unblocked and to provide the value that
     * it might was waiting on. This must only be called while
     * executing on behalf of the Blockable.
+    * 
+    * This does not terminate the blockable. It should go back to sleep 
+    * and expect to be awakened again by the same Blocker. In addition,
+    * awakeNonterminalValue may be called more than once in response to a single call 
+    * to check. halt() will be called after all calls to awakeNonterminalValue 
+    * have completed.
+    * 
+    * This function should not block and should try to be fairly fast.
     */
-  def awakeValue(v: AnyRef): Unit
+  def awakeNonterminalValue(v: AnyRef): Unit
 
   /** Called by the blocker from within its check method to notify the
     * Blockable that it has been unblocked and notify it that the value it
     * it was waiting on is Stop (this is similar to publish(None)).
     * This must only be called while executing on behalf of the Blockable.
+    * 
+    * halt will not be called after awakeStop. The blocker will not call 
+    * the blockable again after this.
+    * 
+    * This function should not block and should try to be fairly fast.
     */
   def awakeStop(): Unit
 

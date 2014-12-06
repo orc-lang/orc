@@ -35,31 +35,43 @@ import orc.Handle
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   // This is the only Blocker that can produce exceptions.
 
-  protected var state: CallState = CallInProgress
+  protected var state: CallState = CallInProgress(List())
   protected var quiescent = false
 
   val runtime = caller.runtime
 
   /* Returns true if the state transition was made,
    * false otherwise (e.g. if the handle was already in a final state)
+   * 
+   * Should always be called with the monitor on this held.
    */
-  protected def setState(newState: CallState): Boolean = synchronized {
+  protected def setState(newState: CallState): Boolean = {
     if (newState.isFinal && quiescent) {
       quiescent = false
       caller.unsetQuiescent()
     }
     if (isLive) {
+      // If the state already has publications then the caller will already be scheduled.
+      // So schedule it if we are either adding publications to an empty state or finalizing an empty state.
+      if (state.publications.isEmpty && (newState.publications.nonEmpty || newState.isFinal))
+        runtime.schedule(caller)
       state = newState
-      runtime.schedule(caller)
       true
     } else {
       false
     }
   }
 
-  def publish(v: AnyRef) { setState(CallReturnedValue(v)) }
-  def halt() { setState(CallSilent) }
-  def !!(e: OrcException) { setState(CallRaisedException(e)) }
+  def publishNonterminal(v: AnyRef) = synchronized {
+    setState(CallInProgress(v +: state.publications))
+  }
+  def halt() = synchronized {
+    assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
+    setState(CallHalted(state.publications))
+  }
+  def !!(e: OrcException) = synchronized {
+    setState(CallRaisedException(e))
+  }
 
   def callSitePosition = caller.sourcePosition
   def hasRight(rightName: String) = caller.options.hasRight(rightName)
@@ -72,7 +84,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   def setQuiescent() = synchronized {
     state match {
-      case CallInProgress if !quiescent => {
+      case CallInProgress(_) if !quiescent => {
         quiescent = true
         caller.setQuiescent()
       }
@@ -87,27 +99,52 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     setState(CallWasKilled)
   }
 
-  def check(t: Blockable) {
-    val callState = synchronized { state }
-    callState match {
-      case CallInProgress => { throw new AssertionError("Spurious check of call handle. " + this + ".state=" + this.state) }
-      case CallReturnedValue(v) => { t.awakeValue(v) } // t.publish(v) sort of
-      case CallSilent => { t.halt() } // t.halt()
+  /* Note from Arthur: There is a small chance this function being fully synchronized will introduce a 
+   * deadlock. However I think the old deadlock was caused by the old lazy recursive closure resolution, 
+   * which has now been replaced. However if there are any places where mutually referential objects
+   * call read or similar in their respective awake* methods then this could cause a dead lock.
+   */
+  def check(t: Blockable) = synchronized {
+    for (v <- state.publications.reverseIterator) {
+      t.awakeNonterminalValue(v)
+    }
+
+    state match {
+      case CallInProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this + ".state=" + this.state) }
+      case CallInProgress(_) => {} // Already handled fully by parts above and below
+      case CallHalted(_) => { t.halt() }
       case CallRaisedException(e) => { t.awakeException(e) } // t !! e
       case CallWasKilled => {}
     }
+    
+    state = state.withoutPublications
+  }
+  
+  override def toString = synchronized {
+    super.toString + s"($state)"
   }
 
 }
 
 /** Possible states of a CallHandle */
-trait CallState { val isFinal: Boolean }
+trait CallState {
+  val isFinal: Boolean
+  // The publications that have not been read in reverse order
+  val publications: Seq[AnyRef] = Nil
+
+  def withoutPublications: CallState = this
+}
 
 trait NonterminalCallState extends CallState { val isFinal = false }
-case object CallInProgress extends NonterminalCallState
+case class CallInProgress(_publications: Seq[AnyRef]) extends NonterminalCallState {
+  override val publications = _publications
+  override def withoutPublications = copy(Nil)
+}
 
 trait TerminalCallState extends CallState { val isFinal = true }
-case class CallReturnedValue(v: AnyRef) extends TerminalCallState
 case class CallRaisedException(e: OrcException) extends TerminalCallState
-case object CallSilent extends TerminalCallState
+case class CallHalted(_publications: Seq[AnyRef]) extends TerminalCallState {
+  override val publications = _publications
+  override def withoutPublications = copy(Nil)
+}
 case object CallWasKilled extends TerminalCallState

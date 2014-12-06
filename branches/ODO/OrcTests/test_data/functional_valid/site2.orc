@@ -5,7 +5,7 @@
  - Created by amp on Nov 30, 2014 10:57:40 PM
  -}
 
-site Test(x) = x+1 | Rwait(100) >> Println(x)
+site Test(x) = x+1 | Rwait(101) >> Println(x)
 
 {| Test(10) |}
 

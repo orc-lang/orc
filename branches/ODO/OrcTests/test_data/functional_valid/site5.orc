@@ -7,7 +7,7 @@
 
 val cell = Cell()
 
-{| site Test(x) = x | Rwait(200) >> x+1 # cell := Test >> stop | Rwait(100) |} |
+{| site Test(x) = x | Rwait(200) >> Println("Should not") # cell := Test >> stop | Rwait(100) |} >> stop |
 
 (
 val Passed = cell? #

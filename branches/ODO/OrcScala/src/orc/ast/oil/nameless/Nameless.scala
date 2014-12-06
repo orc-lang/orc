@@ -36,11 +36,11 @@ sealed abstract class NamelessAST extends AST {
     case Graft(value, body) => List(value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
-    case DeclareDefs(_, defs, body) => defs ::: List(body)
+    case DeclareCallables(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(t, body) => List(t, body)
-    case Def(_, _, body, argtypes, returntype) => {
+    case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
     case TupleType(elements) => elements
@@ -78,7 +78,7 @@ sealed abstract class Expression extends NamelessAST
       case Graft(g, f) => shift(f.freevars, 1) ++ g.freevars
       case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
-      case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
+      case DeclareCallables(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
       case VtimeZone(timeOrder, body) => timeOrder.freevars ++ body.freevars
@@ -115,14 +115,14 @@ sealed abstract class Expression extends NamelessAST
       case Graft(g, f) => Graft(g.subst(ctx), f.subst(None :: ctx))
       case Trim(f) => Trim(f.subst(ctx))
       case f ow g => f.subst(ctx) ow g.subst(ctx)
-      case DeclareDefs(openvars, defs, body) => {
+      case DeclareCallables(openvars, defs, body) => {
         val newctx = (for (_ <- defs) yield None).toList ::: ctx
         val newdefs = {
           val defctx = (for (_ <- openvars) yield None).toList ::: newctx
           defs map { _.subst(defctx) }
         }
         val newbody = body.subst(newctx)
-        DeclareDefs(openvars, newdefs, newbody)
+        DeclareCallables(openvars, newdefs, newbody)
       }
       case HasType(body, t) => HasType(body.subst(ctx), t)
       case DeclareType(t, body) => DeclareType(t, body.subst(ctx))
@@ -145,8 +145,10 @@ case class Sequence(left: Expression, right: Expression) extends Expression with
 case class Graft(value: Expression, body: Expression) extends Expression with hasOptionalVariableName
 case class Trim(f: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
+// Callable should contain all Sites or all Defs and not a mix.
+case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression 
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
+
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
@@ -179,15 +181,39 @@ case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariab
   optionalVariableName = Some(name)
 }
 
-sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends NamelessAST
+sealed abstract class Callable extends NamelessAST
   with hasFreeVars
   with hasOptionalVariableName {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
+  
+  val typeFormalArity: Int
+  val arity: Int
+  val body: Expression
+  val argTypes: Option[List[Type]]
+  val returnType: Option[Type]
 
-  def subst(ctx: List[Option[AnyRef]]): Def = {
-    val newctx = (for (_ <- List.range(0, arity)) yield None).toList ::: ctx
-    Def(typeFormalArity, arity, body.subst(newctx), argTypes, returnType)
+  def copy(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]): Callable
+  
+  def subst(ctx: List[Option[AnyRef]]): Callable = {
+    copy(typeFormalArity, arity, body.subst(substCtx(ctx)), argTypes, returnType)
   }
 
+  protected def substCtx(ctx: List[Option[AnyRef]]) = (for (_ <- List.range(0, arity)) yield None).toList ::: ctx
+}
+object Callable {
+  def unapply(value: Callable) = {
+    Some((value.typeFormalArity, value.arity, value.body, value.argTypes, value.returnType))
+  }
+}
+
+case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
+  def copy(typeFormalArity: Int = typeFormalArity, arity: Int = arity, body: Expression = body, argTypes: Option[List[Type]] = argTypes, returnType: Option[Type] = returnType): Def = {
+    Def(typeFormalArity, arity, body, argTypes, returnType)
+  }
+}
+case class Site(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
+  def copy(typeFormalArity: Int = typeFormalArity, arity: Int = arity, body: Expression = body, argTypes: Option[List[Type]] = argTypes, returnType: Option[Type] = returnType): Site = {
+    Site(typeFormalArity, arity, body, argTypes, returnType)
+  }
 }

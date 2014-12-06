@@ -15,7 +15,7 @@
 package orc.compile.optimize
 
 import scala.language.postfixOps
-import orc.ast.oil.named.{ BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTransform }
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, DeclareCallables, Callable, NamedASTTransform }
 
 /** Removes unused definitions from the OIL AST.
   *
@@ -26,10 +26,10 @@ import orc.ast.oil.named.{ BoundTypevar, BoundVar, DeclareDefs, Def, NamedASTTra
 object RemoveUnusedDefs extends NamedASTTransform {
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
-    case DeclareDefs(defs, body) => {
+    case DeclareCallables(defs, body) => {
       val defnames = defs map { _.name }
       val newbody = transform(body, defnames ::: context, typecontext)
-      val defNamesSet: Set[BoundVar] = defs.toSet map ((a: Def) => a.name)
+      val defNamesSet: Set[BoundVar] = defs.toSet map ((a: Callable) => a.name)
 
       // If none of the defs are bound in the body,
       // just return the body.
@@ -37,7 +37,7 @@ object RemoveUnusedDefs extends NamedASTTransform {
         newbody
       } else {
         val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
-        DeclareDefs(newdefs, newbody)
+        DeclareCallables(newdefs, newbody)
       }
     }
   }

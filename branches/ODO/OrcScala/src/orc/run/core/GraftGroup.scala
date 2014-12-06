@@ -69,7 +69,7 @@ class GraftGroup(parent: Group) extends Subgroup(parent) with Blocker {
     }
 
     result match {
-      case Some(Some(v)) => t.awakeValue(v)
+      case Some(Some(v)) => t.awakeTerminalValue(v)
       case Some(None) => t.awakeStop()
       case None => {}
     }
@@ -77,7 +77,7 @@ class GraftGroup(parent: Group) extends Subgroup(parent) with Blocker {
 
   def check(t: Blockable) {
     synchronized { state } match {
-      case ValuePublished(v) => t.awakeValue(v.get)
+      case ValuePublished(v) => t.awakeTerminalValue(v.get)
       case ValueSilent => t.awakeStop()
       case ValueUnknown(_) => { throw new AssertionError("Spurious check") }
     }

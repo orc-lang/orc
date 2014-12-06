@@ -34,7 +34,7 @@ trait NamedToNameless {
       case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
       case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case DeclareDefs(defs, body) => {
+      case DeclareCallables(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
         val defcontext = defnames.reverse ::: opennames ::: context
@@ -47,7 +47,7 @@ trait NamedToNameless {
             assert(i >= 0)
             i
           }
-        nameless.DeclareDefs(openvars, newdefs, newbody)
+        nameless.DeclareCallables(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
         val newTypeContext = x :: typecontext
@@ -126,15 +126,20 @@ trait NamedToNameless {
     }
   }
 
-  def namedToNameless(defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Def = {
+  def namedToNameless(defn: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Callable = {
     defn -> {
-      case Def(_, formals, body, typeformals, argtypes, returntype) => {
+      case Callable(_, formals, body, typeformals, argtypes, returntype) => {
         val newContext = formals.reverse ::: context
         val newTypeContext = typeformals ::: typecontext
         val newbody = namedToNameless(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { _ map { namedToNameless(_, newTypeContext) } }
         val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
-        nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+        defn match {
+          case _: Def =>
+            nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+          case _: Site =>
+            nameless.Site(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+        }
       }
     }
   }
