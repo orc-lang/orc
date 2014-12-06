@@ -5,7 +5,7 @@
  - Created by amp on Nov 30, 2014 10:57:40 PM
  -}
 
-site Test(x) = x + 1
+site Test(x :: Integer) :: Integer = x + 1
 Test(10)
 
 {-
