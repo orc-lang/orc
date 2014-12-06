@@ -223,9 +223,14 @@
               </xs:element>
               <xs:element name="defs">
                 <xs:complexType>
-                  <xs:sequence>
-                    <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
-                  </xs:sequence>
+                  <xs:choice>
+	                  <xs:sequence>
+	                    <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+	                  </xs:sequence>
+	                  <xs:sequence>
+	                    <xs:element name="sitedefinition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+	                  </xs:sequence>
+                  </xs:choice>
                 </xs:complexType>
               </xs:element>
               <xs:element name="body" type="exp" />

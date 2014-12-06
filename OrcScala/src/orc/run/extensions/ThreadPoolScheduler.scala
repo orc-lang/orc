@@ -16,9 +16,9 @@ package orc.run.extensions
 
 import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit }
 import java.util.logging.Level
-
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
+import orc.run.core.OrcSiteCallTarget
 
 /** A logger just for scheduling */
 object Logger extends orc.util.Logger("orc.run.scheduler")
@@ -240,6 +240,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   }
 
   protected val CHECK_PERIOD = 10 /* milliseconds */
+  protected val SITE_COLLECTION_PERIOD = 100 /* milliseconds */
+  protected val FORCE_GC_PERIOD = 2000 /* milliseconds */
 
   override def run() {
     var shutdownRequested = false
@@ -251,6 +253,9 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     val threadBuffer = new Array[Thread](getMaximumPoolSize + 2)
     var firstTime = 0L
     var lastTime = Long.MinValue
+    
+    var sinceOrcSiteCollect = 0
+    var sinceForcedGC = 0
 
     try {
       while (!isTerminated && !giveUp) {
@@ -314,6 +319,20 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
             } finally {
               mainLock.unlock()
             }
+            
+            if (sinceOrcSiteCollect >= SITE_COLLECTION_PERIOD / CHECK_PERIOD) {
+              // Check for collectable OrcSites
+              OrcSiteCallTarget.collect()
+              sinceOrcSiteCollect = 0
+            }
+            sinceOrcSiteCollect += 1
+            
+            // TODO: Try to be smarter about this and only call GC when there is a reason to. Calling collect more often is safe.
+            if (sinceForcedGC >= FORCE_GC_PERIOD / CHECK_PERIOD) {
+              System.gc() // This is required because if there is nothing else going on to trigger GC then OrcSites will never be found.
+              sinceForcedGC = 0
+            }
+            sinceForcedGC += 1
 
             Thread.sleep(CHECK_PERIOD)
 

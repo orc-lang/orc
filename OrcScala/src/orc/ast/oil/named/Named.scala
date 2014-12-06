@@ -16,7 +16,6 @@
 package orc.ast.oil.named
 
 import scala.language.reflectiveCalls
-
 import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
@@ -32,11 +31,11 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Graft(x, value, body) => List(x, value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
-    case DeclareDefs(defs, body) => defs ::: List(body)
+    case DeclareCallables(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
-    case Def(f, formals, body, typeformals, argtypes, returntype) => {
+    case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
     case TupleType(elements) => elements
@@ -76,7 +75,8 @@ case class Graft(x: BoundVar, value: Expression, body: Expression) extends Expre
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 case class Trim(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
+// Callable should contain all Sites or all Defs and not a mix.
+case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
@@ -132,15 +132,36 @@ class BoundVar(optionalName: Option[String] = None) extends Var with hasOptional
   def productIterator = optionalVariableName.toList.iterator
 }
 
-sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
+sealed abstract class Callable
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
   with hasOptionalVariableName
-  with Substitution[Def] {
+  with Substitution[Callable] {
   transferOptionalVariableName(name, this)
-  lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
+  lazy val withoutNames: nameless.Callable = namedToNameless(this, Nil, Nil)
 
+  val name: BoundVar
+  val formals: List[BoundVar]
+  val body: Expression
+  val typeformals: List[BoundTypevar]
+  val argtypes: Option[List[Type]]
+  val returntype: Option[Type]
+
+  def copy(name: BoundVar = name,
+    formals: List[BoundVar] = formals,
+    body: Expression = body,
+    typeformals: List[BoundTypevar] = typeformals,
+    argtypes: Option[List[Type]] = argtypes,
+    returntype: Option[Type] = returntype): Callable
+}
+object Callable {
+  def unapply(value: Callable) = {
+    Some((value.name, value.formals, value.body, value.typeformals, value.argtypes, value.returntype))
+  }
+}
+
+case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) extends Callable {
   def copy(name: BoundVar = name,
     formals: List[BoundVar] = formals,
     body: Expression = body,
@@ -150,6 +171,18 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
     this ->> Def(name, formals, body, typeformals, argtypes, returntype)
   }
 }
+
+case class Site(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type]) extends Callable {
+  def copy(name: BoundVar = name,
+    formals: List[BoundVar] = formals,
+    body: Expression = body,
+    typeformals: List[BoundTypevar] = typeformals,
+    argtypes: Option[List[Type]] = argtypes,
+    returntype: Option[Type] = returntype) = {
+    this ->> Site(name, formals, body, typeformals, argtypes, returntype)
+  }
+}
+
 
 sealed abstract class Type
   extends NamedAST
@@ -286,7 +319,7 @@ object FoldedLambda {
 
   def unapply(expr: Expression): Option[(List[BoundVar], Expression, List[BoundTypevar], Option[List[Type]], Option[Type])] = {
     expr match {
-      case DeclareDefs(List(Def(m, formals, body, typeFormals, argTypes, returnType)), n: BoundVar) if (m eq n) => {
+      case DeclareCallables(List(Def(m, formals, body, typeFormals, argTypes, returnType)), n: BoundVar) if (m eq n) => {
         Some((formals, body, typeFormals, argTypes, returnType))
       }
       case _ => None
@@ -297,7 +330,7 @@ object FoldedLambda {
   def apply(formals: List[BoundVar], body: Expression, typeFormals: List[BoundTypevar], argTypes: Option[List[Type]], returnType: Option[Type]): Expression = {
     val dummyName = new BoundVar()
     val dummyDef = Def(dummyName, formals, body, typeFormals, argTypes, returnType)
-    DeclareDefs(List(dummyDef), dummyName)
+    DeclareCallables(List(dummyDef), dummyName)
   }
 
 }

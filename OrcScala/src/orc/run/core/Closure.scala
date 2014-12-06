@@ -54,7 +54,7 @@ class ClosureGroup(
   with Blockable with Resolver {
   import ClosureGroup._
   import BlockableMapExtension._
-
+  
   def defs = _defs
   def lexicalContext = _lexicalContext
 
@@ -153,7 +153,8 @@ class ClosureGroup(
 
   def check(t: Blockable, i: Int) = {
     synchronized { state } match {
-      case Resolved => t.awakeValue(closures(i))
+      case Resolved => 
+        t.awakeTerminalValue(closures(i))
       case _ => throw new AssertionError("Closure.check called in bad state: " + state)
     }
   }
@@ -173,8 +174,9 @@ class ClosureGroup(
       }
     }
 
-    if (doawake)
-      t.awakeValue(closures(i))
+    if (doawake) {
+      t.awakeTerminalValue(closures(i))
+    }
   }
 
   //// Blockable Implementation
@@ -183,8 +185,12 @@ class ClosureGroup(
     pop()(v) // Pop and call the old top of the stack on the value. The pop happens first. That's important.
   }
 
-  def awakeValue(v: AnyRef) = handleValue(Some(v))
+  def awakeNonterminalValue(v: AnyRef) = {
+    // We only block on things that produce a single value so we don't have to handle multiple awakeNonterminalValue calls from one source.
+    handleValue(Some(v))
+  }
   def awakeStop() = handleValue(None)
+  override def halt() {} // Ignore halts
 
   def blockOn(b: Blocker) {
     assert(state != Resolved)

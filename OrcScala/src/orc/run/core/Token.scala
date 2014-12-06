@@ -14,17 +14,14 @@
 //
 package orc.run.core
 
-import orc.{ Schedulable, OrcRuntime, OrcEvent, CaughtEvent }
-import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, Graft, Trim, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
-import orc.error.runtime.{ TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException }
+import orc.{CaughtEvent, OrcEvent, OrcRuntime, Schedulable}
+import orc.ast.oil.nameless.{Argument, Call, Def, Site, Constant, DeclareCallables, DeclareType, Expression, Graft, HasType, Hole, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVariable, Variable, VtimeZone}
 import orc.error.OrcException
-import orc.lib.time.{ Vtime, Vclock, Vawait }
-import orc.util.BlockableMapExtension.addBlockableMapToList
+import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException}
+import orc.lib.time.{Vawait, Vtime}
+import orc.values.{Field, OrcRecord, Signal}
 import orc.values.sites.TotalSite
-import orc.values.{ Signal, OrcRecord, Field }
-import orc.ast.oil.nameless.VtimeZone
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
+import orc.run.Logger
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -56,7 +53,7 @@ class Token protected (
   protected var clock: Option[VirtualClock] = None,
   protected var state: TokenState = Live)
   extends GroupMember with Schedulable with Blockable with Resolver {
-
+  
   var functionFramesPushed: Int = 0
 
   val runtime: OrcRuntime = group.runtime
@@ -81,6 +78,7 @@ class Token protected (
     group: Group = group,
     clock: Option[VirtualClock] = clock,
     state: TokenState = state): Token = {
+    Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
     new Token(node, stack, env, group, clock, state)
   }
 
@@ -102,7 +100,7 @@ class Token protected (
     try {
       val recursing = toStringRecusionGuard.get
       toStringRecusionGuard.set(java.lang.Boolean.TRUE)
-      super.toString + (if (recursing eq null) s"(state=$state, node=$node, group=$group, clock=$clock)" else "")
+      super.toString.stripPrefix("orc.run.core.") + (if (recursing eq null) s"(state=$state, node=$node, group=$group, clock=$clock)" else "")
     } finally {
       toStringRecusionGuard.remove()
     }
@@ -120,7 +118,13 @@ class Token protected (
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
-    if (state != Killed) { state = newState; true } else false
+    if (state != Killed) { 
+      // Logger.finer(s"Changing state: $this to $newState")
+      state = newState
+      true
+    } else {
+      false
+    }
   }
 
   /** An expensive walk-to-root check for alive state */
@@ -159,7 +163,7 @@ class Token protected (
       victimState match {
         case Suspending(s) => findHandle(s)
         case Suspended(s) => findHandle(s)
-        case Blocked(handle: SiteCallHandle) => Some(handle)
+        case Blocked(handle: ExternalSiteCallHandle) => Some(handle)
         case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
@@ -184,7 +188,7 @@ class Token protected (
     state match {
       case Live => setState(Blocked(blocker))
       case Killed => {}
-      case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state)
+      case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state + "   " + this)
     }
   }
 
@@ -197,7 +201,7 @@ class Token protected (
     */
   def unblock() {
     state match {
-      case Blocked(_) => {
+      case Blocked(_: OtherwiseGroup) => {
         if (setState(Live)) { runtime.stage(this) }
       }
       case Suspending(Blocked(_: OtherwiseGroup)) => {
@@ -207,7 +211,7 @@ class Token protected (
         setState(Suspended(Live))
       }
       case Killed => {}
-      case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state=" + state) }
+      case _ => { throw new AssertionError("unblock on a Token that is not Blocked(OtherwiseGroup)/Killed: state=" + state) }
     }
   }
 
@@ -349,6 +353,30 @@ class Token protected (
     }
   }
 
+  protected def orcSiteCall(s: OrcSite, params: List[AnyRef]) {
+    if (params.size != s.code.arity) {
+      this !! new ArityMismatchException(s.code.arity, params.size) /* Arity mismatch. */
+    } else {
+      val sh = new OrcSiteCallHandle(this)
+      blockOn(sh)
+      
+      // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
+      
+      val env = (params map BoundValue) ::: s.context
+      
+      Logger.fine(s"Calling OrcSite ${s.code.optionalVariableName} $s with env $env")
+      
+      // Build a token that is in a group nested inside the declaration context.
+      val t = new Token(s.code.body, 
+          env=env, 
+          group=new OrcSiteCallGroup(s.group, sh),
+          stack=GroupFrame(EmptyFrame),
+          clock=s.clock)
+      
+      runtime.stage(t)
+    }
+  }
+
   protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]) {
     (vc, actuals) match {
       case (`Vawait`, List(t)) => {
@@ -372,8 +400,11 @@ class Token protected (
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
       }
+      case s: OrcSite => {
+        orcSiteCall(s, actuals)
+      }
       case _ => {
-        val sh = new SiteCallHandle(this, s, actuals)
+        val sh = new ExternalSiteCallHandle(this, s, actuals)
         blockOn(sh)
         runtime.stage(sh)
       }
@@ -472,10 +503,10 @@ class Token protected (
   //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
   //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
   //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
-
+  
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
-    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
+    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state) 
     try {
       if (group.isKilled()) { kill() }
       state match {
@@ -558,16 +589,31 @@ class Token protected (
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
 
-      case decldefs @ DeclareDefs(openvars, defs, body) => {
+      case decldefs @ DeclareCallables(openvars, decls, body) => {
         /* Closure compaction: Bind only the free variables
          * of the defs in this lexical context.
          */
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-        val closureGroup = new ClosureGroup(defs, lexicalContext, runtime)
-        runtime.stage(closureGroup)
+        
+        decls.head match {
+          case _: Def => {
+            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d}), lexicalContext, runtime)
+            runtime.stage(closureGroup)
 
-        for (c <- closureGroup.closures) {
-          bind(BoundClosure(c))
+            for (c <- closureGroup.closures) {
+              bind(BoundClosure(c))
+            }
+          }
+          case _: Site => {
+            val sites = for (s <- decls) yield new OrcSite(s.asInstanceOf[Site], group, clock)
+
+            val context = (sites map BoundValue) ::: lexicalContext 
+
+            for (s <- sites) {
+              s.context = context
+              bind(BoundValue(s))
+            }
+          }
         }
         move(body)
         runtime.stage(this)
@@ -586,13 +632,29 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
+    Logger.finer("Publishing in token: " + this + " " + v)
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
-      case Live | Blocked(_) => {
+      case Live => {
+        // If we are live then publish normally.
         setState(Publishing(v))
         runtime.stage(this)
       }
+      case Blocked(_) => {
+        if(v.isDefined) {
+          // If we are blocking then publish in a copy of this token.
+          // This is needed to allow blockers to publish more than once.
+          val nt = copy(state=Publishing(v))
+          Logger.finer(s"Cloning $nt")
+          runtime.stage(nt)
+        } else {
+          // However "publishing" stop is handled the old way.
+          setState(Publishing(v))
+          runtime.stage(this)
+        }
+      }
       case Suspending(_) => {
+        throw new AssertionError("Suspension is not supported anymore.")
         setState(Suspending(Publishing(v)))
         runtime.stage(this)
       }
@@ -607,6 +669,7 @@ class Token protected (
   def publish() { publish(Some(Signal)) }
 
   override def halt() {
+    Logger.finer("Halting token: " + this)
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
         setState(Halted)
@@ -630,7 +693,13 @@ class Token protected (
     halt()
   }
 
-  def awakeValue(v: AnyRef) = publish(Some(v))
+  override def awakeTerminalValue(v: AnyRef) = {
+    setState(Live)
+    publish(Some(v))
+  }
+  def awakeNonterminalValue(v: AnyRef) = {
+    publish(Some(v))
+  }
   def awakeStop() = publish(None)
 
   override def awakeException(e: OrcException) = this !! e

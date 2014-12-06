@@ -38,6 +38,7 @@ class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime
   override def toString = super.toString + s"(state=$state, waiter=$waiter)"
 
   def set(index: Int, arg: AnyRef) = synchronized {
+    assert(items(index) == null)
     state match {
       case JoinInProgress(n) if (n > 1) => {
         items(index) = arg
@@ -86,7 +87,7 @@ class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
       case JoinHalted => t.awakeStop()
-      case JoinComplete => t.awakeValue(items.toList) // The checking entity must expect a list
+      case JoinComplete => t.awakeTerminalValue(items.toList) // The checking entity must expect a list
     }
   }
 
@@ -96,8 +97,9 @@ class JoinItem(source: Join, index: Int) extends Blockable {
 
   var obstacle: Option[Blocker] = None
 
-  def awakeValue(v: AnyRef) = source.set(index, v)
+  def awakeNonterminalValue(v: AnyRef) = source.set(index, v)
   def awakeStop() = source.halt()
+  override def halt() {} // Ignore halts
 
   def blockOn(b: Blocker) { obstacle = Some(b) }
 

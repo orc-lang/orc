@@ -22,7 +22,7 @@ import orc.error.OrcException
   *
   * @author dkitchin
   */
-class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
+class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
 
   var invocationThread: Option[Thread] = None
 

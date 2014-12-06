@@ -59,16 +59,20 @@ class PrettyPrint {
       case Graft(x, value, body) => "(val " + reduce(x) + " = " + reduce(value) + " # " + reduce(body) + ")"
       case Trim(f) => "{| " + reduce(f) + " |}"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
-      case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
+      case c@Callable(f, formals, body, typeformals, argtypes, returntype) => {
+        val prefix = c match { 
+          case _ : Def => "def"
+          case _ : Site => "site"
+        }
         val name = f.optionalVariableName.getOrElse(lookup(f))
-        "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
+        prefix + " " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
           (returntype match {
             case Some(t) => " :: " + reduce(t)
             case None => ""
           }) +
           "\n" +
-          "def " + name + paren(formals) + " = " + reduce(body) +
+          prefix + " " + name + paren(formals) + " = " + reduce(body) +
           "\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"

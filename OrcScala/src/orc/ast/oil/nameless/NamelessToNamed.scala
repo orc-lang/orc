@@ -46,14 +46,14 @@ trait NamelessToNamed {
       }
       case Trim(f) => named.Trim(recurse(f))
       case left ow right => named.Otherwise(recurse(left), recurse(right))
-      case DeclareDefs(openvars, defs, body) => {
+      case DeclareCallables(openvars, defs, body) => {
         val opennames = openvars map context
         val defnames = defs map { _ => new BoundVar() }
         val defcontext = defnames.reverse ::: opennames.reverse ::: context
         val bodycontext = defnames.reverse ::: context
         val newdefs = for ((x, d) <- defnames zip defs) yield namelessToNamed(x, d, defcontext, typecontext)
         val newbody = namelessToNamed(body, bodycontext, typecontext)
-        named.DeclareDefs(newdefs, newbody)
+        named.DeclareCallables(newdefs, newbody)
       }
       case DeclareType(t, body) => {
         val x = new BoundTypevar()
@@ -128,9 +128,9 @@ trait NamelessToNamed {
     }
   }
 
-  def namelessToNamed(x: BoundVar, defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): named.Def = {
+  def namelessToNamed(x: BoundVar, defn: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): named.Callable = {
     defn -> {
-      case Def(typearity, arity, body, argtypes, returntype) => {
+      case Callable(typearity, arity, body, argtypes, returntype) => {
         val formals = (for (_ <- 0 until arity) yield new BoundVar()).toList
         val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
         val newContext = formals ::: context
@@ -138,7 +138,12 @@ trait NamelessToNamed {
         val newbody = namelessToNamed(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { _ map { namelessToNamed(_, newTypeContext) } }
         val newReturnType = returntype map { namelessToNamed(_, newTypeContext) }
-        named.Def(x, formals, newbody, typeformals, newArgTypes, newReturnType)
+        defn match {
+          case _: Def =>
+            named.Def(x, formals, newbody, typeformals, newArgTypes, newReturnType)
+          case _: Site =>
+            named.Site(x, formals, newbody, typeformals, newArgTypes, newReturnType)
+        }
       }
     }
   }

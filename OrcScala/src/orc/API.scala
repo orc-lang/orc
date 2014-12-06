@@ -110,7 +110,11 @@ trait Handle {
   def notifyOrc(event: OrcEvent): Unit
   def setQuiescent(): Unit
 
-  def publish(v: AnyRef): Unit
+  def publishNonterminal(v: AnyRef): Unit
+  def publish(v: AnyRef) { 
+    publishNonterminal(v)
+    halt
+  }
   def publish() { publish(Signal) }
   def halt: Unit
   def !!(e: OrcException): Unit

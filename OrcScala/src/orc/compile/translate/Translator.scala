@@ -109,7 +109,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case lambda: ext.Lambda => {
         val lambdaName = new BoundVar()
         val newdef = AggregateDef(lambda)(this).convert(lambdaName, context, typecontext)
-        DeclareDefs(List(newdef), lambdaName)
+        DeclareCallables(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {
         var capThunk = ext.Lambda(None, Nil, None, None, makeClassBody(b, reportProblem))
@@ -119,10 +119,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))
       }
-      case ext.DefGroup(defs, body) => {
+      case ext.CallableGroup(defs, body) => {
         val (newdefs, dcontext) = convertDefs(defs)
         val newbody = convert(body)(context ++ dcontext, typecontext)
-        DeclareDefs(newdefs, newbody)
+        DeclareCallables(newdefs, newbody)
       }
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
@@ -236,8 +236,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     * and
     *      a mapping from their string names to their new bound names
     */
-  def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
-
+  def convertDefs(defs: List[ext.CallableDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Callable], Map[String, BoundVar]) = {
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
     for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
@@ -250,8 +249,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val newdefs = for ((n, d) <- defsMap) yield {
       d ->> d.convert(namesMap(n), recursiveContext, typecontext)
     }
-
-
 
     (newdefs.toList, namesMap)
   }
