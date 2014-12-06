@@ -47,6 +47,9 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: CallableDeclaration): AggregateDef =
     defn -> {
+      case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
+        this + Site(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
+      }
       case Callable(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         assert(this.kindSample.isEmpty || (defn sameKindAs this.kindSample.get))
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
@@ -56,9 +59,6 @@ case class AggregateDef(clauses: List[Clause],
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         val result = AggregateDef(clauses ::: List(newclause), Some(defn), newTypeFormals, newArgTypes, newReturnType)
         result takeEarlierPos this
-      }
-      case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
-        this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
       }
       case CallableSig(_, maybeTypeFormals, argtypes2, maybeReturnType) => {
         assert(this.kindSample.isEmpty || (defn sameKindAs this.kindSample.get))
@@ -92,9 +92,9 @@ case class AggregateDef(clauses: List[Clause],
     val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, translator)
 
     kindSample.get match {
-      case _ : Def | _ : DefSig | _ : DefClass =>
+      case _ : Def | _ : DefSig =>
         named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
-      case _ : Site | _ : SiteSig =>
+      case _ : Site | _ : SiteSig | _ : DefClass =>
         named.Site(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
     }
   }

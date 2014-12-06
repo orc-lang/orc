@@ -16,7 +16,7 @@ type BBTree[A] =
   write :: lambda(A, List[Integer]) :: Signal
 .}
 
-def BBTree[A](Integer) :: BBTree[A]
+site BBTree[A](Integer) :: BBTree[A]
 def class BBTree(0) =
 
   def read(List[Integer]) :: A
