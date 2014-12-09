@@ -25,7 +25,7 @@ import orc.OrcRuntime
   * be maintained.
   *
   * Blockers may unblock Blockables at any time in any thread. So as soon as you
-  * block (for instance by calling PruningGroup.read or instantiating a SiteCallHandle)
+  * block (for instance by calling Future.read or instantiating a SiteCallHandle)
   * on a Blocker you should assume you may be unblocked and running on another thread.
   *
   * @see Blockable
