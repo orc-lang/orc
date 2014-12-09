@@ -67,12 +67,14 @@ sealed abstract class NamedDeclaration extends Declaration {
 sealed abstract class CallableDeclaration extends NamedDeclaration {
   def sameKindAs(decl: CallableDeclaration): Boolean
 }
-object CallableDeclaration {
-  def isSiteDeclaration(decl: CallableDeclaration) = decl match {
-    case _ : Def | _ : DefSig => false
-    case _ => true
-  }
+
+trait DefDeclaration extends CallableDeclaration {
+  def sameKindAs(decl: CallableDeclaration): Boolean = decl.isInstanceOf[DefDeclaration]
 }
+trait SiteDeclaration extends CallableDeclaration {
+  def sameKindAs(decl: CallableDeclaration): Boolean = decl.isInstanceOf[SiteDeclaration]
+}
+
 sealed abstract class Callable extends CallableDeclaration {
   val name: String
   val typeformals: Option[List[String]]
@@ -104,34 +106,29 @@ object CallableSig {
 }
 
 // DefClass is considered a Site
-case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends CallableDeclaration {
-  def sameKindAs(decl: CallableDeclaration): Boolean = CallableDeclaration.isSiteDeclaration(decl)
+case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends CallableDeclaration with SiteDeclaration {
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): DefClass = {
     DefClass(name, typeformals, formals, returntype, guard, body)
   }
 }
 
-case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable {
-  def sameKindAs(decl: CallableDeclaration): Boolean = !CallableDeclaration.isSiteDeclaration(decl)
+case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable with DefDeclaration {
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): Def = {
     Def(name, typeformals, formals, returntype, guard, body)
   }
 }
-case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig {
-  def sameKindAs(decl: CallableDeclaration): Boolean = !CallableDeclaration.isSiteDeclaration(decl)
+case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig with DefDeclaration {
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, argtypes: List[Type] = argtypes, returntype: Type = returntype): DefSig = {
     DefSig(name, typeformals, argtypes, returntype)
   }
 }
 
-case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable {
-  def sameKindAs(decl: CallableDeclaration): Boolean = CallableDeclaration.isSiteDeclaration(decl)
+case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable with SiteDeclaration {
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): Site = {
     Site(name, typeformals, formals, returntype, guard, body)
   }
 }
-case class SiteSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig {
-  def sameKindAs(decl: CallableDeclaration): Boolean = CallableDeclaration.isSiteDeclaration(decl)
+case class SiteSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig with SiteDeclaration {
   def copy(name: String = name, typeformals: Option[List[String]] = typeformals, argtypes: List[Type] = argtypes, returntype: Type = returntype): SiteSig = {
     SiteSig(name, typeformals, argtypes, returntype)
   }

@@ -92,9 +92,9 @@ case class AggregateDef(clauses: List[Clause],
     val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, translator)
 
     kindSample.get match {
-      case _ : Def | _ : DefSig =>
+      case _ : DefDeclaration =>
         named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
-      case _ : Site | _ : SiteSig | _ : DefClass =>
+      case _ : SiteDeclaration =>
         named.Site(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
     }
   }
