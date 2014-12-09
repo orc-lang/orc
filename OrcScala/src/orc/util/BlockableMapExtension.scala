@@ -29,9 +29,18 @@ import scala.language.implicitConversions
   * This method is used to map over a list of potentially blocking
   * entities. It uses the continuation g to resume mapping after blocking
   * on an element.
+  * 
+  * WARNING: This code is not generally safe to use. It can result in 
+  * deadlock if two threads map over lists that have the same elements 
+  * in different orders. This can cause SiteCallHandle to deadlock 
+  * because SiteCallHandle holds it's monitor while calling the Blockables
+  * awake*() methods and awake*() will may call read() or similar on
+  * another SiteCallHandle (when using BlockableMapExtension). So if
+  * there are elements that are in different orders then you get deadlock.
   *
   * @author dkitchin
   */
+@deprecated("blockableMap is dangerous because sequentially binding can resutl in deadlock. See BlockableMapExtension.scala.", "3.0")
 object BlockableMapExtension {
 
   class ListWithBlockableMap[X](xs: List[X]) {

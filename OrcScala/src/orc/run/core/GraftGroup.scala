@@ -24,7 +24,7 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
 
   var state: GraftGroupState = ValueUnknown
 
-  override def toString = super.toString + s"(state=${state})"
+  override def toString = super.toString + s"(state=${state}, ${_future})"
   
   private var _future = new Future(runtime)
   
