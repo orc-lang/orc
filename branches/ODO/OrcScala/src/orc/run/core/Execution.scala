@@ -15,11 +15,12 @@
 package orc.run.core
 
 import java.util.logging.Level
-
 import orc.{ PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedOrKilledEvent, CaughtEvent }
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
+import java.util.Timer
+import java.util.TimerTask
 
 /** An execution is a special toplevel group,
   * associated with the entire program.
@@ -122,6 +123,16 @@ class Execution(
     val prefix = "# "
     Console.err.println(prefix + sb.toString.stripLineEnd.replaceAll("\n", "\n" + prefix))
   }
+  
+  /* 
+  // A useful debugging hack:
+  val dumpTimer = new Timer()
+  dumpTimer.schedule(new TimerTask {
+    def run() {
+      dumpState()
+    }
+  }, 10 * 1000, 2 * 1000)
+  */
 }
 
 object DumpState extends OrcEvent

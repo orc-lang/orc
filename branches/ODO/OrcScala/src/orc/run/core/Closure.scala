@@ -51,12 +51,23 @@ class ClosureGroup(
   private var _lexicalContext: List[Binding],
   val runtime: OrcRuntime)
   extends Schedulable
-  with Blockable with Resolver {
+  with Blockable {
   import ClosureGroup._
   import BlockableMapExtension._
   
   def defs = _defs
   def lexicalContext = _lexicalContext
+  
+  private val toStringRecusionGuard = new ThreadLocal[Object]()
+  override def toString = {
+    try {
+      val recursing = toStringRecusionGuard.get
+      toStringRecusionGuard.set(java.lang.Boolean.TRUE)
+      super.toString.stripPrefix("orc.run.core.") + (if (recursing eq null) s"(state=${state})" else "")
+    } finally {
+      toStringRecusionGuard.remove()
+    }
+  }
 
   /** Create all the closures. They forward most of their methods here.
     */
@@ -76,16 +87,6 @@ class ClosureGroup(
    * evaluation of the token that got it because it will have to resolve the future versions
    * of things.
    */
-
-  private var stack: List[Option[AnyRef] => Unit] = Nil
-
-  private def pop() = {
-    val top = stack.head
-    stack = stack.tail
-    top
-  }
-  private def push(k: (Option[AnyRef] => Unit)) = stack = k :: stack
-  protected def pushContinuation(k: (Option[AnyRef] => Unit)) = push(k)
 
   // State is used for the blocker side
   private var state: ClosureState = Started
@@ -110,37 +111,14 @@ class ClosureGroup(
     assert(activeCount > 0)
   }
 
-  /** Create a new Closure object whose lexical bindings are all resolved and replaced.
-    * Such a closure will have no references to any group.
-    * This object is then passed to the continuation.
-    */
-  private def enclose(bs: List[Binding])(k: List[Binding] => Unit) {
-    def resolveBound(b: Binding)(k: Binding => Unit) =
-      resolveOptional(b) {
-        case Some(v) => k(BoundValue(v))
-        case None => k(BoundStop)
-      }
-    bs.blockableMap(resolveBound)(k)
-  }
-
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
     */
   def run() = synchronized {
     state match {
       case Started => {
         // Start the resolution process
-        enclose(_lexicalContext) { newContext =>
-          // Have to synchronize again because this is really 
-          // a callback that will be called some time later.
-          synchronized {
-            assert(stack.size == 0) // Check for a bug that existed before and was non-deterministic
-            _lexicalContext = newContext
-            _context = closures.reverse.map { BoundValue(_) } ::: lexicalContext
-            state = Resolved
-            waitlist foreach runtime.stage
-            //waitlist = Nil
-          }
-        }
+        val join = new NonhaltingJoin(_lexicalContext, this, runtime)
+        join.join()
       }
       case Blocked(b) => {
         b.check(this)
@@ -181,15 +159,18 @@ class ClosureGroup(
 
   //// Blockable Implementation
 
-  private def handleValue(v: Option[AnyRef]) {
-    pop()(v) // Pop and call the old top of the stack on the value. The pop happens first. That's important.
-  }
-
   def awakeNonterminalValue(v: AnyRef) = {
     // We only block on things that produce a single value so we don't have to handle multiple awakeNonterminalValue calls from one source.
-    handleValue(Some(v))
+    val bindings = v.asInstanceOf[List[Binding]]
+    synchronized {
+      _lexicalContext = bindings
+      _context = closures.reverse.map { BoundValue(_) } ::: lexicalContext
+      state = Resolved
+      waitlist foreach runtime.stage
+      //waitlist = Nil
+    }
   }
-  def awakeStop() = handleValue(None)
+  def awakeStop() = throw new AssertionError("Should never halt")
   override def halt() {} // Ignore halts
 
   def blockOn(b: Blocker) {
