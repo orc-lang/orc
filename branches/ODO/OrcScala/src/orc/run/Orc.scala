@@ -18,21 +18,37 @@ package orc.run
 import orc.ast.oil.nameless.Expression
 import orc.{ OrcRuntime, OrcExecutionOptions, OrcEvent }
 import orc.run.core.{ Token, Execution }
-import scala.collection.mutable.SynchronizedSet
-import scala.collection.mutable.HashSet
-import scala.ref.WeakReference
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
 
-  var roots = new java.util.concurrent.ConcurrentHashMap[WeakReference[Execution], Unit]
+  var roots = new java.util.concurrent.ConcurrentHashMap[Execution, Unit]
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
 
-    val root = new Execution(node, options, k, this)
+    /* Extend Execution to clean up the roots map when it halts or is killed.
+     * This cannot be an event handler because only one handler is allowed to
+     * handle any event.
+     * 
+     * In the past roots contained weak references. However this combined with
+     * the OrcSiteCallTargets resulted in entire group trees being collected all
+     * at once without actually halting, which makes the interpreter hang 
+     * without exiting. 
+     */
+    val root = new Execution(node, options, k, this) {
+      override def onHalt() = {
+        roots.remove(root)
+        super.onHalt()
+      }
+
+      override def kill() = {
+        roots.remove(root)
+        super.onHalt()
+      }
+    }
     installHandlers(root)
 
-    roots.put(new WeakReference(root), ())
+    roots.put(root, ())
 
     val t = new Token(node, root)
     schedule(t)
