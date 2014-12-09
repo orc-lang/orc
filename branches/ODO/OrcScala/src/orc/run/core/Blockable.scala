@@ -23,12 +23,6 @@ import orc.run.Logger
   * the Blocker knows about the Blockable and the Blocker is running you
   * must assume that it could unblock at any time. So in general, blocking
   * should be the last action before returning to the scheduler.
-  *
-  * Blockables should not block on another Blocker in awake*(). This can 
-  * cause SiteCallHandle to deadlock because SiteCallHandle holds it's monitor 
-  * while calling the Blockables awake*() methods. So if you call read() or 
-  * similar on another SiteCallHandle, there could be a deadlock if one
-  * blockable blocks on A then B and the other B then A.
   * 
   * @author amp
   */

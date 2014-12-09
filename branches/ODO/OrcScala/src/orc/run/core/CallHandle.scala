@@ -39,6 +39,43 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   protected var quiescent = false
 
   val runtime = caller.runtime
+  
+  // a mechanism to delay schedule of caller until later without holding the lock.
+  var scheduleHeld = false
+  var scheduleOnRelease = false
+  
+  /** Set the CallHandle to hold scheduling the caller until releaseSchedule is called.
+    * 
+    * Call inside a synchronized block only. 
+    */
+  private def holdSchedule() = {
+    assert(!scheduleHeld)
+    assert(!scheduleOnRelease)
+    scheduleHeld = true
+  }
+  
+  /** Schedule the caller either now or later depending on the hold state.
+    * 
+    * Call inside a synchronized block only. 
+    */
+  private def schedule() = {
+    if (scheduleHeld)
+      scheduleOnRelease = true
+    else
+      runtime.schedule(caller)
+  }
+
+  /** Allow scheduling the caller again and possibly schedule it.
+    * 
+    * Call inside a synchronized block only. 
+    */
+  private def releaseSchedule() = {
+    assert(scheduleHeld)
+    if (scheduleOnRelease)
+      runtime.schedule(caller)
+    scheduleHeld = false
+    scheduleOnRelease = false
+  }
 
   /* Returns true if the state transition was made,
    * false otherwise (e.g. if the handle was already in a final state)
@@ -54,7 +91,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
       // If the state already has publications then the caller will already be scheduled.
       // So schedule it if we are either adding publications to an empty state or finalizing an empty state.
       if (state.publications.isEmpty && (newState.publications.nonEmpty || newState.isFinal))
-        runtime.schedule(caller)
+        schedule()
       state = newState
       true
     } else {
@@ -99,17 +136,19 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     setState(CallWasKilled)
   }
 
-  /* Note from Arthur: There is a small chance this function being fully synchronized will introduce a 
-   * deadlock. However I think the old deadlock was caused by the old lazy recursive closure resolution, 
-   * which has now been replaced. However if there are any places where mutually referential objects
-   * call read or similar in their respective awake* methods then this could cause a dead lock.
-   */
-  def check(t: Blockable) = synchronized {
-    for (v <- state.publications.reverseIterator) {
+  def check(t: Blockable) = {
+    val st = synchronized {
+      val st = state
+      holdSchedule()
+      state = state.withoutPublications
+      st
+    }
+
+    for (v <- st.publications.reverseIterator) {
       t.awakeNonterminalValue(v)
     }
 
-    state match {
+    st match {
       case CallInProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this + ".state=" + this.state) }
       case CallInProgress(_) => {} // Already handled fully by parts above and below
       case CallHalted(_) => { t.halt() }
@@ -117,7 +156,9 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
       case CallWasKilled => {}
     }
     
-    state = state.withoutPublications
+    synchronized {
+      releaseSchedule()
+    }
   }
   
   override def toString = synchronized {
