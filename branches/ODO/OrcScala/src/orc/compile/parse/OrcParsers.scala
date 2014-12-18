@@ -228,12 +228,14 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseBaseExpression = (
     parseValue -> Constant
     | ident -> Variable
+    | "_" -> Placeholder
     | "stop" -> Stop
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
     { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
     | ("{|" ~> parseExpression <~ "|}") -> Trim
+    | ("{" ~> parseExpression <~ "}") -> Section
     | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (

@@ -18,7 +18,6 @@ package orc.compile.translate
 import scala.collection.immutable.{HashMap, List, Map, Nil}
 import scala.collection.mutable
 import scala.language.reflectiveCalls
-
 import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
@@ -31,6 +30,7 @@ import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, 
 import orc.lib.builtin
 import orc.values.{Field, Signal}
 import orc.values.sites.{JavaSiteForm, OrcSiteForm}
+import orc.ast.ext.ExtendedASTTransform
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 
@@ -109,6 +109,33 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case lambda: ext.Lambda => {
         val lambdaName = new BoundVar()
         val newdef = AggregateDef(lambda)(this).convert(lambdaName, context, typecontext)
+        DeclareCallables(List(newdef), lambdaName)
+      }
+      case ext.Section(body) => {
+        val lambdaName = new BoundVar()
+        val removePlaceholders = new ExtendedASTTransform {
+          var args: List[ext.Pattern] = Nil
+          var nextArg = 0
+          
+          override def onExpression() = {
+            case p@ext.Placeholder() =>
+              args ::= p ->> ext.VariablePattern(s"$$$nextArg")
+              val r = p ->> ext.Variable(s"$$$nextArg")
+              nextArg += 1
+              r
+            case ext.TypeAscription(p@ext.Placeholder(), t) =>
+              args ::= p ->> ext.TypedPattern(ext.VariablePattern(s"$$$nextArg"), t)
+              val r = p ->> ext.Variable(s"$$$nextArg")
+              nextArg += 1
+              r
+            case s@ext.Section(_) => s // Ignore placeholders inside other sections.
+          }
+        }
+        
+        val newBody = removePlaceholders(body)
+        val formals = removePlaceholders.args.reverse
+        
+        val newdef = AggregateDef(ext.Lambda(None, formals, None, None, newBody))(this).convert(lambdaName, context, typecontext)
         DeclareCallables(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {
