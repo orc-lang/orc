@@ -47,6 +47,9 @@ case class Lambda(
   guard: Option[Expression] = None,
   body: Expression) extends Expression
 
+case class Section(body: Expression) extends Expression
+case class Placeholder() extends Expression
+
 case class Conditional(ifE: Expression, thenE: Expression, elseE: Expression) extends Expression
 case class Declare(declaration: Declaration, body: Expression) extends Expression
 case class TypeAscription(e: Expression, t: Type) extends Expression
