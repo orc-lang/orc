@@ -114,28 +114,27 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Section(body) => {
         val lambdaName = new BoundVar()
         val removePlaceholders = new ExtendedASTTransform {
-          var args: List[ext.Pattern] = Nil
+          var args = Seq[ext.Pattern]()
           var nextArg = 0
           
+          def handleArgument(p: ext.Placeholder, wrapper: ext.VariablePattern => ext.Pattern) = {
+            args :+= p ->> wrapper(ext.VariablePattern(s"$$$nextArg"))
+            val r = p ->> ext.Variable(s"$$$nextArg")
+            nextArg += 1
+            r
+          }
+          
           override def onExpression() = {
-            case p@ext.Placeholder() =>
-              args ::= p ->> ext.VariablePattern(s"$$$nextArg")
-              val r = p ->> ext.Variable(s"$$$nextArg")
-              nextArg += 1
-              r
-            case ext.TypeAscription(p@ext.Placeholder(), t) =>
-              args ::= p ->> ext.TypedPattern(ext.VariablePattern(s"$$$nextArg"), t)
-              val r = p ->> ext.Variable(s"$$$nextArg")
-              nextArg += 1
-              r
+            case p@ext.Placeholder() => handleArgument(p, x => x)
+            case ext.TypeAscription(p@ext.Placeholder(), t) => handleArgument(p, ext.TypedPattern(_, t))
             case s@ext.Section(_) => s // Ignore placeholders inside other sections.
           }
         }
         
         val newBody = removePlaceholders(body)
-        val formals = removePlaceholders.args.reverse
+        val formals = removePlaceholders.args.toList
         
-        val newdef = AggregateDef(ext.Lambda(None, formals, None, None, newBody))(this).convert(lambdaName, context, typecontext)
+        val newdef = AggregateDef(formals, newBody)(this).convert(lambdaName, context, typecontext)
         DeclareCallables(List(newdef), lambdaName)
       }
       case ext.DefClassBody(b) => {

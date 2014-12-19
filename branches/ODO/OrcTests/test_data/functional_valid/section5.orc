@@ -5,12 +5,9 @@
  - Created by amp on Dec 17, 2014 2:38:20 PM
  -}
 
-val x = 42
-val c = { Println(x) }
-c()
+{ ((_ :: Integer) - (_ :: Integer)) / (_ :: Integer) }(4, 8, 2)
 
 {-
 OUTPUT:
-42
-signal
+-2
 -}

@@ -5,18 +5,18 @@
 
 type Step[A] = Empty() | Item(A, lambda() :: Step[A])
 
-def cons[A](x :: A, s :: lambda() :: Step[A]) = lambda () :: Step[A] = Item(x, s)
-val nil = lambda () = Empty()
+def cons[A](x :: A, s :: lambda() :: Step[A]) = { Item(x, s) }
+val nil = { Empty() }
 
 def mapStream[A, B](lambda(A) :: B, lambda() :: Step[A]) :: lambda() :: Step[B]
 def mapStep[A, B](lambda(A) :: B, Step[A]) :: Step[B]
-def mapStream(f, s) = lambda () = mapStep(f, s())
+def mapStream(f, s) = { mapStep(f, s()) }
 def mapStep(f, Empty()) = Empty()
 def mapStep(f, Item(x, t)) = Item(f(x), mapStream(f, t))
 
 def zipStreams[A, B, C](lambda(A, B) :: C, lambda () :: Step[A], lambda () :: Step[B]) :: lambda () :: Step[C]
 def zipSteps[A, B, C](lambda(A, B) :: C, Step[A], Step[B]) :: Step[C]
-def zipStreams(f, s, t) = lambda () = zipSteps(f, s(), t())
+def zipStreams(f, s, t) = { zipSteps(f, s(), t()) }
 def zipSteps(f, _, Empty()) = Empty()
 def zipSteps(f, Empty(), _) = Empty()
 def zipSteps(f, Item(x, s), Item(y, t)) = Item(f(x,y), zipStreams(f, s, t))

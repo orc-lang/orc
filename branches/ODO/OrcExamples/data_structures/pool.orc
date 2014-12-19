@@ -34,7 +34,7 @@ def class Pool[A](f :: (lambda() :: A)) :: Pool[A] =
   def deallocate(x :: A) = ch.put(x)
   stop
 
-val sempool = Pool[Semaphore](lambda () = Semaphore(1))
+val sempool = Pool[Semaphore]({ Semaphore(1) })
 
 sempool.allocate() >s> (
                           s.acquire() >> "got it"

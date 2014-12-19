@@ -19,7 +19,7 @@ def seq_sum(b, n, s) =
 val b = Channel[Integer]()
 val N = 100
 
-val a = Table(N, lambda(_ :: Integer) :: Integer = Random(10))
+val a = Table(N, ignore({ Random(10) }))
 
 val (s1, s2) = (sum(a, b, N), seq_sum(b, N, 0))
 s1-s2

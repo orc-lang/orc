@@ -6,7 +6,7 @@
  -}
 
 def Sum(Integer) :: lambda (Integer) :: Integer
-def Sum(a) = ( lambda(b) = a+b )
+def Sum(a) = { a+_ }
 val f = Sum(3)
 f(4)
 

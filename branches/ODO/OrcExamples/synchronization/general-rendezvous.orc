@@ -47,7 +47,7 @@ among the callback cells.
 -}
 
 def class Rendezvous[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
-  val b = Table(n, lambda(_::Top) = Channel[(A, Cell[A])]())
+  val b = Table(n, ignore({ Channel[(A, Cell[A])]() }))
 
   def go(i :: Integer, v :: A) =
     val c = Cell[A]()
@@ -95,9 +95,9 @@ from c(i).
 -}
 
 def class Rendezvous2[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
-  val b = Table(n, lambda(_::Top) = Channel[A]())
-  val c = Table(n, lambda(_::Top) = Channel[A]())
-  val sem = Table(n, lambda(_::Top) = Semaphore(1))
+  val b = Table(n, ignore({ Channel[A]() }))
+  val c = Table(n, ignore({ Channel[A]() }))
+  val sem = Table(n, ignore({ Semaphore(1) }))
 
   def go(i :: Integer, v :: A) =
     sem(i).acquire() >>
