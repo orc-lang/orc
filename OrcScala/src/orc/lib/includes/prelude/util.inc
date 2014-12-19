@@ -196,7 +196,7 @@ once it has been populated.
 For example, to set all elements of an array to zero:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 0 0
-val a = fillArray(Array(3), lambda (_) = 0)
+val a = fillArray(Array(3), constant(0))
 a(0)? | a(1)? | a(2)?]]></programlisting>
 
 @implementation
@@ -278,7 +278,7 @@ on the lock. Similar to Java's synchronized keyword.
 --}
 
 def synchronized[A](Semaphore, lambda () :: A) :: lambda() :: A
-def synchronized(s,f) = lambda() = withLock(s, f)
+def synchronized(s,f) = { withLock(s, f) }
 
 {--
 @site InvokeExecutable(command :: List[String])
@@ -450,10 +450,10 @@ def class InvokeExecutable(command :: List[String]) =
   def closeIn() = execInChan.closeD()
   def readOut() = execOutChan.get()
   def readOutD() = execOutChan.getD()
-  def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1({ (_ :: String) + (_ :: String) }, ss)
   def readErr() = execErrChan.get()
   def readErrD() = execErrChan.getD()
-  def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1({ (_ :: String) + (_ :: String) }, ss)
   def exitValue() = p.exitValue()
   def terminate() = p.destroy()
   val buff1 = Array[JavaCharacter](8192, "char")

@@ -17,8 +17,8 @@ def sort(input, comparator) =
   # (input() >x> b.put(x)  >> stop; b.close()>>stop) | sort_Channel() >> l?
 
 
-sort(lambda()=( (1,(2,3)) | (4,true) | (5,[6,7]) | (8,signal) ) >(x,_)> x,
-  lambda(x :: Integer, y :: Integer) = x - y)
+sort({ ( (1,(2,3)) | (4,true) | (5,[6,7]) | (8,signal) ) >(x,_)> x },
+  { (_ :: Integer) -  (_ :: Integer) })
 
 
 {-

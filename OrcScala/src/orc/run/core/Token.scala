@@ -362,7 +362,9 @@ class Token protected (
       
       // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
       
-      val env = (params map BoundValue) ::: s.context
+      // Just build the stack instead of pushing after we create it.
+      // The parameters go on in reverse order. First parameter on the "bottom" of the arguments.
+      val env = (params map BoundValue).reverse ::: s.context
            
       // Build a token that is in a group nested inside the declaration context.
       val t = new Token(s.code.body, 

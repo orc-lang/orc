@@ -296,12 +296,6 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     ~ ("then" ~> parseExpression)
     ~ ("else" ~> parseExpression)
     -> Conditional
-    | "lambda" ~> (ListOf(parseTypeVariable)?)
-    ~ (TupleOf(parsePattern))
-    ~ (parseReturnType?)
-    ~ (parseGuard?)
-    ~ ("=" ~> parseExpression)
-    -> Lambda
     | failExpecting("expression"))
 
   ////////

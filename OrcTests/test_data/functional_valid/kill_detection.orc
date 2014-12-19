@@ -18,8 +18,8 @@ def runOnKill(callback :: lambda() :: Top) =
 
 def simulatedRead() = 
   Println("Open") >>
-  runOnKill(lambda() = Println("Closed")) >> 
-  repeat(lambda() = "line")
+  runOnKill({ Println("Closed") }) >> 
+  repeat({ "line" })
 
 {| simulatedRead() |}
 

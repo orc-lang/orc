@@ -9,9 +9,9 @@ http://www.cs.cmu.edu/~scandal/nesl/alg-sequence.html
 def qs[A](List[A]) :: List[A]
 def qs(a) =
   val pivot = index(a, length(a)/2)
-  val less = filter(lambda(x :: A) = x <: pivot, a)
-  val equal = filter(lambda(x :: A) = x = pivot, a)
-  val greater = filter(lambda(x :: A) = x :> pivot, a)
+  val less = filter({ (_ :: A)  <: pivot }, a)
+  val equal = filter({ (_ :: A) = pivot }, a)
+  val greater = filter({ (_ :: A) :> pivot }, a)
   if length(a) :> 1 then (append(append(qs(less), equal), qs(greater)))
   else a
 

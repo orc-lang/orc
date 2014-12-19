@@ -36,12 +36,14 @@ def balance(in, out, ps) =
     ( c.put(p(x)) >> runningProcesses.dec() >> stop | read(append(pcs, [(p,c)])) )
   
   write(cs) | read(zip(ps,cs)) | 
-  inClosed.read() >> runningProcesses.onZero() >> map(lambda(c :: Channel[OutType]) = c.close(), cs) >> stop
+  inClosed.read() >> runningProcesses.onZero() >> map({ (_ :: Channel[OutType]).close() }, cs) >> stop
 
 val in = Channel[InType]()
 val out = Channel[OutType]()
 def compute(Integer) :: SiteType
-def compute(n) = lambda(x) = Println("Site " + n + " computing") >> x*x  #
+def compute(n) = 
+  def f(x) = Println("Site " + n + " computing") >> x*x
+  f #
 
 
   ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])

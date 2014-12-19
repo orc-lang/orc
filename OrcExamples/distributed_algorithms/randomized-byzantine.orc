@@ -8,7 +8,7 @@ val t = 2
 -- total number of processes
 val p = 8*t+1
 -- list of process out channels
-val channels = collect(lambda () = upto(p) >> Channel[Integer]())
+val channels = collect({ upto(p) >> Channel[Integer]() })
 
 -- Return a random boolean
 def coin() = Random(2) :> 0
@@ -46,11 +46,11 @@ val nRounds = Ref[Integer](0)
 
 -- generic process; pick is the decision algorithm
 def process(pick :: lambda(Integer, Integer) :: Integer) :: lambda(Channel[Integer]) :: Integer =
-  lambda (out) = (
+  def processFunc(out) = (
     -- vote for a value
-    def vote(value :: Integer) = map(lambda (_::Top) = out.put(value), channels)
+    def vote(value :: Integer) = map(ignore({ out.put(value) }), channels)
     -- receive votes
-    def receive() = map(lambda (c :: Channel[Integer]) = c.get(), channels)
+    def receive() = map({ (_ :: Channel[Integer]).get() }, channels)
     -- execute one round
     def round(value :: Integer, n :: Integer) :: Integer =
       -- count the round
@@ -64,6 +64,7 @@ def process(pick :: lambda(Integer, Integer) :: Integer) :: lambda(Channel[Integ
     vote(value) >>
     round(value, 1)
   )
+  processFunc
 
   Println("Bad: " + map(process(bad), take(t, channels))) >> stop
 | Println("Good: " + map(process(good), drop(t, channels))) >> stop

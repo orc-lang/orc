@@ -81,6 +81,16 @@ case class AggregateDef(clauses: List[Clause],
     result takeEarlierPos this
   }
 
+  def +(lambda: (List[Pattern], Expression)): AggregateDef = {
+    val (formals, body) = lambda
+    assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
+    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
+    val newclause = body ->> Clause(newformals, None, body)
+    val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at body))
+    val result = AggregateDef(clauses ::: List(newclause), Some(Def(null,null,null,null,null,null)), None, newArgTypes, None)
+    result takeEarlierPos this
+  }
+
   def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Callable = {
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
@@ -136,6 +146,7 @@ object AggregateDef {
   def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None, None)
 
   def apply(defn: CallableDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
+  def apply(args: List[Pattern], body: Expression)(implicit translator: Translator) = body ->> { empty + (args, body) }
   def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }

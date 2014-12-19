@@ -95,7 +95,7 @@ holds both its forks).
 -}
 def philosophers(n :: Integer) =
   {- channels -}
-  val cs = uncurry(Table(n, lambda (_::Top) = Table(n, lambda(_::Top) = Channel[Message]())))
+  val cs = uncurry(Table(n, ignore({ Table(n, ignore({ Channel[Message]() })) }) ))
 
   {- first row -}
   philosopher((0,0), cs(0,0), Set[Xmitter]([]))

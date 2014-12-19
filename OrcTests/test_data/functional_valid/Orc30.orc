@@ -7,7 +7,7 @@
  -}
 
 def czad(Integer) :: lambda(Integer) :: Integer
-def czad(a) = lambda(b) if (a+b = 0) = a+b
+def czad(a) = def f(b) if (a+b = 0) = a+b # f
 
 czad(2)(-2) | czad(3)(4) | czad(0)(0)
 
