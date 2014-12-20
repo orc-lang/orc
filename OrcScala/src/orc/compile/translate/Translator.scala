@@ -106,11 +106,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
 
-      case lambda: ext.Lambda => {
-        val lambdaName = new BoundVar()
-        val newdef = AggregateDef(lambda)(this).convert(lambdaName, context, typecontext)
-        DeclareCallables(List(newdef), lambdaName)
-      }
       case ext.Section(body) => {
         val lambdaName = new BoundVar()
         val removePlaceholders = new ExtendedASTTransform {
