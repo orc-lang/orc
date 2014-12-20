@@ -70,17 +70,6 @@ case class AggregateDef(clauses: List[Clause],
       }
     }
 
-  def +(lambda: Lambda): AggregateDef = {
-    assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
-    val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(lambda.formals)
-    val newclause = lambda ->> Clause(newformals, lambda.guard, lambda.body)
-    val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
-    val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
-    val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
-    val result = AggregateDef(clauses ::: List(newclause), Some(Def(null,null,null,null,null,null)), newTypeFormals, newArgTypes, newReturnType)
-    result takeEarlierPos this
-  }
-
   def +(lambda: (List[Pattern], Expression)): AggregateDef = {
     val (formals, body) = lambda
     assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
@@ -147,6 +136,5 @@ object AggregateDef {
 
   def apply(defn: CallableDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
   def apply(args: List[Pattern], body: Expression)(implicit translator: Translator) = body ->> { empty + (args, body) }
-  def apply(lambda: Lambda)(implicit translator: Translator) = lambda -> { empty + _ }
 
 }
