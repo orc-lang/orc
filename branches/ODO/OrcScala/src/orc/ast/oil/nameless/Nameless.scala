@@ -18,6 +18,7 @@ package orc.ast.oil.nameless
 import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
+import orc.values.Field
 
 trait hasFreeVars {
   val freevars: Set[Int]
@@ -36,6 +37,8 @@ sealed abstract class NamelessAST extends AST {
     case Graft(value, body) => List(value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
+    case New(f) => List(f)
+    case FieldAccess(o, f) => List(o)
     case DeclareCallables(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
@@ -43,6 +46,8 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
+    case Class(bindings, supers) => bindings.values ++ supers
+    case ObjectStructure(bindings) => bindings.values
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
@@ -145,6 +150,9 @@ case class Sequence(left: Expression, right: Expression) extends Expression with
 case class Graft(value: Expression, body: Expression) extends Expression with hasOptionalVariableName
 case class Trim(f: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
+
+case class New(structure: ObjectStructure) extends Expression
+
 // Callable should contain all Sites or all Defs and not a mix.
 case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression 
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
@@ -152,6 +160,7 @@ case class DeclareType(t: Type, body: Expression) extends Expression with hasOpt
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+case class FieldAccess(obj: Argument, field: Field) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
@@ -180,6 +189,27 @@ case class VariantType(typeFormalArity: Int, variants: List[(String, List[Type])
 case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
   optionalVariableName = Some(name)
 }
+
+sealed class ObjectStructure(val bindings: Map[Field, Expression])
+  extends NamelessAST
+  with hasFreeVars
+  with hasOptionalVariableName {
+  optionalVariableName = None
+  def productIterator: Iterator[Any] = List(bindings).iterator
+  lazy val freevars: Set[Int] = {
+    shift(bindings.values.toSet.flatMap((_:Expression).freevars), 1)
+  }
+}
+
+object ObjectStructure {
+  def apply(bindings: Map[Field, Expression]) = new ObjectStructure(bindings)
+  def unapply(os: ObjectStructure) = Some(os.bindings)
+}
+
+case class Class(
+    override val bindings: Map[Field, Expression], 
+    val superClasses: Set[ObjectStructure])
+  extends ObjectStructure(bindings)
 
 sealed abstract class Callable extends NamelessAST
   with hasFreeVars

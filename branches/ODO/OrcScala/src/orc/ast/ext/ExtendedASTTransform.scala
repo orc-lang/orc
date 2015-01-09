@@ -56,6 +56,8 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
   def onDeclaration(): PartialFunction[Declaration, Declaration] = EmptyFunction
   def onPattern(): PartialFunction[Pattern, Pattern] = EmptyFunction
 
+	// TODO: Add cases for ClassExpression
+
   def transform(e: Expression): Expression = {
     val pf = onExpression()
     if (pf isDefinedAt e) { e -> pf } else {
@@ -77,7 +79,6 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Declare(d, body) => Declare(this(d), recurse(body))
         case TypeAscription(e, t) => TypeAscription(recurse(e), this(t))
         case TypeAssertion(e, t) => TypeAssertion(recurse(e), this(t))
-        case DefClassBody(b) => DefClassBody(recurse(b))
       }
     }
   }

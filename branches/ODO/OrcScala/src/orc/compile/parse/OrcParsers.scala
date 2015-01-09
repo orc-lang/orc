@@ -230,12 +230,14 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | ident -> Variable
     | "_" -> Placeholder
     | "stop" -> Stop
+    | "this" -> Variable("this")
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
-    { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
+         { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
     | ("{|" ~> parseExpression <~ "|}") -> Trim
     | ("{" ~> parseExpression <~ "}") -> Section
+    | "new" ~> parseClassExpression -> New
     | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -368,14 +370,31 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseDefDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Def
 
-    | (Keyword("class") ~> parseDefCore) -> DefClass
-
     | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
 
   val parseSiteDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Site
+    
     | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> SiteSig)
 
+      
+  val parseClassBody: Parser[ClassLiteral] = (
+        ("{" ~> parseDeclaration.* <~ "}") -> ClassLiteral 
+      )
+  
+  val parseClassPrimitiveExpression: Parser[ClassExpression] = (
+        parseClassBody
+        | ident -> ClassVariable
+      )
+  val parseClassExpression: Parser[ClassExpression] = (
+        parseClassPrimitiveExpression
+        | parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin
+      )
+      
+  val parseClassDeclaration = (
+        ("class" ~> ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration 
+      )
+    
   val parseDeclaration: Parser[Declaration] = (
     (
 
@@ -384,6 +403,8 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
       | "def" ~> parseDefDeclaration
       
       | "site" ~> parseSiteDeclaration
+      
+      | "class" ~> parseClassDeclaration
 
       | "import" ~> Keyword("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
 

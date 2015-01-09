@@ -22,6 +22,9 @@ import orc.lib.time.{Vawait, Vtime}
 import orc.values.{Field, OrcRecord, Signal}
 import orc.values.sites.TotalSite
 import orc.run.Logger
+import orc.ast.oil.nameless.New
+import orc.ast.oil.nameless.FieldAccess
+import orc.values.OrcObject
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -315,7 +318,9 @@ class Token protected (
     a match {
       case Constant(v) => BoundValue(v)
       case Variable(n) => env(n)
-      case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
+      case UnboundVariable(x) =>
+        Logger.severe(s"Stopping unbound variable $a at ${a.pos}")
+        BoundStop
     }
   }
 
@@ -585,6 +590,44 @@ class Token protected (
         runtime.stage(l)
       }
 
+      case New(os) => {
+        val obj = new OrcObject()
+        val fields = for((name, expr) <- os.bindings) yield {
+          // We use a GraftGroup since it is exactly what we need.
+          // The difference between this and graft is where the future goes.
+          val pg = new GraftGroup(group)
+          
+          // A binding frame is not needed since publishing will trigger the token to halt anyway.
+          val t = new Token(expr, 
+              env=BoundValue(obj) :: env, 
+              group=pg,
+              stack=GroupFrame(EmptyFrame),
+              clock=clock)
+      
+          runtime.stage(t)
+          
+          (name, pg.future)
+        }
+        obj.setFields(fields)
+        
+        publish(Some(obj))
+      }
+      
+      case FieldAccess(o, f) => {
+        resolve(lookup(o)) {
+          _ match {
+            case o: OrcObject =>
+              Logger.finer(s"resolving $o$f")
+              resolve(BoundFuture(o(f))) { x =>
+                Logger.finer(s"resolved $o$f = $x")
+                publish(Some(x))
+              }
+            case s: AnyRef =>
+              siteCall(s, List(f))
+          }
+        }
+      }
+      
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }

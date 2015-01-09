@@ -22,7 +22,6 @@ import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
-import orc.compile.translate.ClassForms.makeClassBody
 import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
 import orc.error.OrcException
 import orc.error.OrcExceptionExtension.extendOrcException
@@ -45,6 +44,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   /** Convert an extended AST expression to a named OIL expression.
     */
   def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
+    // , classcontent: Map[String, Class]
     e -> {
       case ext.Stop() => Stop()
       case ext.Constant(c) => Constant(c)
@@ -105,6 +105,40 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
+      case ext.New(ext.ClassLiteral(defs)) => {
+        val thisVar = new BoundVar(Some("this"))
+        val memberContext = context + (("this", thisVar))
+
+        var tmpId = 1
+        def convertFields(d : Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
+          case ext.Val(ext.VariablePattern(x), f) +: rest =>
+            (Field(x), convert(f)(memberContext, implicitly)) +: convertFields(rest)
+          case ext.Val(p, f) +: rest =>
+            val tmpField = Field(s"$$pattmp$$$tmpId")
+            tmpId += 1
+            // FIXME: Is it a problem if the same variable is bound in multiple subtrees?
+            val x = new BoundVar()
+            val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
+            val newf = convert(f)(memberContext, implicitly)
+            val generatedFields = for((name, code) <- dcontext.toSeq) yield (Field(name), FieldAccess(thisVar, tmpField) > x > target(code))
+            (tmpField, source(newf)) +: (generatedFields ++ convertFields(rest))
+          case ext.CallableSingle(defs, rest) =>
+            assert(defs.forall(_.name == defs.head.name))
+            val field = Field(defs.head.name)
+            val name = new BoundVar(Some("$" + defs.head.name))
+            val agg = defs.foldLeft(AggregateDef.empty(this))(_ + _)
+
+            val newdef = agg ->> agg.convert(name, memberContext, typecontext)
+            (field, DeclareCallables(List(newdef), name)) +: convertFields(rest)
+          case Seq() =>
+            Nil
+          case decl :: _ =>
+            throw (MalformedExpression("Invalid declaration form in class") at decl)
+        }
+        val newbindings = convertFields(defs)
+        val os = ObjectStructure(thisVar, newbindings.toMap)
+        New(os)
+      }
 
       case ext.Section(body) => {
         val lambdaName = new BoundVar()
@@ -113,8 +147,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           var nextArg = 0
           
           def handleArgument(p: ext.Placeholder, wrapper: ext.VariablePattern => ext.Pattern) = {
-            args :+= p ->> wrapper(ext.VariablePattern(s"$$$nextArg"))
-            val r = p ->> ext.Variable(s"$$$nextArg")
+            val argname = s"$$arg$$$nextArg"
+            args :+= p ->> wrapper(ext.VariablePattern(argname))
+            val r = p ->> ext.Variable(argname)
             nextArg += 1
             r
           }
@@ -131,9 +166,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         
         val newdef = AggregateDef(formals, newBody)(this).convert(lambdaName, context, typecontext)
         DeclareCallables(List(newdef), lambdaName)
-      }
-      case ext.DefClassBody(b) => {
-        convert(makeClassBody(b, reportProblem))
       }
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))
@@ -241,7 +273,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         unfold(args map convert, { Call(target, _, newtypeargs) })
       }
       case ext.FieldAccess(field) => {
-        Call(target, List(Constant(Field(field))), None)
+        FieldAccess(target, Field(field))
       }
       case ext.Dereference => {
         Call(context("?"), List(target), None)
@@ -260,7 +292,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
     }
-    defsMap.values foreach { _.ClassCheck }
 
     // we generate these names beforehand since defs can be bound recursively in their own bodies
     val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
@@ -327,7 +358,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     *      A binding conversion for the target expression,
     *      parameterized on the variable carrying the result
     */
-  def convertPattern(pat: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
+  def convertPattern(pat: ext.Pattern, bridge: Argument)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
 
     var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
 

@@ -34,6 +34,8 @@ trait NamedToNameless {
       case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
       case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
+      case New(os) => nameless.New(namedToNameless(os, context, typecontext))
+      case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
       case DeclareCallables(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
@@ -71,11 +73,23 @@ trait NamedToNameless {
       case Constant(v) => nameless.Constant(v)
       case (x: BoundVar) => {
         var i = context indexOf x
-        assert(i >= 0)
+        assert(i >= 0, s"Cannot find bound variable $x ($i)")
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
+    }
+  }
+  
+  def namedToNameless(a: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ObjectStructure = {
+    a -> {
+      case Class(name, self, bindings, supers) => 
+        nameless.Class(
+          bindings.mapValues(namedToNameless(_, self :: context, typecontext)), 
+          supers.map(namedToNameless(_, context, typecontext)))
+      case ObjectStructure(self, bindings) =>
+        nameless.ObjectStructure(bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
+      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
     }
   }
 

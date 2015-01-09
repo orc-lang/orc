@@ -424,7 +424,7 @@ executable.  If the process has completed, then this method has no effect.
 
 --}
 
-
+{-
 def class InvokeExecutable(command :: List[String]) =
   	import class ProcessBuilder = "java.lang.ProcessBuilder"
 	  import class Reader = "java.io.Reader"
@@ -472,6 +472,7 @@ def class InvokeExecutable(command :: List[String]) =
   | (copyToChan(execOutReader, buff1, execOutChan) ; execOutChan.closeD() >> execOutEOF.write(signal) >> execOutReader.close())
   | (copyToChan(execErrReader, buff2, execErrChan) ; execErrChan.closeD() >> execErrEOF.write(signal) >> execErrReader.close())
   )
+  -}
 
 {--
 @site OrcVersion() :: String
