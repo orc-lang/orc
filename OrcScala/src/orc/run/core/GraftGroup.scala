@@ -62,6 +62,22 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
       case _ => {}
     }
   }
+  
+  // This is not needed for Graft itself. However it doesn't hurt anything and it is needed for 
+  // object field futures to halt when the object is killed.
+  override def kill() = {
+    synchronized {
+      state match {
+        case ValueUnknown => {
+          state = ValueSilent
+          _future.stop()
+          _future = null
+        }
+        case _ => {}
+      }
+    }
+    super.kill()
+  }
 }
 
 /** Possible states of a PruningGroup */

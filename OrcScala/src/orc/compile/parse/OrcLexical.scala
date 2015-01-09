@@ -65,9 +65,9 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
   override val reserved = new HashSet[String] ++ List(
-    "as", "class", "def", "else", "if", "import", "include",
-    "lambda", "signal", "site", "stop", "then", "type", "val",
-    "true", "false", "null", "_")
+    "as", "class", "def", "else", "extends", "if", "import", "include",
+    "lambda", "signal", "site", "stop", "then", "this", "type", "val",
+    "true", "false", "new", "null", "with", "_")
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",

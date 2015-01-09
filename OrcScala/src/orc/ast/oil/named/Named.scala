@@ -19,6 +19,7 @@ import scala.language.reflectiveCalls
 import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
+import orc.values
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
@@ -31,6 +32,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Graft(x, value, body) => List(x, value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
+    case New(c) => List(c)
+    case FieldAccess(o, f) => List(o)
     case DeclareCallables(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
@@ -38,6 +41,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
+    case Class(_, self, fields, supers) => self +: (fields.values.toSeq ++ supers)
+    case ObjectStructure(self, fields) => self +: fields.values.toSeq
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
@@ -65,6 +70,10 @@ sealed abstract class Expression
   lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 }
 
+sealed trait Declaration {
+  this: hasOptionalVariableName =>
+}
+
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
@@ -84,6 +93,69 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+
+/* Classes and structural descriptions
+ * 
+ * Since classes are not first class (and not "reified" in the Java terms), all instantiation 
+ * calls of class must be in the same static scope and hence have the same dynamic variable 
+ * bindings. This allows class references to be statically bound by the compiler (no runtime 
+ * class object created at runtime). Because of this there is no class declaration node; 
+ * instead there is just a Class node that is referenced only from New.
+ */
+
+sealed class ObjectStructure(val self: BoundVar, val bindings: Map[values.Field, Expression])
+  extends NamedAST
+  with hasFreeVars
+  with hasFreeTypeVars
+  with hasOptionalVariableName
+  with Substitution[ObjectStructure]
+  with Declaration {
+  optionalVariableName = None
+  lazy val withoutNames: nameless.ObjectStructure = namedToNameless(this, Nil, Nil)
+  def copy(_self: BoundVar = self, _bindings: Map[values.Field, Expression] = bindings) = 
+    ObjectStructure(_self, _bindings)
+  def productIterator: Iterator[Any] = List(self, bindings).iterator
+}
+
+object ObjectStructure {
+  def apply(self: BoundVar, bindings: Map[values.Field, Expression]) = new ObjectStructure(self, bindings)
+  def unapply(os: ObjectStructure) = Some((os.self, os.bindings))
+}
+
+/** A class representation
+  * 
+  * Classes have a self variable and a list of fields that define the data it contains and 
+  * how it is named. Each name is associated with an expression that is executed in with self
+  * in scope. The expressions may also reference other variables that are in scope at the 
+  * declaration of the class. See above.
+  * 
+  * The translator will already have generated the proper bindings including implementing 
+  * inheritence and derivation correctly.
+  * 
+  * The superclass set is simply for type heirarchy information. It is not used at runtime.
+  * However it does have the invariant that for any superclass S, S.bindings.keys is a subset of 
+  * this.bindings.keys.
+  */
+case class Class(
+    val name: String, 
+    override val self: BoundVar, 
+    override val bindings: Map[values.Field, Expression], 
+    val superClasses: Set[ObjectStructure])
+  extends ObjectStructure(self, bindings) {
+  optionalVariableName = Some(name)
+}
+
+/** Construct a new class instance
+  * 
+  * This node starts running an all the bindings in the class and returns self.
+  */ 
+case class New(cls: ObjectStructure) extends Expression
+
+/** Read the value from a field future.
+  * 
+  * This will block until the future is bound.
+  */
+case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
 /* Match an expression with exactly one hole.
  * Matches as Module(f), where f is a function which takes
@@ -126,7 +198,6 @@ case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
 class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
-
   optionalVariableName = optionalName
 
   def productIterator = optionalVariableName.toList.iterator
@@ -137,7 +208,8 @@ sealed abstract class Callable
   with hasFreeVars
   with hasFreeTypeVars
   with hasOptionalVariableName
-  with Substitution[Callable] {
+  with Substitution[Callable]
+  with Declaration {
   transferOptionalVariableName(name, this)
   lazy val withoutNames: nameless.Callable = namedToNameless(this, Nil, Nil)
 

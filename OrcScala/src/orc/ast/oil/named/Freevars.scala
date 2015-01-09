@@ -59,7 +59,7 @@ trait hasFreeTypeVars {
 trait hasUnboundVars {
   self: NamedAST =>
 
-  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  /* Note: As is evident from the type, UnboundTypeVars are not included in this set */
   lazy val unboundvars: Set[UnboundVar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundVar]()
     val collect = new NamedASTTransform {

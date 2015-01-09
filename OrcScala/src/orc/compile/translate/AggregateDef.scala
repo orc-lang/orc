@@ -47,9 +47,6 @@ case class AggregateDef(clauses: List[Clause],
 
   def +(defn: CallableDeclaration): AggregateDef =
     defn -> {
-      case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
-        this + Site(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
-      }
       case Callable(_, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         assert(this.kindSample.isEmpty || (defn sameKindAs this.kindSample.get))
         val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
@@ -97,22 +94,6 @@ case class AggregateDef(clauses: List[Clause],
         named.Site(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
     }
   }
-
-  def ClassCheck {
-    var existsClass = false
-    var existsNotClass = false
-    for (aclause <- clauses) {
-      aclause match {
-        case Clause(_, _, DefClassBody(_)) =>
-          if (existsNotClass) { reportProblem(ClassDefInNonclassContext() at aclause) }
-          else existsClass = true
-        case _ =>
-          if (existsClass) { reportProblem(NonclassDefInClassContext() at aclause) }
-          else existsNotClass = true
-      }
-    }
-  }
-
 }
 
 object AggregateDef {

@@ -15,6 +15,7 @@
 package orc.ast.oil.named
 
 import scala.language.reflectiveCalls
+import orc.compile.Logger
 
 /** @author dkitchin
   */
@@ -23,6 +24,7 @@ trait NamedASTFunction {
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Callable): Callable
+  def apply(d: ObjectStructure): ObjectStructure
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
@@ -30,6 +32,7 @@ trait NamedASTFunction {
       case e: Expression => this(e)
       case t: Type => this(t)
       case d: Callable => this(d)
+      case s: ObjectStructure => this(s)
     }
   }
 
@@ -40,6 +43,7 @@ trait NamedASTFunction {
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
       def apply(d: Callable): Callable = g(f(d))
+      def apply(d: ObjectStructure): ObjectStructure = g(f(d))
     }
   }
 
@@ -55,6 +59,7 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Callable): Callable = transform(d, Nil, Nil)
+  def apply(d: ObjectStructure): ObjectStructure = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -64,17 +69,22 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onCallable(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
+  def onObjectStructure(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[ObjectStructure, ObjectStructure] = EmptyFunction
+
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
       def apply(d: Callable) = transform(d, context, typecontext)
+      def apply(d: ObjectStructure) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
     val pf = onArgument(context)
-    if (pf isDefinedAt a) { a -> pf } else a
+    if (pf isDefinedAt a) { 
+      a -> pf 
+    } else a
   }
 
   def transform(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): Expression = {
@@ -97,6 +107,8 @@ trait NamedASTTransform extends NamedASTFunction {
         case Graft(x, value, body) => Graft(x, recurse(value), transform(body, x :: context, typecontext))
         case Trim(f) => Trim(recurse(f))
         case left ow right => recurse(left) ow recurse(right)
+        case New(c) => New(recurse(c))
+        case FieldAccess(o, f) => FieldAccess(recurse(o), f)
         case DeclareCallables(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
@@ -169,6 +181,30 @@ trait NamedASTTransform extends NamedASTFunction {
           val newargtypes = argtypes map { _ map { transform(_, newtypecontext) } }
           val newreturntype = returntype map { transform(_, newtypecontext) }
           d.copy(name, formals, newbody, typeformals, newargtypes, newreturntype)
+        }
+      }
+    }
+  }
+  
+  def transform(d: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): ObjectStructure = {
+    val pf = onObjectStructure(context, typecontext)
+    if (pf isDefinedAt d) {
+      d -> pf
+    } else {
+      d -> {
+        case Class(name, self, fields, supers) => {
+          val newcontext = self :: context
+          val newfields = fields.mapValues(transform(_, newcontext, typecontext))
+          val newsupers = supers.map(transform(_, context, typecontext))
+          Class(name, self, newfields, newsupers)
+        }
+        case ObjectStructure(self, fields) => {
+          val newcontext = self :: context
+          // The "Map() ++" is to force strict evaluation of this. mapValues generally returns a view.
+          val newfields = Map() ++ fields.mapValues({ m =>
+            transform(m, newcontext, typecontext)
+          })
+          ObjectStructure(self, newfields)
         }
       }
     }

@@ -15,6 +15,8 @@
 package orc.run.core
 
 import orc.OrcRuntime
+import orc.values.Format
+import orc.values.OrcValue
 
 /** A future value that can be bound or unbound or halted.
   *  
@@ -24,7 +26,7 @@ import orc.OrcRuntime
   * in the critial paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future(val runtime: OrcRuntime) extends Blocker {
+final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
   import Future._
 
   var _state = Unbound
@@ -81,6 +83,14 @@ final class Future(val runtime: OrcRuntime) extends Blocker {
       case Unbound => throw new AssertionError("Spurious call to Future.check.")
       case Bound => blockable.awakeTerminalValue(_value)
       case Halt => blockable.awakeStop()
+    }
+  }
+  
+  override def toOrcSyntax() = {
+    synchronized { _state } match {
+      case Bound => Format.formatValue(_value)
+      case Halt => "stop"
+      case Unbound => "$unbound$"
     }
   }
 }

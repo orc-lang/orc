@@ -63,6 +63,11 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
+      
+      // TODO: Verify that these are correct.
+      case New(os) => os.bindings.values.forall(check)
+      case FieldAccess(o, f) => check(o)
+      
       case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

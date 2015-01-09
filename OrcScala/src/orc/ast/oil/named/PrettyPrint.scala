@@ -17,6 +17,7 @@ package orc.ast.oil.named
 import orc.ast.oil.named._
 import scala.collection.mutable._
 import orc.values.Format
+import orc.values.Field
 
 /** Nicer printing for named OIL syntax trees.
   *
@@ -74,6 +75,16 @@ class PrettyPrint {
           "\n" +
           prefix + " " + name + paren(formals) + " = " + reduce(body) +
           "\n"
+      }
+      case New(os) => "new " + reduce(os) + ""
+      case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
+      case Class(name, self, fields, supers) => name
+      case ObjectStructure(self, fields) => {
+        def reduceField(f: (Field, Expression)) = {
+          val (name, expr) = f
+          s"${name} = ${reduce(expr)}"
+        }
+        s"{ ${reduce(self)} -> ${fields.map(reduceField).mkString(" # ")} }"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
