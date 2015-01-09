@@ -95,6 +95,35 @@
     </xs:choice>
   </xs:complexType>
 
+  <!--  Object Structure  -->
+  <xs:complexType name="objectstructure">
+    <xs:choice>
+      <xs:element name="objectstructure">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="binding" minOccurs="0" maxOccurs="unbounded" >
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="expr" type="exp" />
+                </xs:sequence>
+                <xs:attribute name="name" type="xs:string" />
+                <xs:attributeGroup ref="ast" />
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+          <xs:attributeGroup ref="ast" />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="class">
+        <xs:complexType>
+          <xs:attribute name="name" type="xs:string" />
+          <xs:attributeGroup ref="ast" />
+        </xs:complexType>
+      </xs:element>
+    </xs:choice>
+    <xs:attributeGroup ref="ast"/>
+  </xs:complexType>
+
   <!--  Type  -->
   <xs:complexType name="type">
     <xs:choice>
@@ -189,6 +218,20 @@
 
         <!--  f ; g  -->
         <xs:element name="otherwise" type="combinator" />
+
+        <!--  new os  -->
+        <xs:element name="new" type="objectstructure" />
+
+        <!--  o.n  -->
+        <xs:element name="fieldaccess">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="expr" type="arg" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" />
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
 
         <!--  Site or function call  -->
         <xs:element name="call">

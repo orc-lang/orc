@@ -26,6 +26,7 @@ import scala.math.BigInt
 import scala.math.BigDecimal
 import orc.ast.hasOptionalVariableName
 import orc.error.loadtime.OilParsingException
+import orc.values.Field
 
 object OrcXML {
 
@@ -186,6 +187,21 @@ object OrcXML {
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </otherwise>
+      case FieldAccess(o, f) =>
+        <fieldaccess name={f.field}>
+          <expr>{toXML(o)}</expr>
+        </fieldaccess>
+      case New(os) =>
+        <new>
+          {toXML(os)}
+        </new>
+      case Class(_, _) => ???
+      case ObjectStructure(bindings) =>
+        <objectstructure>
+          { for((n, e) <- bindings) yield
+            <binding name={n.field}><expr>{ toXML(e) }</expr></binding>
+          }
+        </objectstructure>
       case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
           <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
@@ -366,6 +382,10 @@ object OrcXML {
         Trim(fromXML(expr))
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
+      case <fieldaccess><expr>{obj}</expr></fieldaccess> =>
+        FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
+      case <new>{ os }</new> =>
+        New(objectStructureFromXML(os))
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {
         val t1 = {
           uvars.text.split(" ").toList match {
@@ -420,7 +440,19 @@ object OrcXML {
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc argument")
     }
   }
-
+  
+  @throws(classOf[OilParsingException])
+  def objectStructureFromXML(xml: scala.xml.Node): ObjectStructure = {
+    xml --> {
+      case <objectstructure>{ bindings @ _* }</objectstructure> => {
+        val bs = for(x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
+          (Field((x \ "@name").text), fromXML(xmle))
+        }
+        ObjectStructure(bs.toMap)
+      }
+      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
+    }
+  }
   @throws(classOf[OilParsingException])
   def defFromXML(xml: scala.xml.Node): Callable = {
     def buildCallable(d: scala.xml.Node, body: scala.xml.Node, rest: Seq[scala.xml.Node], constructor: (Int, Int, Expression, Option[List[Type]], Option[Type]) => Callable) = {
