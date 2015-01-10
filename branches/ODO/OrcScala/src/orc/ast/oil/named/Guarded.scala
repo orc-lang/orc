@@ -14,6 +14,8 @@
 //
 package orc.ast.oil.named
 
+import orc.compile.Logger
+
 /** @author dkitchin
   */
 trait Guarding {
@@ -23,6 +25,11 @@ trait Guarding {
 
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
+   * 
+   * Calls unguardedRecursion if an instance of unguarded recursiion is found.
+   * 
+   * Returns: True if the expression is "guarding", meaning that it will not always publish
+   * and whether or not it publishes represents some choice or it will publish with some delay.
    */
   def checkGuarded(context: List[BoundVar], unguardedRecursion: Expression => Unit): Boolean = {
     def check(e: Expression) = e.checkGuarded(context, unguardedRecursion)
@@ -53,6 +60,7 @@ trait Guarding {
         l || r
       }
       case Graft(x, value, body) => {
+        // TODO: This will produce false positives because x may act as a guard in body.
         val l = check(value)
         val r = check(body)
         l && r
@@ -63,11 +71,10 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
-      
-      // TODO: Verify that these are correct.
       case New(os) => os.bindings.values.forall(check)
-      case FieldAccess(o, f) => check(o)
-      
+      // TODO: This is actually wrong, FieldAccess is not guarding, however without this we get a lot 
+      // of false positives because Graft handling does not detect the if the body uses the guarded future.
+      case FieldAccess(o, f) => true
       case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

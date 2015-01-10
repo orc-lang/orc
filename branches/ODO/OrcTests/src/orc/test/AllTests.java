@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses( { OrcParserTest.class, ExamplesTest.class, XMLExamplesTest.class, TypedExamplesTest.class, DocExamplesTest.class })
+@Suite.SuiteClasses( { OrcParserTest.class, ExamplesTest.class, XMLExamplesTest.class, /*TypedExamplesTest.class,*/ DocExamplesTest.class })
 public class AllTests {
 	public static void main(final String[] args) {
 		JUnitCore.main(AllTests.class.getSimpleName());
