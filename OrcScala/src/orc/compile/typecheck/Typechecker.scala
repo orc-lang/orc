@@ -246,7 +246,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       case ds => {
         val defBindings: List[(syntactic.BoundVar, Type)] =
           for (d <- ds) yield {
-            d match {
+            (d: @unchecked) match {
               case Callable(name, _, _, typeFormals, Some(argTypes), Some(returnType)) => {
                 val syntacticType = syntactic.FunctionType(typeFormals, argTypes, returnType)
                 (name, lift(syntacticType))

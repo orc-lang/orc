@@ -177,6 +177,27 @@ case class ClassMixin(left: ClassExpression, right: ClassExpression) extends Cla
 
 case class New(cls: ClassExpression) extends Expression
 
+object ClassGroup {
+  def unapply(e: Expression): Option[(List[ClassDeclaration], Expression)] = {
+    partition(e) match {
+      case (Nil, _) => None
+      case (ds, f) => Some((ds, f))
+    }
+  }
+
+  private def partition(e: Expression): (List[ClassDeclaration], Expression) = {
+    e match {
+      case Declare(d: ClassDeclaration, f) => {
+        val (ds, g) = partition(f)
+        (d :: ds, g)
+      }
+      case _ => (Nil, e)
+    }
+  }
+
+}
+
+
 sealed abstract class TypeDeclaration extends NamedDeclaration
 case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration
 case class TypeImport(name: String, classname: String) extends TypeDeclaration

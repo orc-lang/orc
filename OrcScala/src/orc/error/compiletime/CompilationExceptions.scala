@@ -80,6 +80,12 @@ case class DuplicateTypeFormalException(val repeatedName: String)
   extends SyntacticException("Duplicate type formal: " + repeatedName + " occurs more than once.")
   with SeverityError
 
+/** A recursive group of classes contains the same class more than once.
+  */
+case class DuplicateClassException(val repeatedName: String)
+  extends SyntacticException("Duplicate class: " + repeatedName + " occurs more than once in recursive group.")
+  with SeverityError
+
 /** A clause of a function has a different number of parameters than
   * earlier clauses.
   *
@@ -102,13 +108,6 @@ case class RedundantTypeParameters() extends RedundantTypeInformationException("
 case class RedundantArgumentType() extends RedundantTypeInformationException("Redundant argument type")
 case class RedundantReturnType() extends RedundantTypeInformationException("Redundant return type")
 case class UnusedFunctionSignature() extends RedundantTypeInformationException("Unused function signature")
-
-case class ClassDefInNonclassContext()
-  extends SyntacticException("Cannot declare this clause as 'class'; preceding clauses were not declared as 'class'")
-  with SeverityError
-case class NonclassDefInClassContext()
-  extends SyntacticException("This clause must be declared as 'class'; preceding clauses were declared as 'class'")
-  with SeverityError
 
 /** Call to the Vclock quasi-site (in a sequential combinator) that is malformed
   */

@@ -25,6 +25,11 @@ import orc.run.Logger
 import orc.ast.oil.nameless.New
 import orc.ast.oil.nameless.FieldAccess
 import orc.values.OrcObject
+import orc.ast.oil.nameless.Class
+import orc.ast.oil.nameless.Classvar
+import orc.ast.oil.nameless.ObjectStructure
+import orc.ast.oil.nameless.Structural
+import orc.ast.oil.nameless.DeclareClasses
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -317,10 +322,27 @@ class Token protected (
   protected def lookup(a: Argument): Binding = {
     a match {
       case Constant(v) => BoundValue(v)
-      case Variable(n) => env(n)
+      case Variable(n) => {
+        val v = env(n)
+        assert(v match {
+          case BoundValue(_:Class) => false
+          case _ => true
+        }, "Found class when looking up normal variable.")
+        v
+      }
       case UnboundVariable(x) =>
-        Logger.severe(s"Stopping unbound variable $a at ${a.pos}")
+        Logger.severe(s"Stopping token due to unbound variable $a at ${a.pos}")
         BoundStop
+    }
+  }
+  protected def lookupClass(a: ObjectStructure): (Option[Int], Structural) = {
+    a match { 
+      case Classvar(i) =>
+        env(i) match {
+          case BoundValue(c:Class) => (Some(c.contextLength), c.structure) 
+          case v => throw new AssertionError(s"Found non-class when looking up class variable: $v")
+        }
+      case s: Structural => (None, s)
     }
   }
 
@@ -592,18 +614,23 @@ class Token protected (
 
       case New(os) => {
         val obj = new OrcObject()
-        val fields = for((name, expr) <- os.bindings) yield {
+        
+        val (contextsize, struct) = lookupClass(os)
+        
+        // Truncate the context to the height it was at when the class was created also add "this".
+        val objenv = BoundValue(obj) :: contextsize.map(env.take(_)).getOrElse(env)
+          
+        val fields = for((name, expr) <- struct.bindings) yield {
           // We use a GraftGroup since it is exactly what we need.
           // The difference between this and graft is where the future goes.
           val pg = new GraftGroup(group)
           
-          // A binding frame is not needed since publishing will trigger the token to halt anyway.
+          // A binding frame is not needed since publishing will trigger the token to halt.
           val t = new Token(expr, 
-              env=BoundValue(obj) :: env, 
+              env=objenv, 
               group=pg,
               stack=GroupFrame(EmptyFrame),
               clock=clock)
-      
           runtime.stage(t)
           
           (name, pg.future)
@@ -630,6 +657,14 @@ class Token protected (
       
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
+      }
+
+      case DeclareClasses(clss, body) => {
+        for(c <- clss) {
+          bind(BoundValue(c))
+        }
+        move(body)
+        runtime.stage(this)
       }
 
       case decldefs @ DeclareCallables(openvars, decls, body) => {

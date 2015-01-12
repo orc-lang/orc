@@ -195,13 +195,19 @@ object OrcXML {
         <new>
           {toXML(os)}
         </new>
-      case Class(_, _) => ???
-      case ObjectStructure(bindings) =>
-        <objectstructure>
+      case Classvar(i) => <classvar index={ i.toString } />
+      case Structural(bindings) =>
+        <structural>
           { for((n, e) <- bindings) yield
             <binding name={n.field}><expr>{ toXML(e) }</expr></binding>
           }
-        </objectstructure>
+        </structural>
+      case Class(stacksize, struct) => <class stacksize={ stacksize.toString }>{ toXML(struct) }</class>
+      case DeclareClasses(clss, body: Expression) =>
+        <declareclasses>
+          <classes>{ clss map toXML }</classes>
+          <body>{ toXML(body) }</body>
+        </declareclasses>
       case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
           <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
@@ -386,6 +392,11 @@ object OrcXML {
         FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
       case <new>{ os }</new> =>
         New(objectStructureFromXML(os))
+      case <declareclasses><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
+        val t2 = for (d <- clss) yield classFromXML(d)
+        val t3 = fromXML(body)
+        DeclareClasses(t2.toList, t3)
+      }
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {
         val t1 = {
           uvars.text.split(" ").toList match {
@@ -444,15 +455,36 @@ object OrcXML {
   @throws(classOf[OilParsingException])
   def objectStructureFromXML(xml: scala.xml.Node): ObjectStructure = {
     xml --> {
-      case <objectstructure>{ bindings @ _* }</objectstructure> => {
-        val bs = for(x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
-          (Field((x \ "@name").text), fromXML(xmle))
-        }
-        ObjectStructure(bs.toMap)
-      }
+      case <structural>{ _* }</structural> => structuralFromXML(xml)
+      case <classvar /> => Classvar((xml \ "@index").text.toInt)
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
     }
   }
+  
+  @throws(classOf[OilParsingException])
+  def structuralFromXML(xml: scala.xml.Node): Structural = {
+    xml --> {
+      case <structural>{ bindings @ _* }</structural> => {
+        val bs = for(x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
+          (Field((x \ "@name").text), fromXML(xmle))
+        }
+        Structural(bs.toMap)
+      }
+      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Structural")
+    }
+  }
+  
+  @throws(classOf[OilParsingException])
+  def classFromXML(xml: scala.xml.Node): Class = {
+    xml --> {
+      case <class>{ struct }</class> => {
+        val ss = (xml \ "@stacksize").text.toInt
+        Class(ss, structuralFromXML(struct))
+      }
+      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
+    }
+  }
+
   @throws(classOf[OilParsingException])
   def defFromXML(xml: scala.xml.Node): Callable = {
     def buildCallable(d: scala.xml.Node, body: scala.xml.Node, rest: Seq[scala.xml.Node], constructor: (Int, Int, Expression, Option[List[Type]], Option[Type]) => Callable) = {

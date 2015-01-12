@@ -46,8 +46,9 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
-    case Class(bindings, supers) => bindings.values ++ supers
-    case ObjectStructure(bindings) => bindings.values
+    case Class(_, s) => List(s)
+    case Structural(bindings) => bindings.values
+    case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
@@ -57,7 +58,7 @@ sealed abstract class NamelessAST extends AST {
     case VariantType(_, variants) => {
       for ((_, variant) <- variants; t <- variant) yield t
     }
-    case Constant(_) | UnboundVariable(_) | Variable(_) | Hole(_, _) | Stop() => Nil
+    case Constant(_) | UnboundVariable(_) | Variable(_) | Classvar(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | TypeVar(_) | UnboundTypeVariable(_) => Nil
     case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamelessAST.subtrees")
   }
@@ -83,6 +84,8 @@ sealed abstract class Expression extends NamelessAST
       case Graft(g, f) => shift(f.freevars, 1) ++ g.freevars
       case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
+      case New(s) => s.freevars
+      case DeclareClasses(clss, body) => clss.flatMap(_.freevars).toSet ++ shift(body.freevars, clss.length)
       case DeclareCallables(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
@@ -153,6 +156,8 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 
 case class New(structure: ObjectStructure) extends Expression
 
+case class DeclareClasses(defs: List[Class], body: Expression) extends Expression 
+
 // Callable should contain all Sites or all Defs and not a mix.
 case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression 
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
@@ -190,26 +195,30 @@ case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariab
   optionalVariableName = Some(name)
 }
 
-sealed class ObjectStructure(val bindings: Map[Field, Expression])
+sealed trait ObjectStructure
   extends NamelessAST
   with hasFreeVars
-  with hasOptionalVariableName {
-  optionalVariableName = None
-  def productIterator: Iterator[Any] = List(bindings).iterator
+
+case class Structural(val bindings: Map[Field, Expression])
+  extends ObjectStructure {
   lazy val freevars: Set[Int] = {
-    shift(bindings.values.toSet.flatMap((_:Expression).freevars), 1)
+    shift(bindings.values.flatMap(_.freevars).toSet, 1)
   }
 }
-
-object ObjectStructure {
-  def apply(bindings: Map[Field, Expression]) = new ObjectStructure(bindings)
-  def unapply(os: ObjectStructure) = Some(os.bindings)
+  
+case class Classvar(index: Int) extends ObjectStructure with hasOptionalVariableName {
+  require(index >= 0)
+  lazy val freevars: Set[Int] = Set(index)
 }
 
 case class Class(
-    override val bindings: Map[Field, Expression], 
-    val superClasses: Set[ObjectStructure])
-  extends ObjectStructure(bindings)
+    val contextLength: Int,
+    val structure: Structural)
+  extends NamelessAST
+  with hasFreeVars
+  with hasOptionalVariableName {
+  lazy val freevars: Set[Int] = structure.freevars
+}
 
 sealed abstract class Callable extends NamelessAST
   with hasFreeVars
