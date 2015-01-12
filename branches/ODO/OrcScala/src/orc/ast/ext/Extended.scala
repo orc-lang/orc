@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 19, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -176,7 +176,7 @@ sealed abstract class ClassExpression extends AST {
 case class ClassVariable(name: String) extends ClassExpression {
   def toInterfaceString = name
 }
-case class ClassLiteral(decls: Seq[Declaration]) extends ClassExpression {
+case class ClassLiteral(thisname: Option[String], decls: Seq[Declaration]) extends ClassExpression {
   def toInterfaceString = decls.collect({
     case v: Val => v.p.toOrcSyntax
     case d: NamedDeclaration => d.name

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 27, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -494,15 +494,16 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def convertObjectStructure(e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): ObjectStructure = {
     e -> {
       case ext.ClassVariable(n) => classcontext(n)
-      case lit @ ext.ClassLiteral(_) => convertClassLiteral(lit)
+      case lit : ext.ClassLiteral => convertClassLiteral(lit)
       case ext.ClassMixin(_, _) =>
         throw (MalformedExpression("Mixins unsupported") at e)
     }
   }
   
   def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Structural = {
-    val thisVar = new BoundVar(Some("this"))
-    val memberContext = context + (("this", thisVar))
+    val thisName = lit.thisname.getOrElse("this")
+    val thisVar = new BoundVar(Some(thisName))
+    val memberContext = context ++ List((thisName, thisVar), ("this", thisVar))
     
     var tmpId = 1
     def convertFields(d : Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {

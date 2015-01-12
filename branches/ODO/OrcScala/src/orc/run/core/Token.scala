@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -618,7 +618,7 @@ class Token protected (
         val (contextsize, struct) = lookupClass(os)
         
         // Truncate the context to the height it was at when the class was created also add "this".
-        val objenv = BoundValue(obj) :: contextsize.map(env.take(_)).getOrElse(env)
+        val objenv = BoundValue(obj) :: contextsize.map(env.takeRight(_)).getOrElse(env)
           
         val fields = for((name, expr) <- struct.bindings) yield {
           // We use a GraftGroup since it is exactly what we need.

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jul 12, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -94,7 +94,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Val(p, e) => Val(this(p), this(e))
         case Include(o, decls) => Include(o, decls map this.apply)
         case ClassDeclaration(name, base, body) => 
-          ClassDeclaration(name, base map this.apply, ClassLiteral(body.decls map this.apply))
+          ClassDeclaration(name, base map this.apply, ClassLiteral(body.thisname, body.decls map this.apply))
         case c@Callable(name, typeformals, formals, returntype, guard, body) => 
           c.copy(name, typeformals, formals map this.apply, returntype map this.apply, guard map this.apply, this(body))
         case c@CallableSig(name, typeformals, argtypes, returntype) => 
@@ -112,7 +112,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
     if (pf isDefinedAt t) { t -> pf } else {
       t -> {
         case ClassVariable(_) => t
-        case ClassLiteral(ds) => ClassLiteral(ds map this.apply)
+        case ClassLiteral(self, ds) => ClassLiteral(self, ds map this.apply)
         case ClassMixin(l, r) => ClassMixin(this(l), this(r))
       }
     }

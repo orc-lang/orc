@@ -1,26 +1,11 @@
-{- active_object.orc -- An active object in Orc
+{- active_class.orc -- An active class object in Orc
  -
  - $Id$
  -
  - Created by amp on Jan 4, 2015 7:33:07 PM
  -}
 
-val v = Ref[Integer](0)
-
-def reader(lock) =
-  Rwait((Random(4)+1)*100) >>
-  lock.startread() >>
---  Println(v?) >>
-  lock.end()
-
-def writer(lock) =
-  Rwait((Random(4)+1)*100) >>
-  lock.startwrite() >>
-  v := v? + 1 >>
-  lock.end()
-
-{|
-val rw = new {
+class RW {
 	val r = Semaphore(0)
 	val w = Semaphore(0)
 	val na = Counter(0)
@@ -47,7 +32,22 @@ val rw = new {
 	      })
 }
 
-#
+val v = Ref[Integer](0)
+
+def reader(lock) =
+  Rwait((Random(4)+1)*100) >>
+  lock.startread() >>
+--  Println(v?) >>
+  lock.end()
+
+def writer(lock) =
+  Rwait((Random(4)+1)*100) >>
+  lock.startwrite() >>
+  v := v? + 1 >>
+  lock.end()
+
+{|
+val rw = new RW #
 ( upto(1000) >> reader(rw) >> stop
 | upto(1000) >> writer(rw) >> stop)
 ; Println("Final value: "+(v?))

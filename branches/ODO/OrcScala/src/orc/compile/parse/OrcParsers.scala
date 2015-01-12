@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -366,19 +366,22 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseDefCore = (
     ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
+  val parseDefSigCore = (
+      ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType)
+    
   val parseDefDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Def
 
-    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
+    | parseDefSigCore -> DefSig)
 
   val parseSiteDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Site
     
-    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> SiteSig)
+    | parseDefSigCore -> SiteSig)
 
       
   val parseClassBody: Parser[ClassLiteral] = (
-        ("{" ~> parseDeclaration.* <~ "}") -> ClassLiteral 
+        ("{" ~> (ident <~ "#").? ~ parseDeclaration.* <~ "}") -> ClassLiteral 
       )
   
   val parseClassPrimitiveExpression: Parser[ClassExpression] = (
