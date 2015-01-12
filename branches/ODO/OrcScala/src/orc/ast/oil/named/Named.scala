@@ -41,8 +41,10 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case Class(_, self, fields, supers) => self +: (fields.values.toSeq ++ supers)
-    case ObjectStructure(self, fields) => self +: fields.values.toSeq
+    case Class(cls, struct) => List(cls, struct)
+    case Structural(self, fields) => self +: fields.values.toSeq
+    case Classvar(v) => List(v) 
+    case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
@@ -99,51 +101,58 @@ case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
  * Since classes are not first class (and not "reified" in the Java terms), all instantiation 
  * calls of class must be in the same static scope and hence have the same dynamic variable 
  * bindings. This allows class references to be statically bound by the compiler (no runtime 
- * class object created at runtime). Because of this there is no class declaration node; 
- * instead there is just a Class node that is referenced only from New.
+ * class object created at runtime). 
+ * 
+ * However due to recursive classes the class
  */
 
-sealed class ObjectStructure(val self: BoundVar, val bindings: Map[values.Field, Expression])
+sealed trait ObjectStructure
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
-  with hasOptionalVariableName
-  with Substitution[ObjectStructure]
-  with Declaration {
-  optionalVariableName = None
+  with Substitution[ObjectStructure] {
   lazy val withoutNames: nameless.ObjectStructure = namedToNameless(this, Nil, Nil)
-  def copy(_self: BoundVar = self, _bindings: Map[values.Field, Expression] = bindings) = 
-    ObjectStructure(_self, _bindings)
-  def productIterator: Iterator[Any] = List(self, bindings).iterator
 }
 
-object ObjectStructure {
-  def apply(self: BoundVar, bindings: Map[values.Field, Expression]) = new ObjectStructure(self, bindings)
-  def unapply(os: ObjectStructure) = Some((os.self, os.bindings))
+/** A structural object structure representing an "anonymous class" like { val v = 1 }.
+  * 
+  */
+case class Structural(val self: BoundVar, val bindings: Map[values.Field, Expression]) extends ObjectStructure
+
+/** A reference to a class.
+  * 
+  */
+case class Classvar(name: Var) extends ObjectStructure with hasOptionalVariableName {
+  transferOptionalVariableName(name, this)
 }
 
 /** A class representation
   * 
-  * Classes have a self variable and a list of fields that define the data it contains and 
-  * how it is named. Each name is associated with an expression that is executed in with self
-  * in scope. The expressions may also reference other variables that are in scope at the 
-  * declaration of the class. See above.
+  * Classes have a self variable and structure just as a structural type. See above.
   * 
   * The translator will already have generated the proper bindings including implementing 
   * inheritence and derivation correctly.
   * 
-  * The superclass set is simply for type heirarchy information. It is not used at runtime.
-  * However it does have the invariant that for any superclass S, S.bindings.keys is a subset of 
-  * this.bindings.keys.
+  * These values are used as is at runtime, so there is no need to capture context when 
+  * evaluating the declaration.
   */
 case class Class(
-    val name: String, 
-    override val self: BoundVar, 
-    override val bindings: Map[values.Field, Expression], 
-    val superClasses: Set[ObjectStructure])
-  extends ObjectStructure(self, bindings) {
-  optionalVariableName = Some(name)
+    val name: BoundVar, 
+    val structure: Structural)
+  extends NamedAST
+  with hasFreeVars
+  with hasFreeTypeVars
+  with hasOptionalVariableName
+  with Substitution[Class]
+  with Declaration {
+  transferOptionalVariableName(name, this)
 }
+
+/** Declare a group of mutually recursive classes.
+  * 
+  * The class objects are not normal runtime values and should never be accessed in any way other than New.
+  */
+case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 /** Construct a new class instance
   * 

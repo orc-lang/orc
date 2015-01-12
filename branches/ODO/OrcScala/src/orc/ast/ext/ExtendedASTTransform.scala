@@ -24,6 +24,7 @@ trait ExtendedASTFunction {
   def apply(a: ArgumentGroup): ArgumentGroup
   def apply(d: Declaration): Declaration
   def apply(a: Pattern): Pattern
+  def apply(a: ClassExpression): ClassExpression
 
   def andThen(g: ExtendedASTFunction): ExtendedASTFunction = {
     val f = this
@@ -33,6 +34,7 @@ trait ExtendedASTFunction {
       def apply(a: ArgumentGroup): ArgumentGroup = g(f(a))
       def apply(d: Declaration): Declaration = g(f(d))
       def apply(a: Pattern): Pattern = g(f(a))
+      def apply(a: ClassExpression): ClassExpression = g(f(a))
     }
   }
 
@@ -49,14 +51,14 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
   def apply(a: ArgumentGroup): ArgumentGroup = transform(a)
   def apply(d: Declaration): Declaration = transform(d)
   def apply(a: Pattern): Pattern = transform(a)
+  def apply(a: ClassExpression): ClassExpression = transform(a)
 
   def onExpression(): PartialFunction[Expression, Expression] = EmptyFunction
   def onType(): PartialFunction[Type, Type] = EmptyFunction
   def onArgumentGroup(): PartialFunction[ArgumentGroup, ArgumentGroup] = EmptyFunction
   def onDeclaration(): PartialFunction[Declaration, Declaration] = EmptyFunction
   def onPattern(): PartialFunction[Pattern, Pattern] = EmptyFunction
-
-	// TODO: Add cases for ClassExpression
+  def onClassExpression(): PartialFunction[ClassExpression, ClassExpression] = EmptyFunction
 
   def transform(e: Expression): Expression = {
     val pf = onExpression()
@@ -74,6 +76,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Parallel(f, g) => Parallel(recurse(f), recurse(g))
         case Otherwise(f, g) => Otherwise(recurse(f), recurse(g))
         case Trim(f) => Trim(recurse(f))
+        case New(s) => New(this(s))
         case Section(f) => Section(recurse(f))
         case Conditional(f, g, e) => Conditional(recurse(f), recurse(g), recurse(e))
         case Declare(d, body) => Declare(this(d), recurse(body))
@@ -90,6 +93,8 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case SiteImport(_,_) | ClassImport(_,_) | TypeImport(_,_) => d
         case Val(p, e) => Val(this(p), this(e))
         case Include(o, decls) => Include(o, decls map this.apply)
+        case ClassDeclaration(name, base, body) => 
+          ClassDeclaration(name, base map this.apply, ClassLiteral(body.decls map this.apply))
         case c@Callable(name, typeformals, formals, returntype, guard, body) => 
           c.copy(name, typeformals, formals map this.apply, returntype map this.apply, guard map this.apply, this(body))
         case c@CallableSig(name, typeformals, argtypes, returntype) => 
@@ -98,6 +103,17 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
           //case Datatype(name, formals, constructors) => TypeAlias(name, formals, constructors map this.apply)
         case Datatype(name, formals, constructors) => 
           Datatype(name, formals, constructors map { c => Constructor(c.name, c.types map { _ map this.apply }) })
+      }
+    }
+  }
+  
+  def transform(t: ClassExpression): ClassExpression = {
+    val pf = onClassExpression()
+    if (pf isDefinedAt t) { t -> pf } else {
+      t -> {
+        case ClassVariable(_) => t
+        case ClassLiteral(ds) => ClassLiteral(ds map this.apply)
+        case ClassMixin(l, r) => ClassMixin(this(l), this(r))
       }
     }
   }
@@ -130,6 +146,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       }
     }
   }
+  
   def transform(a: ArgumentGroup): ArgumentGroup = {
     val pf = onArgumentGroup()
     if (pf isDefinedAt a) { a -> pf } else {

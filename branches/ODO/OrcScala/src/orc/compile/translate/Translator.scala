@@ -30,21 +30,21 @@ import orc.lib.builtin
 import orc.values.{Field, Signal}
 import orc.values.sites.{JavaSiteForm, OrcSiteForm}
 import orc.ast.ext.ExtendedASTTransform
+import orc.error.compiletime.DuplicateClassException
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
-
   /** Translate an extended AST to a named OIL AST.
     */
   def translate(extendedAST: ext.Expression): named.Expression = {
     val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
     val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
-    convert(extendedAST)(rootContext, rootTypeContext)
+    val rootClassContext: Map[String, Classvar] = HashMap.empty withDefault { n => Classvar(UnboundVar(n)) }
+    convert(extendedAST)(rootContext, rootTypeContext, rootClassContext)
   }
 
   /** Convert an extended AST expression to a named OIL expression.
     */
-  def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
-    // , classcontent: Map[String, Class]
+  def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
     e -> {
       case ext.Stop() => Stop()
       case ext.Constant(c) => Constant(c)
@@ -84,60 +84,29 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Sequential(l, Some(ext.VariablePattern(name)), r) => {
         val x = new BoundVar(Some(name))
         val newl = convert(l)
-        val newr = convert(r)(context + ((name, x)), typecontext)
+        val newr = convert(r)(context + ((name, x)), typecontext, implicitly)
         newl > x > newr
       }
       case ext.Sequential(l, Some(p), r) => {
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
         val newl = convert(l)
-        val newr = convert(r)(context ++ dcontext, typecontext)
+        val newr = convert(r)(context ++ dcontext, typecontext, implicitly)
         source(newl) > x > target(newr)
       }
       case ext.Declare(ext.Val(p, f), body) => {
         // Handle graft
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
-        val newbody = convert(body)(context ++ dcontext, typecontext)
+        val newbody = convert(body)(context ++ dcontext, typecontext, implicitly)
         val newf = convert(f)
         Graft(x, source(newf), target(newbody))
       }
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
-      case ext.New(ext.ClassLiteral(defs)) => {
-        val thisVar = new BoundVar(Some("this"))
-        val memberContext = context + (("this", thisVar))
-
-        var tmpId = 1
-        def convertFields(d : Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
-          case ext.Val(ext.VariablePattern(x), f) +: rest =>
-            (Field(x), convert(f)(memberContext, implicitly)) +: convertFields(rest)
-          case ext.Val(p, f) +: rest =>
-            val tmpField = Field(s"$$pattmp$$$tmpId")
-            tmpId += 1
-            // FIXME: Is it a problem if the same variable is bound in multiple subtrees?
-            val x = new BoundVar()
-            val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
-            val newf = convert(f)(memberContext, implicitly)
-            val generatedFields = for((name, code) <- dcontext.toSeq) yield (Field(name), FieldAccess(thisVar, tmpField) > x > target(code))
-            (tmpField, source(newf)) +: (generatedFields ++ convertFields(rest))
-          case ext.CallableSingle(defs, rest) =>
-            assert(defs.forall(_.name == defs.head.name))
-            val field = Field(defs.head.name)
-            val name = new BoundVar(Some("$" + defs.head.name))
-            val agg = defs.foldLeft(AggregateDef.empty(this))(_ + _)
-
-            val newdef = agg ->> agg.convert(name, memberContext, typecontext)
-            (field, DeclareCallables(List(newdef), name)) +: convertFields(rest)
-          case Seq() =>
-            Nil
-          case decl :: _ =>
-            throw (MalformedExpression("Invalid declaration form in class") at decl)
-        }
-        val newbindings = convertFields(defs)
-        val os = ObjectStructure(thisVar, newbindings.toMap)
-        New(os)
+      case ext.New(e) => {
+        New(convertObjectStructure(e))
       }
 
       case ext.Section(body) => {
@@ -164,7 +133,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newBody = removePlaceholders(body)
         val formals = removePlaceholders.args.toList
         
-        val newdef = AggregateDef(formals, newBody)(this).convert(lambdaName, context, typecontext)
+        val newdef = AggregateDef(formals, newBody)(this).convert(lambdaName, implicitly, implicitly, implicitly)
         DeclareCallables(List(newdef), lambdaName)
       }
       case ext.Conditional(ifE, thenE, elseE) => {
@@ -172,14 +141,37 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.CallableGroup(defs, body) => {
         val (newdefs, dcontext) = convertDefs(defs)
-        val newbody = convert(body)(context ++ dcontext, typecontext)
+        val newbody = convert(body)(context ++ dcontext, typecontext, implicitly)
         DeclareCallables(newdefs, newbody)
       }
+      
+      case ext.ClassGroup(clss, body) => {
+        // Check for duplicate names
+        for (c :: cs <- clss.tails) {
+          cs.find(_.name == c.name) match {
+            case Some(c2) => throw (DuplicateClassException(c.name) at c2)
+            case None => ()
+          }
+        }
+        
+        val classNames = clss.map(c => (c.name, Classvar(new BoundVar(Some("$cls$" + c.name))))).toMap
+        assert(classNames.size == clss.size)
+        
+        val recursiveClassContext = classcontext ++ classNames
+        val newClss = for (c <- clss; Classvar(name : BoundVar) = classNames(c.name)) yield {
+          val os = convertClassLiteral(c.body)(implicitly, implicitly, recursiveClassContext)        
+          val cls = Class(name, os)
+          cls
+        }
+        
+        DeclareClasses(newClss, convert(body)(implicitly, implicitly, recursiveClassContext))
+      }
+      
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
           val site = Constant(OrcSiteForm.resolve(sitename))
           site.pushDownPosition(si.pos)
-          convert(body)(context + { (name, site) }, typecontext)
+          convert(body)(context + { (name, site) }, typecontext, implicitly)
         } catch {
           case oe: OrcException => throw oe at e
         }
@@ -190,7 +182,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           u.pushDownPosition(ci.pos)
           val site = Constant(JavaSiteForm.resolve(classname))
           site.pushDownPosition(ci.pos)
-          val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
+          val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) }, implicitly)
           DeclareType(u, ClassType(classname), newbody)
         } catch {
           case oe: OrcException => throw oe at e
@@ -201,7 +193,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
       case ext.Declare(ext.TypeImport(name, classname), body) => {
         val u = new BoundTypevar(Some(name))
-        val newbody = convert(body)(context, typecontext + { (name, u) })
+        val newbody = convert(body)(context, typecontext + { (name, u) }, implicitly)
         DeclareType(u, ImportedType(classname), newbody)
       }
 
@@ -216,7 +208,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
               TypeAbstraction(newTypeFormals, enclosedType)
             }
           }
-        val newbody = convert(body)(context, typecontext + { (name, u) })
+        val newbody = convert(body)(context, typecontext + { (name, u) }, implicitly)
         DeclareType(u, newtype, newbody)
       }
 
@@ -249,7 +241,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
 
-        val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) })
+        val newbody = convert(body)(context ++ dcontext, typecontext + { (name, d) }, implicitly)
         val makeSites = makeDatatype(d, typeformals.size, constructors, this)
 
         DeclareType(d, variantType, Graft(x, source(makeSites), target(newbody)))
@@ -265,8 +257,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
   }
 
-  def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): Expression = {
-
+  def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
     ag match {
       case ext.Args(typeargs, args) => {
         val newtypeargs = typeargs map { _ map convertType }
@@ -287,7 +278,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     * and
     *      a mapping from their string names to their new bound names
     */
-  def convertDefs(defs: List[ext.CallableDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Callable], Map[String, BoundVar]) = {
+  def convertDefs(defs: List[ext.CallableDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): (List[Callable], Map[String, BoundVar]) = {
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
     for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
@@ -297,7 +288,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
     val recursiveContext = context ++ namesMap
     val newdefs = for ((n, d) <- defsMap) yield {
-      d ->> d.convert(namesMap(n), recursiveContext, typecontext)
+      d ->> d.convert(namesMap(n), recursiveContext, typecontext, classcontext)
     }
 
     (newdefs.toList, namesMap)
@@ -498,6 +489,49 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
     }
 
+  }
+  
+  def convertObjectStructure(e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): ObjectStructure = {
+    e -> {
+      case ext.ClassVariable(n) => classcontext(n)
+      case lit @ ext.ClassLiteral(_) => convertClassLiteral(lit)
+      case ext.ClassMixin(_, _) =>
+        throw (MalformedExpression("Mixins unsupported") at e)
+    }
+  }
+  
+  def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Structural = {
+    val thisVar = new BoundVar(Some("this"))
+    val memberContext = context + (("this", thisVar))
+    
+    var tmpId = 1
+    def convertFields(d : Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
+      case ext.Val(ext.VariablePattern(x), f) +: rest =>
+        (Field(x), convert(f)(memberContext, implicitly, implicitly)) +: convertFields(rest)
+      case ext.Val(p, f) +: rest =>
+        val tmpField = Field(s"$$pattmp$$$tmpId")
+        tmpId += 1
+        // FIXME: Is it a problem if the same variable is bound in multiple subtrees?
+        val x = new BoundVar()
+        val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
+        val newf = convert(f)(memberContext, implicitly, implicitly)
+        val generatedFields = for((name, code) <- dcontext.toSeq) yield (Field(name), FieldAccess(thisVar, tmpField) > x > target(code))
+        (tmpField, source(newf)) +: (generatedFields ++ convertFields(rest))
+      case ext.CallableSingle(defs, rest) =>
+        assert(defs.forall(_.name == defs.head.name))
+        val field = Field(defs.head.name)
+        val name = new BoundVar(Some("$" + defs.head.name))
+        val agg = defs.foldLeft(AggregateDef.empty(this))(_ + _)
+    
+        val newdef = agg ->> agg.convert(name, memberContext, typecontext, classcontext)
+        (field, DeclareCallables(List(newdef), name)) +: convertFields(rest)
+      case Seq() =>
+        Nil
+      case decl :: _ =>
+        throw (MalformedExpression("Invalid declaration form in class") at decl)
+    }
+    val newbindings = convertFields(lit.decls)
+    Structural(thisVar, newbindings.toMap)
   }
 
 }

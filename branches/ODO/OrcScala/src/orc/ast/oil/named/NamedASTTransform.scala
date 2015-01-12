@@ -33,6 +33,7 @@ trait NamedASTFunction {
       case t: Type => this(t)
       case d: Callable => this(d)
       case s: ObjectStructure => this(s)
+      case c: Class => this(c)
     }
   }
 
@@ -70,6 +71,8 @@ trait NamedASTTransform extends NamedASTFunction {
   def onCallable(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
   def onObjectStructure(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[ObjectStructure, ObjectStructure] = EmptyFunction
+  
+  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Class, Class] = EmptyFunction
 
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
@@ -109,6 +112,12 @@ trait NamedASTTransform extends NamedASTFunction {
         case left ow right => recurse(left) ow recurse(right)
         case New(c) => New(recurse(c))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
+        case DeclareClasses(clss, body) => {
+          val defnames = clss map { _.name }
+          val newclss = clss map { transform(_, defnames ::: context, typecontext) }
+          val newbody = transform(body, defnames ::: context, typecontext)
+          DeclareClasses(newclss, newbody)
+        }
         case DeclareCallables(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
@@ -192,19 +201,29 @@ trait NamedASTTransform extends NamedASTFunction {
       d -> pf
     } else {
       d -> {
-        case Class(name, self, fields, supers) => {
-          val newcontext = self :: context
-          val newfields = fields.mapValues(transform(_, newcontext, typecontext))
-          val newsupers = supers.map(transform(_, context, typecontext))
-          Class(name, self, newfields, newsupers)
-        }
-        case ObjectStructure(self, fields) => {
+        case Classvar(name) => Classvar(name)
+        case Structural(self, fields) => {
           val newcontext = self :: context
           // The "Map() ++" is to force strict evaluation of this. mapValues generally returns a view.
           val newfields = Map() ++ fields.mapValues({ m =>
             transform(m, newcontext, typecontext)
           })
-          ObjectStructure(self, newfields)
+          Structural(self, newfields)
+        }
+      }
+    }
+  }
+  
+  def transform(d: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): Class = {
+    val pf = onClass(context, typecontext)
+    if (pf isDefinedAt d) {
+      d -> pf
+    } else {
+      d -> {
+        case Class(name, Structural(self, fields)) => {
+          val newcontext = self :: context
+          val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
+          Class(name, Structural(self, newfields))
         }
       }
     }

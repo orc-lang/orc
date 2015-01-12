@@ -71,10 +71,18 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
-      case New(os) => os.bindings.values.forall(check)
+      case New(Structural(_, bindings)) => bindings.values.forall(check)
+      case New(Classvar(_)) => false
       // TODO: This is actually wrong, FieldAccess is not guarding, however without this we get a lot 
       // of false positives because Graft handling does not detect the if the body uses the guarded future.
       case FieldAccess(o, f) => true
+      case DeclareClasses(clss, body) => {
+        for (c <- clss; e <- c.structure.bindings.values) {
+          // TODO: I am not using the current context because the code is not actually executing here. Correct?
+          e.checkGuarded(Nil, unguardedRecursion)
+        }
+        check(body)
+      }
       case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }

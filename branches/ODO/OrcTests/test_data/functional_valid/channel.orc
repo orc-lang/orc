@@ -1,20 +1,20 @@
-def class channel() =
+class channel {
   val ch = Channel[Integer]()
   val chlen = Ref[Integer](0)
   val s = Semaphore(1)
   val _ = Rwait(3000) >> Println("time up in channel!")
   def put(x :: Integer) =
-    s.acquire() >>
-    (ch.put(x) >>
-    chlen := chlen?+1 >> stop; s.release())
+    this.s.acquire() >>
+    (this.ch.put(x) >>
+    this.chlen := this.chlen?+1 >> stop; this.s.release())
   def get() =
-    s.acquire() >> ch.get() >x>
-    (chlen:= chlen?-1 >> stop; s.release()) >> x
+    this.s.acquire() >> this.ch.get() >x>
+    (this.chlen := this.chlen?-1 >> stop; this.s.release()) >> x
   def len() =
-    s.acquire() >> chlen? >n> s.release() >> n
-  signal
+    this.s.acquire() >> this.chlen? >n> this.s.release() >> n
+}
 
-val c = channel()
+val c = new channel
 
 c.put(1113) >> c.put(2223) >> Println(c.len()) >>
 c.get() >> Println(c.len()) >>stop

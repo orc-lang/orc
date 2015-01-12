@@ -95,33 +95,45 @@
     </xs:choice>
   </xs:complexType>
 
-  <!--  Object Structure  -->
-  <xs:complexType name="objectstructure">
-    <xs:choice>
-      <xs:element name="objectstructure">
+  <!-- Structural -->
+  <xs:complexType name="structural">
+    <xs:sequence>
+      <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="binding" minOccurs="0" maxOccurs="unbounded" >
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="expr" type="exp" />
-                </xs:sequence>
-                <xs:attribute name="name" type="xs:string" />
-                <xs:attributeGroup ref="ast" />
-              </xs:complexType>
-            </xs:element>
+            <xs:element name="expr" type="exp" />
           </xs:sequence>
-          <xs:attributeGroup ref="ast" />
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="class">
-        <xs:complexType>
           <xs:attribute name="name" type="xs:string" />
           <xs:attributeGroup ref="ast" />
         </xs:complexType>
       </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="ast" />
+  </xs:complexType>
+
+  <!--  Object Structure  -->
+  <xs:complexType name="objectstructure">
+    <xs:choice>
+      <xs:element name="structural" type="structural" />
+      <xs:element name="classvar">
+        <xs:complexType>
+          <xs:attribute name="index" type="index" />
+          <xs:attributeGroup ref="ast" />
+          <xs:attributeGroup ref="varnamed"/>
+        </xs:complexType>
+      </xs:element>
     </xs:choice>
     <xs:attributeGroup ref="ast"/>
+  </xs:complexType>
+
+  <!--  Class  -->
+  <xs:complexType name="class">
+    <xs:sequence>
+      <xs:element name="structural" type="structural" />
+    </xs:sequence>
+    <xs:attribute name="stacksize" type="index" />
+    <xs:attributeGroup ref="ast"/> 
+    <xs:attributeGroup ref="varnamed"/>
   </xs:complexType>
 
   <!--  Type  -->
@@ -252,6 +264,27 @@
         </xs:element>
 
         <!--
+              class ...
+              class ...
+              f
+        -->
+        <xs:element name="declareclasses">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="classes">
+                <xs:complexType>
+                  <xs:sequence>
+	                <xs:element name="class" type="class" minOccurs="1" maxOccurs="unbounded" />
+	              </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="body" type="exp" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
+        
+        <!--
               def ...
               def ...
               f
@@ -267,12 +300,12 @@
               <xs:element name="defs">
                 <xs:complexType>
                   <xs:choice>
-	                  <xs:sequence>
-	                    <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
-	                  </xs:sequence>
-	                  <xs:sequence>
-	                    <xs:element name="sitedefinition" type="definition" minOccurs="1" maxOccurs="unbounded" />
-	                  </xs:sequence>
+                    <xs:sequence>
+                      <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                    <xs:sequence>
+                      <xs:element name="sitedefinition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
                   </xs:choice>
                 </xs:complexType>
               </xs:element>

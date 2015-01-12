@@ -36,6 +36,13 @@ trait NamedToNameless {
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
       case New(os) => nameless.New(namedToNameless(os, context, typecontext))
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
+      case DeclareClasses(clss, body) => {
+        val clsnames = clss map { _.name }
+        val newcontext = clsnames.reverse ::: context
+        val newclss = clss map { namedToNameless(_, newcontext, typecontext) }
+        val newbody = namedToNameless(body, newcontext, typecontext)
+        nameless.DeclareClasses(newclss, newbody)
+      }
       case DeclareCallables(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
@@ -83,13 +90,24 @@ trait NamedToNameless {
   
   def namedToNameless(a: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ObjectStructure = {
     a -> {
-      case Class(name, self, bindings, supers) => 
-        nameless.Class(
-          bindings.mapValues(namedToNameless(_, self :: context, typecontext)), 
-          supers.map(namedToNameless(_, context, typecontext)))
-      case ObjectStructure(self, bindings) =>
-        nameless.ObjectStructure(bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
+      case Classvar(v) => {
+        var i = context indexOf v
+        assert(i >= 0, s"Cannot find bound class variable $v ($i)")
+        nameless.Classvar(i)
+      }
+      case s: Structural => convertStructural(s, context, typecontext)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
+    }
+  }
+  
+  def convertStructural(struct: Structural, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Structural = {
+    nameless.Structural(struct.bindings.mapValues(namedToNameless(_, struct.self :: context, typecontext)))
+  }
+  
+  def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
+    a -> {
+      case Class(name, struct) => 
+        nameless.Class(context.size, convertStructural(struct, context, typecontext))
     }
   }
 
@@ -98,7 +116,7 @@ trait NamedToNameless {
     t -> {
       case u: BoundTypevar => {
         var i = typecontext indexOf u
-        assert(i >= 0)
+        assert(i >= 0, t)
         nameless.TypeVar(i)
       }
       case Top() => nameless.Top()

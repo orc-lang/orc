@@ -264,7 +264,6 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseInfixOpExpression = parseLogicalExpr nonAssociativeInfix List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
-  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
   val parseSequentialExpression =
     parseInfixOpExpression rightInterleave parseSequentialCombinator apply Sequential
@@ -392,7 +391,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
       )
       
   val parseClassDeclaration = (
-        ("class" ~> ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration 
+        (ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration 
       )
     
   val parseDeclaration: Parser[Declaration] = (
