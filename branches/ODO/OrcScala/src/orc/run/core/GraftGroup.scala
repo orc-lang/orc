@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,9 +25,9 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
   var state: GraftGroupState = ValueUnknown
 
   override def toString = super.toString + s"(state=${state}, ${_future})"
-  
+
   private var _future = new Future(runtime)
-  
+
   def future = {
     assert(_future ne null)
     _future
@@ -44,7 +44,7 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
       }
       case _ => {}
     }
-    
+
     t.halt()
   }
 
@@ -62,7 +62,7 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
       case _ => {}
     }
   }
-  
+
   // This is not needed for Graft itself. However it doesn't hurt anything and it is needed for 
   // object field futures to halt when the object is killed.
   override def kill() = {

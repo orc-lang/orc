@@ -21,8 +21,7 @@ import scala.collection.mutable.LinkedList
 
 import orc.ast.oil.named._
 
-/**
-  * @author srosario
+/** @author srosario
   */
 object FractionDefs extends NamedASTTransform {
 

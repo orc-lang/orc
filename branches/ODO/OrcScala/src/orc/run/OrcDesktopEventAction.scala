@@ -21,8 +21,7 @@ import orc.lib.util.PromptEvent
 import orc.lib.str.PrintEvent
 import orc.lib.web.BrowseEvent
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 class OrcDesktopEventAction extends OrcEventAction with OrcDesktopActions
 

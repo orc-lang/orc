@@ -23,7 +23,6 @@ import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 
 /**
-  *
   * @author dkitchin
   */
 case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {

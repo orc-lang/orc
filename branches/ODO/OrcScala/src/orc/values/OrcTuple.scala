@@ -21,7 +21,6 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.TupleIndexOutOfBoundsException
 
 /**
-  *
   * @author dkitchin
   */
 case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {

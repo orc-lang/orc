@@ -63,12 +63,12 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
   def transform(e: Expression): Expression = {
     val pf = onExpression()
     if (pf isDefinedAt e) { e -> pf } else {
-      val recurse : Expression => Expression = this.apply
+      val recurse: Expression => Expression = this.apply
       e -> {
         case Stop() | Constant(_) | Variable(_) | Hole | Placeholder() => e
         case TupleExpr(es) => TupleExpr(es map recurse)
         case ListExpr(es) => ListExpr(es map recurse)
-        case RecordExpr(es) => RecordExpr(es map { p => (p._1, recurse(p._2))})
+        case RecordExpr(es) => RecordExpr(es map { p => (p._1, recurse(p._2)) })
         case Call(t, gs) => Call(recurse(t), gs map this.apply)
         case PrefixOperator(op, e) => PrefixOperator(op, recurse(e))
         case InfixOperator(f, op, g) => InfixOperator(recurse(f), op, recurse(g))
@@ -85,28 +85,28 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       }
     }
   }
-  
+
   def transform(d: Declaration): Declaration = {
     val pf = onDeclaration()
     if (pf isDefinedAt d) { d -> pf } else {
       d -> {
-        case SiteImport(_,_) | ClassImport(_,_) | TypeImport(_,_) => d
+        case SiteImport(_, _) | ClassImport(_, _) | TypeImport(_, _) => d
         case Val(p, e) => Val(this(p), this(e))
         case Include(o, decls) => Include(o, decls map this.apply)
-        case ClassDeclaration(name, base, body) => 
+        case ClassDeclaration(name, base, body) =>
           ClassDeclaration(name, base map this.apply, ClassLiteral(body.thisname, body.decls map this.apply))
-        case c@Callable(name, typeformals, formals, returntype, guard, body) => 
+        case c @ Callable(name, typeformals, formals, returntype, guard, body) =>
           c.copy(name, typeformals, formals map this.apply, returntype map this.apply, guard map this.apply, this(body))
-        case c@CallableSig(name, typeformals, argtypes, returntype) => 
+        case c @ CallableSig(name, typeformals, argtypes, returntype) =>
           c.copy(name, typeformals, argtypes map this.apply, this(returntype))
         case TypeAlias(name, formals, aliased) => TypeAlias(name, formals, this(aliased))
-          //case Datatype(name, formals, constructors) => TypeAlias(name, formals, constructors map this.apply)
-        case Datatype(name, formals, constructors) => 
+        //case Datatype(name, formals, constructors) => TypeAlias(name, formals, constructors map this.apply)
+        case Datatype(name, formals, constructors) =>
           Datatype(name, formals, constructors map { c => Constructor(c.name, c.types map { _ map this.apply }) })
       }
     }
   }
-  
+
   def transform(t: ClassExpression): ClassExpression = {
     val pf = onClassExpression()
     if (pf isDefinedAt t) { t -> pf } else {
@@ -117,7 +117,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       }
     }
   }
-  
+
   def transform(p: Pattern): Pattern = {
     val pf = onPattern()
     if (pf isDefinedAt p) { p -> pf } else {
@@ -125,7 +125,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Wildcard() | VariablePattern(_) | ConstantPattern(_) => p
         case TuplePattern(ps) => TuplePattern(ps map this.apply)
         case ListPattern(ps) => ListPattern(ps map this.apply)
-        case RecordPattern(es) => RecordPattern(es map { p => (p._1, this(p._2))})
+        case RecordPattern(es) => RecordPattern(es map { p => (p._1, this(p._2)) })
         case CallPattern(name, args) => CallPattern(name, args map this.apply)
         case ConsPattern(f, g) => ConsPattern(this(f), this(g))
         case AsPattern(p, name) => AsPattern(this(p), name)
@@ -133,20 +133,20 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       }
     }
   }
-  
+
   def transform(t: Type): Type = {
     val pf = onType()
     if (pf isDefinedAt t) { t -> pf } else {
       t -> {
         case TypeVariable(_) => t
         case TupleType(ts) => TupleType(ts map this.apply)
-        case RecordType(es) => RecordType(es map { p => (p._1, this(p._2))})
+        case RecordType(es) => RecordType(es map { p => (p._1, this(p._2)) })
         case LambdaType(typeformals, argtypes, returntype) => LambdaType(typeformals, argtypes map this.apply, this(returntype))
         case TypeApplication(name, actuals) => TypeApplication(name, actuals map this.apply)
       }
     }
   }
-  
+
   def transform(a: ArgumentGroup): ArgumentGroup = {
     val pf = onArgumentGroup()
     if (pf isDefinedAt a) { a -> pf } else {

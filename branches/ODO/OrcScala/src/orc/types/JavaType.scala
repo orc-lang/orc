@@ -21,7 +21,6 @@ import orc.values.sites.OrcJavaCompatibility
 import java.lang.reflect.Modifier
 
 /**
-  *
   * @author dkitchin
   */
 trait JavaType {
@@ -66,9 +65,9 @@ trait JavaType {
          */
         val mss = ms.sortWith({ (l, r) =>
           l.getParameterTypes().length < r.getParameterTypes().length ||
-          OrcJavaCompatibility.isEqOrMoreSpecific(l, r) ||
-          (!Modifier.isAbstract(l.getModifiers()) && Modifier.isAbstract(r.getModifiers())) ||
-          OrcJavaCompatibility.isJavaSubtypeOf(l.getReturnType(),r.getReturnType())
+            OrcJavaCompatibility.isEqOrMoreSpecific(l, r) ||
+            (!Modifier.isAbstract(l.getModifiers()) && Modifier.isAbstract(r.getModifiers())) ||
+            OrcJavaCompatibility.isJavaSubtypeOf(l.getReturnType(), r.getReturnType())
         })
         OverloadedType(mss map { liftJavaMethod(_, javaContext) })
       }

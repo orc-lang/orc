@@ -234,7 +234,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
-         { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
+    { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
     | ("{|" ~> parseExpression <~ "|}") -> Trim
     | ("{" ~> parseExpression <~ "}") -> Section
     | "new" ~> parseClassExpression -> New
@@ -367,8 +367,8 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
   val parseDefSigCore = (
-      ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType)
-    
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType)
+
   val parseDefDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Def
 
@@ -376,36 +376,31 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
   val parseSiteDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Site
-    
+
     | parseDefSigCore -> SiteSig)
 
-      
   val parseClassBody: Parser[ClassLiteral] = (
-        ("{" ~> (ident <~ "#").? ~ parseDeclaration.* <~ "}") -> ClassLiteral 
-      )
-  
+    ("{" ~> (ident <~ "#").? ~ parseDeclaration.* <~ "}") -> ClassLiteral)
+
   val parseClassPrimitiveExpression: Parser[ClassExpression] = (
-        parseClassBody
-        | ident -> ClassVariable
-      )
+    parseClassBody
+    | ident -> ClassVariable)
   val parseClassExpression: Parser[ClassExpression] = (
-        parseClassPrimitiveExpression
-        | parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin
-      )
-      
+    parseClassPrimitiveExpression
+    | parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin)
+
   val parseClassDeclaration = (
-        (ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration 
-      )
-    
+    (ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
+
   val parseDeclaration: Parser[Declaration] = (
     (
 
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
 
       | "def" ~> parseDefDeclaration
-      
+
       | "site" ~> parseSiteDeclaration
-      
+
       | "class" ~> parseClassDeclaration
 
       | "import" ~> Keyword("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport

@@ -1,12 +1,12 @@
 //
-// OrcRecord.scala -- Scala class OrcRecord
+// OrcObject.scala -- Scala class OrcObject
 // Project OrcScala
 //
 // $Id: OrcRecord.scala 2933 2011-12-15 16:26:02Z jthywissen $
 //
-// Created by dkitchin on Jul 10, 2010.
+// Created by dkitchin on Jul 10, 2010. Updated to object from record by amp in Dec 2014.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -21,9 +21,9 @@ import scala.collection.immutable.Map
 import orc.run.core.Future
 
 /** The runtime object representing Orc objects.
-  *  
+  *
   * Since they are recursive the entries need to be set after the object exists.
-  * This is done by initializing entries to null and then having assert checks. 
+  * This is done by initializing entries to null and then having assert checks.
   *
   * @author amp
   */
@@ -32,7 +32,7 @@ case class OrcObject(var entries: Map[Field, Future] = null) extends OrcValue {
     assert(entries eq null)
     entries = _entries
   }
-  
+
   def apply(f: Field) = {
     assert(entries ne null)
     entries(f)

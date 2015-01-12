@@ -6,7 +6,7 @@
 //
 // Created by amshali on Jul 12, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -188,18 +188,18 @@ object OrcXML {
           <right>{ toXML(right) }</right>
         </otherwise>
       case FieldAccess(o, f) =>
-        <fieldaccess name={f.field}>
-          <expr>{toXML(o)}</expr>
+        <fieldaccess name={ f.field }>
+          <expr>{ toXML(o) }</expr>
         </fieldaccess>
       case New(os) =>
         <new>
-          {toXML(os)}
+          { toXML(os) }
         </new>
-      case Classvar(i) => <classvar index={ i.toString } />
+      case Classvar(i) => <classvar index={ i.toString }/>
       case Structural(bindings) =>
         <structural>
-          { for((n, e) <- bindings) yield
-            <binding name={n.field}><expr>{ toXML(e) }</expr></binding>
+          {
+            for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
           }
         </structural>
       case Class(stacksize, struct) => <class stacksize={ stacksize.toString }>{ toXML(struct) }</class>
@@ -388,7 +388,7 @@ object OrcXML {
         Trim(fromXML(expr))
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
-      case <fieldaccess><expr>{obj}</expr></fieldaccess> =>
+      case <fieldaccess><expr>{ obj }</expr></fieldaccess> =>
         FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
       case <new>{ os }</new> =>
         New(objectStructureFromXML(os))
@@ -451,21 +451,21 @@ object OrcXML {
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc argument")
     }
   }
-  
+
   @throws(classOf[OilParsingException])
   def objectStructureFromXML(xml: scala.xml.Node): ObjectStructure = {
     xml --> {
       case <structural>{ _* }</structural> => structuralFromXML(xml)
-      case <classvar /> => Classvar((xml \ "@index").text.toInt)
+      case <classvar/> => Classvar((xml \ "@index").text.toInt)
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
     }
   }
-  
+
   @throws(classOf[OilParsingException])
   def structuralFromXML(xml: scala.xml.Node): Structural = {
     xml --> {
       case <structural>{ bindings @ _* }</structural> => {
-        val bs = for(x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
+        val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
           (Field((x \ "@name").text), fromXML(xmle))
         }
         Structural(bs.toMap)
@@ -473,7 +473,7 @@ object OrcXML {
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Structural")
     }
   }
-  
+
   @throws(classOf[OilParsingException])
   def classFromXML(xml: scala.xml.Node): Class = {
     xml --> {
@@ -498,9 +498,9 @@ object OrcXML {
         case <returntype>{ returnType }</returntype> => Some(typeFromXML(returnType))
         case _ => None
       }
-      constructor(typeFormalArity, arity, fromXML(body), argTypes, returnType)      
+      constructor(typeFormalArity, arity, fromXML(body), argTypes, returnType)
     }
-    
+
     xml --> {
       case d @ <definition><body>{ body }</body>{ rest @ _* }</definition> => {
         buildCallable(d, body, rest, Def)

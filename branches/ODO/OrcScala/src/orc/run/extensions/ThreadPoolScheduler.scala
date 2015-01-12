@@ -134,13 +134,13 @@ trait OrcRunner {
   * @author jthywiss
   */
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-    //TODO: Make more of these params configurable
-    math.max(4, Runtime.getRuntime().availableProcessors * 2),
-    if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
-    2000L, TimeUnit.MILLISECONDS,
-    //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
-    new LinkedBlockingQueue[Runnable](),
-    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+  //TODO: Make more of these params configurable
+  math.max(4, Runtime.getRuntime().availableProcessors * 2),
+  if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
+  2000L, TimeUnit.MILLISECONDS,
+  //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
+  new LinkedBlockingQueue[Runnable](),
+  new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,9 +40,9 @@ trait Blocker {
 
   /** When a Blockable blocked on this resource is scheduled,
     * it performs this check to observe any changes in
-    * the state of this resource. Blockables that call this, should 
+    * the state of this resource. Blockables that call this, should
     * assume they may have been rescheduled when this returns, however
-    * during the execution of check the Blockable may assume it has 
+    * during the execution of check the Blockable may assume it has
     * not yet been rescheduled.
     *
     * This should call Blockable#awake(AnyRef) to notify the

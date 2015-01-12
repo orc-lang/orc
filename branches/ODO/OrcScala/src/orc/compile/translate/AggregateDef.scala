@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -73,7 +73,7 @@ case class AggregateDef(clauses: List[Clause],
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
     val newclause = body ->> Clause(newformals, None, body)
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at body))
-    val result = AggregateDef(clauses ::: List(newclause), Some(Def(null,null,null,null,null,null)), None, newArgTypes, None)
+    val result = AggregateDef(clauses ::: List(newclause), Some(Def(null, null, null, null, null, null)), None, newArgTypes, None)
     result takeEarlierPos this
   }
 
@@ -88,9 +88,9 @@ case class AggregateDef(clauses: List[Clause],
     val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, classcontext, translator)
 
     kindSample.get match {
-      case _ : DefDeclaration =>
+      case _: DefDeclaration =>
         named.Def(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
-      case _ : SiteDeclaration =>
+      case _: SiteDeclaration =>
         named.Site(x, newformals, newbody, newTypeFormals, newArgTypes, newReturnType)
     }
   }

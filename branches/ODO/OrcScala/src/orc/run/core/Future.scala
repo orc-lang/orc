@@ -6,7 +6,7 @@
 //
 // Created by amp on Dec 6, 2014.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,8 +19,8 @@ import orc.values.Format
 import orc.values.OrcValue
 
 /** A future value that can be bound or unbound or halted.
-  *  
-  * Note: This implementation is from the Porc implementation, so 
+  *
+  * Note: This implementation is from the Porc implementation, so
   * it is slightly more optimized than most of the token interpreter.
   * Specifically the states are Ints to avoid the need for objects
   * in the critial paths. The trade off is that Future contains an
@@ -41,7 +41,7 @@ final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
       scheduleBlocked()
     }
   }
-  
+
   def stop() = synchronized {
     if (_state == Unbound) {
       //Logger.finest(s"$this halted")
@@ -49,7 +49,7 @@ final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
       scheduleBlocked()
     }
   }
-  
+
   private def scheduleBlocked(): Unit = {
     for (j <- _blocked) {
       runtime.stage(j)
@@ -58,9 +58,8 @@ final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
     _blocked = null
   }
 
-  
   def read(blockable: Blockable) = {
-    val st = synchronized  { 
+    val st = synchronized {
       _state match {
         case Unbound => {
           blockable.blockOn(this)
@@ -70,14 +69,14 @@ final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
       }
       _state
     }
-   
+
     st match {
       case Bound => blockable.awakeTerminalValue(_value)
       case Halt => blockable.awakeStop()
       case Unbound => {}
     }
   }
-  
+
   def check(blockable: Blockable): Unit = {
     synchronized { _state } match {
       case Unbound => throw new AssertionError("Spurious call to Future.check.")
@@ -85,7 +84,7 @@ final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
       case Halt => blockable.awakeStop()
     }
   }
-  
+
   override def toOrcSyntax() = {
     synchronized { _state } match {
       case Bound => Format.formatValue(_value)

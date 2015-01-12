@@ -15,7 +15,6 @@
 package orc.types
 
 /**
-  *
   * @author dkitchin
   */
 case object Top extends Type {

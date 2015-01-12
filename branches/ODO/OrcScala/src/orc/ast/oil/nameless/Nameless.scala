@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -156,10 +156,10 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 
 case class New(structure: ObjectStructure) extends Expression
 
-case class DeclareClasses(defs: List[Class], body: Expression) extends Expression 
+case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
-case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression 
+case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
 case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 
 case class HasType(body: Expression, expectedType: Type) extends Expression
@@ -205,15 +205,15 @@ case class Structural(val bindings: Map[Field, Expression])
     shift(bindings.values.flatMap(_.freevars).toSet, 1)
   }
 }
-  
+
 case class Classvar(index: Int) extends ObjectStructure with hasOptionalVariableName {
   require(index >= 0)
   lazy val freevars: Set[Int] = Set(index)
 }
 
 case class Class(
-    val contextLength: Int,
-    val structure: Structural)
+  val contextLength: Int,
+  val structure: Structural)
   extends NamelessAST
   with hasFreeVars
   with hasOptionalVariableName {
@@ -225,7 +225,7 @@ sealed abstract class Callable extends NamelessAST
   with hasOptionalVariableName {
   /* Get the free vars of the body, then bind the arguments */
   lazy val freevars: Set[Int] = shift(body.freevars, arity)
-  
+
   val typeFormalArity: Int
   val arity: Int
   val body: Expression
@@ -233,7 +233,7 @@ sealed abstract class Callable extends NamelessAST
   val returnType: Option[Type]
 
   def copy(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]): Callable
-  
+
   def subst(ctx: List[Option[AnyRef]]): Callable = {
     copy(typeFormalArity, arity, body.subst(substCtx(ctx)), argTypes, returnType)
   }

@@ -14,12 +14,12 @@
 //
 package orc.run.core
 
-import orc.{CaughtEvent, OrcEvent, OrcRuntime, Schedulable}
-import orc.ast.oil.nameless.{Argument, Call, Def, Site, Constant, DeclareCallables, DeclareType, Expression, Graft, HasType, Hole, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVariable, Variable, VtimeZone}
+import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
+import orc.ast.oil.nameless.{ Argument, Call, Def, Site, Constant, DeclareCallables, DeclareType, Expression, Graft, HasType, Hole, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVariable, Variable, VtimeZone }
 import orc.error.OrcException
-import orc.error.runtime.{ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException}
-import orc.lib.time.{Vawait, Vtime}
-import orc.values.{Field, OrcRecord, Signal}
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
+import orc.lib.time.{ Vawait, Vtime }
+import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 import orc.run.Logger
 import orc.ast.oil.nameless.New
@@ -61,7 +61,7 @@ class Token protected (
   protected var clock: Option[VirtualClock] = None,
   protected var state: TokenState = Live)
   extends GroupMember with Schedulable with Blockable with Resolver {
-  
+
   var functionFramesPushed: Int = 0
 
   val runtime: OrcRuntime = group.runtime
@@ -126,7 +126,7 @@ class Token protected (
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
-    if (state != Killed) { 
+    if (state != Killed) {
       // Logger.finer(s"Changing state: $this to $newState")
       state = newState
       true
@@ -325,7 +325,7 @@ class Token protected (
       case Variable(n) => {
         val v = env(n)
         assert(v match {
-          case BoundValue(_:Class) => false
+          case BoundValue(_: Class) => false
           case _ => true
         }, "Found class when looking up normal variable.")
         v
@@ -336,10 +336,10 @@ class Token protected (
     }
   }
   protected def lookupClass(a: ObjectStructure): (Option[Int], Structural) = {
-    a match { 
+    a match {
       case Classvar(i) =>
         env(i) match {
-          case BoundValue(c:Class) => (Some(c.contextLength), c.structure) 
+          case BoundValue(c: Class) => (Some(c.contextLength), c.structure)
           case v => throw new AssertionError(s"Found non-class when looking up class variable: $v")
         }
       case s: Structural => (None, s)
@@ -386,20 +386,20 @@ class Token protected (
     } else {
       val sh = new OrcSiteCallHandle(this)
       blockOn(sh)
-      
+
       // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
-      
+
       // Just build the stack instead of pushing after we create it.
       // The parameters go on in reverse order. First parameter on the "bottom" of the arguments.
       val env = (params map BoundValue).reverse ::: s.context
-           
+
       // Build a token that is in a group nested inside the declaration context.
-      val t = new Token(s.code.body, 
-          env=env, 
-          group=new OrcSiteCallGroup(s.group, sh),
-          stack=GroupFrame(EmptyFrame),
-          clock=s.clock)
-      
+      val t = new Token(s.code.body,
+        env = env,
+        group = new OrcSiteCallGroup(s.group, sh),
+        stack = GroupFrame(EmptyFrame),
+        clock = s.clock)
+
       runtime.stage(t)
     }
   }
@@ -530,7 +530,7 @@ class Token protected (
   //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
   //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
   //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
-  
+
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state) 
@@ -614,32 +614,32 @@ class Token protected (
 
       case New(os) => {
         val obj = new OrcObject()
-        
+
         val (contextsize, struct) = lookupClass(os)
-        
+
         // Truncate the context to the height it was at when the class was created also add "this".
         val objenv = BoundValue(obj) :: contextsize.map(env.takeRight(_)).getOrElse(env)
-          
-        val fields = for((name, expr) <- struct.bindings) yield {
+
+        val fields = for ((name, expr) <- struct.bindings) yield {
           // We use a GraftGroup since it is exactly what we need.
           // The difference between this and graft is where the future goes.
           val pg = new GraftGroup(group)
-          
+
           // A binding frame is not needed since publishing will trigger the token to halt.
-          val t = new Token(expr, 
-              env=objenv, 
-              group=pg,
-              stack=GroupFrame(EmptyFrame),
-              clock=clock)
+          val t = new Token(expr,
+            env = objenv,
+            group = pg,
+            stack = GroupFrame(EmptyFrame),
+            clock = clock)
           runtime.stage(t)
-          
+
           (name, pg.future)
         }
         obj.setFields(fields)
-        
+
         publish(Some(obj))
       }
-      
+
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
@@ -654,13 +654,13 @@ class Token protected (
           }
         }
       }
-      
+
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
 
       case DeclareClasses(clss, body) => {
-        for(c <- clss) {
+        for (c <- clss) {
           bind(BoundValue(c))
         }
         move(body)
@@ -672,10 +672,10 @@ class Token protected (
          * of the defs in this lexical context.
          */
         val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-        
+
         decls.head match {
           case _: Def => {
-            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d}), lexicalContext, runtime)
+            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime)
             runtime.stage(closureGroup)
 
             for (c <- closureGroup.closures) {
@@ -685,7 +685,7 @@ class Token protected (
           case _: Site => {
             val sites = for (s <- decls) yield new OrcSite(s.asInstanceOf[Site], group, clock)
 
-            val context = (sites map BoundValue) ::: lexicalContext 
+            val context = (sites map BoundValue) ::: lexicalContext
 
             for (s <- sites) {
               s.context = context
@@ -718,10 +718,10 @@ class Token protected (
         runtime.stage(this)
       }
       case Blocked(_) => {
-        if(v.isDefined) {
+        if (v.isDefined) {
           // If we are blocking then publish in a copy of this token.
           // This is needed to allow blockers to publish more than once.
-          val nt = copy(state=Publishing(v))
+          val nt = copy(state = Publishing(v))
           runtime.stage(nt)
         } else {
           // However "publishing" stop is handled the old way.

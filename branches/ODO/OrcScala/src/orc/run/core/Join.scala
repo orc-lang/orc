@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jan 22, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -86,7 +86,7 @@ abstract class JoinBase extends Blocker {
       runtime.stage(waiter)
     }
   }
-  
+
   def check(t: Blockable): Unit
 }
 
@@ -101,7 +101,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
       case JoinComplete => throw new AssertionError("Erroneous state transformation in Join")
     }
   }
-  
+
   def check(t: Blockable) = {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
@@ -115,7 +115,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
 
 class NonhaltingJoin(val params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends JoinBase {
   def halt(index: Int) = set(index, BoundStop)
-  
+
   def check(t: Blockable) = {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")

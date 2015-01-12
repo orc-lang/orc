@@ -6,7 +6,7 @@
 //
 // Created by amp on Dec 14, 2012.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,7 +23,7 @@ import orc.run.Logger
   * the Blocker knows about the Blockable and the Blocker is running you
   * must assume that it could unblock at any time. So in general, blocking
   * should be the last action before returning to the scheduler.
-  * 
+  *
   * @author amp
   */
 trait Blockable extends Schedulable {
@@ -48,22 +48,22 @@ trait Blockable extends Schedulable {
   }
 
   /** Called to wake up the blockable, but halt it immediately.
-    *  
+    *
     * This may be called after a called to awakeNonterminalValue, but during the same
     * invokation of check. Once this is called the blockable may reschedule
     * itself.
-    * 
+    *
     * This function should not block and should try to be fairly fast.
     */
   def halt() {
     throw new AssertionError("Halt called on non-haltable blockable (This is an interpreter bug).")
   }
-  
+
   /** Called by the blocker from within its check method to notify the
-    * Blockable that it has been unblocked and to provide the single 
+    * Blockable that it has been unblocked and to provide the single
     * value that it might was waiting on. This must only be called while
     * executing on behalf of the Blockable.
-    * 
+    *
     * Semantically this is equivalent to "awakeNonterminalValue(v); halt();", however
     * for implementation reasons it is a separate primitive. Specifically,
     * There are cases in Token where awakeNonterminalValue would trigger an illegal
@@ -79,13 +79,13 @@ trait Blockable extends Schedulable {
     * Blockable that it has been unblocked and to provide the value that
     * it might was waiting on. This must only be called while
     * executing on behalf of the Blockable.
-    * 
-    * This does not terminate the blockable. It should go back to sleep 
+    *
+    * This does not terminate the blockable. It should go back to sleep
     * and expect to be awakened again by the same Blocker. In addition,
-    * awakeNonterminalValue may be called more than once in response to a single call 
-    * to check. halt() will be called after all calls to awakeNonterminalValue 
+    * awakeNonterminalValue may be called more than once in response to a single call
+    * to check. halt() will be called after all calls to awakeNonterminalValue
     * have completed.
-    * 
+    *
     * This function should not block and should try to be fairly fast.
     */
   def awakeNonterminalValue(v: AnyRef): Unit
@@ -94,10 +94,10 @@ trait Blockable extends Schedulable {
     * Blockable that it has been unblocked and notify it that the value it
     * it was waiting on is Stop (this is similar to publish(None)).
     * This must only be called while executing on behalf of the Blockable.
-    * 
-    * halt will not be called after awakeStop. The blocker will not call 
+    *
+    * halt will not be called after awakeStop. The blocker will not call
     * the blockable again after this.
-    * 
+    *
     * This function should not block and should try to be fairly fast.
     */
   def awakeStop(): Unit

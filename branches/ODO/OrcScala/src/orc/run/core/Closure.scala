@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -54,10 +54,10 @@ class ClosureGroup(
   with Blockable {
   import ClosureGroup._
   import BlockableMapExtension._
-  
+
   def defs = _defs
   def lexicalContext = _lexicalContext
-  
+
   private val toStringRecusionGuard = new ThreadLocal[Object]()
   override def toString = {
     try {
@@ -131,7 +131,7 @@ class ClosureGroup(
 
   def check(t: Blockable, i: Int) = {
     synchronized { state } match {
-      case Resolved => 
+      case Resolved =>
         t.awakeTerminalValue(closures(i))
       case _ => throw new AssertionError("Closure.check called in bad state: " + state)
     }

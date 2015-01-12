@@ -78,7 +78,7 @@ trait Schedulable extends Runnable {
     */
   def onSchedule() {}
 
-  /** Invoked after this schedulable unit has been run by the scheduler and 
+  /** Invoked after this schedulable unit has been run by the scheduler and
     * has completed (successfully or not). It is run in the same thread that
     * executed the unit.
     */
@@ -111,7 +111,7 @@ trait Handle {
   def setQuiescent(): Unit
 
   def publishNonterminal(v: AnyRef): Unit
-  def publish(v: AnyRef) { 
+  def publish(v: AnyRef) {
     publishNonterminal(v)
     halt
   }

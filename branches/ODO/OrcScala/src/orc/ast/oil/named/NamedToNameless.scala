@@ -87,7 +87,7 @@ trait NamedToNameless {
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
     }
   }
-  
+
   def namedToNameless(a: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ObjectStructure = {
     a -> {
       case Classvar(v) => {
@@ -99,14 +99,14 @@ trait NamedToNameless {
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
     }
   }
-  
+
   def convertStructural(struct: Structural, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Structural = {
     nameless.Structural(struct.bindings.mapValues(namedToNameless(_, struct.self :: context, typecontext)))
   }
-  
+
   def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
     a -> {
-      case Class(name, struct) => 
+      case Class(name, struct) =>
         nameless.Class(context.size, convertStructural(struct, context, typecontext))
     }
   }

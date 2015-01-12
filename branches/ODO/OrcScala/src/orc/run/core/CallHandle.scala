@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 26, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -39,24 +39,24 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   protected var quiescent = false
 
   val runtime = caller.runtime
-  
+
   // a mechanism to delay schedule of caller until later without holding the lock.
   var scheduleHeld = false
   var scheduleOnRelease = false
-  
+
   /** Set the CallHandle to hold scheduling the caller until releaseSchedule is called.
-    * 
-    * Call inside a synchronized block only. 
+    *
+    * Call inside a synchronized block only.
     */
   private def holdSchedule() = {
     assert(!scheduleHeld)
     assert(!scheduleOnRelease)
     scheduleHeld = true
   }
-  
+
   /** Schedule the caller either now or later depending on the hold state.
-    * 
-    * Call inside a synchronized block only. 
+    *
+    * Call inside a synchronized block only.
     */
   private def schedule() = {
     if (scheduleHeld)
@@ -66,8 +66,8 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   }
 
   /** Allow scheduling the caller again and possibly schedule it.
-    * 
-    * Call inside a synchronized block only. 
+    *
+    * Call inside a synchronized block only.
     */
   private def releaseSchedule() = {
     assert(scheduleHeld)
@@ -155,12 +155,12 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
       case CallRaisedException(e) => { t.awakeException(e) } // t !! e
       case CallWasKilled => {}
     }
-    
+
     synchronized {
       releaseSchedule()
     }
   }
-  
+
   override def toString = synchronized {
     super.toString + s"($state)"
   }
