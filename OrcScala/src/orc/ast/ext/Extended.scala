@@ -76,7 +76,7 @@ sealed abstract class Callable extends CallableDeclaration {
   val returntype: Option[Type]
   val guard: Option[Expression]
   val body: Expression
-  
+
   def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression): Callable
 }
 object Callable {
@@ -85,7 +85,7 @@ object Callable {
   }
 }
 
-sealed abstract class CallableSig extends CallableDeclaration  {
+sealed abstract class CallableSig extends CallableDeclaration {
   val name: String
   val typeformals: Option[List[String]]
   val argtypes: List[Type]
@@ -152,11 +152,10 @@ object CallableSingle {
       case (ds, f) => Some((ds, f))
     }
   }
-  
+
   private def partition(e: Seq[Declaration], kindSample: Option[CallableDeclaration]): (List[CallableDeclaration], Seq[Declaration]) = {
     e match {
-      case (d: CallableDeclaration) :: rest 
-        if kindSample.isEmpty || ((kindSample.get sameKindAs d) && kindSample.get.name == d.name) => {
+      case (d: CallableDeclaration) :: rest if kindSample.isEmpty || ((kindSample.get sameKindAs d) && kindSample.get.name == d.name) => {
         val (ds, g) = partition(rest, Some(d))
         (d :: ds, g)
       }
@@ -207,7 +206,6 @@ object ClassGroup {
   }
 
 }
-
 
 sealed abstract class TypeDeclaration extends NamedDeclaration
 case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration

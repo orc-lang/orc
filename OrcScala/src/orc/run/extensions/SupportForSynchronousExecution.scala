@@ -22,8 +22,7 @@ import orc.ast.oil.nameless.Expression
 import orc.error.runtime.ExecutionException
 import orc.util.LatchingSignal
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait SupportForSynchronousExecution extends OrcRuntime {
   protected var runSyncThread: Thread = null

@@ -22,8 +22,7 @@ import java.util.Timer
 import java.util.TimerTask
 import orc.run.core.Execution
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class RwaitEvent(delay: BigInt, caller: Handle) extends OrcEvent
 

@@ -127,7 +127,7 @@ object Main {
     //TODO: orcLogger.config(options.printAllTheOptions...)
 
     val includeStackTracesWithEveryLogMessage = false
-    if(includeStackTracesWithEveryLogMessage) {
+    if (includeStackTracesWithEveryLogMessage) {
       for (handler <- orcLogger.getHandlers()) {
         val oldFormatter = handler.getFormatter()
         val formatter = new Formatter() {
@@ -135,10 +135,10 @@ object Main {
             val tid = record.getThreadID()
             val stack = {
               val frames = (Thread.currentThread().getStackTrace().toVector.drop(2)
-                    .dropWhile(!_.getClassName().startsWith("orc"))
-                    .takeWhile(_.getMethodName() != "runWorker"))
+                .dropWhile(!_.getClassName().startsWith("orc"))
+                .takeWhile(_.getMethodName() != "runWorker"))
               val sb = new scala.collection.mutable.StringBuilder()
-              for(frame <- frames) {
+              for (frame <- frames) {
                 sb ++= "\tat " + frame + "\n"
               }
               sb.toString

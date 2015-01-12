@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -43,7 +43,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     }
     case Class(cls, struct) => List(cls, struct)
     case Structural(self, fields) => self +: fields.values.toSeq
-    case Classvar(v) => List(v) 
+    case Classvar(v) => List(v)
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
@@ -115,30 +115,30 @@ sealed trait ObjectStructure
 }
 
 /** A structural object structure representing an "anonymous class" like { val v = 1 }.
-  * 
+  *
   */
 case class Structural(val self: BoundVar, val bindings: Map[values.Field, Expression]) extends ObjectStructure
 
 /** A reference to a class.
-  * 
+  *
   */
 case class Classvar(name: Var) extends ObjectStructure with hasOptionalVariableName {
   transferOptionalVariableName(name, this)
 }
 
 /** A class representation
-  * 
+  *
   * Classes have a self variable and structure just as a structural type. See above.
-  * 
-  * The translator will already have generated the proper bindings including implementing 
+  *
+  * The translator will already have generated the proper bindings including implementing
   * inheritence and derivation correctly.
-  * 
-  * These values are used as is at runtime, so there is no need to capture context when 
+  *
+  * These values are used as is at runtime, so there is no need to capture context when
   * evaluating the declaration.
   */
 case class Class(
-    val name: BoundVar, 
-    val structure: Structural)
+  val name: BoundVar,
+  val structure: Structural)
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
@@ -149,19 +149,19 @@ case class Class(
 }
 
 /** Declare a group of mutually recursive classes.
-  * 
+  *
   * The class objects are not normal runtime values and should never be accessed in any way other than New.
   */
 case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 /** Construct a new class instance
-  * 
+  *
   * This node starts running an all the bindings in the class and returns self.
-  */ 
+  */
 case class New(cls: ObjectStructure) extends Expression
 
 /** Read the value from a field future.
-  * 
+  *
   * This will block until the future is bound.
   */
 case class FieldAccess(obj: Argument, field: values.Field) extends Expression
@@ -264,7 +264,6 @@ case class Site(name: BoundVar, formals: List[BoundVar], body: Expression, typef
   }
 }
 
-
 sealed abstract class Type
   extends NamedAST
   with hasFreeTypeVars
@@ -299,12 +298,12 @@ object Conversions {
   /** Given (e1, ... , en) and f, return:
     *
     * f(x1, ... , xn) <x1< e1
-    *               ...
-    *                <xn< en
+    *              ...
+    *               <xn< en
     *
     * As an optimization, if any e is already an argument, no << binder is generated for it.
     */
-   def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
+  def unfold(es: List[Expression], makeCore: List[Argument] => Expression): Expression = {
 
     def expand(es: List[Expression]): (List[Argument], Expression => Expression) =
       es match {
@@ -323,12 +322,12 @@ object Conversions {
     val (args, bind) = expand(es)
     bind(makeCore(args))
   }
-  
+
   /** Given an expression of the form:
     *
     * E <x1<| e1
     * ...
-    *  <xn<| en
+    * <xn<| en
     *
     * where E is not a latebind,
     * return E and (x1,e1), ... , (xn,en)

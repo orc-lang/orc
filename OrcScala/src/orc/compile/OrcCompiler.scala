@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -203,7 +203,7 @@ trait CoreOrcCompilerPhases {
   def outputIR[A](irNumber: Int) = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = s"Output IR #$irNumber"
     override def apply(co: CompilerOptions) = { ast =>
-      val irMask = 1 << (irNumber-1)
+      val irMask = 1 << (irNumber - 1)
       val echoIR = co.options.echoIR
       if ((echoIR & irMask) == irMask) {
         println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")

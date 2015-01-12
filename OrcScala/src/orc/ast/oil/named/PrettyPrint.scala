@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jun 7, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -61,10 +61,10 @@ class PrettyPrint {
       case Trim(f) => "{| " + reduce(f) + " |}"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
-      case c@Callable(f, formals, body, typeformals, argtypes, returntype) => {
-        val prefix = c match { 
-          case _ : Def => "def"
-          case _ : Site => "site"
+      case c @ Callable(f, formals, body, typeformals, argtypes, returntype) => {
+        val prefix = c match {
+          case _: Def => "def"
+          case _: Site => "site"
         }
         val name = f.optionalVariableName.getOrElse(lookup(f))
         prefix + " " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
