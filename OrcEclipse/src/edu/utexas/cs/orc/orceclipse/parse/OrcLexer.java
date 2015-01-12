@@ -248,7 +248,11 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			// COMBINATOR,
 			new TokenRecord(">", TokenType.COMBINATOR), new TokenRecord("|", TokenType.COMBINATOR), new TokenRecord(";", TokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			// BRACKET,
-			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET), new TokenRecord("{|", TokenType.BRACKET), new TokenRecord("|}", TokenType.BRACKET), new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET), new TokenRecord("{.", TokenType.BRACKET), new TokenRecord(".}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+			new TokenRecord("(", TokenType.BRACKET), new TokenRecord(")", TokenType.BRACKET),  //$NON-NLS-1$ //$NON-NLS-2$
+			new TokenRecord("{|", TokenType.BRACKET), new TokenRecord("|}", TokenType.BRACKET),  //$NON-NLS-1$ //$NON-NLS-2$
+			new TokenRecord("[", TokenType.BRACKET), new TokenRecord("]", TokenType.BRACKET),  //$NON-NLS-1$ //$NON-NLS-2$
+			new TokenRecord("{.", TokenType.BRACKET), new TokenRecord(".}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$
+			new TokenRecord("{", TokenType.BRACKET), new TokenRecord("}", TokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$
 			// SEPERATOR,
 			new TokenRecord(",", TokenType.SEPERATOR), new TokenRecord("#", TokenType.SEPERATOR), new TokenRecord("::", TokenType.SEPERATOR), new TokenRecord(":!:", TokenType.SEPERATOR), new TokenRecord(".", TokenType.SEPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 			// COMMENT_ENDLINE,
@@ -256,8 +260,10 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 			// COMMENT_MULTILINE,
 			new TokenRecord("{-", TokenType.COMMENT_MULTILINE), }; //$NON-NLS-1$
 
-	private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", "signal", "stop", "then", "type", "val", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$
-
+	private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+										 "signal", "stop", "then", "type", "val", "class", "extends", "with", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ 
+										 "new", "this", "site" };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	
 	private static final String NEWLINE_CHARS = "\n\r\f\u0085\u2028\u2029"; //$NON-NLS-1$
 	private static final String WHITESPACE_CHARS = " \t" + NEWLINE_CHARS + "\u000B\u200E\u200F"; //$NON-NLS-1$ //$NON-NLS-2$
 	private static final String DECIMAL_DIGIT_CHARS = "0123456789"; //$NON-NLS-1$
