@@ -63,7 +63,17 @@ public class OrcResources {
 	public static final String ORC_DEF_OBJ = "orc_def_obj"; //$NON-NLS-1$
 
 	/**
-	 * Name of the 16x16 icon representing an Orc site declaration
+	 * Name of the 16x16 icon representing an Orc internal site type declaration
+	 */
+	public static final String ORC_ORCSITE_TYPE_OBJ = "orc_orcsite_type_obj"; //$NON-NLS-1$
+
+	/**
+	 * Name of the 16x16 icon representing an Orc internal site
+	 */
+	public static final String ORC_ORCSITE_OBJ = "orc_orcsite_obj"; //$NON-NLS-1$
+
+	/**
+	 * Name of the 16x16 icon representing an Orc external site declaration
 	 */
 	public static final String ORC_SITE_OBJ = "orc_site_obj"; //$NON-NLS-1$
 
@@ -118,6 +128,10 @@ public class OrcResources {
 		addImageDescriptor(bundle, OrcResources.ORC_DEF_TYPE_OBJ, "gif", reg); //$NON-NLS-1$
 
 		addImageDescriptor(bundle, OrcResources.ORC_DEF_OBJ, "gif", reg); //$NON-NLS-1$
+
+		addImageDescriptor(bundle, OrcResources.ORC_ORCSITE_TYPE_OBJ, "gif", reg); //$NON-NLS-1$
+
+		addImageDescriptor(bundle, OrcResources.ORC_ORCSITE_OBJ, "gif", reg); //$NON-NLS-1$
 
 		addImageDescriptor(bundle, OrcResources.ORC_SITE_OBJ, "gif", reg); //$NON-NLS-1$
 

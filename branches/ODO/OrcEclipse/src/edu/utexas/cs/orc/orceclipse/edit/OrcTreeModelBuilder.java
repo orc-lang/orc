@@ -16,10 +16,14 @@
 package edu.utexas.cs.orc.orceclipse.edit;
 
 import orc.ast.AST;
+import orc.ast.ext.CallableDeclaration;
+import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
+import orc.ast.ext.ClassLiteral;
 import orc.ast.ext.DefDeclaration;
 import orc.ast.ext.Include;
 import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.SiteImport;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
@@ -40,6 +44,7 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 	private static final int TYPE_DECL_CATEGORY = 2;
 	private static final int CALLABLE_DECL_CATEGORY = 3;
 	private static final int SIMPLE_VAL_DECL_CATEGORY = 4;
+	private static final int CLASS_DECL_CATEGORY = 5;
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.imp.services.base.TreeModelBuilderBase#visitTree(java.lang.Object)
@@ -62,11 +67,15 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 		 */
 		if (ast instanceof ClassImport) {
 			createSubItem(ast, CALLABLE_DECL_CATEGORY);
-		} else if (ast instanceof DefDeclaration) {
+		} else if (ast instanceof CallableDeclaration) {
 			pushSubItem(ast, CALLABLE_DECL_CATEGORY);
+		} else if (ast instanceof ClassDeclaration) {
+			pushSubItem(ast, CLASS_DECL_CATEGORY);
+		} else if (ast instanceof ClassLiteral) {
+			pushSubItem(ast, CLASS_DECL_CATEGORY);
 		} else if (ast instanceof Include && ((Include) ast).origin() != null && ((Include) ast).origin().length() > 0) {
 			createSubItem(ast, INCLUDE_CATEGORY);
-		} else if (ast instanceof SiteDeclaration) {
+		} else if (ast instanceof SiteImport) {
 			createSubItem(ast, CALLABLE_DECL_CATEGORY);
 		} else if (ast instanceof TypeDeclaration) {
 			createSubItem(ast, TYPE_DECL_CATEGORY);
@@ -74,11 +83,23 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
 		}
 
-		for (final AST currChild : JavaConversions.asJavaIterable(ast.subtrees())) {
-			visit(currChild);
+		// A hack to flatten the ClassLiteral in ClassDeclaration into the parent node.
+		// In that case the ClassLiteral is never visited.
+		if (ast instanceof ClassDeclaration) {
+			ClassDeclaration decl = (ClassDeclaration)ast;
+			if(decl.base().isDefined()) {
+				visit(decl.base().get());
+			}
+			for (final AST currChild : JavaConversions.asJavaIterable(decl.body().subtrees())) {
+				visit(currChild);
+			}
+		} else {
+			for (final AST currChild : JavaConversions.asJavaIterable(ast.subtrees())) {
+				visit(currChild);
+			}
 		}
 
-		if (ast instanceof DefDeclaration) {
+		if (ast instanceof CallableDeclaration || ast instanceof ClassDeclaration || ast instanceof ClassLiteral) {
 			popSubItem();
 		}
 	}

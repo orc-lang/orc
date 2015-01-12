@@ -20,12 +20,18 @@ import java.util.Set;
 
 import orc.ast.AST;
 import orc.ast.OrcSyntaxConvertible;
+import orc.ast.ext.Callable;
+import orc.ast.ext.CallableSig;
+import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
+import orc.ast.ext.ClassLiteral;
 import orc.ast.ext.Def;
-import orc.ast.ext.DefClass;
 import orc.ast.ext.DefSig;
 import orc.ast.ext.Include;
+import orc.ast.ext.Site;
 import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.SiteImport;
+import orc.ast.ext.SiteSig;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
@@ -76,6 +82,10 @@ public class OrcLabelProvider implements ILabelProvider {
 	private static Image ORC_DEF_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_DEF_TYPE_OBJ);
 
 	private static Image ORC_DEF_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_DEF_OBJ);
+	
+	private static Image ORC_ORCSITE_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_ORCSITE_TYPE_OBJ);
+	
+	private static Image ORC_ORCSITE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_ORCSITE_OBJ);
 
 	private static Image ORC_SITE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_SITE_OBJ);
 
@@ -140,10 +150,16 @@ public class OrcLabelProvider implements ILabelProvider {
 		if (n instanceof DefSig) {
 			return ORC_DEF_TYPE_OBJ_IMAGE;
 		}
-		if (n instanceof Def || n instanceof DefClass) {
+		if (n instanceof Def) {
 			return ORC_DEF_OBJ_IMAGE;
 		}
-		if (n instanceof SiteDeclaration) {
+		if (n instanceof SiteSig) {
+			return ORC_ORCSITE_TYPE_OBJ_IMAGE;
+		}
+		if (n instanceof Site) {
+			return ORC_ORCSITE_OBJ_IMAGE;
+		}
+		if (n instanceof SiteImport) {
 			return ORC_SITE_OBJ_IMAGE;
 		}
 		if (n instanceof ClassImport) {
@@ -177,20 +193,16 @@ public class OrcLabelProvider implements ILabelProvider {
 			final Include idecl = (Include) n;
 			return idecl.origin();
 		}
-		if (n instanceof Def) {
-			final Def dmc = (Def) n;
+		if (n instanceof Callable) {
+			final Callable dmc = (Callable) n;
 			return sigToString(dmc);
 		}
-		if (n instanceof DefClass) {
-			final DefClass dmc = (DefClass) n;
-			return sigToString(dmc);
-		}
-		if (n instanceof DefSig) {
-			final DefSig dmt = (DefSig) n;
+		if (n instanceof CallableSig) {
+			final CallableSig dmt = (CallableSig) n;
 			return sigToString(dmt);
 		}
-		if (n instanceof SiteDeclaration) {
-			return ((SiteDeclaration) n).name();
+		if (n instanceof SiteImport) {
+			return ((SiteImport) n).name();
 		}
 		if (n instanceof ClassImport) {
 			return ((ClassImport) n).name();
@@ -200,6 +212,12 @@ public class OrcLabelProvider implements ILabelProvider {
 		}
 		if (n instanceof TypeDeclaration) {
 			return ((TypeDeclaration) n).name();
+		}
+		if (n instanceof ClassDeclaration) {
+			return ((ClassDeclaration) n).name();
+		}
+		if (n instanceof ClassLiteral) {		
+			return ((ClassLiteral) n).toInterfaceString();
 		}
 		// If we get here, someone forgot to add a case above....
 		return "<" + n.getClass().getSimpleName() + ">"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -237,7 +255,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		fListeners.remove(listener);
 	}
 
-	private static String sigToString(final Def d) {
+	private static String sigToString(final Callable d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());
@@ -248,25 +266,7 @@ public class OrcLabelProvider implements ILabelProvider {
 		return s.toString();
 	}
 
-	private static String sigToString(final DefClass d) {
-		final StringBuilder s = new StringBuilder();
-
-		s.append(d.name());
-
-		if (d.typeformals() != null && d.typeformals().isDefined()) {
-			s.append('[');
-			s.append(listMkString(JavaConversions.asJavaIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
-			s.append(']');
-		}
-
-		s.append('(');
-		s.append(listMkString(JavaConversions.asJavaIterable(d.formals()), ", ")); //$NON-NLS-1$
-		s.append(')');
-
-		return s.toString();
-	}
-
-	private static String sigToString(final DefSig d) {
+	private static String sigToString(final CallableSig d) {
 		final StringBuilder s = new StringBuilder();
 
 		s.append(d.name());

@@ -170,10 +170,21 @@ case class ClassImport(name: String, classname: String) extends NamedDeclaration
 
 case class ClassDeclaration(name: String, base: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration
 
-sealed abstract class ClassExpression extends AST
-case class ClassVariable(name: String) extends ClassExpression
-case class ClassLiteral(decls: Seq[Declaration]) extends ClassExpression
-case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression
+sealed abstract class ClassExpression extends AST {
+  def toInterfaceString: String
+}
+case class ClassVariable(name: String) extends ClassExpression {
+  def toInterfaceString = name
+}
+case class ClassLiteral(decls: Seq[Declaration]) extends ClassExpression {
+  def toInterfaceString = decls.collect({
+    case v: Val => v.p.toOrcSyntax
+    case d: NamedDeclaration => d.name
+  }).mkString("{ ", ", ", " }")
+}
+case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
+  def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
+}
 
 case class New(cls: ClassExpression) extends Expression
 
