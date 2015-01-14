@@ -171,6 +171,7 @@ sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
 case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
+  override def toString = optionalVariableName.getOrElse("") + "#" + index
 }
 case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
   optionalVariableName = Some(name)

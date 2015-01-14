@@ -322,12 +322,12 @@ class Token protected (
   protected def lookup(a: Argument): Binding = {
     a match {
       case Constant(v) => BoundValue(v)
-      case Variable(n) => {
+      case vr @ Variable(n) => {
         val v = env(n)
         assert(v match {
           case BoundValue(_: Class) => false
           case _ => true
-        }, "Found class when looking up normal variable.")
+        }, s"Found class when looking up normal variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         v
       }
       case UnboundVariable(x) =>
@@ -337,10 +337,13 @@ class Token protected (
   }
   protected def lookupClass(a: ObjectStructure): (Option[Int], Structural) = {
     a match {
-      case Classvar(i) =>
+      case vr @ Classvar(i) =>
+        Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
         env(i) match {
-          case BoundValue(c: Class) => (Some(c.contextLength), c.structure)
-          case v => throw new AssertionError(s"Found non-class when looking up class variable: $v")
+          case BoundValue(c: Class) =>
+            Logger.finer(s"Found class ${vr.optionalVariableName} ${c.contextLength}")
+            (Some(c.contextLength), c.structure)
+          case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         }
       case s: Structural => (None, s)
     }
@@ -644,9 +647,9 @@ class Token protected (
         resolve(lookup(o)) {
           _ match {
             case o: OrcObject =>
-              Logger.finer(s"resolving $o$f")
+              //Logger.finer(s"resolving $o$f")
               resolve(BoundFuture(o(f))) { x =>
-                Logger.finer(s"resolved $o$f = $x")
+                //Logger.finer(s"resolved $o$f = $x")
                 publish(Some(x))
               }
             case s: AnyRef =>
@@ -671,7 +674,7 @@ class Token protected (
         /* Closure compaction: Bind only the free variables
          * of the defs in this lexical context.
          */
-        val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
+        val lexicalContext = openvars map { i: Int => env(i) }
 
         decls.head match {
           case _: Def => {
@@ -780,6 +783,18 @@ class Token protected (
   override def awakeException(e: OrcException) = this !! e
 
   override def awake() { unblock() }
+  
+  
+  // DEBUG CODE:
+  def envToString() = {
+    env.zipWithIndex.map({
+      case (b, i) => s"$i: " + (b match {
+        case BoundValue(v) => v.toString
+        case BoundFuture(f) => f.toString
+        case BoundClosure(c) => c.code.toString
+      })
+    }).mkString("\n")
+  }
 }
 
 /**  */

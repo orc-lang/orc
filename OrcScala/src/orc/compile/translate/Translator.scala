@@ -502,7 +502,28 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Structural = {
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
-    val memberContext = context ++ List((thisName, thisVar), ("this", thisVar))
+    
+    val thisContext = List((thisName, thisVar), ("this", thisVar))
+    
+    val bindingVisitor = new ExtendedASTTransform {
+      var names = Set[String]()
+      
+      override def onPattern() = {
+        case p @ ext.VariablePattern(n) => names += n; p
+        case p @ ext.AsPattern(pat, n) => names += n; this(pat); p
+      }
+      
+      override def onDeclaration() = {
+        case d: ext.Val => this(d.p); d
+        case d: ext.NamedDeclaration => names += d.name; d
+        case d => d
+      }
+    }
+    lit.decls.foreach(bindingVisitor.apply)
+    val fieldNames = bindingVisitor.names
+    val fieldsContext = fieldNames.map(n => (n, new BoundVar(Some(n))))
+    
+    val memberContext = context ++ thisContext ++ fieldsContext
 
     var tmpId = 1
     def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
@@ -530,8 +551,16 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case decl :: _ =>
         throw (MalformedExpression("Invalid declaration form in class") at decl)
     }
-    val newbindings = convertFields(lit.decls)
-    Structural(thisVar, newbindings.toMap)
+    
+    def bindMembers(e: Expression) = {
+      fieldsContext.foldRight(e) { (binding, e) =>
+        val (name, x) = binding 
+        Graft(x, FieldAccess(thisVar, Field(name)), e)
+      }
+    }
+    
+    val newbindings = convertFields(lit.decls).toMap.mapValues(bindMembers)
+    Structural(thisVar, Map() ++ newbindings)
   }
 
 }

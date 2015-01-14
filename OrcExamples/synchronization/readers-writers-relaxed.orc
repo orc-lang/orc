@@ -40,7 +40,7 @@ removed.
 remove. Since coin flip is fair, it will not favor of one kind forever.
 -}
 
-def class RelaxedChannel() =
+class RelaxedChannel {
   val (nwr, nww) = (Ref[Integer](0),Ref[Integer](0)) -- # waiting readers, writers
   val mutex = Semaphore(1) -- to gain access to (nwr, nww)
   val count = Semaphore(0) -- nwr? + nww?
@@ -62,11 +62,10 @@ def class RelaxedChannel() =
   def chooseone(_,0) = removereader()
   def chooseone(_,_) =
     if (Random(2) = 0) then removereader() else removewriter()
+}
 
-  stop
-
-def class ReadersWriters() =
-  val buff  = RelaxedChannel()
+class ReadersWriters {
+  val buff  = new RelaxedChannel
   val cb    = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
 
@@ -83,13 +82,14 @@ def class ReadersWriters() =
       else  (cb.onZero() >> cb.inc() >> w.release() >> cb.onZero() >> main())
     )
 
-  main()
+  val _ = main()
+}
 
-val rw = ReadersWriters()
+val rw = new ReadersWriters
 
-  rw.start(true) >> Println("1 read") >> Rwait(75) >> rw.end()
-| Rwait(50) >> rw.start(true)  >> Println("2 read") >> rw.end()
-| Rwait(60) >>  rw.start(false) >> Println("3 write") >> rw.end()
+  rw.start(true) >> Println("1 read") >> Rwait(750) >> rw.end()
+| Rwait(500) >> rw.start(true)  >> Println("2 read") >> rw.end()
+| Rwait(600) >>  rw.start(false) >> Println("3 write") >> rw.end()
 
 
 ----------------------------------------------------
