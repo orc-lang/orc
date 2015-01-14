@@ -207,9 +207,15 @@ case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
 class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
-  optionalVariableName = optionalName
-
+  optionalVariableName = Some(optionalName getOrElse Var.getNextVariableName())
   def productIterator = optionalVariableName.toList.iterator
+}
+object Var {
+  private var nextVar: Int = 0
+  def getNextVariableName(s: String = "v"): String = synchronized {
+    nextVar += 1
+    s"`$s$nextVar"
+  }
 }
 
 sealed abstract class Callable

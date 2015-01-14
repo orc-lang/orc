@@ -32,6 +32,9 @@ trait hasFreeVars {
       override def onArgument(context: List[BoundVar]) = {
         case x: BoundVar => (if (context contains x) {} else { varset += x }); x
       }
+      override def onObjectStructure(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
+        case c @ Classvar(x: BoundVar) => (if (context contains x) {} else { varset += x }); c
+      }
     }
     collect(this)
     Set.empty ++ varset

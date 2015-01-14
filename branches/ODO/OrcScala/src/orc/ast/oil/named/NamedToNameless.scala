@@ -101,7 +101,7 @@ trait NamedToNameless {
   }
 
   def convertStructural(struct: Structural, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Structural = {
-    nameless.Structural(struct.bindings.mapValues(namedToNameless(_, struct.self :: context, typecontext)))
+    struct ->> nameless.Structural(Map() ++ struct.bindings.mapValues(namedToNameless(_, struct.self :: context, typecontext)))
   }
 
   def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
