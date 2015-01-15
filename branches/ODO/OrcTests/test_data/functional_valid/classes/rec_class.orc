@@ -14,13 +14,7 @@ class D {
   val y = 2
 }
 
-(new C).x.f().y
-
-{-
-Somewhere I'm building the wrong stack. Probably in conversion to nameless. I suspect class values are being left out in some case or another.
-
-The above program should be giving a non-existant field error.
--}
+(new C).x.f().x.y
 
 {-
 OUTPUT:

@@ -70,13 +70,9 @@ abstract class JoinBase extends Blocker {
         param match {
           case BoundValue(v) => set(i, param)
           case BoundStop => halt(i)
-          case BoundFuture(g) => {
+          case BoundReadable(g) => {
             val item = new JoinItem(this, i)
             g read item
-          }
-          case BoundClosure(c) => {
-            val item = new JoinItem(this, i)
-            c read item
           }
         }
       }

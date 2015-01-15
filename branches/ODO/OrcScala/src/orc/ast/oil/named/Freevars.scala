@@ -30,12 +30,18 @@ trait hasFreeVars {
     val varset = new scala.collection.mutable.HashSet[BoundVar]()
     val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
-        case x: BoundVar => (if (context contains x) {} else { varset += x }); x
+        case x: BoundVar => {
+          if (context contains x) {} else { varset += x }
+          x
+        }
       }
       override def onObjectStructure(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
-        case c @ Classvar(x: BoundVar) => (if (context contains x) {} else { varset += x }); c
+        case c @ Classvar(x: BoundVar) => {
+          if (context contains x) {} else { varset += x }
+          c
+        }
       }
-    }
+     }
     collect(this)
     Set.empty ++ varset
   }

@@ -6,7 +6,7 @@
 //
 // Created by amp on Jan 18, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -45,13 +45,9 @@ trait Resolver extends Blockable {
       case BoundValue(v) =>
         k(Some(v))
       case BoundStop => k(None)
-      case BoundFuture(g) => {
+      case BoundReadable(g) => {
         pushContinuation(k)
         g read this
-      }
-      case BoundClosure(c) => {
-        pushContinuation(k)
-        c read this
       }
     }
   }

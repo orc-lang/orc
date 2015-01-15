@@ -325,7 +325,7 @@ class Token protected (
       case vr @ Variable(n) => {
         val v = env(n)
         assert(v match {
-          case BoundValue(_: Class) => false
+          case BoundValue(_: OrcClass) | BoundReadable(_: OrcClass) => false
           case _ => true
         }, s"Found class when looking up normal variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         v
@@ -335,14 +335,17 @@ class Token protected (
         BoundStop
     }
   }
-  protected def lookupClass(a: ObjectStructure): (Option[Int], Structural) = {
+  protected def lookupClass(a: ObjectStructure): (Option[List[Binding]], Structural) = {
     a match {
       case vr @ Classvar(i) =>
         Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
         env(i) match {
-          case BoundValue(c: Class) =>
-            Logger.finer(s"Found class ${vr.optionalVariableName} ${c.contextLength}")
-            (Some(c.contextLength), c.structure)
+          case BoundValue(c: OrcClass) =>
+            Logger.finer(s"Found resolved class ${vr.optionalVariableName} ${c}")
+            (Some(c.context), c.definition.structure)
+          case BoundReadable(c: OrcClass) =>
+            Logger.finer(s"Found unresolved class ${vr.optionalVariableName} ${c}")
+            (Some(c.context), c.definition.structure)
           case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         }
       case s: Structural => (None, s)
@@ -350,6 +353,7 @@ class Token protected (
   }
 
   protected def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
+    Logger.fine(s"Calling $d with $params")
     if (params.size != d.arity) {
       this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
     } else {
@@ -426,6 +430,7 @@ class Token protected (
   }
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
+    Logger.fine(s"Calling $s with $actuals")
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
@@ -570,7 +575,7 @@ class Token protected (
            * Allow a def to be called with an open context.
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
            */
-          case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
+          case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
 
           case b => resolve(b) { makeCall(_, params) }
         }
@@ -592,7 +597,7 @@ class Token protected (
       case Graft(value, body) => {
         val (v, b) = fork()
         val pg = new GraftGroup(group)
-        b.bind(BoundFuture(pg.future))
+        b.bind(BoundReadable(pg.future))
         v.join(pg)
         v.move(value)
         b.move(body)
@@ -618,10 +623,10 @@ class Token protected (
       case New(os) => {
         val obj = new OrcObject()
 
-        val (contextsize, struct) = lookupClass(os)
+        val (context, struct) = lookupClass(os)
 
         // Truncate the context to the height it was at when the class was created also add "this".
-        val objenv = BoundValue(obj) :: contextsize.map(env.takeRight(_)).getOrElse(env)
+        val objenv = BoundValue(obj) :: context.getOrElse(env)
 
         val fields = for ((name, expr) <- struct.bindings) yield {
           // We use a GraftGroup since it is exactly what we need.
@@ -648,7 +653,7 @@ class Token protected (
           _ match {
             case o: OrcObject =>
               //Logger.finer(s"resolving $o$f")
-              resolve(BoundFuture(o(f))) { x =>
+              resolve(BoundReadable(o(f))) { x =>
                 //Logger.finer(s"resolved $o$f = $x")
                 publish(Some(x))
               }
@@ -663,8 +668,13 @@ class Token protected (
       }
 
       case DeclareClasses(clss, body) => {
-        for (c <- clss) {
-          bind(BoundValue(c))
+        val lexicalContext = env
+
+        val classGroup = new ClassGroup(clss, lexicalContext, runtime)
+        runtime.stage(classGroup)
+
+        for (c <- classGroup.members) {
+          bind(BoundReadable(c))
         }
         move(body)
         runtime.stage(this)
@@ -681,8 +691,8 @@ class Token protected (
             val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime)
             runtime.stage(closureGroup)
 
-            for (c <- closureGroup.closures) {
-              bind(BoundClosure(c))
+            for (c <- closureGroup.members) {
+              bind(BoundReadable(c))
             }
           }
           case _: Site => {
@@ -790,8 +800,8 @@ class Token protected (
     env.zipWithIndex.map({
       case (b, i) => s"$i: " + (b match {
         case BoundValue(v) => v.toString
-        case BoundFuture(f) => f.toString
-        case BoundClosure(c) => c.code.toString
+        case BoundReadable(c: Closure) => c.code.toString
+        case BoundReadable(c) => c.toString
       })
     }).mkString("\n")
   }

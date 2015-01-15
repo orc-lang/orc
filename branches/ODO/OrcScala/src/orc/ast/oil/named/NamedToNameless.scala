@@ -37,6 +37,7 @@ trait NamedToNameless {
       case New(os) => nameless.New(namedToNameless(os, context, typecontext))
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
       case DeclareClasses(clss, body) => {
+        // TODO: Compact classes like defs.
         val clsnames = clss map { _.name }
         val newcontext = clsnames.reverse ::: context
         val newclss = clss map { namedToNameless(_, newcontext, typecontext) }

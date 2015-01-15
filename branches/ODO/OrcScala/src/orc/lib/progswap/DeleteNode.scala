@@ -45,7 +45,7 @@ case class DeleteNode[A <: AST](deletedNode: A, oldParent: A) extends AstEditOpe
         case bv: BoundValue => {
           bv.v match {
             case c: Closure => {
-              for (d <- c.defs) if (d == deletedNode) return true
+              for (d <- c.collection.definitions) if (d == deletedNode) return true
               // Filter recursive bindings
               val cEnv = c.lexicalContext filterNot {
                 case bv2: BoundValue => {

@@ -22,10 +22,7 @@ sealed trait Binding
 case class BoundValue(v: AnyRef) extends Binding
 
 /**  */
-case class BoundFuture(g: Future) extends Binding
-
-/**  */
-case class BoundClosure(c: Closure) extends Binding
+case class BoundReadable(c: ReadableBlocker) extends Binding
 
 /**  */
 case object BoundStop extends Binding
