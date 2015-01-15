@@ -56,7 +56,7 @@ case class ReplaceNode[A <: AST, B <: AST](oldNode: A, newNode: B) extends AstEd
         case bv: BoundValue => {
           bv.v match {
             case c: Closure => {
-              SwappableASTs.setClosureDef(c, c.defs map { d => if (d == oldNode) newNode.asInstanceOf[Def] else d })
+              SwappableASTs.setClosureDef(c, c.collection.definitions map { d => if (d == oldNode) newNode.asInstanceOf[Def] else d })
               // Filter recursive bindings
               val cEnv = c.lexicalContext filterNot {
                 case bv2: BoundValue => {

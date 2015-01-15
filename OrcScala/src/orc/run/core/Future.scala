@@ -1,5 +1,5 @@
 //
-// Future.scala -- Scala class/trait/object Future
+// Future.scala -- Scala class Future
 // Project OrcScala
 //
 // $Id$
@@ -26,7 +26,7 @@ import orc.values.OrcValue
   * in the critial paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future(val runtime: OrcRuntime) extends Blocker with OrcValue {
+final class Future(val runtime: OrcRuntime) extends ReadableBlocker with OrcValue {
   import Future._
 
   var _state = Unbound

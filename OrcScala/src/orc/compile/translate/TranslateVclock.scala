@@ -27,7 +27,10 @@ class TranslateVclock(val reportProblem: CompilationException with ContinuableSe
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
 
-    case Sequence(Call(Constant(`Vclock`), List(arg), None), x, right) if x.optionalVariableName == None =>
+    case Sequence(Call(Constant(`Vclock`), List(arg), None), x, right) =>
+      // This originally had the additional check to make sure x was not used by making sure it did not have a name.
+      // However assigning names to all variables is useful, to the check was removed.
+      // TODO: Add a way to distinguish synthetic from user variable names and add check to require synthetic name
       VtimeZone(arg, transform(right, context, typecontext))
 
     // Match malformed Vclock calls: wrong args, use of typeargs, binding a var in the sequence:
