@@ -41,8 +41,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case Class(cls, struct) => List(cls, struct)
-    case Structural(self, fields) => self +: fields.values.toSeq
+    case Class(cls, self, fields) => cls +: self +: fields.values.toSeq
     case Classvar(v) => List(v)
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
@@ -96,16 +95,11 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
-/* Classes and structural descriptions
- * 
- * Since classes are not first class (and not "reified" in the Java terms), all instantiation 
- * calls of class must be in the same static scope and hence have the same dynamic variable 
- * bindings. This allows class references to be statically bound by the compiler (no runtime 
- * class object created at runtime). 
- * 
- * However due to recursive classes the class
- */
-
+/** The base of all object structure descriptions that can be used to build a new object.
+  * 
+  * This is not actually needed since the only subclass is Classvar, however it makes things
+  * feel more organized. 
+  */
 sealed trait ObjectStructure
   extends NamedAST
   with hasFreeVars
@@ -113,11 +107,6 @@ sealed trait ObjectStructure
   with Substitution[ObjectStructure] {
   lazy val withoutNames: nameless.ObjectStructure = namedToNameless(this, Nil, Nil)
 }
-
-/** A structural object structure representing an "anonymous class" like { val v = 1 }.
-  *
-  */
-case class Structural(val self: BoundVar, val bindings: Map[values.Field, Expression]) extends ObjectStructure
 
 /** A reference to a class.
   *
@@ -138,7 +127,8 @@ case class Classvar(name: Var) extends ObjectStructure with hasOptionalVariableN
   */
 case class Class(
   val name: BoundVar,
-  val structure: Structural)
+  val self: BoundVar, 
+  val bindings: Map[values.Field, Expression])
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars

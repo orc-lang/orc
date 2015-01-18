@@ -9,7 +9,7 @@ val o = {| new {
   val x = 1
   val y = Rwait(100) >> 2
   def f() = this.y ; 3
-  site g() = this.x
+  site g() = x
 } >o> Rwait(50) >> o |}
 
 o.f() | o.x | o.y | o.g()

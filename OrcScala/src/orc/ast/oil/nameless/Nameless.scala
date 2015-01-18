@@ -46,8 +46,7 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
-    case Class(_, s) => List(s)
-    case Structural(bindings) => bindings.values
+    case Class(bindings) => bindings.values
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
@@ -200,25 +199,19 @@ sealed trait ObjectStructure
   extends NamelessAST
   with hasFreeVars
 
-case class Structural(val bindings: Map[Field, Expression])
-  extends ObjectStructure {
-  lazy val freevars: Set[Int] = {
-    shift(bindings.values.flatMap(_.freevars).toSet, 1)
-  }
-}
-
 case class Classvar(index: Int) extends ObjectStructure with hasOptionalVariableName {
   require(index >= 0)
   lazy val freevars: Set[Int] = Set(index)
 }
 
 case class Class(
-  val contextLength: Int,
-  val structure: Structural)
+  val bindings: Map[Field, Expression])
   extends NamelessAST
   with hasFreeVars
   with hasOptionalVariableName {
-  lazy val freevars: Set[Int] = structure.freevars
+  lazy val freevars: Set[Int] = {
+    shift(bindings.values.flatMap(_.freevars).toSet, 1)
+  }
 }
 
 sealed abstract class Callable extends NamelessAST

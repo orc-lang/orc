@@ -202,14 +202,6 @@ trait NamedASTTransform extends NamedASTFunction {
     } else {
       d -> {
         case Classvar(name) => Classvar(name)
-        case Structural(self, fields) => {
-          val newcontext = self :: context
-          // The "Map() ++" is to force strict evaluation of this. mapValues generally returns a view.
-          val newfields = Map() ++ fields.mapValues({ m =>
-            transform(m, newcontext, typecontext)
-          })
-          Structural(self, newfields)
-        }
       }
     }
   }
@@ -220,10 +212,10 @@ trait NamedASTTransform extends NamedASTFunction {
       d -> pf
     } else {
       d -> {
-        case Class(name, Structural(self, fields)) => {
+        case Class(name, self, fields) => {
           val newcontext = self :: context
           val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
-          Class(name, Structural(self, newfields))
+          Class(name, self, newfields)
         }
       }
     }

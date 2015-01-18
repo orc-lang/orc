@@ -105,8 +105,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Parallel(l, r) => convert(l) || convert(r)
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
-      case ext.New(e) => {
-        New(convertObjectStructure(e))
+      case n @ ext.New(e) => {
+        makeNew(n, e)
       }
 
       case ext.Section(body) => {
@@ -159,8 +159,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
         val recursiveClassContext = classcontext ++ classNames
         val newClss = for (c <- clss; Classvar(name: BoundVar) = classNames(c.name)) yield {
-          val os = convertClassLiteral(c.body)(implicitly, implicitly, recursiveClassContext)
-          val cls = Class(name, os)
+          val (self, fields) = convertClassLiteral(c.body)(implicitly, implicitly, recursiveClassContext)
+          val cls = Class(name, self, fields)
           cls
         }
 
@@ -490,16 +490,22 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   }
 
-  def convertObjectStructure(e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): ObjectStructure = {
-    e -> {
-      case ext.ClassVariable(n) => classcontext(n)
-      case lit: ext.ClassLiteral => convertClassLiteral(lit)
+  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
+    e match {
+      case ext.ClassVariable(n) => newe ->> New(e ->> classcontext(n))
+      case lit: ext.ClassLiteral => {
+        val (self, fields) = convertClassLiteral(lit)
+        val clsname = new BoundVar(Some(Var.getNextVariableName("anoncls")))
+        val cls = e ->> Class(clsname, self, fields)
+
+        e ->> DeclareClasses(List(cls), newe ->> New(Classvar(clsname)))
+      }
       case ext.ClassMixin(_, _) =>
         throw (MalformedExpression("Mixins unsupported") at e)
     }
   }
 
-  def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Structural = {
+  def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]) = {
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
     
@@ -560,7 +566,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
     
     val newbindings = convertFields(lit.decls).toMap.mapValues(bindMembers)
-    Structural(thisVar, Map() ++ newbindings)
+    (thisVar, Map() ++ newbindings)
   }
 
 }

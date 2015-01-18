@@ -196,13 +196,12 @@ object OrcXML {
           { toXML(os) }
         </new>
       case Classvar(i) => <classvar index={ i.toString }/>
-      case Structural(bindings) =>
-        <structural>
+      case Class(bindings) => 
+        <class>
           {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
           }
-        </structural>
-      case Class(stacksize, struct) => <class stacksize={ stacksize.toString }>{ toXML(struct) }</class>
+        </class>
       case DeclareClasses(clss, body: Expression) =>
         <declareclasses>
           <classes>{ clss map toXML }</classes>
@@ -455,31 +454,19 @@ object OrcXML {
   @throws(classOf[OilParsingException])
   def objectStructureFromXML(xml: scala.xml.Node): ObjectStructure = {
     xml --> {
-      case <structural>{ _* }</structural> => structuralFromXML(xml)
       case <classvar/> => Classvar((xml \ "@index").text.toInt)
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
     }
   }
 
   @throws(classOf[OilParsingException])
-  def structuralFromXML(xml: scala.xml.Node): Structural = {
+  def classFromXML(xml: scala.xml.Node): Class = {
     xml --> {
-      case <structural>{ bindings @ _* }</structural> => {
+      case <class>{ bindings @ _* }</class> => {
         val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
           (Field((x \ "@name").text), fromXML(xmle))
         }
-        Structural(bs.toMap)
-      }
-      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Structural")
-    }
-  }
-
-  @throws(classOf[OilParsingException])
-  def classFromXML(xml: scala.xml.Node): Class = {
-    xml --> {
-      case <class>{ struct }</class> => {
-        val ss = (xml \ "@stacksize").text.toInt
-        Class(ss, structuralFromXML(struct))
+        Class(bs.toMap)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
     }
