@@ -96,19 +96,14 @@ trait NamedToNameless {
         assert(i >= 0, s"Cannot find bound class variable $v ($i)")
         nameless.Classvar(i)
       }
-      case s: Structural => convertStructural(s, context, typecontext)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
     }
   }
 
-  def convertStructural(struct: Structural, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Structural = {
-    struct ->> nameless.Structural(Map() ++ struct.bindings.mapValues(namedToNameless(_, struct.self :: context, typecontext)))
-  }
-
   def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
     a -> {
-      case Class(name, struct) =>
-        nameless.Class(context.size, convertStructural(struct, context, typecontext))
+      case Class(name, self, bindings) =>
+        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
     }
   }
 

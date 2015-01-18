@@ -28,7 +28,6 @@ import orc.values.OrcObject
 import orc.ast.oil.nameless.Class
 import orc.ast.oil.nameless.Classvar
 import orc.ast.oil.nameless.ObjectStructure
-import orc.ast.oil.nameless.Structural
 import orc.ast.oil.nameless.DeclareClasses
 
 /** Token represents a "process" executing in the Orc program.
@@ -335,20 +334,19 @@ class Token protected (
         BoundStop
     }
   }
-  protected def lookupClass(a: ObjectStructure): (Option[List[Binding]], Structural) = {
+  protected def lookupClass(a: ObjectStructure): (Option[List[Binding]], Map[Field, Expression]) = {
     a match {
       case vr @ Classvar(i) =>
         Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
         env(i) match {
           case BoundValue(c: OrcClass) =>
             Logger.finer(s"Found resolved class ${vr.optionalVariableName} ${c}")
-            (Some(c.context), c.definition.structure)
+            (Some(c.context), c.definition.bindings)
           case BoundReadable(c: OrcClass) =>
             Logger.finer(s"Found unresolved class ${vr.optionalVariableName} ${c}")
-            (Some(c.context), c.definition.structure)
+            (Some(c.context), c.definition.bindings)
           case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         }
-      case s: Structural => (None, s)
     }
   }
 
@@ -623,12 +621,12 @@ class Token protected (
       case New(os) => {
         val obj = new OrcObject()
 
-        val (context, struct) = lookupClass(os)
+        val (context, bindings) = lookupClass(os)
 
         // Truncate the context to the height it was at when the class was created also add "this".
         val objenv = BoundValue(obj) :: context.getOrElse(env)
 
-        val fields = for ((name, expr) <- struct.bindings) yield {
+        val fields = for ((name, expr) <- bindings) yield {
           // We use a GraftGroup since it is exactly what we need.
           // The difference between this and graft is where the future goes.
           val pg = new GraftGroup(group)

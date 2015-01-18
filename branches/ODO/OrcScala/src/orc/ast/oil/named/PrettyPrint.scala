@@ -79,15 +79,14 @@ class PrettyPrint {
       case New(os) => "new " + reduce(os) + ""
       case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
       case Classvar(name) => reduce(name)
-      case Structural(self, fields) => {
+      case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
+      case Class(name, self, fields) => {
         def reduceField(f: (Field, Expression)) = {
           val (name, expr) = f
           s"${name} = ${reduce(expr)}"
         }
-        s"{ ${reduce(self)} -> ${fields.map(reduceField).mkString(" # ")} }"
+        s"class $name { ${reduce(self)} -> ${fields.map(reduceField).mkString(" # ")} }"
       }
-      case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
-      case Class(name, s) => s"class $name ${reduce(s)}"
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
