@@ -97,20 +97,20 @@
 
   <!--  Object Structure  -->
   <xs:complexType name="objectstructure">
-    <xs:choice>
-      <xs:element name="classvar">
+    <xs:sequence>
+      <xs:element name="classvar" minOccurs="0" maxOccurs="unbounded">
         <xs:complexType>
           <xs:attribute name="index" type="index" />
           <xs:attributeGroup ref="ast" />
           <xs:attributeGroup ref="varnamed"/>
         </xs:complexType>
       </xs:element>
-    </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="ast"/>
   </xs:complexType>
 
   <!--  Class  -->
-  <xs:complexType name="class">
+  <xs:complexType name="classfragment">
     <xs:sequence>
       <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
         <xs:complexType>
@@ -264,7 +264,7 @@
               <xs:element name="classes">
                 <xs:complexType>
                   <xs:sequence>
-	                <xs:element name="class" type="class" minOccurs="1" maxOccurs="unbounded" />
+	                <xs:element name="classfragment" type="classfragment" minOccurs="1" maxOccurs="unbounded" />
 	              </xs:sequence>
                 </xs:complexType>
               </xs:element>

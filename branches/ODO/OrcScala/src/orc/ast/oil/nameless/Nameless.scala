@@ -37,7 +37,7 @@ sealed abstract class NamelessAST extends AST {
     case Graft(value, body) => List(value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
-    case New(f) => List(f)
+    case New(f) => f
     case FieldAccess(o, f) => List(o)
     case DeclareCallables(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -46,7 +46,7 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
-    case Class(bindings) => bindings.values
+    case ClassFragment(bindings) => bindings.values
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
@@ -83,7 +83,7 @@ sealed abstract class Expression extends NamelessAST
       case Graft(g, f) => shift(f.freevars, 1) ++ g.freevars
       case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
-      case New(s) => s.freevars
+      case New(s) => s.flatMap(_.freevars).toSet
       case DeclareClasses(clss, body) => clss.flatMap(_.freevars).toSet ++ shift(body.freevars, clss.length)
       case DeclareCallables(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
@@ -153,9 +153,9 @@ case class Graft(value: Expression, body: Expression) extends Expression with ha
 case class Trim(f: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 
-case class New(structure: ObjectStructure) extends Expression
+case class New(linearization: Class.Linearization) extends Expression
 
-case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
+case class DeclareClasses(defs: List[ClassFragment], body: Expression) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
 case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
@@ -195,16 +195,15 @@ case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariab
   optionalVariableName = Some(name)
 }
 
-sealed trait ObjectStructure
+case class Classvar(index: Int) 
   extends NamelessAST
   with hasFreeVars
-
-case class Classvar(index: Int) extends ObjectStructure with hasOptionalVariableName {
+  with hasOptionalVariableName {
   require(index >= 0)
   lazy val freevars: Set[Int] = Set(index)
 }
 
-case class Class(
+case class ClassFragment(
   val bindings: Map[Field, Expression])
   extends NamelessAST
   with hasFreeVars
@@ -212,6 +211,10 @@ case class Class(
   lazy val freevars: Set[Int] = {
     shift(bindings.values.flatMap(_.freevars).toSet, 1)
   }
+}
+
+object Class {
+  type Linearization = List[Classvar]
 }
 
 sealed abstract class Callable extends NamelessAST

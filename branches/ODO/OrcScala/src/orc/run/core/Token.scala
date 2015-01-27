@@ -27,7 +27,6 @@ import orc.ast.oil.nameless.FieldAccess
 import orc.values.OrcObject
 import orc.ast.oil.nameless.Class
 import orc.ast.oil.nameless.Classvar
-import orc.ast.oil.nameless.ObjectStructure
 import orc.ast.oil.nameless.DeclareClasses
 
 /** Token represents a "process" executing in the Orc program.
@@ -334,17 +333,17 @@ class Token protected (
         BoundStop
     }
   }
-  protected def lookupClass(a: ObjectStructure): (Option[List[Binding]], Map[Field, Expression]) = {
+  protected def lookupClass(a: Classvar): OrcClass = {
     a match {
       case vr @ Classvar(i) =>
         Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
         env(i) match {
           case BoundValue(c: OrcClass) =>
             Logger.finer(s"Found resolved class ${vr.optionalVariableName} ${c}")
-            (Some(c.context), c.definition.bindings)
+            c
           case BoundReadable(c: OrcClass) =>
             Logger.finer(s"Found unresolved class ${vr.optionalVariableName} ${c}")
-            (Some(c.context), c.definition.bindings)
+            c
           case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.pos}) => $v:\n${envToString()}")
         }
     }
@@ -619,31 +618,44 @@ class Token protected (
       }
 
       case New(os) => {
-        val obj = new OrcObject()
+        val self = new OrcObject()
 
-        val (context, bindings) = lookupClass(os)
-
-        // Truncate the context to the height it was at when the class was created also add "this".
-        val objenv = BoundValue(obj) :: context.getOrElse(env)
-
-        val fields = for ((name, expr) <- bindings) yield {
-          // We use a GraftGroup since it is exactly what we need.
-          // The difference between this and graft is where the future goes.
-          val pg = new GraftGroup(group)
-
-          // A binding frame is not needed since publishing will trigger the token to halt.
-          val t = new Token(expr,
-            env = objenv,
-            group = pg,
-            stack = GroupFrame(EmptyFrame),
-            clock = clock)
-          runtime.stage(t)
-
-          (name, pg.future)
+        val classes = os.map(lookupClass)
+        
+        // Build a map from (class, field) to group containing every field that is bound.
+        val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
+        
+        Logger.fine(s"Build futures: $fieldsMap")
+        
+        val selfFields = scala.collection.mutable.Map[Field, Future]()
+        
+        
+        for (cls <- classes.reverse) {
+          Logger.fine(s"Instantiating class: ${cls.definition}")
+          val objenv = BoundValue(self) :: cls.context
+          val fields = for ((name, expr) <- cls.definition.bindings) yield {
+            // We use a GraftGroup since it is exactly what we need.
+            // The difference between this and graft is where the future goes.
+            val pg = fieldsMap((cls.definition, name))
+  
+            // A binding frame is not needed since publishing will trigger the token to halt.
+            val t = new Token(expr,
+              env = objenv,
+              group = pg,
+              stack = GroupFrame(EmptyFrame),
+              clock = clock)
+            runtime.stage(t)
+  
+            (name, pg.future)
+          }
+          // TODO: Use fields to build super for next class.
+          Logger.fine(s"Setup binding for fields: $fields")
+          selfFields ++= fields
         }
-        obj.setFields(fields)
 
-        publish(Some(obj))
+        self.setFields(selfFields.toMap)
+
+        publish(Some(self))
       }
 
       case FieldAccess(o, f) => {
