@@ -24,7 +24,7 @@ trait NamedASTFunction {
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Callable): Callable
-  def apply(d: ObjectStructure): ObjectStructure
+  def apply(d: Classvar): Classvar
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
@@ -32,8 +32,8 @@ trait NamedASTFunction {
       case e: Expression => this(e)
       case t: Type => this(t)
       case d: Callable => this(d)
-      case s: ObjectStructure => this(s)
-      case c: Class => this(c)
+      case s: Classvar => this(s)
+      case c: ClassFragment => this(c)
     }
   }
 
@@ -44,7 +44,7 @@ trait NamedASTFunction {
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
       def apply(d: Callable): Callable = g(f(d))
-      def apply(d: ObjectStructure): ObjectStructure = g(f(d))
+      def apply(d: Classvar): Classvar = g(f(d))
     }
   }
 
@@ -60,7 +60,7 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Callable): Callable = transform(d, Nil, Nil)
-  def apply(d: ObjectStructure): ObjectStructure = transform(d, Nil, Nil)
+  def apply(d: Classvar): Classvar = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -70,9 +70,9 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onCallable(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
-  def onObjectStructure(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[ObjectStructure, ObjectStructure] = EmptyFunction
+  def onClassvar(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Classvar, Classvar] = EmptyFunction
 
-  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Class, Class] = EmptyFunction
+  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[ClassFragment, ClassFragment] = EmptyFunction
 
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
@@ -80,7 +80,7 @@ trait NamedASTTransform extends NamedASTFunction {
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
       def apply(d: Callable) = transform(d, context, typecontext)
-      def apply(d: ObjectStructure) = transform(d, context, typecontext)
+      def apply(d: Classvar) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
@@ -110,7 +110,7 @@ trait NamedASTTransform extends NamedASTFunction {
         case Graft(x, value, body) => Graft(x, recurse(value), transform(body, x :: context, typecontext))
         case Trim(f) => Trim(recurse(f))
         case left ow right => recurse(left) ow recurse(right)
-        case New(c) => New(recurse(c))
+        case New(c) => New(c.map(transform(_, context, typecontext)))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
         case DeclareClasses(clss, body) => {
           val defnames = clss map { _.name }
@@ -195,8 +195,8 @@ trait NamedASTTransform extends NamedASTFunction {
     }
   }
 
-  def transform(d: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): ObjectStructure = {
-    val pf = onObjectStructure(context, typecontext)
+  def transform(d: Classvar, context: List[BoundVar], typecontext: List[BoundTypevar]): Classvar = {
+    val pf = onClassvar(context, typecontext)
     if (pf isDefinedAt d) {
       d -> pf
     } else {
@@ -206,16 +206,16 @@ trait NamedASTTransform extends NamedASTFunction {
     }
   }
 
-  def transform(d: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): Class = {
+  def transform(d: ClassFragment, context: List[BoundVar], typecontext: List[BoundTypevar]): ClassFragment = {
     val pf = onClass(context, typecontext)
     if (pf isDefinedAt d) {
       d -> pf
     } else {
       d -> {
-        case Class(name, self, fields) => {
+        case ClassFragment(name, self, fields) => {
           val newcontext = self :: context
           val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
-          Class(name, self, newfields)
+          ClassFragment(name, self, newfields)
         }
       }
     }

@@ -32,7 +32,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Graft(x, value, body) => List(x, value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
-    case New(c) => List(c)
+    case New(c) => c
     case FieldAccess(o, f) => List(o)
     case DeclareCallables(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -41,7 +41,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case Class(cls, self, fields) => cls +: self +: fields.values.toSeq
+    case ClassFragment(cls, self, fields) => cls +: self +: fields.values.toSeq
     case Classvar(v) => List(v)
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
@@ -95,24 +95,17 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
-/** The base of all object structure descriptions that can be used to build a new object.
-  * 
-  * This is not actually needed since the only subclass is Classvar, however it makes things
-  * feel more organized. 
-  */
-sealed trait ObjectStructure
-  extends NamedAST
-  with hasFreeVars
-  with hasFreeTypeVars
-  with Substitution[ObjectStructure] {
-  lazy val withoutNames: nameless.ObjectStructure = namedToNameless(this, Nil, Nil)
-}
-
 /** A reference to a class.
   *
   */
-case class Classvar(name: Var) extends ObjectStructure with hasOptionalVariableName {
+case class Classvar(name: Var) extends NamedAST
+  with hasFreeVars
+  with hasFreeTypeVars
+  with Substitution[Classvar]
+  with hasOptionalVariableName {
   transferOptionalVariableName(name, this)
+  
+  lazy val withoutNames: nameless.Classvar = namedToNameless(this, Nil, Nil)
 }
 
 /** A class representation
@@ -122,33 +115,36 @@ case class Classvar(name: Var) extends ObjectStructure with hasOptionalVariableN
   * The translator will already have generated the proper bindings including implementing
   * inheritence and derivation correctly.
   *
-  * These values are used as is at runtime, so there is no need to capture context when
-  * evaluating the declaration.
+  * The linearization begins with this class and ends with the most general class Object.
   */
-case class Class(
-  val name: BoundVar,
+case class ClassFragment(
+  val name: BoundVar, 
   val self: BoundVar, 
   val bindings: Map[values.Field, Expression])
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
   with hasOptionalVariableName
-  with Substitution[Class]
+  with Substitution[ClassFragment]
   with Declaration {
   transferOptionalVariableName(name, this)
+}
+
+object Class {
+  type Linearization = List[Classvar]
 }
 
 /** Declare a group of mutually recursive classes.
   *
   * The class objects are not normal runtime values and should never be accessed in any way other than New.
   */
-case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
+case class DeclareClasses(defs: List[ClassFragment], body: Expression) extends Expression
 
 /** Construct a new class instance
   *
   * This node starts running an all the bindings in the class and returns self.
   */
-case class New(cls: ObjectStructure) extends Expression
+case class New(linearization: Class.Linearization) extends Expression
 
 /** Read the value from a field future.
   *

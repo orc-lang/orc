@@ -34,7 +34,7 @@ trait NamedToNameless {
       case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
       case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case New(os) => nameless.New(namedToNameless(os, context, typecontext))
+      case New(os) => nameless.New(os.map(namedToNameless(_, context, typecontext)))
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
       case DeclareClasses(clss, body) => {
         // TODO: Compact classes like defs.
@@ -89,7 +89,7 @@ trait NamedToNameless {
     }
   }
 
-  def namedToNameless(a: ObjectStructure, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ObjectStructure = {
+  def namedToNameless(a: Classvar, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Classvar = {
     a -> {
       case Classvar(v) => {
         var i = context indexOf v
@@ -100,10 +100,10 @@ trait NamedToNameless {
     }
   }
 
-  def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
+  def namedToNameless(a: ClassFragment, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ClassFragment = {
     a -> {
-      case Class(name, self, bindings) =>
-        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
+      case ClassFragment(name, self, bindings) =>
+        nameless.ClassFragment(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
     }
   }
 

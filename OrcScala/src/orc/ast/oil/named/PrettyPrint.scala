@@ -76,11 +76,11 @@ class PrettyPrint {
           prefix + " " + name + paren(formals) + " = " + reduce(body) +
           "\n"
       }
-      case New(os) => "new " + reduce(os) + ""
+      case New(os) => "new " + os.map(reduce).mkString("(", ",", ")") + ""
       case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
       case Classvar(name) => reduce(name)
       case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
-      case Class(name, self, fields) => {
+      case ClassFragment(name, self, fields) => {
         def reduceField(f: (Field, Expression)) = {
           val (name, expr) = f
           s"${name} = ${reduce(expr)}"

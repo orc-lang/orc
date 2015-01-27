@@ -77,7 +77,7 @@ case class AggregateDef(clauses: List[Clause],
     result takeEarlierPos this
   }
 
-  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type], classcontext: Map[String, named.Classvar]): named.Callable = {
+  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type], classcontext: Map[String, ClassInfo]): named.Callable = {
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)

@@ -193,15 +193,15 @@ object OrcXML {
         </fieldaccess>
       case New(os) =>
         <new>
-          { toXML(os) }
+          { os.map(toXML) }
         </new>
       case Classvar(i) => <classvar index={ i.toString }/>
-      case Class(bindings) => 
-        <class>
+      case ClassFragment(bindings) => 
+        <classfragment>
           {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
           }
-        </class>
+        </classfragment>
       case DeclareClasses(clss, body: Expression) =>
         <declareclasses>
           <classes>{ clss map toXML }</classes>
@@ -389,8 +389,8 @@ object OrcXML {
         Otherwise(fromXML(left), fromXML(right))
       case <fieldaccess><expr>{ obj }</expr></fieldaccess> =>
         FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
-      case <new>{ os }</new> =>
-        New(objectStructureFromXML(os))
+      case <new>{ os @ _* }</new> =>
+        New(os.map(objectStructureFromXML).toList)
       case <declareclasses><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
         val t2 = for (d <- clss) yield classFromXML(d)
         val t3 = fromXML(body)
@@ -452,7 +452,7 @@ object OrcXML {
   }
 
   @throws(classOf[OilParsingException])
-  def objectStructureFromXML(xml: scala.xml.Node): ObjectStructure = {
+  def objectStructureFromXML(xml: scala.xml.Node): Classvar = {
     xml --> {
       case <classvar/> => Classvar((xml \ "@index").text.toInt)
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
@@ -460,13 +460,13 @@ object OrcXML {
   }
 
   @throws(classOf[OilParsingException])
-  def classFromXML(xml: scala.xml.Node): Class = {
+  def classFromXML(xml: scala.xml.Node): ClassFragment = {
     xml --> {
-      case <class>{ bindings @ _* }</class> => {
+      case <classfragment>{ bindings @ _* }</classfragment> => {
         val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
           (Field((x \ "@name").text), fromXML(xmle))
         }
-        Class(bs.toMap)
+        ClassFragment(bs.toMap)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
     }

@@ -15,9 +15,10 @@
 
 package orc.compile.translate
 
+import scala.language.reflectiveCalls
+
 import scala.collection.immutable.{ HashMap, List, Map, Nil }
 import scala.collection.mutable
-import scala.language.reflectiveCalls
 import orc.ast.ext
 import orc.ast.oil._
 import orc.ast.oil.named._
@@ -38,13 +39,15 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def translate(extendedAST: ext.Expression): named.Expression = {
     val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
     val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
-    val rootClassContext: Map[String, Classvar] = HashMap.empty withDefault { n => Classvar(UnboundVar(n)) }
+    val rootClassContext: Map[String, ClassInfo] = HashMap.empty withDefault { n => ClassInfo(Classvar(UnboundVar(n)), Nil) }
     convert(extendedAST)(rootContext, rootTypeContext, rootClassContext)
   }
 
   /** Convert an extended AST expression to a named OIL expression.
     */
-  def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
+  def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Expression = {
+    implicit val implicit_self = this
+        
     e -> {
       case ext.Stop() => Stop()
       case ext.Constant(c) => Constant(c)
@@ -106,7 +109,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
       case n @ ext.New(e) => {
-        makeNew(n, e)
+        ClassForms.makeNew(n, e)
       }
 
       case ext.Section(body) => {
@@ -146,25 +149,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.ClassGroup(clss, body) => {
-        // Check for duplicate names
-        for (c :: cs <- clss.tails) {
-          cs.find(_.name == c.name) match {
-            case Some(c2) => throw (DuplicateClassException(c.name) at c2)
-            case None => ()
-          }
-        }
+        val (newClss, newClassCtx) = ClassForms.makeClassGroup(clss)
 
-        val classNames = clss.map(c => (c.name, Classvar(new BoundVar(Some("$cls$" + c.name))))).toMap
-        assert(classNames.size == clss.size)
-
-        val recursiveClassContext = classcontext ++ classNames
-        val newClss = for (c <- clss; Classvar(name: BoundVar) = classNames(c.name)) yield {
-          val (self, fields) = convertClassLiteral(c.body)(implicitly, implicitly, recursiveClassContext)
-          val cls = Class(name, self, fields)
-          cls
-        }
-
-        DeclareClasses(newClss, convert(body)(implicitly, implicitly, recursiveClassContext))
+        DeclareClasses(newClss.toList, convert(body)(implicitly, implicitly, newClassCtx))
       }
 
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
@@ -257,7 +244,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
   }
 
-  def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
+  def convertArgumentGroup(target: Argument, ag: ext.ArgumentGroup)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Expression = {
     ag match {
       case ext.Args(typeargs, args) => {
         val newtypeargs = typeargs map { _ map convertType }
@@ -278,7 +265,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     * and
     *     a mapping from their string names to their new bound names
     */
-  def convertDefs(defs: List[ext.CallableDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): (List[Callable], Map[String, BoundVar]) = {
+  def convertDefs(defs: List[ext.CallableDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (List[Callable], Map[String, BoundVar]) = {
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
     for (d <- defs; n = d.name) {
       defsMap = defsMap + { (n, defsMap(n) + d) }
@@ -488,85 +475,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
     }
 
-  }
-
-  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]): Expression = {
-    e match {
-      case ext.ClassVariable(n) => newe ->> New(e ->> classcontext(n))
-      case lit: ext.ClassLiteral => {
-        val (self, fields) = convertClassLiteral(lit)
-        val clsname = new BoundVar(Some(Var.getNextVariableName("anoncls")))
-        val cls = e ->> Class(clsname, self, fields)
-
-        e ->> DeclareClasses(List(cls), newe ->> New(Classvar(clsname)))
-      }
-      case ext.ClassMixin(_, _) =>
-        throw (MalformedExpression("Mixins unsupported") at e)
-    }
-  }
-
-  def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, Classvar]) = {
-    val thisName = lit.thisname.getOrElse("this")
-    val thisVar = new BoundVar(Some(thisName))
-    
-    val thisContext = List((thisName, thisVar), ("this", thisVar))
-    
-    val bindingVisitor = new ExtendedASTTransform {
-      var names = Set[String]()
-      
-      override def onPattern() = {
-        case p @ ext.VariablePattern(n) => names += n; p
-        case p @ ext.AsPattern(pat, n) => names += n; this(pat); p
-      }
-      
-      override def onDeclaration() = {
-        case d: ext.Val => this(d.p); d
-        case d: ext.NamedDeclaration => names += d.name; d
-        case d => d
-      }
-    }
-    lit.decls.foreach(bindingVisitor.apply)
-    val fieldNames = bindingVisitor.names
-    val fieldsContext = fieldNames.map(n => (n, new BoundVar(Some(n))))
-    
-    val memberContext = context ++ thisContext ++ fieldsContext
-
-    var tmpId = 1
-    def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
-      case ext.Val(ext.VariablePattern(x), f) +: rest =>
-        (Field(x), convert(f)(memberContext, implicitly, implicitly)) +: convertFields(rest)
-      case ext.Val(p, f) +: rest =>
-        val tmpField = Field(s"$$pattmp$$$tmpId")
-        tmpId += 1
-        // FIXME: Is it a problem if the same variable is bound in multiple subtrees?
-        val x = new BoundVar()
-        val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
-        val newf = convert(f)(memberContext, implicitly, implicitly)
-        val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), FieldAccess(thisVar, tmpField) > x > target(code))
-        (tmpField, source(newf)) +: (generatedFields ++ convertFields(rest))
-      case ext.CallableSingle(defs, rest) =>
-        assert(defs.forall(_.name == defs.head.name))
-        val field = Field(defs.head.name)
-        val name = new BoundVar(Some("$" + defs.head.name))
-        val agg = defs.foldLeft(AggregateDef.empty(this))(_ + _)
-
-        val newdef = agg ->> agg.convert(name, memberContext, typecontext, classcontext)
-        (field, DeclareCallables(List(newdef), name)) +: convertFields(rest)
-      case Seq() =>
-        Nil
-      case decl :: _ =>
-        throw (MalformedExpression("Invalid declaration form in class") at decl)
-    }
-    
-    def bindMembers(e: Expression) = {
-      fieldsContext.foldRight(e) { (binding, e) =>
-        val (name, x) = binding 
-        Graft(x, FieldAccess(thisVar, Field(name)), e)
-      }
-    }
-    
-    val newbindings = convertFields(lit.decls).toMap.mapValues(bindMembers)
-    (thisVar, Map() ++ newbindings)
   }
 
 }

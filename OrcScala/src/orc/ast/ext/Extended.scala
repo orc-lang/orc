@@ -167,7 +167,7 @@ object CallableSingle {
 case class SiteImport(name: String, sitename: String) extends NamedDeclaration
 case class ClassImport(name: String, classname: String) extends NamedDeclaration
 
-case class ClassDeclaration(name: String, base: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration
+case class ClassDeclaration(name: String, superclass: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration
 
 sealed abstract class ClassExpression extends AST {
   def toInterfaceString: String
