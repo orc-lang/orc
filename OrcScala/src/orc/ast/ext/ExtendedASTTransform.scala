@@ -114,6 +114,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case ClassVariable(_) => t
         case ClassLiteral(self, ds) => ClassLiteral(self, ds map this.apply)
         case ClassMixin(l, r) => ClassMixin(this(l), this(r))
+        case ClassSubclassLiteral(l, r) => ClassSubclassLiteral(this(l), this(r).asInstanceOf[ClassLiteral])
       }
     }
   }

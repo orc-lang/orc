@@ -181,6 +181,9 @@ case class ClassLiteral(thisname: Option[String], decls: Seq[Declaration]) exten
     case d: NamedDeclaration => d.name
   }).mkString("{ ", ", ", " }")
 }
+case class ClassSubclassLiteral(superclass: ClassExpression, body: ClassLiteral) extends ClassExpression {
+  def toInterfaceString = s"(${superclass.toInterfaceString}) ${body.toInterfaceString}"
+}
 case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
   def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
 }
