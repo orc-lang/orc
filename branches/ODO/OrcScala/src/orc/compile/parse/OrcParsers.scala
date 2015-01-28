@@ -233,7 +233,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | "this" -> Variable("this")
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
-    | "new" ~> parseClassExpression -> New
+    | "new" ~> parseNewClassExpression -> New
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
     { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
     | ("{|" ~> parseExpression <~ "|}") -> Trim
@@ -389,6 +389,10 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin
     | parseClassPrimitiveExpression)
 
+  val parseNewClassExpression = (
+          (ident -> ClassVariable) ~ parseClassBody -> ClassSubclassLiteral
+          | parseClassExpression)
+    
   val parseClassDeclaration = (
     (ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
 

@@ -45,11 +45,15 @@ object ClassForms {
   private def linearizeClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): (Map[String, ClassInfo], Seq[ClassFragment]) = {
     // Pretend these are state monads and it's functional. ;-)
     val ctx = scala.collection.mutable.Map[String, ClassInfo]().withDefault(classcontext)
-    val additionalClasses = scala.collection.mutable.Map[ext.ClassLiteral, ClassFragment]()
+    val additionalClasses = scala.collection.mutable.Map[ext.ClassExpression, ClassFragment]()
 
     def linearize(e: ext.ClassExpression): Class.Linearization = e match {
       case ext.ClassVariable(n) => ctx(n).linearization
       case e: ext.ClassLiteral => List(Classvar(additionalClasses.getOrElseUpdate(e, makeSyntheticClass(e)).name))
+      case ext.ClassSubclassLiteral(s, b) => {
+        val synthCls = additionalClasses.getOrElseUpdate(e, makeSyntheticClass(b))
+        concatUniquePreferRight(List(Classvar(synthCls.name)), linearize(s))
+      }
       case ext.ClassMixin(a, b) => concatUniquePreferRight(linearize(b), linearize(a))
     }
     for (c <- clss) {
@@ -162,14 +166,14 @@ object ClassForms {
 
         e ->> DeclareClasses(List(cls), newe ->> New(List(Classvar(cls.name))))
       }
-      case _: ext.ClassMixin =>
+      case _: ext.ClassMixin | _: ext.ClassSubclassLiteral =>
         val tmpClsname = "$$"
         val replacement = ext.ClassDeclaration(tmpClsname, Some(e), ext.ClassLiteral(None, Nil))
         
         val (infos, clss) = linearizeClasses(List(replacement))
         
         e ->> DeclareClasses(clss.toList, newe ->> New(infos(tmpClsname).linearization.tail))
-    }
+   }
   }
 
   private def makeSyntheticClass(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): ClassFragment = {

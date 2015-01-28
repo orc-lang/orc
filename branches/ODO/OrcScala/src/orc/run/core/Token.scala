@@ -812,6 +812,7 @@ class Token protected (
         case BoundValue(v) => v.toString
         case BoundReadable(c: Closure) => c.code.toString
         case BoundReadable(c) => c.toString
+        case BoundStop => "stop"
       })
     }).mkString("\n")
   }
