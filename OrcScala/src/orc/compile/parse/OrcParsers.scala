@@ -384,13 +384,15 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
   val parseClassPrimitiveExpression: Parser[ClassExpression] = (
     parseClassBody
-    | ident -> ClassVariable)
+    | ident -> ClassVariable
+    | "(" ~> parseClassExpression <~ ")")
   val parseClassExpression: Parser[ClassExpression] = (
     parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin
     | parseClassPrimitiveExpression)
 
   val parseNewClassExpression = (
-          (ident -> ClassVariable) ~ parseClassBody -> ClassSubclassLiteral
+          (ident -> ClassVariable
+              | "(" ~> parseClassExpression <~ ")") ~ parseClassBody -> ClassSubclassLiteral
           | parseClassExpression)
     
   val parseClassDeclaration = (

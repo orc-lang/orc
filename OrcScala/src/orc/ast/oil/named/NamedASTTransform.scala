@@ -33,7 +33,7 @@ trait NamedASTFunction {
       case t: Type => this(t)
       case d: Callable => this(d)
       case s: Classvar => this(s)
-      case c: ClassFragment => this(c)
+      case c: Class => this(c)
     }
   }
 
@@ -72,7 +72,7 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onClassvar(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Classvar, Classvar] = EmptyFunction
 
-  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[ClassFragment, ClassFragment] = EmptyFunction
+  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Class, Class] = EmptyFunction
 
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
@@ -206,16 +206,16 @@ trait NamedASTTransform extends NamedASTFunction {
     }
   }
 
-  def transform(d: ClassFragment, context: List[BoundVar], typecontext: List[BoundTypevar]): ClassFragment = {
+  def transform(d: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): Class = {
     val pf = onClass(context, typecontext)
     if (pf isDefinedAt d) {
       d -> pf
     } else {
       d -> {
-        case ClassFragment(name, self, fields) => {
+        case Class(name, self, fields, linearization) => {
           val newcontext = self :: context
           val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
-          ClassFragment(name, self, newfields)
+          Class(name, self, newfields, linearization.map(transform(_, newcontext, typecontext)))
         }
       }
     }

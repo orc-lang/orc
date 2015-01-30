@@ -39,9 +39,12 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def translate(extendedAST: ext.Expression): named.Expression = {
     val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
     val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
-    val rootClassContext: Map[String, ClassInfo] = HashMap.empty withDefault { n => ClassInfo(Classvar(UnboundVar(n)), Nil) }
+    val rootClassContext: Map[String, ClassInfo] = HashMap.empty
+    // TODO: Proper error handling for references to unknown classes.
     convert(extendedAST)(rootContext, rootTypeContext, rootClassContext)
   }
+  
+  val classForms = new ClassForms(this)
 
   /** Convert an extended AST expression to a named OIL expression.
     */
@@ -109,7 +112,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
       case n @ ext.New(e) => {
-        ClassForms.makeNew(n, e)
+        classForms.makeNew(n, e)
       }
 
       case ext.Section(body) => {
@@ -149,7 +152,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.ClassGroup(clss, body) => {
-        val (newClss, newClassCtx) = ClassForms.makeClassGroup(clss)
+        val (newClss, newClassCtx) = classForms.makeClassGroup(clss)
 
         DeclareClasses(newClss.toList, convert(body)(implicitly, implicitly, newClassCtx))
       }

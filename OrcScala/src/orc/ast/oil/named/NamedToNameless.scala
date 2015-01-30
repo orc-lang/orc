@@ -100,10 +100,10 @@ trait NamedToNameless {
     }
   }
 
-  def namedToNameless(a: ClassFragment, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.ClassFragment = {
+  def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
     a -> {
-      case ClassFragment(name, self, bindings) =>
-        nameless.ClassFragment(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
+      case Class(name, self, bindings, linearization) =>
+        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
     }
   }
 

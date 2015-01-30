@@ -41,7 +41,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case ClassFragment(cls, self, fields) => cls +: self +: fields.values.toSeq
+    case Class(cls, self, fields, linearization) => cls +: self +: (fields.values.toSeq ++ linearization)
     case Classvar(v) => List(v)
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
@@ -117,17 +117,19 @@ case class Classvar(name: Var) extends NamedAST
   *
   * The linearization begins with this class and ends with the most general class Object.
   */
-case class ClassFragment(
-  val name: BoundVar, 
-  val self: BoundVar, 
-  val bindings: Map[values.Field, Expression])
+case class Class(
+  val name: BoundVar,
+  val self: BoundVar,
+  val bindings: Map[values.Field, Expression],
+  val linearization: Class.Linearization)
   extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
   with hasOptionalVariableName
-  with Substitution[ClassFragment]
+  with Substitution[Class]
   with Declaration {
   transferOptionalVariableName(name, this)
+  def classvar = Classvar(name)
 }
 
 object Class {
@@ -138,7 +140,7 @@ object Class {
   *
   * The class objects are not normal runtime values and should never be accessed in any way other than New.
   */
-case class DeclareClasses(defs: List[ClassFragment], body: Expression) extends Expression
+case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 /** Construct a new class instance
   *

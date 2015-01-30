@@ -15,7 +15,7 @@
 package orc.run.core
 
 import orc.OrcRuntime
-import orc.ast.oil.nameless.ClassFragment
+import orc.ast.oil.nameless.Class
 
 /**
   *
@@ -23,14 +23,14 @@ import orc.ast.oil.nameless.ClassFragment
   */
 class OrcClass(
   index: Int,
-  classGroup: ClassGroup) extends ResolvableCollectionMember[ClassFragment](index, classGroup) {
+  classGroup: ClassGroup) extends ResolvableCollectionMember[Class](index, classGroup) {
   override def toString = super.toString + (definition.pos, collection, index)
 }
 
 class ClassGroup(
-  _clss: List[ClassFragment],
+  _clss: List[Class],
   _lexicalContext: List[Binding],
   runtime: OrcRuntime)
-  extends ResolvableCollection[ClassFragment, OrcClass](_clss, _lexicalContext, runtime) {
+  extends ResolvableCollection[Class, OrcClass](_clss, _lexicalContext, runtime) {
   def buildMember(i: Int) = new OrcClass(i, this)
 }

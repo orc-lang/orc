@@ -3,7 +3,7 @@
 //
 // $Id$
 //
-// Created by dkitchin on Aug 5, 2010.
+// Created by amp on Jan 26, 2015.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
 //
@@ -14,7 +14,6 @@
 package orc.compile.translate
 
 import scala.language.reflectiveCalls
-
 import orc.ast.ext
 import orc.lib.builtin
 import orc.error.compiletime._
@@ -22,85 +21,63 @@ import orc.error.OrcExceptionExtension._
 import orc.ast.oil.named._
 import orc.ast.ext.ExtendedASTTransform
 import orc.values.Field
+import scala.collection.mutable
+import orc.ast.ext.ClassSubclassLiteral
 
-case class ClassInfo(name: Classvar, linearization: Class.Linearization)
+trait ClassBasicInfo {
+  val linearization: Class.Linearization
+  val members: Set[String]
+}
+case class AnonymousClassInfo(linearization: Class.Linearization, members: Set[String]) extends ClassBasicInfo
+case class ClassInfo(name: BoundVar, linearization: Class.Linearization, members: Set[String], literal: ext.ClassLiteral) extends ClassBasicInfo
 
-/** @author dkitchin
+/** Helper functions for class conversion
+  * @author amp
   */
-object ClassForms {
+case class ClassForms(val translator: Translator) {
+  import translator._
+  
   /** Used to generate unique names for pattern match temporary fields.
     * 
     */
   var tmpId = 1
   // TODO: tmpId could be local to each class if we supported locals that are not visible from subclasses and don't conflict with them.
 
-  /** Helper functions for class conversion
-    */
-  
-  private def concatUniquePreferRight[T](a: List[T], b: List[T]): List[T] = a match {
+  def concatUniquePreferRight[T](a: List[T], b: List[T]): List[T] = a match {
     case v +: vs => if (b contains v) concatUniquePreferRight(vs, b) else v +: concatUniquePreferRight(vs, b)
     case Seq() => b
   }
-
-  private def linearizeClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): (Map[String, ClassInfo], Seq[ClassFragment]) = {
-    // Pretend these are state monads and it's functional. ;-)
-    val ctx = scala.collection.mutable.Map[String, ClassInfo]().withDefault(classcontext)
-    val additionalClasses = scala.collection.mutable.Map[ext.ClassExpression, ClassFragment]()
-
-    def linearize(e: ext.ClassExpression): Class.Linearization = e match {
-      case ext.ClassVariable(n) => ctx(n).linearization
-      case e: ext.ClassLiteral => List(Classvar(additionalClasses.getOrElseUpdate(e, makeSyntheticClass(e)).name))
-      case ext.ClassSubclassLiteral(s, b) => {
-        val synthCls = additionalClasses.getOrElseUpdate(e, makeSyntheticClass(b))
-        concatUniquePreferRight(List(Classvar(synthCls.name)), linearize(s))
-      }
-      case ext.ClassMixin(a, b) => concatUniquePreferRight(linearize(b), linearize(a))
-    }
-    for (c <- clss) {
-      val name = c.name
-      val v = Classvar(new BoundVar(Some("$cls$" + name)))
-      val lin = v :: (c.superclass match {
-        case Some(s) => linearize(s)
-        case None => List()
-      })
-      ctx += name -> ClassInfo(v, lin)
-    }
-    (ctx.toMap, additionalClasses.values.toSeq)
+  implicit class UniqueConcatOperator[T](a: List[T]) {
+    def +>(b: List[T]) = concatUniquePreferRight(a, b)
   }
   
-  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): (Seq[ClassFragment], Map[String, ClassInfo]) = {
-    // Check for duplicate names
-    for (c :: cs <- clss.tails) {
-      cs.find(_.name == c.name) match {
-        case Some(c2) => throw (DuplicateClassException(c.name) at c2)
-        case None => ()
-      }
+  /** Return the ClassInfo of the ClassExpression. As a side effect add any classes needed by  
+    * it to additionalClasses. If name is defined then give the class that name.
+    * 
+    */
+  def linearize(e: ext.ClassExpression, additionalClasses: mutable.Buffer[ClassInfo], name: Option[BoundVar] = None)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: collection.Map[String, ClassInfo]): ClassBasicInfo = {
+    e match {
+      case lit: ext.ClassLiteral =>
+        val info = makeClassInfo(name, lit, Nil, Set())
+        additionalClasses += info 
+        info
+      case ext.ClassMixin(a, b) =>
+        val bi = linearize(b, additionalClasses)
+        val ai = linearize(a, additionalClasses)
+        AnonymousClassInfo(bi.linearization +> ai.linearization, bi.members ++ ai.members)
+      case ext.ClassSubclassLiteral(s, b) =>
+        val si = linearize(s, additionalClasses)
+        val info = makeClassInfo(name, b, si.linearization, si.members)
+        additionalClasses += info
+        info
+      case ext.ClassVariable(v) =>
+        classcontext(v)
     }
-
-    // Build class names and linearizations
-    val (classInfos, additionalClasses) = linearizeClasses(clss)
-
-    val recursiveClassContext = classcontext ++ classInfos
-    val newClss = for (c <- clss; ClassInfo(Classvar(name: BoundVar), _) = recursiveClassContext(c.name)) yield {
-      ClassForms.makeClassFragment(name, c)(implicitly, implicitly, recursiveClassContext, implicitly)
-    }
-    
-    (additionalClasses ++ newClss, recursiveClassContext)
   }
   
-  def makeClassFragment(name: BoundVar, c: ext.ClassDeclaration)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): ClassFragment = {// Handle superclass and generate linearization
-    val (self, fields) = convertClassLiteral(c.body)
-    val cls = ClassFragment(name, self, fields)
-    cls
-  }
-  
-  def convertClassLiteral(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator) = {
-    import translator._
-    val thisName = lit.thisname.getOrElse("this")
-    val thisVar = new BoundVar(Some(thisName))
-    
-    val thisContext = List((thisName, thisVar), ("this", thisVar))
-    
+  /** Return the list of field names declared in the ClassLiteral.
+    */
+  def findFieldNames(lit: ext.ClassLiteral): Set[String] = {
     val bindingVisitor = new ExtendedASTTransform {
       var names = Set[String]()
       
@@ -116,7 +93,29 @@ object ClassForms {
       }
     }
     lit.decls.foreach(bindingVisitor.apply)
-    val fieldNames = bindingVisitor.names
+    bindingVisitor.names
+  }
+  
+  /** Build a ClassInfo object based on the given info.
+    *  
+    * This just does a few computations to extract the needed information build the ClassInfo.
+    */
+  def makeClassInfo(name: Option[BoundVar], lit: ext.ClassLiteral, linearizationSuffix: Class.Linearization, fieldcontext: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): ClassInfo = {
+    val clsname = name getOrElse new BoundVar(Some(Var.getNextVariableName("synCls")))
+    val linearization = Classvar(clsname) :: linearizationSuffix
+    ClassInfo(clsname, linearization, fieldcontext ++ findFieldNames(lit), lit)
+  }
+  
+  /** Given a ClassLiteral and a set of fields on this, build all field expressions for the class.
+    * 
+    * Return the BoundVar for this and the mapping of fields to expressions.
+    */
+  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (BoundVar, Map[Field, Expression]) = {
+    val thisName = lit.thisname.getOrElse("this")
+    val thisVar = new BoundVar(Some(thisName))
+    
+    val thisContext = List((thisName, thisVar), ("this", thisVar))
+    
     val fieldsContext = fieldNames.map(n => (n, new BoundVar(Some(n))))
     
     val memberContext = context ++ thisContext ++ fieldsContext
@@ -124,6 +123,8 @@ object ClassForms {
     def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
       case ext.Val(ext.VariablePattern(x), f) +: rest =>
         (Field(x), convert(f)(memberContext, implicitly, implicitly)) +: convertFields(rest)
+      case ext.Val(ext.TypedPattern(ext.VariablePattern(x), t), f) +: rest =>
+        (Field(x), HasType(convert(f)(memberContext, implicitly, implicitly), convertType(t))) +: convertFields(rest)
       case ext.Val(p, f) +: rest =>
         val tmpField = Field(s"$$pattmp$$$tmpId")
         tmpId += 1
@@ -158,28 +159,63 @@ object ClassForms {
     (thisVar, Map() ++ newbindings)
   }
   
-  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): Expression = {
-    e match {
-      case ext.ClassVariable(n) => newe ->> New(classcontext(n).linearization)
-      case lit: ext.ClassLiteral => {
-        val cls = makeSyntheticClass(lit)
-
-        e ->> DeclareClasses(List(cls), newe ->> New(List(Classvar(cls.name))))
-      }
-      case _: ext.ClassMixin | _: ext.ClassSubclassLiteral =>
-        val tmpClsname = "$$"
-        val replacement = ext.ClassDeclaration(tmpClsname, Some(e), ext.ClassLiteral(None, Nil))
-        
-        val (infos, clss) = linearizeClasses(List(replacement))
-        
-        e ->> DeclareClasses(clss.toList, newe ->> New(infos(tmpClsname).linearization.tail))
-   }
+  /** Convert a ClassInfo to a real class.
+    */
+  def makeClassFromInfo(info: ClassInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Class = {
+    val (self, fields) = convertClassLiteral(info.literal, info.members)
+    info.literal ->> Class(info.name, self, fields, info.linearization)
   }
+  
+  /** Build a New expression from the extended equivalents.
+    * 
+    * This will generate any needed synthetic classes as a DeclareClasses node wrapped around the New.
+    */
+  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): Expression = {
+    val additionalClasses = mutable.Buffer[ClassInfo]()
+    val info = linearize(e, additionalClasses)
+    if (additionalClasses.isEmpty)
+      newe ->> New(info.linearization)
+    else 
+      e ->> DeclareClasses(additionalClasses.map(makeClassFromInfo).toList, newe ->> New(info.linearization))
+  }  
+  
+  /** Build a sequence of Classes from a sequence of extended class declarations.
+    *  
+    * This also returns a new class context to be used for subexpressions. 
+    */
+  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Map[String, ClassInfo]) = {
+    // Check for duplicate names
+    for (c :: cs <- clss.tails) {
+      cs.find(_.name == c.name) match {
+        case Some(c2) => throw (DuplicateClassException(c.name) at c2)
+        case None => ()
+      }
+    }
 
-  private def makeSyntheticClass(lit: ext.ClassLiteral)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): ClassFragment = {
-    val (self, fields) = convertClassLiteral(lit)
-    val clsname = new BoundVar(Some(Var.getNextVariableName("synCls")))
-    val cls = lit ->> ClassFragment(clsname, self, fields)
-    cls
+    // Build class names and linearizations
+    val additionalClasses = mutable.Buffer[ClassInfo]()
+    val incrementalClassContext = mutable.Map() ++ classcontext
+    // TODO: Proper error handling for references to unknown classes.
+    for (ext.ClassDeclaration(name, superclass, body) <- clss) {
+      val e = superclass match {
+        case Some(s) => ext.ClassSubclassLiteral(s, body)
+        case None => body
+      }
+      implicit val classcontext = incrementalClassContext
+      val info = linearize(e, additionalClasses, Some(new BoundVar(Some("$cls$" + name))))
+      info match {
+        case i: ClassInfo => {
+          incrementalClassContext += name -> i
+        }
+        case _ => throw new AssertionError(s"Linearize returned an anonymous class info: $info")
+      }
+    }
+
+    val recursiveClassContext = incrementalClassContext.toMap
+    val newClss = for (info <- additionalClasses) yield {
+      makeClassFromInfo(info)(implicitly, implicitly, recursiveClassContext)
+    }
+    
+    (newClss, recursiveClassContext)
   }
 }
