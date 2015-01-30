@@ -16,7 +16,6 @@
 package orc.compile.translate
 
 import scala.language.reflectiveCalls
-
 import scala.collection.immutable.{ HashMap, List, Map, Nil }
 import scala.collection.mutable
 import orc.ast.ext
@@ -237,6 +236,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareType(d, variantType, Graft(x, source(makeSites), target(newbody)))
       }
 
+      case ext.Declare(decl : ext.ValSig, _) => throw (MalformedExpression("Value signatures are only allowed in classes") at decl)
       case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)
 
       case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))

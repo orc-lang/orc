@@ -27,9 +27,10 @@ import orc.ast.ext.ClassSubclassLiteral
 trait ClassBasicInfo {
   val linearization: Class.Linearization
   val members: Set[String]
+  val concreteMembers: Set[String]
 }
-case class AnonymousClassInfo(linearization: Class.Linearization, members: Set[String]) extends ClassBasicInfo
-case class ClassInfo(name: BoundVar, linearization: Class.Linearization, members: Set[String], literal: ext.ClassLiteral) extends ClassBasicInfo
+case class AnonymousClassInfo(linearization: Class.Linearization, members: Set[String], concreteMembers: Set[String]) extends ClassBasicInfo
+case class ClassInfo(name: BoundVar, linearization: Class.Linearization, members: Set[String], concreteMembers: Set[String], literal: ext.ClassLiteral) extends ClassBasicInfo
 
 /** Helper functions for class conversion
   * @author amp
@@ -58,16 +59,17 @@ case class ClassForms(val translator: Translator) {
   def linearize(e: ext.ClassExpression, additionalClasses: mutable.Buffer[ClassInfo], name: Option[BoundVar] = None)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: collection.Map[String, ClassInfo]): ClassBasicInfo = {
     e match {
       case lit: ext.ClassLiteral =>
-        val info = makeClassInfo(name, lit, Nil, Set())
+        val info = makeClassInfo(name, lit, AnonymousClassInfo(Nil, Set(), Set()))
         additionalClasses += info 
         info
       case ext.ClassMixin(a, b) =>
         val bi = linearize(b, additionalClasses)
         val ai = linearize(a, additionalClasses)
-        AnonymousClassInfo(bi.linearization +> ai.linearization, bi.members ++ ai.members)
+        AnonymousClassInfo(bi.linearization +> ai.linearization, 
+            bi.members ++ ai.members, bi.concreteMembers ++ ai.concreteMembers)
       case ext.ClassSubclassLiteral(s, b) =>
         val si = linearize(s, additionalClasses)
-        val info = makeClassInfo(name, b, si.linearization, si.members)
+        val info = makeClassInfo(name, b, si)
         additionalClasses += info
         info
       case ext.ClassVariable(v) =>
@@ -76,34 +78,40 @@ case class ClassForms(val translator: Translator) {
   }
   
   /** Return the list of field names declared in the ClassLiteral.
+    * 
+    * The first set is all members; the second is only concrete members.
     */
-  def findFieldNames(lit: ext.ClassLiteral): Set[String] = {
+  def findFieldNames(lit: ext.ClassLiteral): (Set[String], Set[String]) = {
     val bindingVisitor = new ExtendedASTTransform {
-      var names = Set[String]()
+      var otherNames = Set[String]()
+      var concreteNames = Set[String]()
       
       override def onPattern() = {
-        case p @ ext.VariablePattern(n) => names += n; p
-        case p @ ext.AsPattern(pat, n) => names += n; this(pat); p
+        case p @ ext.VariablePattern(n) => concreteNames += n; p
+        case p @ ext.AsPattern(pat, n) => concreteNames += n; this(pat); p
       }
       
       override def onDeclaration() = {
         case d: ext.Val => this(d.p); d
-        case d: ext.NamedDeclaration => names += d.name; d
+        case d @ ext.ValSig(n, _) => otherNames += n; d
+        case d: ext.CallableSig => otherNames += d.name; d
+        case d: ext.NamedDeclaration => concreteNames += d.name; d
         case d => d
       }
     }
     lit.decls.foreach(bindingVisitor.apply)
-    bindingVisitor.names
+    (bindingVisitor.otherNames ++ bindingVisitor.concreteNames, bindingVisitor.concreteNames)
   }
   
   /** Build a ClassInfo object based on the given info.
     *  
     * This just does a few computations to extract the needed information build the ClassInfo.
     */
-  def makeClassInfo(name: Option[BoundVar], lit: ext.ClassLiteral, linearizationSuffix: Class.Linearization, fieldcontext: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): ClassInfo = {
+  def makeClassInfo(name: Option[BoundVar], lit: ext.ClassLiteral, superClassInfo: ClassBasicInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): ClassInfo = {
     val clsname = name getOrElse new BoundVar(Some(Var.getNextVariableName("synCls")))
-    val linearization = Classvar(clsname) :: linearizationSuffix
-    ClassInfo(clsname, linearization, fieldcontext ++ findFieldNames(lit), lit)
+    val linearization = Classvar(clsname) :: superClassInfo.linearization
+    val (allmembers, concretemembers) = findFieldNames(lit)
+    ClassInfo(clsname, linearization, superClassInfo.members ++ allmembers, superClassInfo.concreteMembers ++ concretemembers, lit)
   }
   
   /** Given a ClassLiteral and a set of fields on this, build all field expressions for the class.
@@ -120,11 +128,11 @@ case class ClassForms(val translator: Translator) {
     
     val memberContext = context ++ thisContext ++ fieldsContext
 
-    def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Expression)] = d match {
+    def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Option[Expression])] = d match {
       case ext.Val(ext.VariablePattern(x), f) +: rest =>
-        (Field(x), convert(f)(memberContext, implicitly, implicitly)) +: convertFields(rest)
+        (Field(x), Some(convert(f)(memberContext, implicitly, implicitly))) +: convertFields(rest)
       case ext.Val(ext.TypedPattern(ext.VariablePattern(x), t), f) +: rest =>
-        (Field(x), HasType(convert(f)(memberContext, implicitly, implicitly), convertType(t))) +: convertFields(rest)
+        (Field(x), Some(HasType(convert(f)(memberContext, implicitly, implicitly), convertType(t)))) +: convertFields(rest)
       case ext.Val(p, f) +: rest =>
         val tmpField = Field(s"$$pattmp$$$tmpId")
         tmpId += 1
@@ -132,16 +140,26 @@ case class ClassForms(val translator: Translator) {
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
         val newf = convert(f)(memberContext, implicitly, implicitly)
-        val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), FieldAccess(thisVar, tmpField) > x > target(code))
-        (tmpField, source(newf)) +: (generatedFields ++ convertFields(rest))
+        val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), Some(FieldAccess(thisVar, tmpField) > x > target(code)))
+        (tmpField, Some(source(newf))) +: (generatedFields ++ convertFields(rest))
+      case ext.ValSig(v, t) +: rest =>
+        val field = Field(v)
+        // TODO: Store type for later use in type checking.
+        (field, None) +: convertFields(rest)
       case ext.CallableSingle(defs, rest) =>
         assert(defs.forall(_.name == defs.head.name))
         val field = Field(defs.head.name)
         val name = new BoundVar(Some("$" + defs.head.name))
         val agg = defs.foldLeft(AggregateDef.empty(translator))(_ + _)
-
-        val newdef = agg ->> agg.convert(name, memberContext, implicitly, implicitly)
-        (field, DeclareCallables(List(newdef), name)) +: convertFields(rest)
+        if (agg.clauses.isEmpty) {
+          // Abstract
+          // TODO: Store type for later use in type checking.
+          (field, None) +: convertFields(rest)
+        } else {
+          // Concrete
+          val newdef = agg ->> agg.convert(name, memberContext, implicitly, implicitly)
+          (field, Some(DeclareCallables(List(newdef), name))) +: convertFields(rest)
+        }
       case Seq() =>
         Nil
       case decl :: _ =>
@@ -155,7 +173,7 @@ case class ClassForms(val translator: Translator) {
       }
     }
     
-    val newbindings = convertFields(lit.decls).toMap.mapValues(bindMembers)
+    val newbindings = convertFields(lit.decls).collect({ case (f, Some(e)) => (f, e) }).toMap.mapValues(bindMembers)
     (thisVar, Map() ++ newbindings)
   }
   
@@ -173,6 +191,12 @@ case class ClassForms(val translator: Translator) {
   def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): Expression = {
     val additionalClasses = mutable.Buffer[ClassInfo]()
     val info = linearize(e, additionalClasses)
+    
+    val abstractMembers = info.members -- info.concreteMembers
+    if (! abstractMembers.isEmpty) {
+      throw (InstantiatingAbstractClassException(info.linearization.flatMap(_.name.optionalVariableName), abstractMembers) at e)
+    }
+    
     if (additionalClasses.isEmpty)
       newe ->> New(info.linearization)
     else 
