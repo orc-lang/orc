@@ -154,3 +154,17 @@ case class IncludeFileException(val includeFileName: String, cause: Throwable)
 case class SiteResolutionException(val siteName: String, cause: Throwable)
   extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
+  
+/** This Orc program is not valid in class usage.
+  */
+abstract class ClassException(message: String) extends CompilationException(message)
+
+/** A new expression is instantiating a class with abstract members.
+  * 
+  */
+case class InstantiatingAbstractClassException(superclasses: Iterable[String], missingMembers: Iterable[String])
+  extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}. The superclasses are: ${superclasses.mkString(", ")}")
+  with SeverityError
+  
+
+

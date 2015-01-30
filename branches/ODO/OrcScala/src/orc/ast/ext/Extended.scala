@@ -52,6 +52,11 @@ case class TypeAssertion(e: Expression, t: Type) extends Expression
 sealed abstract class Declaration extends AST
 
 case class Val(p: Pattern, e: Expression) extends Declaration
+
+/** Unlike vals val signatures can only assign a single type to a name. They only appear in classes.
+  */
+case class ValSig(name: String, t: Type) extends Declaration
+
 case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
 sealed abstract class NamedDeclaration extends Declaration {

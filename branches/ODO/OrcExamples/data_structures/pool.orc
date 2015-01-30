@@ -40,8 +40,8 @@ val sempool = Pool[Semaphore]({ Semaphore(1) })
 
 sempool.allocate() >s> (
                           s.acquire() >> "got it"
-                        | Rwait(30) >> s.release() >> "threw it"
-                        | Rwait(50) >> sempool.deallocate(s) >> "gone"
+                        | Rwait(50) >> s.release() >> "threw it"
+                        | Rwait(100) >> sempool.deallocate(s) >> "gone"
                        )
 
 {-
