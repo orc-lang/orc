@@ -46,7 +46,7 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
-    case ClassFragment(bindings) => bindings.values
+    case Class(bindings) => bindings.values
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
@@ -155,7 +155,7 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 
 case class New(linearization: Class.Linearization) extends Expression
 
-case class DeclareClasses(defs: List[ClassFragment], body: Expression) extends Expression
+case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
 case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
@@ -203,7 +203,7 @@ case class Classvar(index: Int)
   lazy val freevars: Set[Int] = Set(index)
 }
 
-case class ClassFragment(
+case class Class(
   val bindings: Map[Field, Expression])
   extends NamelessAST
   with hasFreeVars

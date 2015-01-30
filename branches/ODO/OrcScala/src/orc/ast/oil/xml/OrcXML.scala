@@ -196,7 +196,7 @@ object OrcXML {
           { os.map(toXML) }
         </new>
       case Classvar(i) => <classvar index={ i.toString }/>
-      case ClassFragment(bindings) => 
+      case Class(bindings) => 
         <classfragment>
           {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
@@ -460,13 +460,13 @@ object OrcXML {
   }
 
   @throws(classOf[OilParsingException])
-  def classFromXML(xml: scala.xml.Node): ClassFragment = {
+  def classFromXML(xml: scala.xml.Node): Class = {
     xml --> {
       case <classfragment>{ bindings @ _* }</classfragment> => {
         val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
           (Field((x \ "@name").text), fromXML(xmle))
         }
-        ClassFragment(bs.toMap)
+        Class(bs.toMap)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
     }
