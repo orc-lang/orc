@@ -20,11 +20,13 @@ We would like to encapsulate the lock.
 -}
 def Server[A](j :: A) = j
 
-def class Servercall[A]() =
+class Servercall {
+  type A
   val lock = Semaphore(1)
   def main(v :: A) =
     lock.acquire() >> Server(v) >w> lock.release() >> w
-stop
+}
+def Servercall[A']() = new Servercall with { type A = A' }
 
 
 val serve = Servercall[Integer]().main

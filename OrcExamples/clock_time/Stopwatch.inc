@@ -50,8 +50,7 @@ after each call to reset.
 laststart is the time at which the last call to start was made.
 -}
 
-def class Stopwatch() =
-
+class Stopwatch {
   val (laststart, lastpause) = (Ref[Integer](0), Ref[Integer](0))
   val running = Ref[Boolean](false)
   val sem = Semaphore(1)
@@ -78,5 +77,6 @@ def class Stopwatch() =
     sem.release()
 
   def isrunning() = running? -- single atomic step
-
-  stop
+}
+def Stopwatch() = new Stopwatch
+-- TODO: Convert this to use constructor syntactic sugar when it is available.
