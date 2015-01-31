@@ -212,10 +212,10 @@ trait NamedASTTransform extends NamedASTFunction {
       d -> pf
     } else {
       d -> {
-        case Class(name, self, fields, linearization) => {
+        case Class(name, self, supr, fields, linearization) => {
           val newcontext = self :: context
           val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
-          Class(name, self, newfields, linearization.map(transform(_, newcontext, typecontext)))
+          Class(name, self, supr, newfields, linearization.map(transform(_, newcontext, typecontext)))
         }
       }
     }

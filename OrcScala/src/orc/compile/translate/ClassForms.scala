@@ -118,11 +118,12 @@ case class ClassForms(val translator: Translator) {
     * 
     * Return the BoundVar for this and the mapping of fields to expressions.
     */
-  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (BoundVar, Map[Field, Expression]) = {
+  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (BoundVar, BoundVar, Map[Field, Expression]) = {
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
+    val superVar = new BoundVar(Some("super"))
     
-    val thisContext = List((thisName, thisVar), ("this", thisVar))
+    val thisContext = List((thisName, thisVar), ("this", thisVar), ("super", superVar))
     
     val fieldsContext = fieldNames.map(n => (n, new BoundVar(Some(n))))
     
@@ -174,15 +175,15 @@ case class ClassForms(val translator: Translator) {
     }
     
     val newbindings = convertFields(lit.decls).collect({ case (f, Some(e)) => (f, e) }).toMap.mapValues(bindMembers)
-    (thisVar, Map() ++ newbindings)
+    (thisVar, superVar, Map() ++ newbindings)
   }
   
   /** Convert a ClassInfo to a real class.
     */
   def makeClassFromInfo(info: ClassInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Class = {
-    val (self, fields) = convertClassLiteral(info.literal, info.members)
-    info.literal ->> Class(info.name, self, fields, info.linearization)
-  }
+    val (self, superVar, fields) = convertClassLiteral(info.literal, info.members)
+    info.literal ->> Class(info.name, self, superVar, fields, info.linearization)
+  } 
   
   /** Build a New expression from the extended equivalents.
     * 

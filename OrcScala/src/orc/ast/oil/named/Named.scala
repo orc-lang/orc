@@ -41,7 +41,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case Class(cls, self, fields, linearization) => cls +: self +: (fields.values.toSeq ++ linearization)
+    case Class(cls, self, supr, fields, linearization) => cls +: self +: supr +: (fields.values.toSeq ++ linearization)
     case Classvar(v) => List(v)
     case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
@@ -120,6 +120,7 @@ case class Classvar(name: Var) extends NamedAST
 case class Class(
   val name: BoundVar,
   val self: BoundVar,
+  val superVar: BoundVar,
   val bindings: Map[values.Field, Expression],
   val linearization: Class.Linearization)
   extends NamedAST
