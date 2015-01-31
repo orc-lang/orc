@@ -88,6 +88,11 @@ public class OrcResources {
 	public static final String ORC_VARIABLE_OBJ = "orc_variable_obj"; //$NON-NLS-1$
 
 	/**
+	 * Name of the 16x16 icon representing an Orc variable (val) type or abstract declaration
+	 */
+	public static final String ORC_VARIABLE_TYPE_OBJ = "orc_variable_type_obj"; //$NON-NLS-1$
+
+	/**
 	 * Name of the 16x16 icon representing an Orc type declaration
 	 */
 	public static final String ORC_TYPE_OBJ = "orc_type_obj"; //$NON-NLS-1$
@@ -138,6 +143,8 @@ public class OrcResources {
 		addImageDescriptor(bundle, OrcResources.ORC_CLASS_OBJ, "gif", reg); //$NON-NLS-1$
 
 		addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_OBJ, "gif", reg); //$NON-NLS-1$
+
+		addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_TYPE_OBJ, "gif", reg); //$NON-NLS-1$
 
 		addImageDescriptor(bundle, OrcResources.ORC_TYPE_OBJ, "gif", reg); //$NON-NLS-1$
 
