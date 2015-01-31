@@ -197,11 +197,11 @@ object OrcXML {
         </new>
       case Classvar(i) => <classvar index={ i.toString }/>
       case Class(bindings) => 
-        <classfragment>
+        <class>
           {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
           }
-        </classfragment>
+        </class>
       case DeclareClasses(clss, body: Expression) =>
         <declareclasses>
           <classes>{ clss map toXML }</classes>
@@ -462,7 +462,7 @@ object OrcXML {
   @throws(classOf[OilParsingException])
   def classFromXML(xml: scala.xml.Node): Class = {
     xml --> {
-      case <classfragment>{ bindings @ _* }</classfragment> => {
+      case <class>{ bindings @ _* }</class> => {
         val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
           (Field((x \ "@name").text), fromXML(xmle))
         }
