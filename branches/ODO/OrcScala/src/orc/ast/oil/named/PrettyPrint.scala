@@ -80,12 +80,13 @@ class PrettyPrint {
       case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
       case Classvar(name) => reduce(name)
       case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
-      case Class(name, self, fields, linearization) => {
+      case Class(name, self, supr, fields, linearization) => {
         def reduceField(f: (Field, Expression)) = {
           val (name, expr) = f
           s"${name} = ${reduce(expr)}"
         }
-        s"class $name (${linearization.map(reduce).mkString(",")}) { ${reduce(self)} -> ${fields.map(reduceField).mkString(" # ")} }"
+        val superDesc = if (supr.optionalVariableName != Some("super")) s"${reduce(supr)} = super #" else ""
+        s"class $name (${linearization.map(reduce).mkString(",")}) { ${reduce(self)} # $superDesc ${fields.map(reduceField).mkString(" # ")} }"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)

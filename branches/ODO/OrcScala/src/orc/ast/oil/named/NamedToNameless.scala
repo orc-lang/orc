@@ -102,8 +102,8 @@ trait NamedToNameless {
 
   def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
     a -> {
-      case Class(name, self, bindings, linearization) =>
-        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, self :: context, typecontext)))
+      case Class(name, self, supr, bindings, linearization) =>
+        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, supr :: self :: context, typecontext)))
     }
   }
 

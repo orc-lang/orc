@@ -17,7 +17,7 @@ package orc.run.core
 import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.{ Argument, Call, Def, Site, Constant, DeclareCallables, DeclareType, Expression, Graft, HasType, Hole, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVariable, Variable, VtimeZone }
 import orc.error.OrcException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException, NoSuchMemberException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
@@ -531,6 +531,50 @@ class Token protected (
       }
     }
   }
+  
+  def newObject(os: List[Classvar]) {
+    val self = new OrcObject()
+
+    val classes = os.map(lookupClass)
+    
+    // Build a map from (class, field) to group containing every field that is bound.
+    val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
+    
+    Logger.fine(s"Build futures: $fieldsMap")
+    
+    val selfFields = scala.collection.mutable.Map[Field, Future]()
+    
+    // Build the initial super instance. This represents the empty Object instance.
+    var superObj = new OrcObject(Map())
+    // superObj is replaced at the end of the loop each time through to contain the members that have been collected so far.
+    
+    for (cls <- classes.reverse) {
+      Logger.fine(s"Instantiating class: ${cls.definition}")
+      val objenv = BoundValue(superObj) :: BoundValue(self) :: cls.context
+      val fields = for ((name, expr) <- cls.definition.bindings) yield {
+        // We use a GraftGroup since it is exactly what we need.
+        // The difference between this and graft is where the future goes.
+        val pg = fieldsMap((cls.definition, name))
+
+        // A binding frame is not needed since publishing will trigger the token to halt.
+        val t = new Token(expr,
+          env = objenv,
+          group = pg,
+          stack = GroupFrame(EmptyFrame),
+          clock = clock)
+        runtime.stage(t)
+
+        (name, pg.future)
+      }
+      Logger.fine(s"Setup binding for fields: $fields")
+      selfFields ++= fields
+      superObj = new OrcObject(selfFields.toMap)
+    }
+
+    self.setFields(selfFields.toMap)
+
+    publish(Some(self))
+  }
 
   //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
   //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
@@ -618,54 +662,22 @@ class Token protected (
       }
 
       case New(os) => {
-        val self = new OrcObject()
-
-        val classes = os.map(lookupClass)
-        
-        // Build a map from (class, field) to group containing every field that is bound.
-        val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
-        
-        Logger.fine(s"Build futures: $fieldsMap")
-        
-        val selfFields = scala.collection.mutable.Map[Field, Future]()
-        
-        
-        for (cls <- classes.reverse) {
-          Logger.fine(s"Instantiating class: ${cls.definition}")
-          val objenv = BoundValue(self) :: cls.context
-          val fields = for ((name, expr) <- cls.definition.bindings) yield {
-            // We use a GraftGroup since it is exactly what we need.
-            // The difference between this and graft is where the future goes.
-            val pg = fieldsMap((cls.definition, name))
-  
-            // A binding frame is not needed since publishing will trigger the token to halt.
-            val t = new Token(expr,
-              env = objenv,
-              group = pg,
-              stack = GroupFrame(EmptyFrame),
-              clock = clock)
-            runtime.stage(t)
-  
-            (name, pg.future)
-          }
-          // TODO: Use fields to build super for next class.
-          Logger.fine(s"Setup binding for fields: $fields")
-          selfFields ++= fields
-        }
-
-        self.setFields(selfFields.toMap)
-
-        publish(Some(self))
+        newObject(os)
       }
 
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
             case o: OrcObject =>
-              //Logger.finer(s"resolving $o$f")
-              resolve(BoundReadable(o(f))) { x =>
-                //Logger.finer(s"resolved $o$f = $x")
-                publish(Some(x))
+              try {
+                //Logger.finer(s"resolving $o$f")
+                resolve(BoundReadable(o(f))) { x =>
+                  //Logger.finer(s"resolved $o$f = $x")
+                  publish(Some(x))
+                }
+              } catch {
+                case e: NoSuchElementException =>
+                  this !! new NoSuchMemberException(o, f.field)
               }
             case s: AnyRef =>
               siteCall(s, List(f))
