@@ -21,21 +21,21 @@
 
 
 type Bounds = (Integer, Integer)
-type Matrix[A] =
-{.
-  item :: lambda (List[Integer]) :: Ref[A]
-.}
 
+class Matrix {
+  type A
+  val Mat :: Array[A]
+  def item(List[Integer]) :: Ref[A]
+}
 
-site Matrix[A](List[Bounds]) :: Matrix[A]
-
-def class Matrix([]) =
+def class Matrix0D {
   val Mat = Array[A](1)
   def item(List[Integer]) :: Ref[A]
   def item([]) = Mat(0)
-  stop
+}
 
-def class Matrix(xs) =
+def class MatrixND {
+  val xs :: List[Bounds]
 
   {- size of a matrix given a list of bounds, one per dimension -}
   def size(List[Bounds]) :: Integer
@@ -56,8 +56,11 @@ def class Matrix(xs) =
   val Mat = Array[A](size(xs))
   def item(List[Integer]) :: Ref[A]
   def item(is) = Mat(index(0,xs,is))
-
-  stop
+}
+  
+def Matrix[A'](List[Bounds]) :: Matrix with { type A = A' }
+def Matrix[A'](0) = new Matrix0D with { type A = A' }
+def Matrix[A'](xs') = new MatrixND with { type A = A' # val xs = xs' }
 
 val B = Matrix[Integer]([]).item
 val A = Matrix[Integer]([(-2,0),(-1,3),(-1,3)]).item

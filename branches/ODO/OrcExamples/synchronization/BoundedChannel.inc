@@ -27,8 +27,12 @@ We could have a single semaphore bs instead of fs and rs.
 -}
 
 {- Orc standard library provides Bounded Channel -}
-def class BChannel[A](n :: Integer) =
-  val B = Array[A](n)
+class BChannel {
+  -- type A
+  -- TODO: Use abstract type members when they are available
+  val n :: Integer
+  
+  val B = Array(n)
   val f = Ref[Integer](0)
   val fs = Semaphore(1)   -- to guard f
   val r = Ref[Integer](0)
@@ -36,15 +40,19 @@ def class BChannel[A](n :: Integer) =
   val puts = Semaphore(n) -- # of empty positions
   val gets = Semaphore(0) -- # of full positions
 
-  def put(x :: A) =
+  def put(x) =
     puts.acquire() >> rs.acquire() >> B(r?) := x >>
     (r := (r? +1) % n) >> rs.release() >> gets.release()
 
   def get() =
     gets.acquire() >> fs.acquire() >> B(f?)? >v>
     (f := (f? +1) % n) >> fs.release() >> puts.release() >> v
-
-  stop
+}
+def BChannel[A'](n' :: Integer) = new BChannel with { 
+					val n = n' 
+					-- type A = A'
+				      }
+-- TODO: Convert this to use constructor syntactic sugar when it is available.
 
 {- Word.
 
@@ -53,15 +61,19 @@ def class BChannel[A](n :: Integer) =
    instance of put or get can execute at any moment. Therfore, we may
    dispense with fs and rs.
 -}
-def class Word[A]() =
-  val w = Ref[A]()
+class Word {
+  -- type A
+  -- TODO: Use abstract type members when they are available
+
+  val w = Ref()
   val puts = Semaphore(1) -- # of empty positions
   val gets = Semaphore(0) -- # of full positions
 
-  def put(x :: A) =
+  def put(x) =
     puts.acquire() >> w := x >> gets.release()
 
   def get() =
     gets.acquire()  >> w? >v> puts.release() >> v
-
-  stop
+}
+def Word[A']() = new Word -- with { type A = A' }
+-- TODO: Convert this to use constructor syntactic sugar when it is available.

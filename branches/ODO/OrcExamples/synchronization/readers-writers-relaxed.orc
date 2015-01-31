@@ -96,7 +96,7 @@ val rw = new ReadersWriters
 {-
 Readers-Writers written with semaphore pool
 
-def class ReadersWriters() =
+class ReadersWriters {
 val req      = Channel()
 val sempool  = SemaphorePool()
 
@@ -106,12 +106,10 @@ def start(b) = -- read coded as "true", write as "false"
 
 def end() = cb.dec()
 
-def main() =
+val _ =
    req.get() >(b,s)>
    (if  b then  cb.inc() >> s.release()  >> main()
     else cb.onZero() >> cb.inc() >> s.release() >> cb.onZero() >> main()
    )
-
-main()
-
+}
 -}
