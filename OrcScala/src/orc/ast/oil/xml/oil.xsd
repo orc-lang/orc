@@ -110,7 +110,7 @@
   </xs:complexType>
 
   <!--  Class  -->
-  <xs:complexType name="classfragment">
+  <xs:complexType name="class">
     <xs:sequence>
       <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
         <xs:complexType>
@@ -264,7 +264,7 @@
               <xs:element name="classes">
                 <xs:complexType>
                   <xs:sequence>
-	                <xs:element name="classfragment" type="classfragment" minOccurs="1" maxOccurs="unbounded" />
+	                <xs:element name="class" type="class" minOccurs="1" maxOccurs="unbounded" />
 	              </xs:sequence>
                 </xs:complexType>
               </xs:element>
