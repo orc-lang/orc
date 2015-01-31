@@ -26,6 +26,7 @@ import orc.ast.ext.SiteDeclaration;
 import orc.ast.ext.SiteImport;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
+import orc.ast.ext.ValSig;
 
 import org.eclipse.imp.editor.ModelTreeNode;
 import org.eclipse.imp.services.base.TreeModelBuilderBase;
@@ -81,14 +82,16 @@ public class OrcTreeModelBuilder extends TreeModelBuilderBase {
 			createSubItem(ast, TYPE_DECL_CATEGORY);
 		} else if (ast instanceof Val) {
 			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
+		} else if (ast instanceof ValSig) {
+			createSubItem(ast, SIMPLE_VAL_DECL_CATEGORY);
 		}
 
 		// A hack to flatten the ClassLiteral in ClassDeclaration into the parent node.
 		// In that case the ClassLiteral is never visited.
 		if (ast instanceof ClassDeclaration) {
 			ClassDeclaration decl = (ClassDeclaration)ast;
-			if(decl.base().isDefined()) {
-				visit(decl.base().get());
+			if(decl.superclass().isDefined()) {
+				visit(decl.superclass().get());
 			}
 			for (final AST currChild : JavaConversions.asJavaIterable(decl.body().subtrees())) {
 				visit(currChild);

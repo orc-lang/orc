@@ -34,6 +34,7 @@ import orc.ast.ext.SiteImport;
 import orc.ast.ext.SiteSig;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
+import orc.ast.ext.ValSig;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -92,6 +93,8 @@ public class OrcLabelProvider implements ILabelProvider {
 	private static Image ORC_CLASS_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_CLASS_OBJ);
 
 	private static Image ORC_VARIABLE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_VARIABLE_OBJ);
+
+	private static Image ORC_VARIABLE_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_VARIABLE_TYPE_OBJ);
 
 	private static Image ORC_TYPE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_TYPE_OBJ);
 
@@ -168,6 +171,9 @@ public class OrcLabelProvider implements ILabelProvider {
 		if (n instanceof Val) {
 			return ORC_VARIABLE_OBJ_IMAGE;
 		}
+		if (n instanceof ValSig) {
+			return ORC_VARIABLE_TYPE_OBJ_IMAGE;
+		}
 		if (n instanceof TypeDeclaration) {
 			return ORC_TYPE_OBJ_IMAGE;
 		}
@@ -209,6 +215,9 @@ public class OrcLabelProvider implements ILabelProvider {
 		}
 		if (n instanceof Val) {
 			return ((Val) n).p().toOrcSyntax();
+		}
+		if (n instanceof ValSig) {
+			return ((ValSig) n).name();
 		}
 		if (n instanceof TypeDeclaration) {
 			return ((TypeDeclaration) n).name();

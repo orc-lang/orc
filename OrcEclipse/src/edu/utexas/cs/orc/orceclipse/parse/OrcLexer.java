@@ -262,7 +262,7 @@ public class OrcLexer implements Iterable<OrcLexer.OrcToken> {
 
 	private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 										 "signal", "stop", "then", "type", "val", "class", "extends", "with", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ 
-										 "new", "this", "site" };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+										 "new", "this", "site", "super" };  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	
 	private static final String NEWLINE_CHARS = "\n\r\f\u0085\u2028\u2029"; //$NON-NLS-1$
 	private static final String WHITESPACE_CHARS = " \t" + NEWLINE_CHARS + "\u000B\u200E\u200F"; //$NON-NLS-1$ //$NON-NLS-2$
