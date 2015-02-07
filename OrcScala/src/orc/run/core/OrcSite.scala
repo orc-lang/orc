@@ -6,7 +6,7 @@
 //
 // Created by amp on Dec 3, 2014.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -43,7 +43,7 @@ object OrcSiteCallTarget {
           case null =>
             System.gc()
           case ref: OrcSiteCallTarget =>
-            ref.halt()
+            ref.discorporate()
           case _ =>
             throw new AssertionError("Found non-OrcSiteCallTarget reference in OrcSiteCallTarget.queue")
         }
@@ -60,12 +60,13 @@ class OrcSiteCallTarget(site: OrcSite) extends PhantomReference[OrcSite](site, O
   val group = site.group
 
   private var _isLive = true
+  private var _isDiscorporated = false
 
   group.add(this)
 
-  def halt() = if (isLive) {
-    group.remove(this)
-    clear()
+  def discorporate() = synchronized {
+    _isDiscorporated = true
+    group.runtime.schedule(this)
   }
 
   def isLive = synchronized { _isLive }
@@ -83,7 +84,12 @@ class OrcSiteCallTarget(site: OrcSite) extends PhantomReference[OrcSite](site, O
   def checkAlive(): Boolean = isLive && group.checkAlive()
 
   def run() {
-    if (group.isKilled()) { kill() }
+    if (group.isKilled()) {
+      kill()
+    } else if (_isDiscorporated && isLive) {
+      group.discorporate(this)
+      clear()
+    }
   }
 }
 
@@ -129,6 +135,9 @@ class OrcSiteCallGroup(parent: Group, handle: OrcSiteCallHandle) extends Subgrou
     handle.halt()
     parent.remove(this)
   }
+  
+  // Note: discorporate is a no-op in this because this group needs to stay alive to handle kills.
+  def onDiscorporate() = ()
 }
 
 /** A call handle specific to Orc site calls.

@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,7 +18,7 @@ package orc.run.core
   *
   * @author dkitchin
   */
-class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with Blocker {
+class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
 
   var state: OtherwiseGroupState = LeftSideUnknown(t)
 
@@ -47,6 +47,20 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
     }
     parent.remove(this)
   }
+  def onDiscorporate() {
+    synchronized {
+      state match {
+        case LeftSideUnknown(r) => { 
+          // forcably discorporate the token we were holding on to.
+          // The token has never run, but is also not truely halted, so discorporate don't kill.
+          r.discorporate()
+        }
+        case LeftSidePublished => { /* Halting after publication does nothing */ }
+        case LeftSideSilent => { throw new AssertionError("halt of silent f in f;g") }
+      }
+    }
+    parent.discorporate(this)
+  }
 
   def check(t: Blockable) {
     synchronized {
@@ -62,6 +76,6 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
 
 /** Possible states of an OtherwiseGroup */
 class OtherwiseGroupState
-case class LeftSideUnknown(r: Blockable) extends OtherwiseGroupState
+case class LeftSideUnknown(r: Token) extends OtherwiseGroupState
 case object LeftSidePublished extends OtherwiseGroupState
 case object LeftSideSilent extends OtherwiseGroupState

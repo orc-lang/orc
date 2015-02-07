@@ -62,6 +62,19 @@ class GraftGroup(parent: Group) extends Subgroup(parent) {
       case _ => {}
     }
   }
+  
+  def onDiscorporate() = synchronized {
+    state match {
+      case ValueUnknown => {
+        parent.discorporate(this)
+        _future = null
+      }
+      case ValuePublished => {
+        parent.discorporate(this)
+      }
+      case _ => {}
+    }
+  }
 
   // This is not needed for Graft itself. However it doesn't hurt anything and it is needed for 
   // object field futures to halt when the object is killed.
