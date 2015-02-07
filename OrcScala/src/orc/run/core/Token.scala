@@ -789,6 +789,16 @@ class Token protected (
       case Halted | Killed => {}
     }
   }
+  
+  def discorporate() {
+    state match {
+      case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
+        group.discorporate(this)
+      }
+      case Suspended(_) => throw new AssertionError("discorporate on a suspended Token")
+      case Halted | Killed => {}
+    }
+  }
 
   def !!(e: OrcException) {
     e.setPosition(node.pos)
