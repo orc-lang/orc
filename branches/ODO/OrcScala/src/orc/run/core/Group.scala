@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -35,7 +35,10 @@ trait Group extends GroupMember {
 
   override val nonblocking = true
 
-  val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
+  // These are of reduce visibility to make it harder for derived classes to violate the semantics of discorporation.
+  // In general you should not mess with them. However they cannot be private because of debug code in Execution.
+  private[core] val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
+  private var hasDiscorporatedMembers: Boolean = false
 
   val runtime: OrcRuntime
 
@@ -49,6 +52,7 @@ trait Group extends GroupMember {
 
   def publish(t: Token, v: Option[AnyRef]): Unit
   def onHalt(): Unit
+  def onDiscorporate(): Unit
   def run(): Unit
 
   def halt(t: Token) = synchronized { remove(t) }
@@ -98,17 +102,33 @@ trait Group extends GroupMember {
     }
   }
 
+  private def maybeDecTokenCount(m: GroupMember) = m match {
+    /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
+       * Thus, there is no kill-halt multiple remove issue for tokens.  */
+    case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
+    case _ => {}
+  }
+  
   def remove(m: GroupMember) {
     synchronized {
       members -= m
-      if (members.isEmpty) { onHalt() }
+      if (members.isEmpty) {
+        if (hasDiscorporatedMembers)
+          onDiscorporate()
+        else
+          onHalt()
+      }
     }
-    m match {
-      /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
-       * Thus, there is no kill-halt multiple remove issue for tokens.  */
-      case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
-      case _ => {}
+    maybeDecTokenCount(m)
+  }
+
+  def discorporate(m: GroupMember) {
+    synchronized {
+      members -= m
+      hasDiscorporatedMembers = true
+      if (members.isEmpty) { onDiscorporate() }
     }
+    maybeDecTokenCount(m)
   }
 
   def inhabitants: List[Token] =
