@@ -166,5 +166,9 @@ case class InstantiatingAbstractClassException(superclasses: Iterable[String], m
   extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}. The superclasses are: ${superclasses.mkString(", ")}")
   with SeverityError
   
-
-
+/** A with operation is changing the order of methods.
+  */
+case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iterable[String])
+  extends ClassException(s"Classes are in different orders in linearizations of mix-ins. ${leftOrder.mkString(", ")} is different from ${rightOrder.mkString(", ")}")
+  with SeverityWarning
+  

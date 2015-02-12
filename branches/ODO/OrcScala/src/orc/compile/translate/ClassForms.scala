@@ -65,6 +65,8 @@ case class ClassForms(val translator: Translator) {
       case ext.ClassMixin(a, b) =>
         val bi = linearize(b, additionalClasses)
         val ai = linearize(a, additionalClasses)
+        // TODO: Make sure this catches enough cases to be useful.
+        checkForReorderings(ai, bi, e)
         AnonymousClassInfo(bi.linearization +> ai.linearization, 
             bi.members ++ ai.members, bi.concreteMembers ++ ai.concreteMembers)
       case ext.ClassSubclassLiteral(s, b) =>
@@ -74,6 +76,26 @@ case class ClassForms(val translator: Translator) {
         info
       case ext.ClassVariable(v) =>
         classcontext(v)
+    }
+  }
+  
+  def checkForReorderings(a: ClassBasicInfo, b: ClassBasicInfo, e: ext.ClassExpression)(implicit classcontext: collection.Map[String, ClassInfo]): Unit = {
+    for((c :: tail) <- a.linearization.tails) {
+      val tailSet = tail.toSet
+      // If c appears in the linearization of b
+      if (b.linearization.contains(c)) {
+        // If something after c in the linearization of a appears before c in the linearization of b
+        val beforeCinB = b.linearization.takeWhile(_ != c)
+        val misorderedClasses = beforeCinB.filter(tailSet contains _)
+        if( !misorderedClasses.isEmpty ) {
+          val conflictingClasses = (c :: misorderedClasses).toSet
+          // TODO: Check if both c and at least one class in misorderedClasses declare the same member
+          translator.reportProblem(ConflictingOrderWarning(
+              a.linearization.filter(conflictingClasses.contains).map(_.name.toString),
+              b.linearization.filter(conflictingClasses.contains).map(_.name.toString)
+              ) at e)
+        }
+      }
     }
   }
   
@@ -227,7 +249,7 @@ case class ClassForms(val translator: Translator) {
         case None => body
       }
       implicit val classcontext = incrementalClassContext
-      val info = linearize(e, additionalClasses, Some(new BoundVar(Some("$cls$" + name))))
+      val info = linearize(e, additionalClasses, Some(new BoundVar(Some(name))))
       info match {
         case i: ClassInfo => {
           incrementalClassContext += name -> i
