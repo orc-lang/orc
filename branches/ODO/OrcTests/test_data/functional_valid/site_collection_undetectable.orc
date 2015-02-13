@@ -5,12 +5,10 @@
  - Created by amp on Nov 30, 2014 10:57:40 PM
  -}
 
-import site DumpState = "orc.lib.util.DumpState"
-
 ((site Test(x :: Integer) :: Integer = x + 1
 Println(Test(10)) >> stop) ; "Detected!!")
 |
-Rwait(3000) >> Println("3 sec") >> DumpState() >> stop
+Rwait(3000) >> Println("3 sec") >> stop
 
 {-
 OUTPUT:
