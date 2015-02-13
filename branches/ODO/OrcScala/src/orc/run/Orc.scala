@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,8 +20,9 @@ import orc.{ OrcRuntime, OrcExecutionOptions, OrcEvent }
 import orc.run.core.{ Token, Execution }
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
+  thisruntime =>
 
-  var roots = new java.util.concurrent.ConcurrentHashMap[Execution, Unit]
+  var root: Option[Execution] = None
 
   def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
@@ -35,22 +36,20 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
      * at once without actually halting, which makes the interpreter hang 
      * without exiting. 
      */
-    val root = new Execution(node, options, k, this) {
+    root = Some(new Execution(node, options, k, this) {
       override def onHalt() = {
-        roots.remove(root)
+        thisruntime.root = None
         super.onHalt()
       }
 
       override def kill() = {
-        roots.remove(root)
-        super.onHalt()
+        thisruntime.root = None
+        super.kill()
       }
-    }
-    installHandlers(root)
+    })
+    installHandlers(root.get)
 
-    roots.put(root, ())
-
-    val t = new Token(node, root)
+    val t = new Token(node, root.get)
     schedule(t)
   }
 
