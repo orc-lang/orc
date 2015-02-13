@@ -41,7 +41,7 @@ class ResolvableCollectionMember[T](
 }
 
 /** A collection of Ts that all need a shared recursive context. This will 
-  *  resolve that context and should be scheduled to allow resolution. 
+  * resolve that context and should be scheduled to allow resolution. 
   *  
   * @author dkitchin, amp
   */
@@ -67,7 +67,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
     }
   }
   
-  def buildMember(i: Int): Member // = new ResolvableCollectionMember[T](i, this)
+  def buildMember(i: Int): Member
 
   /** Create all the closures. They forward most of their methods here.
     */
@@ -91,32 +91,40 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   // State is used for the blocker side
   private var state: ResolvableCollectionState = Started
 
-  // waitlist is effectively the state of the blocker side.
-  private var waitlist: List[Blockable] = Nil // This should be empty at any time state = Resolved
+  // Waitlist is the state of the blocker side. 
+  // These objects are below this in the dynamic scoping and hence cannot be called with the this lock held.
+  private var waitlist: List[Blockable] = Nil 
+  // This should be empty at any time state = Resolved
 
   private var activeCount = 0
 
-  override def setQuiescent(): Unit = synchronized {
-    assert(activeCount > 0)
-    activeCount -= 1
-    if (activeCount == 0) {
-      waitlist foreach { _.setQuiescent() }
+  override def setQuiescent(): Unit = {
+    val blockablesToSet = synchronized {
+      assert(activeCount > 0)
+      activeCount -= 1
+      if (activeCount == 0) waitlist else Nil
     }
+    blockablesToSet foreach { _.setQuiescent() }
   }
-  override def unsetQuiescent(): Unit = synchronized {
-    if (activeCount == 0) {
-      waitlist foreach { _.unsetQuiescent() }
+  override def unsetQuiescent(): Unit = {
+    val blockablesToUnset = synchronized {
+      assert(activeCount >= 0)
+      activeCount += 1
+      // If activeCount WAS 0
+      if (activeCount == 1) waitlist else Nil
     }
-    activeCount += 1
-    assert(activeCount > 0)
+    blockablesToUnset foreach { _.unsetQuiescent() }
   }
 
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
     */
-  def run() = synchronized {
-    state match {
+  def run() = {
+    // This synchronized may not be needed since we only change state from within this method which is 
+    // only called when this is scheduled which can only happen once (from the join).
+    synchronized { state } match {
       case Started => {
-        // Start the resolution process
+        // We can safely read _lexicalContext without a lock because it is only written from the Blocked 
+        // state which we cannot reach until after the join is started.
         val join = new NonhaltingJoin(_lexicalContext, this, runtime)
         join.join()
       }
@@ -138,18 +146,28 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   }
 
   def read(t: Blockable, i: Int) = {
-    val doawake = synchronized {
+    // To avoid a negative transient of the activeCount of t (to zero being the problem)
+    // we unset here and then set again to undo it after if it was not needed. This means that
+    // blockables in waitlist can always be set without breaking things.
+    // t is guarenteed not to be quiescent (since it is calling read), so unsetting it again
+    // for a little while will not cause an extra step to 0. So we are intensionally creating
+    // a positive transient to avoid a possible negative transient.
+    t.unsetQuiescent()
+
+    val (doawake, doset) = synchronized {
       state match {
-        case Resolved => true
+        case Resolved => (true, true)
         case _ => {
           t.blockOn(members(i))
           waitlist ::= t
-          if (activeCount > 0) {
-            t.unsetQuiescent()
-          }
-          false
+          (false, activeCount == 0)
         }
       }
+    }
+
+    // Now undo the unset from above if needed.
+    if (doset) {
+      t.setQuiescent()
     }
 
     if (doawake) {
@@ -162,13 +180,14 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   def awakeNonterminalValue(v: AnyRef) = {
     // We only block on things that produce a single value so we don't have to handle multiple awakeNonterminalValue calls from one source.
     val bindings = v.asInstanceOf[List[Binding]]
-    synchronized {
+    val waits = synchronized {
       _lexicalContext = bindings
       _context = members.reverse.map { BoundValue(_) } ::: lexicalContext
       state = Resolved
-      waitlist foreach runtime.stage
+      waitlist
       //waitlist = Nil
     }
+    waits foreach runtime.stage
   }
   def awakeStop() = throw new AssertionError("Should never halt")
   override def halt() {} // Ignore halts

@@ -135,6 +135,7 @@ trait Group extends GroupMember {
     members.toList flatMap {
       case t: Token => List(t)
       case g: Group => g.inhabitants
+      case _ => Nil
     }
 
 }
