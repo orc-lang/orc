@@ -19,6 +19,13 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 import orc.run.core.Future
+import orc.run.core.Binding
+import orc.run.core.BoundReadable
+
+trait OrcObjectInterface extends OrcValue {
+  @throws(classOf[NoSuchMemberException])
+  def apply(f: Field): Binding
+}
 
 /** The runtime object representing Orc objects.
   *
@@ -27,15 +34,16 @@ import orc.run.core.Future
   *
   * @author amp
   */
-case class OrcObject(var entries: Map[Field, Future] = null) extends OrcValue {
+case class OrcObject(private var entries: Map[Field, Future] = null) extends OrcObjectInterface {
   def setFields(_entries: Map[Field, Future]) = {
     assert(entries eq null)
     entries = _entries
   }
 
-  def apply(f: Field) = {
+  @throws(classOf[NoSuchMemberException])
+  override def apply(f: Field): Binding = {
     assert(entries ne null)
-    entries(f)
+    BoundReadable(entries.getOrElse(f, throw new NoSuchMemberException(this, f.field)))
   }
 
   override def toOrcSyntax() = {

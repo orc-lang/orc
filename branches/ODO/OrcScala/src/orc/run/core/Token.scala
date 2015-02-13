@@ -24,7 +24,7 @@ import orc.values.sites.TotalSite
 import orc.run.Logger
 import orc.ast.oil.nameless.New
 import orc.ast.oil.nameless.FieldAccess
-import orc.values.OrcObject
+import orc.values.{OrcObject, OrcObjectInterface}
 import orc.ast.oil.nameless.Class
 import orc.ast.oil.nameless.Classvar
 import orc.ast.oil.nameless.DeclareClasses
@@ -668,16 +668,11 @@ class Token protected (
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
-            case o: OrcObject =>
-              try {
-                //Logger.finer(s"resolving $o$f")
-                resolve(BoundReadable(o(f))) { x =>
-                  //Logger.finer(s"resolved $o$f = $x")
-                  publish(Some(x))
-                }
-              } catch {
-                case e: NoSuchElementException =>
-                  this !! new NoSuchMemberException(o, f.field)
+            case o: OrcObjectInterface =>
+              //Logger.finer(s"resolving $o$f")
+              resolve(o(f)) { x =>
+                //Logger.finer(s"resolved $o$f = $x")
+                publish(Some(x))
               }
             case s: AnyRef =>
               siteCall(s, List(f))
