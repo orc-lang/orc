@@ -31,6 +31,9 @@ import orc.run.core.Binding
 import orc.run.core.BoundValue
 import orc.run.core.BoundStop
 import orc.run.core.BoundValue
+import orc.values.Field
+import orc.ast.oil.nameless.Variable
+import orc.ast.oil.nameless.FieldAccess
 
 
 /** A group that stores the first publication and then ignores the rest.
@@ -105,15 +108,29 @@ trait SupportForCallsIntoOrc extends OrcRuntime {
     */
   def callOrcCallable(callable: AnyRef, arguments: List[AnyRef]): Option[AnyRef] = {
     Logger.fine(s"Calling from Java into Orc: $callable $arguments")
-    val callNode = Call(Constant(callable), arguments map Constant, None)
+    val node = Call(Constant(callable), arguments map Constant, None)
+    callNode(node)
+  }
+
+  /** Call a callable member of an Orc object with the given arguments and then return the first thing it publishes.
+    * 
+    * This call blocks until the Orc code publishes for the first time. If the call halts without
+    * publishing this will return None.
+    */
+  def callOrcMethod(obj: AnyRef, field: Field, arguments: List[AnyRef]): Option[AnyRef] = {
+    Logger.fine(s"Calling from Java into Orc: $obj$field $arguments")
+    val node = FieldAccess(Constant(obj), field) >> Call(Variable(0), arguments map Constant, None)
+    callNode(node)
+  }
+
+  private def callNode(node: orc.ast.oil.nameless.Expression): Option[AnyRef] = {
     val rootGroup = root.getOrElse { 
       throw new IllegalStateException("Cannot call into Orc because the root group does not exist (it has probably halted or been killed).")
     }
     val wrapper = new OrcCallWrapperGroup(rootGroup)
-    val t = new Token(callNode, wrapper)
+    val t = new Token(node, wrapper)
     schedule(t)
     val result = wrapper.await() 
-    Logger.finest(s"Returning from Orc to Java: $callable $arguments -> $result")
     result
   }
 }

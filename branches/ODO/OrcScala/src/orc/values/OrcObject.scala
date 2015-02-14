@@ -25,6 +25,7 @@ import orc.run.core.BoundReadable
 trait OrcObjectInterface extends OrcValue {
   @throws(classOf[NoSuchMemberException])
   def apply(f: Field): Binding
+  def contains(f: Field): Boolean
 }
 
 /** The runtime object representing Orc objects.
@@ -40,8 +41,10 @@ case class OrcObject(private var entries: Map[Field, Future] = null) extends Orc
     entries = _entries
   }
 
+  def contains(f: Field) = entries contains f
+  
   @throws(classOf[NoSuchMemberException])
-  override def apply(f: Field): Binding = {
+  def apply(f: Field): Binding = {
     assert(entries ne null)
     BoundReadable(entries.getOrElse(f, throw new NoSuchMemberException(this, f.field)))
   }
