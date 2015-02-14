@@ -5,17 +5,20 @@
  - Created by amp on Feb 11, 2015 7:37:38 PM
  -}
 
+--include "debug.inc"
 include "gui.inc"
 
 {|
+
 val button = Button("Click me!")
 val frame = Frame([button, Button("Dead")]) #
 
-button.onClicked() >> Println("Clicked") >> button.setText("Click me! Started.") >> 
+button.onAction() >> Println("Clicked") >> button.setText("Click me! Started.") >> 
 Rwait(3000) >> button.setText("Click me! Done.") >> stop
 
 |
 
-frame.onClosed() >e> Println("Killing: " + e) 
+frame.onClosing() >e> Println("Killing: " + e) 
 
 |} >> Println("Killed") >> stop
+--| Rwait(10000) >> DumpState()
