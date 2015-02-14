@@ -602,6 +602,7 @@ class Token protected (
   }
 
   protected def eval(node: orc.ast.oil.nameless.Expression) {
+    //Logger.finest(s"Evaluating: $node")
     node match {
       case Stop() => halt()
 
