@@ -75,6 +75,12 @@ sealed trait Declaration {
   this: hasOptionalVariableName =>
 }
 
+trait NamedDeclaration extends Declaration {
+  this: hasOptionalVariableName =>
+  transferOptionalVariableName(name, this)
+  val name: BoundVar
+}
+
 case class Stop() extends Expression
 case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class Parallel(left: Expression, right: Expression) extends Expression
@@ -128,8 +134,7 @@ case class Class(
   with hasFreeTypeVars
   with hasOptionalVariableName
   with Substitution[Class]
-  with Declaration {
-  transferOptionalVariableName(name, this)
+  with NamedDeclaration {
   def classvar = Classvar(name)
 }
 
@@ -213,8 +218,7 @@ sealed abstract class Callable
   with hasFreeTypeVars
   with hasOptionalVariableName
   with Substitution[Callable]
-  with Declaration {
-  transferOptionalVariableName(name, this)
+  with NamedDeclaration {
   lazy val withoutNames: nameless.Callable = namedToNameless(this, Nil, Nil)
 
   val name: BoundVar

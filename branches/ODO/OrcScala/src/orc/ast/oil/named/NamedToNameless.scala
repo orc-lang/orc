@@ -37,26 +37,15 @@ trait NamedToNameless {
       case New(os) => nameless.New(os.map(namedToNameless(_, context, typecontext)))
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
       case DeclareClasses(clss, body) => {
-        // TODO: Compact classes like defs.
-        val clsnames = clss map { _.name }
-        val newcontext = clsnames.reverse ::: context
-        val newclss = clss map { namedToNameless(_, newcontext, typecontext) }
-        val newbody = namedToNameless(body, newcontext, typecontext)
-        nameless.DeclareClasses(newclss, newbody)
+        val (clscontext, bodycontext, openvars) = compactContext(clss, context)
+        val newclss = clss map { namedToNameless(_, clscontext, typecontext) }
+        val newbody = namedToNameless(body, bodycontext, typecontext)
+        nameless.DeclareClasses(openvars, newclss, newbody)
       }
       case DeclareCallables(defs, body) => {
-        val defnames = defs map { _.name }
-        val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
-        val defcontext = defnames.reverse ::: opennames ::: context
-        val bodycontext = defnames.reverse ::: context
+        val (defcontext, bodycontext, openvars) = compactContext(defs, context)
         val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
         val newbody = namedToNameless(body, bodycontext, typecontext)
-        val openvars =
-          opennames map { x =>
-            val i = context indexOf x
-            assert(i >= 0)
-            i
-          }
         nameless.DeclareCallables(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
@@ -74,6 +63,20 @@ trait NamedToNameless {
         nameless.Hole(newHoleContext, newHoleTypeContext)
       }
     }
+  }
+
+  private def compactContext(clss: List[NamedDeclaration with hasFreeVars], context: List[BoundVar]): (List[BoundVar], List[BoundVar], List[Int]) = {
+    val names = clss map { _.name }
+    val opennames = (clss flatMap { _.freevars }).distinct filterNot { names contains _ }
+    val declcontext = names.reverse ::: opennames ::: context
+    val bodycontext = names.reverse ::: context
+    val openvars =
+      opennames map { x =>
+        val i = context indexOf x
+        assert(i >= 0, s"Failed to find variable $x")
+        i 
+      }
+    (declcontext, bodycontext, openvars)
   }
 
   def namedToNameless(a: Argument, context: List[BoundVar]): nameless.Argument = {

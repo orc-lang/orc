@@ -47,7 +47,7 @@ sealed abstract class NamelessAST extends AST {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
     case Class(bindings) => bindings.values
-    case DeclareClasses(clss, body) => clss :+ body
+    case DeclareClasses(_, clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
@@ -84,7 +84,7 @@ sealed abstract class Expression extends NamelessAST
       case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
       case New(s) => s.flatMap(_.freevars).toSet
-      case DeclareClasses(clss, body) => clss.flatMap(_.freevars).toSet ++ shift(body.freevars, clss.length)
+      case DeclareClasses(openvars, clss, body) => openvars.toSet ++ shift(body.freevars, clss.length)
       case DeclareCallables(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
@@ -155,7 +155,7 @@ case class Otherwise(left: Expression, right: Expression) extends Expression
 
 case class New(linearization: Class.Linearization) extends Expression
 
-case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
+case class DeclareClasses(unclosedVars: List[Int], defs: List[Class], body: Expression) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
 case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
