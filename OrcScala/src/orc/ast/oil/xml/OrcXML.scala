@@ -202,8 +202,9 @@ object OrcXML {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
           }
         </class>
-      case DeclareClasses(clss, body: Expression) =>
+      case DeclareClasses(unclosedVars, clss, body: Expression) =>
         <declareclasses>
+          <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
           <classes>{ clss map toXML }</classes>
           <body>{ toXML(body) }</body>
         </declareclasses>
@@ -391,10 +392,16 @@ object OrcXML {
         FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
       case <new>{ os @ _* }</new> =>
         New(os.map(objectStructureFromXML).toList)
-      case <declareclasses><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
+      case <declareclasses><unclosedvars>{ uvars @ _* }</unclosedvars><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
+        val t1 = {
+          uvars.text.split(" ").toList match {
+            case List("") => Nil
+            case xs => xs map { _.toInt }
+          }
+        }
         val t2 = for (d <- clss) yield classFromXML(d)
         val t3 = fromXML(body)
-        DeclareClasses(t2.toList, t3)
+        DeclareClasses(t1, t2.toList, t3)
       }
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {
         val t1 = {

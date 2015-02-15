@@ -25,6 +25,7 @@ trait NamedASTFunction {
   def apply(t: Type): Type
   def apply(d: Callable): Callable
   def apply(d: Classvar): Classvar
+  def apply(d: Class): Class
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
@@ -45,6 +46,7 @@ trait NamedASTFunction {
       def apply(t: Type): Type = g(f(t))
       def apply(d: Callable): Callable = g(f(d))
       def apply(d: Classvar): Classvar = g(f(d))
+      def apply(d: Class): Class = g(f(d))
     }
   }
 
@@ -61,6 +63,7 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Callable): Callable = transform(d, Nil, Nil)
   def apply(d: Classvar): Classvar = transform(d, Nil, Nil)
+  def apply(d: Class): Class = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -81,6 +84,7 @@ trait NamedASTTransform extends NamedASTFunction {
       def apply(t: Type) = transform(t, typecontext)
       def apply(d: Callable) = transform(d, context, typecontext)
       def apply(d: Classvar) = transform(d, context, typecontext)
+      def apply(d: Class) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
@@ -113,9 +117,9 @@ trait NamedASTTransform extends NamedASTFunction {
         case New(c) => New(c.map(transform(_, context, typecontext)))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
         case DeclareClasses(clss, body) => {
-          val defnames = clss map { _.name }
-          val newclss = clss map { transform(_, defnames ::: context, typecontext) }
-          val newbody = transform(body, defnames ::: context, typecontext)
+          val clsnames = clss map { _.name }
+          val newclss = clss map { transform(_, clsnames ::: context, typecontext) }
+          val newbody = transform(body, clsnames ::: context, typecontext)
           DeclareClasses(newclss, newbody)
         }
         case DeclareCallables(defs, body) => {
@@ -213,7 +217,7 @@ trait NamedASTTransform extends NamedASTFunction {
     } else {
       d -> {
         case Class(name, self, supr, fields, linearization) => {
-          val newcontext = self :: context
+          val newcontext = supr :: self :: context
           val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
           Class(name, self, supr, newfields, linearization.map(transform(_, newcontext, typecontext)))
         }

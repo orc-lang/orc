@@ -261,6 +261,11 @@
         <xs:element name="declareclasses">
           <xs:complexType>
             <xs:sequence>
+              <xs:element name="unclosedvars">
+                <xs:simpleType>
+                  <xs:list itemType="index"/>
+                </xs:simpleType>
+              </xs:element>
               <xs:element name="classes">
                 <xs:complexType>
                   <xs:sequence>

@@ -685,8 +685,11 @@ class Token protected (
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
 
-      case DeclareClasses(clss, body) => {
-        val lexicalContext = env
+      case DeclareClasses(openvars, clss, body) => {
+        /* Closure compaction: Bind only the free variables
+         * of the defs in this lexical context.
+         */
+        val lexicalContext = openvars map { i: Int => env(i) }
 
         val classGroup = new ClassGroup(clss, lexicalContext, runtime)
         runtime.stage(classGroup)
