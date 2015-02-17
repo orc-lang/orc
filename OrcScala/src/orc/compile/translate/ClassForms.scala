@@ -190,7 +190,8 @@ case class ClassForms(val translator: Translator) {
     }
     
     def bindMembers(e: Expression) = {
-      fieldsContext.foldRight(e) { (binding, e) =>
+      val fvs = e.freevars
+      fieldsContext.filter(p => fvs contains p._2).foldRight(e) { (binding, e) =>
         val (name, x) = binding 
         Graft(x, FieldAccess(thisVar, Field(name)), e)
       }
