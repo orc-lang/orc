@@ -61,7 +61,7 @@ class OrcCallWrapperGroup(parent: Group) extends Subgroup(parent) {
     * This is required to maintain an invarient that groups never hold references to values.
     */
   def await() = synchronized {
-    assert(state == Unbound)
+    assert(state != Completed)
     while(!state.isInstanceOf[Bound]) {
       this.wait()
     }

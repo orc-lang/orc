@@ -32,6 +32,7 @@ import orc.error.runtime.TokenLimitReachedError
   * @author dkitchin
   */
 trait Group extends GroupMember {
+  override def toString = super.toString + (if (alive) "" else "!!!") 
 
   override val nonblocking = true
 
@@ -89,9 +90,11 @@ trait Group extends GroupMember {
     synchronized {
       if (!alive) {
         m.kill()
+        //println(s"Warning: adding $m to $this")
+      } else {
+        assert(!members.contains(m), s"Double Group.add of $m")
+        members += m
       }
-      assert(!members.contains(m), s"Double Group.add of $m")
-      members += m
     }
     m match {
       case t: Token if (root.options.maxTokens > 0) => {
@@ -111,12 +114,18 @@ trait Group extends GroupMember {
   
   def remove(m: GroupMember) {
     synchronized {
-      members -= m
-      if (members.isEmpty) {
-        if (hasDiscorporatedMembers)
-          onDiscorporate()
-        else
-          onHalt()
+      if (!alive) {
+        //println(s"Warning: removing $m from $this")
+      } else {
+        assert(members contains m, s"Group $this does not contain $m")
+        members -= m
+        if (members.isEmpty) {
+          if (hasDiscorporatedMembers)
+            onDiscorporate()
+          else {
+            onHalt()
+          }
+        }
       }
     }
     maybeDecTokenCount(m)

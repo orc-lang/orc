@@ -24,7 +24,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
 
   t.blockOn(this)
 
-  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
+  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()}, alive=$isKilled)"
 
   def publish(t: Token, v: Option[AnyRef]) {
     synchronized {
@@ -42,7 +42,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
       state match {
         case LeftSideUnknown(r) => { state = LeftSideSilent; runtime.stage(r) }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError("halt of silent f in f;g") }
+        case LeftSideSilent => { throw new AssertionError(s"halt of silent f in f;g: $this") }
       }
     }
     parent.remove(this)
@@ -56,7 +56,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
           r.discorporate()
         }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError("halt of silent f in f;g") }
+        case LeftSideSilent => { throw new AssertionError("discorporate of silent f in f;g") }
       }
     }
     parent.discorporate(this)
@@ -65,8 +65,8 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def check(t: Blockable) {
     synchronized {
       state match {
-        case LeftSidePublished => { t.halt() } // t.halt()
-        case LeftSideSilent => { t.awake() } // t.unblock()
+        case LeftSidePublished => { t.halt() }
+        case LeftSideSilent => { t.awake() }
         case LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }

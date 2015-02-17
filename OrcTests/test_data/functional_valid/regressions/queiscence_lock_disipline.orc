@@ -1,4 +1,4 @@
-{- queiscence_lock_disipline.orc -- Orc program queiscence_lock_disipline
+{- queiscence_lock_disipline.orc -- Attempt to trigger a dead-lock between various resolving classes and defs.
  -
  - $Id$
  -
