@@ -525,11 +525,11 @@ class Token protected (
     val classes = os.map(lookupClass)
     
     // Build a map from (class, field) to group containing every field that is bound.
-    val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
+    //val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
     
-    Logger.fine(s"Build futures: $fieldsMap")
+    //Logger.fine(s"Build futures: $fieldsMap")
     
-    val selfFields = scala.collection.mutable.Map[Field, Future]()
+    val selfFields = scala.collection.mutable.Map[Field, Binding]()
     
     // Build the initial super instance. This represents the empty Object instance.
     var superObj = new OrcObject(Map())
@@ -538,20 +538,32 @@ class Token protected (
     for (cls <- classes.reverse) {
       Logger.fine(s"Instantiating class: ${cls.definition}")
       val objenv = BoundValue(superObj) :: BoundValue(self) :: cls.context
+            
       val fields = for ((name, expr) <- cls.definition.bindings) yield {
-        // We use a GraftGroup since it is exactly what we need.
-        // The difference between this and graft is where the future goes.
-        val pg = fieldsMap((cls.definition, name))
+        expr match {
+          // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
+          case Constant(v) => {
+            (name, BoundValue(v))
+          }
+          case Variable(n) => {
+            (name, objenv(n))
+          }
+          case _ => {
+            // We use a GraftGroup since it is exactly what we need.
+            // The difference between this and graft is where the future goes.
+            val pg = new GraftGroup(group) //fieldsMap((cls.definition, name))
 
-        // A binding frame is not needed since publishing will trigger the token to halt.
-        val t = new Token(expr,
-          env = objenv,
-          group = pg,
-          stack = GroupFrame(EmptyFrame),
-          clock = clock)
-        runtime.stage(t)
+            // A binding frame is not needed since publishing will trigger the token to halt.
+            val t = new Token(expr,
+              env = objenv,
+              group = pg,
+              stack = GroupFrame(EmptyFrame),
+              clock = clock)
+            runtime.stage(t)
 
-        (name, pg.future)
+            (name, BoundReadable(pg.future))
+          }
+        }
       }
       Logger.fine(s"Setup binding for fields: $fields")
       selfFields ++= fields
@@ -622,7 +634,7 @@ class Token protected (
         move(left)
         runtime.stage(this)
       }
-
+      
       case Graft(value, body) => {
         val (v, b) = fork()
         val pg = new GraftGroup(group)
