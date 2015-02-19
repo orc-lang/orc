@@ -35,8 +35,8 @@ trait OrcObjectInterface extends OrcValue {
   *
   * @author amp
   */
-case class OrcObject(private var entries: Map[Field, Future] = null) extends OrcObjectInterface {
-  def setFields(_entries: Map[Field, Future]) = {
+case class OrcObject(private var entries: Map[Field, Binding] = null) extends OrcObjectInterface {
+  def setFields(_entries: Map[Field, Binding]) = {
     assert(entries eq null)
     entries = _entries
   }
@@ -46,7 +46,7 @@ case class OrcObject(private var entries: Map[Field, Future] = null) extends Orc
   @throws(classOf[NoSuchMemberException])
   def apply(f: Field): Binding = {
     assert(entries ne null)
-    BoundReadable(entries.getOrElse(f, throw new NoSuchMemberException(this, f.field)))
+    entries.getOrElse(f, throw new NoSuchMemberException(this, f.field))
   }
 
   override def toOrcSyntax() = {

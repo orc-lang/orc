@@ -11,6 +11,6 @@ o | o.x
 
 {-
 OUTPUT:PERMUTABLE:
-{ .x = 1 }
+{ .x = BoundValue(1) }
 1
 -}
