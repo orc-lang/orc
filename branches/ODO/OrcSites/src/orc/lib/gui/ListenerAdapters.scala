@@ -29,15 +29,19 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import java.awt.event.WindowListener
 import java.awt.event.WindowStateListener
 import java.awt.event.WindowFocusListener
+import java.awt.event.MouseListener
+import java.awt.event.MouseEvent
 
 abstract class ListenerAdapter {
   val deligate: OrcObjectInterface
   val runtime: SupportForCallsIntoOrc
   
-  def call(f: Field, arguments: List[AnyRef]) = {
+  def call(f: Field, arguments: List[AnyRef]): Unit = {
     if (deligate contains f) 
       runtime.callOrcMethod(deligate, f, arguments)
   }
+  def call(f: Field, arguments: AnyRef*): Unit = call(f, arguments.toList)
+  def call(f: String, arguments: AnyRef*): Unit = call(Field(f), arguments.toList)
 }
 
 // TODO: Make this typed once we have object types.
@@ -87,5 +91,18 @@ class WindowListenerAdapter(val deligate: OrcObjectInterface, val runtime: Suppo
 object WindowListenerAdapter extends ListenerAdapterSite {
   def buildAdapter(runtime: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef = {
     new WindowListenerAdapter(del, runtime)
+  }
+}
+
+class MouseListenerAdapter(val deligate: OrcObjectInterface, val runtime: SupportForCallsIntoOrc) extends ListenerAdapter with MouseListener {
+  def mouseClicked(e: MouseEvent): Unit = call("mouseClicked", e)
+  def mousePressed(e: MouseEvent): Unit = call("mousePressed", e)
+  def mouseReleased(e: MouseEvent): Unit = call("mouseReleased", e)
+  def mouseEntered(e: MouseEvent): Unit = call("mouseEntered", e)
+  def mouseExited(e: MouseEvent): Unit = call("mouseExited", e)
+}
+object MouseListenerAdapter extends ListenerAdapterSite {
+  def buildAdapter(runtime: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef = {
+    new MouseListenerAdapter(del, runtime)
   }
 }
