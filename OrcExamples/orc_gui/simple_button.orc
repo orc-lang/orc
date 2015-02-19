@@ -10,7 +10,7 @@ include "gui.inc"
 
 {|
 
-val button = Button("Click me!")
+val button = Button("Click me! Loaded.")
 val frame = Frame([button, Button("Dead")]) #
 
 button.onAction() >> Println("Clicked") >> button.setText("Click me! Started.") >> 
