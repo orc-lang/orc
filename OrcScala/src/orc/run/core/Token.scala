@@ -428,6 +428,7 @@ class Token protected (
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
     Logger.fine(s"Calling $s with $actuals")
+    assert(!s.isInstanceOf[Binding])
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
@@ -451,54 +452,40 @@ class Token protected (
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      case _ => {
+      case o: OrcObjectInterface if (o contains Field("apply")) => {
+        resolve(o(Field("apply"))) { makeCall(_, params) }
+      }
+      case s => {
         params match {
           /* Zero parameters. No need to block. */
           case Nil => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
-              case s => siteCall(s, Nil)
-            }
+            siteCall(s, Nil)
           }
 
           /* One parameter. May need to block. No need to join. */
           case List(param) => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => {
-                resolveOptional(param) {
-                  /* apply isn't allowed to supersede other member accesses */
-                  case Some(Field(f)) => siteCall(r, List(Field(f)))
-                  /*
-                   * The resolved arg is ignored and the apply member is retried on the parameters.
-                   * The arg is ignored even if it is halted, since the apply member might be a function.
-                   */
-                  case _ => makeCall(entries("apply"), params)
-                }
+            resolve(param) { arg: AnyRef =>
+              if (arg.isInstanceOf[Field]) {
+                Logger.warning(s"Field call to site is no longer supported: $s($arg)")
               }
-              case s => resolve(param) { arg: AnyRef => siteCall(s, List(arg)) }
+              siteCall(s, List(arg))
             }
           }
 
           /* Multiple parameters. May need to join. */
           case _ => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
-              case s => {
+            /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
+            pushContinuation({
+              case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
+              case Some(_) => throw new AssertionError("Join resulted in a non-list")
+              case None => halt()
+            })
 
-                /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
-                pushContinuation({
-                  case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
-                  case Some(_) => throw new AssertionError("Join resulted in a non-list")
-                  case None => halt()
-                })
+            /* Create a join over the parameters. */
+            val j = new Join(params, this, runtime)
 
-                /* Create a join over the parameters. */
-                val j = new Join(params, this, runtime)
-
-                /* Perform the join. */
-                j.join()
-              }
-            }
+            /* Perform the join. */
+            j.join()
           }
         }
       }
@@ -744,6 +731,9 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
+    v foreach { vv =>
+      assert(!vv.isInstanceOf[Binding])
+    }
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
       case Live => {
