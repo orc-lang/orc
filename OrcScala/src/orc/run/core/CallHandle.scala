@@ -153,7 +153,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     }
 
     st match {
-      case CallInProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this + ".state=" + this.state) }
+      case CallInProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this) }
       case CallInProgress(_) => {} // Already handled fully by parts above and below
       case CallHalted(_) => { t.halt() }
       case CallRaisedException(e) => { t.awakeException(e) } // t !! e

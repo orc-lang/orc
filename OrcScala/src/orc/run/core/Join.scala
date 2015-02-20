@@ -100,7 +100,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
 
   def check(t: Blockable) = {
     synchronized { state } match {
-      case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
+      case JoinInProgress(_) => throw new AssertionError(s"Spurious check on Join: $this")
       case JoinHalted => t.awakeStop()
       case JoinComplete =>
         val values = items.toList.map(_.asInstanceOf[BoundValue].v)
