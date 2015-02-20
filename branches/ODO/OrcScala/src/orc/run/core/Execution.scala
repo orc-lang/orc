@@ -100,6 +100,11 @@ class Execution(
           sb.append('\n')
           g.members map { printGroupMember(_, level + 1, sb) }
         }
+        case null => {
+          // TODO: Figure out how we ever end up getting null here.
+          sb.append("null")
+          sb.append('\n')
+        }
         case _ => {
           sb.append(currMember.toString())
           sb.append('\n')
@@ -127,16 +132,6 @@ class Execution(
     val prefix = "# "
     Console.err.println(prefix + sb.toString.stripLineEnd.replaceAll("\n", "\n" + prefix))
   }
-
-  /* 
-  // A useful debugging hack:
-  val dumpTimer = new Timer()
-  dumpTimer.schedule(new TimerTask {
-    def run() {
-      dumpState()
-    }
-  }, 10 * 1000, 2 * 1000)
-  */
 }
 
 object DumpState extends OrcEvent

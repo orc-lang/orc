@@ -556,7 +556,7 @@ class Token protected (
               clock = clock)
             runtime.stage(t)
 
-            (name, BoundReadable(pg.future))
+            (name, pg.binding)
           }
         }
       }
@@ -633,7 +633,7 @@ class Token protected (
       case Graft(value, body) => {
         val (v, b) = fork()
         val pg = new GraftGroup(group)
-        b.bind(BoundReadable(pg.future))
+        b.bind(pg.binding)
         v.join(pg)
         v.move(value)
         b.move(body)
