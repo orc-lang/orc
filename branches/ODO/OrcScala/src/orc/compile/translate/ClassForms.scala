@@ -75,7 +75,9 @@ case class ClassForms(val translator: Translator) {
         additionalClasses += info
         info
       case ext.ClassVariable(v) =>
-        classcontext(v)
+        classcontext.getOrElse(v, {
+          throw (UnboundClassVariableException(v) at e)
+        })
     }
   }
   
@@ -231,7 +233,7 @@ case class ClassForms(val translator: Translator) {
     *  
     * This also returns a new class context to be used for subexpressions. 
     */
-  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Map[String, ClassInfo]) = {
+  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Map[String, Type], Map[String, ClassInfo]) = {
     // Check for duplicate names
     for (c :: cs <- clss.tails) {
       cs.find(_.name == c.name) match {
@@ -243,7 +245,6 @@ case class ClassForms(val translator: Translator) {
     // Build class names and linearizations
     val additionalClasses = mutable.Buffer[ClassInfo]()
     val incrementalClassContext = mutable.Map() ++ classcontext
-    // TODO: Proper error handling for references to unknown classes.
     for (ext.ClassDeclaration(name, superclass, body) <- clss) {
       val e = superclass match {
         case Some(s) => ext.ClassSubclassLiteral(s, body)
@@ -260,10 +261,11 @@ case class ClassForms(val translator: Translator) {
     }
 
     val recursiveClassContext = incrementalClassContext.toMap
+    val recursiveTypeContext = typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
     val newClss = for (info <- additionalClasses) yield {
-      makeClassFromInfo(info)(implicitly, implicitly, recursiveClassContext)
+      makeClassFromInfo(info)(implicitly, recursiveTypeContext, recursiveClassContext)
     }
     
-    (newClss, recursiveClassContext)
+    (newClss, recursiveTypeContext, recursiveClassContext)
   }
 }

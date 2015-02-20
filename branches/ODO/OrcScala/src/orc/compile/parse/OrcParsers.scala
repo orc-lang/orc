@@ -231,6 +231,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | "_" -> Placeholder
     | "stop" -> Stop
     | "this" -> Variable("this")
+    | "super" ~> "." ~> ident -> { f => Call(Variable("super"), List(FieldAccess(f))) } 
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | "new" ~> parseNewClassExpression -> New
@@ -246,8 +247,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args)
 
   val parseCallExpression: Parser[Expression] = (
-      "super" ~> "." ~> ident -> { f => Call(Variable("super"), List(FieldAccess(f))) } 
-    | parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
+      parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
 
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal

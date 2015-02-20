@@ -523,12 +523,7 @@ class Token protected (
     val self = new OrcObject()
 
     val classes = os.map(lookupClass)
-    
-    // Build a map from (class, field) to group containing every field that is bound.
-    //val fieldsMap = classes.flatMap(c => c.definition.bindings.map(p => ((c.definition, p._1), new GraftGroup(group)))).toMap
-    
-    //Logger.fine(s"Build futures: $fieldsMap")
-    
+        
     val selfFields = scala.collection.mutable.Map[Field, Binding]()
     
     // Build the initial super instance. This represents the empty Object instance.
@@ -551,7 +546,7 @@ class Token protected (
           case _ => {
             // We use a GraftGroup since it is exactly what we need.
             // The difference between this and graft is where the future goes.
-            val pg = new GraftGroup(group) //fieldsMap((cls.definition, name))
+            val pg = new GraftGroup(group)
 
             // A binding frame is not needed since publishing will trigger the token to halt.
             val t = new Token(expr,
