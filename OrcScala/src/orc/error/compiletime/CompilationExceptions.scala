@@ -129,6 +129,9 @@ case class UnboundVariableException(val varName: String)
 case class UnboundTypeVariableException(val typevarName: String)
   extends SyntacticException("Type variable " + typevarName + " is unbound")
   with SeverityError
+case class UnboundClassVariableException(val clsName: String)
+  extends SyntacticException("The class " + clsName + " is undefined")
+  with SeverityError
 
 /** The compilation process has produced a malformed expression;
   * this is a fatal internal error, and not the fault of the user.

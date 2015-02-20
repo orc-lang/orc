@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//test_data/functional_invalid/classes/nonexistent_class.orc=UTF-8
 encoding//test_data/functional_valid/block.orc=UTF-8
 encoding//test_data/functional_valid/classes/cake_pattern.orc=UTF-8
 encoding//test_data/functional_valid/classes/linearization_conflict.orc=UTF-8
