@@ -148,12 +148,11 @@ case class ClassForms(val translator: Translator) {
     val superVar = new BoundVar(Some("super"))
     
     val thisContext = List((thisName, thisVar), ("this", thisVar), ("super", superVar))
+        
+    val memberContext = context ++ thisContext
     
-    val fieldsContext = fieldNames.map(n => (n, new BoundVar(Some(n))))
-    
-    val memberContext = context ++ thisContext ++ fieldsContext
-
     def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Option[Expression])] = d match {
+      // NOTE: The first two cases are optimizations. The third case also covers them, but also introduces extra fields.
       case ext.Val(ext.VariablePattern(x), f) +: rest =>
         (Field(x), Some(convert(f)(memberContext, implicitly, implicitly))) +: convertFields(rest)
       case ext.Val(ext.TypedPattern(ext.VariablePattern(x), t), f) +: rest =>
@@ -190,16 +189,15 @@ case class ClassForms(val translator: Translator) {
       case decl :: _ =>
         throw (MalformedExpression("Invalid declaration form in class") at decl)
     }
-    
-    def bindMembers(e: Expression) = {
-      val fvs = e.freevars
-      fieldsContext.filter(p => fvs contains p._2).foldRight(e) { (binding, e) =>
-        val (name, x) = binding 
-        Graft(x, FieldAccess(thisVar, Field(name)), e)
+
+    val desugarMembers = new ExtendedASTTransform {
+      override def onExpression() = {
+        case v @ ext.Variable(name) if fieldNames contains name =>
+          ext.Call(ext.Variable("this"), List(ext.FieldAccess(name)))
       }
     }
     
-    val newbindings = convertFields(lit.decls).collect({ case (f, Some(e)) => (f, e) }).toMap.mapValues(bindMembers)
+    val newbindings = convertFields(lit.decls.map(desugarMembers.apply)).collect({ case (f, Some(e)) => (f, e) }).toMap
     (thisVar, superVar, Map() ++ newbindings)
   }
   

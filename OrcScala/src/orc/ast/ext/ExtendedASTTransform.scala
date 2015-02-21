@@ -92,6 +92,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       d -> {
         case SiteImport(_, _) | ClassImport(_, _) | TypeImport(_, _) => d
         case Val(p, e) => Val(this(p), this(e))
+        case ValSig(p, t) => ValSig(p, this(t))
         case Include(o, decls) => Include(o, decls map this.apply)
         case ClassDeclaration(name, base, body) =>
           ClassDeclaration(name, base map this.apply, ClassLiteral(body.thisname, body.decls map this.apply))
