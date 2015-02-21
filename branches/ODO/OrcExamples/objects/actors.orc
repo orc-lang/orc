@@ -29,33 +29,63 @@ class MailBox {
     
   def getFirstMessage() = 
     withLock(lock, { messages? }) >first : _> first ; 
-      waiting.acquire() >> this.getFirstMessage()
+      waiting.acquire() >> getFirstMessage()
     
   def getNextMessage(id) =
     def h((id', m) : next : _) if (id' = id) = next
     def h(_ : tail) = h(tail)
-    def h([]) = waiting.acquire() >> this.getNextMessage(id)
+    def h([]) = waiting.acquire() >> getNextMessage(id)
     h(withLock(lock, { messages? }))
 }
 def MailBox() = new MailBox
 
--- A simple actor that merges two messages and prints the result.
-class Actor {
+class ActorBase {
   val mailBox = MailBox()
   def sendMessage(m) = mailBox.add(m)
   def receive(receiver) = mailBox.receive(receiver)
-  
+}
+
+-- A simple actor that merges two messages and prints the result.
+class Actor extends ActorBase {
+  val target :: ActorBase
+    
   val _ = repeat({ -- Body
-    Println("Actor") >>
-    receive({ _ >("test", v)> Println("Test: " + v) >> v }) >v>
-    receive({ _ >("other", v')> Println("Other: " + v + " " + v') })
+    receive({ _ >("test", v)> v }) >v>
+    receive({ _ >("other", v')> Println("Other: " + v + " " + v') >> target.sendMessage(("pair", v, v')) })
   })
 }
-def Actor() = new Actor
+def Actor(t :: ActorBase) = new Actor { val target = t }
 
--- Use the actor to make sure it does the right things.
-val a = Actor()
-a.sendMessage(("other", 201)) |
-a.sendMessage(("test", 42)) |
-a.sendMessage(("test", 43)) |
-Rwait(1000) >> a.sendMessage(("other", 202))
+class SumOfProducts extends ActorBase {
+  val sum = Ref(0)
+
+  val _ = repeat({ -- Body
+    receive({ val m = _ #
+    	      m >("pair", x, y)> sum := sum? + x * y |
+    	      m >("print")> Println("Result: " + sum?) })
+  })
+}
+def SumOfProducts() = new SumOfProducts
+
+{|
+val sum = SumOfProducts()
+val a = Actor(sum) #
+
+(
+a.sendMessage(("other", 2)) |
+a.sendMessage(("test", 1)) |
+Rwait(100) >> a.sendMessage(("test", 10)) |
+Rwait(700) >> a.sendMessage(("other", 3)) |
+Rwait(500) >> sum.sendMessage("print")
+) >> stop |
+Rwait(1000) >> sum.sendMessage("print") >> Rwait(100)
+|}
+
+{-
+OUTPUT:
+Other: 1 2
+Result: 2
+Other: 10 3
+Result: 32
+signal
+-}
