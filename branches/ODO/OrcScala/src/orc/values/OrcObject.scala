@@ -2,7 +2,7 @@
 // OrcObject.scala -- Scala class OrcObject
 // Project OrcScala
 //
-// $Id: OrcRecord.scala 2933 2011-12-15 16:26:02Z jthywissen $
+// $Id$
 //
 // Created by dkitchin on Jul 10, 2010. Updated to object from record by amp in Dec 2014.
 //
@@ -42,7 +42,7 @@ case class OrcObject(private var entries: Map[Field, Binding] = null) extends Or
   }
 
   def contains(f: Field) = entries contains f
-  
+
   @throws(classOf[NoSuchMemberException])
   def apply(f: Field): Binding = {
     assert(entries ne null)

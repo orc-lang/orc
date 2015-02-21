@@ -2,7 +2,7 @@
 // IterableToStream.scala -- Scala object IterableToStream
 // Project OrcScala
 //
-// $Id: IterableToStream.scala 3260 2013-09-07 17:25:14Z jthywissen $
+// $Id$
 //
 // Created by amp in Feb 5, 2015.
 //
@@ -28,9 +28,9 @@ import orc.Handle
 import orc.values.sites.Site0
 import orc.types.Bot
 
-/** A site that just blocks forever. However it does so in a way that the interpreter knows 
+/** A site that just blocks forever. However it does so in a way that the interpreter knows
   * about so it is handled more efficiently and will not prevent hte interpreter from exiting.
-  *  
+  *
   * @author amp
   */
 object Block extends Site0 with TypedSite {

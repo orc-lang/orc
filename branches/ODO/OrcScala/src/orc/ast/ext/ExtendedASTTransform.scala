@@ -2,9 +2,9 @@
 // Transformation.scala -- Scala traits ExtendedASTFunction and ExtendedASTTransform and object EmptyFunction
 // Project OrcScala
 //
-// $Id: NamedASTTransform.scala 3368 2014-12-06 01:55:28Z arthur.peters@gmail.com $
+// $Id$
 //
-// Created by dkitchin on Jul 12, 2010.
+// Created by amp on Jan, 2015.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
@@ -16,7 +16,7 @@ package orc.ast.ext
 
 import scala.language.reflectiveCalls
 
-/** @author dkitchin
+/** @author dkitchin and amp
   */
 trait ExtendedASTFunction {
   def apply(e: Expression): Expression

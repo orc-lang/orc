@@ -1,6 +1,6 @@
 {- trivial_class.orc -- A test of a trivial class and instantiation
  -
- - $Id: trivial_class.orc 3387 2015-01-12 21:57:11Z arthur.peters@gmail.com $
+ - $Id$
  -
  - Created by amp on Jan 4, 2015 7:33:07 PM
  -}

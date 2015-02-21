@@ -21,14 +21,13 @@ import java.awt.Color
 import java.awt.Dimension
 
 /**
-  *
   * @author amp
   */
 class CanvasImpl(x: Int, y: Int) extends JPanel {
   val image = new BufferedImage(x, y, BufferedImage.TYPE_3BYTE_BGR)
-  
+
   override def getPreferredSize() = new Dimension(x, y)
-  
+
   protected override def paintComponent(g: Graphics) = {
     g.drawImage(image, 0, 0, getWidth(), getHeight(), Color.CYAN, null)
   }

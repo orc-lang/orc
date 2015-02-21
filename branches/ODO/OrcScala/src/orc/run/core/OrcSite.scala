@@ -135,7 +135,7 @@ class OrcSiteCallGroup(parent: Group, handle: OrcSiteCallHandle) extends Subgrou
     handle.halt()
     parent.remove(this)
   }
-  
+
   // Note: discorporate is a no-op in this because this group needs to stay alive to handle kills.
   def onDiscorporate() = ()
 }
