@@ -2,7 +2,7 @@
 // IterableToStream.scala -- Scala object IterableToStream
 // Project OrcScala
 //
-// $Id: IterableToStream.scala 3260 2013-09-07 17:25:14Z jthywissen $
+// $Id$
 //
 // Created by amp in Feb 5, 2015.
 //
@@ -29,7 +29,7 @@ import orc.Handle
 import orc.values.sites.Site0
 
 /** Cause the execution to dump the token state.
-  * 
+  *
   * @author amp
   */
 object DumpState extends Site0 with TypedSite {

@@ -2,7 +2,7 @@
 // CallableToRunnable.scala -- Scala object CallableToRunnable and CallableToCallable
 // Project OrcScala
 //
-// $Id: IterableToStream.scala 3260 2013-09-07 17:25:14Z jthywissen $
+// $Id$
 //
 // Created by amd on Feb 11, 2015.
 //
@@ -34,7 +34,7 @@ import java.util.concurrent.Callable
 object CallableToRunnable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
     val runtime = h.runtime match {
-      case r : SupportForCallsIntoOrc => r 
+      case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     h.publish(new Runnable {
@@ -57,7 +57,7 @@ object CallableToRunnable extends Site1 with TypedSite {
 object CallableToCallable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
     val runtime = h.runtime match {
-      case r : SupportForCallsIntoOrc => r 
+      case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     h.publish(new Callable[AnyRef] {

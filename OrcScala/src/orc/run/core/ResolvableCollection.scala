@@ -2,7 +2,7 @@
 // Closure.scala -- Scala class ResolvableCollection
 // Project OrcScala
 //
-// $Id: Closure.scala 3387 2015-01-12 21:57:11Z arthur.peters@gmail.com $
+// $Id$
 //
 // Created by dkitchin on Aug 12, 2011.
 //
@@ -40,9 +40,9 @@ class ResolvableCollectionMember[T](
   override val runtime = collection.runtime
 }
 
-/** A collection of Ts that all need a shared recursive context. This will 
-  * resolve that context and should be scheduled to allow resolution. 
-  *  
+/** A collection of Ts that all need a shared recursive context. This will
+  * resolve that context and should be scheduled to allow resolution.
+  *
   * @author dkitchin, amp
   */
 abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]](
@@ -66,7 +66,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
       toStringRecusionGuard.remove()
     }
   }
-  
+
   def buildMember(i: Int): Member
 
   /** Create all the closures. They forward most of their methods here.
@@ -93,7 +93,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   // Waitlist is the state of the blocker side. 
   // These objects are below this in the dynamic scoping and hence cannot be called with the this lock held.
-  private var waitlist: List[Blockable] = Nil 
+  private var waitlist: List[Blockable] = Nil
   // This should be empty at any time state = Resolved
 
   private var activeCount = 0

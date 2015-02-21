@@ -3,6 +3,10 @@
  -
  - This version uses only the features provided by the nu-obj calculus
  - and a Scala like syntax on top of it.
+ -
+ - $Id$
+ -
+ - Created by amp in Jan, 2015
  -}
 
 -- Given the list [x1, x2, ...] return [(0, x1), (1, x2), ...].

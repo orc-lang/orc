@@ -18,7 +18,6 @@ import orc.OrcRuntime
 import orc.ast.oil.nameless.Class
 
 /**
-  *
   * @author amp
   */
 class OrcClass(
