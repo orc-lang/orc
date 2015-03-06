@@ -364,8 +364,11 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   // Declarations
   ////////
 
+  val parseDefSigCoreNamed = (
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?))
+    
   val parseDefCore = (
-    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
+    parseDefSigCoreNamed ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
   val parseDefSigCore = (
     ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType)
@@ -395,9 +398,14 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
           (ident -> ClassVariable
               | "(" ~> parseClassExpression <~ ")") ~ parseClassBody -> ClassSubclassLiteral
           | parseClassExpression)
-    
+  
+  val parseClassConstructor: Parser[ClassConstructor] = (
+      ident ~ (ListOf(parseTypeVariable)?) -> ClassConstructor.None
+      | "def" ~> parseDefSigCoreNamed -> ClassConstructor.Def 
+      | "site" ~> parseDefSigCoreNamed -> ClassConstructor.Site)
+      
   val parseClassDeclaration = (
-    (ident ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
+    (parseClassConstructor ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
 
   val parseDeclaration: Parser[Declaration] = (
     (
