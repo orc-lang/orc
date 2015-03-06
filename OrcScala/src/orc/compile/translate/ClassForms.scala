@@ -254,7 +254,7 @@ case class ClassForms(val translator: Translator) {
     val clsNames = (for (cd @ ext.ClassDeclaration(constructor, _, _) <- clss) yield 
                       (constructor.name -> new BoundVar(Some(constructor.name)))).toMap
 
-    val (desugaredClss, constructorMakers) = desugarClasses(clss, clsNames)
+    val (desugaredClss, constructorMakers) = desugarClasses(clss)
     assert(desugaredClss.forall(_.constructor.isInstanceOf[ext.ClassConstructor.None]))
 
     // Build class names and linearizations
@@ -269,7 +269,7 @@ case class ClassForms(val translator: Translator) {
       val info = linearize(e, additionalClasses, Some(clsNames(name)))
       info match {
         case i: ClassInfo => {
-          incrementalClassContext += name -> i
+          incrementalClassContext += name -> i.copy(concreteMembers = i.concreteMembers ++ constructorMakers.keys)
         }
         case _ => throw new AssertionError(s"Linearize returned an anonymous class info: $info")
       }
@@ -278,13 +278,18 @@ case class ClassForms(val translator: Translator) {
     val recursiveClassContext = incrementalClassContext.toMap
     val recursiveTypeContext = typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
     val newClss = for (info <- additionalClasses) yield {
-      makeClassFromInfo(info)(implicitly, recursiveTypeContext, recursiveClassContext)
+      val cls = makeClassFromInfo(info)(implicitly, recursiveTypeContext, recursiveClassContext)
+      val additionalBindings = constructorMakers.map { case (n, b) =>
+        val newdef = b(recursiveTypeContext, recursiveClassContext)
+        Field(n) -> DeclareCallables(List(newdef), newdef.name)
+      }
+      cls.copy(bindings = cls.bindings ++ additionalBindings) 
     }
     
-    val constructors = constructorMakers.map(_(recursiveTypeContext))
+    val constructors = constructorMakers.values.map(_(recursiveTypeContext, recursiveClassContext))
     val newContext = context ++ constructors.map(d => d.name.optionalVariableName.get -> d.name)
 
-    (newClss, constructors, newContext, recursiveTypeContext, recursiveClassContext)
+    (newClss, constructors.toList, newContext, recursiveTypeContext, recursiveClassContext)
   }
 
   /**
@@ -294,16 +299,21 @@ case class ClassForms(val translator: Translator) {
     * toRecursiveBind is a set of fields that should be bound to specific variables
     * (usually recursive functions). This can contain constrName and often will. 
     */
-  private def makeClassConstructor(isSite: Boolean, clsName: BoundVar, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Seq[Type], returnType: Type): Callable = {
+  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Seq[Type], returnType: Type)(classcontext: Map[String, ClassInfo]): Callable = {
     val formals = toBind.map(f => new BoundVar(Some(f.field))).toList
-    val synClsName = new BoundVar(Some(Var.getNextVariableName("synCls")))
-    val thisVar = new BoundVar(Some("this"))
-    val superVar = new BoundVar(Some("super"))
-    val bindings = for((f, n) <- (toBind zip formals) ++ toRecursiveBind) yield f -> n
-    val cls = Class(synClsName, thisVar, superVar, bindings.toMap, List(Classvar(synClsName)))
-    val body = DeclareClasses(List(cls), {
-      New(List(Classvar(clsName), Classvar(synClsName)))
-    })
+    val body = if (toBind.isEmpty && toRecursiveBind.isEmpty) {
+      New(classcontext(clsName).linearization)
+    } else {
+      val synClsName = new BoundVar(Some(Var.getNextVariableName("synCls")))
+      val thisVar = new BoundVar(Some("this"))
+      val superVar = new BoundVar(Some("super"))
+      val bindings = for ((f, n) <- (toBind zip formals) ++ toRecursiveBind) yield f -> n
+      val cls = Class(synClsName, thisVar, superVar, bindings.toMap, List(Classvar(synClsName)))
+
+      DeclareClasses(List(cls), {
+        New(Classvar(synClsName) +: classcontext(clsName).linearization)
+      })
+    }
     val typeformals = Nil
     val argtypes = Some(argTypes.toList)
     val returntype = Some(returnType)
@@ -323,7 +333,7 @@ case class ClassForms(val translator: Translator) {
     * The appoach is to first collect type and name information about all the constructors and then update
     * classes and build constructor maker closures using that information.
     */
-  private def desugarClasses(clss: Seq[ext.ClassDeclaration], clsNames: Map[String, BoundVar])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[ext.ClassDeclaration], Seq[Map[String, Type] => Callable]) = {
+  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
     // Generate constructor names and ext types
     val constructorInfo = (for (ext.ClassDeclaration(constructor: ext.ClassCallableConstructor, _, _) <- clss) yield {
       val argTypes = (constructor.formals.zipWithIndex) map { both =>
@@ -343,10 +353,11 @@ case class ClassForms(val translator: Translator) {
     }).toMap
     
     val toRecursiveBind = constructorInfo map { case (n, (v, _)) => Field(n) -> v }
+    val newConstructorDecls = constructorInfo.toList.map { case (n, (_, t)) => ext.ValSig(n, t) }
     
     // Generate the desugared classes and constuctor maker functions
     val results = for (cls @ ext.ClassDeclaration(constructor, superclass, body) <- clss) yield {
-      constructor match {
+      val (newCls, constrMakerMapping) = constructor match {
         case _: ext.ClassConstructor.None => (cls, None)
         case constructor: ext.ClassCallableConstructor => {
           val newFields = constructor.formals.map(_ => uniqueField("arg"))
@@ -359,21 +370,22 @@ case class ClassForms(val translator: Translator) {
                 ext.ValSig(tmpField.field, argType), 
                 ext.Val(p, ext.Call(ext.Variable("this"), List(ext.FieldAccess(tmpField.field)))))
           }
-          
-          val newConstructorDecls = constructorInfo.toList.map { case (n, (_, t)) => ext.ValSig(n, t) }
-          
+                    
           val newCls = ext.ClassDeclaration(ext.ClassConstructor.None(constructor.name, constructor.typeformals), superclass, 
-                body.copy(decls = body.decls ++ newDecls ++ newConstructorDecls))
-          def constrMaker(tc: Map[String, Type]) = 
+                body.copy(decls = body.decls ++ newDecls))
+                
+          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = 
             makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
-                clsNames(constructor.name), constructorInfo(constructor.name)._1, newFields, toRecursiveBind,
-                argTypes.map(convertType(_)(tc)), convertType(returnType)(tc))
-          (newCls, Some(constrMaker _))
+                constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
+                argTypes.map(convertType(_)(tc)), convertType(returnType)(tc))(cc)
+                
+          (newCls, Some(constructor.name -> constrMaker _))
         }
       }
+      (newCls.copy(body = newCls.body.copy(decls = newCls.body.decls ++ newConstructorDecls)), constrMakerMapping)
     }
     val (newClss, constrs) = results.unzip
-    (newClss, constrs.flatten)
+    (newClss, constrs.flatten.toMap)
   }
 
   private def arguments(e: Expression): Set[Argument] = e match {
