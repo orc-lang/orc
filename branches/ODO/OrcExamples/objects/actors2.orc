@@ -7,7 +7,7 @@
  
 -- An actor style mail box where receive can handle messages that are not at the top of the queue.
 -- This implementation is VERY slow, but it works.
-class MailBox {
+class def MailBox() :: MailBox {
   val messages = Ref([])
   val nextID = Ref(0)
   val lock = Semaphore(1)
@@ -38,7 +38,6 @@ class MailBox {
     def h([]) = waiting.acquire() >> getNextMessage(id)
     h(withLock(lock, { messages? }))
 }
-def MailBox() = new MailBox
 
 class ActorBase {
   val mailBox = MailBox()
@@ -46,7 +45,7 @@ class ActorBase {
   def receive(receiver) = mailBox.receive(receiver)
 }
 
-class Actor extends ActorBase {
+class def Actor() :: Actor extends ActorBase {
   val a = Ref[Integer](0)
   val b = Ref[Integer](0)
   val c = Ref[Integer](0)
@@ -57,7 +56,6 @@ class Actor extends ActorBase {
     	      m >("read", other)> other.sendMessage((a?, b?, c?)) })
   })
 }
-def Actor() = new Actor
 
 {|
 

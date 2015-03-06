@@ -33,13 +33,16 @@ def runOnKill(callback :: lambda() :: Top) =
   site check() :: Top = Block()
   runOnKillHandler(check, callback)
   
-class FanoutChannel {
+class def FanoutChannel() :: FanoutChannel {
+  -- A lock to protect internal data structure
   val lock = Semaphore(1)
+  -- A list of output ("listener") channels
   val listeners = Ref[List[Channel]]([])
   
+  -- Put an value on every listener channel
   def put(v) = each(listeners?) >c> c.put(v)
   
-  -- Return a listener channel that will be active until this call is killed.
+  -- Return a listener channel that will be active until this call is killed
   def newListener() = withLock(lock, {
     val c = Channel()
     runOnKill({ removeListener(c) }) >>
@@ -47,15 +50,16 @@ class FanoutChannel {
     c
   })
   
+  -- Remove a listener channel
   def removeListener(c :: Channel) = withLock(lock, {
-    listeners := filter(listeners?, {_ /= c})
+    listeners := filter(listeners?, { _ /= c })
   })
   
+  -- Publish all values put on this channel while this call is active
   def listen() =
     val c = newListener()
     repeat(c.get)
 }
-def FanoutChannel() = new FanoutChannel
   
 def onEDTProfile(f :: lambda() :: Top) = SwingUtilities.invokeLater(CallableToRunnable({ Rtime() >t> f() >> Println("onEDT for " + (Rtime() - t) + " with " + f) }))
 def onEDT(f :: lambda() :: Top) = SwingUtilities.invokeLater(CallableToRunnable(f))
@@ -72,8 +76,7 @@ class Component {
   val impl :: JComponent
 }
 
-class Frame extends Component {
-  val children :: List[Top]
+class def Frame(children :: List[Component]) :: Frame extends Component {
   val impl = onEDTBlock({ JFrame() })
   val listener = WindowListenerAdapter(this)
   val _ = children >> impl -- First block on the fields we need and then take the "EDT lock"
@@ -103,10 +106,8 @@ class Frame extends Component {
   
   def onClosing() = closingChannel.listen()
 }
-def Frame(children_ :: List[Top]) = new Frame with { val children = children_ }
 
-class Button extends Component {
-  val text :: String
+class def Button(text :: String) :: Button extends Component {
   val impl = onEDTBlock({ JButton() })
   val _ = setText(text)
   
@@ -121,9 +122,8 @@ class Button extends Component {
   
   def onAction() = actionChannel.listen()
 }
-def Button(text_ :: String) = new Button with { val text = text_ }
 
-class Canvas extends Component {
+class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Component {
   val width :: Integer
   val height :: Integer
 
@@ -155,6 +155,5 @@ class Canvas extends Component {
   
   def onClicked() = mouseClickedChannel.listen()
 }
-def Canvas(width_ :: Integer, height_:: Integer) = new Canvas with { val width = width_ # val height = height_ }
 
 -- def closeGUI() = each(arrayToList(Window.getWindows())) >w> Println("Disposing " + w) >> w.dispose()

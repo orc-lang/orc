@@ -6,7 +6,7 @@
  -}
  
 -- An actor style mail box where receive can handle messages that are not at the top of the queue.
-class MailBox {
+class def MailBox() :: MailBox {
   val messages = Ref([])
   val nextID = Ref(0)
   val lock = Semaphore(1)
@@ -37,7 +37,6 @@ class MailBox {
     def h([]) = waiting.acquire() >> getNextMessage(id)
     h(withLock(lock, { messages? }))
 }
-def MailBox() = new MailBox
 
 class ActorBase {
   val mailBox = MailBox()
@@ -46,17 +45,14 @@ class ActorBase {
 }
 
 -- A simple actor that merges two messages and prints the result.
-class Actor extends ActorBase {
-  val target :: ActorBase
-    
+class def Actor(target :: ActorBase) :: Actor extends ActorBase {
   val _ = repeat({ -- Body
     receive({ _ >("test", v)> v }) >v>
     receive({ _ >("other", v')> Println("Other: " + v + " " + v') >> target.sendMessage(("pair", v, v')) })
   })
 }
-def Actor(t :: ActorBase) = new Actor { val target = t }
 
-class SumOfProducts extends ActorBase {
+class def SumOfProducts() :: SumOfProducts extends ActorBase {
   val sum = Ref(0)
 
   val _ = repeat({ -- Body
@@ -65,7 +61,6 @@ class SumOfProducts extends ActorBase {
     	      m >("print")> Println("Result: " + sum?) })
   })
 }
-def SumOfProducts() = new SumOfProducts
 
 {|
 val sum = SumOfProducts()

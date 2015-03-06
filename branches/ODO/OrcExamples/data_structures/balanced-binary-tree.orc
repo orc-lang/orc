@@ -18,7 +18,7 @@ class BBTree {
 }
 
 class BBTreeLeaf extends BBTree {
-  def read(List[Integer]) :: Top
+  def read(List[Integer]) :: BBTree
   def read(is) = stop
 
   def write(Top, List[Integer]) :: Signal
@@ -27,7 +27,7 @@ class BBTreeLeaf extends BBTree {
 
 class BBTreeBranch extends BBTree {
   val n :: Integer
-  val BBTree :: lambda(Integer) :: Top
+  val BBTree :: lambda(Integer) :: BBTree
 
   val (root, left, right) = (Ref(), BBTree(n-1), BBTree(n-1))
 
@@ -42,8 +42,9 @@ class BBTreeBranch extends BBTree {
   def read(1:is) = right.read(is)
 }
 def BBTree(0) = new BBTreeLeaf
-def BBTree(n' :: Integer) = val rec = BBTree
-							  new BBTreeBranch with { val n = n' # val BBTree = rec }
+def BBTree(n' :: Integer) = 
+  val rec = BBTree 
+  new BBTreeBranch with { val n = n' # val BBTree = rec }
 
 -- TODO: Convert this to use constructor syntactic sugar when it is available.
 
