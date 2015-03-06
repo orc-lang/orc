@@ -163,10 +163,21 @@ case class SiteResolutionException(val siteName: String, cause: Throwable)
 abstract class ClassException(message: String) extends CompilationException(message)
 
 /** A new expression is instantiating a class with abstract members.
-  * 
   */
 case class InstantiatingAbstractClassException(superclasses: Iterable[String], missingMembers: Iterable[String])
   extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}. The superclasses are: ${superclasses.mkString(", ")}")
+  with SeverityError
+  
+/** A constructor is missing types on one of it's arguments.
+  */
+case class ConstructorArgumentTypeMissingException(className: String, argument: Int)
+  extends ClassException(s"Constructor for class $className is missing an explicit type on argument $argument.")
+  with SeverityError
+  
+/** A constructor is missing a return type.
+  */
+case class ConstructorReturnTypeMissingException(className: String)
+  extends ClassException(s"Constructor for class $className is missing an explicit return type.")
   with SeverityError
   
 /** A with operation is changing the order of methods.

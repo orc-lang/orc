@@ -25,6 +25,7 @@ trait ExtendedASTFunction {
   def apply(d: Declaration): Declaration
   def apply(a: Pattern): Pattern
   def apply(a: ClassExpression): ClassExpression
+  def apply(a: ClassConstructor): ClassConstructor
 
   def andThen(g: ExtendedASTFunction): ExtendedASTFunction = {
     val f = this
@@ -35,6 +36,7 @@ trait ExtendedASTFunction {
       def apply(d: Declaration): Declaration = g(f(d))
       def apply(a: Pattern): Pattern = g(f(a))
       def apply(a: ClassExpression): ClassExpression = g(f(a))
+      def apply(a: ClassConstructor): ClassConstructor = g(f(a))
     }
   }
 
@@ -52,6 +54,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
   def apply(d: Declaration): Declaration = transform(d)
   def apply(a: Pattern): Pattern = transform(a)
   def apply(a: ClassExpression): ClassExpression = transform(a)
+  def apply(a: ClassConstructor): ClassConstructor = transform(a)
 
   def onExpression(): PartialFunction[Expression, Expression] = EmptyFunction
   def onType(): PartialFunction[Type, Type] = EmptyFunction
@@ -59,6 +62,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
   def onDeclaration(): PartialFunction[Declaration, Declaration] = EmptyFunction
   def onPattern(): PartialFunction[Pattern, Pattern] = EmptyFunction
   def onClassExpression(): PartialFunction[ClassExpression, ClassExpression] = EmptyFunction
+  def onClassConstructor(): PartialFunction[ClassConstructor, ClassConstructor] = EmptyFunction
 
   def transform(e: Expression): Expression = {
     val pf = onExpression()
@@ -94,8 +98,8 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Val(p, e) => Val(this(p), this(e))
         case ValSig(p, t) => ValSig(p, this(t))
         case Include(o, decls) => Include(o, decls map this.apply)
-        case ClassDeclaration(name, base, body) =>
-          ClassDeclaration(name, base map this.apply, ClassLiteral(body.thisname, body.decls map this.apply))
+        case ClassDeclaration(constructor, base, body) =>
+          ClassDeclaration(this(constructor), base map this.apply, ClassLiteral(body.thisname, body.decls map this.apply))
         case c @ Callable(name, typeformals, formals, returntype, guard, body) =>
           c.copy(name, typeformals, formals map this.apply, returntype map this.apply, guard map this.apply, this(body))
         case c @ CallableSig(name, typeformals, argtypes, returntype) =>
@@ -155,6 +159,16 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       a -> {
         case Dereference | FieldAccess(_) => a
         case Args(types, elements) => Args(types map { _ map this.apply }, elements map this.apply)
+      }
+    }
+  }
+  
+  def transform(a: ClassConstructor): ClassConstructor = {
+    val pf = onClassConstructor()
+    if (pf isDefinedAt a) { a -> pf } else {
+      a -> {
+        case ClassConstructor.None(name, tfs) => a
+        case a: ClassCallableConstructor => a.copy(a.name, a.typeformals, a.formals map this.apply, a.returntype map this.apply)
       }
     }
   }

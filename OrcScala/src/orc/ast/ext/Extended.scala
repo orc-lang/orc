@@ -172,7 +172,9 @@ object CallableSingle {
 case class SiteImport(name: String, sitename: String) extends NamedDeclaration
 case class ClassImport(name: String, classname: String) extends NamedDeclaration
 
-case class ClassDeclaration(name: String, superclass: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration
+case class ClassDeclaration(constructor: ClassConstructor, superclass: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration {
+  val name = constructor.name
+}
 
 sealed abstract class ClassExpression extends AST {
   def toInterfaceString: String
@@ -191,6 +193,30 @@ case class ClassSubclassLiteral(superclass: ClassExpression, body: ClassLiteral)
 }
 case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
   def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
+}
+
+sealed trait ClassConstructor extends AST {
+  val name: String
+  val typeformals: Option[List[String]]
+}
+sealed trait ClassCallableConstructor extends ClassConstructor {
+  val formals: List[Pattern]
+  val returntype: Option[Type]
+  
+  def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]): ClassCallableConstructor
+}
+object ClassConstructor {
+  case class None(name: String, typeformals: Option[List[String]]) extends ClassConstructor
+  case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]) extends ClassCallableConstructor {
+    def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype): Def = {
+      Def(name, typeformals, formals, returntype)
+    }
+  }
+  case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]) extends ClassCallableConstructor {
+    def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype): Site = {
+      Site(name, typeformals, formals, returntype)
+    }    
+  }
 }
 
 case class New(cls: ClassExpression) extends Expression

@@ -151,9 +151,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.ClassGroup(clss, body) => {
-        val (newClss, newTypeCtx, newClassCtx) = classForms.makeClassGroup(clss)
+        val (newClss, constructors, newContext, newTypeCtx, newClassCtx) = classForms.makeClassGroup(clss)
 
-        DeclareClasses(newClss.toList, convert(body)(implicitly, newTypeCtx, newClassCtx))
+        DeclareClasses(newClss.toList, DeclareCallables(constructors.toList, convert(body)(newContext, newTypeCtx, newClassCtx)))
       }
 
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
