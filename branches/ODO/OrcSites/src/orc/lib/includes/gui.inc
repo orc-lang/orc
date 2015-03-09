@@ -89,7 +89,7 @@ class def Frame(children :: List[Component]) :: Frame extends Component {
 	    >> impl.setVisible(true)
 	  })
   
-  def setVisible(b :: Boolean) = Println("setVisible") >> onEDT({
+  site setVisible(b :: Boolean) = Println("setVisible") >> onEDT({
     Println("setVisible onEDT")
     >> impl.pack()
     >> impl.setVisible(b)
@@ -97,30 +97,30 @@ class def Frame(children :: List[Component]) :: Frame extends Component {
   
   def dispose() = onEDT({ impl.removeWindowListener(listener) }) >> impl.dispose()
   
-  def add(c) = onEDT({ impl.add(c.impl) })
+  site add(c) = onEDT({ impl.add(c.impl) })
 
   val _ = runOnKill({ dispose() })
   
   val closingChannel = FanoutChannel()
-  def windowClosing(e) = closingChannel.put(e)
+  site windowClosing(e) = closingChannel.put(e)
   
-  def onClosing() = closingChannel.listen()
+  site onClosing() = closingChannel.listen()
 }
 
 class def Button(text :: String) :: Button extends Component {
   val impl = onEDTBlock({ JButton() })
   val _ = setText(text)
   
-  def setText(s :: String) = onEDT({
+  site setText(s :: String) = onEDT({
     impl.setText(s)
   })
   
   val _ = installOnEDTUntilKill( impl.addActionListener, impl.removeActionListener, ActionListenerAdapter(this))
   
   val actionChannel = FanoutChannel()
-  def actionPerformed(e) = actionChannel.put(e)  
+  site actionPerformed(e) = actionChannel.put(e)  
   
-  def onAction() = actionChannel.listen()
+  site onAction() = actionChannel.listen()
 }
 
 class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Component {
@@ -130,30 +130,30 @@ class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Componen
   val impl = onEDTBlock({ CanvasImpl(width, height) })
   val image = impl.image()
   
-  def setPixel(x, y, color) = onEDT({
+  site setPixel(x, y, color) = onEDT({
   	image.setRGB(x, y, color)
   })
   
-  def fill(color) = onEDT({
+  site fill(color) = onEDT({
 	image.createGraphics()
 	>g> g.setColor(Color(color))
 	>> g.fillRect(0, 0, width, height)
 	-->> g.dispose()
   }) >> repaint()
   
-  def repaint() = onEDT({
+  site repaint() = onEDT({
   	impl.repaint(0, 0, impl.getWidth(), impl.getHeight())
   })
   
-  def getDisplayWidth() = onEDTBlock({ impl.getWidth() })
-  def getDisplayHeight() = onEDTBlock({ impl.getHeight() })
+  site getDisplayWidth() = onEDTBlock({ impl.getWidth() })
+  site getDisplayHeight() = onEDTBlock({ impl.getHeight() })
   
   val _ = installOnEDTUntilKill( impl.addMouseListener, impl.removeMouseListener, MouseListenerAdapter(this))
   
   val mouseClickedChannel = FanoutChannel()
-  def mouseClicked(e) = mouseClickedChannel.put(e)  
+  site mouseClicked(e) = mouseClickedChannel.put(e)  
   
-  def onClicked() = mouseClickedChannel.listen()
+  site onClicked() = mouseClickedChannel.listen()
 }
 
 -- def closeGUI() = each(arrayToList(Window.getWindows())) >w> Println("Disposing " + w) >> w.dispose()
