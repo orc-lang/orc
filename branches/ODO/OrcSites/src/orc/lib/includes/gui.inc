@@ -89,17 +89,15 @@ class def Frame(children :: List[Component]) :: Frame extends Component {
 	    >> impl.setVisible(true)
 	  })
   
-  site setVisible(b :: Boolean) = Println("setVisible") >> onEDT({
-    Println("setVisible onEDT")
-    >> impl.pack()
+  site setVisible(b :: Boolean) = impl >> onEDT({
+       impl.pack()
     >> impl.setVisible(b)
   })
   
-  def dispose() = onEDT({ impl.removeWindowListener(listener) }) >> impl.dispose()
-  
-  site add(c) = onEDT({ impl.add(c.impl) })
-
   val _ = runOnKill({ dispose() })
+  def dispose() = impl >> onEDT({ impl.removeWindowListener(listener) }) >> impl.dispose()
+  
+  site add(c) = impl >> onEDT({ impl.add(c.impl) })
   
   val closingChannel = FanoutChannel()
   site windowClosing(e) = closingChannel.put(e)
@@ -111,7 +109,7 @@ class def Button(text :: String) :: Button extends Component {
   val impl = onEDTBlock({ JButton() })
   val _ = setText(text)
   
-  site setText(s :: String) = onEDT({
+  site setText(s :: String) = impl >> onEDT({
     impl.setText(s)
   })
   
@@ -124,29 +122,26 @@ class def Button(text :: String) :: Button extends Component {
 }
 
 class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Component {
-  val width :: Integer
-  val height :: Integer
-
   val impl = onEDTBlock({ CanvasImpl(width, height) })
   val image = impl.image()
   
-  site setPixel(x, y, color) = onEDT({
+  site setPixel(x, y, color) = image >> onEDT({
   	image.setRGB(x, y, color)
   })
   
-  site fill(color) = onEDT({
+  site fill(color) = image >> onEDT({
 	image.createGraphics()
 	>g> g.setColor(Color(color))
 	>> g.fillRect(0, 0, width, height)
 	-->> g.dispose()
   }) >> repaint()
   
-  site repaint() = onEDT({
+  site repaint() = impl >> onEDT({
   	impl.repaint(0, 0, impl.getWidth(), impl.getHeight())
   })
   
-  site getDisplayWidth() = onEDTBlock({ impl.getWidth() })
-  site getDisplayHeight() = onEDTBlock({ impl.getHeight() })
+  site getDisplayWidth() = impl >> onEDTBlock({ impl.getWidth() })
+  site getDisplayHeight() = impl >> onEDTBlock({ impl.getHeight() })
   
   val _ = installOnEDTUntilKill( impl.addMouseListener, impl.removeMouseListener, MouseListenerAdapter(this))
   
