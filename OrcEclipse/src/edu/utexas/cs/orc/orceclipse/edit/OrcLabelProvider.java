@@ -217,7 +217,7 @@ public class OrcLabelProvider implements ILabelProvider {
 			return ((Val) n).p().toOrcSyntax();
 		}
 		if (n instanceof ValSig) {
-			return ((ValSig) n).name();
+			return ((ValSig) n).name() + " :: " + ((ValSig) n).t().toOrcSyntax(); //$NON-NLS-1$
 		}
 		if (n instanceof TypeDeclaration) {
 			return ((TypeDeclaration) n).name();
