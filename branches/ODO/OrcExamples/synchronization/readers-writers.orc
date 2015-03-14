@@ -66,7 +66,7 @@ def reader(lock :: RW) =
 def writer(lock :: RW) =
   Rwait((Random(4)+1)*100) >>
   lock.write_start() >>
-  v := v? + 1 >>
+  v := (v? + 1 >x> Rwait(Random(4)) >> x) >>
   lock.write_finish()
 
 val rw = new RW
