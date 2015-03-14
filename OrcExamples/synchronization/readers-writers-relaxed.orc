@@ -85,12 +85,34 @@ class ReadersWriters {
   val _ = main()
 }
 
+val v = Ref[Integer](0)
+
+
+def reader(lock :: ReadersWriters) =
+  Rwait((Random(4)+1)*100) >>
+  lock.start(true) >>
+--  Println(v?) >>
+  lock.end()
+
+def writer(lock :: ReadersWriters) =
+  Rwait((Random(4)+1)*100) >>
+  lock.start(false) >>
+  v := (v? + 1 >x> Rwait(Random(4)) >> x) >>
+  lock.end()
+
+{|
 val rw = new ReadersWriters
 
-  rw.start(true) >> Println("1 read") >> Rwait(750) >> rw.end()
-| Rwait(500) >> rw.start(true)  >> Println("2 read") >> rw.end()
-| Rwait(600) >>  rw.start(false) >> Println("3 write") >> rw.end()
+#
+( upto(1000) >> reader(rw) >> stop
+| upto(1000) >> writer(rw) >> stop)
+; Println("Final value: "+(v?))
+|} >> stop
 
+{-
+OUTPUT:
+Final value: 1000
+-}
 
 ----------------------------------------------------
 {-
@@ -113,3 +135,4 @@ val _ =
    )
 }
 -}
+
