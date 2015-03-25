@@ -2,5 +2,7 @@ eclipse.preferences.version=1
 encoding//distributed_algorithms/superposition-random.orc=UTF-8
 encoding//objects/active_objects.orc=UTF-8
 encoding//objects/sequential_objects.orc=UTF-8
+encoding//objects/supervisor-example.orc=UTF-8
+encoding//objects/supervisor.inc=UTF-8
 encoding//orc_gui/simple_button.orc=UTF-8
 encoding/<project>=UTF-8
