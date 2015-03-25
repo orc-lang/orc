@@ -39,7 +39,7 @@ class def Notifier() :: Notifier {
   site notify() = (each(listeners?) >c> c.release()) ; signal
   
   -- Return a listener semaphore that will be active until this call is killed
-  site newListener() = withLock(lock, {
+  def newListener() = withLock(lock, {
     val c = Semaphore(0)
     runOnKill({ removeListener(c) }) >>
     listeners := c : listeners? >>
@@ -47,7 +47,7 @@ class def Notifier() :: Notifier {
   })
   
   -- Remove a listener semaphore
-  site removeListener(c :: Channel) = withLock(lock, {
+  def removeListener(c :: Channel) = withLock(lock, {
     listeners := filter(listeners?, { _ /= c })
   })
   
@@ -62,6 +62,8 @@ class def Notifier() :: Notifier {
 
 class def ClearableRef() :: ClearableRef {
   val ref = Ref(Cell())
+  --val setNotifier = Notifier()
+  val clearLock = Semaphore(1)
   
   -- Calling the object is a blocking read
   val apply = read
@@ -70,11 +72,14 @@ class def ClearableRef() :: ClearableRef {
   -- Nonblocking read
   def readD() = ref.read().readD()
   -- Set the value of this
-  def write(v) = ref.read().write(v)
+  def write(v) = ref.read().write(v) -->> setNotifier.notify()
   -- True if this is currently set
   def isDefined() = readD() >> true ; false
   -- Clear this into the unset state (future calls to read will block until it is set again)
-  def clear() = ref.write(Cell())
+  def clear() = withLock(clearLock, { 
+    -- To avoid a read blocking indefinitely this can never go form one empty Cell to another.
+    if isDefined() then ref.write(Cell()) else signal
+  })
 }
 
 type T = Top
@@ -106,10 +111,13 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   -- Politely shutdown the currently running instance
   site shutdown(timeout :: Integer) = 
   	current.readD() >s> {| 
-  	  s.shutdown() >> stop | 
-  	  current.clear() >> stop | 
-  	  Rwait(timeout) >> killSwitch.notify() >> stop |
-  	  onHalted()
+  	  haltedChannel.newListener() >l>  
+  	  (
+  	    s.shutdown() >> stop | 
+  	    current.clear() >> stop | 
+  	    Rwait(timeout) >> killSwitch.notify() >> stop |
+  	    l.acquire()
+  	  )
   	|}
   -- Kill the currently running instance
   site kill() = current.readD() >> (killSwitch.notify(), current.clear()) >> signal
@@ -152,7 +160,9 @@ class Supervisor {
 
 type SupervisableBuilder[S, G] = lambda(Supervisor) :: Supervisable
 
-class SupervisorBase extends Supervisor {
+class SupervisorBase extends Supervisor with Supervisable {
+  val groupConstructor :: lambda() :: G
+  val group = groupConstructor()
   val startAllowed = Ref(true)
   val finalShutdownSwitch = Notifier()
 
@@ -166,12 +176,12 @@ class SupervisorBase extends Supervisor {
   site shutdown() = startAllowed := false >> finalShutdownSwitch.notify() >> shutdownAll()
 }
 
-class def OneForOneSupervisor(group :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
+class def OneForOneSupervisor(groupConstructor :: lambda() :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
   val _ = startAll()
   val _ = {| finalShutdownSwitch.wait() | each(managers) >m> m.onHalted() >> start(m) >> stop |}
 }
 
-class def AllForOneSupervisor(group :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
+class def AllForOneSupervisor(groupConstructor :: lambda() :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
   val _ = startAll()
   val _ = repeat({ {| each(managers) >m> m.onHalted() |} >> 
     shutdownAll() >> startAll() })
