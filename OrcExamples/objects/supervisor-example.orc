@@ -28,13 +28,13 @@ class def Group() :: Group extends SupervisableGroup {
 }
 
 {|
-val s = AllForOneSupervisor(Group(), 1000)
+val s = AllForOneSupervisor(Group, 1000)
 Println("==== Test All for One") >>
 Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
 |} >>
 {|
-val s = OneForOneSupervisor(Group(), 1000)
+val s = OneForOneSupervisor(Group, 1000)
 Println("==== Test One for One") >>
 Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
