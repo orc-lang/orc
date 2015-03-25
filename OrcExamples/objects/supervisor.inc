@@ -3,10 +3,9 @@
  - $Id$
  -
  - This library is inspired by Erlang/OTP but uses object orientation to make it easier for 
- - objects under the same superviser to communicate. This design cannot be 100% type safe,
- - however all casting will be hidden within a SupervisableGroup object that is implemented 
- - by the user. The actual supervisable classes will interact with the group in a typesafe
- - way.
+ - objects under the same superviser to communicate. This approach is type-safe, but requires
+ - that the user implement a group object that generates all the required managers. So without
+ - some change this system cannot support dynamic addition and removal of processes.
  -
  - For an example of usage see supervisor-example.orc.
  - 
@@ -138,12 +137,8 @@ The group should implement a type-safe interface to the elements that can be use
 classes that are aware of the groups full type.
 -}
 class SupervisableGroup {
-  -- A list of IDs for supervisables in this group
-  val elementIDs :: Set[ID]
-  -- Set the manager for an id
-  def setElement(ID, Manager[S]) :: Signal
-  -- Get the instance builder for an element of this group
-  def builder(ID) :: SupervisableBuilder[S, G]
+  -- A list of managers that the supervisor should use
+  val managers :: Set[Manager[S]]
 }
 
 type S = Top
@@ -161,29 +156,23 @@ class SupervisorBase extends Supervisor {
   val startAllowed = Ref(true)
   val finalShutdownSwitch = Notifier()
 
-  val managers = (
-    def f(i) =
-      val m = Manager({ group.builder(i)(this) })
-      group.setElement(i, m) >>
-      (i, m)
-    map(f, group.elementIDs)
-  )
-  def start(i, m) = if startAllowed? then m.start() else stop
-  def startAll() = map(uncurryTuple(start), managers) >> signal
+  val managers = group.managers
+  def start(m) = if startAllowed? then m.start() else stop
+  def startAll() = map(start, managers) >> signal
  
   site shutdownAll() =
-    def f((_, m)) = m.shutdown(killTime) ; signal -- If shutdown fails (due to it not currently running) just keep going
+    def f(m) = m.shutdown(killTime) ; signal -- If shutdown fails (due to it not currently running) just keep going
     map(f, managers) >> signal
   site shutdown() = startAllowed := false >> finalShutdownSwitch.notify() >> shutdownAll()
 }
 
 class def OneForOneSupervisor(group :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
   val _ = startAll()
-  val _ = {| finalShutdownSwitch.wait() | each(managers) >(i, m)> m.onHalted() >> start(i, m) >> stop |}
+  val _ = {| finalShutdownSwitch.wait() | each(managers) >m> m.onHalted() >> start(m) >> stop |}
 }
 
 class def AllForOneSupervisor(group :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
   val _ = startAll()
-  val _ = repeat({ {| each(managers) >(_, m)> m.onHalted() |} >> 
+  val _ = repeat({ {| each(managers) >m> m.onHalted() |} >> 
     shutdownAll() >> startAll() })
 }

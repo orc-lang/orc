@@ -22,26 +22,21 @@ class def Proc(name :: String) :: Proc extends Supervisable {
 }
 
 class def Group() :: Group extends SupervisableGroup {
-  val elementIDs = ["Server", "DB"]
-  val server = Ref()
-  val db = Ref()
-  val proxy = Ref()
-  def setElement("Server", s) = server := s
-  def setElement("DB", s) = db := s
-  def setElement("Proxy", s) = proxy := s
-  def builder(id) = ignore({ Proc(id) })
+  val managers = [server, db]
+  val server = Manager({ Proc("Server") })
+  val db = Manager({ Proc("DB") })
 }
 
 {|
 val s = AllForOneSupervisor(Group(), 1000)
 Println("==== Test All for One") >>
-Rwait(1000) >> Println("Stopping one Proc") >> s.group.db?().justStop() >> 
+Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
 |} >>
 {|
 val s = OneForOneSupervisor(Group(), 1000)
 Println("==== Test One for One") >>
-Rwait(1000) >> Println("Stopping one Proc") >> s.group.db?().justStop() >> 
+Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
 |} >> stop
 
