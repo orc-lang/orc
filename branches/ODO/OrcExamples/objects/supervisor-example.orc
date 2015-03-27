@@ -21,22 +21,23 @@ class def Proc(name :: String) :: Proc extends Supervisable {
   val _ = Println("Starting " + procName(name)) >> repeat({ Rwait(100) >> Ift(running?) })
 }
 
-class def Group() :: Group extends SupervisableGroup {
+class Group extends StaticSupervisor {
+  val killTime = 1000
   val managers = [server, db]
   val server = Manager({ Proc("Server") })
   val db = Manager({ Proc("DB") })
 }
 
 {|
-val s = AllForOneSupervisor(Group, 1000)
+val s = new Group with AllForOneSupervisor
 Println("==== Test All for One") >>
-Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
+Rwait(1000) >> Println("Stopping one Proc") >> s.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
 |} >>
 {|
-val s = OneForOneSupervisor(Group, 1000)
+val s = new Group with OneForOneSupervisor
 Println("==== Test One for One") >>
-Rwait(1000) >> Println("Stopping one Proc") >> s.group.db().justStop() >> 
+Rwait(1000) >> Println("Stopping one Proc") >> s.db().justStop() >> 
 Rwait(2000) >> s.shutdown() >> Println("Shutdown done") 
 |} >> stop
 

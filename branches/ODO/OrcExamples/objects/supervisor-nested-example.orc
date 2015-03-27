@@ -21,23 +21,25 @@ class def Proc(name :: String) :: Proc extends Supervisable {
   val _ = Println("Starting " + procName(name)) >> repeat({ Rwait(100) >> Ift(running?) })
 }
 
-class def Group() :: Group extends SupervisableGroup {
+class Group extends StaticSupervisor {
+  val killTime = 2000
   val managers = [servers, db]
   val servers = Manager({ 
-    OneForOneSupervisor({ new SupervisableGroup {
+    new (StaticSupervisor with OneForOneSupervisor) {
+      val killTime = 1000
       def managerBuilder(i) = Manager({ Proc("server " + i) })
       val managers = map(managerBuilder, [1, 2])
       val [server1, server2] = managers
-    } }, 1000)
+    }
   })
   val db = Manager({ Proc("DB") })
 }
 
 {|
-val s = AllForOneSupervisor(Group, 2000)
+val s = new Group with AllForOneSupervisor
 
-Rwait(2000) >> Println("= Stopping DB") >> s.group.db().justStop() >>
-Rwait(5000) >> Println("= Stopping one server") >> s.group >g> g.servers() >servers> servers.group >g> g.server1() >s1> s1.justStop() >> 
+Rwait(2000) >> Println("= Stopping DB") >> s.db().justStop() >>
+Rwait(5000) >> Println("= Stopping one server") >> s.servers().server1().justStop() >> 
 Rwait(2000) >> Println("= Shutting down") >> s.shutdown() >> Println("= Shutdown done") 
 |} >> stop
 --| Rwait(10000) >> DumpState()
