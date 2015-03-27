@@ -28,6 +28,20 @@ def runOnKill(callback :: lambda() :: Top) =
 def uncurryTuple[A, B, T](f :: lambda(A, B) :: T) :: lambda((A, B)) :: T = 
   def unpackFunc((a, b) :: (A, B)) :: T = f(a, b)
   unpackFunc
+  
+  
+import class JavaConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
+class def Map() :: Map {
+  val impl = JavaConcurrentHashMap()
+  site get(k) = impl.get(k) >v> Iff(v = null) >> v
+  val apply = get
+  site put(k, v) = impl.put(k, v)
+  site contains(k) = impl.contains(k)
+  site remove(k) = impl.remove(k)
+  site keys() = iterableToList(impl.keySet())
+}
+
+  
  
 class def Notifier() :: Notifier {
   -- A lock to protect internal data structure
@@ -98,9 +112,10 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   def apply() :: T = current()
   -- Nonblocking get for the currently running instance
   def readD() :: T = current.readD()
+  def isRunning() :: Boolean = readD() >> true ; false
   
   val current = ClearableRef[T]()
-  val haltedChannel = Notifier()
+  val haltedNotifier = Notifier()
   val killSwitch = Notifier()
   
   -- Return the currently running instance starting one if needed
@@ -111,7 +126,7 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   -- Politely shutdown the currently running instance
   site shutdown(timeout :: Integer) = 
   	current.readD() >s> {| 
-  	  haltedChannel.newListener() >l>  
+  	  haltedNotifier.newListener() >l>  
   	  (
   	    s.shutdown() >> stop | 
   	    current.clear() >> stop | 
@@ -123,9 +138,9 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   site kill() = current.readD() >> (killSwitch.notify(), current.clear()) >> signal
   
   -- Publish whenever the instance halts (including when it is killed or shutdown)
-  def onHalted() = haltedChannel.listen()
+  def onHalted() = haltedNotifier.listen()
   
-  def halted() = current.clear() >> haltedChannel.notify()
+  def halted() = current.clear() >> haltedNotifier.notify()
 }
 
 class Supervisable {
@@ -133,56 +148,86 @@ class Supervisable {
   def shutdown() :: Signal
 }
 
-type ID = Top
+type S = Top
 
-{--
-A SupervisableGroup represents a group of Supervisables that are supervised
-by the same superviser.
+class Supervisor extends Supervisable {
+  val killTime :: Integer
+  {--
+  Shutdown this supervisor and all of the managers it is supervising
+  -}
+  site shutdown() :: Signal
+  {--
+  Add a manager to this supervisor.
+  -}
+  site add(Manager) :: Manager
+  {--
+  Remove a manager from this supervisor. This does not shutdown the process in the manager.
+  This publishes once the manager will nolonger be called by this supervisor.
+  -}
+  site remove(Manager) :: Signal
+}
 
-This provides information to the supervisor that allows it to start managers for 
-objects and restart them as needed. The managers are communicated back to this group.
-The group should implement a type-safe interface to the elements that can be used by
-classes that are aware of the groups full type.
--}
-class SupervisableGroup {
+class StaticSupervisor extends Supervisor {
   -- A list of managers that the supervisor should use
   val managers :: Set[Manager[S]]
+  
+  val _ = each(managers) >m> add(m)
 }
 
-type S = Top
-type G = Top
-
-class Supervisor {
-  val group :: G
-  val killTime :: Integer 
-  site shutdown() :: Signal
-}
-
-type SupervisableBuilder[S, G] = lambda(Supervisor) :: Supervisable
-
-class SupervisorBase extends Supervisor with Supervisable {
-  val groupConstructor :: lambda() :: G
-  val group = groupConstructor()
+class SupervisorBase extends Supervisor {
   val startAllowed = Ref(true)
-  val finalShutdownSwitch = Notifier()
+  val finalShutdownSwitch = Cell[Signal]()
+  
+  val managerMap = Map[Manager, Cell[Semaphore]]()
+  val managerChannel = Channel[Manager]()
+  val managerMapLock = Semaphore(1)
+  
+  site add(m) = withLock(managerMapLock, {
+    managerMap.put(m, Cell()) >> managerChannel.put(m) >> m
+  })
+  site remove(m) = withLock(managerMapLock, {
+    val s = Semaphore(0)
+    managerMap(m).write(s) >> s.acquire()
+  })
+  val _ = repeat(managerChannel.get) >m> {|
+    finalShutdownSwitch.read() >> None | 
+    managerMap(m).read() >s> managerMap.remove(m) >> Some(s) | 
+    monitorManager(m) >> start(m) >> stop
+  |} >Some(s)> s.release()
+  
+  {-- 
+  Called to monitor the manager. This should publish once when it is setup to monitor.
+  The call will be killed if the supervisor is shutdown or if the manager is removed.
+  -}
+  def monitorManager(Manager) :: Top
 
-  val managers = group.managers
   def start(m) = if startAllowed? then m.start() else stop
-  def startAll() = map(start, managers) >> signal
+  
+  def startAll() = withLock(managerMapLock, { 
+    map(start, managerMap.keys()) >> signal
+  })
  
-  site shutdownAll() =
+  site shutdownAll() = withLock(managerMapLock, {
     def f(m) = m.shutdown(killTime) ; signal -- If shutdown fails (due to it not currently running) just keep going
-    map(f, managers) >> signal
-  site shutdown() = startAllowed := false >> finalShutdownSwitch.notify() >> shutdownAll()
+    map(f, managerMap.keys()) >> signal
+  })
+  
+  site shutdown() = startAllowed := false >> finalShutdownSwitch.write(signal) >> shutdownAll()
 }
 
-class def OneForOneSupervisor(groupConstructor :: lambda() :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
+class OneForOneSupervisor extends SupervisorBase {
   val _ = startAll()
-  val _ = {| finalShutdownSwitch.wait() | each(managers) >m> m.onHalted() >> start(m) >> stop |}
+  def monitorManager(m) =
+	m.haltedNotifier.newListener() >l> (signal |
+    repeat(l.acquire) >> start(m) >> stop)
 }
 
-class def AllForOneSupervisor(groupConstructor :: lambda() :: G, killTime :: Integer) :: Supervisor extends SupervisorBase {  
+class AllForOneSupervisor extends SupervisorBase {  
   val _ = startAll()
-  val _ = repeat({ {| each(managers) >m> m.onHalted() |} >> 
-    shutdownAll() >> startAll() })
+  def monitorManager(m) =
+	m.haltedNotifier.newListener() >l> (signal |
+	repeat(l.acquire) >> restartNotifier.notify() >> stop)
+  
+  val restartNotifier = Notifier()
+  val _ = {| repeat({ restartNotifier.wait() >> shutdownAll() >> startAll() }) >> stop | finalShutdownSwitch.read() |}
 }
