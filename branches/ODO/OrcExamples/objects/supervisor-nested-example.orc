@@ -14,6 +14,7 @@ def procName(name) = "Proc"
 class def Proc(name :: String) :: Proc extends Supervisable {
   val running = Ref(true)
 
+  site monitorUsefulness() = {| repeat({ Rwait(100) >> running? }) >false> true |} 
   def shutdown() = (running := false, Println("Shutting down " + procName(name))) >> signal
   
   def justStop() = (running := false, Println("Stopping " + procName(name))) >> signal
@@ -39,7 +40,7 @@ class Group extends StaticSupervisor {
 val s = new Group with AllForOneSupervisor
 
 Rwait(2000) >> Println("= Stopping DB") >> s.db().justStop() >>
-Rwait(5000) >> Println("= Stopping one server") >> s.servers().server1().justStop() >> 
+Rwait(2000) >> Println("= Stopping one server") >> s.servers().server1().justStop() >> 
 Rwait(2000) >> Println("= Shutting down") >> s.shutdown() >> Println("= Shutdown done") 
 |} >> stop
 --| Rwait(10000) >> DumpState()
