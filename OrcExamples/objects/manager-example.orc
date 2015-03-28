@@ -10,6 +10,7 @@ include "supervisor.inc"
 class def Proc() :: Proc extends Supervisable {
   val running = Ref(true)
   val shuttingDownSemaphore = Semaphore(0)
+  def monitorUsefulness() = false
 
   def shutdown() = (running := false, shuttingDownSemaphore.release()) >> signal
   

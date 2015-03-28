@@ -33,7 +33,7 @@ def uncurryTuple[A, B, T](f :: lambda(A, B) :: T) :: lambda((A, B)) :: T =
 import class JavaConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 class def Map() :: Map {
   val impl = JavaConcurrentHashMap()
-  site get(k) = impl.get(k) >v> Iff(v = null) >> v
+  site get(k) = impl.get(k) >v> Ift(v /= null) >> v
   val apply = get
   site put(k, v) = impl.put(k, v)
   site contains(k) = impl.contains(k)
@@ -96,6 +96,47 @@ class def ClearableRef() :: ClearableRef {
   })
 }
 
+{--
+The interface for objects that can be monitored to detect shutdown or failure.
+
+This interface is an alternative to detecting halting in many cases. However it allows
+"doneness" to be detected on objects that have site members and as such will never halt.
+-}
+class Monitorable {
+  {--
+  Publish when this object is not longer useful either because it has shutdown or because a fault has occured.
+  This may still respond to queries, but if this has published those results are in some way undesirable.
+  If the object is already useless when this is called it will immediately publish.
+  -}
+  def onUseless() = {| monitorUsefulness() >b> (if b then signal else Block()) ; signal |}
+  
+  {--
+  Publish true OR halt without publishing if this object is no longer useful.
+  Publish false if monitoring failed and the object may well still be useful.
+  This is what objects should implement but external usage should be through
+  -}
+  site monitorUsefulness() :: Boolean
+}
+
+{--
+The interface for objects that can be requested to shutdown.
+-}
+class Shutdownable {
+  {--
+  Politely request that this object halt.
+  The shutdown may occur asynchrously.
+  -}
+  def shutdown() :: Signal
+}
+
+{--
+A combination of shutdown and monitoring.
+-}
+class Supervisable extends Monitorable with Shutdownable {
+  --def shutdownAndWait() = shutdown() >> stop | onUseless()  
+}
+
+
 type T = Top
 
 {--
@@ -121,7 +162,7 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   -- Return the currently running instance starting one if needed
   site start() :: T =
     Ift(~(current.isDefined())) >>
-    ({| (current := constructor() >> stop ; signal) | killSwitch.wait() |} >> stop ; halted()) >> stop 
+    ({| (current := constructor() >> stop ; signal) | killSwitch.wait() | current().onUseless() |} >> stop ; halted()) >> stop 
     | current()
   -- Politely shutdown the currently running instance
   site shutdown(timeout :: Integer) = 
@@ -141,11 +182,6 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   def onHalted() = haltedNotifier.listen()
   
   def halted() = current.clear() >> haltedNotifier.notify()
-}
-
-class Supervisable {
-  -- Politely request that this halts
-  def shutdown() :: Signal
 }
 
 type S = Top
@@ -177,6 +213,9 @@ class StaticSupervisor extends Supervisor {
 class SupervisorBase extends Supervisor {
   val startAllowed = Ref(true)
   val finalShutdownSwitch = Cell[Signal]()
+  val shutdownComplete = Cell[Signal]()
+ 
+  site monitorUsefulness() = shutdownComplete.read() >> true
   
   val managerMap = Map[Manager, Cell[Semaphore]]()
   val managerChannel = Channel[Manager]()
@@ -212,7 +251,7 @@ class SupervisorBase extends Supervisor {
     map(f, managerMap.keys()) >> signal
   })
   
-  site shutdown() = startAllowed := false >> finalShutdownSwitch.write(signal) >> shutdownAll()
+  site shutdown() = startAllowed := false >> finalShutdownSwitch.write(signal) >> shutdownAll() >> shutdownComplete.write(signal)
 }
 
 class OneForOneSupervisor extends SupervisorBase {
@@ -231,3 +270,33 @@ class AllForOneSupervisor extends SupervisorBase {
   val restartNotifier = Notifier()
   val _ = {| repeat({ restartNotifier.wait() >> shutdownAll() >> startAll() }) >> stop | finalShutdownSwitch.read() |}
 }
+
+class def FrequencyCounter(period :: Integer) :: FrequencyCounter {
+  val times = Ref[List[Integer]]([])
+  val lock = Semaphore(1)
+  site mark() = withLock(lock, {
+    times := Rtime() : times? 
+  })
+  site count() = withLock(lock, {
+    val cutoff = Rtime() - period
+    times := filter({ _ :> cutoff }, times?) >>
+    length(times?)
+  })
+}
+
+class LimitRestarts extends Supervisor {
+  val startsLimit :: Integer
+  val timePeriod :: Integer
+
+  val startCounterMap = Map[Manager, FrequencyCounter]()
+  site add(m) = startCounterMap.put(m, FrequencyCounter(timePeriod)) >> super.add(m)
+
+  def start(m) = 
+    val counter = startCounterMap(m)
+    counter.mark() >> 
+    --Println(counter.count()) >> 
+    (
+      if counter.count() :> startsLimit then shutdown() else super.start(m)
+    )
+}
+

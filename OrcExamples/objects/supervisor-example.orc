@@ -14,6 +14,7 @@ def procName(name) = "Proc"
 class def Proc(name :: String) :: Proc extends Supervisable {
   val running = Ref(true)
 
+  site monitorUsefulness() = {| repeat({ Rwait(100) >> running? }) >false> true |} 
   def shutdown() = (running := false, Println("Shutting down " + procName(name))) >> signal
   
   def justStop() = running := false
