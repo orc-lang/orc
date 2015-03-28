@@ -28,6 +28,7 @@ import orc.values.{OrcObject, OrcObjectInterface}
 import orc.ast.oil.nameless.Class
 import orc.ast.oil.nameless.Classvar
 import orc.ast.oil.nameless.DeclareClasses
+import orc.error.runtime.DoesNotHaveMembersException
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -671,6 +672,8 @@ class Token protected (
               }
             case s: AnyRef =>
               siteCall(s, List(f))
+            case null =>
+              throw new DoesNotHaveMembersException(null)
           }
         }
       }

@@ -103,7 +103,9 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     setState(CallInProgress(v +: state.publications))
   }
   def halt() = synchronized {
-    assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
+    // A second call to this can occur because we are trying to halt a handle for an OrcSite call. 
+    // And it's idempotent, so it shouldn't matter.
+    //assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
     setState(CallHalted(state.publications))
   }
   def discorporate() = synchronized {
