@@ -31,7 +31,7 @@ class Group extends StaticSupervisor {
   val killTime = 2000
   val managers = [servers]
   val servers = Manager({ 
-    new (StaticSupervisor with OneForOneSupervisor with LimitRestarts) {
+    new (StaticSupervisor with OneForOneSupervisor with LimitStarts) {
       val killTime = 1000
       val startsLimit = 5
       val timePeriod = 10000

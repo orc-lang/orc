@@ -18,18 +18,44 @@ import site Block = "orc.lib.util.Block"
 site runOnKillHandler(check :: lambda() :: Top, callback :: lambda() :: Top) =
   (check() ; callback()) >> stop | signal
 
--- Call callable when this def call is killed.
--- As a side effect this will never halt.
+{--
+Call callable when this def call is killed.
+As a side effect this will never halt.
+-}
 def runOnKill(callback :: lambda() :: Top) = 
   site check() :: Top = Block()
   runOnKillHandler(check, callback)
 
+site acquireReleaseOnKillHandler(check :: lambda() :: Top, acquire :: lambda() :: Signal, release :: lambda() :: Top) =
+  acquire() >> ((check() ; release()) >> stop | signal)
+
+{-- 
+Call acquire then publish a callable that will call release and also call release if this 
+is killed. Release will never be called more than once.
+-}
+def acquireReleaseOnKill(acquire :: lambda() :: Signal, release :: lambda() :: Signal) = 
+  val f = Semaphore(0)
+  val check = Cell()
+  {|
+  site c() :: Top = Block()
+  check := c >> f.acquire()
+  |} >> stop |
+  acquireReleaseOnKillHandler(check.read(), acquire, release) >> f.release
+  
 -- Convert a function with 2 arguments into a function with a single pair argument.
 def uncurryTuple[A, B, T](f :: lambda(A, B) :: T) :: lambda((A, B)) :: T = 
   def unpackFunc((a, b) :: (A, B)) :: T = f(a, b)
   unpackFunc
   
-  
+class MonitorLock {
+  val lock = Semaphore(1)
+  def synchronized[T](f :: lambda() :: T) = 
+	  acquireReleaseOnKill(lock.acquire, lock.release) >earlyRelease> (
+	    val r = f() #
+	    (r ; signal) >> earlyRelease() >> r
+	  )
+}
+
 import class JavaConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 class def Map() :: Map {
   val impl = JavaConcurrentHashMap()
@@ -43,9 +69,7 @@ class def Map() :: Map {
 
   
  
-class def Notifier() :: Notifier {
-  -- A lock to protect internal data structure
-  val lock = Semaphore(1)
+class def Notifier() :: Notifier extends MonitorLock {
   -- A list of output ("listener") channels
   val listeners = Ref[List[Semaphore]]([])
   
@@ -53,7 +77,7 @@ class def Notifier() :: Notifier {
   site notify() = (each(listeners?) >c> c.release()) ; signal
   
   -- Return a listener semaphore that will be active until this call is killed
-  def newListener() = withLock(lock, {
+  def newListener() = synchronized({
     val c = Semaphore(0)
     runOnKill({ removeListener(c) }) >>
     listeners := c : listeners? >>
@@ -61,8 +85,8 @@ class def Notifier() :: Notifier {
   })
   
   -- Remove a listener semaphore
-  def removeListener(c :: Channel) = withLock(lock, {
-    listeners := filter(listeners?, { _ /= c })
+  def removeListener(c :: Channel) = synchronized({
+    listeners := filter({ _ /= c }, listeners?)
   })
   
   -- Publish each time this is notified while this call is active
@@ -139,6 +163,17 @@ class Supervisable extends Monitorable with Shutdownable {
 
 type T = Top
 
+class IdentityComparable {}
+
+class ManagementInterface extends IdentityComparable {
+  site start() :: Supervisable
+  site shutdown(Integer) :: Signal
+  site kill() :: Signal
+  
+  val haltedNotifier :: Notifier
+  def onHalted() :: Signal
+}
+
 {--
 Manage an running object.
 
@@ -148,26 +183,29 @@ This class provides methods to:
 * Shutdown and kill the running instance
 * Detect when the instance halts (or is killed)
 -}
-class def Manager(constructor :: lambda() :: T) :: Manager {
+class Manager extends MonitorLock {
+  val constructor :: lambda() :: T
+
   -- Get the currently running instance of T block if there is none
   def apply() :: T = current()
   -- Nonblocking get for the currently running instance
   def readD() :: T = current.readD()
   def isRunning() :: Boolean = readD() >> true ; false
   
-  val current = ClearableRef[T]()
+  val current = ClearableRef()
   val haltedNotifier = Notifier()
   val killSwitch = Notifier()
   
   -- Return the currently running instance starting one if needed
-  site start() :: T =
+  site start() :: T = synchronized({
     Ift(~(current.isDefined())) >>
     ({| (current := constructor() >> stop ; signal) | killSwitch.wait() | current().onUseless() |} >> stop ; halted()) >> stop 
     | current()
+  })
   -- Politely shutdown the currently running instance
-  site shutdown(timeout :: Integer) = 
+  site shutdown(timeout :: Integer) = synchronized({
   	current.readD() >s> {| 
-  	  haltedNotifier.newListener() >l>  
+  	  haltedNotifier.newListener() >l>
   	  (
   	    s.shutdown() >> stop | 
   	    current.clear() >> stop | 
@@ -175,16 +213,27 @@ class def Manager(constructor :: lambda() :: T) :: Manager {
   	    l.acquire()
   	  )
   	|}
+  })
   -- Kill the currently running instance
-  site kill() = current.readD() >> (killSwitch.notify(), current.clear()) >> signal
+  site kill() = synchronized({ current.readD() >> (killSwitch.notify(), current.clear()) >> signal })
   
   -- Publish whenever the instance halts (including when it is killed or shutdown)
   def onHalted() = haltedNotifier.listen()
   
   def halted() = current.clear() >> haltedNotifier.notify()
 }
+def Manager(c :: lambda() :: T) :: Manager = new Manager with {val constructor = c}
 
-type S = Top
+class def ManagerUpgradable(initialConstructor :: lambda() :: T) :: ManagerUpgradable extends Manager {
+  val constructorRef = Ref(initialConstructor)
+  
+  def constructor() = constructorRef.read()()
+  
+  site upgrade(newConstructor :: lambda() :: T, timeout :: Integer) =
+    synchronized({ constructorRef := newConstructor }) >>
+    (shutdown(timeout) ; signal) >> start() >> signal
+}
+
 
 class Supervisor extends Supervisable {
   val killTime :: Integer
@@ -195,17 +244,17 @@ class Supervisor extends Supervisable {
   {--
   Add a manager to this supervisor.
   -}
-  site add(Manager) :: Manager
+  site add(ManagementInterface) :: ManagementInterface
   {--
   Remove a manager from this supervisor. This does not shutdown the process in the manager.
   This publishes once the manager will nolonger be called by this supervisor.
   -}
-  site remove(Manager) :: Signal
+  site remove(ManagementInterface) :: Signal
 }
 
 class StaticSupervisor extends Supervisor {
   -- A list of managers that the supervisor should use
-  val managers :: Set[Manager[S]]
+  val managers :: Set[ManagementInterface]
   
   val _ = each(managers) >m> add(m)
 }
@@ -217,8 +266,8 @@ class SupervisorBase extends Supervisor {
  
   site monitorUsefulness() = shutdownComplete.read() >> true
   
-  val managerMap = Map[Manager, Cell[Semaphore]]()
-  val managerChannel = Channel[Manager]()
+  val managerMap = Map[ManagementInterface, Cell[Semaphore]]()
+  val managerChannel = Channel[ManagementInterface]()
   val managerMapLock = Semaphore(1)
   
   site add(m) = withLock(managerMapLock, {
@@ -238,7 +287,7 @@ class SupervisorBase extends Supervisor {
   Called to monitor the manager. This should publish once when it is setup to monitor.
   The call will be killed if the supervisor is shutdown or if the manager is removed.
   -}
-  def monitorManager(Manager) :: Top
+  def monitorManager(ManagementInterface) :: Top
 
   def start(m) = if startAllowed? then m.start() else stop
   
@@ -284,17 +333,16 @@ class def FrequencyCounter(period :: Integer) :: FrequencyCounter {
   })
 }
 
-class LimitRestarts extends Supervisor {
+class LimitStarts extends Supervisor {
   val startsLimit :: Integer
   val timePeriod :: Integer
 
-  val startCounterMap = Map[Manager, FrequencyCounter]()
+  val startCounterMap = Map[ManagementInterface, FrequencyCounter]()
   site add(m) = startCounterMap.put(m, FrequencyCounter(timePeriod)) >> super.add(m)
 
   def start(m) = 
     val counter = startCounterMap(m)
     counter.mark() >> 
-    --Println(counter.count()) >> 
     (
       if counter.count() :> startsLimit then shutdown() else super.start(m)
     )
