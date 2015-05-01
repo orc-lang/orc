@@ -28,7 +28,7 @@ notes: Scala runtime library, used extensively.
 files: [ant-googlecode-0.0.1.jar]
 project: ant-googlecode
 version: 0.0.1
-url: http://code.google.com/p/ant-googlecode/
+url: https://code.google.com/p/ant-googlecode/
 license: BSD-ant-googlecode.txt
 phase: build
 notes: Used for google code upload task.
