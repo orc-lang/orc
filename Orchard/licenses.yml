@@ -18,7 +18,7 @@
 files: [jaxws-api.jar, jaxws-rt.jar, jaxws-tools.jar, jsr181-api.jar, jsr250-api.jar, http.jar, FastInfoset.jar, saaj-impl.jar, sjsxp.jar, stax-ex.jar, streambuffer.jar]
 project: JAXWS Reference Implementation
 version: 2.1.3
-url: https://jax-ws.dev.java.net
+url: https://jax-ws.java.net
 license: GPLv2+classpath.txt
 phase: link
 notes: Used by SOAP web service.
@@ -28,7 +28,7 @@ notes: Used by SOAP web service.
 files: [resolver.jar]
 project: Apache XML Commons Resolver
 version: 1.2
-url: http://xml.apache.org/commons/
+url: https://xerces.apache.org/xml-commons/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of jaxws-rt.jar.
@@ -48,7 +48,7 @@ notes: Used for OrchardDemo local server.
 files: [velocity-1.5.jar, jakarta-oro-2.0.8.jar, commons-lang-2.4.jar, commons-collections-3.2.1.jar]
 project: Apache Velocity
 version: 1.5
-url: http://commons.apache.org/collections/
+url: https://commons.apache.org/collections/
 license: ASF2.0.txt
 phase: link
 notes: Used for JSON web service.
@@ -58,7 +58,7 @@ notes: Used for JSON web service.
 files: [commons-fileupload-1.2.1.jar]
 project: Apache Commons FileUpload
 version: 1.2.1
-url: http://commons.apache.org/fileupload/
+url: https://commons.apache.org/fileupload/
 license: ASF2.0.txt
 phase: link
 notes: Used for File Upload web forms widget.
@@ -68,7 +68,7 @@ notes: Used for File Upload web forms widget.
 files: [commons-io-1.4.jar]
 project: Apache Commons IO
 version: 1.4
-url: http://commons.apache.org/io/
+url: https://commons.apache.org/io/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of commons-fileupload-1.2.1.jar
@@ -78,7 +78,7 @@ notes: Dependency of commons-fileupload-1.2.1.jar
 files: [servlet-api-2.5-20081211.jar]
 project: Java Servlet API
 version: 2.5
-url: http://java.sun.com/products/servlet/
+url: https://java.sun.com/products/servlet/
 license: SunBCL-servlet.txt
 phase: extend
 notes: Used for various servlets.
@@ -88,7 +88,7 @@ notes: Used for various servlets.
 files: [postgresql-8.3-603.jdbc3.jar]
 project: PostgreSQL JDBC Interface
 version: 8.3-603
-url: http://jdbc.postgresql.org/
+url: https://jdbc.postgresql.org/
 license: BSD-postgresql.txt
 phase: link
 notes: Used for accounts database.
@@ -98,7 +98,7 @@ notes: Used for accounts database.
 files: [yuicompressor-2.3.6.jar]
 project: YUI Compressor
 version: 2.3.6
-url: http://developer.yahoo.com/yui/compressor/
+url: https://yui.github.io/yuicompressor/
 license: BSD-YUI.txt
 phase: build
 notes: Used to minify Javascript files.
@@ -108,7 +108,7 @@ notes: Used to minify Javascript files.
 files: [org.jvnet.jax_ws_commons.json.*]
 project: JAX-WS Commons JSON Binding
 version: 1.2
-url: https://jax-ws-commons.dev.java.net/json/
+url: https://jax-ws-commons.java.net/json/
 license: GPLv2+classpath.txt
 phase: modify
 notes: Used for JSON web service.
@@ -118,7 +118,7 @@ notes: Used for JSON web service.
 files: [org.jvnet.jax_ws_commons.json.template.*]
 project: JAX-WS Commons JSON Binding
 version: 1.2
-url: https://jax-ws-commons.dev.java.net/json/
+url: https://jax-ws-commons.java.net/json/
 license: CCPL-by-2.5.txt
 phase: link
 notes: Used for JSON web service.
@@ -138,7 +138,7 @@ notes: Used for web forms date widget.
 files: [web/jquery-1.7.1.min.js]
 project: jQuery
 version: 1.7.1
-url: http://jquery.com
+url: https://jquery.com/
 license: MIT-jquery.txt
 phase: link
 notes: Used for web/orc.js
@@ -148,7 +148,7 @@ notes: Used for web/orc.js
 files: [web/codemirror/*]
 project: Codemirror
 version: 1.0
-url: http://marijn.haverbeke.nl/codemirror/
+url: https://codemirror.net/
 license: BSD-codemirror.txt
 phase: extend
 notes: Used for web/orc.js

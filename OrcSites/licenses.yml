@@ -18,7 +18,7 @@
 files: [axis.jar, jaxrpc.jar]
 project: Apache Axis
 version: 1.4
-url: http://ws.apache.org/axis/
+url: https://ws.apache.org/axis/
 license: ASF2.0.txt
 phase: link
 notes: Used for Webservice site.
@@ -38,7 +38,7 @@ notes: Dependency of axis.jar.
 files: [gdata-base-1.0.jar, gdata-calendar-1.0.jar, gdata-calendar-meta-1.0.jar, gdata-client-1.0.jar, gdata-core-1.0.jar]
 project: Google Data Java Client API
 version: 1.0
-url: http://code.google.com/p/gdata-java-client/
+url: https://code.google.com/p/gdata-java-client/
 license: ASF2.0.txt
 phase: link
 notes: Used for music calendar demo.
@@ -58,7 +58,7 @@ notes: Used for music calendar demo.
 files: [jettison-1.0.1.jar]
 project: Jettison
 version: 1.0.1
-url: http://docs.codehaus.org/display/JETTISON/Home
+url: https://docs.codehaus.org/display/JETTISON/Home
 license: ASF2.0.txt
 phase: link
 notes: Used for implementation of Webservice.
@@ -78,7 +78,7 @@ notes: Used by Orc programs for date/time datatypes.
 files: [mail.jar]
 project: JavaMail API
 version: 1.4.1
-url: http://java.sun.com/products/javamail/
+url: https://java.sun.com/products/javamail/
 license: SunSLA-JavaMail.txt
 phase: link
 notes: Used for SendMail site.
@@ -98,7 +98,7 @@ notes: Used for SendMail site.
 files: [oauth-20100527.jar, oauth-consumer-20100527.jar, oauth-httpclient3-20090617.jar, oauth-provider-20100527.jar]
 project: OAuth Java Client and Provider
 version: various
-url: http://code.google.com/p/oauth/
+url: https://code.google.com/p/oauth/
 license: ASF2.0.txt
 phase: link
 notes: Used for Google calendar authentication.
@@ -108,7 +108,7 @@ notes: Used for Google calendar authentication.
 files: [commons-discovery-0.2.jar]
 project: Apache Commons Discovery
 version: 0.2
-url: http://commons.apache.org/discovery/
+url: https://commons.apache.org/discovery/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of axis.jar.
@@ -118,7 +118,7 @@ notes: Dependency of axis.jar.
 files: [commons-httpclient-3.1.jar]
 project: Jakarta Commons HTTP Client
 version: 3.1
-url: http://hc.apache.org/httpclient-3.x/
+url: https://hc.apache.org/httpclient-3.x/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of oauth-1.2.jar
@@ -128,7 +128,7 @@ notes: Dependency of oauth-1.2.jar
 files: [commons-codec-1.3.jar]
 project: Apache Commons Codec
 version: 1.3
-url: http://commons.apache.org/codec/
+url: https://commons.apache.org/codec/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of oauth-1.2.jar
@@ -138,7 +138,7 @@ notes: Dependency of oauth-1.2.jar
 files: [commons-logging-1.1.1.jar]
 project: Apache Commons Logging
 version: 1.1.1
-url: http://commons.apache.org/logging/
+url: https://commons.apache.org/logging/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of axis.jar and oauth-1.2.jar
@@ -148,7 +148,7 @@ notes: Dependency of axis.jar and oauth-1.2.jar
 files: [smack.jar, smackx.jar]
 project: Ignite Realtime Smack API
 version: 3.0?
-url: http://www.igniterealtime.org/projects/smack/
+url: https://www.igniterealtime.org/projects/smack/
 license: ASF2.0.txt
 phase: link
 notes: Used for XMPP chat demos.
@@ -168,7 +168,7 @@ notes: Used for Eliza demo.
 files: [eclipse-ecj.jar]
 project: Eclipse JDT Batch Compiler
 version: 3.3.0
-url: http://www.eclipse.org/jdt/core/index.php
+url: https://www.eclipse.org/jdt/core/index.php
 license: EPL1.txt
 phase: link
 notes: Used to compile webservice proxies.
