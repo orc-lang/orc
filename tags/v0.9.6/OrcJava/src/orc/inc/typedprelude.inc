@@ -1,0 +1,7 @@
+include "typedprelude/core.inc"
+include "typedprelude/data.inc"
+include "typedprelude/time.inc"
+include "typedprelude/idioms.inc"
+include "typedprelude/list.inc"
+include "typedprelude/text.inc"
+include "typedprelude/util.inc"

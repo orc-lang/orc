@@ -1,0 +1,22 @@
+<?xml version='1.0' ?> 
+<settings>
+  <resource name='**ANTLR-ECLIPSE-PLUGIN**'>
+    <property name='pluginVersion' value='2.7.6' />
+  </resource>
+  <resource name='src/orc/parser/OrcParser.g'>
+    <property name='traceTreeParser' value='false' />
+    <property name='noTrace' value='true' />
+    <property name='output' value='' />
+    <property name='diagnosticOutput' value='false' />
+    <property name='superGrammars' value='' />
+    <property name='docbookOutput' value='false' />
+    <property name='installSmap' value='true' />
+    <property name='traceLexer' value='false' />
+    <property name='debug' value='false' />
+    <property name='traceParser' value='false' />
+    <property name='normalOuput' value='true' />
+    <property name='trace' value='false' />
+    <property name='htmlOutput' value='false' />
+    <property name='cleanWarnings' value='false' />
+  </resource>
+</settings>

@@ -1,0 +1,103 @@
+module orc.doc.DocParser;
+
+header {
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.util.ListIterator;
+	import java.io.FileNotFoundException;
+	import java.io.File;
+	
+	import xtc.util.Utilities;
+	import xtc.util.Action;
+	import xtc.util.Pair;
+}
+
+option constant;
+
+public List<DocNode> Content =
+	blocks:DocumentationBlock* {
+		List<DocNode> out = new LinkedList<DocNode>();
+		for (List<DocNode> nodes : blocks) {
+			out.addAll(nodes);
+		}
+		yyValue = out;
+	}
+	;
+	
+//////////////////////////////////////////////////////
+// Doc nodes
+	
+List<DocNode> DocumentationBlock =
+	void:StartDoc void:EndLine? nodes:DocNode* void:EndDoc {
+		yyValue = nodes.list();
+	}
+	/ text:DocCode {
+		yyValue = new LinkedList<DocNode>();
+		yyValue.add(new DocCode(text));
+	}
+	;
+
+DocNode DocNode =
+	"@site" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(1, "site " + type);
+	}
+	/ "@def" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(1, "def " + type);
+	}
+	/ "@method" Space type:RestOfLine EndLine? BlankLine* {
+		yyValue = new DocType(2, "site " + type);
+	}
+	/ "@" name:Identifier {
+		yyValue = new DocTag(name);
+	}
+	/ desc:DocParagraph EndLine? BlankLine* {
+		yyValue = new DocParagraph(desc);
+	}
+	;
+
+String DocParagraph = (XML / !(EndDoc / EndLine BlankLine) _)+ ;
+
+String DocCode = (!StartDoc (EndLineComment /  MultiLineComment / StringLiteral / _))+;
+
+String XML =
+    "<!--" (!"-->" _)+ "-->"
+    / "<![CDATA[" (!"]]>" _)* "]]>"
+	/ "<?" (![>] _)+ "?>"
+	/ "<" (![>] _)+ "/>"
+	/ "<" (![>] _)+ ">" (XML / ![<] _ )* "</" (![>] _)+ ">"
+	;
+
+
+transient String StartDoc = "{--" Space? ;
+transient String EndDoc = Space? [\-]+ [}] ;
+transient String BlankLine = Space? EndLine ;
+transient String Identifier = [a-zA-Z_]+ ;
+	
+//////////////////////////////////////////////////////
+// String literals
+
+String StringLiteral = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7] ;
+
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+transient String Space = [ \t\f]+ ;
+transient String RestOfLine = ( ![\n\r] _ )* ;
+
+transient String EndLineComment = "--" ( ![\n\r] _ )* ( EndLine / EndFile ) ;
+transient String MultiLineComment = "{-" ( [\-] ![}] / EndLine / ![\-\n\r] _ )* "-}" ;
+	
+transient String EndFile = !_ ;
+transient String EndLine = "\r\n" / '\r' / '\n' ;

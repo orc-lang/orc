@@ -1,0 +1,1025 @@
+module orc.parser.OrcParserRats;
+
+header {
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.util.ListIterator;
+	import java.io.FileNotFoundException;
+	import java.io.File;
+	import java.math.BigInteger;
+	import java.math.BigDecimal;
+	
+	import xtc.util.Utilities;
+	import xtc.util.Action;
+	import xtc.util.Pair;
+	import xtc.tree.Location;
+	
+	import orc.Orc;
+	import orc.ast.extended.*;
+	import orc.ast.extended.declaration.*;
+	import orc.ast.extended.declaration.defn.*;
+	import orc.ast.extended.declaration.type.*;
+	import orc.ast.extended.pattern.*;
+	import orc.error.*;
+	import orc.ast.simple.type.*;
+	import orc.runtime.values.Value;
+	import orc.runtime.values.ListValue;
+	import orc.runtime.values.TupleValue;
+	import orc.type.Variance;
+}
+
+body {
+	/**
+	 * Attach a source location to an expression. Used like this:
+	 * <code>yyValue = at(yyStart, yyCount, yyValue)</code>
+	 */
+	private <E extends Locatable> E at(int start, int end, E e) {
+		Location startl = location(start);
+		Location endl = location(end-2);
+		e.setSourceLocation(new SourceLocation(
+			new File(startl.file), startl.line, startl.column,
+			endl.line, endl.column));
+		return e;
+	}
+	/**
+	 * Attach a source location to an infix binary operator.
+	 */
+	private <E extends Locatable> E at(Locatable start, Locatable end, E e) {
+		SourceLocation startl = start.getSourceLocation();
+		SourceLocation endl = end.getSourceLocation();
+		e.setSourceLocation(new SourceLocation(
+			startl.file, startl.line, startl.column,
+			endl.endLine, endl.endColumn));
+		return e;
+	}
+	/**
+	 * Attach a source location to a postfix operator.
+	 */
+	private <E extends Locatable> E at(Locatable start, int end, E e) {
+		SourceLocation startl = start.getSourceLocation();
+		Location endl = location(end-2);
+		e.setSourceLocation(new SourceLocation(
+			startl.file, startl.line, startl.column,
+			endl.line, endl.column));
+		return e;
+	}
+}
+
+option constant;
+
+/////////////////////////////////////////////
+// Declarations
+/////////////////////////////////////////////
+
+public Expression Program = Space yyValue:Body EndOfFile;
+	
+/*
+ * Include files are treated differently than programs;
+ * the may not have a goal expression.
+ */
+public List<Declaration> Module =
+	Space yyValue:Declarations EndOfFile
+	;
+
+/*
+ * The body of a program or definition may include
+ * declarations and must include a goal expression.
+ */
+Expression Body =
+	ds:Declarations g:GoalExpression {
+		Expression out = g;
+		ListIterator<Declaration> it = ds.listIterator(ds.size());
+		while (it.hasPrevious()) {
+			out = new Declare(it.previous(), out);
+		}
+		yyValue = out;
+	}
+	;
+
+List<Declaration> Declarations =
+	ds:Include ds2:Declarations {
+		ds.addAll(ds2);
+		yyValue = ds;
+	}
+	/ d:Declaration ds:Declarations {
+		ds.add(0, d);
+		yyValue = ds;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Declaration>();
+	}
+	;
+	
+/*
+ * Include files are parsed in place.
+ */
+List<Declaration> Include =
+	INCLUDE filename:StringLiteral Space ^{
+		try {
+			OrcParserRats parser = new OrcParserRats(Orc.openInclude(filename), filename);
+			Result result = parser.pModule(0);
+			if (result.hasValue()) {
+				yyResult = new SemanticValue(result.semanticValue(), yyBase);
+			} else {
+				yyResult = new ParseError(result.parseError().msg, yyBase);
+			}
+		} catch (FileNotFoundException e) {
+			yyResult = new ParseError("File not found: " + filename, yyBase);
+		}
+	}
+	;
+
+Declaration Declaration =
+	SITE name:(Identifier / BareOperator) Space EQ className:ClassName {
+		yyValue = new SiteDeclaration(name, className);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ CLASS name:Identifier Space EQ className:ClassName {
+		yyValue = new ClassDeclaration(name, className);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ defs:Definition+ {
+		// a block of definitions is treated as a single
+		// declaration (akin to a letrec)
+		yyValue = new DefsDeclaration(defs.list());
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ VAL p:Pattern EQ e:Body {
+		yyValue = new ValDeclaration(p, e);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ cs:ConstructorList {
+		yyValue = new DatatypeDeclaration(name, cs, vtf);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ className:ClassName {
+		yyValue = new TypeDeclaration(name, className, vtf);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ TYPE name:Identifier vtf:VariantTypeFormals Space EQ t:Type {
+		yyValue = new TypeAliasDeclaration(name, t, vtf);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+
+Constructor Constructor =
+	name:Identifier LPAREN ts:TypeList RPAREN Space {
+		yyValue = new Constructor(name,ts);
+	}
+	;
+
+List<Constructor> ConstructorList = 
+	c:Constructor cs:(void:BAR cs:Constructor)* {
+		List<Constructor> out = cs.list();
+		out.add(0, c);
+		yyValue = out;
+	}
+	;
+
+
+Defn Definition =
+	DEF name:(Identifier / BareOperator) Space LPAREN formals:PatternList RPAREN Space
+	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
+	resultType:MaybeResultType
+	EQ body0:Body {
+		Type linearResultType = resultType;
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body, linearResultType);
+			linearResultType = null;
+		}
+		yyValue = new DefnClause(name, formals, body, linearResultType);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ DEF name:(Identifier / BareOperator) Space typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
+	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
+	resultType:MaybeResultType {
+		Type curriedType = resultType;
+		List<List<Type>> curried = curried0.list();
+		ListIterator<List<Type>> it = curried.listIterator(curried.size());
+		while (it.hasPrevious()) {
+			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
+		}
+		yyValue = new DefnType(name, argTypes, curriedType, typeFormals);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+List<Pattern> PatternList =
+	f:Pattern fs:(void:COMMA fs:Pattern)* {
+		List<Pattern> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Pattern>();
+	}
+	;
+	
+/*---------------------------------------------------------
+Expressions
+
+For reference, here are Orc's operators sorted
+and grouped in order of increasing precedence.
+
+Symbol   Assoc       Name
+----------------------------------------------------
+ lambda  prefix[3]   anonymous function
+ if      prefix[3]   if/then/else
+----------------------------------------------------
+ ;       left        semicolon
+----------------------------------------------------
+ <<      left        where
+----------------------------------------------------
+ |       right[2]    parallel
+----------------------------------------------------
+ >>      right       sequence
+----------------------------------------------------
+ ::	     right       type annotation
+ atomic  prefix      atomic transaction
+ :=      none        ref assignment
+----------------------------------------------------
+ ||      right[2]    boolean or
+ &&      right[2]    boolean and
+----------------------------------------------------
+ =       none        equal
+ /=      none        not equal
+ :>      none        greater
+ >       none[1]     greater
+ >=      none        greater or equal
+ <:      none        less
+ <       none[1]     less
+ <=      none        less or equal
+----------------------------------------------------
+ ~       prefix      boolean not
+ :       right       cons
+ +       left        addition
+ -       left[4]     subtraction
+----------------------------------------------------
+ *       left        multiplication
+ /       left        division
+ %       left        modulus
+----------------------------------------------------
+ **      left        exponent
+----------------------------------------------------
+ -       prefix      unary minus
+----------------------------------------------------
+ ?       postfix     dereference
+ .       postfix     field projection
+ ()      postfix[4]  application
+
+[1] An expression like (a > b > c > d) could be read as
+either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
+this ambiguity with precedence, but that's likely to
+violate the principle of least suprise. So instead we just
+disallow these operators unparenthesized inside << or >>.
+This results in some unfortunate duplication of the lower-
+precedence operators: see the NoCmp_ productions.
+
+[2] These operators are semantically fully associative, but
+they are implemented as right-associative because it's
+slightly more efficient in Rats!.
+
+[3] I'm not sure whether I'd call lambda and if operators,
+but the point is they bind very loosely, so everything to
+their right is considered part of their body.
+
+[4] These operators may not be preceded by a newline, to
+avoid ambiguity about where an expression ends.  So if you
+have a newline in front of a minus, the parser assumes
+it's a unary minus, and if you have a newline in front of
+a paren, the parser assumes it's a tuple (as opposed to a
+function application).  Hopefully these rules match how
+people intuitively use these operators.
+-----------------------------------------------------------*/
+
+Expression GoalExpression =
+	Lambda
+	/ MaybeSemiExpression
+	;
+	
+Expression MaybeSemiExpression =
+	seed:MaybeWhereExpression actions:SemiExpressionTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> SemiExpressionTail =
+	SEMICOLON right:MaybeWhereExpression {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				Expression yyValue = new Semi(left, right);
+				yyValue = at(left, right, yyValue);
+				return yyValue;
+			}
+		};
+	}
+	;
+
+Expression Lambda = 
+	LAMBDA LPAREN formals:PatternList RPAREN Space
+	curried0:(LPAREN yyValue:PatternList RPAREN Space)*
+	resultType:MaybeResultType
+	EQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Type linearResultType = resultType;
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body, linearResultType);
+			linearResultType = null;
+		}
+		yyValue = new Lambda(formals, body, linearResultType);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+	
+Expression MaybeWhereExpression =
+	// A "NoCmp" expression is one which does not contain
+	// the unparenthesized comparison operators < and >,
+	// which might confuse the parser
+	seed:NoCmpMaybeBarExpression actions:WhereExpressionTail+ {
+		yyValue = apply(actions, seed);
+	}
+	/ MaybeBarExpression
+	;
+Action<Expression> WhereExpressionTail =
+	LANGLE p:Pattern? LANGLE right:NoCmpMaybeBarExpression {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				Expression yyValue;
+				if (p == null) yyValue = new Where(left, right);
+				else yyValue = new Where(left, right, p);
+				yyValue = at(left, right, yyValue);
+				return yyValue;
+					
+			}
+		};
+	}
+	;
+
+Expression MaybeBarExpression =
+	left:MaybeSeqExpression BAR right:MaybeBarExpression {
+		yyValue = new Parallel(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeSeqExpression
+	;
+Expression NoCmpMaybeBarExpression =
+	left:NoCmpMaybeSeqExpression BAR right:NoCmpMaybeBarExpression {
+		yyValue = new Parallel(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeSeqExpression
+	;
+	
+Expression SeqExpression =
+	left:NoCmpMaybeAtomic RANGLE p:Pattern? RANGLE right:NoCmpMaybeSeqExpression {
+		if (p == null) yyValue = new Sequential(left, right);
+		else yyValue = new Sequential(left, right, p);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+Expression MaybeSeqExpression = SeqExpression / IfThenElse / MaybeTyped;
+Expression NoCmpMaybeSeqExpression = SeqExpression / IfThenElse / NoCmpMaybeTyped;
+	
+Expression IfThenElse =
+	IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression ELSE alternative:MaybeSemiExpression {
+		yyValue = new IfThenElse(condition, consequent, alternative);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ IF condition:MaybeDisjunction THEN consequent:MaybeSemiExpression {
+		yyValue = new IfThenElse(condition, consequent);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+Expression MaybeTyped =
+	body:MaybeAtomic void:DOUBLE_COLON_BANG type:Type {
+		yyValue = new AssertType(body, type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ body:MaybeAtomic void:DOUBLE_COLON type:Type {
+		yyValue = new HasType(body, type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeAtomic
+	;
+
+Expression NoCmpMaybeTyped =
+	body:NoCmpMaybeAtomic void:DOUBLE_COLON_BANG type:Type {
+		yyValue = new AssertType(body,type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ body:NoCmpMaybeAtomic void:DOUBLE_COLON type:Type {
+		yyValue = new HasType(body,type);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeAtomic
+	;
+
+Expression MaybeAtomic =
+	void:ATOMIC body:MaybeAssignment {
+		yyValue = new Atomic(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeAssignment
+	;
+
+Expression NoCmpMaybeAtomic =
+	void:ATOMIC body:NoCmpMaybeAssignment {
+		yyValue = new Atomic(body);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeAssignment
+	;
+
+Expression MaybeAssignment =
+    left:DotExpression void:COLON_EQUALS right:MaybeDisjunction {
+		yyValue = new Call(":=", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+    }
+    / MaybeDisjunction
+    ;
+Expression NoCmpMaybeAssignment =
+    left:DotExpression void:COLON_EQUALS right:NoCmpMaybeDisjunction {
+		yyValue = new Call(":=", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+    }
+    / NoCmpMaybeDisjunction
+    ;
+
+Expression MaybeDisjunction =
+	left:MaybeConjunction void:OROR right:MaybeDisjunction {
+		yyValue = new Call("||", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeConjunction
+	;
+Expression NoCmpMaybeDisjunction =
+	left:NoCmpMaybeConjunction void:OROR right:NoCmpMaybeDisjunction {
+		yyValue = new Call("||", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeConjunction
+	;
+	
+Expression MaybeConjunction = 
+	left:MaybeComparison void:ANDAND right:MaybeConjunction {
+		yyValue = new Call("&&", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ MaybeComparison
+	;
+Expression NoCmpMaybeConjunction = 
+	left:NoCmpMaybeComparison void:ANDAND right:NoCmpMaybeConjunction {
+		yyValue = new Call("&&", left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeComparison
+	;
+
+Expression MaybeComparison = 
+	left:Comparable op:Comparator right:Comparable {
+		yyValue = new Call(op, left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ NoCmpMaybeComparison
+	;
+String Comparator = RANGLE / LANGLE ;
+	
+Expression NoCmpMaybeComparison = 
+	left:Comparable op:NoCmpComparator right:Comparable {
+		yyValue = new Call(op, left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ Comparable
+	;
+String NoCmpComparator = EQ / NEQ / GT / GEQ / LT / LEQ ;
+
+Expression Comparable =
+	NOT x:DotExpression Space {
+		yyValue = new Call("~", x);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ Cons
+	/ MaybeSum Space
+	;
+	
+Expression Cons =
+	left:MaybeSigned Space void:COLON right:(Cons / MaybeSigned Space) {
+		yyValue = new ConsExpr(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+///////////////////////////////////////////////////////////
+// NOTE: from here down, in the expression syntax,
+// expression productions cannot end with a newline.
+// Anywhere a newline is permitted, it must be explicitly
+// by following the production with "Space".
+	
+/* Ends without newline */
+Expression MaybeSum =
+	seed:MaybeProduct actions:SumTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> SumTail =
+	op:SumOperator right:MaybeProduct {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				Expression yyValue = new Call(op, left, right);
+				yyValue = at(left, right, yyValue);
+				return yyValue;
+			}
+		};
+	}
+	;
+String SumOperator = Space PLUS / MINUS ;
+	
+/* Ends without newline */
+Expression MaybeProduct =
+	seed:MaybeExponent Space actions:ProductTail {
+		yyValue = apply(actions, seed);
+	}
+	/ MaybeExponent
+	;
+Pair<Action<Expression>> ProductTail =
+	op:ProductOperator right:MaybeExponent rest:(Space ProductTail)? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(op, left, right);
+					yyValue = at(left, right, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	;
+String ProductOperator = DIV / MOD / TIMES ;
+	
+/* Ends without newline */
+Expression MaybeExponent =
+	seed:MaybeSigned Space actions:ExponentTail {
+		yyValue = apply(actions, seed);
+	}
+	/ MaybeSigned
+	;
+Pair<Action<Expression>> ExponentTail =
+	op:ExponentOperator right:MaybeSigned rest:(Space ExponentTail)? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(op, left, right);
+					yyValue = at(left, right, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	;
+String ExponentOperator = EXPONENT ;
+	
+/* Ends without newline */
+Expression MaybeSigned =
+	MINUS x:DotExpression {
+		yyValue = new Call("0-", x);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ DotExpression
+	;
+
+/* Ends without newline */
+Expression DotExpression =
+	SIGNAL {
+		yyValue = new Let();
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ STOP {
+		yyValue = new Silent();
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ seed:BasicExpression tail:CallTail {
+		yyValue = apply(tail, seed);
+	}
+	/ seed:BasicExpression
+	;
+	
+/* Ends without newline */
+Pair<Action<Expression>> CallTail =
+	types:MaybeTypeActuals LPAREN args:ExpressionList RPAREN rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call(left, args, types);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	/ Space DOT right:Identifier rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Dot(left, right);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	/ Space QMARK rest:CallTail? {
+		yyValue = new Pair<Action<Expression>>(new Action<Expression>() {
+				public Expression run(Expression left) {
+					Expression yyValue = new Call("?", left);
+					yyValue = at(left, yyCount, yyValue);
+					return yyValue;
+				}
+			}, rest == null ? Pair.EMPTY : rest);
+	}
+	;
+	
+/* Ends without newline */
+Expression BasicExpression =
+	Literal
+	/ Variable
+	/ op:BareOperator {
+		yyValue = new Name(op);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ LPAREN args:ExpressionList RPAREN {
+		if (args.size() == 1) {
+			yyValue = args.get(0);
+		} else {
+			yyValue = new Let(args);
+			yyValue = at(yyStart, yyCount, yyValue);
+		}
+	}
+	/ LBRACKET args:ExpressionList RBRACKET {
+		yyValue = new ListExpr(args);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+/* Ends without newline */
+String BareOperator =
+	LPAREN yyValue:(
+		NoCmpComparator / Comparator / COLON_EQUALS / QMARK
+		/ ANDAND / OROR / NOT / COLON
+		/ ExponentOperator / ProductOperator / SumOperator
+		/ "0" MINUS { yyValue = "0-"; }
+	) RPAREN
+	;
+
+/* Ends without newline */
+Literal Literal =
+	literal:(
+		Integer
+		/ Float
+		/ StringLiteral
+		/ TRUE { yyValue = true; }
+		/ FALSE { yyValue = false; }
+		/ NULL { yyValue = null; }
+	) {
+		yyValue = new Literal(literal);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+/* Ends without newline */
+Expression Variable =
+	name:Identifier {
+		yyValue = new Name(name);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+	
+List<Expression> ExpressionList =
+	f:Body fs:(COMMA yyValue:Body)* {
+		List<Expression> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Expression>();
+	}
+	;
+	
+/////////////////////////////////////////////
+// Patterns
+/////////////////////////////////////////////
+
+Pattern Pattern =
+	p:AsPattern index:DOUBLE_COLON t:Type Space {
+		yyValue = new TypedPattern(p, t);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ AsPattern
+	;
+
+Pattern AsPattern =
+	p:ConsPattern index:AS v:Identifier Space {
+		yyValue = new AsPattern(p, v);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ ConsPattern
+	;
+
+Pattern ConsPattern =
+	left:BasicPattern index:COLON right:ConsPattern {
+		yyValue = new ConsPattern(left, right);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ BasicPattern
+	;
+	
+Pattern BasicPattern =
+	UNDERSCORE {
+		yyValue = new WildcardPattern();
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ literal:Literal Space {
+		yyValue = new LiteralPattern(literal);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ SIGNAL {
+		yyValue = new TuplePattern();
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ name:Identifier Space LPAREN formals:PatternList RPAREN Space {
+		yyValue = new CallPattern(name, formals);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ name:Identifier Space {
+		yyValue = new VariablePattern(name);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ BANG p:BasicPattern {
+		yyValue = new PublishPattern(p);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	/ LPAREN formals:PatternList RPAREN Space {
+		if (formals.size() == 1) {
+			yyValue = formals.get(0);
+		} else {
+			yyValue = new TuplePattern(formals);
+			yyValue = at(yyStart, yyCount, yyValue);
+		}
+	}
+	/ LBRACKET formals:PatternList RBRACKET Space {
+		yyValue = new ListPattern(formals);
+		yyValue = at(yyStart, yyCount, yyValue);
+	}
+	;
+
+/////////////////////////////////////////////
+// Types
+/////////////////////////////////////////////
+
+Type Type =
+	LPAREN ts:TypeList RPAREN Space { 
+		if (ts.size() > 1) {
+			yyValue = new TupleType(ts);
+		}
+		else {
+			yyValue = ts.get(0);
+		} 
+	}
+	/ UNDERSCORE { yyValue = Type.BLANK; }
+	/ LAMBDA typeFormals:TypeFormals LPAREN argTypes:TypeList RPAREN Space
+	curried0:(LPAREN yyValue:TypeList RPAREN Space)*
+	 DOUBLE_COLON resultType:Type {
+		Type curriedType = resultType;
+		List<List<Type>> curried = curried0.list();
+		ListIterator<List<Type>> it = curried.listIterator(curried.size());
+		while (it.hasPrevious()) {
+			curriedType = new ArrowType(it.previous(), curriedType, new LinkedList<String>() /* curried type params not allowed */);
+		}
+		yyValue = new ArrowType(argTypes, curriedType, typeFormals);
+	}
+	/ name:Identifier actualTypes:TypeActuals Space { yyValue = new TypeInstance(name, actualTypes); }
+	/ name:Identifier Space { yyValue = new NamedType(name); }
+	;
+	
+
+
+
+VariantTypeFormal VariantTypeFormal =
+	  name:Identifier PLUS  { yyValue = new VariantTypeFormal(name, Variance.COVARIANT); }
+	/ name:Identifier MINUS { yyValue = new VariantTypeFormal(name, Variance.CONTRAVARIANT); }
+	/ name:Identifier TIMES { yyValue = new VariantTypeFormal(name, Variance.INVARIANT); }
+	/ name:Identifier { yyValue = new VariantTypeFormal(name, Variance.CONSTANT); }
+	;	
+
+List<Type> TypeList = 
+	t:Type ts:(void:COMMA ts:Type)* {
+		List<Type> out = ts.list();
+		out.add(0, t);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Type>();
+	}
+	;
+	
+
+List<String> TypeFormals = 
+	LBRACKET tf:Identifier tfs:(void:COMMA tfs:Identifier)* RBRACKET {
+		List<String> out = tfs.list();
+		out.add(0, tf);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<String>();
+	}
+	;
+
+List<VariantTypeFormal> VariantTypeFormals =
+	LBRACKET vtf:VariantTypeFormal vtfs:(void:COMMA vtfs:VariantTypeFormal)* RBRACKET {
+		List<VariantTypeFormal> out = vtfs.list();
+		out.add(0, vtf);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<VariantTypeFormal>();
+	}
+	;
+
+
+List<Type> MaybeTypeActuals =
+	ta:TypeActuals {
+		yyValue = ta;
+	}
+	/ /* empty */ {
+		yyValue = null;
+	}
+	;
+
+List<Type> TypeActuals = 
+	LBRACKET t:Type ts:(void:COMMA ts:Type)* RBRACKET {
+		List<Type> out = ts.list();
+		out.add(0, t);
+		yyValue = out;
+	}
+	;
+	
+Type MaybeResultType =
+	DOUBLE_COLON resultType:Type
+		{ yyValue = resultType; }
+	/
+		{ yyValue = null; }	
+	;
+
+/////////////////////////////////////////////
+// Literals
+/////////////////////////////////////////////
+
+// This isn't used by the parser directly, but
+// is used by the Read site to read Orc literal
+// syntax
+public Object LiteralValue =
+	Number Space
+	/ StringLiteral Space
+	/ TRUE Space { yyValue = true; }
+	/ FALSE Space { yyValue = false; }
+	/ LPAREN args:LiteralValueList RPAREN Space {
+		if (args.size() == 1) {
+			yyValue = args.get(0);
+		} else {
+			yyValue = new TupleValue(args);
+		}
+	}
+	/ LBRACKET args:LiteralValueList RBRACKET Space {
+		yyValue = ListValue.make(args);
+	}
+	;
+List<Object> LiteralValueList = 
+	f:LiteralValue fs:(COMMA yyValue:LiteralValue)* {
+		List<Object> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Object>();
+	}
+	;
+	
+Number Number = Float / Integer;
+BigDecimal Float =
+	rep:FloatToken HSpace {
+		try {
+			yyValue = new BigDecimal(rep);
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+// Note that even if a number has no decimal, having an exponent
+// is enough to make it floating point
+String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
+String Exponent = [eE] [+\-]? IntegerToken;
+BigInteger Integer =
+	rep:SignedIntegerToken HSpace {
+		try {
+			yyValue = BigInteger.valueOf(Long.parseLong(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+String SignedIntegerToken = '-'? IntegerToken;
+String IntegerToken = '0' / [1-9] [0-9]*;
+	
+String StringLiteral =
+	string:StringLiteralToken HSpace {
+		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
+	}
+	;
+String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7];
+	
+String ClassName = ClassNameToken Space;
+String ClassNameToken = Word ('.' Word)*;
+String Identifier = Word HSpace;
+String Word = [a-zA-Z_] [a-zA-Z0-9_']*;
+
+/////////////////////////////////////////////
+// Keywords
+/////////////////////////////////////////////
+
+transient String DEF = "def":Word Space;
+transient String VAL = "val":Word Space;
+transient String CLASS = "class":Word Space;
+transient String SITE = "site":Word Space;
+transient String INCLUDE = "include":Word Space;
+transient String TYPE = "type":Word Space;
+transient String LAMBDA = "lambda":Word Space;
+transient String ATOMIC = "atomic":Word Space;
+transient String AS = "as":Word Space;
+transient String IF = "if":Word Space;
+transient String THEN = "then":Word Space;
+transient String ELSE = "else":Word Space;
+transient String NULL = "null":Word HSpace;
+transient String STOP = "stop":Word HSpace;
+transient String SIGNAL = "signal":Word HSpace;
+transient String TRUE = "true":Word HSpace;
+transient String FALSE = "false":Word HSpace;
+transient String DOUBLE_COLON = "::" Space;
+transient String DOUBLE_COLON_BANG = ":!:" Space;
+transient String EQ = "=" Space;
+transient String LBRACE = "{" ![\-] Space; // make sure it's not a comment
+transient String RBRACE = "}" Space;
+transient String LANGLE = "<" Space;
+transient String RANGLE = ">" Space;
+transient String LPAREN = "(" Space;
+transient String RPAREN = ")" HSpace;
+transient String LBRACKET = "[" Space;
+transient String RBRACKET = "]" HSpace;
+transient String DOT = "." Space;
+transient String BANG = "!" Space;
+transient String BAR = "|" Space;
+transient String UNDERSCORE = "_" Space;
+transient String COMMA = "," Space;
+transient String SEMICOLON = ";" Space;
+transient String ANDAND = "&&" Space;
+transient String OROR = "||" Space;
+transient String NOT = "~" Space;
+transient String PLUS = "+" Space;
+transient String MINUS = "-" ![\-] Space; // make sure it's not a comment
+transient String DIV = "/" Space;
+transient String MOD = "%" Space;
+transient String TIMES = "*" Space;
+transient String EXPONENT = "**" Space;
+transient String COLON = ":" Space;
+transient String LT = "<:" Space;
+transient String LEQ = "<=" Space;
+transient String GT = ":>" Space;
+transient String GEQ = ">=" Space;
+transient String NEQ = "/=" Space;
+transient String COLON_EQUALS = ":=" Space;
+transient String QMARK = "?" HSpace;
+	
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+/* HSpace is horizontal space only */
+transient void HSpace = (' ' / '\t' / '\f' / SingleLineComment)*;
+/* Space is both horizontal and vertical space */
+transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / EndLineComment / MultiLineComment)*;
+
+transient void EndLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
+transient void MultiLineComment = "{-" ( MultiLineComment / [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
+transient void SingleLineComment = "{-" ( SingleLineComment / [\-] ![}] / ![\-\n\r] _ )* "-}";
+	
+transient void EndOfFile = !_;
+transient void EndOfLine = "\r\n" / '\r' / '\n';
