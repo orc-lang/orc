@@ -1,0 +1,14 @@
+This package includes web services and job servers
+for the Orc language.
+
+There are three products of this project:
+1. A Mac OS X application that provides a stand-alone demonstration of
+   the Orchard environment.
+2. A set of JAR/WAR files that provide a stand-alone demonstration of
+   the Orchard environment.
+3. A set of JAR/WAR files that can be deployed into a Java Servlet
+   container that provide the Orchard environment. 
+
+See licenses.yml for information on bundled third-party libraries and code.
+
+See http://orc.csres.utexas.edu for more information.

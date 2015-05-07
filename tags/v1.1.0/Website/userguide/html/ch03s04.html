@@ -1,0 +1,70 @@
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.4.&nbsp;Web Services</title><meta content="DocBook XSL Stylesheets V1.74.0" name="generator"><link rel="home" href="index.html" title="Orc User Guide v1.1.0"><link rel="up" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Accessing and Creating External Services"><link rel="prev" href="ch03s03.html" title="3.3.&nbsp; site Sites"><link rel="next" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Type Checking"><link href="/orchard/orc.css" type="text/css" rel="stylesheet"><link href="style.css" type="text/css" rel="stylesheet"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3">3.4.&nbsp;Web Services</th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ch03s03.html">Prev</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;3.&nbsp;Accessing and Creating External Services</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ch04.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="N1176B"></a>3.4.&nbsp;Web Services</h2></div></div></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1176E"></a>3.4.1.&nbsp;Introduction</h3></div></div></div><p>
+While we believe Orc is an excellent language for web service scripting,
+currently the library support for such tasks is at a proof-of-concept level.
+The web service libraries are not bundled with the core Orc distribution, do
+not have stable APIs, and are not officially documented.  However this section
+should provide you with enough information to get started.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N11773"></a>3.4.2.&nbsp;Downloading and Running Examples</h3></div></div></div><p>All Orc sites related to web services are bundled in a separate
+"OrcSites" library.  As with the core Orc distribution, you can either
+download this library as a prepackaged JAR or check out the
+source code from the "OrcSites" module in version control.  We generally recommend the latter
+approach, since the source code provides several examples which can be used as
+a basis for creating your own web service sites.
+</p><p>
+Within the OrcSites source code you will find:
+</p><div class="itemizedlist"><ul type="disc"><li>Java source code for web service sites: <code class="filename">src/orc/lib/net/</code></li><li>Orc source code for programs using web services: <code class="filename">examples/</code></li></ul></div><p>Several of the examples require you to create
+	<code class="filename">.properties</code> files and place them in your
+	classpath. The simplest way to do this is to make sure the
+	<code class="filename">examples/</code> directory is in your classpath, and
+	place the necessary <code class="filename">.properties</code> files there.
+</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N1178E"></a>3.4.3.&nbsp;Protocols Supported</h3></div></div></div><p>
+Web services use a variety of protocols, so there are a variety of ways to
+contact them. All of them boil down to creating a Java proxy site for the
+service and calling that.  Previous sections explain how to implement such Java
+sites which can be called in Orc. Because web services tend to use blocking
+I/O, Java wrappers make frequent use of <a class="link" href="ch03s03.html#section.services.sites.ThreadedSite" title="3.3.2.2.&nbsp;ThreadedSite">ThreadedSite</a> and
+<a class="link" href="ch03s02.html#section.services.kilim" title="3.2.7.&nbsp;Cooperative Scheduling and Concurrency">Kilim</a> to ensure that web service calls don't block the Orc engine.
+</p><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N1179B"></a>3.4.3.1.&nbsp;Java APIs</h4></div></div></div><p>
+Some web services provide Java APIs specifically for the service. For example,
+Google Calendar. In these cases we just use the Java API from Orc, either
+directly or via a small Java wrapper which simplifies the interface.
+</p><p>OrcSites includes <code class="code"><span class="hl-keyword">class</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">GoogleCalendar</span></code> as an
+	example of this type of web service.</p></div><div class="section" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="N117A5"></a>3.4.3.2.&nbsp;SOAP RPC</h4></div></div></div></div><p>
+OrcSites includes a generic <code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Webservice</span></code> which allows you to connect to any SOAP RPC (specifically
+rpc/encoded) service, without writing Java wrappers.  Instead <a class="link" href="http://ws.apache.org/axis/" target="_top">Apache Axis</a> is used to
+generate Java wrappers on-demand.
+</p><p>
+<a class="link" href="http://www.xmethods.net" target="_top">http://www.xmethods.net</a> is a good place to find examples
+of SOAP RPC services:
+</p><div class="orderedlist"><ol type="1"><li>Find the RPC "Style" service which does what you want.</li><li>Click on the name of the service.</li><li>Click on "View RPC Profile" for a summary of the methods available.</li><li>Construct instances of the service by passing the WSDL URL to the
+	<code class="code"><span class="hl-variable">Webservice</span></code> site. E.g. <code class="code"><span class="hl-site">Webservice</span>(<span class="hl-literal">"http://site.com/wsdl"</span>)</code>.</li><li>Call methods on the service as you would with any Java object. The
+	<a class="link" href="http://jcp.org/en/jsr/detail?id=101" target="_top">JAX-RPC
+		specification</a> has complete details on how SOAP
+	operations and data types are represented in Java.  Beware: method
+	names always begin with a lower-case letter, even if the corresponding
+	operation does not.</li></ol></div><p>
+Example:
+</p><pre class="orc">
+<span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Webservice</span>
+<span class="hl-comment">{-
+Find documentation of this service at:
+http://www.xmethods.net/ve2/WSDLRPCView.po?
+key=uuid:BF3EFCDD-FCD4-8867-3AAC-068985E7CB89
+-}</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">service</span> = <span class="hl-site">Webservice</span>(
+  <span class="hl-literal">"http://www.ebob42.com/cgi-bin/"</span>
+  + <span class="hl-literal">"Romulan.exe/wsdl/IRoman"</span>)
+<span class="hl-variable">service</span>.<span class="hl-site">intToRoman</span>(<span class="hl-literal">451</span>)
+</pre></div><div class="section" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="N117D0"></a>3.4.4.&nbsp;REST</h3></div></div></div><p>
+Many services use ad-hoc REST/XML protocols. Unfortunately, there is no REST
+equivalent to WSDL, so there's no way to automatically generate an API for REST
+services. We're not trying to solve this problem with Orc, but when the web
+services community reaches some kind of consensus, Orc will support it.
+</p><p>
+For now you must write a Java wrapper for each service which handles
+marshalling and unmarshalling the data. There's no reason such marshalling code
+couldn't be written in Orc, calling low-level HTTP and XML libraries directly,
+but there would be no advantage to doing so, so we let each language play to
+its strengths. OrcSites includes utility classes to assist with submitting
+requests and parsing responses.</p><p>OrcSites includes the following examples of this type of service:</p><div class="itemizedlist"><ul type="disc"><li><code class="code"><span class="hl-keyword">class</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">Upcoming</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">TrueRandom</span></code></li><li><code class="code"><span class="hl-keyword">site</span> <span class="hl-variable">orc</span>.<span class="hl-variable">lib</span>.<span class="hl-variable">net</span>.<span class="hl-variable">YahooSpellFactory</span></code></li></ul></div></div></div><script type="text/javascript" src="/orchard/orc.js"></script><div class="navfooter"><hr><table summary="Navigation footer" width="100%"><tr><td align="left" width="40%"><a accesskey="p" href="ch03s03.html">Prev</a>&nbsp;</td><td align="center" width="20%"><a accesskey="u" href="ch03.html">Up</a></td><td align="right" width="40%">&nbsp;<a accesskey="n" href="ch04.html">Next</a></td></tr><tr><td valign="top" align="left" width="40%">3.3.&nbsp;
+                site Sites&nbsp;</td><td align="center" width="20%"><a accesskey="h" href="index.html">Home</a></td><td valign="top" align="right" width="40%">&nbsp;Chapter&nbsp;4.&nbsp;Type Checking</td></tr></table></div></body></html>

@@ -1,0 +1,52 @@
+OVERVIEW
+--------
+
+In this package you should find:
+
+- orc-X.Y.Z.jar: the main Orc JAR file.
+- examples/: example programs written in Orc.
+- doc/: documentation of the Orc language and libraries.
+
+Read one of the following sections depending on your OS.
+
+GENERAL USERS
+-------------
+
+You can run Orc programs directly from any OS's command prompt.
+
+To run <your script file>:
+  java -cp orc-X.Y.Z.jar orc.Orc <your script file>
+
+To see command-line arguments, run:
+  java -cp orc-X.Y.Z.jar orc.Orc -help
+
+WINDOWS USERS
+-------------
+
+Orc comes with a GUI tool for running scripts.
+
+To start the GUI, double-click on the JAR file's icon, or run:
+  java -cp orc-X.Y.Z.jar orc.gui.OrcGui
+
+To see command-line arguments for the GUI, run:
+  java -cp orc-X.Y.Z.jar orc.gui.OrcGui -help
+
+To associate .orc files with the Orc GUI tool, run SETUP.BAT from the directory
+where you put orc-X.Y.Z.jar.  If you move the orc-X.Y.Z.jar, you will need to
+rerun SETUP.BAT.  If desired, you can edit the association in Explorer's "File
+Types" dialog to add command-line arguments or change the icon.
+
+APPLE OS X USERS
+----------------
+
+You should download the Orc app for OS X.  To run an Orc script, double-click it
+or drag it onto the Orc app.
+
+DEVELOPERS
+----------
+
+The JAR can be used as a Java library with which you can develop your own
+Orc sites.  Simply place orc-X.Y.Z.jar on your project's classpath.
+
+Refer to the Javadoc at http://orc.csres.utexas.edu/javadoc/STABLE for
+more information on Orc's Java API.

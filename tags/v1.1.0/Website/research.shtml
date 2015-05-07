@@ -1,0 +1,173 @@
+<!--#include virtual="template/header.shtml" -->
+
+<a name="top" id="top"></a><h1>Publications</h1>
+
+<ul>
+	<li><a href="#Introduction">Introduction to Orc</a></li>
+	<li><a href="#Semantics">Semantics &amp; Verification</a></li>
+	<li><a href="#Applications">Applications</a></li>
+	<li><a href="#Presentations">Presentations</a></li>
+	<li><a href="#Student_Reports">Student Reports</a></li>
+	<li><a href="#Other">Other Resources</a></li>
+</ul>
+
+<a name="Introduction" id="Introduction"></a><h2>Introduction to Orc <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/forte09.pdf">The Orc Programming Language</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-642-02138-1_1">DOI</a>
+	<a class="bibtex" href="papers/forte09.bib">BibTeX</a>
+	<br />
+	David Kitchin, Adrian Quark, William Cook and Jayadev Misra<br />
+	<span class="venue">Proceedings of FMOODS/FORTE</span>, Springer Verlag, LNCS 5522, pp 1--25, 2009.</li>
+	
+	<li><a target="_blank" class="paper" href="papers/qs.pdf">Quicksort: Combining Concurrency, Recursion, and Mutable Data Structures</a>
+	<a class="bibtex" href="papers/qs.bib">BibTeX</a>
+	<br />
+	David Kitchin, Adrian Quark, and Jayadev Misra<br />
+	Submitted to a Festschrift in honor of Tony Hoare on his 75th birthday</li>
+	
+	<li><a target="_blank" class="paper" href="papers/structured_interacting_computations_2008.pdf">Structured Interacting Computations (A position paper)</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-540-89437-7_9">DOI</a>
+	<a class="bibtex" href="papers/structured_interacting_computations_2008.bib">BibTeX</a>
+	<br />
+	William Cook and Jayadev Misra<br />
+	<span class="venue">Proceedings of Software-Intensive Systems</span>, Springer Verlag, LNCS 5380, pp139 --145, 2008.</li>
+	<li><a target="_blank" class="paper" href="papers/OrcJSSM.pdf">Computation Orchestration: A Basis for Wide-Area Computing</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/s10270-006-0012-1">DOI</a>
+	<a class="bibtex" href="papers/OrcJSSM.bib">BibTeX</a>
+	<br />
+	Jayadev Misra and William R. Cook<br />
+	Journal of Software and Systems Modeling, March 2007</li>
+</ul>
+
+<a name="Semantics" id="Semantics"></a><h2>Semantics &amp; Verification <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/timed_semantics.pdf">A Timed semantics of Orc</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1016/j.tcs.2008.04.037">DOI</a>
+	<a class="bibtex" href="papers/timed_semantics.bib">BibTeX</a>
+	<br />
+	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
+	Theoretical Computer Science, August 2008</li>
+
+	<li><a target="_blank" class="paper" href="papers/tcs07-tr.pdf">Properties of the Timed Operational and Denotational Semantics of Orc</a>
+	<a class="bibtex" href="papers/tcs07-tr.bib">BibTeX</a>
+	<br />
+	Ian Wehrman,&nbsp;David Kitchin,&nbsp;William R. Cook.&nbsp;Jayadev Misra<br />
+	University of Texas at Austin, Department of Computer Sciences, 2007, Report# TR-07-65</li>
+
+	<li><a target="_blank" class="paper" href="papers/events.pdf">Event Structure Semantics of Orc</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-540-79230-7_11">DOI</a>
+	<a class="bibtex" href="papers/events.bib">BibTeX</a>
+	<br />
+	Sidney Rosario, David Kitchin, Albert Benveniste, William Cook, Stefan Haar, and Claude Jard<br />
+	<a target="_blank" class="venue" href="http://bpm07.fit.qut.edu.au/ws-fm07/">4th International Workshop on Web Services and Formal Methods</a> (WS-FM 2007)<br />
+	Irisa and UT Austin</li>
+
+	<li><a target="_blank" class="paper" href="papers/OrcSemantics.pdf">A Language for Task Orchestration and its Semantic Properties</a> (<a target="_blank" href="papers/OrcSemantics2up.pdf">2up</a>)
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/11817949_32">DOI</a>
+	<a class="bibtex" href="papers/OrcSemantics.bib">BibTeX</a>
+	<br />
+	David Kitchin, William R. Cook and Jayadev Misra<br />
+	<a target="_blank" class="venue" href="http://depend.cs.uni-sb.de/concur2006">Proc. of the International Conference on Concurrency Theory (CONCUR), 2006</a>.<br />
+	August 27-30, Bonn, Germany.<br />
+	Extended version: <a target="_blank" href="http://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
+
+	<li><a target="_blank" class="paper" href="papers/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a>
+	<a class="bibtex" href="papers/Semantics.Orc.bib">BibTeX</a>
+	<br />
+	Jayadev Misra, Tony Hoare and Galen Menzel<br />
+	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
+</ul>
+
+<a name="Applications" id="Applications"></a><h2>Applications <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a target="_blank" href="papers/OrcSimulation.pdf" class="paper">Simulation using Orchestration (DRAFT)</a>
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/978-3-540-79980-1_2">DOI</a>
+	<a class="bibtex" href="papers/OrcSimulation.bib">BibTeX</a>
+	<br />
+	David Kitchin, Evan Powell, and Jayadev Misra<br />
+	In <span class="venue">Proceedings of AMAST</span>, 2008</li>
+
+	<li><a target="_blank" class="paper" href="papers/tr07-63.pdf">Orc-X: Combining Orchestrations and XQuery</a>
+	<a class="bibtex" href="papers/tr07-63.bib">BibTeX</a>
+	<br />
+	Kristi Morton, David Kitchin, William Cook<br />
+	The University of Texas at Austin, Department of Computer Sciences, December 2007, Report# TR-07-63</li>
+
+	<li><a target="_blank" class="paper" href="papers/OrcWorkflow.pdf">Workflow Patterns in Orc</a> (<a target="_blank" href="papers/OrcWorkflow2up.pdf">2up</a>)
+	<a target="_blank" class="doi" href="http://dx.doi.org/10.1007/11767954_6">DOI</a>
+	<a class="bibtex" href="papers/OrcWorkflow.bib">BibTeX</a>
+	<br />
+	William R. Cook, Sourabh Patwardhan, and Jayadev Misra<br />
+	<span class="venue">Proc. of the International Conference on Coordination Models and Languages</span> (COORDINATION), 2006<br />
+	(<a target="_blank" href="papers/workflow_slides.pdf">slides from talk</a>)</li>
+</ul>
+
+<a name="Presentations" id="Presentations"></a><h2>Presentations <small>(<a href="#top">top</a>)</small></h2>
+<ul>
+	<li><a target="_blank" class="paper" href="papers/orc-presentation.pdf">Structured Application Development over
+Wide-Area Networks</a><br />
+	William Cook, Jayadev Misra, David Kitchin, Adrian Quark, Andrew Matsuoka, John Thywissen<br />
+	FORTE 2009
+	</li>
+	
+	<li><a target="_blank" class="paper" href="papers/orc-pads09.pdf">Describing Simulations in the Orc Programming
+Language</a><br />
+	David Kitchin, Adrian Quark, Jayadev Misra<br />
+	23rd ACM/IEEE/SCS Workshop on Principles of Advanced and Distributed Simulation (PADS 2009)</li>
+	
+</ul>
+
+
+<a name="Student_Reports" id="Student_Reports"></a><h2>Student Reports <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/quark_sif_09_draft.pdf">Secure Information Flow in Orc (DRAFT)</a><br />
+	Adrian Quark<br />
+	The University of Texas at Austin, Department of Computer Sciences, Spring 2009</li>
+
+	<li><a target="_blank" class="paper" href="papers/coonske_sp08.pdf">Transactional Orc</a><br />
+	Katherine E. Coons<br />
+	CS 395T Computation Orchestration, Spring 2008</li>
+
+	<li><a target="_blank" class="paper" href="papers/quark_sp08.pdf">Distributed Orc</a><br />
+	Adrian Quark<br />
+	CS 395T Computation Orchestration, Spring 2008</li>
+</ul>
+
+<a name="Other" id="Other"></a><h2>Other Resources <small>(<a href="#top">top</a>)</small></h2>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/OrcExceptionSemantics.pdf">A Semantics for Exception Handling in Orc</a>
+	<a class="bibtex" href="papers/OrcExceptionSemantics.bib">BibTeX</a>
+	<br />
+	Andrew Matsuoka and David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/OrcOtherwiseSemantics.pdf">Operational and Denotational Semantics of the Otherwise Combinator (DRAFT)</a>
+	<a class="bibtex" href="papers/OrcOtherwiseSemantics.bib">BibTeX</a>
+	<br />
+	David Kitchin<br />
+	Unpublished, 2009.</li>
+</ul>
+
+<ul>
+	<li><a target="_blank" class="paper" href="papers/OrcImpDraft.pdf">Implementation Outline of Orc</a>
+	<a class="bibtex" href="papers/OrcImpDraft.bib">BibTeX</a>
+	<br />
+	William R. Cook and Jayadev Misra<br />
+	Unpublished, 2005.</li>
+</ul>
+
+
+
+
+
+
+
+<!--#include virtual="template/footer.shtml" -->

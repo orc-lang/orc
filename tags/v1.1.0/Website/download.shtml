@@ -1,0 +1,81 @@
+<!--#include virtual="template/header.shtml" --> 
+
+<h2>License</h2>
+
+<p>The Orc source code and binaries are released under the <a href="license.shtml">BSD License</a>.</p>
+
+<h2>Audience</h2>
+
+<p>Orc is available in different formats depending on what you will be doing with it:</p>
+<ul>
+<li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
+<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine under the Eclipse IDE.</li>
+<li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
+<li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
+</ul>
+
+<a id="casual"></a>
+<h3>Casual Users</h3>
+
+<p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
+your browser. We are currently working on extending the online job server to
+support user accounts so you can create long-running jobs; please <a
+href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
+us</a> if you are interested in obtaining an account.</p>
+
+<a id="eclipse"></a>
+<h3>Eclipse Users</h3>
+
+<p>There is an Orc plugin available for the <a href="http://www.eclipse.org/">Eclipse IDE</a>. It is compatible with Eclipse versions 3.3 and later.</p> 
+
+To install the Orc Eclipse plugin within Eclipse 3.4 or 3.5, follow these steps:
+<ol>
+<li> Select <b>Help</b>, then <b>Install New Software...</b> </li>
+<li> Press the <b>Add...</b> button in the upper right of the Install window. </li>
+<li> Fill in the following in the <b>Add Site</b> dialog box, and press OK:
+  <ul>
+    <li><b>Name:</b> <tt>Orc programming language</tt></li>
+    <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
+  </ul>
+</li>
+<li> Expand the <b>Orc programming language</b> category that appears, and select <b>Orc Eclipse plug-in</b>. </li>
+<li> Press <b>Next</b>, and proceed through the confirmation pages that appear. </li>
+<li> <i>(recommended)</i> In <b>Eclipse Preferences</b>, expand the <b>Install/Update</b> category, and
+select <b>Automatic Updates</b>. Select the checkbox labeled <b>"Automatically find new updates and notify me"</b>.</li>
+</ol>
+<br/>
+To install the Orc Eclipse plugin within Eclipse 3.3, follow these steps:
+<ol>
+<li> Select <b>Help</b>, go over <b>Software Updates</b> and then click on <b>Find and Install...</b>.</li>
+<li> Select <b>Search for new features to install</b> and then click <b>Next</b>.</li>
+<li> From the right hand side select <b>New Remote Site...</b></li>
+<li> Fill in the following in the <b>New Update Site</b> dialog box, and press <b>OK</b>:
+  <ul>
+    <li><b>Name:</b> <tt>Orc programming language</tt></li>
+    <li><b>Location:</b> <tt>http://orc.csres.utexas.edu/eclipse_updates/</tt></li>
+  </ul>
+</li>
+<li> Press Finish.</li>
+<li> A window titled <b>Updates</b> will appear. Select <b>Orc programming language</b> and click on <b>Next</b>.</li>
+<li> Go through the license page and click <b>Finish</b> at the end. </li>
+<li> Confirm the installation by clicking on <b>Install</b>.</li>
+</ol>
+
+
+<a id="cmdline"></a>
+<h3>Command Line Users</h3>
+
+<p>Orc is also available as a standalone JAR which you can use to run programs on
+the command line.</p>
+
+<p>Download the <a href="http://code.google.com/p/orc/downloads/list">latest release</a> from Google Code.
+For further assistance, please see the <a href="documentation.shtml">documentation</a>.</p>
+
+<a id="devs"></a>
+<h3>Developers</h3>
+
+<p>Orc is developed in Eclipse. The <a href="quickstart.shtml">developer's
+quick start</a> describes how to check out and build the Orc Eclipse project
+from source and start running Orc programs.</p>
+
+<!--#include virtual="template/footer.shtml" --> 

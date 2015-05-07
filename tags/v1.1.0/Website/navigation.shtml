@@ -1,0 +1,5 @@
+<a href="index.shtml" <!--#if expr="\"$DOCUMENT_NAME\" = \"index.shtml\"" -->id="active"<!--#endif -->>Home</a>
+<a href="download.shtml" <!--#if expr="\"$DOCUMENT_NAME\" = \"download.shtml\"" -->id="active"<!--#endif -->>Download</a>
+<a href="documentation.shtml" <!--#if expr="\"$DOCUMENT_NAME\" = \"documentation.shtml\"" -->id="active"<!--#endif -->>Documentation</a>
+<a href="research.shtml" <!--#if expr="\"$DOCUMENT_NAME\" = \"research.shtml\"" -->id="active"<!--#endif -->>Research</a>
+<a href="community.shtml" <!--#if expr="\"$DOCUMENT_NAME\" = \"community.shtml\"" -->id="active"<!--#endif -->>Community</a>

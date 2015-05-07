@@ -1,0 +1,25 @@
+This package includes assorted useful sites for Orc.
+See the Javadoc for more information.
+
+See licenses.yml for information on bundled third-party libraries and code.
+
+Example programs using these sites are in examples/
+
+Using the JAR
+-------------
+
+To use the JAR, just include it in your classpath when
+running Orc.  Because of some weirdness with the classloader,
+if you want to use the include files which declare the sites
+in this package, you should not run orc with the "-jar" option.
+Instead, run programs manually with the orc.Orc class, for example:
+
+java -cp orc-sites-0.9.2.jar:orc-0.9.2.jar orc.Orc examples/eliza.orc
+
+Building the JAR
+----------------
+
+For a source build, you need to have OrcJava open in
+your Eclipse workspace.
+
+See http://orc.csres.utexas.edu for more information.

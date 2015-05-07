@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcJava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
+	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
+	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/collections/api-release/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/fileupload/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-io-1.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/io/api-release/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://commons.apache.org/lang/api-release/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://jakarta.apache.org/oro/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-xjc.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-8.3-603.jdbc3.jar"/>
+	<classpathentry kind="lib" path="lib/resolver.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://xml.apache.org/commons/components/apidocs/resolver/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/stax-ex.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://stax-ex.dev.java.net/nonav/maven/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/streambuffer.jar"/>
+	<classpathentry kind="lib" path="lib/velocity-1.5.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://velocity.apache.org/engine/releases/velocity-1.5/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/jetty-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>

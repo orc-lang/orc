@@ -1,0 +1,37 @@
+<!--#include virtual="template/header.shtml" --> 
+
+<h2>Community Resources</h2>
+<ul>
+	<li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a>
+	<br /><form action="http://groups.google.com/group/orc-lang/boxsubscribe">
+		<div>Email: <input type="text" name="email" />
+		<input type="submit" name="sub" value="Subscribe" /></div>
+	</form></li>
+	<li><a href="wiki">Wiki</a></li>
+	<li><a href="http://code.google.com/p/orc/issues/list">Issue Tracker</a> (for bug reports)</li>
+	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
+</ul>
+
+<h2>UT Project Members</h2>
+<h3>Current</h3>
+<!-- FIXME: point these to orc wiki pages? -->
+<ul>
+        <li><a href="http://www.cs.utexas.edu/~misra/">Prof. Jayadev Misra</a></li>
+        <li><a href="http://www.cs.utexas.edu/~wcook/">Prof. William Cook</a></li>
+        <li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=DavidKitchin">David Kitchin</a></li>
+        <li><a href="http://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>
+        <li>Amin Shali</li>
+        <li>Sidney Rosario</li>
+</ul>
+<h3>Past</h3>
+<ul>
+		<li><a href="http://www.cs.utexas.edu/~matsuoka/">Andrew Matsuoka</a></li>
+        <li><a href="http://orc.csres.utexas.edu/wiki/Wiki.jsp?page=AdrianQuark">Adrian Quark</a></li>
+        <li><a href="http://www.cs.utexas.edu/~iwehrman/">Ian Wehrman</a></li>
+        <li><a href="http://www.cs.utexas.edu/~tfinster/">Thomas Finsterbusch</a></li>
+	    <li>Evan Powell</li>
+        <li><a href="http://www.cs.utexas.edu/~kmorton/">Kristi Morton</a></li>
+</ul>
+
+<!--#include virtual="template/footer.shtml" --> 
