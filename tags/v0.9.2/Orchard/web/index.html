@@ -1,0 +1,30 @@
+<html>
+<!--
+To play with this in your browser without running an Orchard server,
+load it as index.html?mock
+-->
+<head>
+<title>Orchard Demo</title>
+<link rel="stylesheet" type="text/css" href="orc.css"/>
+</head>
+
+<div style="margin: 0 auto 0 auto; width: 500px">
+<h1>Try Orc!</h1>
+
+<p>Enter an Orc program in the text box below and then click the <b>run</b> button.</p>
+
+<textarea spellcheck="false" class="orc" style="width: 500px; height: 200px">
+include "fun.inc"
+
+def ElizaPrompt(init) =
+    val eliza = Eliza()
+    def loop(message) =
+        eliza(Prompt(message)) >response>
+        loop(response)
+    loop(init)
+
+ElizaPrompt("How do you do.  Please tell me your problem.")
+</textarea>
+</div>
+<script src="orc.js" type="text/javascript"></script>
+</body>

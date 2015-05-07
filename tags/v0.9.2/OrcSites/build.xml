@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<project name="orc-sites" default="jar" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+	<property file="build.properties" />
+
+	<target name="jar" description="generate the distribution">
+		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
+		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
+			<!-- Include library dependencies -->
+			<zipgroupfileset dir="${orc.location.lib}" includes="*.jar"/>
+		</jar>
+	</target>
+	
+	<target name="zip" depends="jar" description="generate the ZIP">
+		<zip basedir="." zipfile="${ant.project.name}-${orc.version}.zip">
+			<include name="${ant.project.name}-${orc.version}.jar"/>
+			<include name="README"/>
+			<include name="LICENSE"/>
+			<include name="examples/**"/>
+		</zip>
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${orc.location.build}" />
+		<delete>
+			<fileset dir="." includes="${ant.project.name}-*.jar"/>
+		</delete>
+	</target>
+</project>
