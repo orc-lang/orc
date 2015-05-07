@@ -1,0 +1,5 @@
+#Thu Apr 14 17:45:30 CDT 2011
+eclipse.preferences.version=1
+encoding//test_data/performance/scheduler_load_blockedthreads.orc=UTF-8
+encoding//test_data/performance/scheduler_load_busythreads.orc=UTF-8
+encoding/<project>=UTF-8

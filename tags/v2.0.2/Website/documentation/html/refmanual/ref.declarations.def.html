@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>4.2.&nbsp;def: Define Function</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.declarations.html" title="Chapter&nbsp;4.&nbsp;Declarations"><link rel="prev" href="ref.declarations.val.html" title="4.1.&nbsp;val: Bind Value"><link rel="next" href="ref.declarations.defclass.html" title="4.3.&nbsp;def class: Define Site in Orc"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.declarations.val.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.declarations.html">Chapter&nbsp;4.&nbsp;Declarations</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.declarations.defclass.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.declarations.val.html">4.1.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code>:  Bind Value</a>&nbsp;</td><th align="center" width="60%">4.2.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span></code>:  Define Function</th><td align="right" width="20%"><a href="ref.declarations.defclass.html">4.3.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code>: Define Site in Orc</a>&nbsp;</td></tr></table></div><div class="section" title="4.2.&nbsp;def: Define Function"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.declarations.def"></a>4.2.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span></code>:  Define Function</h2></div></div></div><a name="N41B2A" class="indexterm"></a><p>
+			The <code class="code"><a name="N41B30" class="indexterm"></a><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span></code> declaration defines a function. 
+			A function definition consists of an identifier, a sequence of <a name="N41B35" class="indexterm"></a><em class="firstterm">parameters</em>,
+		  and a <a name="N41B3D" class="indexterm"></a><em class="firstterm">body</em> expression. 
+		</p><p>
+		  An Orc function behaves much like a function, method, procedure, or subroutine in other programming languages. 
+		  However, there are two key differences:
+		</p><p>
+		</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
+		Orc functions are <a name="N41B4C" class="indexterm"></a><a class="link" href="ref.expressions.call.html#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">lenient</a>: when a function is called, the argument expressions and the 
+		function body are evaluated in parallel. 
+		</p></li><li class="listitem"><p>
+		Orc functions may <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a> any number of values, including zero,
+		during the execution of the function body.
+		</p></li></ul></div><p>
+		</p><p>
+		Orc functions have additional features, many of them adopted from typed functional programming languages:
+		</p><p>
+		</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>Orc functions may be recursive. A group of functions may be mutually recursive.</p></li><li class="listitem"><p><a class="link" href="ref.patterns.html" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a> may be used as function parameters.</p></li><li class="listitem"><p>A function may have a guard, which allows the function body to be executed only if a given condition holds.</p></li><li class="listitem"><p>A function may be defined by multiple clauses.</p></li></ul></div><p>
+		</p><div class="section" title="4.2.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.syntax"></a>4.2.1.&nbsp;Syntax</h3></div></div></div><p>
+		    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[22]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.declaration.def"><a class="link" href="ref.declarations.def.html" title="4.2.&nbsp;def: Define Function">DeclareDefinition</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span></code> <a href="ref.syntax.EBNF.html#ebnf.variable">Variable</a> <a href="ref.syntax.EBNF.html#ebnf.typeparameters">TypeParameters</a><span class="bold"><strong>?</strong></span> <a href="ref.syntax.EBNF.html#ebnf.parameters">Parameters</a> <a href="ref.syntax.EBNF.html#ebnf.returntype">ReturnType</a><span class="bold"><strong>?</strong></span> <a href="ref.syntax.EBNF.html#ebnf.guard">Guard</a><span class="bold"><strong>?</strong></span> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <a href="ref.syntax.EBNF.html#ebnf.expression">Expression</a> 
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr><tr><td width="3%" valign="top" align="left">[64]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.parameters">Parameters</a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code">(</code> <a href="ref.syntax.EBNF.html#ebnf.pattern">Pattern</a> <code class="code">,</code> <span class="bold"><strong>&hellip;</strong></span> <code class="code">,</code> <a href="ref.syntax.EBNF.html#ebnf.pattern">Pattern</a> <code class="code">)</code>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr><tr><td width="3%" valign="top" align="left">[24]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.guard"><a class="link" href="ref.declarations.def.html#ref.declarations.def.guard" title="4.2.5.&nbsp;Guards">Guard</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span></code> <code class="code">(</code> <a href="ref.syntax.EBNF.html#ebnf.expression">Expression</a> <code class="code">)</code> 
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+		  </p></div><div class="section" title="4.2.2.&nbsp;Function Execution"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.execution"></a>4.2.2.&nbsp;Function Execution</h3></div></div></div><p>
+		  The simplest case of argument binding uses only <a class="link" href="ref.patterns.variable.html" title="5.2.&nbsp;Variable Pattern">variables</a> and <a class="link" href="ref.patterns.wildcard.html" title="5.9.&nbsp;Wildcard Pattern">wildcards</a> as parameters.
+		  </p><p>
+		   When a function is <a class="link" href="ref.expressions.call.html#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">called</a>, the function body executes,
+		   and in parallel the argument expressions of the call are <a name="N41B96" class="indexterm"></a><a class="link" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation">deflated</a>.
+		   </p><p>
+		   If the execution of the body encounters a <a class="link" href="ref.expressions.variable.html" title="2.2.&nbsp;Variable">use of a parameter</a> whose corresponding argument expression 
+		  has not yet published a value, that use <a class="link" href="ref.concepts.states.html#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">blocks</a> 
+		  until the argument value is available,
+			but the rest of the body continues to execute. 
+			</p><p>
+		  Whenever the execution of the body would publish a value, the function call publishes that value.
+		  If execution of the body <a class="link" href="ref.concepts.states.html#ref.concepts.states.halt" title="8.3.3.&nbsp;Halted">halts</a>, the function call also halts.
+		  As a result, a function call might publish any number of times, including zero.
+		  </p><p>
+		  If the function call is <a class="link" href="ref.concepts.states.html#ref.concepts.states.kill" title="8.3.4.&nbsp;Killed">killed</a>,
+		  execution of the body expression is also immediately killed.
+		  </p><p>
+		  Because functions are lenient, the following two programs are equivalent:
+		  
+		  </p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>)
+</pre><p>
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+</pre><p>
+
+		</p></div><div class="section" title="4.2.3.&nbsp;Patterns as Parameters"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.pattern"></a>4.2.3.&nbsp;Patterns as Parameters</h3></div></div></div><p>
+		  A function parameter may be any pattern. 
+		  A <a name="N41BC3" class="indexterm"></a><em class="firstterm">lenient pattern</em> is either a variable pattern or a wildcard pattern; 
+		  such patterns will never fail to match. 
+		  Any other pattern is a <a name="N41BCA" class="indexterm"></a><em class="firstterm">strict pattern</em>, which could fail to match. 
+		  </p><p>
+		  When a function is called, the call blocks until a value is available for each strict pattern. The values are then matched
+		  against the strict patterns. If all of these matches succeed, then the function call executes as described earlier. If any 
+		  strict pattern match fails, or if any of the argument expressions corresponding to a strict pattern halts, 
+		  then the function call halts. 
+		  </p><p>
+		  Suppose <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span></code> is a strict pattern. The following two programs are equivalent:
+		  
+		  </p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>)
+</pre><p>
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">z</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">z</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+</pre><p>
+
+		</p></div><div class="section" title="4.2.4.&nbsp;Recursion"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.recursion"></a>4.2.4.&nbsp;Recursion</h3></div></div></div><a name="N41BE5" class="indexterm"></a><p>
+        Functions can be recursive; that is, the name of a function may be used in its own body.
+      </p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- A recursive factorial function -}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fact</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">&lt;=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">then</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">else</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">*</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fact</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">-</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>)
+</pre><p>
+        A recursive function might continue executing indefinitely, producing an infinite number of publications.
+      </p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publishes a signal every second, forever -}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">metronome</span>() <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">signal</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Rwait</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1000</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">metronome</span>()
+</pre><p>
+        A set of functions may be mutually recursive by naming each other in their bodies.
+        There is no special keyword for <a name="N41BF4" class="indexterm"></a>mutual recursion; 
+        whenever two or more function definitions are adjacent, they are allowed to mutually recurse.
+        </p></div><div class="section" title="4.2.5.&nbsp;Guards"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.guard"></a>4.2.5.&nbsp;Guards</h3></div></div></div><p>
+		  A function definition may include a guard, of the form <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span></code> <code class="code">(</code> <em class="replaceable"><code>E</code></em> <code class="code">)</code>.
+		  When a function is called, and each strict pattern matches successfuly as described earlier, then the guard expression
+		  <em class="replaceable"><code>E</code></em> is deflated. If <em class="replaceable"><code>E</code></em> deflates to <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">true</span></code>, then the function
+		  body is executed. If <em class="replaceable"><code>E</code></em> deflates to some other value, or halts without publishing a value,
+		  then the function call halts silently. 
+		  </p><p>
+		  Suppose <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span></code> is a strict pattern and <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Gd</span></code> is a guard expression.
+		  The following two programs are equivalent:
+		  
+		  </p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Gd</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">fn</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>)
+</pre><p>
+
+</p><pre class="programlisting">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">G</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">z</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">H</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">z</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">P</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Ift</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Gd</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">E</span>
+</pre><p>
+
+			</p></div><div class="section" title="4.2.6.&nbsp;Clausal Definition"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.clauses"></a>4.2.6.&nbsp;Clausal Definition</h3></div></div></div><p>
+			  A function can be defined by a sequence of <a name="N41C2C" class="indexterm"></a><em class="firstterm">clauses</em>: repeated
+			  function definitions with the same identifier but different parameters. Each clause must have
+			  the same number of parameters.  
+			</p><p>
+			  When a function with multiple clauses is called, the argument expressions are deflated, and in
+			  parallel the first clause is executed.
+			  The clause will <a name="N41C36" class="indexterm"></a><em class="firstterm">fail</em> under any of the following conditions:
+			  </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>One of the parameters is a strict pattern, and that pattern fails to match.</p></li><li class="listitem"><p>One of the parameters is a strict pattern, and the corresponding argument expression has halted <a class="link" href="ref.concepts.silent.html" title="8.2.&nbsp;Silence">silently</a>.</p></li><li class="listitem"><p>There is a guard expression, and it did not deflate to <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">true</span></code>.</p></li></ol></div><p>
+			  
+			  If each strict pattern matches successfully, and the guard expression (if present) deflates to <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">true</span></code>, 
+			  then the corresponding function body executes. 
+			  If the clause fails, then the next clause is executed.
+			  If the last clause fails, then the function call halts silently. 
+			</p></div><div class="section" title="4.2.7.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.type"></a>4.2.7.&nbsp;Type</h3></div></div></div><p>
+	      When a function is defined, the function identifier is bound to a <a class="link" href="ref.data.closure.html" title="1.9.&nbsp;Closures">closure</a>.
+	      A definition must be given <a class="link" href="ref.types.typeinfo.html#ref.types.typeinfo.function" title="9.4.2.&nbsp;Function Type Information">additional type information</a> so that the typechecker can deduce the correct <a class="link" href="ref.data.closure.html#ref.data.closure.type" title="1.9.1.&nbsp;Type">function type</a> for the identifier.
+	    </p></div><div class="section" title="4.2.8.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.examples"></a>4.2.8.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.lenientpairs_link" onclick="toggle(this, 'ref.declarations.def.examples.lenientpairs_content')">
+					&minus;
+				</a><span class="exampleCaption">Available Pairs</span></div><div class="exampleBody" id="ref.declarations.def.examples.lenientpairs_content"><pre class="orc">
+<span class="hl-comment">{- 
+  Publish pairs of results from three computations, as they become available.
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">pairs</span>(<span class="hl-variable">x</span>, <span class="hl-variable">y</span>, <span class="hl-variable">z</span>) <span class="hl-operator">=</span> (<span class="hl-variable">x</span>, <span class="hl-variable">y</span>) <span class="hl-combinator">|</span> (<span class="hl-variable">x</span>, <span class="hl-variable">z</span>) <span class="hl-combinator">|</span> (<span class="hl-variable">y</span>, <span class="hl-variable">z</span>)
+			
+<span class="hl-site">pairs</span>(<span class="hl-site">Rwait</span>(<span class="hl-literal">2000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">0</span>, <span class="hl-literal">1</span>, <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">2</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+(1, 2)
+(0, 1)
+(0, 2)
+-}</span>
+<span class="hl-comment">{-
+OUTPUT:
+(1, 2)
+(0, 2)
+(0, 1)
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.lenientpairs_link'), 'ref.declarations.def.examples.lenientpairs_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.parallelor_link" onclick="toggle(this, 'ref.declarations.def.examples.parallelor_content')">
+					&minus;
+				</a><span class="exampleCaption">Parallel-Or Function</span></div><div class="exampleBody" id="ref.declarations.def.examples.parallelor_content"><pre class="orc">
+<span class="hl-comment">{- 
+  Define a parallel-or function. 
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">parallelor</span>(<span class="hl-variable">x</span>,<span class="hl-variable">y</span>) <span class="hl-operator">=</span> 
+  <span class="hl-keyword">val</span> <span class="hl-variable">first</span> <span class="hl-operator">=</span> <span class="hl-site">Ift</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span> <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">y</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span> <span class="hl-combinator">|</span> (<span class="hl-variable">x</span> <span class="hl-operator">||</span> <span class="hl-variable">y</span>)
+  <span class="hl-variable">first</span>
+			
+<span class="hl-site">parallelor</span>(<span class="hl-literal">false</span>, <span class="hl-site">Rwait</span>(<span class="hl-literal">1000</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+true
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.parallelor_link'), 'ref.declarations.def.examples.parallelor_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.evenodd_link" onclick="toggle(this, 'ref.declarations.def.examples.evenodd_content')">
+					&minus;
+				</a><span class="exampleCaption">Even/Odd Using Mutual Recursion</span></div><div class="exampleBody" id="ref.declarations.def.examples.evenodd_content"><pre class="orc">
+<span class="hl-comment">{- Test if a number is even or odd, using mutual recursion -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span>) <span class="hl-operator">=</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">=</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">true</span>
+            <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">&lt;:</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span><span class="hl-operator">+</span><span class="hl-literal">1</span>) 
+            <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">:&gt;</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span><span class="hl-operator">-</span><span class="hl-literal">1</span>)
+    
+<span class="hl-keyword">def</span> <span class="hl-site">odd</span>(<span class="hl-variable">n</span>) <span class="hl-operator">=</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">=</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-literal">false</span>
+           <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">&lt;:</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span><span class="hl-operator">+</span><span class="hl-literal">1</span>) 
+           <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">n</span> <span class="hl-operator">:&gt;</span> <span class="hl-literal">0</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">even</span>(<span class="hl-variable">n</span><span class="hl-operator">-</span><span class="hl-literal">1</span>)
+
+<span class="hl-site">odd</span>(<span class="hl-operator">-</span><span class="hl-literal">4</span>)
+
+<span class="hl-comment">{- 
+OUTPUT:
+false
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.evenodd_link'), 'ref.declarations.def.examples.evenodd_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listhead_link" onclick="toggle(this, 'ref.declarations.def.examples.listhead_content')">
+					&minus;
+				</a><span class="exampleCaption">List Head</span></div><div class="exampleBody" id="ref.declarations.def.examples.listhead_content"><pre class="orc">
+<span class="hl-comment">{- 
+  Publish the head of a nonempty list.
+  If the list is empty, halt silently.
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">head</span>(<span class="hl-variable">h</span><span class="hl-operator">:</span><span class="hl-variable">_</span>) <span class="hl-operator">=</span> <span class="hl-variable">h</span>
+
+<span class="hl-site">head</span>([<span class="hl-literal">2</span>, <span class="hl-literal">3</span>]) <span class="hl-combinator">|</span> <span class="hl-site">head</span>([])
+
+<span class="hl-comment">{-
+OUTPUT:
+2
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.listhead_link'), 'ref.declarations.def.examples.listhead_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listlength_link" onclick="toggle(this, 'ref.declarations.def.examples.listlength_content')">
+					&minus;
+				</a><span class="exampleCaption">List Length</span></div><div class="exampleBody" id="ref.declarations.def.examples.listlength_content"><pre class="orc">
+<span class="hl-comment">{- Find the length of a list -}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">length</span>([]) <span class="hl-operator">=</span> <span class="hl-literal">0</span>
+<span class="hl-keyword">def</span> <span class="hl-site">length</span>(<span class="hl-variable">_</span><span class="hl-operator">:</span><span class="hl-variable">rest</span>) <span class="hl-operator">=</span> <span class="hl-site">length</span>(<span class="hl-variable">rest</span>) <span class="hl-operator">+</span> <span class="hl-literal">1</span>
+			
+<span class="hl-site">length</span>([<span class="hl-literal">1</span>, <span class="hl-literal">2</span>, <span class="hl-literal">4</span>])
+
+<span class="hl-comment">{-
+OUTPUT:
+3
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.listlength_link'), 'ref.declarations.def.examples.listlength_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.listsum_link" onclick="toggle(this, 'ref.declarations.def.examples.listsum_content')">
+					&minus;
+				</a><span class="exampleCaption">List Sum</span></div><div class="exampleBody" id="ref.declarations.def.examples.listsum_content"><pre class="orc">
+<span class="hl-comment">{- Sum the elements of a list -}</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>([]) <span class="hl-operator">=</span> <span class="hl-literal">0</span>
+<span class="hl-keyword">def</span> <span class="hl-site">sum</span>(<span class="hl-variable">h</span><span class="hl-operator">:</span><span class="hl-variable">t</span>) <span class="hl-operator">=</span> <span class="hl-variable">h</span> <span class="hl-operator">+</span> <span class="hl-site">sum</span>(<span class="hl-variable">t</span>)
+<span class="hl-site">sum</span>([<span class="hl-literal">1</span>, <span class="hl-literal">2</span>, <span class="hl-literal">3</span>])
+
+<span class="hl-comment">{-
+OUTPUT:
+6
+-}</span>
+
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.listsum_link'), 'ref.declarations.def.examples.listsum_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.examples.zip_link" onclick="toggle(this, 'ref.declarations.def.examples.zip_content')">
+					&minus;
+				</a><span class="exampleCaption">Same-Length Zip</span></div><div class="exampleBody" id="ref.declarations.def.examples.zip_content"><pre class="orc">
+<span class="hl-comment">{- 
+  "Zip" a pair of lists together into a list of pairs.
+  If the lists are of inequal length, halt silently.
+-}</span>
+<span class="hl-keyword">def</span> <span class="hl-site">zip</span>(<span class="hl-variable">x</span><span class="hl-operator">:</span><span class="hl-variable">xs</span>, <span class="hl-variable">y</span><span class="hl-operator">:</span><span class="hl-variable">ys</span>) <span class="hl-operator">=</span> (<span class="hl-variable">x</span>, <span class="hl-variable">y</span>)<span class="hl-operator">:</span><span class="hl-site">zip</span>(<span class="hl-variable">xs</span>, <span class="hl-variable">ys</span>)
+<span class="hl-keyword">def</span> <span class="hl-site">zip</span>([], []) <span class="hl-operator">=</span> []
+
+  <span class="hl-site">zip</span>([<span class="hl-literal">0</span>, <span class="hl-literal">1</span>], [<span class="hl-literal">false</span>, <span class="hl-literal">true</span>]) 
+<span class="hl-combinator">|</span> <span class="hl-site">zip</span>([<span class="hl-literal">1</span>, <span class="hl-literal">2</span>, <span class="hl-literal">3</span>], <span class="hl-keyword">signal</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+[(0, false), (1, true)]
+-}</span>
+
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.examples.zip_link'), 'ref.declarations.def.examples.zip_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.declarations.def.clausal.examples.fib_link" onclick="toggle(this, 'ref.declarations.def.clausal.examples.fib_content')">
+					&minus;
+				</a><span class="exampleCaption">Fibonacci Function</span></div><div class="exampleBody" id="ref.declarations.def.clausal.examples.fib_content"><pre class="orc">
+<span class="hl-comment">{- Fibonacci numbers -}</span>
+
+<span class="hl-keyword">def</span> <span class="hl-site">fib</span>(<span class="hl-literal">0</span>) <span class="hl-operator">=</span> <span class="hl-literal">1</span>
+<span class="hl-keyword">def</span> <span class="hl-site">fib</span>(<span class="hl-literal">1</span>) <span class="hl-operator">=</span> <span class="hl-literal">1</span>
+<span class="hl-keyword">def</span> <span class="hl-site">fib</span>(<span class="hl-variable">n</span>) <span class="hl-keyword">if</span> (<span class="hl-variable">n</span> <span class="hl-operator">:&gt;</span> <span class="hl-literal">1</span>) <span class="hl-operator">=</span> <span class="hl-site">fib</span>(<span class="hl-variable">n</span><span class="hl-operator">-</span><span class="hl-literal">1</span>) <span class="hl-operator">+</span> <span class="hl-site">fib</span>(<span class="hl-variable">n</span><span class="hl-operator">-</span><span class="hl-literal">2</span>)
+
+<span class="hl-site">fib</span>(<span class="hl-literal">5</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+8
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.declarations.def.clausal.examples.fib_link'), 'ref.declarations.def.clausal.examples.fib_content');
+</script></div><div class="section" title="4.2.9.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.declarations.def.links"></a>4.2.9.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.expressions.call.html#ref.expressions.call.function" title="2.4.3.&nbsp;Function Calls">Function Calls</a></p></li><li class="listitem"><p><a class="link" href="ref.patterns.html" title="Chapter&nbsp;5.&nbsp;Patterns">Patterns</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">Publication</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.states.html#ref.concepts.states.block" title="8.3.2.&nbsp;Blocked">Blocking</a></p></li><li class="listitem"><p><a class="link" href="ref.concepts.deflate.html" title="8.4.&nbsp;Deflation">Deflation</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.lambda.html" title="2.8.&nbsp;lambda"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">lambda</span></code> Expressions</a></p></li><li class="listitem"><p><a class="link" href="ref.data.closure.html" title="1.9.&nbsp;Closures">Closures</a></p></li><li class="listitem"><p><a class="link" href="ref.types.typeinfo.html#ref.types.typeinfo.function" title="9.4.2.&nbsp;Function Type Information">Adding Type Information to Functions</a></p></li><li class="listitem"><p><a class="link" href="ref.declarations.defclass.html" title="4.3.&nbsp;def class: Define Site in Orc"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">def</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">class</span></code>: Define Site in Orc</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.functions" class="olink">Functions</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.closures" class="olink">First-class Functions</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

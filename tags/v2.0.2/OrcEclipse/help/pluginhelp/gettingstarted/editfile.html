@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Edit an Orc File</title>
+		<link rel="stylesheet" href="PLUGINS_ROOT/PRODUCT_PLUGIN/book.css" charset="utf-8" type="text/css">
+	</head>
+
+	<body>
+		<h1>Edit an Orc File</h1>
+		<p>
+			In this section, you will try out some of the editing assistance the Orc plug-in provides for Orc source code. 
+		</p>
+		<h2>Editing a File</h2>
+		<ol>
+			<li>If needed, in the Project Explorer, expand the project and folders containing the Orc file of interest.</li>
+			<li>Double-click the Orc file you wish to view and edit, or try this simple program (copy-and-paste this text into
+			a new Orc file):<kbd><pre>
+-- Testing the Orc editor
+
+def SimpleDef() = "SimpleDef"
+
+def WithParmsDef(x, y, z) = (x | y | z)
+
+def OuterDef() =
+    def InnerDef() = "InnerDef"
+    "OuterDef"
+
+site TestSite = "orc.lib.builtin.Let"
+
+class TestClass = "java.lang.String"
+
+val testval = "testval"
+
+type Type1 = Bot
+
+
+(1 | 2 | 3) >x> x+40
+			</pre></kbd>You can copy the above text and paste it into the editor.  Save the file.</li>
+			<li>Notice the syntax highlighting. Different kinds of elements in the Orc source code are rendered in unique colors.</li>
+			<li>Look at the Outline view. It displays an outline of the Orc file including the include declarations, definitions, site
+			declarations, class declarations, type declarations and val declarations. The Outline view uses icons to annotate Orc elements.</li>
+			<li>Type a syntactically invalid character sequence, like <strong><kbd>- - -</kbd></strong> (with spaces). Note the "red X in a circle"
+			problem marker in the ruler on the left of your text, and the red underlining under the text. Delete the syntactically invalid
+			character sequence.</li>
+			<li>Type a character that does not belong in Orc source code, like <strong><kbd>$</kbd></strong>. Note the inverse red
+			highlighting. This is useful, for example, when cut-and-pasting code from formatted documents, where odd characters such
+			as non-breaking spaces or "curly quotes" can accidentally end up in your code. Delete the character that does not belong
+			in Orc source code.</li>
+			<li>In the Outline view, try pressing the <strong>Sort by Name</strong> button (it looks like a downward-pointing arrow with "a"
+			and "z" next to it).  Notice that the outline items are now sorted alphabetically within categories. Click on an entry in the
+			outline.  Note that this selects this declaration in the source code.  This is a quick way to navigate declarations in large files.
+			Press the <strong>Sort by Name</strong> button again to return to textual order.</li>
+			<li>Have you ever counted parentheses, trying to match open and close pairs? Type <strong><kbd>(1 | (2 | (3 | (4))))</kbd></strong>
+			and move the cursor to the right one of the close parentheses.  Note the box around the matching open parentheses.</li>
+		</ol>
+		<p><strong>Next Section: <em><a href="runprogram.html">Run an Orc program</a></em></strong></p>
+   </body>
+</html>

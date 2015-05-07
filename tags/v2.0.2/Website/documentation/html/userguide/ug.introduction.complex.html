@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.2.&nbsp;Complex Expressions</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.0.2"><link rel="up" href="ug.introduction.html" title="Chapter&nbsp;1.&nbsp;An Introduction to Orc"><link rel="prev" href="ug.introduction.simple.html" title="1.1.&nbsp;Simple Expressions"><link rel="next" href="ug.introduction.structures.html" title="1.3.&nbsp;Data Structures"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ug.introduction.simple.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ug.introduction.html">Chapter&nbsp;1.&nbsp;An Introduction to Orc</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ug.introduction.structures.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ug.introduction.simple.html">1.1.&nbsp;Simple Expressions</a>&nbsp;</td><th align="center" width="60%">1.2.&nbsp;Complex Expressions</th><td align="right" width="20%"><a href="ug.introduction.structures.html">1.3.&nbsp;Data Structures</a>&nbsp;</td></tr></table></div><div class="section" title="1.2.&nbsp;Complex Expressions"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.introduction.complex"></a>1.2.&nbsp;Complex Expressions</h2></div></div></div><p>
+Complex expressions recursively contain other expressions. 
+They may be formed in a number of ways: using one of Orc's four combinators,
+adding a declaration, adding a conditional expression, or using an expression 
+as an operand or site call argument.
+</p><div class="section" title="1.2.1.&nbsp;Combinators"><div class="titlepage"><div><div><h3 class="title"><a name="ug.introduction.complex.combinators"></a>1.2.1.&nbsp;Combinators</h3></div></div></div>
+
+The concurrency combinators are one of the two fundamental concepts of Orc programming,
+the other being sites. They provide the core orchestration capabilities of Orc: parallel
+execution, sequential execution, blocking on future values, terminating a computation,
+and trying an alternative if some computation halts.
+
+	<div class="section" title="Parallel"><div class="titlepage"><div><div><h4 class="title"><a name="ug.introduction.complex.combinators.parallel"></a>Parallel</h4></div></div></div><p>
+	Orc's simplest combinator is <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code>, the parallel combinator. Execution of
+	the complex expression F <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code> G, where F and G are Orc expressions, executes 
+	F and G concurrently. Whenever a value is published during the execution of F or G,
+	the execution of F <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code> G publishes that value.  Note the publications of
+	F and G are interleaved arbitrarily.
+	</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish 1 and 2 in parallel -}</span>  
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:PERMUTABLE
+1
+2
+-}</span>
+</pre><p>
+  </p><p>
+	The brackets <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- -}</span></code> enclose <em class="firstterm">comments</em>,
+	which are present only for documentation and are ignored by the compiler.
+	</p></div><div class="section" title="Sequential"><div class="titlepage"><div><div><h4 class="title"><a name="ug.introduction.complex.combinators.sequential"></a>Sequential</h4></div></div></div><p>
+	Now that we have expressions which publish multiple values, what can we do with those
+	publications? The sequential combinator, written F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code>G, 
+	combines the expression F, which may publish some values, with another expression G, 
+	which will use the values as they are published; the <em class="firstterm">variable</em>
+	<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> transmits the values from F to G.
+	</p><p>
+	The execution of F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code>G starts by executing F. Whenever F publishes a value, 
+	a new execution of G begins in parallel with F (and with other executions of G). In that
+	instance of G, variable <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> is bound to the value published by F. Values published by the executions
+	of G are published by the whole expression, but the values published by F are not published
+	by the whole expression; they are consumed by the variable binding.
+	</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish 1 and 2 in parallel -}</span>
+  
+(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">0</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:PERMUTABLE
+1
+2
+-}</span>
+</pre><p>
+</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish 3 and 4 in parallel -}</span>
+  
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">n</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span>)
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:PERMUTABLE
+3
+4
+-}</span>
+</pre><p>
+</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish 5 -}</span>
+  
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+5
+-}</span>
+</pre><p>
+</p><p>
+	The sequential combinator may also be written without a variable, as in F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code>G.
+	This has the same behavior, except that no variable name is given to the values published by F.
+	When F publishes only one value, this is similar to a sequential execution in an imperative
+	language. For example, suppose we want to print three messages in sequence:
+	</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Print three messages in sequence -}</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"Yes"</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"We"</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"Can"</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:PERMUTABLE
+Yes
+We
+Can
+-}</span> 
+</pre><p>
+</p><p>
+  The simple expression <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code> does nothing and halts immediately.
+  In conjunction with <code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> </code>, it can be used to ignore unneeded publications,
+  such as the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">signal</span></code> that would be published by <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"Can"</span>)</code>.
+  </p></div><div class="section" title="Pruning"><div class="titlepage"><div><div><h4 class="title"><a name="ug.introduction.complex.combinators.pruning"></a>Pruning</h4></div></div></div><p>
+	The pruning combinator, written F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code>G, allows us to block 
+	a computation waiting for a result, or terminate a computation. The execution of 
+	F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code>G starts by executing F and G in parallel. Whenever
+	F publishes a value, that value is published by the entire execution. When G publishes
+	its first value, that value is bound to <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> in F, and then the execution of G is immediately 
+	<em class="firstterm">killed</em>. A killed expression cannot make any more site calls or 
+	publish any values.
+	</p><p>
+	During the execution of F, any part of the execution that depends on <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> 
+	will be blocked until <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> is bound. 
+	If G never publishes a value, parts of F may be blocked forever. 
+	</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish either 5 or 6, but not both -}</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">4</span>)
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+5
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+6
+-}</span>
+</pre><p>
+	</p><p>
+	Though a terminated execution may not make any new calls, the calls
+	that it has already made will continue normally; their responses are simply
+	ignored. This may have surprising consequences when a call has side effects,
+	as in the following example.
+
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- This example might actually print both "uh" and "oh" to the
+   console, regardless of which call responds first. -}</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"uh"</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-site">Println</span>(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">"oh"</span>)
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:PERMUTABLE
+uh
+oh
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+uh
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+oh
+-}</span>
+</pre><p>
+
+	Both of the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Println</span></code> calls could be initiated before either one of
+	them publishes a value and terminates the expression. Once the expression
+	is terminated, no new calls occur, but the other <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Println</span></code> call
+	still proceeds and still has the effect of printing its message to the
+	console.
+	</p></div><div class="section" title="Otherwise"><div class="titlepage"><div><div><h4 class="title"><a name="ug.introduction.complex.combinators.otherwise"></a>Otherwise</h4></div></div></div><p>
+	Orc's fourth concurrency combinator, the <em class="firstterm">otherwise</em> combinator,
+	is written F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">;</span> </code>G. The execution of F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">;</span> </code> G proceeds as follows.
+	First, F is executed. If F halts, and has not published any values, 
+	then G executes. If F did publish one or more values, then G is ignored.
+	</p></div></div><div class="section" title="1.2.2.&nbsp;val"><div class="titlepage"><div><div><h3 class="title"><a name="ug.introduction.complex.val"></a>1.2.2.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code></h3></div></div></div><p>
+An expression may be preceded by one or more <em class="firstterm">declarations</em>.
+Declarations are used to bind values to be used in that expression (or <em class="firstterm">scope</em>).
+</p><p>
+The declaration <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span> </code>G, followed by expression F, executes G,
+and binds its first publication to <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code>, to be used in F.
+</p><p>
+This is actually just a different way of writing the expression F<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code>G.
+Thus, <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code> shares all of the behavior of the pruning combinator: F executes
+in parallel with G, uses of <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> block until G has published, and when G
+publishes, it is killed. In fact, the <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code> form is used much more often than the
+<code class="code"> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&lt;</span> </code> form, since it is usually easier to read.
+</p></div><div class="section" title="1.2.3.&nbsp;Conditional Expressions"><div class="titlepage"><div><div><h3 class="title"><a name="ug.introduction.complex.conditionals"></a>1.2.3.&nbsp;Conditional Expressions</h3></div></div></div><p>
+Orc has a conditional expression, written <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span></code> E <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">then</span></code> F <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">else</span></code> G.
+The <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">else</span></code> branch is required. Execution of <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span></code> E <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">then</span></code> F <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">else</span></code> G
+first executes E. If E publishes <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">true</span></code>, E is terminated and F executes. If E publishes
+<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">false</span></code>, E is terminated and G executes.
+</p></div><div class="section" title="1.2.4.&nbsp;Nested Expressions"><div class="titlepage"><div><div><h3 class="title"><a name="ug.introduction.complex.nesting"></a>1.2.4.&nbsp;Nested Expressions</h3></div></div></div><p>
+The execution of an Orc expression may publish many values. What if we want to use such an expression 
+in a context where only one value is expected? For example, what does <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">4</span>)</code> 
+publish? 
+</p><p>
+Whenever an Orc expression appears in such a context, it executes until it publishes its first value, 
+and then it is terminated. The published value is then used in the context. This allows any expression to
+be used as an operand of an operator expression or an argument to a site call. 
+</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish either 5 or 6 -}</span>
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">4</span>)
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+5
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+6
+-}</span>
+</pre><p>
+</p><p>
+</p><pre class="orc">
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{- Publish exactly one of 0, 1, 2 or 3 -}</span>
+
+(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">0</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">2</span>) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">+</span> (<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">0</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">1</span>)
+
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+0
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+1
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+2
+-}</span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-comment">{-
+OUTPUT:
+3
+-}</span>
+</pre><p>
+</p><p>
+To be precise, whenever an Orc expression appears in such a context, it is treated as if it were 
+on the right side of a pruning combinator, using a fresh variable name to fill in the hole. 
+This is called <a href="../refmanual/ref.concepts.deflate.html#ref.concepts.deflate" class="olink">deflation</a>.
+</p></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>
