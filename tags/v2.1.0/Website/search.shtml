@@ -1,0 +1,26 @@
+<!--#include virtual="/template/header.shtml" -->
+<style type="text/css">
+.right {
+	display: none;
+}
+.left {
+	width: 800px;
+}
+</style>
+
+<div id="cse-search-results">
+<script>
+  (function() {
+    var cx = '001989989275909646143:conqllya2xi';
+    var gcse = document.createElement('script');
+    gcse.type = 'text/javascript';
+    gcse.async = true;
+    gcse.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') +
+        '//www.google.com/cse/cse.js?cx=' + cx;
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(gcse, s);
+  })();
+</script>
+<gcse:searchresults-only></gcse:searchresults-only>
+</div>
+<!--#include virtual="/template/footer.shtml" -->

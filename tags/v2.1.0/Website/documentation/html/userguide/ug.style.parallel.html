@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.1.&nbsp;Parallel combinator</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc User Guide v2.1.0"><link rel="up" href="ug.style.html" title="Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions"><link rel="prev" href="ug.style.html" title="Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions"><link rel="next" href="ug.style.sequential.html" title="3.2.&nbsp;Sequential combinator"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ug.style.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ug.style.html">Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ug.style.sequential.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ug.style.html">Chapter&nbsp;3.&nbsp;Syntactic and Stylistic Conventions</a>&nbsp;</td><th align="center" width="60%">3.1.&nbsp;Parallel combinator</th><td align="right" width="20%"><a href="ug.style.sequential.html">3.2.&nbsp;Sequential combinator</a>&nbsp;</td></tr></table></div><div class="section" title="3.1.&nbsp;Parallel combinator"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ug.style.parallel"></a>3.1.&nbsp;Parallel combinator</h2></div></div></div><p>
+When the expressions to be combined are small, write them all on one line.
+
+</p><pre class="programlisting">
+<span class="bold"><strong>F</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>G</strong></span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>H</strong></span>
+</pre><p>
+
+</p><p>
+When the combined expressions are large enough to take up a full line, write one expression
+per line, with each subsequent expression aligned with the first and preceded by <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code>. 
+Indent the first expression to improve readability.
+
+</p><pre class="programlisting">
+  <span class="bold"><strong>long expression</strong></span> 
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>long expression</strong></span>
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>long expression</strong></span>
+</pre><p>
+ 
+</p><p>
+A sequence of parallel expressions often form the left hand side of a sequential combinator. 
+Since the sequential combinator has higher precedence, use parentheses to group the
+combined parallel expressions together. 
+
+
+</p><pre class="programlisting">
+( <span class="bold"><strong>expression</strong></span> 
+<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span> <span class="bold"><strong>expression</strong></span>
+) <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">&gt;</span> 
+<span class="bold"><strong>another expression</strong></span>
+</pre><p>
+</p></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

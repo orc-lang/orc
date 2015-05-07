@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.sites.library.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<section xml:id="ref.sites.library" xmlns="http://docbook.org/ns/docbook">
+<title>Library sites</title>
+
+<para>
+The Orc <link linkend="ref.stdlib">Standard Library</link> provides a variety of sites, functions, and types for use in Orc programs.
+These sites are declared in the Orc <indexterm significance="preferred"><primary>prelude</primary></indexterm><firstterm>prelude</firstterm>, 
+a sequence of declarations which is implicitly included in all Orc programs.
+</para>
+
+<para>
+Orc programs are expected to rely on the host language and environment for all but the most essential sites.
+For example, in the Java implementation of Orc, the entire Java standard library is available to Orc programs via <code>import class</code> declarations.
+Therefore, the Orc standard library aims only to provide convenience for the most common Orc idioms, not the complete set of features needed for general-purpose programming.
+</para>
+
+
+<section xml:id="ref.sites.library.examples">
+<title>Examples</title>
+
+<example xml:id="ref.sites.library.examples.floor">
+<title>Using a standard library site</title>
+<programlisting language="orc-demo"><![CDATA[
+{- The Floor site, also called the greatest integer function or integer value -}
+
+Floor(2.5)
+
+{-
+OUTPUT:
+2
+-}
+]]></programlisting>
+</example>
+
+<example xml:id="ref.sites.library.examples.if">
+<title>Another standard library site: Ift</title>
+<programlisting language="orc-demo"><![CDATA[
+{- Orc's conditional site: Ift(), publishes a signal if the argument is true -}
+
+Ift(1 :> 0) >> "correct"
+
+{-
+OUTPUT:
+"correct"
+-}
+]]></programlisting>
+</example>
+		  
+</section>
+
+
+<section xml:id="ref.sites.library.links">
+<title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.stdlib">Standard Library</link></para></listitem>
+			<listitem><para><link linkend="ref.concepts.helpful">Helpful Sites</link></para></listitem>
+		</itemizedlist>
+</section>
+
+</section>

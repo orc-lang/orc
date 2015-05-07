@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.time.xml - DocBook source for an Orc reference manual chapter
+
+     $Id$
+
+     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<chapter 
+	xml:id="ref.time"  
+	xmlns="http://docbook.org/ns/docbook"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Time</title>
+
+<para>
+Orc is designed to communicate with the external world, and one of the
+most important characteristics of the external world is the passage of
+time. Orc implicitly interacts with the passage of time by calling external
+services which take time to respond. However, Orc can also explicitly
+wait for some amount of time, using the special site <code>Rwait</code>. 
+</para>
+
+<para>
+Virtual time....
+</para>
+
+<xi:include href="ref.time.real.xml"/>
+<xi:include href="ref.time.virtual.xml"/>
+
+</chapter>

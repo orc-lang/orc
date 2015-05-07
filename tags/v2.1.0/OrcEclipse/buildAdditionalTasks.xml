@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- buildAdditionalTasks.xml - Ant buildfile (additional tasks for project build)
+     Project OrcEclipse
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<project name="OrcEclipse">
+	<description>
+		Ant build file with additional tasks for Orc Eclipse plug-in build.
+	</description>
+	<property file="build.properties" />
+
+	<target name="copylib">
+		<copy preservelastmodified="true" todir="lib" verbose="true">
+			<fileset dir="${orc.location.OrcScala}/build" includes="orc-${orc.version}.jar"/>
+		</copy>
+		<copy preservelastmodified="true" todir="lib" verbose="true">
+			<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
+		</copy>
+	</target>
+
+	<target name="copyuserguide">
+		<copy todir="help" verbose="true">
+			<fileset dir="../OrcDocs/build/eclipsehelp" excludes="**/toc.xml"/>
+		</copy>
+		<!-- Fix up the paths in the Eclipse Help TOCs -->
+		<copy file="../OrcDocs/build/eclipsehelp/refmanual/toc.xml" todir="help/refmanual" verbose="true">
+			<filterchain>
+				<tokenfilter>
+			    	<replacestring from=" topic=&quot;" to=" topic=&quot;help/refmanual/"/>
+			    	<replacestring from=" href=&quot;" to=" href=&quot;help/refmanual/"/>
+				</tokenfilter>
+			</filterchain>
+		</copy>
+		<copy file="../OrcDocs/build/eclipsehelp/userguide/toc.xml" todir="help/userguide" verbose="true">
+			<filterchain>
+				<tokenfilter>
+			    	<replacestring from=" topic=&quot;" to=" topic=&quot;help/userguide/"/>
+			    	<replacestring from=" href=&quot;" to=" href=&quot;help/userguide/"/>
+				</tokenfilter>
+			</filterchain>
+		</copy>
+	</target>
+</project>

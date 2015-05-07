@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;5.&nbsp;Patterns</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.1.0"><link rel="up" href="index.html" title="Orc Reference Manual v2.1.0"><link rel="prev" href="ref.declarations.include.html" title="4.7.&nbsp;include: Include Orc File"><link rel="next" href="ref.patterns.literal.html" title="5.1.&nbsp;Literal Pattern"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.declarations.include.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%">
+											&nbsp;
+										</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.patterns.literal.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.declarations.include.html">4.7.&nbsp;<code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">include</span></code>:  Include Orc File</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;5.&nbsp;Patterns</th><td align="right" width="20%"><a href="ref.patterns.literal.html">5.1.&nbsp;Literal Pattern</a>&nbsp;</td></tr></table></div><div lang="" class="chapter" title="Chapter&nbsp;5.&nbsp;Patterns"><div class="titlepage"><div><div><h2 class="title"><a name="ref.patterns"></a>Chapter&nbsp;5.&nbsp;Patterns</h2></div></div></div><div class="toc"><dl><dt><span class="section"><a href="ref.patterns.literal.html">5.1. Literal Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.variable.html">5.2. Variable Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.tuple.html">5.3. Tuple Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.list.html">5.4. List Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.record.html">5.5. Record Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.call.html">5.6. Call Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.cons.html">5.7. Cons Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.as.html">5.8. As Pattern</a></span></dt><dt><span class="section"><a href="ref.patterns.wildcard.html">5.9. Wildcard Pattern</a></span></dt></dl></div><p>
+<a name="N420E4" class="indexterm"></a><em class="firstterm">Patterns</em> are used in <a class="link" href="ref.combinators.html" title="Chapter&nbsp;3.&nbsp;Combinators">combinators</a>, in <a class="link" href="ref.declarations.val.html" title="4.1.&nbsp;val: Bind Value"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">val</span></code></a> declarations, and in <a class="link" href="ref.declarations.def.html#ref.declarations.def.clauses" title="4.2.6.&nbsp;Clausal Definition">clausal definitions</a> of functions, to select values and bind variables to values. 
+A pattern is given by a shape and a set of variables. A <span class="emphasis"><em>shape</em></span> is either a tuple, a list, 
+a record, a call, a literal value,
+or wildcard (written as <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">_</span></code>). If the shape describes a structured value (such as a tuple), its components may
+also be shapes. For example, the shape <code class="code">(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">_</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span>)</code> describes all pairs whose second element is <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span></code>, 
+and the pattern <code class="code">(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-literal">3</span>)</code> binds <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span></code> to the first element of all such pairs.      
+</p><p>
+Note that a pattern may fail to match a value, if it does not have the same shape as that value.
+When this occurs, the unmatched value is simply discarded.
+</p><p>
+A pattern such as <code class="code">(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span>)</code> may bind multiple variables. 
+However, patterns are <a name="N42111" class="indexterm"></a><em class="firstterm">linear</em>, meaning that a pattern may mention a variable name at most once. 
+For example, <code class="code">(<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">y</span>,<span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">x</span>)</code> is not a valid pattern.
+</p><p>
+During typechecking, a pattern is matched against a type instead of a value. This match produces a 
+<a name="N4211E" class="indexterm"></a><a class="link" href="ref.types.context.html" title="9.6.&nbsp;Typing Contexts">typing context</a>, which associates a type with each variable that occurs in the pattern.
+</p></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

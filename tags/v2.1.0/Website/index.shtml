@@ -1,0 +1,120 @@
+<!--#include virtual="/template/header.shtml" -->
+
+<h2>Orc is ...</h2>
+
+<p>... a novel language for distributed and concurrent programming which provides
+uniform access to computational services, including distributed communication
+and data manipulation, through <span class="highlight">sites</span>. Using four simple
+concurrency primitives, the programmer <span class="highlight">orchestrates</span> the
+invocation of sites to achieve a goal, while managing timeouts, priorities, and
+failures.</p>
+
+<p>Orc 2.1.0 is available for <a href="download.shtml">download</a> (<a href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=Orc%202.1%20Release%20Notes">release notes</a>)</p>
+
+<h2>What can I use Orc for?</h2>
+
+<ul>
+<li>
+As a <span class="highlight">general purpose programming language</span> for concise encoding of
+concurrent and distributed applications. See a
+<a href="#" onclick="showDemo('#orc-demo-dining')">probabilistic solution</a>
+to the dining philosophers problem, or try out <a href="tryorc.shtml">some simple programs</a>
+that combine concurrency and synchronization with fault-tolerance and time-out.
+
+<div id="orc-demo-dining" class="orc-demo">
+<small><a href="#" onclick="hideDemo('#orc-demo-dining')">hide this demo</a></small>
+<pre class="orc" style="height: 200px">
+{-
+Dining Philosophers.
+
+Based on the randomized algorithm given in:
+Lehmann, D. J., Rabin M. O.  On the Advantages of Free Choice: A Symmetric and Fully Distributed Solution to the Dining Philosophers Problem. Principles Of Programming Languages 1981 (POPL'81), pages 133-138.
+-}
+
+-- Randomly swap two elements
+def shuffle(a,b) = if (Random(2) = 1) then (a,b) else (b,a)
+
+-- Acquire two forks in the order given
+def take((a,b)) =
+  a.acquire() &gt;&gt; b.acquireD() ;
+  a.release() &gt;&gt; take(shuffle(a,b))
+
+-- Release two forks
+def drop(a,b) = (a.release(), b.release()) &gt;&gt; signal
+
+-- Start a philosopher process with forks a and b
+def phil(a,b,name) =
+  def thinking() = Rwait(Random(1000))
+  def hungry() = take((a,b))
+  def eating() =
+    Println(name + " is eating.") &gt;&gt;
+    Rwait(Random(1000)) &gt;&gt;
+    Println(name + " has finished eating.") &gt;&gt;
+    drop(a,b)
+  thinking() &gt;&gt; hungry() &gt;&gt; eating() &gt;&gt; phil(a,b,name)
+
+-- Start n philosophers dining in a ring
+def dining(n) =
+  val forks = Table(n, lambda(_) = Semaphore(1))
+  def phils(0) = stop
+  def phils(i) =
+      phil(forks(i%n), forks(i-1), "Philosopher " + i)
+    | phils(i-1)
+  phils(n)
+
+-- Simulate 5 philosophers for 10 seconds before halting
+Let( dining(5) | Rwait(10000) ) &gt;&gt;
+Println("Simulation stopped.") &gt;&gt;
+stop
+</pre>
+</div>
+</li>
+
+<li>
+As a <span class="highlight">web scripting language</span> to create a web-service mashup in a few
+minutes. Orc's emphasis on concurrency makes mashups much simpler to write than in
+other scripting languages. See a <a href="#" onclick="showDemo('#orc-demo-search')">simple search mashup</a> that starts a Bing search
+and a Google search simultaneously and prints the first set of responses. You can
+<a href="tryorc.shtml">create your own mashup here</a>.
+
+<div id="orc-demo-search" class="orc-demo">
+<small><a href="#" onclick="hideDemo('#orc-demo-search')">hide this demo</a></small>
+<pre class="orc">
+include "search.inc"
+
+each(results)
+  &lt;results&lt;
+    Prompt("Search for:") &gt;term&gt;
+    ( Bing(term) | Google(term) )
+</pre>
+</div>
+</li>
+
+<li>
+As an <span class="highlight">executable specification language</span> for workflow applications
+and process coordination problems. Read about how Orc can <a href="/papers/OrcWorkflow.pdf">represent
+many common workflow patterns</a>
+</li>
+</ul>
+
+<p>Read more about the <a href="introduction.shtml">ideas behind Orc</a> or
+dive in to <a href="tutorial.shtml">Orc in 15 minutes</a>.</p>
+
+<script src="/orchard/orc.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+//<![CDATA[
+function showDemo(selector) {
+        $thing = jQuery(selector);
+        $thing.css('display', 'none');
+        $thing.css('visibility', 'visible');
+        $thing.css('position', 'static');
+        $thing.slideDown();
+}
+function hideDemo(selector) {
+        jQuery(selector).slideUp();
+}
+//]]>
+</script>
+
+<!--#include virtual="/template/footer.shtml" -->
