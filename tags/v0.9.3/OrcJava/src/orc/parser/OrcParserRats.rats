@@ -1,0 +1,621 @@
+module orc.parser.OrcParserRats;
+
+header {
+	import java.util.List;
+	import java.util.LinkedList;
+	import java.util.ListIterator;
+	import java.io.FileNotFoundException;
+	import java.math.BigInteger;
+	import java.math.BigDecimal;
+	import orc.ast.extended.*;
+	import orc.ast.extended.declaration.*;
+	import orc.ast.extended.pattern.*;
+	import orc.error.*;
+	import orc.Orc;
+	import xtc.util.Utilities;
+	import xtc.util.Action;
+	import xtc.tree.Location;
+}
+
+body {
+	/**
+	 * Attach a source index to a semantic value.
+	 */
+	private static class Indexed<E> {
+		public E value;
+		public int index;
+		public Indexed(E value, int index) {
+			this.value = value;
+			this.index = index;
+		}
+	}
+	/**
+	 * Attach a source location to a node.
+	 * It's really only necessary to use this with nodes
+	 * that could end up generating token errors where we'd
+	 * need to know the source location.
+	 */
+	private <E extends Locatable> E at(int start, E e) {
+		Location l = location(start);
+		e.setSourceLocation(new SourceLocation(l.file, l.line, l.column));
+		return e;
+	}
+}
+
+option constant;
+
+/////////////////////////////////////////////
+// Declarations
+/////////////////////////////////////////////
+
+public Expression Program = Space yyValue:Body EndOfFile;
+	
+/*
+ * Include files are treated differently than programs;
+ * the may not have a goal experssion.
+ */
+public List<Declaration> Module =
+	Space yyValue:Declarations EndOfFile
+	;
+
+/*
+ * The body of a program or definition may include
+ * declarations and must include a goal expression.
+ */
+Expression Body =
+	ds:Declarations g:GoalExpression {
+		Expression out = g;
+		ListIterator<Declaration> it = ds.listIterator(ds.size());
+		while (it.hasPrevious()) {
+			out = new Declare(it.previous(), out);
+		}
+		yyValue = out;
+	}
+	;
+
+List<Declaration> Declarations =
+	ds:Include ds2:Declarations {
+		ds.addAll(ds2);
+		yyValue = ds;
+	}
+	/ d:Declaration ds:Declarations {
+		ds.add(0, d);
+		yyValue = ds;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Declaration>();
+	}
+	;
+	
+/*
+ * Include files are parsed in place.
+ */
+List<Declaration> Include =
+	INCLUDE filename:StringLiteral ^{
+		try {
+			OrcParserRats parser = new OrcParserRats(Orc.openInclude(filename), filename);
+			Result result = parser.pDeclarations(0);
+			if (result.hasValue()) {
+				yyResult = new SemanticValue(result.semanticValue(), yyBase);
+			} else {
+				yyResult = new ParseError(result.parseError().msg, yyBase);
+			}
+		} catch (FileNotFoundException e) {
+			yyResult = new ParseError("File not found: " + filename, yyBase);
+		}
+	}
+	;
+
+Declaration Declaration =
+	SITE name:(Identifier / StringLiteral) EQ className:ClassName {
+		yyValue = new SiteDeclaration(name, className);
+	}
+	/ CLASS name:Identifier EQ className:ClassName {
+		yyValue = new ClassDeclaration(name, className);
+	}
+	/ defs:Definition+ {
+		// a block of definitions is treated as a single
+		// declaration (akin to a letrec)
+		yyValue = new DefsDeclaration(defs.list());
+	}
+	/ VAL p:Pattern EQ e:Body {
+		yyValue = new ValDeclaration(p, e);
+	}
+	;
+
+Definition Definition =
+	DEF name:Identifier LPAREN formals:PatternList RPAREN
+	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	EQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body);
+		}
+		yyValue = new Definition(name, formals, body);
+	}
+	;
+
+List<Pattern> PatternList =
+	f:Pattern fs:(void:COMMA fs:Pattern)* {
+		List<Pattern> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Pattern>();
+	}
+	;
+	
+/*---------------------------------------------------------
+Expressions
+
+For reference, here are Orc's operators listed according to
+precedence.
+
+Symbol	Assoc		Prec	Name
+-----------------------------------------------------------
+ lambda	unary		0***	lambda
+ ;		left		1		semicolon
+ >		none		2*		greater
+ <		none		2*		less
+ <<		left		2		where
+ |		right**		3		parallel
+ >>		right		4		sequence
+ ||		right**		5		boolean or
+ &&		right**		5		boolean and
+ =		none		6		equal
+ /=		none		6		not equal
+ :>		none		6		greater
+ >=		none		6		greater or equal
+ <:		none		6		less
+ <=		none		6		less or equal
+ ~		unary		7		boolean not
+ :		right		7		cons
+ +		left		7		addition
+ -		left		7		subtraction
+ *		left		8		multiplication
+ /		left		8		division
+ %		left		8		modulus
+ -		unary		9		unary minus
+ ()		none		10		application
+
+* An expression like (a > b > c > d) could be read as
+either ((a >b> c) > d) or (a > (b >c> d)). We could resolve
+this ambiguity with precedence, but that's likely to
+violate the principle of least suprise. So instead we just
+disallow these operators unparenthesized inside << or >>.
+See the Safe_ productions.
+
+** These operators are semantically associative, but they
+are implemented as right-associative because it's slightly
+more efficient in Rats!.
+
+*** I'm not sure whether I'd call lambda an operator, but
+the point is it binds very loosely, so everything to the right
+of a lambda is considered part of its body.
+-----------------------------------------------------------*/
+
+Expression GoalExpression =
+	Lambda
+	/ seed:MaybeWhereExpression actions:SemiExpressionTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> SemiExpressionTail =
+	SEMICOLON right:MaybeWhereExpression {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				return new Semi(left, right);
+			}
+		};
+	}
+	;
+	
+Expression Lambda = 
+	LAMBDA LPAREN formals:PatternList RPAREN
+	curried0:(LPAREN yyValue:PatternList RPAREN)*
+	EQ body0:Body {
+		List<List<Pattern>> curried = curried0.list();
+		ListIterator<List<Pattern>> it = curried.listIterator(curried.size());
+		Expression body = body0;
+		while (it.hasPrevious()) {
+			body = new Lambda(it.previous(), body);
+		}
+		yyValue = new Lambda(formals, body);
+	}
+	;
+	
+Expression MaybeWhereExpression =
+	// A "Safe" expression is one which does not contain
+	// the unparenthesized comparison operators < and >,
+	// which might confuse the parser
+	seed:SafeMaybeBarExpression actions:WhereExpressionTail+ {
+		yyValue = apply(actions, seed);
+	}
+	/ MaybeBarExpression
+	;
+Action<Expression> WhereExpressionTail =
+	LANGLE p:Pattern? LANGLE right:SafeMaybeBarExpression {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				if (p == null) return new Where(left, right);
+				else return new Where(left, right, p);
+			}
+		};
+	}
+	;
+
+Expression MaybeBarExpression =
+	left:MaybeSeqExpression BAR right:MaybeBarExpression {
+		yyValue = new Parallel(left, right);
+	}
+	/ MaybeSeqExpression
+	;
+Expression SafeMaybeBarExpression =
+	left:SafeMaybeSeqExpression BAR right:SafeMaybeBarExpression {
+		yyValue = new Parallel(left, right);
+	}
+	/ SafeMaybeSeqExpression
+	;
+	
+Expression SeqExpression =
+	left:SafeMaybeDisjunction RANGLE p:Pattern? RANGLE right:SafeMaybeSeqExpression {
+		if (p == null) yyValue = new Sequential(left, right);
+		else yyValue = new Sequential(left, right, p);
+	}
+	;
+Expression MaybeSeqExpression = SeqExpression / MaybeDisjunction;
+Expression SafeMaybeSeqExpression = SeqExpression / SafeMaybeDisjunction;
+
+Expression MaybeDisjunction =
+	left:MaybeConjunction index:OROR right:MaybeDisjunction {
+		yyValue = at(index, new Call("op||", left, right));
+	}
+	/ MaybeConjunction
+	;
+Expression SafeMaybeDisjunction =
+	left:SafeMaybeConjunction index:OROR right:SafeMaybeDisjunction {
+		yyValue = at(index, new Call("op||", left, right));
+	}
+	/ SafeMaybeConjunction
+	;
+	
+Expression MaybeConjunction = 
+	left:MaybeComparison index:ANDAND right:MaybeConjunction {
+		yyValue = at(index, new Call("op&&", left, right));
+	}
+	/ MaybeComparison
+	;
+Expression SafeMaybeConjunction = 
+	left:SafeMaybeComparison index:ANDAND right:SafeMaybeConjunction {
+		yyValue = at(index, new Call("op&&", left, right));
+	}
+	/ SafeMaybeComparison
+	;
+
+Expression MaybeComparison = 
+	left:Comparable op:Comparator right:Comparable {
+		yyValue = at(op.index, new Call(op.value, left, right));
+	}
+	/ SafeMaybeComparison
+	;
+Indexed<String> Comparator =
+	value:(
+		RANGLE { yyValue = "op>"; }
+		/ LANGLE{ yyValue = "op<"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
+	;
+	
+Expression SafeMaybeComparison = 
+	left:Comparable op:SafeComparator right:Comparable {
+		yyValue = at(op.index, new Call(op.value, left, right));
+	}
+	/ Comparable
+	;
+Indexed<String> SafeComparator =
+	value:(
+		EQ { yyValue = "op="; }
+		/ NEQ { yyValue = "op/="; }
+		/ GT { yyValue = "op>"; }
+		/ GEQ { yyValue = "op>="; }
+		/ LT { yyValue = "op<"; }
+		/ LEQ { yyValue = "op<="; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
+	;
+
+Expression Comparable =
+	NOT x:BasicExpression {
+		yyValue = at(yyStart, new Call("op~", x));
+	}
+	/ Cons
+	/ MaybeSum
+	;
+	
+Expression Cons =
+	left:MaybeSigned index:COLON right:MaybeCons {
+		yyValue = at(index, new ConsExpr(left, right));
+	}
+	;
+Expression MaybeCons = Cons / MaybeSigned;
+	
+Expression MaybeSum =
+	seed:MaybeProduct actions:SumTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> SumTail =
+	op:SumOperator right:MaybeProduct {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				return at(op.index, new Call(op.value, left, right));
+			}
+		};
+	}
+	;
+Indexed<String> SumOperator =
+	value:(
+		PLUS { yyValue = "op+"; }
+		/ MINUS { yyValue = "op-"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
+	;
+	
+Expression MaybeProduct =
+	seed:MaybeSigned actions:ProductTail* {
+		yyValue = apply(actions, seed);
+	}
+	;
+Action<Expression> ProductTail =
+	op:ProductOperator right:MaybeSigned {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				return at(op.index, new Call(op.value, left, right));
+			}
+		};
+	}
+	;
+
+Indexed<String> ProductOperator =
+	value:(
+		DIV { yyValue = "op/"; }
+		/ MOD { yyValue = "op%"; }
+		/ TIMES { yyValue = "op*"; }
+	) {
+		yyValue = new Indexed(value, yyStart);
+	}
+	;
+
+Expression MaybeSigned =
+	MINUS x:BasicExpression {
+		yyValue = at(yyStart, new Call("opu-", x));
+	}
+	/ BasicExpression
+	;
+
+Expression BasicExpression =
+	Literal
+	/ STOP {
+		yyValue = new Silent();
+	}
+	/ NULL {
+		// We're changing "null" to "stop" but
+		// for now we're still allowing both
+		yyValue = new Silent();
+	}
+	/ Call
+	/ LPAREN args:ExpressionList RPAREN {
+		if (args.size() == 1) {
+			yyValue = args.get(0);
+		} else {
+			yyValue = at(yyStart, new Let(args));
+		}
+	}
+	/ LBRACKET args:ExpressionList RBRACKET {
+		yyValue = at(yyStart, new ListExpr(args));
+	}
+	;
+	
+Expression Call =
+	seed:Identifier actions:CallTail* {
+		yyValue = apply(actions, at(yyStart, new Name(seed)));
+	}
+	;
+Action<Expression> CallTail =
+	DOT right:Identifier {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				return at(yyStart, new Dot(left, right));
+			}
+		};
+	}
+	/ LPAREN args:ExpressionList RPAREN {
+		yyValue = new Action<Expression>() {
+			public Expression run(Expression left) {
+				return at(yyStart, new Call(left, args));
+			}
+		};
+	}
+	;
+	
+List<Expression> ExpressionList =
+	f:Body fs:(COMMA yyValue:Body)* {
+		List<Expression> out = fs.list();
+		out.add(0, f);
+		yyValue = out;
+	}
+	/ /* empty */ {
+		yyValue = new LinkedList<Expression>();
+	}
+	;
+	
+/////////////////////////////////////////////
+// Patterns
+/////////////////////////////////////////////
+
+Pattern Pattern =
+	p:ConsPattern index:AS v:Identifier {
+		yyValue = at(index, new AsPattern(p, v));
+	}
+	/ ConsPattern
+	;
+
+Pattern ConsPattern =
+	left:BasicPattern index:COLON right:ConsPattern {
+		yyValue = at(index, new ConsPattern(left, right));
+	}
+	/ BasicPattern
+	;
+	
+Pattern BasicPattern =
+	UNDERSCORE {
+		yyValue = new WildcardPattern();
+	}
+	/ literal:Literal {
+		yyValue = new LiteralPattern(literal);
+	}
+	/ name:Identifier index:LPAREN formals:PatternList RPAREN {
+		yyValue = at(index, new CallPattern(name, new TuplePattern(formals)));
+	}
+	/ name:Identifier {
+		yyValue = at(yyStart, new VariablePattern(name));
+	}
+	/ BANG p:BasicPattern {
+		yyValue = new PublishPattern(p);
+	}
+	/ LPAREN formals:PatternList RPAREN {
+		yyValue = at(yyStart, new TuplePattern(formals));
+	}
+	/ LBRACKET formals:PatternList RBRACKET {
+		yyValue = at(yyStart, new ListPattern(formals));
+	}
+	;
+
+/////////////////////////////////////////////
+// Literals
+/////////////////////////////////////////////
+
+Literal Literal =
+	literal:(
+		Number
+		/ StringLiteral
+		/ TRUE { yyValue = true; }
+		/ FALSE { yyValue = false; }
+	) {
+		yyValue = new Literal(literal);
+	}
+	;
+	
+Number Number = Float / Integer;
+BigDecimal Float =
+	rep:FloatToken Space {
+		try {
+			yyValue = BigDecimal.valueOf(Double.parseDouble(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+// Note that even if a number has no decimal, having an exponent
+// is enough to make it floating point
+String FloatToken = SignedIntegerToken ('.' [0-9]+ Exponent? / Exponent);
+String Exponent = [eE] [+\-]? IntegerToken;
+BigInteger Integer =
+	rep:SignedIntegerToken Space {
+		try {
+			yyValue = BigInteger.valueOf(Long.parseLong(rep));
+		} catch (NumberFormatException e) {
+			// impossible by construction
+			throw new AssertionError(e);
+		}
+	}
+	;
+String SignedIntegerToken = '-'? IntegerToken;
+String IntegerToken = '0' / [1-9] [0-9]*;
+	
+String StringLiteral =
+	string:StringLiteralToken Space {
+		yyValue = Utilities.unescape(string.substring(1, string.length()-1));
+	}
+	;
+String StringLiteralToken = ["] ( EscapeSequence / !["\\] _ )* ["] ;
+transient String EscapeSequence =
+   '\\' [btnfr"'\-\[\\\]] / UnicodeEscape / OctalEscape
+   ;
+transient String UnicodeEscape = '\\' 'u' HexDigit HexDigit HexDigit HexDigit ;
+transient String HexDigit = [0-9a-fA-F] ;
+transient String OctalEscape =
+	'\\' [0-3] OctalDigit OctalDigit
+	/ '\\' OctalDigit OctalDigit
+	/ '\\' OctalDigit
+	;
+transient String OctalDigit = [0-7];
+	
+String ClassName = ClassNameToken Space;
+String ClassNameToken = WordToken ('.' WordToken)*;
+String Identifier = WordToken Space;
+String WordToken = [a-zA-Z_] [a-zA-Z0-9_]*;
+
+/////////////////////////////////////////////
+// Keywords
+/////////////////////////////////////////////
+
+transient int DEF = "def" Space { yyValue = yyStart; };
+transient int TRUE = "true" Space { yyValue = yyStart; };
+transient int FALSE = "false" Space { yyValue = yyStart; };
+transient int VAL = "val" Space { yyValue = yyStart; };
+transient int CLASS = "class" Space { yyValue = yyStart; };
+transient int SITE = "site" Space { yyValue = yyStart; };
+transient int NULL = "null" Space { yyValue = yyStart; }; // DEPRECATED
+transient int STOP = "stop" Space { yyValue = yyStart; };
+transient int INCLUDE = "include" Space { yyValue = yyStart; };
+transient int LAMBDA = "lambda" Space { yyValue = yyStart; };
+transient int AS = "as" Space { yyValue = yyStart; };
+transient int EQ = "=" Space { yyValue = yyStart; };
+transient int LBRACE = "{" Space { yyValue = yyStart; };
+transient int RBRACE = "}" Space { yyValue = yyStart; };
+transient int LANGLE = "<" Space { yyValue = yyStart; };
+transient int RANGLE = ">" Space { yyValue = yyStart; };
+transient int LPAREN = "(" Space { yyValue = yyStart; };
+transient int RPAREN = ")" Space { yyValue = yyStart; };
+transient int LBRACKET = "[" Space { yyValue = yyStart; };
+transient int RBRACKET = "]" Space { yyValue = yyStart; };
+transient int DOT = "." Space { yyValue = yyStart; };
+transient int BANG = "!" Space { yyValue = yyStart; };
+transient int BAR = "|" Space { yyValue = yyStart; };
+transient int UNDERSCORE = "_" Space { yyValue = yyStart; };
+transient int COMMA = "," Space { yyValue = yyStart; };
+transient int SEMICOLON = ";" Space { yyValue = yyStart; };
+transient int ANDAND = "&&" Space { yyValue = yyStart; };
+transient int OROR = "||" Space { yyValue = yyStart; };
+transient int NOT = "~" Space { yyValue = yyStart; };
+transient int PLUS = "+" Space { yyValue = yyStart; };
+transient int MINUS = "-" Space { yyValue = yyStart; };
+transient int DIV = "/" Space { yyValue = yyStart; };
+transient int MOD = "%" Space { yyValue = yyStart; };
+transient int TIMES = "*" Space { yyValue = yyStart; };
+transient int COLON = ":" Space { yyValue = yyStart; };
+transient int LT = "<:" Space { yyValue = yyStart; };
+transient int LEQ = "<=" Space { yyValue = yyStart; };
+transient int GT = ":>" Space { yyValue = yyStart; };
+transient int GEQ = ">=" Space { yyValue = yyStart; };
+transient int NEQ = "/=" Space { yyValue = yyStart; };
+	
+/////////////////////////////////////////////
+// Whitespace, Comments, etc.
+/////////////////////////////////////////////
+
+transient void Space = (' ' / '\t' / '\f' / '\r' / '\n' / SingleLineComment / MultiLineComment)*;
+
+transient void SingleLineComment = "--" ( ![\n\r] _ )* (EndOfLine / EndOfFile);
+transient void MultiLineComment = "{-" ( [\-] ![}] / EndOfLine / ![\-\n\r] _ )* "-}";
+	
+transient void EndOfFile = !_;
+transient void EndOfLine = "\r\n" / '\r' / '\n';

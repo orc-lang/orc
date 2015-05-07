@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<project name="orc-sites" default="jar" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+	<property file="build.properties" />
+	
+	<path id="orc.classpath">
+		<fileset dir="${orc.location.lib}" includes="*.jar" />
+		<pathelement path="${orc.location.build}" />
+		<!-- FIXME: I hate having to hard-code these -->
+		<pathelement path="${orc.location.OrcJava.build}" />
+		<fileset dir="${orc.location.OrcJava.lib}" includes="*.jar" />
+	</path>
+
+	<target name="jar" depends="kilim" description="generate the distribution">
+		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
+		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
+			<!-- Include library dependencies -->
+			<zipgroupfileset dir="${orc.location.lib}"
+				includes="*.jar"
+				excludes="orc-*.jar"/>
+		</jar>
+	</target>
+	
+	<target name="zip" depends="jar" description="generate the ZIP">
+		<zip basedir="." zipfile="${ant.project.name}-${orc.version}.zip">
+			<include name="${ant.project.name}-${orc.version}.jar"/>
+			<include name="README"/>
+			<include name="LICENSE"/>
+			<include name="examples/**"/>
+		</zip>
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${orc.location.build}" />
+		<delete>
+			<fileset dir="." includes="${ant.project.name}-*.jar"/>
+		</delete>
+	</target>
+	
+	<target name="kilim" description="Kilim weaving">
+		<java classname="kilim.tools.Weaver" fork="yes">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+			<arg value="-d" />
+			<arg value="${orc.location.build}" />
+			<arg line="${orc.location.build}" />
+		</java>
+	</target>
+</project>
