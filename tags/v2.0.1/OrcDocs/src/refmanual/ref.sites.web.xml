@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.sites.web.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<section xml:id="ref.sites.web" xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+<title>Web Services</title>
+
+<para>
+Some sites provide access to remote services, rather than performing local computation.
+In particular, a site could provide access to a <indexterm><primary>Web service</primary></indexterm>Web service. 
+The Orc library provides sites which perform basic HTTP requests and manipulate JSON and XML data representations;
+these capabilities are sufficient to interact with many simple web services, especially <indexterm><primary>REST</primary></indexterm>RESTful services.
+</para>
+
+<section xml:id="ref.sites.web.http">
+<title>HTTP</title>
+<indexterm><primary>HTTP</primary></indexterm>
+<para>
+The <link linkend="ref.stdlib.web.HTTP"><code>HTTP</code></link> site provides a simple mechanism to send GET and POST requests to a URL.
+<itemizedlist>
+<listitem><para>
+<code>HTTP(</code><replaceable>U</replaceable><code>)</code>, where <replaceable>U</replaceable> is a <code>java.net.URL</code>, publishes a site which accepts HTTP requests on the URL <replaceable>U</replaceable>.
+</para></listitem>
+<listitem><para>
+<code>HTTP(</code><replaceable>S</replaceable><code>)</code> parses the <link linkend="ref.data.string">string</link> <replaceable>S</replaceable> as an absolute URL <replaceable>U</replaceable>, and then behaves as <code>HTTP(</code><replaceable>U</replaceable><code>)</code>.
+</para></listitem>
+<listitem><para>
+<code>HTTP(</code><replaceable>S</replaceable><code>,</code><replaceable>Q</replaceable><code>)</code> maps the record <replaceable>Q</replaceable> to a URL query string <replaceable>QS</replaceable> by translating each record binding to a query pair, escaping characters
+if necessary. The call then behaves as <code>HTTP(</code><replaceable>S</replaceable>+<replaceable>QS</replaceable><code>)</code>.
+</para></listitem>
+</itemizedlist>  
+</para>
+
+<para>
+The <code>HTTP</code> site publishes a site (call it <replaceable>H</replaceable>) with methods <code>get</code> and <code>post</code>:
+
+<itemizedlist>
+<listitem><para>
+<replaceable>H</replaceable><code>.get()</code> performs a <code>GET</code> request on the URL used to create <replaceable>H</replaceable>. 
+</para></listitem>
+<listitem><para>
+<replaceable>H</replaceable><code>.post(</code><replaceable>P</replaceable><code>)</code> performs a <code>POST</code> request with payload <replaceable>P</replaceable> on the URL used to create <replaceable>H</replaceable>. 
+</para></listitem>
+</itemizedlist>
+</para>
+
+<para>
+If the request is successful, the response is published as a single string, which may be translated to a more useful representation by other library sites.
+</para>
+
+</section>
+
+<section xml:id="ref.sites.web.data">
+<title>Data Processing</title>
+
+<para>
+Web services often expect inputs or provide outputs in a particular format, such as XML or JSON. 
+The Orc library provides sites which convert between string representations of these data formats
+and structured representations which Orc can manipulate.
+
+</para>
+
+<section xml:id="ref.sites.web.json">
+<title>JSON</title>
+<indexterm><primary>JSON</primary></indexterm>
+<para>
+<link xlink:href="http://www.json.org">JSON</link> (JavaScript Object Notation) is a lightweight data format often used 
+by Web services, especially by services with simple interfaces. The structure of JSON values maps onto Orc values, using nested lists and records.
+</para> 
+
+<para>
+The library sites <link linkend="ref.stdlib.web.ReadJSON"><code>ReadJSON</code></link> and <link linkend="ref.stdlib.web.WriteJSON"><code>WriteJSON</code></link> convert between string representations of JSON
+values and Orc representations of those values. <code>ReadJSON</code> parses a string representation of JSON
+and creates an Orc value, where each JSON array becomes an Orc <link linkend="ref.data.list">list</link>,
+each JSON object becomes an Orc <link linkend="ref.data.record">record</link>, and literal values map to their
+Orc counterparts. <code>WriteJSON</code> performs the inverse operation, taking a structured value of this form
+and producing a string representation of an equivalent JSON value. If <replaceable>j</replaceable> is an Orc
+representation of a JSON value, then <code>ReadJSON(WriteJSON(</code><replaceable>j</replaceable><code>))</code> is
+equal to <replaceable>j</replaceable>.
+</para>
+
+
+</section>
+
+<section xml:id="ref.sites.web.xml">
+<title>XML</title>
+<indexterm><primary>XML</primary></indexterm>
+<para>
+<link xlink:href="http://www.w3.org/XML/">XML</link> (Extensible Markup Language) is a structured data format used in many contexts,
+including Web services. 
+</para>
+
+<para>
+The library sites <link linkend="ref.stdlib.xml.ReadXML"><code>ReadXML</code></link> and <link linkend="ref.stdlib.xml.WriteXML"><code>WriteXML</code></link> convert between string representations of XML
+values and Orc representations of those values. <code>ReadXML</code> parses a string representation of XML
+and creates an Orc representation, which can be manipulated by Orc's XML library sites. <code>WriteXML</code> 
+performs the inverse operation, taking an Orc representation of XML and serializing it to a string.
+If <replaceable>x</replaceable> is an Orc representation of an XML fragment, 
+then <code>ReadXML(WriteXML(</code><replaceable>x</replaceable><code>))</code> is equal to <replaceable>x</replaceable>.
+</para>
+
+<para>
+Unlike JSON, the structure of XML does not map directly to Orc's structured values.
+Instead, Orc provides a set of library sites and functions which manipulate XML in a manner similar to Orc's
+<link linkend="ref.data.datatype">datatypes</link>. Orc's XML manipulation capabilities are currently incomplete; 
+in particular, it does not handle namespaces. 
+All constructed elements have the default namespace, element and attribute tags have no prefixes,
+and element matching discards namespace and prefix information.
+For more comprehensive XML manipulation, use of underlying platform capabilities 
+(such as Scala or Java libraries) is recommended.
+</para>
+
+<section xml:id="ref.sites.web.xml.primitives">
+<title>Primitive XML Sites</title>
+<para>
+There are three library sites that construct XML nodes directly. Each of these sites may also be used in a 
+<link linkend="ref.patterns.call">call pattern</link> to match the corresponding constructed value.
+</para>
+
+<para>
+<itemizedlist>
+  <listitem><para>
+    <code><link linkend="ref.stdlib.xml.XMLElement">XMLElement</link>(</code><replaceable>tag</replaceable><code>,</code> <replaceable>attr</replaceable><code>,</code> <replaceable>children</replaceable><code>)</code> 
+    creates a new XML element with the tag given by string <replaceable>tag</replaceable>, 
+    the set of attributes specified by the record <replaceable>attr</replaceable>,
+    and the sequence of child elements given by the list <replaceable>children</replaceable>. 
+    Each value mapped by <replaceable>attr</replaceable> is converted to a string in the XML representation.
+    <replaceable>attr</replaceable> may be an empty record. 
+    Each element of <replaceable>children</replaceable> must be an XML node.
+    <replaceable>children</replaceable> may be an empty list.
+  </para></listitem>
+  <listitem><para>
+    <code><link linkend="ref.stdlib.xml.XMLText">XMLText</link>(</code><replaceable>txt</replaceable><code>)</code> creates a new XML text node
+    whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
+    which are not permitted in XML text will be encoded.
+  </para></listitem>
+  <listitem><para>
+    <code><link linkend="ref.stdlib.xml.XMLCData">XMLCData</link>(</code><replaceable>txt</replaceable><code>)</code> creates a new XML CDATA node
+    whose content is the string <replaceable>txt</replaceable>. Characters in <replaceable>txt</replaceable>
+    are <emphasis>not</emphasis> encoded.
+  </para></listitem>
+</itemizedlist>
+</para>
+
+<para>
+The library site <link linkend="ref.stdlib.xml.IsXML"><code>IsXML</code></link> verifies that its argument is an XML node of some type. 
+<code>IsXML(</code><replaceable>x</replaceable><code>)</code> publishes <replaceable>x</replaceable> if <replaceable>x</replaceable> is an XML node;
+otherwise it halts silently.
+</para>
+
+</section>
+
+<section xml:id="ref.sites.web.xml.manipulation">
+<title>Manipulating XML</title>
+
+<para>
+The library provides two records, <link linkend="ref.stdlib.xml.xml"><code>xml</code></link> and <link linkend="ref.stdlib.xml.xattr"><code>xattr</code></link>, to manipulate XML
+nodes more conveniently than by using the primitive XML sites. Each
+record has two members, <code>apply</code> and <code>unapply</code>, 
+that are both functions. The apply function builds XML values, 
+and the unapply function is used in pattern matching.
+</para>
+
+<para>
+<code>xml</code> is convenient when working only with the tree structure
+of XML, and not with the attributes of the element nodes.
+Note that <code>xml</code>'s apply and unapply members are not inverses of each other. 
+</para>
+
+<para>
+<itemizedlist>
+<listitem>
+<para><code>xml(</code><replaceable>t</replaceable><code>,</code> <replaceable>cs</replaceable><code>)</code> returns a new XML
+element with the tag <replaceable>t</replaceable>, the list of children <replaceable>cs</replaceable>, and no attributes. If any element
+of <replaceable>cs</replaceable> is not an XML node, it is converted to a string and enclosed in a text node. 
+</para>
+</listitem>
+<listitem>
+<para>
+The pattern <code>xml(</code><replaceable>p<subscript>tag</subscript></replaceable><code>,</code> <replaceable>p<subscript>child</subscript></replaceable><code>)</code>
+matches an XML element. 
+The pattern <replaceable>p<subscript>tag</subscript></replaceable> is matched against the element tag. 
+The pattern <replaceable>p<subscript>child</subscript></replaceable> is matched against each child of the element;
+it is a multimatch, so it may succeed multiple times and produces a result on each success. Additionally, when <replaceable>p<subscript>child</subscript></replaceable>
+matches a text or CDATA node rather than an element node, it is bound to the string contents of the node, rather than the node itself. 
+
+</para>
+</listitem>
+</itemizedlist>
+</para>
+
+<para>
+<code>xattr</code> is convenient when working only with the attributes
+of XML element nodes, and not with the overall tree structure.
+</para>
+
+<para>
+<itemizedlist>
+<listitem>
+<para><code>xattr(</code><replaceable>x</replaceable><code>,</code> <replaceable>attr</replaceable><code>)</code> 
+returns a new XML element which is the same as <replaceable>x</replaceable> except that all bindings in the record <replaceable>attr</replaceable>
+have been added to the attributes of the element. 
+If <replaceable>attr</replaceable> binds any attribute names already bound in <replaceable>x</replaceable>, 
+<replaceable>attr</replaceable> takes precedence and overwrites those bindings. 
+</para>
+</listitem>
+<listitem>
+<para>
+The pattern <code>xattr(</code><replaceable>p<subscript>e</subscript></replaceable><code>,</code> <replaceable>p<subscript>a</subscript></replaceable><code>)</code>
+matches an XML element. 
+The pattern <replaceable>p<subscript>e</subscript></replaceable> is matched against a copy of the element with no attributes. 
+The pattern <replaceable>p<subscript>a</subscript></replaceable> is matched against a record containing the attributes of the element.  
+</para>
+</listitem>
+</itemizedlist>
+</para>
+
+</section>
+
+</section>
+
+</section>
+
+
+
+<section xml:id="ref.sites.web.soap">
+<title>SOAP Web Services</title>
+
+<para>
+Though Orc does not provide direct bindings to <indexterm><primary>SOAP</primary></indexterm>SOAP web services, it is possible to access such services through Java bindings.
+Frameworks such as JAX-WS map SOAP web service functionality to Java classes; these classes can then be <link linkend="ref.sites.java">used as sites in Orc</link>.
+</para>
+
+</section>
+
+
+
+<section xml:id="ref.sites.web.examples">
+<title>Examples</title>
+
+<example xml:id="ref.sites.web.examples.randombytes">
+<title>Random Bytes from Fourmilab</title>
+<programlisting language="orc-demo"><![CDATA[
+{-
+   Make a request to the Fourmilab HotBits service 
+   to produce a sequence of 4 random bytes in hex.
+-}
+
+{- Returns a string of n random hexadecimal bytes -}
+def randombytes(n) =
+  val query = {. nbytes = n, fmt = "xml" .} 
+  val location = "https://www.fourmilab.ch/cgi-bin/Hotbits"
+  val response = HTTP(location, query).get()
+  val xml("hotbits", xml("random-data", data)) = ReadXML(response) 
+  data.trim()
+
+randombytes(4)
+]]></programlisting>
+</example>
+		  
+</section>
+
+
+<section xml:id="ref.sites.web.links">
+<title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.stdlib.web">Standard Library: Web</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.xml">Standard Library: XML</link></para></listitem>
+			<listitem><para><link linkend="ref.data.list">Lists</link></para></listitem>
+			<listitem><para><link linkend="ref.data.record">Records</link></para></listitem>
+		</itemizedlist>
+</section>
+
+</section>

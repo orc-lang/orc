@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.data.xml - DocBook source for an Orc reference manual chapter
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<chapter
+	xml:id="ref.data"
+	xmlns="http://docbook.org/ns/docbook"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<title>Data Values</title>
+
+<para>
+The primitive data types in Orc are Booleans, numbers, strings, 
+and a unit value <code>signal</code>.
+Orc also has structured <indexterm><primary>value</primary></indexterm>values: lists, tuples, records, and algebraic datatypes. 
+Functions are values, called closures. 
+Additionally, sites are themselves values, and may be passed to sites or returned by sites.
+</para>
+
+<para>
+All of the preceding values are immutable. Orc also has access to mutable state through sites.
+The <link linkend="ref.stdlib">Standard Library</link> includes many such sites, e.g. <code>Ref</code> and <code>Channel</code>.
+</para> 
+
+<para>
+Orc sites may create and manipulate many more kinds of values, such as Java objects, XML documents,
+video files, relational databases, etc. In fact, all of the built-in datatypes could be implemented 
+by external sites.   
+</para>
+
+<xi:include href="ref.data.boolean.xml"/>
+<xi:include href="ref.data.numeric.xml"/>
+<xi:include href="ref.data.string.xml"/>
+<xi:include href="ref.data.signal.xml"/>
+
+<xi:include href="ref.data.list.xml"/>
+<xi:include href="ref.data.tuple.xml"/>
+<xi:include href="ref.data.record.xml"/>
+<xi:include href="ref.data.datatype.xml"/>
+
+<xi:include href="ref.data.closure.xml"/>
+
+<xi:include href="ref.data.mutable.xml"/>
+<xi:include href="ref.data.external.xml"/>
+
+
+</chapter>
