@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>Chapter&nbsp;2.&nbsp;Expressions</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="up" href="index.html" title="Orc Reference Manual v2.0.0"><link rel="prev" href="ref.data.external.html" title="1.11.&nbsp;External Values"><link rel="next" href="ref.expressions.literal.html" title="2.1.&nbsp;Literal Value"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.data.external.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%">
+											&nbsp;
+										</th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.expressions.literal.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.data.external.html">1.11.&nbsp;External Values</a>&nbsp;</td><th align="center" width="60%">Chapter&nbsp;2.&nbsp;Expressions</th><td align="right" width="20%"><a href="ref.expressions.literal.html">2.1.&nbsp;Literal Value</a>&nbsp;</td></tr></table></div><div lang="" class="chapter" title="Chapter&nbsp;2.&nbsp;Expressions"><div class="titlepage"><div><div><h2 class="title"><a name="ref.expressions"></a>Chapter&nbsp;2.&nbsp;Expressions</h2></div></div></div><div class="toc"><dl><dt><span class="section"><a href="ref.expressions.literal.html">2.1. Literal Value</a></span></dt><dt><span class="section"><a href="ref.expressions.variable.html">2.2. Variable</a></span></dt><dt><span class="section"><a href="ref.expressions.stop.html">2.3. <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code></a></span></dt><dt><span class="section"><a href="ref.expressions.call.html">2.4. Site and Function Calls</a></span></dt><dt><span class="section"><a href="ref.expressions.dot.html">2.5. Dot Access</a></span></dt><dt><span class="section"><a href="ref.expressions.operators.html">2.6. Operators</a></span></dt><dt><span class="section"><a href="ref.expressions.ifthenelse.html">2.7. <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">if</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">then</span> <span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">else</span></code></a></span></dt><dt><span class="section"><a href="ref.expressions.lambda.html">2.8. <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">lambda</span></code></a></span></dt></dl></div><p>
+	Orc <a name="N40CBE" class="indexterm"></a>expressions are executed, rather than evaluated.
+	An execution may call external services and <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publish</a> some number of values (possibly zero).
+	Different executions of the same expression may have completely different
+	behaviors; they may call different services, may receive different
+	responses from the same site, and may publish different values.  This
+	chapter shows how various expressions are executed in Orc.
+</p></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

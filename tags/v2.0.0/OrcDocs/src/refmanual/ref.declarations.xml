@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.declarations.xml - DocBook source for an Orc reference manual chapter
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<chapter 
+	xml:id="ref.declarations"
+	xmlns="http://docbook.org/ns/docbook"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Declarations</title>
+
+<para>
+A declaration binds variables to values, or type variables to types, in an expression.
+The values may be as simple as integers or booleans, or as complex as functions, sites, or classes. 
+Declarations follow the rules of <link xlink:href="http://en.wikipedia.org/wiki/Lexical_scoping#Lexical_scoping">lexical scoping</link>.
+</para>
+
+<para>
+ 
+</para>
+
+<xi:include href="ref.declarations.val.xml"/>
+<xi:include href="ref.declarations.def.xml"/>
+<xi:include href="ref.declarations.defclass.xml"/>
+<xi:include href="ref.declarations.site.xml"/>
+<xi:include href="ref.declarations.class.xml"/>
+<xi:include href="ref.declarations.type.xml"/>  
+<xi:include href="ref.declarations.include.xml"/>
+	
+</chapter>

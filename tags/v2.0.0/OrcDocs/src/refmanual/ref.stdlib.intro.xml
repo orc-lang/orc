@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- ref.stdlib.intro.xml - DocBook source for an Orc reference manual component
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<section xml:id="ref.stdlib.intro" xmlns="http://docbook.org/ns/docbook" xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd">
+<title>Introduction</title>
+     <para>
+     The standard library is a set of <link linkend="ref.declarations">declarations</link> implicitly available to all Orc
+     programs.  In this section we give an informal description of the standard library,
+     including the type of each declaration and a short explanation of its use.
+     </para>
+     
+     <para>
+     Orc programs are expected to rely on the host language and environment for
+     all but the most essential <link linkend="ref.sites">sites</link>.  For example, in the Java implementation of
+     Orc, the entire Java standard library is available to Orc programs via
+     <link linkend="ref.declarations.class"><code>import class</code></link> declarations. Therefore the Orc standard library aims only
+     to provide convenience for the most common Orc idioms, not the complete set of
+     features needed for general-purpose programming.
+     </para>
+     
+     <para>
+     The documentation of library functions uses special notation for types 
+     that have <link linkend="ref.expressions.dot">dot-accessible members</link>.
+     Member names of an instance of <code>Type</code> are written in the form <code>type.member</code>, 
+     e.g.  <code>foo.get</code>
+     refers to the <code>get</code> member of an object of type <code>Foo</code>.
+     The object type can include <link linkend="ref.types.polymorphism">type parameters</link> which are referenced by the member
+     type, so for example <code>@method channel[A].get() :: A</code> means that
+     when the <code>get</code> method is called on a value of type <code>Channel[A]</code>,
+     it will return a value of type <code>A</code>.
+     </para>
+
+	 <para>
+		The Standard Library makes use of colored tags to quickly convey properties 
+		of library sites.  The tags and their definitions are as follows:
+	 </para>
+	
+	<para>
+		<variablelist><title>Site Property Set</title>
+		  <varlistentry>
+		    <term><od:sitepropset><od:siteprop propname="indefinite"/></od:sitepropset></term>
+		    <listitem>
+		      <para>A <link linkend="ref.expressions.call.site">call</link> to this site may <link linkend="ref.concepts.states.block">block</link> execution of an expression, since it is not 
+		            guaranteed to always eventually <link linkend="ref.concepts.publish">publish</link> a value or <link linkend="ref.concepts.states.halt">halt</link>.</para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><od:sitepropset><od:siteprop propname="definite"/></od:sitepropset></term>
+		    <listitem>
+		      <para>A call to this site will never block execution of an expression, since it is 
+		            guaranteed to always eventually publish a value or halt.</para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><od:sitepropset><od:siteprop propname="pure"/></od:sitepropset></term>
+		    <listitem>
+		      <para>
+		      Any call to this site is pure, meaning that it is deterministic, responds immediately, and has no side effects. 
+		      A call to a pure site may be textually replaced with its return value 
+		      (or replaced with <link linkend="ref.expressions.stop"><code>stop</code></link> if the call halts) in any program context.
+		      </para>
+		    </listitem>
+		  </varlistentry>
+		  <varlistentry>
+		    <term><od:sitepropset><od:siteprop propname="idempotent"/></od:sitepropset></term>
+		    <listitem>
+		      <para>The site is idempotent; calling it more than once on the same
+		      		arguments is equivalent to calling it once on those arguments.</para> 
+		    </listitem>
+		  </varlistentry>
+ </variablelist>
+	</para>
+	
+</section>

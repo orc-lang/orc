@@ -1,0 +1,58 @@
+<!--#include virtual="template/header.shtml" --> 
+
+<script src="/orchard/orc.js" type="text/javascript"></script>
+
+<a id="top"></a><h1>Orc Tutorial Lectures</h1>
+
+This set of four lectures introduce Orc in a tutorial style.
+
+
+<h2><a id="Lecture1"></a>Lecture 1: Orc Calculus</h2>
+
+<p>Lecture 1 introduces the Orc calculus, i.e., the combinators. A
+number of simple synchronization problems are solved.</p>
+
+<ul><li>
+<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/1-Calculus.pdf" target="_blank">Lecture 1 slides <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 234 kB)
+</li></ul>
+
+
+<h2><a id="Lecture2"></a>Lecture 2: Orc Programming Language</h2>
+
+<p>Lecture 2 introduces the Orc Programming language, a semi-functional
+language that embeds the Orc combinators. A number of useful sites are
+introduced and many example problems are solved.</p>
+
+<ul><li>
+<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/2-Language.pdf" target="_blank">Lecture 2 slides <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 253 kB)
+</li></ul>
+
+
+<h2><a id="Lecture3"></a>Lecture 3: Orc Programming Examples</h2>
+
+<p>In lecture 3, a number of useful Orc idioms are introduced. Several
+involved programming exercises illustrate their application.</p>
+
+<ul><li>
+<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/3-Idioms.pdf" target="_blank">Lecture 3 slides <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 433 kB)
+</li></ul>
+
+
+<h2><a id="Lecture4"></a>Lecture 4: Orc Abstraction, Class</h2>
+
+<p>In lecture 4, an abstraction mechanism, the class definition, is introduced that
+permits creating sites in Orc. A number of examples illustrate the
+various ways in which classes can be used.</p>
+
+<ul><li>
+<a href="http://userweb.cs.utexas.edu/users/misra/orc.dir/4-Class.pdf" target="_blank">Lecture 4 slides <img src="images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a> (PDF, 349 kB)
+</li></ul>
+
+
+<h2><a id="Resources"></a>Resources</h2>
+
+<p>Please refer to the <a href="documentation.shtml">Documentation</a> page for further
+guidance.  When you are ready, <a href="tryorc.shtml">try Orc</a>
+yourself.</p>
+
+<!--#include virtual="template/footer.shtml" --> 

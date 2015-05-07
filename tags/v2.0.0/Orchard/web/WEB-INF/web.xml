@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- web.xml - Java Web application (WAR) deployment descriptor
+     Project Orchard
+
+     $Id$
+
+     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd"
+         version="2.5">
+    <!-- WSServletContextListener and WSServlet are implementation-specific (non-portable) for Sun's "Metro" JAX-WS RI -->
+    <!-- Until we move to JSR 109 annotations, we're stuck with non-portable WS declarations -->
+	<listener>
+		<listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
+	</listener>
+	<servlet>
+		<servlet-name>WSServlet</servlet-name>
+		<servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<listener>
+		<listener-class>orc.orchard.OrchardWebAppContextListener</listener-class>
+	</listener>
+	<servlet>
+		<servlet-name>OrchardOAuthServlet</servlet-name>
+		<servlet-class>orc.orchard.OrchardOAuthServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>FormsServlet</servlet-name>
+		<servlet-class>orc.orchard.FormsServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>MailListenerServlet</servlet-name>
+		<servlet-class>orc.orchard.MailListenerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet>
+		<servlet-name>LoginServlet</servlet-name>
+		<servlet-class>orc.orchard.LoginServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>WSServlet</servlet-name>
+		<url-pattern>/soap/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>WSServlet</servlet-name>
+		<url-pattern>/json/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>OrchardOAuthServlet</servlet-name>
+		<url-pattern>/oauth</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>FormsServlet</servlet-name>
+		<url-pattern>/FormsServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>LoginServlet</servlet-name>
+		<url-pattern>/LoginServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MailListenerServlet</servlet-name>
+		<url-pattern>/MailListenerServlet</url-pattern>
+	</servlet-mapping>
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+</web-app>

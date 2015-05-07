@@ -1,0 +1,49 @@
+@charset "UTF-8";
+/* orc-misc.css -- CSS style sheet orc-misc
+ * $Id$
+ */
+
+/* For "Opens in new window" icon */
+.newWindowIcon {
+    margin: none;
+    border: none;
+    padding: none;
+}
+
+/* For Orc in-line demos */
+.orc-demo {
+        visibility: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+}
+.content ul li {
+        margin-top: 1em;
+}
+.highlight {
+        font-weight: bold;
+        font-style: italic;
+}
+
+/* For our research paper list */
+.paper {
+        font-weight: bold;
+        text-decoration: underline;
+}
+.venue {
+        font-style: italic;
+}
+.content ul li.new {
+        list-style: url(images/new.gif);
+}
+.doi, .bibtex {
+        border: 1px outset;
+        height: 10px;
+        font-size: 10px;
+        padding: 0 2px 0 2px;
+        text-decoration: none;
+        color: #FFF;
+        font-family: sans-serif;
+        border-color: #036;
+        background: #06C;
+}

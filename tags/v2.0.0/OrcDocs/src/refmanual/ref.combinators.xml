@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.combinators.xml - DocBook source for an Orc reference manual chapter
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<chapter 
+	xml:id="ref.combinators"
+	xmlns="http://docbook.org/ns/docbook"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+<title>Combinators</title>
+
+<para>
+Orc has four <indexterm significance="preferred"><primary>combinator</primary></indexterm><firstterm baseform="combinator">combinators</firstterm>: parallel, sequential, pruning, and otherwise. A combinator forms an
+expression from two component expressions. Each combinator captures a different aspect of concurrency.
+Syntactically, the combinators are written infix, and have lower <link linkend="ref.syntax.precedence">precedence</link> than <link linkend="ref.expressions.operators">operators</link> or <link linkend="ref.expressions.call">calls</link>, 
+but higher precedence than other expression forms.
+</para>
+
+<xi:include href="ref.combinators.parallel.xml"/>	
+<xi:include href="ref.combinators.sequential.xml"/>
+<xi:include href="ref.combinators.pruning.xml"/> 
+<xi:include href="ref.combinators.otherwise.xml"/> 
+
+</chapter>

@@ -1,0 +1,122 @@
+BUILD.txt -- Project build notes
+Project OrcEclipse
+
+$Id$
+
+The Orc programming language Eclipse plug-in project
+
+From the Orc team in the Department of Computer Science
+at The University of Texas at Austin.
+
+--------
+
+
+PREREQUISITE:
+
+Install IMP, the Eclipse IDE Meta-tooling Platform from the IMP Eclipse
+Update Site (Eclipse menu item Help > Install new Software...)  Add the
+site with Name: IMP Update Site, 
+          URL: http://download.eclipse.org/technology/imp/updates/
+From that site, select all categories and install.
+
+
+
+BUILD PROCEDURE -- FOR A LOCAL BUILD:
+
+Note: This Eclipse plug-in will build in the Eclipse IDE.  There is no
+      stand-alone build script.
+
+      (The buildAdditionalTasks.xml file supplies additional build
+       tasks, but is not a full build script.)
+
+1. Check out this project, OrcEclipse, and the required projects:
+   - OrcJava
+   - WebSite
+
+2. Clean and re-build all projects.
+
+
+
+BUILD PROCEDURE -- FOR A RELEASE PUBLICATION:
+
+Note: This Eclipse plug-in will build in the Eclipse IDE.  There is no
+      stand-alone build script.
+
+      (The buildAdditionalTasks.xml file supplies additional build
+       tasks, but is not a full build script.)
+
+1. Check out this project, OrcEclipse, and the required projects:
+   - OrcJava
+   - WebSite
+   - OrcEclipseFeature
+   - OrcEclipseUpdateSite
+
+2. If this is a new Orc release number:
+   Sync the orc-*.jar filename's version component from the OrcJava
+   project to OrcEclipse's build files in three places:
+   - In OrcEclipse project properties > Java Build Path, select the
+     orc-*.jar entry, press Edit..., and select the orc-*.jar of the
+     new release.
+   - In the META-INF/MANIFEST.MF manifest file, update the 
+     Bundle-ClassPath attribute path to include the new release's
+     JAR (in lib/orc-*.jar)
+   - In the build.properties file, update the jars.extra.classpath
+     entry to specify the new release's JAR (lib/orc-*.jar)
+
+3. Bump the plug-in's version number: Open the Plug-In Overview page
+   of the Plug-In Manifest Editor, accessed by opening the MANIFEST.MF
+   file and selecting the Overview tab.  Change the Version field per
+   the Eclipse rules:  
+
+     In Eclipse, version numbers are composed of four segments:
+     three integers and a string respectively named 
+     major.minor.service.qualifier.
+     
+     Increment major when incompatible/breaking changes have been made
+     to an interface. Reset minor and service to 0 in this case.
+
+     Increment minor when a plug-in changes in an "externally visible"
+     way. Examples of externally visible changes include binary
+     compatible API changes, significant performance changes, major
+     code rework, etc. Another way to know when this version number
+     should be changed is by exclusion: it should indicate changes that
+     are neither bug fixes (indicated by the service segment) nor
+     breaking API changes (indicated by the major segment). When the
+     minor segment is changed, the service segment is reset to 0.
+
+     The service segment number must be incremented whenever there have
+     been changes to a plug-in between releases that are not visible in
+     its interface. For example, a bug has been fixed in the code, the
+     plug-in manifest has changed, documentation has changed, compiler
+     settings have changed, etc.
+
+   Leave the ".qualifier" string as literally ".qualifier" -- the build
+   procedure automatically handles this segment.
+
+4. In the OrcEclipseFeature project, bump the feature's version number:
+   Open the Feature Overview page of the Feature Manifest Editor,
+   accessed by opening the feature.xml file and selecting the Overview
+   tab.  Change the Version field per the Eclipse rules (above).
+
+5. Commit the changes in OrcEclipse's plug-in/build files and in
+   OrcEclipseFeature's feature.xml file.
+
+6. Clean and re-build all projects.
+
+7. In the OrcEclipseUpdateSite project, add the newly built version of
+   the feature: Open the Site Map page of the Site Manifest Editor,
+   accessed by opening the site.xml file and selecting the Site Map
+   tab.  Expand the "Orc programming language" category, then select
+   (highlight) the category.  Press the Add Feature button, and pick
+   the edu.utexas.cs.orc.orceclipse feature.  Select (highlight) the
+   newly added feature. Make sure the feature is IN the category
+   (indented the same as the others).  Press the Synchronize button
+   and choose "Synchronize selected features only" and OK.  Then
+   press the Build button.
+
+8. Commit the changes in the OrcEclipseUpdateSite project.
+
+9. Update the files on the Orc server by the following:
+   ssh orc.csres.utexas.edu
+   cd /var/lib/jetty6/webapps/root/eclipse_updates
+   sudo svn up https://orc.googlecode.com/svn/trunk/OrcEclipseUpdateSite .
