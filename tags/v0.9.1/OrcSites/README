@@ -1,0 +1,12 @@
+This package includes assorted useful sites for Orc.
+See the Javadoc for more information.
+
+Example programs using these sites are in examples/
+
+To use the JAR, just include it in your classpath when
+running Orc.
+
+For a source build, you need to have OrcJava open in
+your Eclipse workspace.
+
+See http://orc.csres.utexas.edu for more information.

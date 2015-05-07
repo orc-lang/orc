@@ -1,0 +1,28 @@
+Orchard SOAP
+	jaxb-api.jar
+	jaxb-impl.jar
+	jaxb-xjc.jar
+	jaxws-api.jar
+	jaxws-rt.jar
+	jaxws-tools.jar
+	jetty-util-6.1.11.jar
+	jsr173_api.jar
+	jsr181-api.jar
+	jsr250-api.jar
+	saaj-api.jar
+	saaj-impl.jar
+	servlet-api.jar
+	stax-ex.jar
+	streambuffer.jar
+	http.jar
+	activation.jar
+	FastInfoset.jar
+	resolver.jar
+	commons-logging-1.1.1.jar
+	commons-discovery-0.2.jar
+	sjsxp.jar
+
+Orchard JSON (requires Orchard SOAP)
+	velocity-1.5.jar
+	velocity-dep-1.5.jar
+	jettison-1.0.1.jar
