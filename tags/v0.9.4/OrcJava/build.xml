@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+<project name="orc" default="jar" basedir=".">
+	<description>
+		Ant build file for Orc binary distribution.
+	</description>
+	<property file="build.properties" />
+	
+	<path id="orc.classpath">
+		<fileset dir="${orc.location.lib}" includes="*.jar" />
+		<pathelement path="${orc.location.build}" />
+	</path>
+
+	<target name="jar" depends="kilim" description="generate the distribution">
+		<!-- Put everything in ${orc.location.build} into orc-sites.jar -->
+		<jar jarfile="${ant.project.name}-${orc.version}.jar" basedir="${orc.location.build}">
+			<exclude name="orc/test/**"/>
+			<!-- Include library dependencies -->
+			<zipgroupfileset dir="${orc.location.lib}">
+				<include name="*.jar"/>
+				<exclude name="rats.jar"/>
+				<exclude name="kilimex.jar"/>
+				<exclude name="junit-*.jar"/>
+			</zipgroupfileset>
+			<manifest>
+				<attribute name="Main-Class" value="orc.Orc"/>
+			</manifest>	
+		</jar>
+	</target>
+	
+	<target name="zip" depends="jar" description="generate the ZIP">
+		<zip zipfile="${ant.project.name}-${orc.version}.zip">
+			<zipfileset prefix="${ant.project.name}-${orc.version}" dir=".">
+				<include name="${ant.project.name}-${orc.version}.jar"/>
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="INSTALL"/>
+				<include name="examples/**/*.orc"/>
+				<include name="doc/**/*.pdf"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${orc.location.build}" />
+		<delete>
+			<fileset dir="." includes="${ant.project.name}-*.jar"/>
+		</delete>
+	</target>
+
+	<target name="kilim" description="Kilim weaving">
+		<java classname="kilim.tools.Weaver" fork="yes">
+			<classpath refid="orc.classpath"/>
+				<assertions>
+					<enable/>
+				</assertions>
+			<arg value="-d" />
+			<arg value="${orc.location.build}" />
+			<arg value="${orc.location.build}" />
+		</java>
+	</target>
+
+	<target name="rats" description="Build rats parser">
+		<java classname="xtc.parser.Rats" fork="yes">
+			<classpath>
+				<pathelement path="${orc.location.lib}/rats.jar" />
+			</classpath>
+			<arg value="-lgpl" />
+			<arg value="-out" />
+			<arg value="${orc.location.src}/orc/parser" />
+			<arg value="${orc.location.src}/orc/parser/OrcParserRats.rats" />
+		</java>
+	</target>
+	<target name="ChangeLog" description="ChangeLog">
+		<exec executable="cvs2cl">
+			<arg value="--hide-filenames" />
+			<arg value="--no-wrap" />
+			<arg value="-F" /> <arg value="TRUNK" />
+		</exec>
+	</target>
+	<target name="javadoc" description="Build Javadoc">
+		<delete dir="${orc.location.javadoc}" />
+		<javadoc destdir="${orc.location.javadoc}"
+				author="true"
+				access="protected"
+				source="1.5"
+				sourcepath="${orc.location.src}"
+				splitindex="true"
+				windowtitle="Orc ${orc.version}"
+				doctitle="Orc ${orc.version}"
+				use="true"
+				version="true">
+			<classpath refid="orc.classpath"/>
+		</javadoc>
+		<zip zipfile="${ant.project.name}-${orc.version}-doc.zip" basedir="${orc.location.javadoc}" />
+	</target>
+</project>
