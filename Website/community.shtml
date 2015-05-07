@@ -9,8 +9,8 @@
 		<input type="submit" name="sub" value="Subscribe" /></div>
 	</form></li>
 	<li><a href="/wiki">Wiki</a></li>
-	<li><a href="https://code.google.com/p/orc/issues/list">Issue Tracker</a> (for bug reports)</li>
-	<li><a href="https://orc.googlecode.com">Google Code Project</a></li>
+	<li><a href="https://github.com/orc-lang/orc/issues">Issue Tracker</a> (for bug reports)</li>
+	<li><a href="https://github.com/orc-lang">Orc on GitHub</a></li>
 </ul>
 
 <h2>UT Project Members</h2>
@@ -24,7 +24,8 @@
 </ul>
 <h3>Past</h3>
 <ul>
-	<li>João Pedro Barbosa</li>
+	<li>Lauren Yew</li>
+	<li>Jo&atilde;o Pedro Barbosa</li>
 	<li>Ricardo Bernardino</li>
 	<li>Brian McCord</li>
 	<li>Blake Davis</li>
