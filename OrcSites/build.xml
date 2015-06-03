@@ -137,25 +137,8 @@
 	<!-- =================================
           target: upload
          ================================= -->
-	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-			classpath="${orc.location.OrcScala}/tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
-		<gcupload
-			username="${orc.googlecode.username}"
-			password="${orc.googlecode.password}"
-			projectname="orc"
-			filename="build/${target.name}.zip"
-			targetfilename="${target.name}.zip"
-			summary="Supplemental Orc sites, for webservices and other demos."
-			labels="Type-Archive, OpSys-All"/>
-		<gcupload
-			username="${orc.googlecode.username}"
-			password="${orc.googlecode.password}"
-			projectname="orc"
-			filename="build/${target.name}-doc.zip"
-			targetfilename="${target.name}-doc.zip"
-			summary="Javadoc documentation for supplemental Orc sites."
-			labels="Type-Docs, OpSys-All"/>
+	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to GitHub">
+		<!-- FIXME: Implement GitHub upload task -->
 	</target>
 
 	<!-- =================================
