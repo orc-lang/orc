@@ -1,0 +1,5 @@
+/orc-*.jar
+/scala-library.jar
+/scala-parser-combinators_2.11-*.jar
+/scala-reflect.jar
+/scala-xml_2.11-*.jar
