@@ -17,7 +17,8 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.eclipse.ui.navigator,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.eclipse.osgi;bundle-version="3.10"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Eclipse-LazyStart: true
