@@ -32,6 +32,7 @@ public class CompilerService extends AbstractCompilerService implements Compiler
 		logger.config("Orchard compiler RMI server: Bound to '" + baseURI + "'");
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(final String[] args) {
 		URI baseURI;
 		try {

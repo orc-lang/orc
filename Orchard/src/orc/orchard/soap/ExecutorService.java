@@ -120,6 +120,7 @@ public class ExecutorService extends AbstractExecutorService {
 		logger.config("Orchard executor Web service: Published endpoint at '" + baseURI + "'");
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(final String[] args) {
 		URI baseURI = URI.create("http://localhost:8280/orchard/executor");
 		if (args.length > 0) {
