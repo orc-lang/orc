@@ -48,14 +48,18 @@
           target: jar
          ================================= -->
 	<target name="jar" description="Build orc-sites-*.jar">
-		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<exec executable="git" outputproperty="scmrevision">
+			<arg value="describe"/>
+			<arg value="--dirty"/>
+			<arg value="--always"/>
+		</exec>
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Implementation-Title" value="${orcsites.title}"/>
 				<attribute name="Implementation-Version" value="${orc.version}"/>
 				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
 				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
-				<attribute name="SVN-Revision" value="${svnversion}"/>
+				<attribute name="SCM-Revision" value="${scmrevision}"/>
 				<section name="orc.lib">
 					<attribute name="Implementation-Title" value="${orcsites.title}"/>
 					<attribute name="Implementation-Version" value="${orc.version}"/>
@@ -113,6 +117,7 @@
 				<include name="examples/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
 			</zipfileset>
 			<zipfileset prefix="${target.name}/examples" dir="${orc.location.OrcExamples}/OrcSites">
 				<include name="**"/>
