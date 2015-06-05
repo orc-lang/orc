@@ -103,8 +103,8 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
 		// Will also look upwards in prefs levels if not found in project.
 
-		// DANGER: IMP's getStringPreferences attempts to do an astoundingly broken macro substitution.
-		//         Use getStringPreferences instead.
+		// DANGER: IMP's getStringPreference attempts to do an astoundingly broken macro substitution.
+		//         Use getRawStringPreference instead.
 
 		if (prefSvc.isDefined(LOG_LEVEL_ATTR_NAME)) {
 			logLevel_$eq(prefSvc.getRawStringPreference(LOG_LEVEL_ATTR_NAME));
