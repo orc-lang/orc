@@ -37,6 +37,7 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.internal.ui.stringsubstitution.SelectedResourceManager;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -83,10 +84,13 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 	/**
 	 * @param configuration LaunchConfigurationWorkingCopy to update
+	 * @throws CoreException 
 	 */
-	public static void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
-		// Currently, a minimal Orc launch config. is an empty one (no required attributes)
-		// So, do nothing here
+	public static void setDefaults(final ILaunchConfigurationWorkingCopy configuration) throws CoreException {
+		// Currently, a minimal Orc launch config. is an nearly empty one.
+		// We turn off background launching by default because launching can be slow and non-obvious.
+		configuration.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
+		configuration.doSave();
 	}
 
 	/**
