@@ -492,6 +492,97 @@ Return the size of the array.
 import site Array = "orc.lib.state.JavaArray"
 import type Array = "orc.lib.state.types.ArrayType"
 
+
+
+
+
+{--
+@site ObservationSubject[E]() :: ObservationSubject[E]
+TODO: Write OrcDoc for ref manual entry
+
+@method observe :: lambda[]() :: {. get :: lambda[]() :: Integer, stream :: lambda[]() :: Integer, close :: lambda[]() :: Signal, isClosed :: lambda[]() :: Boolean .}
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method put :: lambda[](Integer) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method close :: lambda[]() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method closeD :: lambda[]() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method isClosed :: lambda[]() :: java.lang.Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@implementation
+--}
+def class ObservationSubject[E]() =
+  val observers = Channel[Channel[E]]()
+  val observersSem = Semaphore(1)
+  def observe() =
+    val outstanding = Channel[E]()
+    observersSem.acquire()  >>
+    ( {- This construction:  1. Always 'release's, but doesn't 'release' until
+       - the 'put' halts. 2. Only publishes if the 'put' & 'release' publish. -}
+      val putResult = observers.put(outstanding)
+      putResult >> stop; observersSem.release() >> putResult) >>
+    {.
+      get = lambda() :: E = outstanding.get(),
+      stream = lambda() :: E = 
+        def doStream() :: E = outstanding.get() >e> (e | doStream())
+        doStream(),
+      close = lambda() :: Signal = outstanding.closeD(), -- Will get dropped from 'observers' on next put
+      isClosed = lambda() :: Boolean = outstanding.isClosed()
+    .}
+  def put(e :: E) :: Signal =
+    observersSem.acquire()  >>
+    ( val currObservers = observers.getAll()
+      each(currObservers) >o> o.put(e) >> observers.put(o) >> stop )  ;
+    observersSem.release()
+  def close() :: Signal =
+    observersSem.acquire()  >>
+    ( val currObservers = observers.getAll()
+      each(currObservers) >o> o.close() >> stop )  ;
+    observers.closeD()  >>
+    observersSem.release()
+  def closeD() :: Signal =
+    observersSem.acquire()  >>
+    ( val currObservers = observers.getAll()
+      each(currObservers) >o> o.closeD() >> stop )  ;
+    observers.closeD()  >>
+    observersSem.release()
+  def isClosed() :: Boolean = observers.isClosed()
+  stop
+
+
 {--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
 The call <code>Table(n,f)</code>, where <code>n</code> is a
