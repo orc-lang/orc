@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -493,22 +493,57 @@ import site Array = "orc.lib.state.JavaArray"
 import type Array = "orc.lib.state.types.ArrayType"
 
 
-
-
-
 {--
 @site ObservationSubject[E]() :: ObservationSubject[E]
-TODO: Write OrcDoc for ref manual entry
+Returns a "subject" where notifications are sent to all observers.
+An ObservationSubject can be viewed as a multi-reader channel.
+Observers register for notifications by calling observe().
+Each time put() is called, the value is enqueued at each current observer.
+Observers fetch enqueued values by calling get().  
 
-@method observe :: lambda[]() :: {. get :: lambda[]() :: Integer, stream :: lambda[]() :: Integer, close :: lambda[]() :: Signal, isClosed :: lambda[]() :: Boolean .}
+@method observationSubject.observe() :: {. get :: lambda[]() :: Integer, stream :: lambda[]() :: Integer, close :: lambda[]() :: Signal, isClosed :: lambda[]() :: Boolean .}
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
 </od:sitepropset>
 
-TODO: Write OrcDoc for ref manual entry
+Create an observer.
+TODO: Write more OrcDoc for ref manual entry
 
-@method put :: lambda[](Integer) :: Signal
+@method observer.get() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.stream() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.close() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.isClosed() :: Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observationSubject.put(Integer) :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -516,7 +551,7 @@ TODO: Write OrcDoc for ref manual entry
 
 TODO: Write OrcDoc for ref manual entry
 
-@method close :: lambda[]() :: Signal
+@method observationSubject.close() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="indefinite"/>
@@ -525,7 +560,7 @@ TODO: Write OrcDoc for ref manual entry
 
 TODO: Write OrcDoc for ref manual entry
 
-@method closeD :: lambda[]() :: Signal
+@method observationSubject.closeD() :: Signal
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
@@ -534,7 +569,7 @@ TODO: Write OrcDoc for ref manual entry
 
 TODO: Write OrcDoc for ref manual entry
 
-@method isClosed :: lambda[]() :: java.lang.Boolean
+@method observationSubject.isClosed() :: Boolean
 
 <od:sitepropset>
    <od:siteprop propname="definite"/>
