@@ -582,13 +582,23 @@ TODO: Write OrcDoc for ref manual entry
 def class ObservationSubject[E]() =
   val observers = Channel[Channel[E]]()
   val observersSem = Semaphore(1)
+
+  -- Copies of defs from "util" part of prelude --
+  def each[A](List[A]) :: A
+  def each([]) = stop
+  def each(h:t) = h | each(t)
+  def withLock[A](Semaphore, lambda () :: A) :: A
+  def withLock(s, f) =
+    s.acquire() >> (
+      Let(f()) >x>
+      s.release() >>
+      x
+      ; s.release() >> stop
+    )
+
   def observe() =
     val outstanding = Channel[E]()
-    observersSem.acquire()  >>
-    ( {- This construction:  1. Always 'release's, but doesn't 'release' until
-       - the 'put' halts. 2. Only publishes if the 'put' & 'release' publish. -}
-      val putResult = observers.put(outstanding)
-      putResult >> stop; observersSem.release() >> putResult) >>
+    withLock(observersSem, lambda() = observers.put(outstanding))  >>
     {.
       get = lambda() :: E = outstanding.get(),
       stream = lambda() :: E = 
@@ -598,22 +608,19 @@ def class ObservationSubject[E]() =
       isClosed = lambda() :: Boolean = outstanding.isClosed()
     .}
   def put(e :: E) :: Signal =
-    observersSem.acquire()  >>
-    ( val currObservers = observers.getAll()
-      each(currObservers) >o> o.put(e) >> observers.put(o) >> stop )  ;
-    observersSem.release()
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))
   def close() :: Signal =
-    observersSem.acquire()  >>
-    ( val currObservers = observers.getAll()
-      each(currObservers) >o> o.close() >> stop )  ;
-    observers.closeD()  >>
-    observersSem.release()
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.close() >> stop )  ;
+      observers.closeD())
   def closeD() :: Signal =
-    observersSem.acquire()  >>
-    ( val currObservers = observers.getAll()
-      each(currObservers) >o> o.closeD() >> stop )  ;
-    observers.closeD()  >>
-    observersSem.release()
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.closeD() >> stop )  ;
+    observers.closeD())
   def isClosed() :: Boolean = observers.isClosed()
   stop
 
