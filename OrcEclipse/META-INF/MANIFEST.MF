@@ -40,6 +40,6 @@ Bundle-ClassPath: .,
  lib/orc-2.1.0.jar,
  lib/scala-library.jar,
  lib/scala-reflect.jar,
- lib/scala-xml_2.11-1.0.2.jar,
- lib/scala-parser-combinators_2.11-1.0.1.jar
+ lib/scala-xml_2.11-1.0.4.jar,
+ lib/scala-parser-combinators_2.11-1.0.4.jar
 Export-Package: orc
