@@ -67,6 +67,7 @@ recompileOnMacroDef=true
 relationsDebug=false
 scala.compiler.additionalParams=-Yinline-warnings -feature
 scala.compiler.installation=2.11
+scala.compiler.sourceLevel=2.11
 scala.compiler.useProjectSettings=true
 stopBuildOnError=true
 syntaxColouring.bracket.bold=false
