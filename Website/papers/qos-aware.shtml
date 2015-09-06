@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml+xml; charset=UTF-8" />
+<meta name="description" content="description"/>
+<meta name="keywords" content="keywords"/><meta name="author" content="author"/>
+<link rel="stylesheet" type="text/css" href="../template/default.css" media="screen"/>
+<link rel="stylesheet" type="text/css" href="/orchard/orc.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="/orc-misc.css" media="screen" />
+<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" />
+<title>Supplemental material to: QoS-Aware Management of Monotonic Service Orchestrations</title>
+</head>
+
+<body>
+
+<div class="container">
+<!--	<div class="left">-->
+		<div class="header-background">
+			<div class="header">
+				<div class="title">
+					<h1><img src="../indigo-template/img/orc-top.gif" alt="Orc" /> Language Project</h1>
+				</div>
+
+				<div class="navigation">
+					<a href="../index.shtml" >Home</a>
+<a href="../download.shtml" >Download</a>
+<a href="../documentation.shtml" >Documentation</a>
+<a href="../research.shtml" >Research</a>
+<a href="../community.shtml" >Community</a>
+
+					<div class="clearer"><span></span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="main">
+			<div class="content">
+
+<script src="/orchard/orc.js" type="text/javascript"></script>
+
+<a id="top"></a><h2>Supplemental material to:</h2>
+<h1>QoS-Aware Management of Monotonic Service Orchestrations</h1>
+
+<p>This page is supplemental material to:
+A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware Management of Monotonic Service Orchestrations,"
+Submitted to <span class="venue"><a href="http://www.springer.com/engineering/circuits+%26+systems/journal/10703">Formal Methods in System Design</a></span>, 2013.</p>
+
+<p>The code presented here is from Appendix B of the paper, with
+<code>Println</code> output added to illuminate the events occurring during
+the program execution.</p>
+
+<ul>
+<li><a href="#QoS">QoS.orc&mdash;Declaration of the QoS operators for the Cost and ResponseTime QoS domains.</a></li>
+<li><a href="#TravelAgent2-sim">TravelAgent2-sim.orc&mdash;The Orc specification of the TravelAgent2 orchestration</a></li>
+<li><a href="#TravelAgent2-weaved">TravelAgent2-weaved&mdash;The QoS-weaved description of the TravelAgent2 orchestration</a></li>
+</ul>
+
+<a id="QoS"></a><h2>QoS.inc <small>(<a href="#top">top</a>)</small></h2>
+
+<p>The QoS operator definitions for the response time domain, cost domain,
+and more interestingly, the composite cost-response time domain.</p>
+
+<p>Note the following about the cost domain implementation:  In the body of the
+article, lattice operators' semantics forced us to use multisets to represent
+cost.  Since the join operator is defined explicitly here, as an optimization,
+we deviate from the lattice semantics for the cost domain, so it can be
+defined as a single number.</p>
+
+
+<pre class="orc-snippet">
+--------
+-- Response time
+--------
+
+def class ResponseTimeDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = max(xs)
+  def compete(x, ys) = x
+  stop
+
+val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
+
+--------
+-- Cost
+--------
+
+def class CostDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = cfold(oPlus, xs)
+  def compete(x, ys) = x
+  stop
+
+val costDomain = CostDomainClass() -- Singleton
+
+--------
+-- Cost and response time
+--------
+
+def class CostAndRTDomainClass() =
+  def leq((c1, rt1), (c2, rt2)) = if c1 /= c2 then costDomain.leq(c1, c2) else responseTimeDomain.leq(rt1, rt2)
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus((c1, rt1), (c2, rt2)) = (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
+  def zero() = (costDomain.zero(), responseTimeDomain.zero())
+  def join(xs) = unzip(xs) >(cs,rts)> (costDomain.join(cs), responseTimeDomain.join(rts))
+  def compete((cx,rtx), ys) = unzip(ys) >(_,rtys)> (cx, responseTimeDomain.join(rtx:rtys))
+  stop
+
+val costAndRTDomain = CostAndRTDomainClass() -- Singleton
+</pre>
+
+<a id="TravelAgent2-sim"></a><h2>TravelAgent2-sim.orc <small>(<a href="#top">top</a>)</small></h2>
+
+<p>The Orc specification of the TravelAgent2 orchestration.  This is the
+non-QoS-aware base implementation, to be contrasted with with the QoS-aware
+version below.  To run this program, simply press the <em>run</em> button
+below the listing.</p>
+
+<pre class="orc">
+--------
+-- Air travel quote service
+--------
+
+def randomPrice() = Random(50)
+def simulateDelay() = Random(150) >d> Rwait(d) >> d
+
+def class Airline(name) =
+  def quoteAvailPrice(order) =
+    randomPrice()  >p>
+    simulateDelay()  >d>
+    Println("Order "+order+": Airline '"+name+"' quote="+p+" (response time "+d+" ms)") >>
+    {. supplier = name, price = p .}
+  stop
+
+--------
+-- Hotel accommodation quote service
+--------
+
+type RoomCategory = Deluxe() | Standard()
+def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
+
+def class Hotel(name) =
+  def quoteAvailPrice(order) =
+    randomPrice()  >p>
+    randomRoomCat() >r>
+    simulateDelay()  >d>
+    Println("Order "+order+": Hotel '"+name+"' room category="+r+", quote="+p+" (response time "+d+" ms)") >>
+    {. supplier = name, roomCat = r, price = p .}
+  stop
+
+--------
+-- Travel Agency orchestration
+--------
+
+{- QoS-based comparisons -}
+
+def bestPrice(vx, vy) = if vx.price &lt;= vy.price then vx else vy
+
+def bestCategoryPrice(vx, vy) if (vx.roomCat = vy.roomCat) = if vx.price &lt;= vy.price then vx else vy
+def bestCategoryPrice(vx, vy) if (vx.roomCat = Deluxe())   = vx
+def bestCategoryPrice(vx, vy) if (vy.roomCat = Deluxe())   = vy
+
+{- Service instances -}
+
+val airline1 = Airline("Airline 1")
+val airline2 = Airline("Airline 2")
+val hotelA = Hotel("Hotel A")
+val hotelB = Hotel("Hotel B")
+
+{- The TravelAgent2 workflow -}
+
+{- Wait for up to 't' milliseconds for the first value from x, then halt -}
+def timeout(t, x) = Let(Some(x) | Rwait(t) >> None()) >Some(y)> y
+
+def class TravelAgent2() = 
+  def acceptOrder(order, budget) =
+    (timeout(325,
+      Println("Order "+order+": Accepted by travel agent") >>
+      {. order = order .}  >invoice>
+      bestPrice(airline1.quoteAvailPrice(order), airline2.quoteAvailPrice(order)) >air>
+      invoice + {. airSegment = air .}  >invoice>
+      bestCategoryPrice(hotelA.quoteAvailPrice(order), hotelB.quoteAvailPrice(order)) >hotel>
+      invoice + {. hotelSegment = hotel .}  >invoice>
+      invoice + {. totalPrice = invoice.airSegment.price + invoice.hotelSegment.price .}
+    ) ; Println("Order "+order+": Timeout") >> stop)
+      >invoice>
+    ( if invoice.totalPrice &lt;= budget 
+      then (Println("Order "+order+": Orchestration completed") >> invoice)
+      else (Println("Order "+order+": Budget exceeded, resubmitting") >> acceptOrder(order, budget)))
+  stop
+
+
+--------
+-- Simulate some orders
+--------
+
+{- Simulation parameters -}
+val numSimulatedOrders = 10
+val budget = 40
+val delayBetweenOrders = 200
+
+def simulateOrders(_, 0) = stop
+def simulateOrders(number, max) =
+    TravelAgent2().acceptOrder(number, budget)
+  | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
+
+simulateOrders(0, numSimulatedOrders)
+</pre>
+
+<a id="TravelAgent2-weaved"></a><h2>TravelAgent2-weaved.orc <small>(<a href="#top">top</a>)</small></h2>
+
+<p>The QoS-weaved description of the TravelAgent2 orchestration, to be
+contrasted with with the base version above.  To run this program, simply
+press the <em>run</em> button below the listing.</p>
+
+<pre class="orc">
+--------
+-- Response time
+--------
+
+def class ResponseTimeDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = max(xs)
+  def compete(x, ys) = x
+  stop
+
+val responseTimeDomain = ResponseTimeDomainClass() -- Singleton
+
+--------
+-- Cost
+--------
+
+def class CostDomainClass() =
+  def leq(x, y) = x &lt;= y
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus(x, y) = x + y
+  def zero() = 0
+  def join(xs) = cfold(oPlus, xs)
+  def compete(x, ys) = x
+  stop
+
+val costDomain = CostDomainClass() -- Singleton
+
+--------
+-- Cost and response time
+--------
+
+def class CostAndRTDomainClass() =
+  def leq((c1, rt1), (c2, rt2)) = if c1 /= c2 then costDomain.leq(c1, c2) else responseTimeDomain.leq(rt1, rt2)
+  def min(xs) = cfold(lambda(x, y) = if leq(x, y) then x else y, xs)
+  def max(xs) = cfold(lambda(x, y) = if leq(y, x) then x else y, xs)
+  def oPlus((c1, rt1), (c2, rt2)) = (costDomain.oPlus(c1, c2), responseTimeDomain.oPlus(rt1, rt2))
+  def zero() = (costDomain.zero(), responseTimeDomain.zero())
+  def join(xs) = unzip(xs) >(cs,rts)> (costDomain.join(cs), responseTimeDomain.join(rts))
+  def compete((cx,rtx), ys) = unzip(ys) >(_,rtys)> (cx, responseTimeDomain.join(rtx:rtys))
+  stop
+
+val costAndRTDomain = CostAndRTDomainClass() -- Singleton
+{- EXAMPLE -}
+--------
+-- Air travel quote service
+--------
+
+def randomPrice() = Random(50)
+def simulateDelay() = Random(150) >d> Rwait(d) >> d
+
+def class Airline(name) =
+  def quoteAvailPrice(order, qosParms) =
+    randomPrice()  >p>
+    simulateDelay()  >d>
+    Println("Order "+order+": Airline '"+name+"' quote="+p+" (response time "+d+" ms)") >>
+    ({. supplier = name, price = p .}, costAndRTDomain.oPlus(qosParms, (p,d)))
+  stop
+
+--------
+-- Hotel accommodation quote service
+--------
+
+type RoomCategory = Deluxe() | Standard()
+def randomRoomCat() = if Random(2) = 0 then Deluxe() else Standard()
+
+def class Hotel(name) =
+  def quoteAvailPrice(order, qosParms) =
+    randomPrice()  >p>
+    randomRoomCat() >r>
+    simulateDelay()  >d>
+    Println("Order "+order+": Hotel '"+name+"' room category="+r+", quote="+p+" (response time "+d+" ms)") >>
+    ({. supplier = name, roomCat = r, price = p .}, costAndRTDomain.oPlus(qosParms, (p,d)))
+  stop
+
+--------
+-- Travel Agency orchestration
+--------
+
+{- QoS-based comparisons -}
+
+def bestPrice((vx, qx), (vy, qy)) = if vx.price &lt;= vy.price then (vx, costAndRTDomain.compete(qx,[qy])) else (vy, costAndRTDomain.compete(qy,[qx]))
+
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vx.roomCat = vy.roomCat) = if vx.price &lt;= vy.price then (vx, costAndRTDomain.compete(qx,[qy])) else (vy, costAndRTDomain.compete(qy,[qx]))
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vx.roomCat = Deluxe())   = (vx, costAndRTDomain.compete(qx,[qy]))
+def bestCategoryPrice((vx, qx), (vy, qy)) if (vy.roomCat = Deluxe())   = (vy, costAndRTDomain.compete(qy,[qx]))
+
+{- Service instances -}
+
+val airline1 = Airline("Airline 1")
+val airline2 = Airline("Airline 2")
+val hotelA = Hotel("Hotel A")
+val hotelB = Hotel("Hotel B")
+
+{- The TravelAgent2 workflow -}
+
+{- Wait for up to 't' milliseconds for the first value from x, then halt -}
+def timeout(t, x) = Let(Some(x) | Rwait(t) >> None()) >Some(y)> y
+
+def class TravelAgent2() = 
+  def acceptOrder(order, budget) =
+    (timeout(325,
+      Println("Order "+order+": Accepted by travel agent") >>
+      {. order = order .}  >invoice>
+      costAndRTDomain.zero()  >qosParms>
+      bestPrice(airline1.quoteAvailPrice(order, qosParms), airline2.quoteAvailPrice(order, qosParms)) >(air,qosParms)>
+      (invoice + {. airSegment = air .})  >invoice>
+      bestCategoryPrice(hotelA.quoteAvailPrice(order, qosParms), hotelB.quoteAvailPrice(order, qosParms)) >(hotel,qosParms)>
+      (invoice + {. hotelSegment = hotel .})  >invoice>
+      (invoice + {. totalPrice = invoice.airSegment.price + invoice.hotelSegment.price .}, qosParms)
+    ) ; Println("Order "+order+": Timeout") >> stop)
+      >(invoice, qosParms)>
+    ( if invoice.totalPrice &lt;= budget 
+      then (Println("Order "+order+": Orchestration completed with (cost, response time) QoS delivered="+qosParms) >> (invoice, qosParms))
+      else (Println("Order "+order+": Budget exceeded, resubmitting") >> acceptOrder(order, budget)))
+  stop
+
+
+--------
+-- Simulate some orders
+--------
+
+{- Simulation parameters -}
+val numSimulatedOrders = 10
+val budget = 40
+val delayBetweenOrders = 200
+
+def simulateOrders(_, 0) = stop
+def simulateOrders(number, max) =
+    TravelAgent2().acceptOrder(number, budget)
+  | Rwait(delayBetweenOrders) >> simulateOrders(number + 1, max - 1)
+
+simulateOrders(0, numSimulatedOrders)
+</pre>
+
+			</div>
+<!--		</div>-->
+	</div>
+<!--
+	<div class="right">
+		<div class="sidenav">
+			<form action="search.shtml" id="cse-search-box">
+  <div>
+    <input type="hidden" name="cx" value="001989989275909646143:conqllya2xi" />
+    <input type="hidden" name="cof" value="FORID:9" />
+    <input type="hidden" name="ie" value="UTF-8" />
+    <input type="text" name="q" size="15" class="styled" />
+    <input type="submit" name="sa" value="Search" />
+  </div>
+</form>
+<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
+
+<h1>Get Started</h1>
+
+<ul class="block">
+	<li><a href="../tutorial.shtml">Orc in 15 Minutes</a></li>
+	<li><a href="../lectures.shtml">See Tutorial Lectures on Orc</a></li>
+	<li><a href="../tryorc.shtml">Try Orc! (in your browser)</a></li>
+	<li><a href="../download.shtml">Download Orc</a></li>
+	<li><a href="../documentation/html/userguide/userguide.html" onclick="window.open(this.href, 'orcUserGuide');return false;">User Guide <img src="../images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a></li>
+	<li><a href="../documentation/html/refmanual/index.html" onclick="window.open(this.href, 'orcRefManual');return false;">Reference Manual <img src="../images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a></li>
+</ul>
+
+<h1>Get Involved</h1>
+
+<ul class="block">
+	<li><a href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="../wiki">Wiki</a></li>
+	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
+	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
+</ul>
+
+<h1>Contact Us</h1>
+
+<ul class="block">
+	<li><b>Academic inquiries</b><br />
+		<small><a class="obfuscated-email">academic at orc.csres.utexas.edu</a></small></li>
+	<li><b>Commercial inquiries</b><br />
+		<small><a class="obfuscated-email">commercial at orc.csres.utexas.edu</a></small></li>
+	<li><b>Webmaster/other</b><br />
+		<small><a class="obfuscated-email">webmaster at orc.csres.utexas.edu</a></small></li>
+</ul>
+
+
+<!--#config timefmt="%Y-%m-%d" -->
+<p style="padding-top: 1em"><small>Last updated <!--#flastmod file="$DOCUMENT_NAME" --></small></p>
+
+		</div>
+	</div>
+-->
+	<div class="clearer"><span></span></div>
+</div>
+
+<div class="footer">
+ <!--#config timefmt="%Y-%m-%d" -->
+<p style="padding-top: 1em"><small>Last updated <!--#flastmod file="$DOCUMENT_NAME" --></small></p>
+</div>
+
+<script type="text/javascript" src="obfuscated-email.js"></script>
+</body>
+
+</html>

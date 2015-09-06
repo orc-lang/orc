@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>1.8.&nbsp;Algebraic Data Types</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.data.html" title="Chapter&nbsp;1.&nbsp;Data Values"><link rel="prev" href="ref.data.record.html" title="1.7.&nbsp;Records"><link rel="next" href="ref.data.closure.html" title="1.9.&nbsp;Closures"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.data.record.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.data.html">Chapter&nbsp;1.&nbsp;Data Values</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.data.closure.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.data.record.html">1.7.&nbsp;Records</a>&nbsp;</td><th align="center" width="60%">1.8.&nbsp;Algebraic Data Types</th><td align="right" width="20%"><a href="ref.data.closure.html">1.9.&nbsp;Closures</a>&nbsp;</td></tr></table></div><div class="section" title="1.8.&nbsp;Algebraic Data Types"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.data.datatype"></a>1.8.&nbsp;Algebraic Data Types</h2></div></div></div><p>An Orc <a name="N409DF" class="indexterm"></a><a name="N409E4" class="indexterm"></a><em class="firstterm">datatype</em> is an algebraic data type, or "tagged union".
+A datatype value contains a sequence of values enclosed by a <a name="N409EB" class="indexterm"></a><em class="firstterm">tag</em>.
+This value can be <a name="N409F2" class="indexterm"></a><a class="link" href="ref.patterns.call.html" title="5.6.&nbsp;Call Pattern">matched by a pattern</a>.
+</p><p>
+  Datatypes are defined by a <a class="link" href="ref.declarations.type.html#ref.declarations.type.datatype" title="4.6.4.&nbsp;Datatype"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code> declaration</a>.
+  Each <a name="N40A01" class="indexterm"></a><em class="firstterm">constructor</em> 
+  in the declaration introduces a new tag, followed by a sequence of <span class="emphasis"><em>slots</em></span>.
+  The <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code> separator allows multiple constructors to be defined at the same time.
+</p><p>
+  In an untyped program, slots are written as <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">_</span></code>. In a typed program, slots contain types.
+</p><div class="section" title="1.8.1.&nbsp;Syntax"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.syntax"></a>1.8.1.&nbsp;Syntax</h3></div></div></div><p>
+    </p><table cellpadding="5" width="100%" class="productionset" summary="EBNF"><tr><td><table cellpadding="0" width="99%" border="0" class="productionset" summary="EBNF productions"><tr><td width="3%" valign="top" align="left">[32]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.declaration.type.datatype"><a class="link" href="ref.declarations.type.html#ref.declarations.type.datatype" title="4.6.4.&nbsp;Datatype">DeclareDatatype</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code> <a href="ref.syntax.EBNF.html#ebnf.typevariable">TypeVariable</a> <a href="ref.syntax.EBNF.html#ebnf.typeparameters">TypeParameters</a><span class="bold"><strong>?</strong></span> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">=</span></code> <a href="ref.syntax.EBNF.html#ebnf.constructor">Constructor</a> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code> <span class="bold"><strong>&hellip;</strong></span> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-combinator">|</span></code> <a href="ref.syntax.EBNF.html#ebnf.constructor">Constructor</a>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr><tr><td width="3%" valign="top" align="left">[33]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.constructor"><a class="link" href="ref.data.datatype.html#ref.data.datatype.constructors" title="1.8.2.&nbsp;Constructors">Constructor</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		     <a href="ref.syntax.EBNF.html#ebnf.variable">Variable</a> <code class="code">(</code> <a href="ref.syntax.EBNF.html#ebnf.slot">Slot</a> <code class="code">,</code> <span class="bold"><strong>&hellip;</strong></span> <code class="code">,</code> <a href="ref.syntax.EBNF.html#ebnf.slot">Slot</a> <code class="code">)</code>
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr><tr><td width="3%" valign="top" align="left">[34]</td><td width="10%" valign="top" align="right"><a href="ref.syntax.EBNF.html#ebnf.slot"><a class="link" href="ref.data.datatype.html" title="1.8.&nbsp;Algebraic Data Types">Slot</a></a></td><td align="center" width="5%" valign="top"><code>::=</code></td><td width="52%" valign="top">
+		    <a href="ref.syntax.EBNF.html#ebnf.type">Type</a>
+		    &#10073; <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">_</span></code> 
+		  </td><td width="30%" valign="top" align="left">&nbsp;</td></tr></table></td></tr></table><p>
+  </p></div><div class="section" title="1.8.2.&nbsp;Constructors"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.constructors"></a>1.8.2.&nbsp;Constructors</h3></div></div></div><p>
+  Each constructor is a <a class="link" href="ref.expressions.call.html#ref.expressions.call.site" title="2.4.2.&nbsp;Site Calls">site</a>, which takes one argument for each slot
+  of the constructor, and <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publishes</a> a datatype value consisting of the sequence of argument
+  values, tagged with that constructor's unique tag.
+</p><p>
+  Each constructor also has a corresponding <a class="link" href="ref.patterns.call.html" title="5.6.&nbsp;Call Pattern"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">unapply</span></code> member</a>,
+  which takes a value with that constructor's tag, removes the tag, and publishes the sequence of values as a tuple.
+  If its argument does not have the tag, it halts. 
+  Thus, constructors can be used in pattern matching. 
+</p></div><div class="section" title="1.8.3.&nbsp;Type"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.type"></a>1.8.3.&nbsp;Type</h3></div></div></div><p>
+A datatype declaration defines a new <a name="N40A41" class="indexterm"></a><em class="firstterm">sum type</em>.
+</p><p>
+Each constructor defined by the datatype has the <a class="link" href="ref.data.closure.html#ref.data.closure.type" title="1.9.1.&nbsp;Type">function type</a> 
+<code class="code"><a name="N40A4F" class="indexterm"></a><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">lambda</span></code> <code class="code">[</code> <em class="replaceable"><code>X<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>X<sub>n</sub></code></em> <code class="code">]</code><code class="code">(</code> <em class="replaceable"><code>T<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>T<sub>n</sub></code></em> <code class="code">)</code> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span></code> <em class="replaceable"><code>S</code></em>,
+where <em class="replaceable"><code>X<sub>i</sub></code></em> are the <a class="link" href="ref.types.polymorphism.html" title="9.2.&nbsp;Parametric Polymorphism">type parameters</a> of the datatype, <em class="replaceable"><code>T<sub>i</sub></code></em> are the types in the slots of the constructor,
+and <em class="replaceable"><code>S</code></em> is the sum type.
+</p><p>
+Each constructor also has a corresponding <a class="link" href="ref.patterns.call.html" title="5.6.&nbsp;Call Pattern"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">unapply</span></code> member</a>,
+with type <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">lambda</span></code> <code class="code">[</code> <em class="replaceable"><code>X<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>X<sub>n</sub></code></em> <code class="code">]</code><code class="code">(</code><em class="replaceable"><code>S</code></em><code class="code">)</code> <code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-operator">:</span></code> <code class="code">(</code> <em class="replaceable"><code>T<sub>0</sub></code></em> <code class="code">,</code> &hellip; <code class="code">,</code> <em class="replaceable"><code>T<sub>n</sub></code></em> <code class="code">)</code>.
+</p><p>
+A datatype declaration may define a <a name="N40AD8" class="indexterm"></a><em class="firstterm">recursive type</em>: the name of the type
+may be used in the definition of the type itself. In fact, this is the only way to declare a recursive
+type in Orc.
+</p></div><div class="section" title="1.8.4.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.examples"></a>1.8.4.&nbsp;Examples</h3></div></div></div><p></p><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.enumeration_link" onclick="toggle(this, 'ref.data.datatypes.examples.enumeration_content')">
+					&minus;
+				</a><span class="exampleCaption">Enumeration</span></div><div class="exampleBody" id="ref.data.datatypes.examples.enumeration_content"><pre class="orc">
+<span class="hl-comment">{- An enumeration, such as Java's enum, can be represented by a datatype
+   whose constructors have no arguments. Note that an empty argument list,
+   (), is still needed.
+-}</span>
+<span class="hl-keyword">type</span> <span class="hl-variable">objective</span> <span class="hl-operator">=</span> <span class="hl-site">Primary</span>() <span class="hl-combinator">|</span> <span class="hl-site">Secondary</span>() <span class="hl-combinator">|</span> <span class="hl-site">Tertiary</span>()
+
+[<span class="hl-site">Secondary</span>(), <span class="hl-site">Tertiary</span>()]
+
+<span class="hl-comment">{-
+OUTPUT:
+[Secondary(), Tertiary()]
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.datatypes.examples.enumeration_link'), 'ref.data.datatypes.examples.enumeration_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.shapes_link" onclick="toggle(this, 'ref.data.datatypes.examples.shapes_content')">
+					&minus;
+				</a><span class="exampleCaption">Geometric shape datatype</span></div><div class="exampleBody" id="ref.data.datatypes.examples.shapes_content"><pre class="orc">
+<span class="hl-comment">{- A Shape type with three data constructors -}</span>
+<span class="hl-keyword">type</span> <span class="hl-variable">Shape</span> <span class="hl-operator">=</span> <span class="hl-site">Rectangle</span>(<span class="hl-variable">_</span>, <span class="hl-variable">_</span>) <span class="hl-combinator">|</span> <span class="hl-site">Circle</span> (<span class="hl-variable">_</span>)
+
+<span class="hl-keyword">def</span> <span class="hl-site">area</span>(<span class="hl-site">Rectangle</span>(<span class="hl-variable">width</span>,<span class="hl-variable">height</span>)) <span class="hl-operator">=</span> <span class="hl-variable">width</span> <span class="hl-operator">*</span> <span class="hl-variable">height</span>
+<span class="hl-keyword">def</span> <span class="hl-site">area</span>(<span class="hl-site">Circle</span>(<span class="hl-variable">radius</span>)) <span class="hl-operator">=</span> <span class="hl-literal">3.1415926535897</span> <span class="hl-operator">*</span> <span class="hl-variable">radius</span> <span class="hl-operator">**</span> <span class="hl-literal">2</span>
+
+<span class="hl-site">area</span>(<span class="hl-site">Rectangle</span>(<span class="hl-literal">2</span>, <span class="hl-literal">3</span>)) <span class="hl-combinator">|</span> <span class="hl-site">area</span>(<span class="hl-site">Circle</span>(<span class="hl-literal">1</span>))
+
+<span class="hl-comment">{-
+OUTPUT:PERMUTABLE:
+6
+3.14159265358970
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.datatypes.examples.shapes_link'), 'ref.data.datatypes.examples.shapes_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.binarytree_link" onclick="toggle(this, 'ref.data.datatypes.examples.binarytree_content')">
+					&minus;
+				</a><span class="exampleCaption">Binary tree node</span></div><div class="exampleBody" id="ref.data.datatypes.examples.binarytree_content"><pre class="orc">
+<span class="hl-comment">{- This is a binary tree datatype
+   Leaf nodes carry integer values
+-}</span>
+
+<span class="hl-keyword">type</span> <span class="hl-variable">Node</span> <span class="hl-operator">=</span> <span class="hl-site">LeafNode</span>(<span class="hl-variable">Integer</span>) <span class="hl-combinator">|</span> <span class="hl-site">InnerNode</span>(<span class="hl-variable">Node</span>, <span class="hl-variable">Node</span>)
+
+<span class="hl-comment">{- Constructing a simple tree
+    /\
+   1 /\
+    2  3
+-}</span>
+<span class="hl-site">InnerNode</span>(<span class="hl-site">LeafNode</span>(<span class="hl-literal">1</span>),<span class="hl-site">InnerNode</span>(<span class="hl-site">LeafNode</span>(<span class="hl-literal">2</span>),<span class="hl-site">LeafNode</span>(<span class="hl-literal">3</span>)))
+
+<span class="hl-comment">{-
+OUTPUT:
+InnerNode(LeafNode(1), InnerNode(LeafNode(2), LeafNode(3)))
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.datatypes.examples.binarytree_link'), 'ref.data.datatypes.examples.binarytree_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.binarytreepoly_link" onclick="toggle(this, 'ref.data.datatypes.examples.binarytreepoly_content')">
+					&minus;
+				</a><span class="exampleCaption">Polymorphic binary tree node</span></div><div class="exampleBody" id="ref.data.datatypes.examples.binarytreepoly_content"><pre class="orc">
+<span class="hl-comment">{- This is a binary tree datatype
+   Leaf nodes carry values of type T
+-}</span>
+
+<span class="hl-keyword">type</span> <span class="hl-site">Node</span>[<span class="hl-variable">T</span>] <span class="hl-operator">=</span> <span class="hl-site">LeafNode</span>(<span class="hl-variable">T</span>) <span class="hl-combinator">|</span> <span class="hl-site">InnerNode</span>(<span class="hl-variable">Node</span>, <span class="hl-variable">Node</span>)
+
+<span class="hl-comment">{- Constructing a simple tree
+      /\
+   "A" /\
+    "B"  "C"
+-}</span>
+<span class="hl-site">InnerNode</span>[<span class="hl-variable">String</span>](<span class="hl-site">LeafNode</span>(<span class="hl-literal">"A"</span>),<span class="hl-site">InnerNode</span>(<span class="hl-site">LeafNode</span>(<span class="hl-literal">"B"</span>),<span class="hl-site">LeafNode</span>(<span class="hl-literal">"C"</span>)))
+
+<span class="hl-comment">{-
+OUTPUT:
+InnerNode(LeafNode("A"), InnerNode(LeafNode("B"), LeafNode("C")))
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.datatypes.examples.binarytreepoly_link'), 'ref.data.datatypes.examples.binarytreepoly_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.data.datatypes.examples.option_link" onclick="toggle(this, 'ref.data.datatypes.examples.option_content')">
+					&minus;
+				</a><span class="exampleCaption">Orc built-in Option type</span></div><div class="exampleBody" id="ref.data.datatypes.examples.option_content"><pre class="programlisting">
+<span class="hl-comment">{- A datatype for optional values of type T -}</span>
+
+<span class="hl-keyword">type</span> <span class="hl-site">Option</span>[<span class="hl-variable">T</span>] <span class="hl-operator">=</span> <span class="hl-site">Some</span>(<span class="hl-variable">T</span>) <span class="hl-combinator">|</span> <span class="hl-variable">None</span>
+
+<span class="hl-comment">{-
+NONRUNNABLE
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.data.datatypes.examples.option_link'), 'ref.data.datatypes.examples.option_content');
+</script></div><div class="section" title="1.8.5.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.data.datatype.links"></a>1.8.5.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.patterns.call.html" title="5.6.&nbsp;Call Pattern">Call pattern</a></p></li><li class="listitem"><p><a class="link" href="ref.declarations.type.html" title="4.6.&nbsp;type: Declare Type"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">type</span></code>:  Declare Type</a></p></li></ul></div><div class="itemizedlist" title="Related Tutorial Sections"><p class="title"><b>Related Tutorial Sections</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a href="../userguide/userguide.html#ug.additional.datatypes" class="olink">Datatypes</a></p></li><li class="listitem"><p><a href="../userguide/userguide.html#ug.introduction.structures.patterns" class="olink">Patterns</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

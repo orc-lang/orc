@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head><META http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>8.2.&nbsp;Silence</title><meta content="DocBook XSL-NS Stylesheets V1.76.1" name="generator"><link rel="home" href="index.html" title="Orc Reference Manual v2.0.2"><link rel="up" href="ref.concepts.html" title="Chapter&nbsp;8.&nbsp;Concepts"><link rel="prev" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication"><link rel="next" href="ref.concepts.states.html" title="8.3.&nbsp;Expression States"><link rel="copyright" href="legalnotice.html" title="License and Grant Information"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/css" rel="stylesheet" href="/orchard/orc.css"><link xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" href="style.css" type="text/css" rel="stylesheet"><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+// Expandable content script from flooble.com.
+// For more information please visit:
+// http://www.flooble.com/scripts/expand.php
+// Copyright 2002 Animus Pactum Consulting Inc.
+//----------------------------------------------
+function toggle(link, divId) {
+	var lText = link.innerHTML;
+	var d = document.getElementById(divId);
+	if (lText == '+') {
+		link.innerHTML = '&#8722;';
+		d.style.display = 'block';
+	} else {
+		link.innerHTML = '+';
+		d.style.display = 'none';
+	}
+}
+</script></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table summary="Navigation header" width="100%"><tr><th align="center" colspan="3"><a accesskey="h" href="index.html"><img src="images/home.gif" alt="Table of Contents"></a></th></tr><tr><td align="left" width="20%"><a accesskey="p" href="ref.concepts.publish.html"><img src="images/prev.gif" alt="Prev"></a>&nbsp;</td><th align="center" width="60%"><a accesskey="u" href="ref.concepts.html">Chapter&nbsp;8.&nbsp;Concepts</a></th><td align="right" width="20%">&nbsp;<a accesskey="n" href="ref.concepts.states.html"><img src="images/next.gif" alt="Next"></a></td></tr><tr><td align="left" width="20%"><a href="ref.concepts.publish.html">8.1.&nbsp;Publication</a>&nbsp;</td><th align="center" width="60%">8.2.&nbsp;Silence</th><td align="right" width="20%"><a href="ref.concepts.states.html">8.3.&nbsp;Expression States</a>&nbsp;</td></tr></table></div><div class="section" title="8.2.&nbsp;Silence"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ref.concepts.silent"></a>8.2.&nbsp;Silence</h2></div></div></div><div class="section" title="8.2.1.&nbsp;Definition"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.silent.definition"></a>8.2.1.&nbsp;Definition</h3></div></div></div><p>
+			An expression is <a name="N42C00" class="indexterm"></a><em class="firstterm">silent</em> in an execution if it never <a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">publishes</a> in that execution. 
+			An expression is always silent if it does not publish in any execution.
+			A silent expression may call <a class="link" href="ref.sites.html" title="Chapter&nbsp;6.&nbsp;Sites and Services">sites</a>. 
+			The type of a silent expression is <a class="link" href="ref.types.subtyping.html#ref.types.subtyping.Bot" title="9.3.2.&nbsp;Bot"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code></a>. 
+		</p></div><div class="section" title="8.2.2.&nbsp;Examples"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.silent.examples"></a>8.2.2.&nbsp;Examples</h3></div></div></div><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.silent.examples.sideeffects_link" onclick="toggle(this, 'ref.concepts.silent.examples.sideeffects_content')">
+					&minus;
+				</a><span class="exampleCaption">Silence with Side Effects</span></div><div class="exampleBody" id="ref.concepts.silent.examples.sideeffects_content"><pre class="orc">
+<span class="hl-comment">{- Silent expressions never publish but may have side effects 
+   such as output to the console.
+-}</span>
+ 
+  <span class="hl-site">Println</span>(<span class="hl-literal">"print but don't publish"</span>) <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-keyword">stop</span>
+<span class="hl-combinator">|</span> <span class="hl-keyword">stop</span> <span class="hl-combinator">&gt;</span><span class="hl-combinator">&gt;</span> <span class="hl-site">Println</span>(<span class="hl-literal">"never runs"</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+print but don't publish
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.silent.examples.sideeffects_link'), 'ref.concepts.silent.examples.sideeffects_content');
+</script><div xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="example"><div class="exampleHeading"><a class="showHideToggle" href="javascript: void(0);" title="show/hide" id="ref.concepts.silent.examples.conditional_link" onclick="toggle(this, 'ref.concepts.silent.examples.conditional_content')">
+					&minus;
+				</a><span class="exampleCaption">Conditional Silence</span></div><div class="exampleBody" id="ref.concepts.silent.examples.conditional_content"><pre class="orc">
+<span class="hl-comment">{- 
+  Ift(x) is silent if x is bound to false
+  Ift(y) is silent because y is always bound to false
+  Ift(z) is silent because z is never bound
+-}</span>
+
+<span class="hl-keyword">val</span> <span class="hl-variable">x</span> <span class="hl-operator">=</span> <span class="hl-literal">true</span> <span class="hl-combinator">|</span> <span class="hl-literal">false</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">y</span> <span class="hl-operator">=</span> <span class="hl-literal">false</span>
+<span class="hl-keyword">val</span> <span class="hl-variable">z</span> <span class="hl-operator">=</span> <span class="hl-keyword">stop</span>
+
+<span class="hl-site">Ift</span>(<span class="hl-variable">x</span>) <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">y</span>) <span class="hl-combinator">|</span> <span class="hl-site">Ift</span>(<span class="hl-variable">z</span>)
+
+<span class="hl-comment">{-
+OUTPUT:
+signal
+-}</span>
+<span class="hl-comment">{-
+OUTPUT:
+-}</span>
+</pre></div></div><noscript xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook"><p>"WARNING: This example requires Javascript to be rendered correctly. Please enable it in your browser."</p></noscript><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript">
+toggle(document.getElementById('ref.concepts.silent.examples.conditional_link'), 'ref.concepts.silent.examples.conditional_content');
+</script></div><div class="section" title="8.2.3.&nbsp;Related Links"><div class="titlepage"><div><div><h3 class="title"><a name="ref.concepts.silent.links"></a>8.2.3.&nbsp;Related Links</h3></div></div></div><div class="itemizedlist" title="Related Reference Topics"><p class="title"><b>Related Reference Topics</b></p><ul class="itemizedlist" type="disc"><li class="listitem"><p><a class="link" href="ref.concepts.publish.html" title="8.1.&nbsp;Publication">Publish</a></p></li><li class="listitem"><p><a class="link" href="ref.expressions.stop.html" title="2.3.&nbsp;stop"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-keyword">stop</span></code></a></p></li><li class="listitem"><p><a class="link" href="ref.types.subtyping.html#ref.types.subtyping.Bot" title="9.3.2.&nbsp;Bot"><code class="code"><span xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" class="hl-variable">Bot</span></code></a></p></li><li class="listitem"><p><a class="link" href="ref.combinators.otherwise.html" title="3.4.&nbsp;Otherwise Combinator">Otherwise combinator</a></p></li></ul></div></div></div><script xmlns:od="http://orc.csres.utexas.edu/OrcDocBook.xsd" xmlns:db="http://docbook.org/ns/docbook" type="text/javascript" src="/orchard/orc.js"></script></body></html>

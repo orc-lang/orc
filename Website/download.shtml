@@ -1,0 +1,55 @@
+<!--#include virtual="/template/header.shtml" --> 
+
+<h2>License</h2>
+
+<p>The Orc source code and binaries are released under the <a href="license.shtml">BSD License</a>.</p>
+
+<h2>Audience</h2>
+
+<p>Orc is available in different formats depending on what you will be doing with it:</p>
+<ul>
+<li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
+<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine in the Eclipse IDE.</li>
+<li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
+<li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
+</ul>
+
+<a id="casual"></a>
+<h3>Casual Users</h3>
+
+<p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
+your browser. We are currently working on extending the online job server to
+support user accounts so you can create long-running jobs; please <a
+href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
+us</a> if you are interested in obtaining an account.</p>
+
+<a id="eclipse"></a>
+<h3>Eclipse Users</h3>
+
+<p>Click on the links below for instructions on how to download and install the Orc plugin for Eclipse.
+	We provide instructions for the following operating systems: </p>
+
+<ul>
+	<li><a href="documentation/installation_instructions/Orc_install_mac.pdf">Mac OS X</a></li>
+	<li><a href="documentation/installation_instructions/Orc_install_linux.pdf">Linux</a></li>
+	<li><a href="documentation/installation_instructions/Orc_install_windows.pdf">Windows</a></li>
+</ul>
+
+<a id="cmdline"></a>
+<h3>Command Line Users</h3>
+
+<p>Orc is also available as a standalone JAR which you can use to run programs on
+the command line.</p>
+
+<p>Download the <a href="http://code.google.com/p/orc/downloads/list">latest release</a> from Google Code.
+For further assistance, please see the <a href="documentation.shtml">documentation</a>.</p>
+
+<a id="devs"></a>
+<h3>Developers</h3>
+
+<p>Orc is developed in Eclipse. The <a href="quickstart.shtml">developer's
+quick start</a> describes how to check out and build the Orc Eclipse project
+from source and start running Orc programs.</p>
+
+
+<!--#include virtual="/template/footer.shtml" --> 

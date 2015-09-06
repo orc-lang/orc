@@ -1,0 +1,15 @@
+# view res/layout/activity_load_orc.xml #generated:1
+-keep class android.support.v4.view.ViewPager { <init>(...); }
+
+# view AndroidManifest.xml #generated:27
+-keep class orc.android.FileExplore { <init>(...); }
+
+# view AndroidManifest.xml #generated:15
+-keep class orc.android.LoadOrcActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:23
+-keep class orc.android.RunActivity { <init>(...); }
+
+# onClick res/layout/run_activity.xml #generated:24
+-keepclassmembers class * { *** startProgress(...); }
+

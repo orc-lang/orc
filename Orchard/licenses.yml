@@ -1,0 +1,154 @@
+# This file is in YAML format.  It lists all bundled third-party dependencies.
+# Each dependency includes the following information:
+# 
+# $Id$
+#
+# files: list of incorporated files
+# project: the project from which the files were derived
+# version: the version of the project
+# url: the url for the project
+# license: license covering incorporated files; see licenses/ directory
+# phase: build = used for compilation only, not at runtime.
+#        link = linked against but not extended.
+#        extend = classes are extended.
+#        modify = we bundle modified versions of the code.
+# notes: any notes about why the dependency is needed
+---
+
+files: [jaxws-api.jar, jaxws-rt.jar, jaxws-tools.jar, jsr181-api.jar, jsr250-api.jar, http.jar, FastInfoset.jar, saaj-impl.jar, sjsxp.jar, stax-ex.jar, streambuffer.jar]
+project: JAXWS Reference Implementation
+version: 2.1.3
+url: https://jax-ws.dev.java.net
+license: GPLv2+classpath.txt
+phase: link
+notes: Used by SOAP web service.
+
+---
+
+files: [resolver.jar]
+project: Apache XML Commons Resolver
+version: 1.2
+url: http://xml.apache.org/commons/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of jaxws-rt.jar.
+
+---
+
+files: [jetty-6.1.22.jar, jetty-util-6.1.22.jar, jetty-j2se6-6.1.11.jar]
+project: Jetty
+version: 6.1.22
+url: http://www.mortbay.org/jetty/
+license: ASF2.0.txt
+phase: link
+notes: Used for OrchardDemo local server.
+
+---
+
+files: [velocity-1.5.jar, jakarta-oro-2.0.8.jar, commons-lang-2.4.jar, commons-collections-3.2.1.jar]
+project: Apache Velocity
+version: 1.5
+url: http://commons.apache.org/collections/
+license: ASF2.0.txt
+phase: link
+notes: Used for JSON web service.
+
+---
+
+files: [commons-fileupload-1.2.1.jar]
+project: Apache Commons FileUpload
+version: 1.2.1
+url: http://commons.apache.org/fileupload/
+license: ASF2.0.txt
+phase: link
+notes: Used for File Upload web forms widget.
+
+---
+
+files: [commons-io-1.4.jar]
+project: Apache Commons IO
+version: 1.4
+url: http://commons.apache.org/io/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of commons-fileupload-1.2.1.jar
+
+---
+
+files: [servlet-api-2.5-20081211.jar]
+project: Java Servlet API
+version: 2.5
+url: http://java.sun.com/products/servlet/
+license: SunBCL-servlet.txt
+phase: extend
+notes: Used for various servlets.
+
+---
+
+files: [postgresql-8.3-603.jdbc3.jar]
+project: PostgreSQL JDBC Interface
+version: 8.3-603
+url: http://jdbc.postgresql.org/
+license: BSD-postgresql.txt
+phase: link
+notes: Used for accounts database.
+
+---
+
+files: [yuicompressor-2.3.6.jar]
+project: YUI Compressor
+version: 2.3.6
+url: http://developer.yahoo.com/yui/compressor/
+license: BSD-YUI.txt
+phase: build
+notes: Used to minify Javascript files.
+
+---
+
+files: [org.jvnet.jax_ws_commons.json.*]
+project: JAX-WS Commons JSON Binding
+version: 1.2
+url: https://jax-ws-commons.dev.java.net/json/
+license: GPLv2+classpath.txt
+phase: modify
+notes: Used for JSON web service.
+
+---
+
+files: [org.jvnet.jax_ws_commons.json.template.*]
+project: JAX-WS Commons JSON Binding
+version: 1.2
+url: https://jax-ws-commons.dev.java.net/json/
+license: CCPL-by-2.5.txt
+phase: link
+notes: Used for JSON web service.
+
+---
+
+files: [web/cal/*]
+project: DHTML Calendar
+version: 0.9.4
+url: http://dynarch.com/mishoo/calendar.epl
+license: GPLv2.txt
+phase: link
+notes: Used for web forms date widget.
+
+---
+
+files: [web/jquery-1.7.1.min.js]
+project: jQuery
+version: 1.7.1
+url: http://jquery.com
+license: MIT-jquery.txt
+phase: link
+notes: Used for web/orc.js
+
+---
+
+files: [web/codemirror/*]
+project: Codemirror
+version: 1.0
+url: http://marijn.haverbeke.nl/codemirror/
+license: BSD-codemirror.txt
+phase: extend
+notes: Used for web/orc.js

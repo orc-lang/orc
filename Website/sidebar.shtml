@@ -1,0 +1,50 @@
+<form action="search.shtml" id="cse-search-box">
+  <div>
+    <input type="hidden" name="cx" value="001989989275909646143:conqllya2xi" />
+    <input type="hidden" name="cof" value="FORID:9" />
+    <input type="hidden" name="ie" value="UTF-8" />
+    <input type="text" name="q" size="15" class="styled" />
+    <input type="submit" name="sa" value="Search" />
+  </div>
+</form>
+<script type="text/javascript" src="https://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
+
+<h1>Get Started</h1>
+
+<ul class="block">
+	<li><a href="/tutorial.shtml">Orc in 15 Minutes</a></li>
+	<li><a href="/lectures.shtml">See Tutorial Lectures on Orc</a></li>
+	<li><a href="/tryorc.shtml">Try Orc! (in your browser)</a></li>
+	<li><a href="/download.shtml">Download Orc</a></li>
+	<li><a href="/documentation/html/userguide/userguide.html" onclick="window.open(this.href,'orcUserGuide');return false;">User Guide <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a></li>
+	<li><a href="/documentation/html/refmanual/index.html" onclick="window.open(this.href,'orcRefManual');return false;">Reference Manual <img src="/images/new-window.gif" alt="opens in new window" class="newWindowIcon" /></a></li>
+</ul>
+
+<h1>Get Involved</h1>
+
+<ul class="block">
+	<li><a href="/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="/wiki">Wiki</a></li>
+	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
+	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
+</ul>
+
+<h1>Contact Us</h1>
+
+<ul class="block">
+	<li><b>Academic inquiries</b><br />
+		<small><a class="obfuscated-email">academic at orc.csres.utexas.edu</a></small></li>
+	<li><b>Commercial inquiries</b><br />
+		<small><a class="obfuscated-email">commercial at orc.csres.utexas.edu</a></small></li>
+	<li><b>Webmaster/other</b><br />
+		<small><a class="obfuscated-email">webmaster at orc.csres.utexas.edu</a></small></li>
+</ul>
+
+<h1>Supporting Agencies</h1>
+<p><small>This research is supported in part by funding from the <b>National Science Foundation</b>. 
+Any opinions, findings, and conclusions or recommendations expressed on this website
+are those of the author(s) and do not necessarily reflect the views of the National
+Science Foundation.</small></p>
+
+<!--#config timefmt="%Y-%m-%d" -->
+<p style="padding-top: 1em"><small>Last updated <!--#flastmod file="$DOCUMENT_NAME" --></small></p>

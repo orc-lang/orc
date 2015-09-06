@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ref.expressions.ifthenelse.xml - DocBook source for an Orc reference manual section
+
+     $Id$
+
+     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<!-- if then else -->
+	<section xml:id="ref.expressions.ifthenelse" xmlns="http://docbook.org/ns/docbook">
+		<title><code>if then else</code></title><indexterm><primary>if then else</primary></indexterm>
+		
+		<para>
+		The expression <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
+		is a conditional expression.
+		It executes as follows:
+		<itemizedlist>
+		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> <link linkend="ref.concepts.deflate">deflates</link> to <code>true</code>, execute <replaceable>E<subscript>t</subscript></replaceable>.</para></listitem>
+		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> deflates to <code>false</code>, execute <replaceable>E<subscript>f</subscript></replaceable>.</para></listitem>
+		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> deflates to a non-Boolean value, <link linkend="ref.concepts.states.halt">halt</link>.</para></listitem>
+		<listitem><para>If <replaceable>E<subscript>c</subscript></replaceable> halts <link linkend="ref.concepts.silent">silently</link>, halt.</para></listitem>
+		</itemizedlist>
+		 
+		</para>
+		
+		<section xml:id="ref.expressions.ifthenelse.syntax">
+		  <title>Syntax</title>
+		  <para>
+		    <productionset>
+		    <productionrecap linkend="ebnf.expression.conditional"/>
+		    </productionset>
+		  </para>
+		</section>
+
+		<section xml:id="ref.expressions.ifthenelse.type">
+		  <title>Type</title>
+		  <para>
+		    The type of <code>if</code> <replaceable>E<subscript>c</subscript></replaceable> <code>then</code> <replaceable>E<subscript>t</subscript></replaceable> <code>else</code> <replaceable>E<subscript>f</subscript></replaceable>
+		    is the <link linkend="ref.types.subtyping.join">join</link> of the types of <replaceable>E<subscript>t</subscript></replaceable> and <replaceable>E<subscript>f</subscript></replaceable>.
+		    Additionally, <replaceable>E<subscript>c</subscript></replaceable> must have type <code>Boolean</code>.
+		  </para>
+		</section>
+		
+		<section xml:id="ref.expressions.ifthenelse.examples">
+		  <title>Examples</title>
+
+		  <example xml:id="ref.expressions.ifthenelse.examples.binarysearch">
+		  <title>Binary Search in a Sorted Array</title>
+<programlisting language="orc-demo"><![CDATA[
+{-
+  Binary search in a sorted array.
+-}
+
+def binary_search(x,a) =
+  def searchIn(lo, hi) =
+    if (lo >= hi) then 
+      false
+    else (
+      val mid = (lo+hi) / 2
+	     val y = a(mid)?
+      if (x = y) then 
+        true
+      else if (x <: y) then
+        searchIn(lo, mid) 
+      else 
+        searchIn(mid+1, hi)
+    )
+  searchIn(0, a.length?)
+      
+val a = Array(15)
+      
+for(0, 15) >i> 
+a(i) := 2*i >> 
+stop ;
+
+binary_search(19, a) | binary_search(22, a)
+
+{-
+OUTPUT:PERMUTABLE
+true
+false
+-}
+]]></programlisting>
+		  </example>
+		  
+		  
+	  </section>
+				
+		<section xml:id="ref.expressions.ifthenelse.links">
+		  <title>Related Links</title>
+		<itemizedlist>
+			<title>Related Reference Topics</title>
+			<listitem><para><link linkend="ref.data.boolean">Booleans</link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Ift"><code>Ift</code></link></para></listitem>
+			<listitem><para><link linkend="ref.stdlib.core.Iff"><code>Iff</code></link></para></listitem>
+		</itemizedlist>
+		  
+		  <!--
+		<itemizedlist>
+			<title>Related Tutorial Sections</title>
+		</itemizedlist>
+		  -->
+		  
+	  </section>
+	</section>

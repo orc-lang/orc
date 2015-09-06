@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- metainfo.xml - DocBook source for Orc document DocBook metadata
+
+     $Id$
+
+     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+
+     Use and redistribution of this file is governed by the license terms in
+     the LICENSE file found in the project's top-level directory and also found at
+     URL: http://orc.csres.utexas.edu/license.shtml .
+  -->
+
+<info xmlns="http://docbook.org/ns/docbook">
+	<!-- Modify "titlepage-html-src.xml to change what metadata appears in output -->
+	<author> 
+		<orgname>The University of Texas at Austin</orgname>
+		<address></address>  <!-- Dummy value for proper spacing -->
+		<!-- 
+		<address><street>1 University Station, Stop C0500</street>, <city>Austin</city>, <state>TX</state> <postcode>78712-0233</postcode>, <country>USA</country></address>
+		-->
+		<uri>https://orc.csres.utexas.edu/</uri>
+	</author>
+	<copyright>
+		<year>2013</year>
+		<holder>The University of Texas at Austin</holder>
+	</copyright>
+	<legalnotice xml:id="legalnotice">
+		<title>License and Grant Information</title>
+		<para>
+			Use and redistribution of this file is governed by the license terms in
+			the LICENSE file found in the project's top-level directory and also
+			found at
+			URL: http://orc.csres.utexas.edu/license.shtml .
+		</para>
+		<para>
+			This material is based upon work supported by the National Science
+			Foundation under Grant No. CCF-0811536.
+			Any opinions, findings, and conclusions or
+			recommendations expressed in this document are those of the authors
+			and do not necessarily reflect the views of the National Science
+			Foundation.
+		</para>
+	</legalnotice>
+	<pubdate><?dbtimestamp format="Y-m-d"?></pubdate>
+</info>
