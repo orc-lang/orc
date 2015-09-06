@@ -639,7 +639,7 @@ class Token protected (
 }
 
 /**  */
-trait TokenState {
+sealed trait TokenState {
   val isLive: Boolean
 }
 

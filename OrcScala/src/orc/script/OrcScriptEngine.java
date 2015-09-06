@@ -34,6 +34,8 @@ import javax.script.ScriptException;
 
 import orc.Backend;
 import orc.BackendType;
+import orc.OrctimizerBackend;
+import orc.OrctimizerInterpreterBackend;
 import orc.Runtime;
 import orc.Compiler;
 import orc.OrcEvent;
@@ -304,6 +306,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         backendType = k;
         if(k == TokenInterpreterBackend.it())
           _backend = (Backend<CompiledCode>)new StandardBackend();
+        else if(k == OrctimizerInterpreterBackend.it())
+          _backend = (Backend<CompiledCode>)new OrctimizerBackend();
         else
           throw new IllegalArgumentException("Unknown backend: " + b.backend());      
       } else {
