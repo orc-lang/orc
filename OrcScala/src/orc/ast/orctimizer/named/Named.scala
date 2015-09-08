@@ -21,7 +21,7 @@ import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
 
-sealed abstract class NamedAST extends AST {
+sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 
@@ -87,7 +87,7 @@ case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
-trait Var extends Argument with hasOptionalVariableName
+sealed trait Var extends Argument with hasOptionalVariableName
 case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
@@ -138,7 +138,7 @@ case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
 
-trait Typevar extends Type with hasOptionalVariableName
+sealed trait Typevar extends Type with hasOptionalVariableName
 case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
 }
