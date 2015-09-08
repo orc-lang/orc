@@ -20,36 +20,11 @@ import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
 import orc.util.SingletonCache
 
-/** The context in which analysis is occuring.
+
+/** The context in which an expression appears.
   */
-/* This implementation is simplier but seems to be slightly slower and this actually is a hotspot.
-case class TransformContext(val _bindings: Map[BoundVar, Bindings.Binding] = Map(), val typeBindings: Map[BoundTypevar, TypeBinding] = Map()) extends PrecomputeHashcode {
-  import Bindings._, TransformContext._
-  def apply(e: BoundVar): Binding = _bindings(e)
-  def apply(e: BoundTypevar): TypeBinding = typeBindings(e)
-  def contains(e: BoundVar): Boolean = _bindings.contains(e)
-  def contains(e: BoundTypevar): Boolean = typeBindings.contains(e)
-
-  def extendBindings(bs: Iterable[Binding]): TransformContext = {
-    normalize(new TransformContext(_bindings ++ bs.map(b => (b.variable, b)), typeBindings))
-  }
-  def extendTypeBindings(bs: Iterable[TypeBinding]): TransformContext = {
-    normalize(new TransformContext(_bindings, typeBindings ++ bs.map(b => (b.variable, b))))
-  }
-
-  def +(b: Binding): TransformContext = {
-    normalize(new TransformContext(_bindings + ((b.variable, b)), typeBindings))
-  }
-  def +(b: TypeBinding): TransformContext = {
-    normalize(new TransformContext(_bindings, typeBindings + ((b.variable, b))))
-  }
-  
-  def size = _bindings.size + typeBindings.size
-  def bindings = _bindings.values.toSet
-}*/
-
-// Chaining implementation for higher efficiency in equality and hashing
 abstract class TransformContext extends PrecomputeHashcode with Product {
+  // Chaining implementation for higher efficiency in equality and hashing
   import Bindings._, TransformContext._
   def apply(e: BoundVar): Binding
   def apply(e: BoundTypevar): TypeBinding
@@ -81,7 +56,8 @@ object TransformContext {
   
   val cache = new SingletonCache[TransformContext]()
 
-  // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
+  // This is a very important optimization as contexts are constantly compared 
+  // to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
     cache.normalize(c)
   }
@@ -143,7 +119,7 @@ object Bindings {
     val ctx: TransformContext
     val ast: NamedAST
     
-    override def toString = s"$productPrefix($variable)" //${ast.toString.take(50).replace('\n', ' ')}
+    override def toString = s"$productPrefix($variable)"
   }
 
   case class SeqBound(ctx: TransformContext, ast: Sequence) extends Binding {
