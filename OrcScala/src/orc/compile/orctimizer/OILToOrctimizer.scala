@@ -16,19 +16,22 @@ package orc.compile.orctimizer
 
 import orc.ast.oil.named._
 import orc.ast.orctimizer.{named => orct}
+import orc.lib.state.NewFlag
+import orc.lib.state.PublishIfNotSet
+import orc.lib.state.SetFlag
 
 /** @author dkitchin
   */
 // Conversions from named to nameless representations
 class OILToOrctimizer {
   private def newFlag() = {
-    orct.Call(orct.Constant("newFlag"), List(), None)
+    orct.Call(orct.Constant(NewFlag), List(), None)
   }
   private def setFlag(flag: orct.BoundVar) = {
-    orct.Call(orct.Constant("setFlag"), List(flag), None)
+    orct.Call(orct.Constant(SetFlag), List(flag), None)
   }
   private def publishIfNotSet(flag: orct.BoundVar) = {
-    orct.Call(orct.Constant("publishIfNotSet"), List(flag), None)
+    orct.Call(orct.Constant(PublishIfNotSet), List(flag), None)
   }
   
   def apply(e: Expression): orct.Expression = {
