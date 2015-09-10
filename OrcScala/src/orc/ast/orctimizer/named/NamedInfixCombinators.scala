@@ -100,6 +100,14 @@ object CallAt {
     case _ => None
   }
 }
+object ConcatAt {
+  def unapply(e: WithContext[Expression]) = e match {
+    case (n@Concat(f, g)) in ctx => {
+      Some(f in ctx, g in ctx)
+    }
+    case _ => None
+  }
+}
 object DeclareTypeAt {
   def unapply(e: WithContext[Expression]) = e match {
     case (n@DeclareType(tv, t, b)) in ctx => {
