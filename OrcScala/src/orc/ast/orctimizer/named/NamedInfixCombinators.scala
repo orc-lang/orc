@@ -61,7 +61,7 @@ object > {
       case _ => None
     }
   }
-  def unapply(p: (Expression, BoundVar)) = Some(p)
+  def unapply[T](p: (T, BoundVar)) = Some(p)
 }
 
 

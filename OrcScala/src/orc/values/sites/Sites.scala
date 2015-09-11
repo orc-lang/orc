@@ -27,12 +27,6 @@ import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
 
-trait SiteMetadata {
-  def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
-  
-  def publications: (Int, Option[Int]) = (0, None)
-}
-
 trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], h: Handle): Unit
 
