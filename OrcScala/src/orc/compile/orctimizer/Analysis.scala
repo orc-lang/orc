@@ -195,6 +195,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f > x > g if f.publications only 0 => f.timeToHalt
       case f > x > g => f.timeToHalt max g.timeToHalt
       case LimitAt(f) => f.timeToHalt min f.timeToPublish
+      case Force(x: BoundVar) in ctx => ctx(x) match {
+        case Bindings.SeqBound(_, _) => Delay.NonBlocking
+        case _ => Delay.Blocking
+      }
+      case Force(x: Constant) in ctx => Delay.NonBlocking
+      case Future(f) in ctx => (f in ctx).timeToHalt
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
         val siteRunTime = (target match {
@@ -230,6 +236,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f || g => f.timeToPublish min g.timeToPublish
       case f > x > g => f.timeToPublish max g.timeToPublish
       case LimitAt(f) => f.timeToPublish
+      case Force(x: BoundVar) in ctx => ctx(x) match {
+        case Bindings.SeqBound(_, _) => Delay.NonBlocking
+        case _ => Delay.Blocking
+      }
+      case Force(x: Constant) in ctx => Delay.NonBlocking
+      case Future(f) in ctx => Delay.NonBlocking
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
 
@@ -305,6 +317,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f || g => f.freeVars | g.freeVars
       case f > x > g => f.freeVars | (g.freeVars - x)
       case LimitAt(f) => f.freeVars
+      case Force(a) in ctx => (a in ctx).freeVars
+      case Future(f) in ctx => (f in ctx).freeVars
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
         target.freeVars | args.map(_.freeVars).reduce(_ | _)
@@ -359,6 +373,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f > x > g if f.effects == Effects.None => ForceType.maxMaps(f.forceTypes, g.forceTypes - x) 
       case f > x > g => f.forceTypes.mapValues { t => t.delayBy(f.timeToPublish) }
       case LimitAt(f) => f.forceTypes
+      case Force(a: Var) in ctx => Map((a, ForceType.Immediately(true)))
+      case Force(a) in _ => Map()
+      case Future(f) in ctx => (f in ctx).forceTypes.mapValues { t => t max ForceType.Immediately(false) }
       case DeclareDefsAt(defs, defsctx, body) => body.forceTypes
       case DeclareTypeAt(_, _, b) => b.forceTypes
       case HasType(b, _) in ctx => (b in ctx).forceTypes
@@ -381,6 +398,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ => g.effects max Effects.BeforePub
       }
       case LimitAt(f) => f.effects min Effects.BeforePub
+      case Force(a) in _ => Effects.None
+      case Future(f) in ctx => (f in ctx).effects match {
+        case Effects.BeforePub => Effects.Anytime
+        case e => e
+      }
       case DeclareDefsAt(defs, defsctx, body) => body.effects
       case DeclareTypeAt(_, _, b) => b.effects
       case HasType(b, _) in ctx => (b in ctx).effects
