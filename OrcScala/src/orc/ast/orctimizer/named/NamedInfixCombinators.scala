@@ -23,8 +23,11 @@ trait NamedInfixCombinators {
 
   def >>(g: Expression) = Sequence(this, new BoundVar(), g)
 
-  def >(x: BoundVar) =
-    new {
+  trait WithGreater {
+    def >(g: Expression): Expression
+  }
+  def >(x: BoundVar): WithGreater =
+    new WithGreater {
       def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
     }
   

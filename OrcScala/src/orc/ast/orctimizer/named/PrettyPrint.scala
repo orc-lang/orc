@@ -16,10 +16,11 @@ package orc.ast.orctimizer.named
 
 import scala.collection.mutable._
 import orc.values.Format
+import orc.compile.orctimizer.ExpressionAnalysisProvider
 
 /** Nicer printing for named OIL syntax trees.
   *
-  * @author dkitchin
+  * @author dkitchin, amp
   */
 class PrettyPrint {
 
@@ -42,8 +43,8 @@ class PrettyPrint {
   def brack(l: List[NamedAST]): String = "[" + commasep(l) + "]"
   def paren(l: List[NamedAST]): String = "(" + commasep(l) + ")"
 
-  def reduce(ast: NamedAST): String =
-    ast match {
+  def reduce(ast: NamedAST): String = {
+    val exprStr = ast match {
       case Stop() => "stop"
       case Call(target, args, typeargs) => {
         reduce(target) +
@@ -99,5 +100,6 @@ class PrettyPrint {
       }
       case _ => "???"
     }
-
+    exprStr
+  }
 }

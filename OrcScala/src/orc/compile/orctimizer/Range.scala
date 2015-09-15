@@ -73,6 +73,7 @@ case class Range(mini : Int, maxi : Option[Int]) {
     */
   def *(r : Range) = {
     Range(mini * r.mini, (maxi, r.maxi) match {
+      case (Some(0), _) | (_, Some(0)) => Some(0)
       case (Some(n), Some(m)) => Some(n * m)
       case _ => None
     })
