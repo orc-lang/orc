@@ -20,6 +20,7 @@ import orc.ast.orctimizer.named._
 import orc.compile.orctimizer._
 import orc.values.sites.Delay
 import orc.values.sites.Effects
+import orc.values.sites.Range
 import orc.lib.state.NewFlag
 import orc.lib.builtin.Iff
 import orc.values.Signal
@@ -32,6 +33,7 @@ class OrctimizerAnalysisTest {
   import analyzer.ImplicitResults._
   
   def getInContext(expr: Expression, f: Expression) = {
+    println(s"Testing analysis of $f in:\n$expr")
     var res: Option[WithContext[Expression]] = None
     val searcher = new ContextualTransform.NonDescending {
       override def onExpression(implicit ctx: TransformContext) = {
@@ -132,14 +134,14 @@ class OrctimizerAnalysisTest {
     val f = unanalyzableCall >> Force(x)
     val e = Future(Constant("")) > x > f
     val a = getInContext(e, f)
-    assertEquals(Range(0, None), a.publications)
+    assertEquals(Range(0, 1), a.publications)
     assertEquals(Set(x), a.freeVars)
     assertEquals(ForceType.Eventually, a.forces(x))
   }
   
   @Test
   def analyzeLimit(): Unit = {
-    val e = Limit(unanalyzableCall)
+    val e = Limit(unanalyzableCall || unanalyzableCall)
     val a = getInContext(e, e)
     assertEquals(Range(0, 1), a.publications)
     assertEquals(Effects.BeforePub, a.effects)
@@ -149,7 +151,7 @@ class OrctimizerAnalysisTest {
   def analyzePar(): Unit = {
     val x = new BoundVar(Some("x"))
     val f = Call(Constant(Iff), List(x), None) || Call(Constant(Iff), List(x), None) || Stop()
-    val e = unanalyzableCall > x > f
+    val e = Future(unanalyzableCall) > x > f
     val a = getInContext(e, f)
     assertEquals(Range(0, 2), a.publications)
     assertEquals(Effects.None, a.effects)
@@ -161,12 +163,39 @@ class OrctimizerAnalysisTest {
   def analyzeParPubs(): Unit = {
     val x = new BoundVar(Some("x"))
     val f = Call(Constant(Iff), List(x), None) || Constant(Signal) || Stop()
-    val e = unanalyzableCall > x > f
+    val e = Future(unanalyzableCall) > x > f
     val a = getInContext(e, f)
     assertEquals(Range(1, 2), a.publications)
     assertEquals(Effects.None, a.effects)
     assertEquals(Delay.Blocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
+    assertEquals(ForceType.Immediately(false), a.forces(x))
+  }
+  
+  @Test
+  def analyzeParForce(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val f = Constant(Signal) || Force(x)
+    val e = Future(unanalyzableCall) > x > f
+    val a = getInContext(e, f)
+    assertEquals(Range(1, 2), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.Blocking, a.timeToHalt)
+    assertEquals(Delay.NonBlocking, a.timeToPublish)
+    assertEquals(ForceType.Immediately(false), a.forces(x))
+  }
+  
+  @Test
+  def analyzeSeqForce(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val f = unanalyzableCall >> Force(x)
+    val e = Future(unanalyzableCall) > x > f
+    val a = getInContext(e, f)
+    assertEquals(Range(0, 1), a.publications)
+    assertEquals(Effects.Anytime, a.effects)
+    assertEquals(Delay.Blocking, a.timeToHalt)
+    assertEquals(Delay.Blocking, a.timeToPublish)
+    assertEquals(ForceType.Eventually, a.forces(x))
   }
   
   @Test
@@ -177,5 +206,33 @@ class OrctimizerAnalysisTest {
     assertEquals(Effects.None, a.effects)
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.Forever, a.timeToPublish)
+  }
+
+  
+  @Test
+  def analyzeDefCall(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val id = new BoundVar(Some("id"))
+    val body = id
+    val f = Call(id, List(Constant(BigInt(1))), None)
+    val e = DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
+    val a = getInContext(e, f)
+    a.publications
+    // TODO: Currently this doesn't know anything about the properties of id.
+    // So nothing worth testing here.
+  }
+  
+  @Test
+  def analyzeDefPub(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val id = new BoundVar(Some("id"))
+    val body = x
+    val f = Force(id)
+    val e = DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
+    val a = getInContext(e, f)
+    assertEquals(Range(1, 1), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.NonBlocking, a.timeToHalt)
+    assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
 }

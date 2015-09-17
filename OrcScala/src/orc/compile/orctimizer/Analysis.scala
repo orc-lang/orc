@@ -21,6 +21,7 @@ import orc.values.Field
 import orc.values.sites.Site
 import orc.values.sites.Delay
 import orc.values.sites.Effects
+import orc.values.sites.Range
 
 sealed trait ForceType {
   val haltsWith = false
@@ -59,13 +60,39 @@ object ForceType {
     def min(o: ForceType): ForceType = o
   }
 
-  def maxMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = {
-    a ++ b.map { case (k, v) => k -> (v max a.getOrElse(k, Immediately(false))) }
+  def mergeMaps[T](op: (ForceType, ForceType) => ForceType, default: ForceType, a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = {
+    val res = for (e <- a.keysIterator ++ b.keysIterator) yield (e, op(a.getOrElse(e, default), b.getOrElse(e, default)))
+    res.toMap
   }
-  def minMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = {
-    a ++ b.map { case (k, v) => k -> (v min a.getOrElse(k, Never)) }
+  /*
+  def maxMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = 
+    intersectMap(_ max _, a, b)
+  def minMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = 
+    intersectMap(_ min _, a, b)
+  */
+}
+
+/*
+sealed trait ValueKind {
+  def join(o: ValueKind) = {
+    if(o == this)
+      this
+    else
+      ValueKind.Unknown
   }
 }
+object ValueKind {
+  case object Unknown extends ValueKind
+  case object Blocking extends ValueKind
+  case object NonBlocking extends ValueKind 
+  
+  def apply(d: Delay) = d match {
+    case Delay.Blocking => Blocking
+    case Delay.NonBlocking => NonBlocking
+    case Delay.Forever => Unknown
+  }
+}
+*/
 
 /** The analysis results of an expression. The results refer to this object used an
   * expression. So for variables publication is in terms of what happens when you
@@ -98,6 +125,10 @@ trait AnalysisResults {
   /** Free variables in the expression.
     */
   def freeVars: Set[Var]
+  
+  /** The amount of time forcing values published by this expression will cost.
+    */
+  def valueForceDelay: Delay
 }
 
 case class AnalysisResultsConcrete(
@@ -106,7 +137,8 @@ case class AnalysisResultsConcrete(
   effects: Effects,
   publications: Range,
   forceTypes: Map[Var, ForceType],
-  freeVars: Set[Var]) extends AnalysisResults {
+  freeVars: Set[Var],
+  valueForceDelay: Delay) extends AnalysisResults {
   // TODO: Add validity checks to catch unreasonable combinations of values
 }
 
@@ -172,11 +204,15 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   //       means flow analyses MUST occur across function boundries.
 
   def analyze(e: WithContext[Expression]): AnalysisResults = {
-    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), freeVars(e))
+    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), freeVars(e),
+        valueForceDelay(e))
   }
 
   // TODO: This is missing cases throughout and needs to be checked for currectness in all analyses!!
 
+  
+  // TODO: For correctness I need to assume values to calls are futures. So I need to block on them at future call time.
+  
   def timeToHalt(e: WithContext[Expression]): Delay = {
     import ImplicitResults._
     e match {
@@ -191,27 +227,22 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case LimitAt(f) =>
         f.timeToHalt min f.timeToPublish
       case Force(x: BoundVar) in ctx =>
-        ctx(x) match {
-          case Bindings.SeqBound(sctx, Sequence(Future(source), _, _)) =>
-            (source in sctx).timeToHalt min (source in sctx).timeToPublish
-          case _ =>
-            Delay.Blocking
-        }
-      case Force(x: Constant) in ctx =>
-        Delay.NonBlocking
+        (x in ctx).valueForceDelay
       case Future(f) in ctx =>
         (f in ctx).timeToHalt
       case CallAt(target in _, args, _, ctx) => {
         implicit val _ctx = ctx
         val siteRunTime = (target match {
           case Constant(s: Site) => s.timeToHalt min args.foldRight(Delay.Blocking: Delay) { (a, others) =>
-            if (a.publications only 0) a.timeToHalt min others
+            if (a.publications only 0) a.valueForceDelay min others
             else others
           }
-          case v: BoundVar if v.publications only 0 => v.timeToHalt
+          // TODO: Needs cases for def calls.
           case _ => Delay.Blocking
         })
-        val argForceTime = args.foldRight(Delay.NonBlocking: Delay)((a, acc) => (a.timeToPublish min a.timeToHalt) max acc)
+        val argForceTime = args.foldRight(Delay.NonBlocking: Delay) {
+          (a, acc) => a.valueForceDelay max acc
+        }
         siteRunTime max argForceTime
       }
       case DeclareDefsAt(defs, defsctx, body) =>
@@ -226,9 +257,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         ctx(v) match {
           case Bindings.SeqBound(_, _)
             | Bindings.DefBound(_, _, _)
-            | Bindings.RecursiveDefBound(_, _, _) => Delay.NonBlocking
-          case _ => Delay.Blocking
-          // FIXME: There should be cases for Bindings.DefBound(_, _, _) | Bindings.RecursiveDefBound(_, _, _)
+            | Bindings.RecursiveDefBound(_, _, _) => 
+            Delay.NonBlocking
+          case Bindings.ArgumentBound(_, _, _) => 
+            Delay.NonBlocking
+          case _ => 
+            Delay.Blocking
         }
       case _ =>
         Delay.Blocking
@@ -250,6 +284,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         ctx(x) match {
           case Bindings.SeqBound(sctx, Sequence(Future(source), _, _)) =>
             (source in sctx).timeToPublish
+          case Bindings.DefBound(_, _, _)
+             | Bindings.RecursiveDefBound(_, _, _) =>
+            (x in ctx).valueForceDelay
           case _ =>
             Delay.Blocking
         }
@@ -261,7 +298,10 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         implicit val _ctx = ctx
 
         target match {
-          case Constant(s: Site) => s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay)((a, acc) => a.timeToPublish max acc)
+          case Constant(s: Site) => 
+            s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) { 
+              (a, acc) => a.valueForceDelay max acc 
+            }
           case v: BoundVar => Delay.Blocking
           case _ => Delay.Blocking
         }
@@ -278,6 +318,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case Bindings.SeqBound(_, _)
           | Bindings.DefBound(_, _, _)
           | Bindings.RecursiveDefBound(_, _, _) =>
+          Delay.NonBlocking
+        case Bindings.ArgumentBound(_, _, _) => 
           Delay.NonBlocking
         case _ =>
           Delay.Blocking
@@ -297,11 +339,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (target match {
           case Constant(s: Site) => {
             if (args.forall(a => a.publications > 0))
-              Range(s.publications)
+              s.publications
             else if (args.exists(a => a.publications only 0))
               Range(0, 0)
             else
-              Range(s.publications).mayHalt
+              s.publications.mayHalt
           }
           case _ => Range(0, None)
         })
@@ -310,10 +352,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.publications.limitTo(1)
       case Force(x: BoundVar) in ctx => ctx(x) match {
         case Bindings.DefBound(_, _, _)
-          | Bindings.RecursiveDefBound(_, _, _) => Range(1, 1)
+          | Bindings.RecursiveDefBound(_, _, _) => 
+          Range(1, 1)
         case Bindings.SeqBound(sctx, Sequence(Future(source), _, _)) =>
           (source in sctx).publications.limitTo(1)
-        case _ => Range(0, 1)
+        case _ => 
+          Range(0, 1)
       }
       case Future(f) in _ =>
         Range(1, 1)
@@ -336,7 +380,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           | Bindings.DefBound(_, _, _)
           | Bindings.RecursiveDefBound(_, _, _) =>
           Range(1, 1)
-        case _ => ???
+        case Bindings.ArgumentBound(_, _, _) => 
+          Range(1, 1)
       }
       case _ =>
         Range(0, None)
@@ -364,10 +409,14 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case DeclareDefsAt(defs, defsctx, body) => {
         implicit val _ctx = defsctx
-        val defVars = defs.map(_.name)
-        (body.freeVars -- defVars) | defs.map({ d =>
-          d.body.freeVars -- d.formals -- defVars
+        val defVars = defs.map(_.name) 
+        
+        val defFreeVars = (for(d <- defs.iterator) yield {
+          val DefAt(_, formals, body, _, _, _, _) = d in defsctx
+          body.freeVars -- formals
         }).reduce(_ | _)
+            
+        (body.freeVars | defFreeVars) -- defVars
       }
       case DeclareTypeAt(_, _, b) =>
         b.freeVars
@@ -415,10 +464,14 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ => Map()
       }
       case f || g =>
-        ForceType.maxMaps(f.forceTypes, g.forceTypes)
+        ForceType.mergeMaps(
+            _ max _, ForceType.Immediately(false), 
+            f.forceTypes, g.forceTypes)
       // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
       case f > x > g =>
-        ForceType.minMaps(f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
+        ForceType.mergeMaps(
+            _ min _, ForceType.Never,
+            f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
       case LimitAt(f) =>
         f.forceTypes
       case Force(a: Var) in ctx =>
@@ -434,7 +487,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case HasType(b, _) in ctx =>
         (b in ctx).forceTypes
       case (v: BoundVar) in _ =>
-        Map((v, ForceType.Immediately(true)))
+        Map()
     }
   }
 
@@ -479,6 +532,73 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Effects.None
       case _ =>
         Effects.Anytime
+    }
+  }
+
+  def valueForceDelay(e: WithContext[Expression]): Delay = {
+    import ImplicitResults._
+    e match {
+      case Stop() in _ =>
+        Delay.NonBlocking
+      case CallAt(target in _, args, _, ctx) => 
+        target match {
+          case Constant(s: Site) => 
+            Delay.NonBlocking // Sites never make futures
+          case v: BoundVar => ctx(v) match {
+            case Bindings.DefBound(ctx, decls, d) => {
+              val DeclareDefsAt(_, dctx, _) = decls in ctx
+              val DefAt(_, _, body, _, _, _, _) = d in dctx
+              body.valueForceDelay
+            }
+            case _ => Delay.Blocking
+          }
+          case _ => Delay.Blocking
+        }        
+        // TODO: Figure out if this should be required to be NonBlocking
+        // This restricts all calls (sites and defs) from publishing futures
+      case f || g =>
+        // TODO: Can Blocking actually be treated as the join of other elements in Delay?
+        if (f.valueForceDelay == g.valueForceDelay)
+          g.valueForceDelay
+        else
+          Delay.Blocking
+      case f > x > g => 
+        g.valueForceDelay
+      case LimitAt(f) =>
+        f.valueForceDelay
+      case Force(a) in _ =>
+        Delay.NonBlocking
+      case Future(f) in ctx =>
+        (f in ctx).timeToPublish min (f in ctx).timeToHalt
+      case DeclareDefsAt(defs, defsctx, body) =>
+        body.valueForceDelay
+      case DeclareTypeAt(_, _, b) =>
+        b.valueForceDelay
+      case HasType(b, _) in ctx =>
+        (b in ctx).valueForceDelay
+      case Constant(_) in _ =>
+        Delay.NonBlocking
+      case (x: BoundVar) in ctx => 
+        ctx(x) match {
+          case Bindings.SeqBound(sctx, s) =>
+            (s.left in sctx).valueForceDelay
+          case Bindings.DefBound(ctx, decls, d) =>
+            val DeclareDefsAt(_, dctx, _) = decls in ctx
+            val DefAt(_, _, body, _, _, _, _) = d in dctx
+            val bodyVars = body.freeVars
+            println(bodyVars)
+            if (bodyVars subsetOf d.formals.toSet)
+              Delay.NonBlocking
+            else
+              Delay.Blocking
+          case Bindings.RecursiveDefBound(_, _, _) =>
+            // TODO: Can this be better?
+            Delay.Blocking
+          case _ =>
+            Delay.Blocking
+        }
+      case _ =>
+        Delay.Blocking
     }
   }
 }

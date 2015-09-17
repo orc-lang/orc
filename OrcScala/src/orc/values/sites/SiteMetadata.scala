@@ -67,7 +67,7 @@ object Effects {
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
   
-  def publications: (Int, Option[Int]) = (0, None)
+  def publications: Range = Range(0, None)
   def timeToPublish: Delay = Delay.Blocking
   def timeToHalt: Delay = Delay.Blocking
   def effects: Effects = Effects.Anytime
