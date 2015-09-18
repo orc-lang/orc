@@ -34,6 +34,10 @@ sealed trait ForceType {
     case Delay.Blocking => this max ForceType.Eventually
     case Delay.Forever => this max ForceType.Never
   }
+ 
+  def <=(o: ForceType): Boolean = {
+    (this max o) == o
+  }
 }
 object ForceType {
   case class Immediately(override val haltsWith: Boolean) extends ForceType {
@@ -119,16 +123,29 @@ trait AnalysisResults {
     * action other than halting?
     * Specifically is <code>x</code> forced before the expression has side effects or publishes.
     */
-  def forces(x: Var) = forceTypes(x)
+  def forces(x: Var) = forceTypes.getOrElse(x, ForceType.Never)
   def forceTypes: Map[Var, ForceType]
 
   /** Free variables in the expression.
     */
   def freeVars: Set[Var]
   
+  // TODO: This may not be the right way to represent this.
+  /*   For each future I basically want to know full analyses of what a force on it will do.
+   *   Maybe I should just create phantom force operations and have the force case in each analyses
+   *   look at the source of forced value.
+   */
   /** The amount of time forcing values published by this expression will cost.
     */
   def valueForceDelay: Delay
+  
+  def silent = publications only 0
+  def talkative = publications > 0
+  
+  def effectFree = effects == Effects.None
+  
+  def nonBlockingHalt = timeToHalt == Delay.NonBlocking
+  def nonBlockingPublish = timeToPublish == Delay.NonBlocking
 }
 
 case class AnalysisResultsConcrete(
@@ -224,9 +241,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.timeToHalt
       case f > x > g =>
         f.timeToHalt max g.timeToHalt
+      case f ConcatAt g =>
+        f.timeToHalt max g.timeToHalt
       case LimitAt(f) =>
         f.timeToHalt min f.timeToPublish
-      case Force(x: BoundVar) in ctx =>
+      case Force(x) in ctx =>
         (x in ctx).valueForceDelay
       case Future(f) in ctx =>
         (f in ctx).timeToHalt
@@ -264,8 +283,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case _ => 
             Delay.Blocking
         }
-      case _ =>
-        Delay.Blocking
     }
   }
 
@@ -278,6 +295,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.timeToPublish min g.timeToPublish
       case f > x > g =>
         f.timeToPublish max g.timeToPublish
+      case f ConcatAt g =>
+        f.timeToPublish min (f.timeToHalt max g.timeToPublish)
       case LimitAt(f) =>
         f.timeToPublish
       case Force(x: BoundVar) in ctx =>
@@ -324,8 +343,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ =>
           Delay.Blocking
       }
-      case _ =>
-        Delay.Blocking
     }
   }
 
@@ -359,14 +376,18 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ => 
           Range(0, 1)
       }
+      case Force(Constant(_)) in ctx => 
+        Range(1, 1)
+      case Force(_) in ctx => 
+        Range(0, 1)
       case Future(f) in _ =>
         Range(1, 1)
       case f || g =>
         f.publications + g.publications
       case f ConcatAt g =>
         f.publications + g.publications
-      case (f > x > g) in ctx =>
-        (f in ctx).publications * (g in ctx).publications
+      case f > x > g =>
+        f.publications * g.publications
       case DeclareDefsAt(defs, defsctx, body) => {
         body.publications
       }
@@ -383,8 +404,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case Bindings.ArgumentBound(_, _, _) => 
           Range(1, 1)
       }
-      case _ =>
-        Range(0, None)
     }
   }
 
@@ -394,6 +413,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Stop() in _ =>
         Set()
       case f || g =>
+        f.freeVars | g.freeVars
+      case f ConcatAt g =>
         f.freeVars | g.freeVars
       case f > x > g =>
         f.freeVars | (g.freeVars - x)
@@ -468,6 +489,10 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             _ max _, ForceType.Immediately(false), 
             f.forceTypes, g.forceTypes)
       // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
+      case f ConcatAt g =>
+        ForceType.mergeMaps(
+            _ min _, ForceType.Never,
+            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) })
       case f > x > g =>
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
@@ -510,6 +535,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ =>
           g.effects max Effects.BeforePub
       }
+      case f ConcatAt g => f.effects match {
+        case Effects.Anytime if f.publications only 0 =>
+          g.effects max Effects.BeforePub
+        case _ =>
+          g.effects max f.effects
+      }
       case LimitAt(f) =>
         f.effects min Effects.BeforePub
       case Force(a) in _ =>
@@ -530,8 +561,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Effects.None
       case (v: BoundVar) in _ =>
         Effects.None
-      case _ =>
-        Effects.Anytime
     }
   }
 
@@ -564,6 +593,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           Delay.Blocking
       case f > x > g => 
         g.valueForceDelay
+      case f ConcatAt g => 
+        // TODO: Can Blocking actually be treated as the join of other elements in Delay?
+        if (f.valueForceDelay == g.valueForceDelay)
+          g.valueForceDelay
+        else
+          Delay.Blocking
       case LimitAt(f) =>
         f.valueForceDelay
       case Force(a) in _ =>
@@ -586,7 +621,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             val DeclareDefsAt(_, dctx, _) = decls in ctx
             val DefAt(_, _, body, _, _, _, _) = d in dctx
             val bodyVars = body.freeVars
-            println(bodyVars)
             if (bodyVars subsetOf d.formals.toSet)
               Delay.NonBlocking
             else
@@ -597,8 +631,36 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case _ =>
             Delay.Blocking
         }
-      case _ =>
-        Delay.Blocking
     }
+  }
+}
+
+object Analysis {
+  def count(t : NamedAST, p : (Expression => Boolean)) : Int = {
+    val cs = t.subtrees
+    (t match {
+      case e : Expression if p(e) => 1
+      case _ => 0
+    }) +
+    (cs.map( count(_, p) ).sum)
+  }
+  
+  val futureCost = 4
+  val forceCost = 4
+  val sequenceCost = 1
+  val limitCost = 3
+  val callCost = 1
+  
+  def cost(t : NamedAST) : Int = {
+    val cs = t.subtrees
+    (t match {
+      case _ : Future => futureCost
+      case _ : Force => forceCost
+      case _ : Sequence => sequenceCost
+      case _ : Limit => limitCost
+      case _ : Call => callCost
+      case _ => 0
+    }) +
+    (cs.map( cost(_) ).sum)
   }
 }

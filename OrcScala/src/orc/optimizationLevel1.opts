@@ -1,0 +1,12 @@
+remove-unused-defs
+remove-unused-types
+fraction-defs
+orct
+orct:seq-reassoc
+orct:stop-equiv
+orct:seq-elim
+orct:seq-elim-var
+orct:par-elim
+orct:constant-propogation
+orct:limit-elim
+orct:max-passes=5

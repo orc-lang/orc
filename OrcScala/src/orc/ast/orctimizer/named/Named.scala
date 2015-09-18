@@ -61,7 +61,7 @@ sealed abstract class Expression
   extends NamedAST
   with NamedInfixCombinators
   //with hasVars
-  //with Substitution[Expression]
+  with Substitution[Expression]
   //with ContextualSubstitution
   //with Guarding 
   {
@@ -104,7 +104,7 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
   //with hasFreeVars
   //with hasFreeTypeVars
   with hasOptionalVariableName
-  //with Substitution[Def] 
+  with Substitution[Def] 
   {
   transferOptionalVariableName(name, this)
   //lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
@@ -122,7 +122,7 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
 sealed abstract class Type
   extends NamedAST
   //with hasFreeTypeVars
-  //with Substitution[Type] 
+  with Substitution[Type] 
   {
   //lazy val withoutNames: nameless.Type = namedToNameless(this, Nil)
 }

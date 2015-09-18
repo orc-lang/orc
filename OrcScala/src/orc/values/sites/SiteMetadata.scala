@@ -42,6 +42,10 @@ object Delay {
 sealed trait Effects {
   def max(o: Effects): Effects
   def min(o: Effects): Effects
+  
+  def <=(o: Effects): Boolean = {
+    (this max o) == o
+  }
 }
 object Effects {
   case object None extends Effects {

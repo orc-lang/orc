@@ -19,6 +19,7 @@ import orc.ast.orctimizer.{named => orct}
 import orc.lib.state.NewFlag
 import orc.lib.state.PublishIfNotSet
 import orc.lib.state.SetFlag
+import scala.collection.mutable
 
 /** @author dkitchin
   */
@@ -101,15 +102,19 @@ class OILToOrctimizer {
   def apply(a: Argument): orct.Argument = {
     a -> {
       case Constant(v) => orct.Constant(v)
-      case (x: BoundVar) => new orct.BoundVar()
+      case (x: BoundVar) => apply(x)
       case UnboundVar(s) => orct.UnboundVar(s)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
     }
   }
 
+  val boundVarCache = mutable.HashMap[BoundVar, orct.BoundVar]()
+    
   def apply(a: BoundVar): orct.BoundVar = {
     a -> {
-      case (x: BoundVar) => new orct.BoundVar()
+      case (x: BoundVar) => {
+        boundVarCache.getOrElseUpdate(x, new orct.BoundVar())
+      }
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
     }
   }

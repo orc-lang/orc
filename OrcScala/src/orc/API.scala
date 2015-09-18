@@ -26,6 +26,7 @@ import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
 import scala.util.parsing.input.Position
+import orc.compile.CompilerFlagValue
 
 /** The interface from a caller to the Orc compiler
   */
@@ -187,6 +188,13 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def compileOnly_=(newVal: Boolean)
   def runOil: Boolean
   def runOil_=(newVal: Boolean)
+  
+  def optimizationLevel: Int
+  def optimizationLevel_=(newVal: Int)
+  def optimizationOptions: java.util.List[String]
+  def optimizationOptions_=(v: java.util.List[String])
+
+  def optimizationFlags: Map[String, CompilerFlagValue]
 }
 
 trait OrcExecutionOptions extends OrcCommonOptions {

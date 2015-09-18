@@ -95,6 +95,22 @@ object LimitAt {
     case _ => None
   }
 }
+object FutureAt {
+  def unapply(e: WithContext[Expression]) = e match {
+    case (n@Future(f)) in ctx => {
+      Some(f in ctx)
+    }
+    case _ => None
+  }
+}
+object ForceAt {
+  def unapply(e: WithContext[Expression]) = e match {
+    case (n@Force(f)) in ctx => {
+      Some(f in ctx)
+    }
+    case _ => None
+  }
+}
 object CallAt {
   def unapply(e: WithContext[Expression]) = e match {
     case (n@Call(t, args, targs)) in ctx => {

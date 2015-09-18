@@ -79,6 +79,8 @@ object TransformContext {
     
     def size = 0
     def bindings: Set[Binding] = Set()
+    
+    override def toString = "()"
   }
   
   case class ExtendBindings(nbindings: ArrayBuffer[Binding], prev: TransformContext) extends TransformContext {
@@ -90,6 +92,8 @@ object TransformContext {
 
     def size = nbindings.length + prev.size
     def bindings = prev.bindings ++ nbindings
+    
+    override def toString = s"(${nbindings.mkString(",")})+$prev"
   }
   case class ExtendTypeBindings(nbindings: ArrayBuffer[TypeBinding], prev: TransformContext) extends TransformContext {
     def apply(v: BoundVar) = prev(v)
@@ -100,6 +104,8 @@ object TransformContext {
 
     def size = nbindings.length + prev.size
     def bindings = prev.bindings
+
+    override def toString = s"[${nbindings.mkString(",")}]+$prev"
   }
 }
 
@@ -146,7 +152,9 @@ object Bindings {
  * WithContext represents a node paired with the context in which it should be 
  * viewed. Some infix notation is provided for working with them.
  */
-case class WithContext[+E <: NamedAST](e: E, ctx: TransformContext)
+case class WithContext[+E <: NamedAST](e: E, ctx: TransformContext) {
+  override def toString = s"$e<in $ctx>"
+}
 object WithContext {
   import scala.language.implicitConversions
   

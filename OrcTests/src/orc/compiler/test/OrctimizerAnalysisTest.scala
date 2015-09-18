@@ -235,4 +235,24 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
+  
+  @Test
+  def analyzeConcatSimple(): Unit = {
+    val e = Concat(unanalyzableCall, Constant(""))
+    val a = getInContext(e, e)
+    assertEquals(Range(1, 2), a.publications)
+    assertEquals(Effects.Anytime, a.effects)
+    assertEquals(Delay.Blocking, a.timeToHalt)
+    assertEquals(Delay.Blocking, a.timeToPublish)
+  }
+  
+  @Test
+  def analyzeConcatFast(): Unit = {
+    val e = Concat(Call(Constant(Iff), List(Constant("")), None), Constant(""))
+    val a = getInContext(e, e)
+    assertEquals(Range(1, 2), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.NonBlocking, a.timeToHalt)
+    assertEquals(Delay.NonBlocking, a.timeToPublish)
+  }
 }
