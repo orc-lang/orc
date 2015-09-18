@@ -23,7 +23,7 @@ import orc.values.{ OrcRecord, OrcValue, OrcTuple }
 import orc.values.sites._
 import orc.types._
 
-object TupleConstructor extends TotalSite with TypedSite {
+object TupleConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
 
@@ -37,7 +37,7 @@ object TupleConstructor extends TotalSite with TypedSite {
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends PartialSite2 with TypedSite {
+object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite {
   override def name = "TupleArityChecker"
   def eval(x: AnyRef, y: AnyRef) =
     (x, y) match {

@@ -4,6 +4,7 @@ fraction-defs
 orct
 orct:late-bind-reorder
 orct:def-seq-norm
+orct:def-elim
 orct:seq-reassoc
 orct:stop-equiv
 orct:seq-elim

@@ -96,7 +96,19 @@ case class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
-  val ForceElim = Opt("force-elim") {
+  val ForceElim =  OptFull("force-elim") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case ForceAt(c@Constant(_) in ctx) => Some(c)
+      case ForceAt((x: BoundVar) in ctx) => ctx(x) match {
+        case Bindings.SeqBound(ctx, Call(Constant(_: Site), _, _) > _ > _) => Some(x)
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+  Opt("force-elim") {
+    case (ForceAt(c@Constant(_) in ctx), a) => c
     case (ForceAt(c@Constant(_) in ctx), a) => c
   }
 
@@ -117,6 +129,7 @@ case class Optimizer(co: CompilerOptions) {
     e match {
       case f > x > y if x == y.e => Some(f)
       case ((x: Var) in _) > y > f if f.forces(y) == ForceType.Immediately(true) => Some(f.subst(x, y))
+      case ForceAt((x: Var) in _) > y > f if f.forces(x) == ForceType.Immediately(true) && !(a(f).freeVars contains y) => Some(f)
       case _ => None
     }
   }

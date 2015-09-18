@@ -23,12 +23,12 @@ import orc.types._
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
 object NilSite extends StructurePairSite(NilConstructor, NilExtractor)
-object NilConstructor extends TotalSite0 with TypedSite {
+object NilConstructor extends TotalSite0 with TypedSite with FunctionalSite {
   override def name = "Nil"
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
 }
-object NilExtractor extends PartialSite1 with TypedSite {
+object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   override def name = "Nil.unapply"
   def eval(arg: AnyRef) = {
     arg match {
@@ -40,7 +40,7 @@ object NilExtractor extends PartialSite1 with TypedSite {
 }
 
 object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor)
-object ConsConstructor extends TotalSite2 with TypedSite {
+object ConsConstructor extends TotalSite2 with TypedSite with FunctionalSite {
   override def name = "Cons"
   def eval(h: AnyRef, t: AnyRef) = {
     t match {
@@ -53,7 +53,7 @@ object ConsConstructor extends TotalSite2 with TypedSite {
     FunctionType(List(X), List(X, ListType(X)), ListType(X))
   }
 }
-object ConsExtractor extends PartialSite1 with TypedSite {
+object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {

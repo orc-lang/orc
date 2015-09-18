@@ -257,7 +257,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             else others
           }
           // TODO: Needs cases for def calls.
-          case _ => Delay.Blocking
+          case _ => 
+            Delay.Blocking
         })
         val argForceTime = args.foldRight(Delay.NonBlocking: Delay) {
           (a, acc) => a.valueForceDelay max acc
@@ -321,7 +322,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) { 
               (a, acc) => a.valueForceDelay max acc 
             }
-          case v: BoundVar => Delay.Blocking
+          case v: BoundVar => 
+            Delay.Blocking
           case _ => Delay.Blocking
         }
       }
@@ -529,12 +531,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.effects max g.effects
       case f > x > g if f.publications only 0 =>
         f.effects
-      case f > x > g => f.effects match {
-        case Effects.Anytime =>
-          Effects.Anytime
-        case _ =>
-          g.effects max Effects.BeforePub
-      }
+      case f > x > g => 
+        g.effects max f.effects
       case f ConcatAt g => f.effects match {
         case Effects.Anytime if f.publications only 0 =>
           g.effects max Effects.BeforePub
@@ -620,14 +618,17 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case Bindings.DefBound(ctx, decls, d) =>
             val DeclareDefsAt(_, dctx, _) = decls in ctx
             val DefAt(_, _, body, _, _, _, _) = d in dctx
-            val bodyVars = body.freeVars
-            if (bodyVars subsetOf d.formals.toSet)
-              Delay.NonBlocking
-            else
-              Delay.Blocking
+            val closedVars = body.freeVars -- d.formals
+            val closedVarDelay = (for (x <- closedVars.iterator) yield {
+              (x in body.ctx).valueForceDelay
+            }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
+            closedVarDelay
           case Bindings.RecursiveDefBound(_, _, _) =>
-            // TODO: Can this be better?
-            Delay.Blocking
+            // TODO: Figure out how to avoid this hack.
+            // Really we need to know what context it's being referenced in.
+            // Specifically if it's in force(f) we cannot make this assumption
+            // But if it's a call or passed as parameter we can.
+            Delay.NonBlocking
           case _ =>
             Delay.Blocking
         }

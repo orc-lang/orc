@@ -24,6 +24,9 @@ import orc.values.sites.Range
 import orc.lib.state.NewFlag
 import orc.lib.builtin.Iff
 import orc.values.Signal
+import orc.values.Field
+import orc.lib.builtin.structured.TupleConstructor
+import orc.lib.builtin.structured.RecordConstructor
 
 /**
  * @author amp
@@ -237,6 +240,35 @@ class OrctimizerAnalysisTest {
   }
   
   @Test
+  def analyzeClosurePub(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val y = new BoundVar(Some("y"))
+    val id = new BoundVar(Some("id"))
+    val body = y
+    val f = Force(id)
+    val e = Future(unanalyzableCall) > y > DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
+    val a = getInContext(e, f)
+    assertEquals(Range(1, 1), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.Blocking, a.timeToHalt)
+    assertEquals(Delay.Blocking, a.timeToPublish)
+  }
+  
+  @Test
+  def analyzeClosureSiteCall(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val y = new BoundVar(Some("y"))
+    val id = new BoundVar(Some("id"))
+    val body = y
+    val f = Call(Constant(TupleConstructor), List(Constant(Field("apply")), id), None)
+    val e = Future(Constant("")) > y > DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
+    val a = getInContext(e, f)
+    assertEquals(Range(0, 1), a.publications)
+    assertEquals(Delay.NonBlocking, a.timeToHalt)
+    assertEquals(Delay.NonBlocking, a.timeToPublish)
+  }
+  
+  @Test
   def analyzeConcatSimple(): Unit = {
     val e = Concat(unanalyzableCall, Constant(""))
     val a = getInContext(e, e)
@@ -255,4 +287,40 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
+  
+  @Test
+  def analyzeComplex1(): Unit = {
+    val v1541 = new BoundVar()
+    val v1542 = new BoundVar()
+    val e = (Call(Constant(TupleConstructor), List(Constant(Field("apply")), Constant("")), None) > v1541 > 
+      (Call(Constant(TupleConstructor), List(Constant(Field("unapply")), Constant("")), None) > v1542 > 
+      (Call(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
+    val a = getInContext(e, e)
+    assertEquals(Range(0, 0), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.NonBlocking, a.timeToHalt)
+    assertEquals(Delay.Forever, a.timeToPublish)
+  }
+  
+  @Test
+  def analyzeComplex2(): Unit = {
+    val x = new BoundVar(Some("x"))
+    val id = new BoundVar(Some("id"))
+    val id2 = new BoundVar(Some("id"))
+    val body = x
+    val defs = List(Def(id, List(x), body, List(), None, None), Def(id2, List(x), body, List(), None, None))
+    val v1541 = new BoundVar()
+    val v1542 = new BoundVar()
+    val f = (Call(Constant(TupleConstructor), List(Constant(Field("apply")), id), None) > v1541 > 
+      (Call(Constant(TupleConstructor), List(Constant(Field("unapply")), id2), None) > v1542 > 
+      (Call(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
+    val e = DeclareDefs(defs, f)
+    val a = getInContext(e, f)
+    assertEquals(Range(0, 0), a.publications)
+    assertEquals(Effects.None, a.effects)
+    assertEquals(Delay.NonBlocking, a.timeToHalt)
+    assertEquals(Delay.Forever, a.timeToPublish)
+  }
+  // TODO: test timeToHalt for: 
+  // (Tuple(.apply, toattr) >`v1541> (Tuple(.unapply, fromattr) >`v1542> (Record(`v1541, `v1542) >`ov1784> stop)))
 }

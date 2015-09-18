@@ -44,6 +44,7 @@ class OILToOrctimizer {
         val (newTarget, forceTarget) = target match {
             case c: Constant =>
               (apply(c), None)
+            // TODO: Add a case to handle def calls within a defs scope. These should not be forced.
             case _ =>
               val t = new orct.BoundVar(Some(s"fut_$target"))
               (t, Some(t))

@@ -59,7 +59,7 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> Analysis.cost(prog))
           val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-          s"Orctimizer Pass $pass: $s"
+          s"Orctimizer Pass $pass/$maxPasses: $s"
         }
 
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
