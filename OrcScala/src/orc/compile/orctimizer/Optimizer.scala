@@ -235,9 +235,11 @@ case class Optimizer(co: CompilerOptions) {
     
     e match {
       case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
-        case Bindings.DefBound(dctx, _, d) => {
-          def cost = Analysis.cost(d.body)
-          val bodyfree = (d.body in dctx).freeVars
+        case Bindings.DefBound(dctx, decls, d) => {
+          val DeclareDefsAt(_, dctx, _) = decls in ctx
+          val DefAt(_, _, body, _, _, _, _) = d in dctx
+          def cost = Analysis.cost(body)
+          val bodyfree = body.freeVars
           def recursive = bodyfree.contains(d.name)
           def ctxsCompat = {
             def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable) && b.variable != d.name
@@ -249,10 +251,10 @@ case class Optimizer(co: CompilerOptions) {
           //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
           //if( !ctxsCompat ) 
           //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
-          if ( recursive || Analysis.cost(d.body) > inlineCostThreshold || !ctxsCompat)
+          if ( recursive || Analysis.cost(body) > inlineCostThreshold || !ctxsCompat)
             None // No inlining of recursive functions or large functions.
           else {
-            val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
+            val bodyWithValArgs = body.substAll(((d.formals: List[Argument]) zip args).toMap)
             val typeSubst = targs match {
               case Some(as) => (d.typeformals:List[Typevar]) zip as
               case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }

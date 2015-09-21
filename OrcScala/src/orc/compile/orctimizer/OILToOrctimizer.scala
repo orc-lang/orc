@@ -35,16 +35,22 @@ class OILToOrctimizer {
     orct.Call(orct.Constant(PublishIfNotSet), List(flag), None)
   }
   
-  def apply(e: Expression): orct.Expression = {
+  private def isDef(b: BoundVar)(implicit ctx: Map[BoundVar, Expression]) = ctx.get(b) match {
+    case Some(_: DeclareDefs) => true
+    case _ => false
+  }
+  
+  def apply(e: Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
       case a: Argument => orct.Force(apply(a))
       case Call(target, args, typeargs) => {
         // Compute the target value and a flag to state of it should be forced
         val (newTarget, forceTarget) = target match {
-            case c: Constant =>
+            case (c: Constant) =>
               (apply(c), None)
-            // TODO: Add a case to handle def calls within a defs scope. These should not be forced.
+            case (x: BoundVar) if isDef(x) =>
+              (apply(x), None)
             case _ =>
               val t = new orct.BoundVar(Some(s"fut_$target"))
               (t, Some(t))
@@ -80,8 +86,14 @@ class OILToOrctimizer {
         }
       }
       case left || right => orct.Parallel(apply(left), apply(right))
-      case left > x > right => orct.Sequence(apply(left), apply(x), apply(right))
-      case left < x <| right => orct.Sequence(orct.Future(apply(right)), apply(x), apply(left))
+      case left > x > right => {
+        val bctx = ctx + ((x, e))
+        orct.Sequence(apply(left), apply(x), apply(right)(bctx)) 
+      }
+      case left < x <| right => {
+        val bctx = ctx + ((x, e))
+        orct.Sequence(orct.Future(apply(right)), apply(x), apply(left)(bctx))
+      }
       case Limit(f) => orct.Limit(apply(f))
       case left ow right => 
         val x = new orct.BoundVar()
@@ -90,7 +102,8 @@ class OILToOrctimizer {
         val cr = orct.Sequence(publishIfNotSet(flag), new orct.BoundVar(), apply(right))
         orct.Sequence(newFlag(), flag, orct.Concat(cl, cr))
       case DeclareDefs(defs, body) => {
-        orct.DeclareDefs(defs map apply, apply(body))
+        val bctx = ctx ++ (defs map { d => (d.name, e) })        
+        orct.DeclareDefs(defs map { apply(_)(bctx) }, apply(body)(bctx))
       }
       case DeclareType(x, t, body) => {
         orct.DeclareType(apply(x), apply(t), apply(body))
@@ -161,7 +174,7 @@ class OILToOrctimizer {
     }
   }
   
-  def apply(defn: Def): orct.Def = {
+  def apply(defn: Def)(implicit ctx: Map[BoundVar, Expression]): orct.Def = {
     defn -> {
       case Def(name, formals, body, typeformals, argtypes, returntype) => {
         orct.Def(apply(name), formals map apply, apply(body), typeformals map apply, 

@@ -612,23 +612,28 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Constant(_) in _ =>
         Delay.NonBlocking
       case (x: BoundVar) in ctx => 
+        def handleDef(decls: DeclareDefs, ctx: TransformContext, d: Def) = {
+          val DeclareDefsAt(_, dctx, _) = decls in ctx
+          val DefAt(_, _, body, _, _, _, _) = d in dctx
+          // Remove all arguments because they are not closed variables.
+          // Remove all recursive references. Because those will always 
+          // be available immediately when non-recursive references 
+          // become available, so they can never increase the delay.
+          val closedVars = freeVars(body) -- d.formals -- decls.defs.map(_.name)
+          val closedVarDelay = (for (x <- closedVars.iterator) yield {
+            (x in body.ctx).valueForceDelay
+          }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
+          closedVarDelay
+        }
+        
         ctx(x) match {
           case Bindings.SeqBound(sctx, s) =>
             (s.left in sctx).valueForceDelay
-          case Bindings.DefBound(ctx, decls, d) =>
-            val DeclareDefsAt(_, dctx, _) = decls in ctx
-            val DefAt(_, _, body, _, _, _, _) = d in dctx
-            val closedVars = body.freeVars -- d.formals
-            val closedVarDelay = (for (x <- closedVars.iterator) yield {
-              (x in body.ctx).valueForceDelay
-            }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
-            closedVarDelay
-          case Bindings.RecursiveDefBound(_, _, _) =>
-            // TODO: Figure out how to avoid this hack.
-            // Really we need to know what context it's being referenced in.
-            // Specifically if it's in force(f) we cannot make this assumption
-            // But if it's a call or passed as parameter we can.
-            Delay.NonBlocking
+          case Bindings.DefBound(ctx, decls, d) => 
+            handleDef(decls, ctx, d)
+          case Bindings.RecursiveDefBound(ctx, decls, d) =>
+            // TODO: Make free variables somehow computed first so this can be used: handleDef(decls, ctx, d)
+            Delay.Blocking
           case _ =>
             Delay.Blocking
         }

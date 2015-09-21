@@ -17,12 +17,11 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OILToOrctimizer()
-        translator(ast)
+        translator(ast)(Map())
       }
   }
 
   lazy val optimize = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
-    import orc.compile.optimize.named._
     import orctimizer.named._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
