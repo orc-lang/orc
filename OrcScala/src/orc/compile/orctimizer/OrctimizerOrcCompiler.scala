@@ -94,9 +94,9 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
       outputIR(1) >>>
       splitPrune.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(2) >>>

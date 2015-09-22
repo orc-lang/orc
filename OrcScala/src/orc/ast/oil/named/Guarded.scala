@@ -52,11 +52,12 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case left < x < right => {
+      case left < x <| right => {
         val l = check(left)
         val r = check(right)
         l && r
       }
+      case Limit(e) => check(e)
       case left ow right => {
         val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
@@ -70,6 +71,7 @@ trait Guarding {
       case DeclareType(_, _, body) => check(body)
       case HasType(body, _) => check(body)
       case VtimeZone(timeOrder, body) => check(body)
+      case FieldAccess(o, f) => false
     }
   }
 

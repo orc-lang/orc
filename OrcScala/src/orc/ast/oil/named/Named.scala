@@ -20,6 +20,7 @@ import orc.ast.oil._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
+import orc.values
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this)
@@ -34,6 +35,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case left ow right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
+    case FieldAccess(o, f) => List(o)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
@@ -83,6 +85,10 @@ case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) 
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+
+/** Read the value from a field.
+  */
+case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
 /* Match an expression with exactly one hole.
  * Matches as Module(f), where f is a function which takes

@@ -20,6 +20,7 @@ import orc.ast.orctimizer._
 import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
+import orc.values
 
 // TODO: Consider porting ODO FieldAccess combinator to this.
 // TODO: Consider porting Porc Tuple access sites. Or should it be a varient of FieldAccess (_1, _2, ...)?
@@ -40,6 +41,7 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case left Concat right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
+    case FieldAccess(o, f) => List(o)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
     case Def(f, formals, body, typeformals, argtypes, returntype) => {
@@ -88,6 +90,10 @@ case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Ex
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
 case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+
+/** Read the value from a field.
+  */
+case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
 
 sealed abstract class Argument extends Expression

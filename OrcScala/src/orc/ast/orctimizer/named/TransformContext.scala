@@ -158,7 +158,6 @@ case class WithContext[+E <: NamedAST](e: E, ctx: TransformContext) {
 object WithContext {
   import scala.language.implicitConversions
   
-  @inline
   implicit def withoutContext[E <: NamedAST](e: WithContext[E]): E = e.e
 }
 

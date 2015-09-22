@@ -59,7 +59,7 @@ object PrimitiveForms {
     getExtractor > extractor > invokeExtractor
   }
 
-  def makeNth(a: Argument, i: Int) = Call(a, List(Constant(BigInt(i))), None)
+  def makeNth(a: Argument, i: Int) = FieldAccess(a, Field(s"_$i"))
 
   def makeLet(args: List[Argument]): Expression = {
     args match {

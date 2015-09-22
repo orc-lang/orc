@@ -67,6 +67,7 @@ class SplitPrune(val reportProblem: CompilationException with ContinuableSeverit
       }
       case HasType(body, expectedType) => named5c.HasType(toExp(body), toType(expectedType))
       case VtimeZone(ord, body) => named5c.VtimeZone(toArg(ord), toExp(body))
+      case FieldAccess(o, f) => named5c.FieldAccess(toArg(o), f)
       case Hole(ctx, tctx) => named5c.Hole(ctx mapValues toArg, tctx mapValues toType)
     }
   }

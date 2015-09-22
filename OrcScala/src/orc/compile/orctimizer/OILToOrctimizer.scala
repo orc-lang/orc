@@ -110,6 +110,10 @@ class OILToOrctimizer {
       }
       case HasType(body, expectedType) => orct.HasType(apply(body), apply(expectedType))
       case VtimeZone(timeOrder, body) => orct.VtimeZone(apply(timeOrder), apply(body))
+      case FieldAccess(o, f) => {
+        val t = new orct.BoundVar(Some(s"f_$o"))
+        orct.Force(apply(o)) > t > orct.FieldAccess(t, f)
+      }
     }    
   }
 

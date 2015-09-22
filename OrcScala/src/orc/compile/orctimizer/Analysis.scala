@@ -284,6 +284,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case _ => 
             Delay.Blocking
         }
+      case FieldAccess(_, _) in _ =>
+        Delay.NonBlocking
     }
   }
 
@@ -345,6 +347,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ =>
           Delay.Blocking
       }
+      case FieldAccess(_, _) in _ =>
+        Delay.NonBlocking
     }
   }
 
@@ -406,6 +410,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case Bindings.ArgumentBound(_, _, _) => 
           Range(1, 1)
       }
+      case FieldAccess(_, _) in _ =>
+        Range(0, 1)
     }
   }
 
@@ -449,6 +455,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Set()
       case (v: BoundVar) in ctx =>
         Set(v)
+      case FieldAccess(v, _) in ctx =>
+        (v in ctx).freeVars
     }
   }
 
@@ -515,6 +523,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (b in ctx).forceTypes
       case (v: BoundVar) in _ =>
         Map()
+      case FieldAccess(_, _) in _ =>
+        Map()
     }
   }
 
@@ -558,6 +568,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Constant(_) in _ =>
         Effects.None
       case (v: BoundVar) in _ =>
+        Effects.None
+      case FieldAccess(_, _) in _ =>
         Effects.None
     }
   }
@@ -637,6 +649,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case _ =>
             Delay.Blocking
         }
+      case FieldAccess(_, _) in _ =>
+        Delay.NonBlocking
     }
   }
 }

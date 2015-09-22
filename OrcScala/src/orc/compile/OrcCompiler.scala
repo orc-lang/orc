@@ -183,11 +183,11 @@ trait CoreOrcCompilerPhases {
     }
   }
 
-  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named4c.Expression, named4c.Expression] {
+  val noUnguardedRecursion = new CompilerPhase[CompilerOptions, named5c.Expression, named5c.Expression] {
     val phaseName = "noUnguardedRecursion"
     override def apply(co: CompilerOptions) =
       { ast =>
-        def warn(e: named4c.Expression) = {
+        def warn(e: named5c.Expression) = {
           co.reportProblem(UnguardedRecursionException() at e)
         }
         if (!co.options.disableRecursionCheck) {
@@ -310,9 +310,9 @@ class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expre
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
       outputIR(1) >>>
       splitPrune.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(2) >>>

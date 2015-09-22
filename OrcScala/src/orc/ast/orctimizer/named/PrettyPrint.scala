@@ -75,6 +75,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
+      case FieldAccess(o, f) => reduce(o) + "." + f.field
       case Constant(v) => Format.formatValue(v)
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
       case UnboundVar(s) => "?" + s

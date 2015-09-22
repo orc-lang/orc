@@ -230,7 +230,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         unfold(args map convert, { Call(target, _, newtypeargs) })
       }
       case ext.FieldAccess(field) => {
-        Call(target, List(Constant(Field(field))), None)
+        FieldAccess(target, Field(field))
       }
       case ext.Dereference => {
         Call(context("?"), List(target), None)

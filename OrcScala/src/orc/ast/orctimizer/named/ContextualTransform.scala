@@ -88,6 +88,7 @@ trait ContextualTransform extends NamedASTFunction {
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
         case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
+        case FieldAccess(o, f) => FieldAccess(recurse(o), f)
       })(expr)
   }
 
