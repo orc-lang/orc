@@ -79,7 +79,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
       case Array(name) =>
         (name, new CompilerFlagValue(name, Some("true")))
       case Array(name, value) =>
-        (name, new CompilerFlagValue(name, Some(s)))
+        (name, new CompilerFlagValue(name, Some(value)))
       case _ =>
         throw new IllegalArgumentException(s"Cound not parse option: $s")
     }
