@@ -31,6 +31,8 @@ import orc.values.sites.Site
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
   def name : String
+  
+  override def toString = name
 }
 
 case class Opt(name : String)(f : PartialFunction[(WithContext[Expression], ExpressionAnalysisProvider[Expression]), Expression]) extends Optimization {
@@ -102,14 +104,11 @@ case class Optimizer(co: CompilerOptions) {
       case ForceAt(c@Constant(_) in ctx) => Some(c)
       case ForceAt((x: BoundVar) in ctx) => ctx(x) match {
         case Bindings.SeqBound(ctx, Call(Constant(_: Site), _, _) > _ > _) => Some(x)
+        case Bindings.SeqBound(ctx, FieldAccess(_, _) > _ > _) => Some(x)
         case _ => None
       }
       case _ => None
     }
-  }
-  Opt("force-elim") {
-    case (ForceAt(c@Constant(_) in ctx), a) => c
-    case (ForceAt(c@Constant(_) in ctx), a) => c
   }
 
   val StopEquiv = Opt("stop-equiv") {
@@ -143,6 +142,7 @@ case class Optimizer(co: CompilerOptions) {
     }
   } 
   */
+  
   val SeqExp = Opt("seq-expansion") {
     case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
       // This doesn't really eliminate any code and I cannot think of a case where 
@@ -272,6 +272,20 @@ case class Optimizer(co: CompilerOptions) {
   val DefElim = Opt("def-elim") {
     case (DeclareDefsAt(defs, ctx, b), a) if (a(b).freeVars & defs.map(_.name).toSet).isEmpty => b
   }
+
+  def containsType(b: Expression, tv: BoundTypevar) = {
+    var found = false
+    (new NamedASTTransform {
+      override def onType(typecontext: List[BoundTypevar]) = {
+        case `tv` => found = true; tv
+        case e: Typevar => e
+      }
+    })(b)
+    found
+  }
+  val TypeElim = Opt("type-elim") {
+    case (DeclareTypeAt(tv, t, b), a) if !containsType(b, tv) => b
+  }
   
   def isClosureBinding(b: Bindings.Binding) = {
     import Bindings._
@@ -281,34 +295,40 @@ case class Optimizer(co: CompilerOptions) {
     } 
   }
   
-  /*
   val AccessorElim = Opt("accessor-elim") {
-    case (CallAt(Constant(GetField) in _, List(Constant(r : OrcRecord), Constant(f: Field)), ctx, _), a) if r.entries.contains(f.field) => 
-      Constant(r.getField(f))
-    case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
+    case (FieldAccess(Constant(r : OrcRecord), f) in ctx, a) if r.entries.contains(f.field) => 
+      Constant(r.entries(f.field))
+/*  case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
       Constant(r.getField(Field("apply")))
     case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
       v
     case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
       Constant(r.getField(Field("unapply")))
+      */
   }
+  
+  val TupleFieldPattern = """_([0-9]+)""".r
   
   val TupleElim = OptFull("tuple-elim") { (e, a) =>
     import a.ImplicitResults._, Bindings._
     e match {
-      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
-        val i = bi.intValue
+      case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx if (v in ctx).nonBlockingPublish => 
+        val i = num.toInt
         ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size && (args(i) in tctx).immediatePublish => Some(args(i))
+          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) 
+            if i < args.size && (args(i) in tctx).nonBlockingPublish => 
+              Some(args(i))
           case _ => None
         }
-      case CallAt(Constant(GetElem) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) > x > e if (v in ctx).immediatePublish && !e.freevars.contains(x) => 
-        val i = bi.intValue
+      case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
+          if (v in ctx).nonBlockingPublish && !e.freeVars.contains(x) => 
+        val i = num.toInt
         ctx(v) match {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
           case _ => None
         }
-      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).immediatePublish => 
+      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) 
+          if (v in ctx).nonBlockingPublish => 
         val i = bi.intValue
         ctx(v) match {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
@@ -339,7 +359,6 @@ case class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
-  */
 
   val allOpts = List(
       SeqReassoc,
@@ -347,15 +366,17 @@ case class Optimizer(co: CompilerOptions) {
       LiftUnrelated, 
       FutureElimFlatten, FutureElim, 
       FutureForceElim, ForceElim,
-      SiteForceElim,
+      SiteForceElim, TupleElim, AccessorElim,
       LimitCompChoice, LimitElim, ConstProp, 
       StopEquiv, ParElim,
       SeqExp, SeqElim, SeqElimVar,
-      InlineDef
+      InlineDef, TypeElim
       )
 
   val opts = allOpts.filter{ o =>
-    co.options.optimizationFlags(s"orct:${o.name}").asBool()
+    val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
+    //Logger.fine(s"${if(b) "ENABLED" else "disabled"} ${o.name}")
+    b
   }
 }
 

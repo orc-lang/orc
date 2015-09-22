@@ -23,7 +23,7 @@ import orc.values.{ OrcRecord, OrcValue, OrcTuple }
 import orc.values.sites._
 import orc.types._
 
-object TupleConstructor extends TotalSite with TypedSite with FunctionalSite {
+object TupleConstructor extends TotalSite with TypedSite with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
 

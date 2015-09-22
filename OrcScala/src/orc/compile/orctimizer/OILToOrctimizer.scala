@@ -52,7 +52,7 @@ class OILToOrctimizer {
             case (x: BoundVar) if isDef(x) =>
               (apply(x), None)
             case _ =>
-              val t = new orct.BoundVar(Some(s"fut_$target"))
+              val t = new orct.BoundVar(Some(s"f_$target"))
               (t, Some(t))
           }
 
@@ -63,7 +63,7 @@ class OILToOrctimizer {
             case c: Constant =>
               apply(c)
             case _ =>
-              val newArg = new orct.BoundVar(Some(s"fut_$arg"))
+              val newArg = new orct.BoundVar(Some(s"f_$arg"))
               bindings += ((arg, newArg))
               newArg
           }

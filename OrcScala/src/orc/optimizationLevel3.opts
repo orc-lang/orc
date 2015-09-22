@@ -2,7 +2,7 @@ remove-unused-defs
 remove-unused-types
 fraction-defs
 orct
-orct:late-bind-reorder
+orct:type-elim
 orct:def-seq-norm
 orct:def-elim
 orct:seq-reassoc
@@ -17,6 +17,8 @@ orct:inline-threshold=30
 orct:future-elim
 orct:future-force-elim
 orct:force-elim
+orct:tuple-elim
+orct:accessor-elim
 orct:future-elim-flatten
 orct:future-flatten-threshold=15
 orct:site-force-elim
