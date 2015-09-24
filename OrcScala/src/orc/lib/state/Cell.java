@@ -148,4 +148,13 @@ public class Cell extends EvalSite implements TypedSite {
 
 	}
 
+
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }

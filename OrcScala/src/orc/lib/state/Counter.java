@@ -106,4 +106,12 @@ public class Counter extends EvalSite implements TypedSite {
 		return CounterType.getBuilder();
 	}
 
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }
