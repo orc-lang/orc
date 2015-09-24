@@ -26,6 +26,10 @@ import orc.types
 import orc.values.sites.Delay
 import orc.values.sites.Effects
 import orc.values.sites.Site
+import orc.lib.state.NewFlag
+import orc.lib.state.SetFlag
+import orc.lib.state.PublishIfNotSet
+import orc.values.Signal
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -93,6 +97,7 @@ case class Optimizer(co: CompilerOptions) {
     e match {
       case FutureAt(ForceAt((x: BoundVar) in ctx)) => ctx(x) match {
         case Bindings.SeqBound(ctx, Future(_) > _ > _) => Some(x)
+        case Bindings.ArgumentBound(ctx, _, _) => Some(x)
         case _ => None
       }
       case _ => None
@@ -175,10 +180,31 @@ case class Optimizer(co: CompilerOptions) {
     }
   }
  
-  val ParElim = OptSimple("par-elim") {
+  val StopElim = OptSimple("stop-elim") {
     case (Stop() in _) || g => g.e
     case f || (Stop() in _) => f.e
+    case (Stop() in _) ConcatAt g => g.e
+    case f ConcatAt (Stop() in _) => f.e
   }
+  
+  val ParFlatten = OptFull("par-flatten") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case Pars(es, ctx) if es.exists(e => (e in ctx).nonBlockingHalt) => {
+        val (nbs, bs) = es.partition(e => (e in ctx).nonBlockingHalt)
+        /*if(nbs.size > 1)
+          Logger.finer(s"Found par-flatten: $nbs\n|\n$bs")
+        */
+        (nbs.size, bs.isEmpty) match {
+          case (n, _) if n <= 1 => None
+          case (_, false) => Some(nbs.reduce(Concat) || Pars(bs))
+          case (_, true) => Some(nbs.reduce(Concat))
+        }
+      }
+      case _ => None
+    }
+  }
+  
   val ConstProp = Opt("constant-propogation") {
     case (((y : Constant) in _) > x > g, a) => g.e.subst(y, x)
     case (((y : Argument) in ctx) > x > g, a) if a(y in ctx).nonBlockingPublish => g.subst(y, x) 
@@ -226,6 +252,58 @@ case class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
+  
+  // This only implements the very simplest way of detecting when the Flag will never be set or never be used.
+  // This could be made smarter number of other ways. However note that because of dead code elimination this
+  // will catch the main case where something that never publishes controls SetFlag.
+  val FlagElim = OptFull("flag-elim") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case CallAt(Constant(NewFlag) in _, _, _, ctx) > x > e => {
+        var hasSet = false
+        var hasCheck = false
+        var hasOther = false
+        (new ContextualTransform.NonDescending {
+          override def onExpressionCtx = {
+            case CallAt(Constant(SetFlag) in _, List(`x`), _, ctx) => {
+              hasSet = true
+              Stop()
+            }
+            case CallAt(Constant(PublishIfNotSet) in _, List(`x`), _, ctx) => {
+              hasCheck = true
+              Stop()
+            }
+            case `x` => {
+              hasOther = true
+              Stop()
+            }
+          }
+          override def onArgument(implicit ctx: TransformContext) = {
+            case `x` => {
+              hasOther = true
+              x
+            }
+          }
+        })(e)
+        //Logger.finer(s"Checked flag $x: set $hasSet check $hasCheck other $hasOther")
+        if(!hasOther && (hasSet || hasCheck) && (!hasSet || !hasCheck)) {
+          // If one or the other, but not both are set
+          val s = if (hasCheck) PublishIfNotSet else SetFlag
+          Some((new ContextualTransform.NonDescending {
+            override def onExpressionCtx = {
+              case CallAt(Constant(`s`) in _, List(`x`), _, ctx) => {
+                Constant(Signal)
+              }
+            }
+          })(e))
+        } else {
+          None
+        }
+      }
+      case _ => None
+    }
+  }
+
 
   
   val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
@@ -363,14 +441,15 @@ case class Optimizer(co: CompilerOptions) {
   val allOpts = List(
       SeqReassoc,
       DefSeqNorm, DefElim, 
-      LiftUnrelated, 
+      LiftUnrelated,
       FutureElimFlatten, FutureElim, 
       FutureForceElim, ForceElim,
       SiteForceElim, TupleElim, AccessorElim,
       LimitCompChoice, LimitElim, ConstProp, 
-      StopEquiv, ParElim,
+      StopEquiv, StopElim,
       SeqExp, SeqElim, SeqElimVar,
-      InlineDef, TypeElim
+      InlineDef, TypeElim,
+      ParFlatten, FlagElim
       )
 
   val opts = allOpts.filter{ o =>
