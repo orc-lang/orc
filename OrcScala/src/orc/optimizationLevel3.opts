@@ -24,4 +24,6 @@ orct:future-flatten-threshold=15
 orct:site-force-elim
 orct:par-flatten
 orct:flag-elim
+orct:unroll-def
+orct:unroll-threshold=1500
 orct:max-passes=30

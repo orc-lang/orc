@@ -55,27 +55,29 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
   *
   * @author amp
   */
-case class Optimizer(co: CompilerOptions) {
+abstract class Optimizer(co: CompilerOptions) {
+  def opts: Seq[Optimization]
+  
+  def transformFrom(f: PartialFunction[WithContext[Expression], Expression]): ContextualTransform
+  
   def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression]) : Expression = {
-    val trans = new ContextualTransform.Pre {
-      override def onExpressionCtx = {
-        case (e: WithContext[Expression]) => {
-          val e1 = opts.foldLeft(e)((e, opt) => {
-            opt(e, analysis) match {
-              case None => e
-              case Some(e2) =>
-                if (e.e != e2) {
-                  Logger.fine(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
-                  e2 in e.ctx
-                } else
-                  e
-            }
-          })
-          e1.e
-        }
+    val trans = transformFrom {
+      case (e: WithContext[Expression]) => {
+        val e1 = opts.foldLeft(e)((e, opt) => {
+          opt(e, analysis) match {
+            case None => e
+            case Some(e2) =>
+              if (e.e != e2) {
+                Logger.fine(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
+                e2 in e.ctx
+              } else
+                e
+          }
+        })
+        e1.e
       }
     }
-    
+   
     trans(e)
   }
 
@@ -314,37 +316,69 @@ case class Optimizer(co: CompilerOptions) {
     e match {
       case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
         case Bindings.DefBound(dctx, decls, d) => {
-          val DeclareDefsAt(_, dctx, _) = decls in ctx
-          val DefAt(_, _, body, _, _, _, _) = d in dctx
+          val DeclareDefsAt(_, declsctx, _) = decls in dctx
+          val DefAt(_, _, body, _, _, _, _) = d in declsctx
           def cost = Analysis.cost(body)
           val bodyfree = body.freeVars
           def recursive = bodyfree.contains(d.name)
-          def ctxsCompat = {
-            def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable) && b.variable != d.name
-            val ctxTrimed = ctx.bindings.filter(isRelevant)
-            val dctxTrimed = dctx.bindings.filter(isRelevant)
-            ctxTrimed == dctxTrimed
-          }
+          def ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
           //if (cost > costThreshold) 
           //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
           //if( !ctxsCompat ) 
           //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
           if ( recursive || Analysis.cost(body) > inlineCostThreshold || !ctxsCompat)
             None // No inlining of recursive functions or large functions.
-          else {
-            val bodyWithValArgs = body.substAll(((d.formals: List[Argument]) zip args).toMap)
-            val typeSubst = targs match {
-              case Some(as) => (d.typeformals:List[Typevar]) zip as
-              case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
-            }
-            val newBody = bodyWithValArgs.substAllTypes(typeSubst.toMap)
-            Some(newBody)
-          }
+          else
+            Some(buildInlineDef(d, args, targs))
         }
         case _ => None
       }
       case _ => None
     }
+  }
+   
+  val unrollCostThreshold = co.options.optimizationFlags("orct:unroll-threshold").asInt(15)
+  val UnrollDef = OptFull("unroll-def") { (e, a) =>
+    import a.ImplicitResults._
+    
+    e match {
+      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
+        case Bindings.RecursiveDefBound(dctx, decls, d) => {
+          val DeclareDefsAt(_, declsctx, _) = decls in dctx
+          val DefAt(_, _, body, _, _, _, _) = d in declsctx
+          def cost = Analysis.cost(body)
+          if (cost > unrollCostThreshold) 
+            println(s"WARNING: Not unrolling ${d.name} because of cost ${cost}")
+          if (Analysis.cost(body) > unrollCostThreshold)
+            None
+          else
+            Some(buildInlineDef(d, args, targs))
+        }
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+
+  // TODO: Rename all variable inside the function body.
+  def buildInlineDef(d: Def, args: List[Argument], targs: Option[List[Type]]) = {
+    val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
+    val typeSubst = targs match {
+      case Some(as) => (d.typeformals:List[Typevar]) zip as
+      case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
+    }
+    bodyWithValArgs.substAllTypes(typeSubst.toMap)    
+  }
+
+  def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareDefs, 
+      d: Def, dctx: TransformContext, ctx: TransformContext) = {
+    val DeclareDefsAt(_, declsctx, _) = decls in dctx
+    val DefAt(_, _, body, _, _, _, _) = d in declsctx
+    val bodyfree = a(body).freeVars
+    def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable)
+    val ctxTrimed = ctx.bindings.filter(isRelevant)
+    val dctxTrimed = dctx.bindings.filter(isRelevant)
+    ctxTrimed == dctxTrimed
   }
   
   val DefElim = Opt("def-elim") {
@@ -437,7 +471,9 @@ case class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
+}
 
+case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       SeqReassoc,
       DefSeqNorm, DefElim, 
@@ -456,6 +492,22 @@ case class Optimizer(co: CompilerOptions) {
     val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
     //Logger.fine(s"${if(b) "ENABLED" else "disabled"} ${o.name}")
     b
+  }
+  
+  def transformFrom(f: PartialFunction[WithContext[Expression], Expression]) = new ContextualTransform.Pre {
+    override def onExpressionCtx = f
+  }
+}
+
+case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
+  val allOpts = List(
+      UnrollDef
+      )
+
+  val opts = allOpts
+
+  def transformFrom(f: PartialFunction[WithContext[Expression], Expression]) = new ContextualTransform.Post {
+    override def onExpressionCtx = f
   }
 }
 

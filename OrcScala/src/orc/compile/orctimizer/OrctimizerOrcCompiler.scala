@@ -64,7 +64,35 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
         
         val analyzer = new ExpressionAnalyzer
-        val prog1 = Optimizer(co)(prog, analyzer)
+        val prog1 = StandardOptimizer(co)(prog, analyzer)
+
+        if((prog1 == prog && pass > 1) || pass > maxPasses)
+          prog1
+        else {
+          opt(prog1, pass+1)
+        }
+      }
+      
+      val e = if(co.options.optimizationFlags("orct").asBool())
+        opt(ast, 1)
+      else
+        ast
+        
+      TransformContext.clear()
+
+      e
+    }
+  }
+  lazy val unroll = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
+    import orctimizer.named._
+    val phaseName = "unroll"
+    override def apply(co: CompilerOptions) = { ast =>
+      //println(co.options.optimizationFlags)
+      val maxPasses = co.options.optimizationFlags("orct:unroll-repeats").asInt(2)
+      
+      def opt(prog : Expression, pass : Int) : Expression = {
+        val analyzer = new ExpressionAnalyzer
+        val prog1 = UnrollOptimizer(co)(prog, analyzer)
 
         if((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -103,5 +131,9 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
       toOrctimizer >>>
       outputIR(3) >>>
       optimize >>>
-      outputIR(4)
+      outputIR(4) >>>
+      unroll >>>
+      outputIR(4) >>>
+      optimize >>>
+      outputIR(5)
 }
