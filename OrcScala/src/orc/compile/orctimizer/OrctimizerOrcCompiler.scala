@@ -55,6 +55,10 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
               case f > x > g => true
               case _ => false
             }),
+            "concats" -> Analysis.count(prog, {
+              case f Concat g => true
+              case _ => false
+            }),
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> Analysis.cost(prog))
           val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
@@ -101,7 +105,8 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
         }
       }
       
-      val e = if(co.options.optimizationFlags("orct").asBool())
+      val e = if(co.options.optimizationFlags("orct").asBool() &&
+          co.options.optimizationFlags("orct:unroll-def").asBool())
         opt(ast, 1)
       else
         ast
