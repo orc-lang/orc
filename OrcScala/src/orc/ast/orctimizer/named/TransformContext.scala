@@ -117,7 +117,7 @@ object Bindings {
   /** The class representing binding in the context. The analysis results stored in it refer
     * to a simple direct reference to the variable.
     */
-  sealed trait Binding extends PrecomputeHashcode with Product {
+  sealed trait Binding extends Product with PrecomputeHashcode {
     /** The variable that is bound.
       */
     def variable: BoundVar
@@ -125,7 +125,9 @@ object Bindings {
     val ctx: TransformContext
     val ast: NamedAST
     
-    override def toString = s"$productPrefix($variable)"
+    override def toString = s"$productPrefix($variable, ${ctx.hashCode})"
+        
+    def nonRecursive: Binding = this
   }
 
   case class SeqBound(ctx: TransformContext, ast: Sequence) extends Binding {
@@ -144,6 +146,8 @@ object Bindings {
   case class RecursiveDefBound(ctx: TransformContext, ast: DeclareDefs, d: Def) extends Binding {
     assert(ast.defs.contains(d))
     def variable = d.name
+
+    override def nonRecursive: Binding = DefBound(ctx, ast, d)
   }
 }
 

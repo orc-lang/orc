@@ -614,7 +614,10 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Force(a) in _ =>
         Delay.NonBlocking
       case Future(f) in ctx =>
-        (f in ctx).timeToPublish min (f in ctx).timeToHalt
+        // This could sort of be: (f in ctx).timeToPublish min (f in ctx).timeToHalt
+        // However in the optimizer uses valueForceDelay to detect if force can be removed.
+        // So futures should never be NonBlocking
+        ((f in ctx).timeToPublish min (f in ctx).timeToHalt) max Delay.Blocking
       case DeclareDefsAt(defs, defsctx, body) =>
         body.valueForceDelay
       case DeclareTypeAt(_, _, b) =>
@@ -625,13 +628,14 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       case (x: BoundVar) in ctx => 
         def handleDef(decls: DeclareDefs, ctx: TransformContext, d: Def) = {
+          // TODO: This is copied to Optimizer.ForceElim. Dedup.
           val DeclareDefsAt(_, dctx, _) = decls in ctx
           val DefAt(_, _, body, _, _, _, _) = d in dctx
           // Remove all arguments because they are not closed variables.
           // Remove all recursive references. Because those will always 
           // be available immediately when non-recursive references 
           // become available, so they can never increase the delay.
-          val closedVars = freeVars(body) -- d.formals -- decls.defs.map(_.name)
+          val closedVars = body.freeVars -- d.formals -- decls.defs.map(_.name)
           val closedVarDelay = (for (x <- closedVars.iterator) yield {
             (x in body.ctx).valueForceDelay
           }).foldLeft(Delay.NonBlocking: Delay)(_ max _)

@@ -14,6 +14,7 @@ orct:constant-propogation
 orct:limit-elim
 orct:inline-def
 orct:inline-threshold=30
+orct:higher-order-inline-threshold=100
 orct:future-elim
 orct:future-force-elim
 orct:force-elim
@@ -25,5 +26,5 @@ orct:site-force-elim
 orct:par-flatten
 orct:flag-elim
 orct:unroll-def
-orct:unroll-threshold=1500
+orct:unroll-threshold=250
 orct:max-passes=30

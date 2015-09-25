@@ -108,12 +108,34 @@ abstract class Optimizer(co: CompilerOptions) {
   val ForceElim =  OptFull("force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case ForceAt(c@Constant(_) in ctx) => Some(c)
-      case ForceAt((x: BoundVar) in ctx) => ctx(x) match {
-        case Bindings.SeqBound(ctx, Call(Constant(_: Site), _, _) > _ > _) => Some(x)
-        case Bindings.SeqBound(ctx, FieldAccess(_, _) > _ > _) => Some(x)
+      case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
+      case ForceAt((x: BoundVar) in ctx) => ctx(x).nonRecursive match {
+        // Handle the case that Analysis cannot
+        case Bindings.RecursiveDefBound(ctx, decls, d) => {
+          // TODO: This is copied from ExpressionAnalysisProvider.valueForceDelay. Dedup.
+          val DeclareDefsAt(_, dctx, _) = decls in ctx
+          val DefAt(_, _, body, _, _, _, _) = d in dctx
+          val closedVars = body.freeVars -- d.formals -- decls.defs.map(_.name)
+          val closedVarDelay = (for (x <- closedVars.iterator) yield {
+            (x in body.ctx).valueForceDelay
+          }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
+          
+          if(closedVarDelay == Delay.NonBlocking)
+            Some(x)
+          else
+            None
+        }
         case _ => None
       }
+      /*
+      case ForceAt(c@Constant(_) in ctx) => Some(c)
+      case ForceAt((x: BoundVar) in ctx) => ctx(x).nonRecursive match {
+        case Bindings.SeqBound(ctx, Call(Constant(_: Site), _, _) > _ > _) => Some(x)
+        case Bindings.SeqBound(ctx, FieldAccess(_, _) > _ > _) => Some(x)
+        case Bindings.SeqBound(ctx, Force(_) > _ > _) => Some(x)
+        case _ => None
+      }
+      */
       case _ => None
     }
   }
@@ -309,6 +331,7 @@ abstract class Optimizer(co: CompilerOptions) {
 
   
   val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
+  val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(100)
   
   val InlineDef = OptFull("inline-def") { (e, a) =>
     import a.ImplicitResults._
@@ -318,18 +341,27 @@ abstract class Optimizer(co: CompilerOptions) {
         case Bindings.DefBound(dctx, decls, d) => {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
-          def cost = Analysis.cost(body)
+          val cost = Analysis.cost(body)
           val bodyfree = body.freeVars
-          def recursive = bodyfree.contains(d.name)
-          def ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
+          val recursive = bodyfree.contains(d.name)
+          val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
+          val hasDefArg = args.exists { 
+            case x: BoundVar => ctx(x) match {
+              case Bindings.SeqBound(yctx, Force(y: BoundVar) > _ > _) => isClosureBinding(yctx(y))
+              case b => isClosureBinding(b)
+            }
+            case _ => false
+          }
           //if (cost > costThreshold) 
           //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
-          //if( !ctxsCompat ) 
-          //println(s"${d.name} compatibily:\n$ctxTrimed\n$dctxTrimed")
-          if ( recursive || Analysis.cost(body) > inlineCostThreshold || !ctxsCompat)
-            None // No inlining of recursive functions or large functions.
-          else
+          if (!recursive && hasDefArg && cost <= higherOrderInlineCostThreshold && ctxsCompat) {
             Some(buildInlineDef(d, args, targs))
+          } else if (!recursive && cost <= inlineCostThreshold && ctxsCompat) {
+            Some(buildInlineDef(d, args, targs))
+          } else {
+            Logger.finer(s"Failed to inline: ${e.e} hasDefArg=$hasDefArg ctxsCompat=$ctxsCompat cost=$cost recursive=$recursive (higherOrderInlineCostThreshold=$higherOrderInlineCostThreshold inlineCostThreshold=$inlineCostThreshold)")
+            None
+          }
         }
         case _ => None
       }
@@ -337,7 +369,8 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
    
-  val unrollCostThreshold = co.options.optimizationFlags("orct:unroll-threshold").asInt(15)
+  val unrollCostThreshold = co.options.optimizationFlags("orct:unroll-threshold").asInt(45)
+  
   val UnrollDef = OptFull("unroll-def") { (e, a) =>
     import a.ImplicitResults._
     
@@ -347,12 +380,12 @@ abstract class Optimizer(co: CompilerOptions) {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           def cost = Analysis.cost(body)
-          if (cost > unrollCostThreshold) 
-            println(s"WARNING: Not unrolling ${d.name} because of cost ${cost}")
-          if (Analysis.cost(body) > unrollCostThreshold)
+          if (Analysis.cost(body) > unrollCostThreshold) {
+            Logger.finer(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold")
             None
-          else
+          } else {
             Some(buildInlineDef(d, args, targs))
+          }
         }
         case _ => None
       }
@@ -376,10 +409,23 @@ abstract class Optimizer(co: CompilerOptions) {
     val DefAt(_, _, body, _, _, _, _) = d in declsctx
     val bodyfree = a(body).freeVars
     def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable)
-    val ctxTrimed = ctx.bindings.filter(isRelevant)
-    val dctxTrimed = dctx.bindings.filter(isRelevant)
-    ctxTrimed == dctxTrimed
+    val ctxTrimed = ctx.bindings.filter(isRelevant).map(_.nonRecursive)
+    val dctxTrimed = dctx.bindings.filter(isRelevant).map(_.nonRecursive)
+    val res = compareBindingSets(ctxTrimed, dctxTrimed)
+    if(!res) {
+      Logger.finer(s"Incompatible ctxs: decls: ${decls.defs.map(_.name).mkString("[", ",", "]")} d=$d\n$ctxTrimed\n$dctxTrimed")
+    }
+    res
   }
+  
+  def compareBindingSets(ctx1: Set[Bindings.Binding], ctx2: Set[Bindings.Binding]): Boolean = {
+    ctx1 forall { e1 =>
+      ctx2.exists { e2 => 
+        e1.ast == e2.ast && e1.variable == e2.variable
+      }
+    }
+  }
+
   
   val DefElim = Opt("def-elim") {
     case (DeclareDefsAt(defs, ctx, b), a) if (a(b).freeVars & defs.map(_.name).toSet).isEmpty => b
