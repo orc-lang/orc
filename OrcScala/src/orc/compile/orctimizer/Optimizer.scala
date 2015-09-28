@@ -86,7 +86,13 @@ abstract class Optimizer(co: CompilerOptions) {
   val flattenThreshold = co.options.optimizationFlags("orct:future-flatten-threshold").asInt(5)
 
   val FutureElimFlatten = Opt("future-elim-flatten") {
-    case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) && Analysis.cost(g) <= flattenThreshold => g > x > f
+    // TODO: This may not be legal. What about small expressions that could still block on something.
+    case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
+            && Analysis.cost(g) <= flattenThreshold => 
+              g > x > f
+    case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
+            && a(g).nonBlockingPublish => 
+              g > x > f
   }
   val FutureElim = Opt("future-elim") {
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && a(g).publications <= 1 => g > x > f
@@ -99,6 +105,7 @@ abstract class Optimizer(co: CompilerOptions) {
     e match {
       case FutureAt(ForceAt((x: BoundVar) in ctx)) => ctx(x) match {
         case Bindings.SeqBound(ctx, Future(_) > _ > _) => Some(x)
+        case b if isClosureBinding(b) => Some(x)
         case Bindings.ArgumentBound(ctx, _, _) => Some(x)
         case _ => None
       }
@@ -201,6 +208,9 @@ abstract class Optimizer(co: CompilerOptions) {
   val DefSeqNorm = Opt("def-seq-norm") {
     case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (a(e).freeVars & defs.map(_.name).toSet).isEmpty  => {
        DeclareDefs(defs, b > x > e)
+    }
+    case (FutureAt(DeclareDefsAt(defs, ctx, b)), a)  => {
+       DeclareDefs(defs, Future(b))
     }
   }
  

@@ -14,7 +14,7 @@ orct:constant-propogation
 orct:limit-elim
 orct:inline-def
 orct:inline-threshold=30
-orct:higher-order-inline-threshold=100
+orct:higher-order-inline-threshold=250
 orct:future-elim
 orct:future-force-elim
 orct:force-elim
