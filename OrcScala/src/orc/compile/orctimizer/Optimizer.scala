@@ -132,7 +132,20 @@ abstract class Optimizer(co: CompilerOptions) {
           else
             None
         }
-        case _ => None
+        case _ => {
+          // Search the context for a SeqBound of force(x)
+          val bindOpt = ctx.bindings find {
+            case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
+            case _ => false
+          }
+          
+          bindOpt map {
+            case Bindings.SeqBound(_, _ > y > _) => {
+              // Just replace this force with y that was already bound to the force.
+              y
+            }
+          }
+        }
       }
       /*
       case ForceAt(c@Constant(_) in ctx) => Some(c)
@@ -164,7 +177,7 @@ abstract class Optimizer(co: CompilerOptions) {
     e match {
       case f > x > y if x == y.e => Some(f)
       case ((x: Var) in _) > y > f if f.forces(y) == ForceType.Immediately(true) => Some(f.subst(x, y))
-      case ForceAt((x: Var) in _) > y > f if f.forces(x) == ForceType.Immediately(true) && !(a(f).freeVars contains y) => Some(f)
+      //case ForceAt((x: Var) in _) > y > f if f.forces(x) == ForceType.Immediately(true) && !(a(f).freeVars contains y) => Some(f)
       case _ => None
     }
   }
@@ -180,7 +193,7 @@ abstract class Optimizer(co: CompilerOptions) {
   */
   
   val SeqExp = Opt("seq-expansion") {
-    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => a(f in ctx).silent) => {
+    case (e@(Pars(fs, ctx) > x > g), a) if fs.size > 1 && fs.exists(f => a(f in ctx).silent) => {
       // This doesn't really eliminate any code and I cannot think of a case where 
       val (sil, nsil) = fs.partition(f => a(f in ctx).silent)
       (sil.isEmpty, nsil.isEmpty) match {
@@ -189,7 +202,7 @@ abstract class Optimizer(co: CompilerOptions) {
         case (true, false) => e
       }
     }
-    case (e@(Pars(fs, ctx) > x > g), a) if fs.exists(f => f.isInstanceOf[Constant]) => {
+    case (e@(Pars(fs, ctx) > x > g), a) if fs.size > 1 && fs.exists(f => f.isInstanceOf[Constant]) => {
       val cs = fs.collect{ case c : Constant => c }
       val es = fs.filter(f => !f.isInstanceOf[Constant])
       (cs.isEmpty, es.isEmpty) match {
@@ -224,7 +237,7 @@ abstract class Optimizer(co: CompilerOptions) {
   val ParFlatten = OptFull("par-flatten") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case Pars(es, ctx) if es.exists(e => (e in ctx).nonBlockingHalt) => {
+      case Pars(es, ctx) if es.size > 1 && es.exists(e => (e in ctx).nonBlockingHalt) => {
         val (nbs, bs) = es.partition(e => (e in ctx).nonBlockingHalt)
         /*if(nbs.size > 1)
           Logger.finer(s"Found par-flatten: $nbs\n|\n$bs")
@@ -233,6 +246,52 @@ abstract class Optimizer(co: CompilerOptions) {
           case (n, _) if n <= 1 => None
           case (_, false) => Some(nbs.reduce(Concat) || Pars(bs))
           case (_, true) => Some(nbs.reduce(Concat))
+        }
+      }
+      case _ => None
+    }
+  }
+  
+  val LiftForce = OptFull("lift-force") { (e, a) =>
+    import a.ImplicitResults._
+    val freevars = e.freeVars
+    val vars = e.forceTypes.flatMap {
+      case (v, t) if freevars.contains(v) && t <= ForceType.Eventually => Some(v)
+      case _ => None
+    }
+    e match {
+      case Pars(es, ctx) if es.size > 1 && vars.size > 0 => {
+        val forceLimit = ForceType.Immediately(true)
+        val (bestVar, matchingEs) = vars.map({ v =>
+          val alreadyLifted = ctx.bindings exists {
+            case Bindings.SeqBound(_, Force(`v`) > _ > _) => true
+            case _ => false
+          }
+          if (alreadyLifted || (v in ctx).valueForceDelay == Delay.NonBlocking) (v, 0)
+          else (v, es.count { e => (e in ctx).forces(v) <= forceLimit })
+        }).maxBy(_._2)
+        if (matchingEs <= 1) {
+          None
+        } else {
+          // We know at this point that there will be at least 2 matching elements.
+          // But I leave checks for clarity.
+          val (forcers, nonforcers) = es.partition(e => (e in ctx).forces(bestVar) <= forceLimit)
+          
+          def processedForcers = {
+            val y = new BoundVar()
+            val trans = new ContextualTransform.NonDescending {
+              override def onExpressionCtx = {
+                case ForceAt(`bestVar` in _) => 
+                  y
+              }
+            }
+            Force(bestVar) > y > trans(Pars(forcers))
+          }
+          (forcers.size, nonforcers.isEmpty) match {
+            case (n, _) if n <= 1 => None
+            case (_, false) => Some(processedForcers || Pars(nonforcers))
+            case (_, true) => Some(processedForcers)
+          }
         }
       }
       case _ => None
@@ -533,7 +592,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       SeqReassoc,
       DefSeqNorm, DefElim, 
-      LiftUnrelated,
+      LiftUnrelated, LiftForce,
       FutureElimFlatten, FutureElim, 
       FutureForceElim, ForceElim,
       SiteForceElim, TupleElim, AccessorElim,
@@ -546,7 +605,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
 
   val opts = allOpts.filter{ o =>
     val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
-    //Logger.fine(s"${if(b) "ENABLED" else "disabled"} ${o.name}")
+    Logger.finest(s"${if(b) "ENABLED" else "disabled"} ${o.name}")
     b
   }
   

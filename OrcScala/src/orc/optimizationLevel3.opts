@@ -18,6 +18,7 @@ orct:higher-order-inline-threshold=250
 orct:future-elim
 orct:future-force-elim
 orct:force-elim
+orct:lift-force
 orct:tuple-elim
 orct:accessor-elim
 orct:future-elim-flatten

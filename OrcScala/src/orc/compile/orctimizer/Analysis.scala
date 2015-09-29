@@ -167,9 +167,7 @@ sealed trait ExpressionAnalysisProvider[E <: Expression] {
 
   object ImplicitResults {
     import scala.language.implicitConversions
-    @inline
     implicit def expressionWithResults(e: E)(implicit ctx: TransformContext): AnalysisResults = apply(e)
-    @inline
     implicit def expressionCtxWithResults(e: WithContext[E]): AnalysisResults = apply(e.e)(e.ctx)
   }
 
