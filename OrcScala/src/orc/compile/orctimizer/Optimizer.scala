@@ -247,8 +247,8 @@ abstract class Optimizer(co: CompilerOptions) {
           Logger.finer(s"Found par-flatten: $nbs\n|\n$bs")
         */
         (nbs.size, bs.isEmpty) match {
-          case (n, _) if n <= 1 => None
-          case (_, false) => Some(nbs.reduce(Concat) || Pars(bs))
+          case (n, _) if n < 1 => None
+          case (_, false) => Some(Concat(nbs.reduce(Concat), Pars(bs)))
           case (_, true) => Some(nbs.reduce(Concat))
         }
       }
