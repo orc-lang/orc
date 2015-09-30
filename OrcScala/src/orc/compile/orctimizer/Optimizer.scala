@@ -31,6 +31,7 @@ import orc.lib.state.SetFlag
 import orc.lib.state.PublishIfNotSet
 import orc.values.Signal
 import orc.ast.hasAutomaticVariableName
+import orc.error.compiletime.UnboundVariableException
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -69,7 +70,7 @@ abstract class Optimizer(co: CompilerOptions) {
             case None => e
             case Some(e2) =>
               if (e.e != e2) {
-                Logger.fine(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(80)} ==> ${e2.toString.replace("\n", " ").take(80)}")
+                Logger.fine(s"${opt.name}: ${e.e.toString}\n==>\n${e2.toString}")
                 e2 in e.ctx
               } else
                 e
@@ -79,7 +80,26 @@ abstract class Optimizer(co: CompilerOptions) {
       }
     }
    
-    trans(e)
+    val r = trans(e)
+
+    val check = transformFrom {
+      case (e: Expression) in ctx => {
+        for (v <- e.freeVars) {
+          try {
+            ctx(v)
+          } catch {
+            case exc: UnboundVariableException => {
+              throw new AssertionError(s"Variable $v not bound in expression:\n$e\n=== in context: $ctx\n=== in overall program:\n$r", exc)
+            }
+          }
+        }
+        e
+      }
+    }
+    
+    check(r)
+
+    r
   }
 
   import Optimizer._
@@ -117,34 +137,17 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._
     e match {
       case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
-      case ForceAt((x: BoundVar) in ctx) => ctx(x).nonRecursive match {
-        // Handle the case that Analysis cannot
-        case Bindings.RecursiveDefBound(ctx, decls, d) => {
-          // TODO: This is copied from ExpressionAnalysisProvider.valueForceDelay. Dedup.
-          val DeclareDefsAt(_, dctx, _) = decls in ctx
-          val DefAt(_, _, body, _, _, _, _) = d in dctx
-          val closedVars = body.freeVars -- d.formals -- decls.defs.map(_.name)
-          val closedVarDelay = (for (x <- closedVars.iterator) yield {
-            (x in body.ctx).valueForceDelay
-          }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
-          
-          if(closedVarDelay == Delay.NonBlocking)
-            Some(x)
-          else
-            None
+      case ForceAt((x: BoundVar) in ctx) => {
+        // Search the context for a SeqBound of force(x)
+        val bindOpt = ctx.bindings find {
+          case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
+          case _ => false
         }
-        case _ => {
-          // Search the context for a SeqBound of force(x)
-          val bindOpt = ctx.bindings find {
-            case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
-            case _ => false
-          }
-          
-          bindOpt map {
-            case Bindings.SeqBound(_, _ > y > _) => {
-              // Just replace this force with y that was already bound to the force.
-              y
-            }
+        
+        bindOpt map {
+          case Bindings.SeqBound(_, _ > y > _) => {
+            // Just replace this force with y that was already bound to the force.
+            y
           }
         }
       }
@@ -472,19 +475,31 @@ abstract class Optimizer(co: CompilerOptions) {
     }
 
     val boundVarCache = collection.mutable.HashMap[BoundVar, BoundVar]()
+    def replaceVar(x: BoundVar) = {          
+      def newVar = {
+        val name = x.optionalVariableName.map { n => 
+          hasAutomaticVariableName.getNextVariableName(n.takeWhile(!_.isDigit).dropWhile(_ == '`'))
+        }
+        new BoundVar(name)
+      }
+      boundVarCache.getOrElseUpdate(x, newVar)
+    }
 
     val freevars = bodyWithValArgs.freeVars
     
-    val trans = new ContextualTransform.NonDescendingNoNames {
+    val trans = new ContextualTransform.Pre {
+      override def onExpression(implicit ctx: TransformContext) = {
+        case e@(left > x > right) => left > replaceVar(x) > right
+      }
+      
+      override def onDef(implicit ctx: TransformContext) = {
+        case d @ Def(name, formals, body, typeformals, argtypes, returntype) => {
+          d.copy(name=replaceVar(name), formals=formals.map(replaceVar))
+        }
+      }
+
       override def onArgument(implicit ctx: TransformContext) = {
-        case x: BoundVar if !freevars.contains(x) => 
-          def newVar = {
-            val name = x.optionalVariableName.map { n => 
-              hasAutomaticVariableName.getNextVariableName(n.takeWhile(!_.isDigit))
-            }
-            new BoundVar(name)
-          }
-          boundVarCache.getOrElseUpdate(x, newVar)
+        case x: BoundVar if !freevars.contains(x) => replaceVar(x)
       }
     }
 
@@ -597,7 +612,7 @@ abstract class Optimizer(co: CompilerOptions) {
         vars.groupBy(_._1).toSeq match {
           case Seq((tv, inds)) => 
             e.typeOf(tv).runtimeType match {
-              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv))
+              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv)))
               case _ => None
             }
         }
@@ -725,7 +740,7 @@ object Optimizer {
     }
     def unapply(e: WithContext[Expression]): Option[(WithContext[Expression], List[(BoundVar, WithContext[Expression])])] = {
       e match {
-        case LateBinds(e, lbs) if lbs.size > 0 && indepentant(lbs.map(p => (p._1, p._2.e))) => Some(e, lbs)))))
+        case LateBinds(e, lbs) if lbs.size > 0 && indepentant(lbs.map(p => (p._1, p._2.e))) => Some(e, lbs)))))))))
         case e => None
       }
     }

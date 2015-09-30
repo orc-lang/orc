@@ -575,7 +575,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       case (x: BoundVar) in ctx => 
         def handleDef(decls: DeclareDefs, ctx: TransformContext, d: Def) = {
-          // TODO: This is copied to Optimizer.ForceElim. Dedup.
           val DeclareDefsAt(_, dctx, _) = decls in ctx
           val DefAt(_, _, body, _, _, _, _) = d in dctx
           // Remove all arguments because they are not closed variables.
@@ -595,8 +594,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case Bindings.DefBound(ctx, decls, d) => 
             handleDef(decls, ctx, d)
           case Bindings.RecursiveDefBound(ctx, decls, d) =>
-            // TODO: Make free variables somehow computed first so this can be used: handleDef(decls, ctx, d)
-            Delay.Blocking
+            handleDef(decls, ctx, d)
           case _ =>
             Delay.Blocking
         }
