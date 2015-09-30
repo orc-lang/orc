@@ -146,24 +146,19 @@ trait ContextualTransform extends NamedASTFunction {
 object ContextualTransform {
   trait NonDescending extends ContextualTransform {
     def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
-      e ->> pf.applyOrElse(e, descend)
-    }
-  }
-  trait NonDescendingNoNames extends ContextualTransform {
-    def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       pf.applyOrElse(e, descend)
     }
   }
   trait Pre extends ContextualTransform {
     def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
-      val e1 = e ->> pf.lift(e).getOrElse(e)
+      val e1 = pf.lift(e).getOrElse(e)
       e1 ->> descend(e1)
     }
   }
   trait Post extends ContextualTransform {
     def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       val e1 = e ->> descend(e)
-      e1 ->> pf.lift(e1).getOrElse(e1)
+      pf.lift(e1).getOrElse(e1)
     }
   }
 }

@@ -19,6 +19,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
 import orc.util.SingletonCache
+import orc.error.compiletime.UnboundTypeVariableException
 
 
 /** The context in which an expression appears.
@@ -68,7 +69,7 @@ object TransformContext {
   
   object Empty extends TransformContext {
     def apply(v: BoundVar) = throw new UnboundVariableException(v.toString)
-    def apply(v: BoundTypevar) = throw new UnboundVariableException(v.toString)
+    def apply(v: BoundTypevar) = throw new UnboundTypeVariableException(v.toString)
     
     def contains(e: BoundVar): Boolean = false
     def contains(e: BoundTypevar): Boolean = false
@@ -125,7 +126,7 @@ object Bindings {
     val ctx: TransformContext
     val ast: NamedAST
     
-    override def toString = s"$productPrefix($variable, ${ctx.hashCode})"
+    override def toString = s"$productPrefix($variable)"
         
     def nonRecursive: Binding = this
   }
