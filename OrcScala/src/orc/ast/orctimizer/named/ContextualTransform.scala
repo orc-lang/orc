@@ -149,6 +149,11 @@ object ContextualTransform {
       e ->> pf.applyOrElse(e, descend)
     }
   }
+  trait NonDescendingNoNames extends ContextualTransform {
+    def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
+      pf.applyOrElse(e, descend)
+    }
+  }
   trait Pre extends ContextualTransform {
     def order[E <: NamedAST](pf: PartialFunction[E, E], descend: E => E)(e: E): E = {
       val e1 = e ->> pf.lift(e).getOrElse(e)

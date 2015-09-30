@@ -123,12 +123,8 @@ trait AnalysisResults {
     * action other than halting?
     * Specifically is <code>x</code> forced before the expression has side effects or publishes.
     */
-  def forces(x: Var) = forceTypes.getOrElse(x, ForceType.Never)
-  def forceTypes: Map[Var, ForceType]
-
-  /** Free variables in the expression.
-    */
-  def freeVars: Set[Var]
+  def forces(x: BoundVar) = forceTypes.getOrElse(x, ForceType.Never)
+  def forceTypes: Map[BoundVar, ForceType]
   
   // TODO: This may not be the right way to represent this.
   /*   For each future I basically want to know full analyses of what a force on it will do.
@@ -153,8 +149,7 @@ case class AnalysisResultsConcrete(
   timeToPublish: Delay,
   effects: Effects,
   publications: Range,
-  forceTypes: Map[Var, ForceType],
-  freeVars: Set[Var],
+  forceTypes: Map[BoundVar, ForceType],
   valueForceDelay: Delay) extends AnalysisResults {
   // TODO: Add validity checks to catch unreasonable combinations of values
 }
@@ -219,8 +214,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   //       means flow analyses MUST occur across function boundries.
 
   def analyze(e: WithContext[Expression]): AnalysisResults = {
-    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), freeVars(e),
-        valueForceDelay(e))
+    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), valueForceDelay(e))
   }
 
   // TODO: This is missing cases throughout and needs to be checked for currectness in all analyses!!
@@ -413,52 +407,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     }
   }
 
-  def freeVars(e: WithContext[Expression]): Set[Var] = {
-    import ImplicitResults._
-    e match {
-      case Stop() in _ =>
-        Set()
-      case f || g =>
-        f.freeVars | g.freeVars
-      case f ConcatAt g =>
-        f.freeVars | g.freeVars
-      case f > x > g =>
-        f.freeVars | (g.freeVars - x)
-      case LimitAt(f) =>
-        f.freeVars
-      case Force(a) in ctx =>
-        (a in ctx).freeVars
-      case Future(f) in ctx =>
-        (f in ctx).freeVars
-      case CallAt(target in _, args, _, ctx) => {
-        implicit val _ctx = ctx
-        target.freeVars | args.map(_.freeVars).foldRight(Set[Var]())(_ | _)
-      }
-      case DeclareDefsAt(defs, defsctx, body) => {
-        implicit val _ctx = defsctx
-        val defVars = defs.map(_.name) 
-        
-        val defFreeVars = (for(d <- defs.iterator) yield {
-          val DefAt(_, formals, body, _, _, _, _) = d in defsctx
-          body.freeVars -- formals
-        }).reduce(_ | _)
-            
-        (body.freeVars | defFreeVars) -- defVars
-      }
-      case DeclareTypeAt(_, _, b) =>
-        b.freeVars
-      case HasType(b, _) in ctx =>
-        (b in ctx).freeVars
-      case Constant(_) in _ =>
-        Set()
-      case (v: BoundVar) in ctx =>
-        Set(v)
-      case FieldAccess(v, _) in ctx =>
-        (v in ctx).freeVars
-    }
-  }
-
-  def forces(e: WithContext[Expression]): Map[Var, ForceType] = {
+  def forces(e: WithContext[Expression]): Map[BoundVar, ForceType] = {
     import ImplicitResults._
     e match {
       case Stop() in _ =>
@@ -467,7 +416,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
       case CallAt(target in _, args, _, ctx) => target match {
         case Constant(s: Site) => {
-          val vars = (args collect { case v: Var => v })
+          val vars = (args collect { case v: BoundVar => v })
           val mayStops = vars filter { v => !((v in ctx).publications > 0) }
           mayStops match {
             case List() => vars.map(v => (v, ForceType.Immediately(true))).toMap
@@ -480,16 +429,16 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             case Bindings.DefBound(ctx, _, d) => d in ctx match {
               case DefAt(name in _, formals, body, _, _, _, _) => {
                 assert(name == v)
-                (for ((f, a: Var) <- formals zip args) yield {
+                (for ((f, a: BoundVar) <- formals zip args) yield {
                   (a, body.forces(f))
                 }).toMap
               }
             }
-            case _ => Map[Var, ForceType]()
+            case _ => Map[BoundVar, ForceType]()
           }
           callstr.updated(v, ForceType.Immediately(true))
         }
-        case v: Var => Map((v, ForceType.Immediately(true)))
+        case v: BoundVar => Map((v, ForceType.Immediately(true)))
         case _ => Map()
       }
       case f || g =>
@@ -507,7 +456,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
       case LimitAt(f) =>
         f.forceTypes
-      case Force(a: Var) in ctx =>
+      case Force(a: BoundVar) in ctx =>
         Map((a, ForceType.Immediately(true)))
       case Force(a) in _ =>
         Map()

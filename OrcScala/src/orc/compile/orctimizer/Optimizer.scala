@@ -30,6 +30,7 @@ import orc.lib.state.NewFlag
 import orc.lib.state.SetFlag
 import orc.lib.state.PublishIfNotSet
 import orc.values.Signal
+import orc.ast.hasAutomaticVariableName
 
 
 trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
@@ -97,7 +98,7 @@ abstract class Optimizer(co: CompilerOptions) {
   val FutureElim = Opt("future-elim") {
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && a(g).publications <= 1 => g > x > f
     case (FutureAt(g) > x > f, a) if a(g).nonBlockingPublish && (a(g).publications only 1) => g > x > f
-    case (FutureAt(g) > x > f, a) if !(a(f).freeVars contains x) => f || (g >> Stop()) 
+    case (FutureAt(g) > x > f, a) if !(f.freeVars contains x) => f || (g >> Stop()) 
     case (FutureAt(g) > x > (Stop() in _), a) => g > x > Stop()
   }
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
@@ -170,7 +171,7 @@ abstract class Optimizer(co: CompilerOptions) {
   val SeqElim = Opt("seq-elim") {
     case (f > x > g, a) if a(f).silent => f
     case (f > x > g, a) if a(f).effectFree && a(f).nonBlockingPublish && 
-      (a(f).publications only 1) && a(f).nonBlockingHalt && !a(g).freeVars.contains(x) => g
+      (a(f).publications only 1) && a(f).nonBlockingHalt && !g.freeVars.contains(x) => g
   }
   val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
     import a.ImplicitResults._
@@ -219,7 +220,7 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
   val DefSeqNorm = Opt("def-seq-norm") {
-    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (a(e).freeVars & defs.map(_.name).toSet).isEmpty  => {
+    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty  => {
        DeclareDefs(defs, b > x > e)
     }
     case (FutureAt(DeclareDefsAt(defs, ctx, b)), a)  => {
@@ -306,8 +307,8 @@ abstract class Optimizer(co: CompilerOptions) {
 
   val LiftUnrelated = Opt("lift-unrelated") {
     case (e@(g > x > Pars(es, ctx)), a) if a(g).nonBlockingPublish && 
-            es.exists(e => !a(e in ctx).freeVars.contains(x)) => {
-      val (f, h) = es.partition(e => a(e in ctx).freeVars.contains(x))
+            es.exists(e => !e.freeVars.contains(x)) => {
+      val (f, h) = es.partition(e => e.freeVars.contains(x))
       (f.isEmpty, h.isEmpty) match {
         case (false, false) => (g > x > Pars(f)) || Pars(h)
         case (true, false) => (g >> Stop()) || Pars(h)
@@ -424,9 +425,9 @@ abstract class Optimizer(co: CompilerOptions) {
           //if (cost > costThreshold) 
           //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
           if (!recursive && hasDefArg && cost <= higherOrderInlineCostThreshold && ctxsCompat) {
-            Some(buildInlineDef(d, args, targs))
+            Some(buildInlineDef(d, args, targs, declsctx, a))
           } else if (!recursive && cost <= inlineCostThreshold && ctxsCompat) {
-            Some(buildInlineDef(d, args, targs))
+            Some(buildInlineDef(d, args, targs, declsctx, a))
           } else {
             Logger.finer(s"Failed to inline: ${e.e} hasDefArg=$hasDefArg ctxsCompat=$ctxsCompat cost=$cost recursive=$recursive (higherOrderInlineCostThreshold=$higherOrderInlineCostThreshold inlineCostThreshold=$inlineCostThreshold)")
             None
@@ -453,7 +454,7 @@ abstract class Optimizer(co: CompilerOptions) {
             Logger.finer(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold")
             None
           } else {
-            Some(buildInlineDef(d, args, targs))
+            Some(buildInlineDef(d, args, targs, declsctx, a))
           }
         }
         case _ => None
@@ -462,21 +463,39 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
 
-  // TODO: Rename all variable inside the function body.
-  def buildInlineDef(d: Def, args: List[Argument], targs: Option[List[Type]]) = {
+  // TODO: Rename all type variables inside the function body.
+  def buildInlineDef(d: Def, args: List[Argument], targs: Option[List[Type]], ctx: TransformContext, a: ExpressionAnalysisProvider[Expression]) = {
     val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
     val typeSubst = targs match {
       case Some(as) => (d.typeformals:List[Typevar]) zip as
       case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
     }
-    bodyWithValArgs.substAllTypes(typeSubst.toMap)    
+
+    val boundVarCache = collection.mutable.HashMap[BoundVar, BoundVar]()
+
+    val freevars = bodyWithValArgs.freeVars
+    
+    val trans = new ContextualTransform.NonDescendingNoNames {
+      override def onArgument(implicit ctx: TransformContext) = {
+        case x: BoundVar if !freevars.contains(x) => 
+          def newVar = {
+            val name = x.optionalVariableName.map { n => 
+              hasAutomaticVariableName.getNextVariableName(n.takeWhile(!_.isDigit))
+            }
+            new BoundVar(name)
+          }
+          boundVarCache.getOrElseUpdate(x, newVar)
+      }
+    }
+
+    trans(bodyWithValArgs.substAllTypes(typeSubst.toMap))
   }
 
   def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareDefs, 
       d: Def, dctx: TransformContext, ctx: TransformContext) = {
     val DeclareDefsAt(_, declsctx, _) = decls in dctx
     val DefAt(_, _, body, _, _, _, _) = d in declsctx
-    val bodyfree = a(body).freeVars
+    val bodyfree = body.freeVars
     def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable)
     val ctxTrimed = ctx.bindings.filter(isRelevant).map(_.nonRecursive)
     val dctxTrimed = dctx.bindings.filter(isRelevant).map(_.nonRecursive)
@@ -497,7 +516,7 @@ abstract class Optimizer(co: CompilerOptions) {
 
   
   val DefElim = Opt("def-elim") {
-    case (DeclareDefsAt(defs, ctx, b), a) if (a(b).freeVars & defs.map(_.name).toSet).isEmpty => b
+    case (DeclareDefsAt(defs, ctx, b), a) if (b.freeVars & defs.map(_.name).toSet).isEmpty => b
   }
 
   def containsType(b: Expression, tv: BoundTypevar) = {
@@ -578,7 +597,7 @@ abstract class Optimizer(co: CompilerOptions) {
         vars.groupBy(_._1).toSeq match {
           case Seq((tv, inds)) => 
             e.typeOf(tv).runtimeType match {
-              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv)
+              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv))
               case _ => None
             }
         }
@@ -706,7 +725,7 @@ object Optimizer {
     }
     def unapply(e: WithContext[Expression]): Option[(WithContext[Expression], List[(BoundVar, WithContext[Expression])])] = {
       e match {
-        case LateBinds(e, lbs) if lbs.size > 0 && indepentant(lbs.map(p => (p._1, p._2.e))) => Some(e, lbs)
+        case LateBinds(e, lbs) if lbs.size > 0 && indepentant(lbs.map(p => (p._1, p._2.e))) => Some(e, lbs)))))
         case e => None
       }
     }

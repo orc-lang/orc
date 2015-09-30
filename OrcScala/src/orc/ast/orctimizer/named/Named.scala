@@ -73,6 +73,18 @@ sealed abstract class Expression
   //with Guarding 
   {
   //lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
+
+  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  lazy val freeVars: Set[BoundVar] = {
+    val varset = new scala.collection.mutable.HashSet[BoundVar]()
+    val collect = new NamedASTTransform {
+      override def onArgument(context: List[BoundVar]) = {
+        case x: BoundVar => (if (context contains x) {} else { varset += x }); x
+      }
+    }
+    collect(this)
+    Set.empty ++ varset
+  }
 }
 
 case class Stop() extends Expression
