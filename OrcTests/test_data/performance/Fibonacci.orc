@@ -1,9 +1,7 @@
 include "timeIt.inc"
 
 def fibNaive(Integer) :: Integer
-def fibNaive(0) = 0
-def fibNaive(1) = 1
-def fibNaive(n) = fibNaive(n-1) + fibNaive(n-2)
+def fibNaive(n) = if n <= 1 then n else fibNaive(n-1) + fibNaive(n-2)
 
 def fibPair(Integer) :: Integer
 def fibPair(n) = 

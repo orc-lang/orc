@@ -19,8 +19,8 @@ def distance((ar, ai)) = (ar**2 + ai**2) ** 0.5
 val threshold = 100
 val steps = 10
 val size = 24
-val resolution = 3.0 / size
-val offset = size / 2.0
+val resolution = 0.125 -- 3.0 / size
+val offset = 12 -- size / 2.0
 
 def point(c :: Complex) =
 	def inner(z :: Complex, n :: Integer) :: Boolean = 

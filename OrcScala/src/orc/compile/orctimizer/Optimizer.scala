@@ -136,6 +136,9 @@ abstract class Optimizer(co: CompilerOptions) {
   val ForceElim =  OptFull("force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
+      case ForceAt((v: BoundVar) in _) > x > g 
+          if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually && g.effectFree => 
+        Some(g)
       case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
       case ForceAt((x: BoundVar) in ctx) => {
         // Search the context for a SeqBound of force(x)

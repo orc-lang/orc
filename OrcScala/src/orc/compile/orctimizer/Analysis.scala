@@ -531,11 +531,18 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case Constant(s: Site) => 
             Delay.NonBlocking // Sites never make futures
           case v: BoundVar => ctx(v) match {
+            // TODO: I need to prove that all calls will actually return concrete values that will not block.
+            case Bindings.DefBound(_, _, _) | 
+                 Bindings.RecursiveDefBound(_, _, _) => {
+              Delay.NonBlocking
+            }
+            /*
             case Bindings.DefBound(ctx, decls, d) => {
               val DeclareDefsAt(_, dctx, _) = decls in ctx
               val DefAt(_, _, body, _, _, _, _) = d in dctx
               body.valueForceDelay
             }
+            */
             case _ => Delay.Blocking
           }
           case _ => Delay.Blocking
