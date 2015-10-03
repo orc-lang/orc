@@ -108,9 +108,10 @@ abstract class Optimizer(co: CompilerOptions) {
 
   val FutureElimFlatten = Opt("future-elim-flatten") {
     // TODO: This may not be legal. What about small expressions that could still block on something.
-    case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
+    /*case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
             && Analysis.cost(g) <= flattenThreshold => 
               g > x > f
+              */
     case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
             && a(g).nonBlockingPublish => 
               g > x > f
@@ -163,6 +164,52 @@ abstract class Optimizer(co: CompilerOptions) {
         case _ => None
       }
       */
+      case _ => None
+    }
+  }
+  
+  val LiftForce = OptFull("lift-force") { (e, a) =>
+    import a.ImplicitResults._
+    val freevars = e.freeVars
+    val vars = e.forceTypes.flatMap {
+      case (v, t) if freevars.contains(v) && t <= ForceType.Eventually => Some(v)
+      case _ => None
+    }
+    e match {
+      case Pars(es, ctx) if es.size > 1 && vars.size > 0 => {
+        val forceLimit = ForceType.Immediately(true)
+        val (bestVar, matchingEs) = vars.map({ v =>
+          val alreadyLifted = ctx.bindings exists {
+            case Bindings.SeqBound(_, Force(`v`) > _ > _) => true
+            case _ => false
+          }
+          if (alreadyLifted || (v in ctx).valueForceDelay == Delay.NonBlocking) (v, 0)
+          else (v, es.count { e => (e in ctx).forces(v) <= forceLimit })
+        }).maxBy(_._2)
+        if (matchingEs <= 1) {
+          None
+        } else {
+          // We know at this point that there will be at least 2 matching elements.
+          // But I leave checks for clarity.
+          val (forcers, nonforcers) = es.partition(e => (e in ctx).forces(bestVar) <= forceLimit)
+          
+          def processedForcers = {
+            val y = new BoundVar()
+            val trans = new ContextualTransform.NonDescending {
+              override def onExpressionCtx = {
+                case ForceAt(`bestVar` in _) => 
+                  y
+              }
+            }
+            Force(bestVar) > y > trans(Pars(forcers))
+          }
+          (forcers.size, nonforcers.isEmpty) match {
+            case (n, _) if n <= 1 => None
+            case (_, false) => Some(processedForcers || Pars(nonforcers))
+            case (_, true) => Some(processedForcers)
+          }
+        }
+      }
       case _ => None
     }
   }
@@ -253,52 +300,6 @@ abstract class Optimizer(co: CompilerOptions) {
           case (n, _) if n < 1 => None
           case (_, false) => Some(Concat(nbs.reduce(Concat), Pars(bs)))
           case (_, true) => Some(nbs.reduce(Concat))
-        }
-      }
-      case _ => None
-    }
-  }
-  
-  val LiftForce = OptFull("lift-force") { (e, a) =>
-    import a.ImplicitResults._
-    val freevars = e.freeVars
-    val vars = e.forceTypes.flatMap {
-      case (v, t) if freevars.contains(v) && t <= ForceType.Eventually => Some(v)
-      case _ => None
-    }
-    e match {
-      case Pars(es, ctx) if es.size > 1 && vars.size > 0 => {
-        val forceLimit = ForceType.Immediately(true)
-        val (bestVar, matchingEs) = vars.map({ v =>
-          val alreadyLifted = ctx.bindings exists {
-            case Bindings.SeqBound(_, Force(`v`) > _ > _) => true
-            case _ => false
-          }
-          if (alreadyLifted || (v in ctx).valueForceDelay == Delay.NonBlocking) (v, 0)
-          else (v, es.count { e => (e in ctx).forces(v) <= forceLimit })
-        }).maxBy(_._2)
-        if (matchingEs <= 1) {
-          None
-        } else {
-          // We know at this point that there will be at least 2 matching elements.
-          // But I leave checks for clarity.
-          val (forcers, nonforcers) = es.partition(e => (e in ctx).forces(bestVar) <= forceLimit)
-          
-          def processedForcers = {
-            val y = new BoundVar()
-            val trans = new ContextualTransform.NonDescending {
-              override def onExpressionCtx = {
-                case ForceAt(`bestVar` in _) => 
-                  y
-              }
-            }
-            Force(bestVar) > y > trans(Pars(forcers))
-          }
-          (forcers.size, nonforcers.isEmpty) match {
-            case (n, _) if n <= 1 => None
-            case (_, false) => Some(processedForcers || Pars(nonforcers))
-            case (_, true) => Some(processedForcers)
-          }
         }
       }
       case _ => None
