@@ -579,7 +579,8 @@ TODO: Write OrcDoc for ref manual entry
 
 @implementation
 --}
-def class ObservationSubject[E]() =
+{-
+class def ObservationSubject[E]() :: ObservationSubject[E] {
   val observers = Channel[Channel[E]]()
   val observersSem = Semaphore(1)
 
@@ -598,31 +599,35 @@ def class ObservationSubject[E]() =
 
   def observe() =
     val outstanding = Channel[E]()
-    withLock(observersSem, lambda() = observers.put(outstanding))  >>
+    withLock(observersSem, { observers.put(outstanding) })  >>
     {.
-      get = lambda() :: E = outstanding.get(),
-      stream = lambda() :: E = 
+      get = { outstanding.get() },
+      stream = {
         def doStream() :: E = outstanding.get() >e> (e | doStream())
-        doStream(),
-      close = lambda() :: Signal = outstanding.closeD(), -- Will get dropped from 'observers' on next put
-      isClosed = lambda() :: Boolean = outstanding.isClosed()
+        doStream() },
+      close = { outstanding.closeD() }, -- Will get dropped from 'observers' on next put
+      isClosed ={ outstanding.isClosed() }
     .}
   def put(e :: E) :: Signal =
-    withLock(observersSem, lambda() = 
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
-        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))
+        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop )
+        })
   def close() :: Signal =
-    withLock(observersSem, lambda() = 
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
         each(currObservers) >o> o.close() >> stop )  ;
-      observers.closeD())
+      observers.closeD()
+      })
   def closeD() :: Signal =
-    withLock(observersSem, lambda() = 
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
         each(currObservers) >o> o.closeD() >> stop )  ;
-    observers.closeD())
+    observers.closeD()
+    })
   def isClosed() :: Boolean = observers.isClosed()
-  stop
+}
+-}
 
 
 {--
