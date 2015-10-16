@@ -1,0 +1,9 @@
+/.cache
+/.cache-main
+/build/
+/build-local.properties
+/orchard-demo.jar
+/*.war
+/orchard.app
+/orchard.properties
+/oauth.jks

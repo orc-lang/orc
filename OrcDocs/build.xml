@@ -4,7 +4,7 @@
 
 	 $Id$
 
-	 Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+	 Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 
 	 Use and redistribution of this file is governed by the license terms in
 	 the LICENSE file found in the project's top-level directory and also found at
@@ -27,8 +27,8 @@
 	<property name="xalan.lib.dir" value="lib"/>
 	<property name="database.olink.dir" value="${src.dir}"/>
 	<property name="orc.prelude.dir"
-		value="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
-	<property name="orc.orcdoc-out.dir" value="${basedir}/${src.dir}/refmanual/"/>
+		location="${orc.location.OrcScala}/src/orc/lib/includes/prelude"/>
+	<property name="orc.orcdoc-out.dir" location="${basedir}/${src.dir}/refmanual/"/>
 
 	<!--Sets up the classpath for the Xalan and Xerces implementations that 
 		are to be used in this script, since the versions that ship with Ant may 
@@ -95,8 +95,8 @@
 			<arg value="${orc.orcdoc-out.dir}"/>
 			<classpath>
 				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.11-1.0.2.jar"/>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.11-1.0.1.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.11-1.0.4.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.11-1.0.4.jar"/>
 				<pathelement location="${orc.location.OrcDocgen}/build"/>
 			</classpath>
 		</java>
@@ -471,9 +471,6 @@
 		<copy todir="${build.dir}/html/refmanual/images">
 			<fileset dir="${src.dir}/xsl/images"/>
 		</copy>
-		<copy todir="${build.dir}/html/refmanual/images">
-			<fileset dir="${src.dir}/refmanual/images"/>
-		</copy>
 	</target>
 
 	<!-- ================================= 
@@ -569,9 +566,6 @@
 		</copy>
 		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
 			<fileset dir="src/xsl/images"/>
-		</copy>
-		<copy todir="${build.dir}/eclipsehelp/refmanual/images">
-			<fileset dir="src/refmanual/images"/>
 		</copy>
 		<!-- Fix XML character escaping in attributes for operators starting with < -->
 		<replaceregexp file="${build.dir}/eclipsehelp/refmanual/toc.xml" match='label="\(&lt;' replace='label="(&amp;lt;' flags="g"/>

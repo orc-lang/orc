@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on 04 Aug 2009.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -37,15 +37,16 @@ import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.internal.ui.stringsubstitution.SelectedResourceManager;
+import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.ExecutionArguments;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
-import org.eclipse.osgi.baseadaptor.BaseData;
-import org.eclipse.osgi.baseadaptor.loader.BaseClassLoader;
+import org.eclipse.osgi.internal.loader.ModuleClassLoader;
+import org.eclipse.osgi.internal.loader.classpath.ClasspathEntry;
+import org.eclipse.osgi.internal.loader.classpath.ClasspathManager;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.osgi.framework.BundleException;
 
 import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.text.MessageFormat;
@@ -83,10 +84,13 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
 	/**
 	 * @param configuration LaunchConfigurationWorkingCopy to update
+	 * @throws CoreException 
 	 */
-	public static void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
-		// Currently, a minimal Orc launch config. is an empty one (no required attributes)
-		// So, do nothing here
+	public static void setDefaults(final ILaunchConfigurationWorkingCopy configuration) throws CoreException {
+		// Currently, a minimal Orc launch config. is an nearly empty one.
+		// We turn off background launching by default because launching can be slow and non-obvious.
+		configuration.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
+		configuration.doSave();
 	}
 
 	/**
@@ -159,7 +163,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			orcConfig = new OrcConfigSettings(currentLaunchOrcProg.getProject(), configuration);
 			orcConfig.filename_$eq(currentLaunchOrcProg.getRawLocation().toFile().toString());
 
-			final String mainTypeName = "orc.Main"; //$NON-NLS-1$
+			final Class<?> mainTypeClass = Main.class;
 			final IVMRunner runner = getVMRunner(configuration, mode);
 
 			final File launchConfigWorkingDir = verifyWorkingDirectory(configuration);
@@ -192,11 +196,11 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			if (!configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, true) && getClasspath(configuration).length > 0) {
 				classpath = getClasspath(configuration);
 			} else {
-				classpath = getAbsoluteClasspathForClass(Main.class);
+				classpath = getAbsoluteClasspathForClass(mainTypeClass);
 			}
 
 			// Create VM config
-			final VMRunnerConfiguration runConfig = new VMRunnerConfiguration(mainTypeName, classpath);
+			final VMRunnerConfiguration runConfig = new VMRunnerConfiguration(mainTypeClass.getName(), classpath);
 			runConfig.setProgramArguments(execArgs.getProgramArgumentsArray());
 			runConfig.setEnvironment(envp);
 			runConfig.setVMArguments(execArgs.getVMArgumentsArray());
@@ -230,26 +234,14 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 		}
 	}
 
-	private String[] getAbsoluteClasspathForClass(final Class<Main> classOfInterest) {
-		//FIXME: Is this possible without using the restricted/discouraged OSGi BaseData and BaseClassLoader classes?
-		final BaseData basedata = ((BaseClassLoader) classOfInterest.getClassLoader()).getClasspathManager().getBaseData();
+	private String[] getAbsoluteClasspathForClass(final Class<?> classOfInterest) {
+		//FIXME: Is this possible without using the internal Eclipse OSGi ModuleClassLoader, ClasspathManager, and ClasspathEntry classes?
+		final ClasspathManager manager = ((ModuleClassLoader) classOfInterest.getClassLoader()).getClasspathManager();
 		String[] classpath = null;
-		try {
-			classpath = basedata.getClassPath();
-			for (int i = 0; i < classpath.length; i++) {
-				final File classpathEntryFile = basedata.getBundleFile().getFile(classpath[i], false);
-				if (classpathEntryFile != null) {
-					classpath[i] = classpathEntryFile.getAbsolutePath();
-				} else {
-					// Cannot get the file for this classpath entry.
-					// This happens, for example, for "." in a deployed plugin.
-					// We'll just guess the bundle location itself, then.
-					classpath[i] = basedata.getBundleFile().getBaseFile().getAbsolutePath();
-				}
-			}
-		} catch (final BundleException e) {
-			// This is thrown on an invalid JAR manifest, but then we wouldn't be here, so this is an "impossible" case
-			Activator.log(e);
+		final ClasspathEntry[] classpathentries = manager.getHostClasspathEntries();
+		classpath = new String[classpathentries.length];
+		for (int i = 0; i < classpathentries.length; i++) {
+			classpath[i] = classpathentries[i].getBundleFile().getBaseFile().getAbsolutePath();
 		}
 		return classpath;
 	}

@@ -59,6 +59,7 @@
 		<exclude name="orc-parser.js"/>
 		<exclude name="**/CVS"/>
 		<exclude name="**/.svn"/>
+		<exclude name="**/.gitignore"/>
 	</fileset>
 
 
@@ -168,7 +169,11 @@
           target: war
          ================================= -->
 	<target name="war" depends="wsgen,properties,jaxws-json,minify" description="Build orchard.war">
-		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<exec executable="git" outputproperty="scmrevision">
+			<arg value="describe"/>
+			<arg value="--dirty"/>
+			<arg value="--always"/>
+		</exec>
 		<war destfile="build/${ant.project.name}.war" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
 			<manifest>
 				<attribute name="Implementation-Title" value="${orchard.title}"/>
@@ -178,7 +183,7 @@
 				<attribute name="Specification-Title" value="${orchard.title}"/>
 				<attribute name="Specification-Version" value="${orc.version}"/>
 				<attribute name="Specification-Vendor" value="${orc.vendor}"/>
-				<attribute name="SVN-Revision" value="${svnversion}"/>
+				<attribute name="SCM-Revision" value="${scmrevision}"/>
 			</manifest>
 			<fileset refid="orchard.static-web-files"/>
 			<classes dir="build/classes">
@@ -225,6 +230,7 @@
 				<include name="images/**/*"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
 			</fileset>
 		</war>
 		<jar destfile="build/${target.name}-demo.jar" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
@@ -278,6 +284,7 @@
 				<include name="doc/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
 			</zipfileset>
         </zip>
     </target>
@@ -301,6 +308,7 @@
 				<exclude name="**/*.plist"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
 				<exclude name="**/JavaApplicationStub"/>
 			</fileset>
 		</copy>
@@ -312,7 +320,11 @@
 			<flattenmapper/>
 			<map from="" to="$JAVAROOT/"/>
 		</pathconvert>
-		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<exec executable="git" outputproperty="scmrevision">
+			<arg value="describe"/>
+			<arg value="--dirty"/>
+			<arg value="--always"/>
+		</exec>
 		<!-- copy plist files with token filtering -->
 		<copy todir="${appdir}">
 			<fileset dir="app-skeleton">
@@ -322,7 +334,7 @@
 				<filter token="app.jar" value="${appname}.jar"/>
 				<filter token="app.classpath" value="$JAVAROOT/${appname}.jar:${orchard.extra.jars.JAVAROOT}:${orchard-demo.extra.jars.JAVAROOT}"/>
 				<filter token="orc.version" value="${orc.version}"/>
-				<filter token="orchard.svnversion" value="${svnversion}"/>
+				<filter token="orchard.scmrevision" value="${scmrevision}"/>
 				<filter token="orc.copyright-year" value="${orc.copyright-year}"/>
 			</filterset>
 		</copy>

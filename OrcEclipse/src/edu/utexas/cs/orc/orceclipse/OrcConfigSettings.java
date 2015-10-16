@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Sep 3, 2009.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -26,6 +26,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.variables.IStringVariableManager;
+import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.imp.preferences.PreferencesService;
 
@@ -95,23 +97,26 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 		}
 	}
 
-	private void fillFromProject(final IProject project) {
+	private void fillFromProject(final IProject project) throws CoreException {
 		final PreferencesService prefSvc = Activator.getInstance().getPreferencesService();
 		prefSvc.setProject(project);
 
 		// Will also look upwards in prefs levels if not found in project.
 
+		// DANGER: IMP's getStringPreference attempts to do an astoundingly broken macro substitution.
+		//         Use getRawStringPreference instead.
+
 		if (prefSvc.isDefined(LOG_LEVEL_ATTR_NAME)) {
-			logLevel_$eq(prefSvc.getStringPreference(LOG_LEVEL_ATTR_NAME));
+			logLevel_$eq(prefSvc.getRawStringPreference(LOG_LEVEL_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(PRELUDE_ATTR_NAME)) {
 			usePrelude_$eq(prefSvc.getBooleanPreference(PRELUDE_ATTR_NAME));
 		}
 		if (prefSvc.isDefined(INCLUDE_PATH_ATTR_NAME)) {
-			includePath_$eq(stringToPathList(prefSvc.getStringPreference(INCLUDE_PATH_ATTR_NAME)));
+			includePath_$eq(performSubstitutions(stringToPathList(prefSvc.getRawStringPreference(INCLUDE_PATH_ATTR_NAME))));
 		}
 		if (prefSvc.isDefined(ADDITIONAL_INCLUDES_ATTR_NAME)) {
-			additionalIncludes_$eq(stringToPathList(prefSvc.getStringPreference(ADDITIONAL_INCLUDES_ATTR_NAME)));
+			additionalIncludes_$eq(performSubstitutions(stringToPathList(prefSvc.getRawStringPreference(ADDITIONAL_INCLUDES_ATTR_NAME))));
 		}
 		if (prefSvc.isDefined(TYPE_CHECK_ATTR_NAME)) {
 			typecheck_$eq(prefSvc.getBooleanPreference(TYPE_CHECK_ATTR_NAME));
@@ -123,10 +128,10 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 			echoOil_$eq(prefSvc.getBooleanPreference(ECHO_OIL_ATTR_NAME));
 		}
 		//if (prefSvc.isDefined(OIL_OUT_ATTR_NAME)) {
-		//	oilOutputFile_$eq(new File(prefSvc.getStringPreference(OIL_OUT_ATTR_NAME)));
+		//	oilOutputFile_$eq(new File(prefSvc.getRawStringPreference(OIL_OUT_ATTR_NAME)));
 		//}
 		if (prefSvc.isDefined(SITE_CLASSPATH_ATTR_NAME)) {
-			classPath_$eq(stringToPathList(prefSvc.getStringPreference(SITE_CLASSPATH_ATTR_NAME)));
+			classPath_$eq(performSubstitutions(stringToPathList(prefSvc.getRawStringPreference(SITE_CLASSPATH_ATTR_NAME))));
 		}
 		if (prefSvc.isDefined(SHOW_JAVA_STACK_TRACE_ATTR_NAME)) {
 			showJavaStackTrace_$eq(prefSvc.getBooleanPreference(SHOW_JAVA_STACK_TRACE_ATTR_NAME));
@@ -219,5 +224,17 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 			pathListString.append(OrcConfigSettings.PATH_SEPARATOR);
 		}
 		return pathListString.toString();
+	}
+	
+	public static List<String> performSubstitutions(final List<String> stringList) throws CoreException {
+		if (stringList.isEmpty()) {
+			return new ArrayList<String>(0);
+		}
+		IStringVariableManager svm = VariablesPlugin.getDefault().getStringVariableManager();
+		ArrayList<String> resultList = new ArrayList<String>(stringList.size());
+		for (String str : stringList) {
+			resultList.add(svm.performStringSubstitution(str));
+		}
+		return resultList;
 	}
 }

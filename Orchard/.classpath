@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="/OrcScala/lib/scala-library.jar"/>
-	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.2.jar"/>
-	<classpathentry kind="lib" path="/OrcScala/lib/scala-parser-combinators_2.11-1.0.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-library.jar"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-parser-combinators_2.11-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-reflect.jar"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar">
 		<attributes>
@@ -57,5 +55,8 @@
 	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar"/>
 	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

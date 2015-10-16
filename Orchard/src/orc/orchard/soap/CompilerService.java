@@ -54,6 +54,7 @@ public class CompilerService extends AbstractCompilerService {
 		logger.config("Orchard compiler Web service: Published endpoint at  '" + baseURI + "'");
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(final String[] args) {
 		URI baseURI;
 		baseURI = URI.create("http://localhost:8280/orchard/compiler");

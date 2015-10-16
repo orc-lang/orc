@@ -14,7 +14,7 @@
 					url="http://org.eclipse.ui.intro/showHelpTopic?id=/edu.utexas.cs.orc.orceclipse/help/orcuserguide/index.html"
 					id="orcIntroLink"
 					style-id="content-link">
-				<text>An introduction to the Orc programing language, many examples, and the official language specification</text>
+				<text>An introduction to the Orc programming language, many examples, and the official language specification</text>
 			</link>
 			<link
 					label="Orc in 15 Minutes"

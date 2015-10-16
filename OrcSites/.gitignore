@@ -1,0 +1,13 @@
+/.cache
+/.cache-main
+/build
+/build-local.properties
+/google.properties
+/javadoc
+/mail.properties
+/oauth.jks
+/oauth.properties
+/orc-sites-*.jar
+/orc-sites-*.zip
+/upcoming.properties
+/yahoo.properties

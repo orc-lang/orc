@@ -86,6 +86,7 @@ public class OrchardDemo {
 		org.mortbay.log.Log.setLog(new SyslogishJettyLogger());
 	}
 
+	@SuppressWarnings("unused")
 	protected static void startJetty(final int port) throws URISyntaxException, Exception {
 		final Server server = new Server();
 		JettyHttpServerProvider.setServer(server);

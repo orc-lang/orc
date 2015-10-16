@@ -90,8 +90,8 @@ object Main {
     p
   }
   lazy val orcImplName: String = versionProperties.getProperty("orc.title")
-  lazy val svnRevision: String = versionProperties.getProperty("orc.svn-revision")
-  lazy val orcVersion: String = versionProperties.getProperty("orc.version") + " rev. " + svnRevision + (if (svnRevision.forall(_.isDigit)) "" else " (dev. build " + versionProperties.getProperty("orc.build.date") + " " + versionProperties.getProperty("orc.build.user") + ")")
+  lazy val scmRevision: String = versionProperties.getProperty("orc.scm-revision")
+  lazy val orcVersion: String = versionProperties.getProperty("orc.version") + " rev. " + scmRevision + " (built " + versionProperties.getProperty("orc.build.date") + " " + versionProperties.getProperty("orc.build.user") + ")"
   lazy val orcURL: String = versionProperties.getProperty("orc.url")
   lazy val orcCopyright: String = "(c) " + copyrightYear + " " + versionProperties.getProperty("orc.vendor")
   lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year")

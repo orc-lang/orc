@@ -6,7 +6,7 @@
 //
 // Created by jthywiss on Jan 19, 2011.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -65,7 +65,8 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 public class OrcPathEditor extends PathEditor {
 
 	private static final String[] TYPE_DIALOG_BUTTON_LABELS = { Messages.OrcPathEditor_Folder, Messages.OrcPathEditor_JarFile, Messages.OrcPathEditor_ExternalFolder, Messages.OrcPathEditor_ExternalJarFile };
-	private static final String WORKSPACE_PATH_PREFIX = "${workspaceLoc}"; //$NON-NLS-1$
+	private static final String WORKSPACE_PATH_PREFIX = "${workspace_loc:"; //$NON-NLS-1$
+	private static final String WORKSPACE_PATH_SUFFIX = "}"; //$NON-NLS-1$
 	private final String pathDescriptionForDialogMessage;
 	private String lastJarPath;
 
@@ -135,6 +136,7 @@ public class OrcPathEditor extends PathEditor {
 		for (String pathEntry : getList().getItems()) {
 			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX)) {
 				pathEntry = pathEntry.substring(WORKSPACE_PATH_PREFIX.length());
+				pathEntry = pathEntry.substring(0, pathEntry.length() - WORKSPACE_PATH_SUFFIX.length());
 			}
 			final IPath usedEntry = Path.fromPortableString(pathEntry);
 			final IResource resource = root.findMember(usedEntry);
@@ -155,7 +157,7 @@ public class OrcPathEditor extends PathEditor {
 		dialog.setInitialSelection(null);
 
 		if (dialog.open() == Window.OK) {
-			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().addTrailingSeparator().toPortableString();
+			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().addTrailingSeparator().toPortableString() + WORKSPACE_PATH_SUFFIX;
 		}
 		return null;
 	}
@@ -169,6 +171,7 @@ public class OrcPathEditor extends PathEditor {
 		for (String pathEntry : getList().getItems()) {
 			if (pathEntry.startsWith(WORKSPACE_PATH_PREFIX)) {
 				pathEntry = pathEntry.substring(WORKSPACE_PATH_PREFIX.length());
+				pathEntry = pathEntry.substring(0, pathEntry.length() - WORKSPACE_PATH_SUFFIX.length());
 			}
 			final IPath usedEntry = Path.fromPortableString(pathEntry);
 			final IResource resource = root.findMember(usedEntry);
@@ -190,7 +193,7 @@ public class OrcPathEditor extends PathEditor {
 		dialog.setAllowMultiple(false);
 
 		if (dialog.open() == Window.OK) {
-			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().toPortableString();
+			return WORKSPACE_PATH_PREFIX + ((IResource) dialog.getResult()[0]).getFullPath().toPortableString() + WORKSPACE_PATH_SUFFIX;
 		}
 		return null;
 	}

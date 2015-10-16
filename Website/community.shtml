@@ -1,0 +1,42 @@
+<!--#include virtual="/template/header.shtml" -->
+
+<h2>Community Resources</h2>
+<ul>
+	<li><a href="/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="https://groups.google.com/group/orc-lang/">Mailing List</a>
+	<br /><form action="https://groups.google.com/group/orc-lang/boxsubscribe">
+		<div>Email: <input type="text" name="email" />
+		<input type="submit" name="sub" value="Subscribe" /></div>
+	</form></li>
+	<li><a href="/wiki">Wiki</a></li>
+	<li><a href="https://github.com/orc-lang/orc/issues">Issue Tracker</a> (for bug reports)</li>
+	<li><a href="https://github.com/orc-lang">Orc on GitHub</a></li>
+</ul>
+
+<h2>UT Project Members</h2>
+<h3>Current</h3>
+<ul>
+	<li><a href="https://www.cs.utexas.edu/~misra/">Prof. Jayadev Misra</a></li>
+	<li><a href="https://www.cs.utexas.edu/~wcook/">Prof. William Cook</a></li>
+	<li>David Kitchin</li>
+	<li><a href="https://www.cs.utexas.edu/~jthywiss/">John A. Thywissen</a></li>
+	<li><a href="https://www.cs.utexas.edu/~amp/">Arthur Peters</a></li>
+</ul>
+<h3>Past</h3>
+<ul>
+	<li>Lauren Yew</li>
+	<li>Jo&atilde;o Pedro Barbosa</li>
+	<li>Ricardo Bernardino</li>
+	<li>Brian McCord</li>
+	<li>Blake Davis</li>
+	<li>Amin Shali</li>
+	<li>Sidney Rosario</li>
+	<li>Andrew Matsuoka</li>
+	<li>Adrian Quark</li>
+	<li>Ian Wehrman</li>
+	<li>Thomas Finsterbusch</li>
+	<li>Evan Powell</li>
+	<li>Kristi Morton</li>
+</ul>
+
+<!--#include virtual="/template/footer.shtml" -->

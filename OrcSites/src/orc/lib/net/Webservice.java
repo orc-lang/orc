@@ -174,6 +174,7 @@ public class Webservice extends SiteAdaptor {
 			}
 
 			if (stub == null) {
+				//cl.close();
 				throw new Exception("Unable to find stub among port interfaces");
 			}
 
@@ -185,6 +186,8 @@ public class Webservice extends SiteAdaptor {
 					locator = cl.loadClass(e.className);
 				}
 			}
+
+			//cl.close();
 
 			if (locator == null) {
 				throw new Exception("Unable to find Locator among services");

@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.2.jar"/>
-	<classpathentry kind="lib" path="/OrcScala/lib/scala-parser-combinators_2.11-1.0.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
+	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-parser-combinators_2.11-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/axis.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-base-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-calendar-1.0.jar"/>
@@ -35,5 +33,7 @@
 	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
+	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

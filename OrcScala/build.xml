@@ -18,7 +18,6 @@
 	</description>
 
 	<property file="build.properties"/>
-	<property file="googlecode.properties"/>
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
 
@@ -75,7 +74,11 @@
           target: version
          ================================= -->
 	<target name="version" description="Build version.properites">
-		<exec executable="svnversion" outputproperty="svnversion"/>  <!-- Format: 9999[:9999][M][S][P] -->
+		<exec executable="git" outputproperty="scmrevision">
+			<arg value="describe"/>
+			<arg value="--dirty"/>
+			<arg value="--always"/>
+		</exec>
 		<tstamp>
 			<format property="build.date" pattern="yyyy-MM-dd-HH:mm:ss" timezone="Etc/UTC"/>
 		</tstamp>
@@ -93,7 +96,7 @@
 			<entry key="orc.vendor" value="${orc.vendor}"/>
 			<entry key="orc.url" value="${orc.url}"/>
 			<entry key="orc.copyright-year" value="${orc.copyright-year}"/>
-			<entry key="orc.svn-revision" value="${svnversion}"/>
+			<entry key="orc.scm-revision" value="${scmrevision}"/>
 			<entry key="orc.build.date" value="${build.date}Z"/>
 			<entry key="orc.build.user" value="${user.name}"/>
 			<entry key="orc.build.java.version" value="${java.version}"/>
@@ -153,7 +156,7 @@
 				<attribute name="Implementation-Version" value="${orc.version}"/>
 				<attribute name="Implementation-Vendor" value="${orc.vendor}"/>
 				<attribute name="Implementation-Vendor-Id" value="${orc.vendor-id}"/>
-				<attribute name="SVN-Revision" value="${svnversion}"/>
+				<attribute name="SCM-Version" value="${scmrevision}"/>
 				<attribute name="Built-Date" value="${build.date}"/>
 				<attribute name="Built-By" value="${user.name}"/>
 				<section name="orc">
@@ -224,6 +227,7 @@
 				<include name="doc/**"/>
 				<exclude name="**/CVS/*"/>
 				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
 			</zipfileset>
 			<zipfileset prefix="${target.name}/examples" dir="${orc.location.OrcExamples}">
 				<include name="**"/>
@@ -249,25 +253,8 @@
 	<!-- =================================
           target: upload
          ================================= -->
-	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to Google Code">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
-			classpath="tools/ant-googlecode-0.0.1.jar" name="gcupload"/>
-		<gcupload
-			username="${orc.googlecode.username}"
-			password="${orc.googlecode.password}"
-			projectname="orc"
-			filename="build/${target.name}.zip"
-			targetfilename="${target.name}.zip"
-			summary="Core Orc interpreter."
-			labels="Featured, Type-Archive, OpSys-All"/>
-		<gcupload
-			username="${orc.googlecode.username}"
-			password="${orc.googlecode.password}"
-			projectname="orc"
-			filename="build/${target.name}-doc.zip"
-			targetfilename="${target.name}-doc.zip"
-			summary="Javadoc documentation for core Orc interpreter."
-			labels="Type-Docs, OpSys-All"/>
+	<target name="upload" depends="zip,javadoc" description="Upload ZIP and Javadoc ZIP to GitHub">
+		<!-- FIXME: Implement GitHub upload task -->
 	</target>
 
 	<!-- =================================

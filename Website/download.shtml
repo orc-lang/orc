@@ -1,0 +1,82 @@
+<!--#include virtual="/template/header.shtml" -->
+
+<h2>License</h2>
+
+<p>The Orc source code and binaries are released under the <a href="license.shtml">BSD License</a>.</p>
+
+<h2>Audience</h2>
+
+<p>Orc is available in different formats depending on what you will be doing with it:</p>
+<ul>
+<li><a href="#casual">Casual users</a> who are interested in playing with Orc.</li>
+<li><a href="#eclipse">Eclipse users</a> who want to develop Orc programs on their own machine in the Eclipse IDE.</li>
+<li><a href="#cmdline">Command line users</a> who want to run Orc programs from the command line.</li>
+<li><a href="#devs">Developers</a> who want to explore Orc's implementation.</li>
+</ul>
+
+<a id="casual"></a>
+<h3>Casual Users</h3>
+
+<p>Use our <a href="tryorc.shtml">Try Orc!</a> feature to experiment with Orc in
+your browser. We are currently working on extending the online job server to
+support user accounts so you can create long-running jobs; please <a
+href="mailto:webmaster at orc.cs.utexas.edu" class="obfuscated-email">contact
+us</a> if you are interested in obtaining an account.</p>
+
+<a id="eclipse"></a>
+<h3>Eclipse Users</h3>
+
+<p>To use the Orc plug-in for Eclipse, you will need <a href="http://www.eclipse.org/downloads/">Eclipse</a> and Java installed on your workstation.  Only the Eclipse Standard package is needed.</p>
+
+<h4>Install the Orc plug-in for Eclipse</h4>
+
+<ol>
+<li>Open Eclipse</li>
+<li>Choose <i>Eclipse Marketplace</i> from the <i>Help</i> menu.</li>
+<li>In the window that appears, type <i>Orc</i> in the <i>Find</i> text box, and press the <i>Go</i> button.</li>
+<li>In the &#x201C;Orc Eclipse Plug-in&#x201D; entry, press the <i>Install</i> button.</li>
+<li>Click <i>Confirm &gt;</i>, then agree to the terms of the license agreement, then click <i>Finish</i>.</li>
+<li>Allow the installation of unsigned content when prompted by clicking <i>OK</i>.</li>
+<li>When installation is finished and Eclipse asks to restart, click <i>Yes</i>.</li>
+<li>Confirm installation by choosing <i>Window</i> &#x2192; <i>Open Perspective</i> &#x2192; <i>Other...</i> If Orc is in the listing, the plugin has been successfully installed.</li>
+<li>(recommended) In Eclipse Preferences, expand the <i>Install/Update</i> category, and select <i>Automatic Updates</i>. Select the checkbox labeled &#x201C;Automatically find new updates and notify me&#x201D;.</li>
+</ol>
+
+<h4>Create and run an Orc program</h4>
+
+<ol>
+<li>Open Eclipse</li>
+<li>Choose <i>File</i> &#x2192; <i>New</i> &#x2192; <i>Other...</i> &#x2192; <i>New Orc Project</i></li>
+<li>Name the project, click <i>Next &gt;</i>, then click <i>Finish</i>.</li>
+<li>If prompted, allow Eclipse to open the Orc perspective.</li>
+<li>Right-click on the project folder, then choose <i>New</i> &#x2192; <i>New Orc File</i>.</li>
+<li>In the window that appears, select the project folder as the parent folder, then type the desired name of the new file in the &#x201C;File Name:&#x201D; text box. Click <i>Finish</i>.</li>
+<li>For testing purposes, under the comments in the new file type &#x201C;1 | 2&#x201D; (without the quotes).</li>
+<li>Click the <i>Run</i> button (white arrow in green circle). If prompted, save the changes to the file. The console output should be the following:<br/>
+<pre>
+1
+2
+</pre></li>
+<li>To run Orc programs in the future, simply click the <i>Run</i> button. Note the Orc program must be in the active editor or highlighted in the active navigator.</li>
+</ol>
+
+
+
+<a id="cmdline"></a>
+<h3>Command Line Users</h3>
+
+<p>Orc is also available as a standalone JAR which you can use to run programs on
+the command line.</p>
+
+<p>Download the <a href="https://github.com/orc-lang/orc/releases">latest release</a> from GitHub.
+For further assistance, please see the <a href="documentation.shtml">documentation</a>.</p>
+
+<a id="devs"></a>
+<h3>Developers</h3>
+
+<p>Orc is developed in Eclipse. The <a href="quickstart.shtml">developer's
+quick start</a> describes how to check out and build the Orc Eclipse project
+from source and start running Orc programs.</p>
+
+
+<!--#include virtual="/template/footer.shtml" -->

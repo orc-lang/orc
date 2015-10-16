@@ -24,6 +24,7 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.java.CompilerService;
 
 public class RmiTest {
+	@SuppressWarnings("unused")
 	public static void main(final String[] args) throws Exception {
 		// Create an executor
 		final URI executorURI = new URI("rmi://localhost/orchard/executor");

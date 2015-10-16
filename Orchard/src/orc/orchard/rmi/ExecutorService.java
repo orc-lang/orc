@@ -32,6 +32,7 @@ public class ExecutorService extends AbstractExecutorService implements Executor
 		logger.config("Orchard executor RMI server: Bound to '" + baseURI + "'");
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(final String[] args) {
 		URI baseURI = URI.create("rmi://localhost/orchard/executor");
 		if (args.length > 0) {

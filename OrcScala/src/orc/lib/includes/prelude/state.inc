@@ -4,7 +4,7 @@
 --
 -- $Id$
 --
--- Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+-- Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in
 -- the LICENSE file found in the project's top-level directory and also found at
@@ -491,6 +491,139 @@ Return the size of the array.
 --}
 import site Array = "orc.lib.state.JavaArray"
 import type Array = "orc.lib.state.types.ArrayType"
+
+
+{--
+@site ObservationSubject[E]() :: ObservationSubject[E]
+Returns a "subject" where notifications are sent to all observers.
+An ObservationSubject can be viewed as a multi-reader channel.
+Observers register for notifications by calling observe().
+Each time put() is called, the value is enqueued at each current observer.
+Observers fetch enqueued values by calling get().  
+
+@method observationSubject.observe() :: {. get :: lambda[]() :: Integer, stream :: lambda[]() :: Integer, close :: lambda[]() :: Signal, isClosed :: lambda[]() :: Boolean .}
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+Create an observer.
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.get() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.stream() :: Integer
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.close() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observer.isClosed() :: Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write more OrcDoc for ref manual entry
+
+@method observationSubject.put(Integer) :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method observationSubject.close() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="indefinite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method observationSubject.closeD() :: Signal
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+   <od:siteprop propname="idempotent"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@method observationSubject.isClosed() :: Boolean
+
+<od:sitepropset>
+   <od:siteprop propname="definite"/>
+</od:sitepropset>
+
+TODO: Write OrcDoc for ref manual entry
+
+@implementation
+--}
+def class ObservationSubject[E]() =
+  val observers = Channel[Channel[E]]()
+  val observersSem = Semaphore(1)
+
+  -- Copies of defs from "util" part of prelude --
+  def each[A](List[A]) :: A
+  def each([]) = stop
+  def each(h:t) = h | each(t)
+  def withLock[A](Semaphore, lambda () :: A) :: A
+  def withLock(s, f) =
+    s.acquire() >> (
+      Let(f()) >x>
+      s.release() >>
+      x
+      ; s.release() >> stop
+    )
+
+  def observe() =
+    val outstanding = Channel[E]()
+    withLock(observersSem, lambda() = observers.put(outstanding))  >>
+    {.
+      get = lambda() :: E = outstanding.get(),
+      stream = lambda() :: E = 
+        def doStream() :: E = outstanding.get() >e> (e | doStream())
+        doStream(),
+      close = lambda() :: Signal = outstanding.closeD(), -- Will get dropped from 'observers' on next put
+      isClosed = lambda() :: Boolean = outstanding.isClosed()
+    .}
+  def put(e :: E) :: Signal =
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))
+  def close() :: Signal =
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.close() >> stop )  ;
+      observers.closeD())
+  def closeD() :: Signal =
+    withLock(observersSem, lambda() = 
+      ( val currObservers = observers.getAll()
+        each(currObservers) >o> o.closeD() >> stop )  ;
+    observers.closeD())
+  def isClosed() :: Boolean = observers.isClosed()
+  stop
+
 
 {--
 @def Table[A](Integer, lambda (Integer) :: A)(Integer) :: A
