@@ -21,7 +21,8 @@ import orc.run.extensions._
 
 class StandardOrcRuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   with StandardInvocationBehavior
-  with OrcWithThreadPoolScheduler
+  with OrcWithWorkStealingScheduler
+  //with OrcWithThreadPoolScheduler
   with SupportForRwait
   with SupportForSynchronousExecution
   with SupportForCallsIntoOrc
