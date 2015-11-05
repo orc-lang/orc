@@ -46,7 +46,7 @@ val mygps = new GPS {
 (new Navigation {
 	val gps = mygps
 	val ui = new UI {
-		def announce(s :: String) :: Signal = Println(s)
+		def announce(s :: String) :: Signal = Rwait(10) >> Println(s)
 		def updatePosition(s :: String) :: Signal = Println("Pos: " + s)
 	}
 	val destination = (2, 10)
