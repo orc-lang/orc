@@ -85,7 +85,7 @@ class Token protected (
     group: Group = group,
     clock: Option[VirtualClock] = clock,
     state: TokenState = state): Token = {
-    Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
+    //Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
     new Token(node, stack, env, group, clock, state)
   }
 

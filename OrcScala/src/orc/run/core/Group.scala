@@ -118,6 +118,7 @@ trait Group extends GroupMember {
         //println(s"Warning: removing $m from $this")
       } else {
         assert(members contains m, s"Group $this does not contain $m")
+        // TODO: This may be a performance issue. We are performing a linear remove. How large do groups get?
         members -= m
         if (members.isEmpty) {
           if (hasDiscorporatedMembers)
