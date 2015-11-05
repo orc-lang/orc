@@ -14,115 +14,78 @@
 //
 package orc.run.extensions
 
-import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit }
+import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ForkJoinPool, ForkJoinTask, TimeUnit }
 import java.util.logging.Level
-
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
-
-/** A logger just for scheduling */
-object Logger extends orc.util.Logger("orc.run.scheduler")
+import java.util.concurrent.ForkJoinWorkerThread
+import scala.collection.mutable
 
 /** An Orc runtime engine extension which
   * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
   *
   * @author jthywiss
   */
-trait OrcWithThreadPoolScheduler extends Orc {
-
-  protected var executor: OrcRunner = null
-  protected val executorLock = new Object()
-
-  override def stage(ts: List[Schedulable]) {
-    ts.foreach(stage(_))
-  }
-
-  override def stage(t: Schedulable, u: Schedulable) {
-    stage(t)
-    stage(u)
-  }
-
-  override def stage(t: Schedulable) {
-    if (executor == null) {
-      throw new IllegalStateException("Cannot stage a task without an inited executor")
-    }
-    t.onSchedule()
-    executor.stageTask(t)
-  }
-
-  override def schedule(t: Schedulable) {
-    if (executor == null) {
-      throw new IllegalStateException("Cannot schedule a task without an inited executor")
-    }
-    t.onSchedule()
-    executor.executeTask(t)
-  }
-
+trait OrcWithWorkStealingScheduler extends OrcWithThreadPoolScheduler {
   override def startScheduler(options: OrcExecutionOptions) {
     Logger.entering(getClass().getCanonicalName(), "startScheduler")
     executorLock synchronized {
       if (executor == null) {
-        executor = new OrcThreadPoolExecutor(engineInstanceName, options.maxSiteThreads)
+        executor = new OrcWorkStealingExecutor(engineInstanceName, options.maxSiteThreads)
         executor.startupRunner()
       } else {
         throw new IllegalStateException("startScheduler() multiply invoked")
       }
     }
   }
+}
 
-  override def stopScheduler() {
-    Logger.entering(getClass().getCanonicalName(), "stopScheduler")
-    executorLock synchronized {
-      if (executor != null) {
-        executor.shutdownRunner(
-          { () => executorLock synchronized { executor = ShutdownScheduler } },
-          { () => executorLock synchronized { executor = null } })
+object OrcWorkStealingExecutor {
+  final class OrcWorkerThread(p: ForkJoinPool, name: String) extends ForkJoinWorkerThread(p) {
+    val stagedTasks = new mutable.ArrayBuffer[Schedulable](4)
+    setName(name)
+  }
+  final class OrcWorkerThreadFactory(engineInstanceName: String) extends ForkJoinPool.ForkJoinWorkerThreadFactory {
+    val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
+    var threadCreateCount = 0
+    protected def getNewThreadName() = {
+      var ourThreadNum = 0
+      synchronized {
+        ourThreadNum = threadCreateCount
+        threadCreateCount += 1
+      }
+      engineInstanceName + " Worker Thread " + ourThreadNum
+    }
+    def newThread(p: ForkJoinPool): ForkJoinWorkerThread = {
+      new OrcWorkerThread(p, getNewThreadName())
+    }
+  }
+  
+  @inline
+  def currentOrcWorkerThread() = {
+    Thread.currentThread() match {
+      case t : OrcWorkerThread =>
+        t
+      case t =>
+        throw new AssertionError(s"currentOrcWorkerThread called from a non scheduler worker thread: $t (${t.getClass})")
+    }
+  }
+  
+  final class OrcForkJoinTask(task: Schedulable) extends ForkJoinTask[Void] {
+    final def getRawResult() : Void = null
+    final def setRawResult(v : Void) = ()
+    final def exec() : Boolean = {
+      try {
+        task.run()
+        true
+      } finally {
+        task.onComplete()
+        val t = currentOrcWorkerThread()
+        t.stagedTasks.foreach(s => new OrcForkJoinTask(s).fork())
+        t.stagedTasks.clear()
       }
     }
   }
-
-  object ShutdownScheduler extends OrcRunner {
-    def startupRunner() =
-      throw new IllegalStateException("Cannot start a shutting down scheduler")
-
-    def stageTask(task: Schedulable) =
-      { /* Silently discard task */ }
-
-    def executeTask(task: Schedulable) =
-      { /* Silently discard task */ }
-
-    def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit) =
-      Logger.finer("Ignoring stop of scheduler while it was already shutting down")
-  }
-}
-
-/** Interface from Orc runtime engine to an executor service
-  *
-  * This essentially is a simplified subset of scala.concurrent.FutureTaskRunner
-  * or java.util.concurrent.ExecutorService.
-  *
-  * @author jthywiss
-  */
-trait OrcRunner {
-
-  /** Begin executing submitted tasks */
-  @throws(classOf[IllegalStateException])
-  @throws(classOf[SecurityException])
-  def startupRunner(): Unit
-
-  /** Submit task for execution after this task completes */
-  @throws(classOf[IllegalStateException])
-  def stageTask(task: Schedulable): Unit
-
-  /** Submit task for execution */
-  @throws(classOf[IllegalStateException])
-  @throws(classOf[SecurityException])
-  def executeTask(task: Schedulable): Unit
-
-  /** Orderly shutdown, wait, then force shutdown */
-  @throws(classOf[IllegalStateException])
-  @throws(classOf[SecurityException])
-  def shutdownRunner(onShutdownStart: () => Unit, onShutdownFinish: () => Unit): Unit
 
 }
 
@@ -133,35 +96,22 @@ trait OrcRunner {
   *
   * @author jthywiss
   */
-class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-    //TODO: Make more of these params configurable
-    math.max(4, Runtime.getRuntime().availableProcessors * 2),
-    if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
-    2000L, TimeUnit.MILLISECONDS,
-    //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
-    new LinkedBlockingQueue[Runnable](),
-    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ForkJoinPool(
+  //TODO: Make more of these params configurable
+  math.max(4, Runtime.getRuntime().availableProcessors * 2),
+  // We want our own threads
+  new OrcWorkStealingExecutor.OrcWorkerThreadFactory(engineInstanceName),
+  // Default exception handler
+  null,
+  // Use async mode (FIFO queue instead of LIFO stack of tasks)
+  true
+  ) with OrcRunner with Runnable {
+  import OrcWorkStealingExecutor._
 
-  val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
-
-  object OrcWorkerThreadFactory extends ThreadFactory {
-    var threadCreateCount = 0
-    protected def getNewThreadName() = {
-      var ourThreadNum = 0
-      synchronized {
-        ourThreadNum = threadCreateCount
-        threadCreateCount += 1
-      }
-      engineInstanceName + " Worker Thread " + ourThreadNum
-    }
-    def newThread(r: Runnable): Thread = {
-      new Thread(threadGroup, r, getNewThreadName())
-    }
-  }
-
-  setThreadFactory(OrcWorkerThreadFactory)
-
-  @scala.volatile private var supervisorThread: Thread = null
+  val threadGroup = getFactory().asInstanceOf[OrcWorkStealingExecutor.OrcWorkerThreadFactory].threadGroup
+  val maximumPoolSize = if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256
+  
+  private var supervisorThread: Thread = null
   @scala.volatile private var onShutdownStart: () => Unit = { () => }
   @scala.volatile private var onShutdownFinish: () => Unit = { () => }
 
@@ -182,13 +132,9 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     if (supervisorThread == null) {
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
-    if (OrcThreadPoolExecutor.stagedTasks.get == null) {
-      throw new AssertionError("stageTask called from a non scheduler worker thread")
-    }
-
-    OrcThreadPoolExecutor.stagedTasks.set(task :: OrcThreadPoolExecutor.stagedTasks.get())
+    currentOrcWorkerThread().stagedTasks += task
   }
-
+  
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
   def executeTask(task: Schedulable) {
@@ -196,21 +142,13 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
       throw new IllegalStateException("OrcThreadPoolExecutor.execute() on an un-started instance")
     }
     //FIXME: Don't allow blocking tasks to consume all worker threads
-    execute(task)
-  }
-
-  override def beforeExecute(t: Thread, r: Runnable) {
-    OrcThreadPoolExecutor.stagedTasks.set(Nil)
-  }
-
-  override def afterExecute(r: Runnable, t: Throwable) {
-    super.afterExecute(r, t)
-    r match {
-      case s: Schedulable => s.onComplete()
-      case _ => {}
-    }
-    OrcThreadPoolExecutor.stagedTasks.get.reverseIterator.foreach(executeTask)
-    OrcThreadPoolExecutor.stagedTasks.set(Nil)
+    val fjtask = new OrcForkJoinTask(task)
+    // Check if we are already in the thread pool
+    if(Thread.currentThread().isInstanceOf[OrcWorkerThread])
+      fjtask.fork()
+    else
+      execute(fjtask)
+    // Use task.fork() here instead of this.execute because this.execute will not insert the task into the current threads queue. 
   }
 
   @throws(classOf[IllegalStateException])
@@ -231,8 +169,8 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
     super.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)
   }
 
-  override protected def terminated() {
-    super.terminated()
+  // TODO: Make sure this is called at the right time.
+  protected def terminated() {
     val t = supervisorThread
     if (t != null) {
       t.interrupt()
@@ -242,13 +180,16 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
   protected val CHECK_PERIOD = 10 /* milliseconds */
 
   override def run() {
+    // For now do no supervision.
+    // TODO: Integrate with ForkJoinPool blocking handling.
+    /*
     var shutdownRequested = false
     var giveUp = false
     val numCores = Runtime.getRuntime().availableProcessors()
     val mainLockField = getClass.getSuperclass.getDeclaredField("mainLock")
     mainLockField.setAccessible(true)
     val mainLock = mainLockField.get(this).asInstanceOf[java.util.concurrent.locks.ReentrantLock]
-    val threadBuffer = new Array[Thread](getMaximumPoolSize + 2)
+    val threadBuffer = new Array[Thread](maximumPoolSize + 2)
     var firstTime = 0L
     var lastTime = Long.MinValue
 
@@ -341,22 +282,14 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
       supervisorThread = null;
     }
     Logger.exiting(getClass.getCanonicalName, "run")
+    */
   }
 
   Logger.finer(getClass.getCanonicalName + ": Constructed")
-  Logger.finest("corePoolSize = " + getCorePoolSize)
-  Logger.finest("maximumPoolSize = " + getMaximumPoolSize)
 
   def logThreadExit() = {
     Logger.finer(getClass.getCanonicalName + ": Supervisor thread exit")
-    Logger.finest("corePoolSize = " + getCorePoolSize)
-    Logger.finest("maximumPoolSize = " + getMaximumPoolSize)
     Logger.finest("poolSize = " + getPoolSize)
-    Logger.finest("activeCount = " + getActiveCount)
-    Logger.finest("largestPoolSize = " + getLargestPoolSize)
-    Logger.finest("taskCount = " + getTaskCount)
-    Logger.finest("completedTaskCount = " + getCompletedTaskCount)
-    Logger.finest("Worker threads creation count: " + OrcWorkerThreadFactory.threadCreateCount)
   }
 
   def threadGroupDump(threadGroup: ThreadGroup): String = {
@@ -396,8 +329,4 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
       }).mkString
   }
 
-}
-
-object OrcThreadPoolExecutor {
-  val stagedTasks: ThreadLocal[List[Schedulable]] = new ThreadLocal[List[Schedulable]]()
 }
