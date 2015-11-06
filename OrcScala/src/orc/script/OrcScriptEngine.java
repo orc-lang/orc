@@ -359,5 +359,13 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
   public OrcCompiledScript loadDirectly(final InputStream in) throws LoadingException {
     return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
   }
-
+  
+  /**
+   */
+  public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
+    if(script instanceof OrcScriptEngine.OrcCompiledScript)
+      return new OrcCompiledScript(((OrcCompiledScript)script).code);
+    else
+      throw new IllegalArgumentException("Provided compiled script is not of the correct time.");
+  }
 }

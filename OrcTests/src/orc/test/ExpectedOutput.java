@@ -56,6 +56,7 @@ import java.util.List;
  */
 public class ExpectedOutput {
     private final List<MaybePermutableOutput> outs = new LinkedList<MaybePermutableOutput>();
+    private boolean shouldBenchmark = false;
 
     public ExpectedOutput(final File file) throws IOException {
         final BufferedReader r = new BufferedReader(new FileReader(file));
@@ -75,11 +76,12 @@ public class ExpectedOutput {
                 permutable = true;
                 oneOutput = new StringBuilder();
             } else if (line.startsWith("OUTPUT:")) {
-                permutable = false;
-                oneOutput = new StringBuilder();
+              permutable = false;
+              oneOutput = new StringBuilder();
+            } else if (line.startsWith("BENCHMARK")) {
+              shouldBenchmark = true;
             }
         }
-        r.close();
     }
 
     public boolean contains(final String actual) {
@@ -93,6 +95,10 @@ public class ExpectedOutput {
 
     public boolean isEmpty() {
         return outs.isEmpty();
+    }
+
+    public boolean shouldBenchmark() {
+      return shouldBenchmark;
     }
 
     static class MaybePermutableOutput {

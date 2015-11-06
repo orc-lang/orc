@@ -24,7 +24,7 @@ val N = 503
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
-  val ring = Table(N, ignore({ Channel[Integer]() }))
+  val ring = Table(N, { Channel[Integer]() | _ >> stop } )
   val _ = ring(0).put(0)
   val lastid = {| upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N)) |}
   Println(lastid)
@@ -36,3 +36,7 @@ OUTPUT:
 498
 444
 -}
+{-
+BENCHMARK
+-}
+
