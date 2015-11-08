@@ -102,6 +102,8 @@ public class Ref extends EvalSite implements TypedSite {
 						}
 					}
 				}
+                @Override
+                public boolean nonBlocking() { return true; }
 			});
 		}
 
@@ -161,6 +163,8 @@ public class Ref extends EvalSite implements TypedSite {
 					writer.publish(object2value(signal()));
 				}
 			}
+            @Override
+            public boolean nonBlocking() { return true; }
 		}
 
 		@Override
@@ -169,4 +173,6 @@ public class Ref extends EvalSite implements TypedSite {
 		}
 	}
 
+    @Override
+    public boolean nonBlocking() { return true; }
 }

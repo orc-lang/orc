@@ -23,7 +23,8 @@ import java.lang.reflect.Modifier
 import orc.run.Logger
 import scala.collection.generic.Shrinkable
 
-/** @author jthywiss, dkitchin
+/**
+  * @author jthywiss, dkitchin
   */
 object OrcJavaCompatibility {
 

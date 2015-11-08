@@ -22,7 +22,7 @@ import orc.error.compiletime.typing._
 import orc.types._
 import orc.util.TypeListEnrichment._
 
-object DatatypeBuilder extends TotalSite with TypedSite {
+object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite{
 
   override def name = "Datatype"
   def evaluate(args: List[AnyRef]) = {
@@ -70,7 +70,7 @@ object DatatypeBuilder extends TotalSite with TypedSite {
   }
 }
 
-class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite {
+class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite with FunctionalSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
     if (args.size != arity) {
       throw new ArityMismatchException(arity, args.size)
@@ -79,7 +79,7 @@ class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite {
     }
   }
 }
-class DatatypeExtractor(tag: Tag) extends PartialSite1 {
+class DatatypeExtractor(tag: Tag) extends PartialSite1 with FunctionalSite {
   def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
       case TaggedValue(`tag`, values) => Some(OrcValue.letLike(values))

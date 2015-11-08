@@ -58,6 +58,8 @@ public class Counter extends EvalSite implements TypedSite {
 						}
 						return signal();
 					}
+	                @Override
+	                public boolean nonBlocking() { return true; }
 				});
 				addMember("dec", new PartialSite() {
 					@Override
@@ -77,6 +79,8 @@ public class Counter extends EvalSite implements TypedSite {
 							}
 						}
 					}
+	                @Override
+	                public boolean nonBlocking() { return true; }
 				});
 				addMember("onZero", new SiteAdaptor() {
 					@Override
@@ -96,6 +100,8 @@ public class Counter extends EvalSite implements TypedSite {
 					public Object evaluate(final Args args) throws TokenException {
 						return BigDecimal.valueOf(count);
 					}
+	                @Override
+	                public boolean nonBlocking() { return true; }
 				});
 			}
 		};
@@ -106,4 +112,12 @@ public class Counter extends EvalSite implements TypedSite {
 		return CounterType.getBuilder();
 	}
 
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }

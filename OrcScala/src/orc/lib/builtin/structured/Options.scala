@@ -22,12 +22,12 @@ import orc.types._
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 
 object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor)
-object NoneConstructor extends TotalSite0 with TypedSite {
+object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite {
   override def name = "None"
   def eval() = None
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
-object NoneExtractor extends PartialSite1 with TypedSite {
+object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   override def name = "None.unapply"
   def eval(a: AnyRef) = {
     a match {
@@ -40,7 +40,7 @@ object NoneExtractor extends PartialSite1 with TypedSite {
 }
 
 object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor)
-object SomeConstructor extends TotalSite1 with TypedSite {
+object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite {
   override def name = "Some"
   def eval(a: AnyRef) = Some(a)
   def orcType() = {
@@ -48,7 +48,7 @@ object SomeConstructor extends TotalSite1 with TypedSite {
     new FunctionType(List(X), List(X), OptionType(X))
   }
 }
-object SomeExtractor extends PartialSite1 with TypedSite {
+object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   override def name = "Some.unapply"
   def eval(arg: AnyRef) = {
     arg match {

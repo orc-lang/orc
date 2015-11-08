@@ -19,10 +19,11 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.SimpleFunctionType
 import orc.types.BooleanType
+import orc.values.sites.FunctionalSite
 
 /** Logical negation site
   */
-object Not extends TotalSite with TypedSite {
+object Not extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Not"
   def evaluate(args: List[AnyRef]) =
     args match {

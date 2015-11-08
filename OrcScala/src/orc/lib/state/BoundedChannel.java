@@ -117,6 +117,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 						}
 					}
 				}
+                @Override
+                public boolean nonBlocking() { return true; }
 			});
 			addMember("put", new SiteAdaptor() {
 				@Override
@@ -161,6 +163,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 						}
 					}
 				}
+                @Override
+                public boolean nonBlocking() { return true; }
 			});
 			addMember("getAll", new EvalSite() {
 				@Override
@@ -231,6 +235,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 						caller.publish(signal());
 					}
 				}
+                @Override
+                public boolean nonBlocking() { return true; }
 			});
 		}
 	}
