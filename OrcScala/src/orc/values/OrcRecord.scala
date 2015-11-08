@@ -22,11 +22,12 @@ import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
 import orc.run.core.BoundValue
 import orc.run.core.Binding
+import orc.values.sites.NonBlockingSite
 
 /**
   * @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with OrcObjectInterface {
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with OrcObjectInterface {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)

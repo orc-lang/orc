@@ -79,4 +79,6 @@ public abstract class DotSite extends SiteAdaptor {
 		throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
 	}
 
+    @Override
+    public boolean nonBlocking() { return true; }
 }

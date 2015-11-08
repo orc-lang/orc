@@ -76,14 +76,28 @@ object OrcWorkStealingExecutor {
     final def setRawResult(v : Void) = ()
     final def exec() : Boolean = {
       try {
-        task.run()
-        true
+        if (task.nonblocking)
+          task.run()
+        else
+          ForkJoinPool.managedBlock(new ForkJoinPool.ManagedBlocker {
+            var done = false
+            def block() = {
+              task.run()
+              done = true
+              true
+            }
+            def isReleasable() = done
+          })
+      } catch {
+        case e: Throwable => 
+          Logger.log(Level.SEVERE, "Exception in schedulable run", e)
       } finally {
         task.onComplete()
         val t = currentOrcWorkerThread()
         t.stagedTasks.foreach(s => new OrcForkJoinTask(s).fork())
         t.stagedTasks.clear()
       }
+      true
     }
   }
 

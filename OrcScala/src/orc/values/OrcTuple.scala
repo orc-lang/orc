@@ -19,11 +19,12 @@ import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.TupleIndexOutOfBoundsException
+import orc.values.sites.NonBlockingSite
 
 /**
   * @author dkitchin
   */
-case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
+case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite {
 
   assert(values.size > 1)
 

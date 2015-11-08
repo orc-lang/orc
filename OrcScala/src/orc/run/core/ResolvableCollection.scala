@@ -53,6 +53,9 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   with Blockable {
   import ResolvableCollection._
 
+  /** Execution of a ResolvableCollection cannot indefinitely block the executing thread. */
+  override val nonblocking = true
+
   def definitions = _defs
   def lexicalContext = _lexicalContext
 

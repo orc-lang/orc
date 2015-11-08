@@ -122,6 +122,7 @@ class NonhaltingJoin(val params: List[Binding], val waiter: Blockable, val runti
 }
 
 class JoinItem(source: JoinBase, index: Int) extends Blockable {
+  override val nonblocking = true
 
   var obstacle: Option[Blocker] = None
 

@@ -16,6 +16,8 @@ package orc.run.core
 
 import orc.{ Schedulable, CaughtEvent }
 import orc.error.OrcException
+import orc.values.sites.Site
+import orc.values.sites.Delay
 
 /** A call handle specific to site calls.
   * Scheduling this call handle will invoke the site.
@@ -23,6 +25,11 @@ import orc.error.OrcException
   * @author dkitchin
   */
 class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
+  override val nonblocking = calledSite match {
+    case s: Site =>
+      s.timeToHalt == Delay.NonBlocking
+    case _ => false
+  }
 
   var invocationThread: Option[Thread] = None
 

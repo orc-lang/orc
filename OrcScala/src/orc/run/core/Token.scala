@@ -758,7 +758,7 @@ class Token protected (
           val nt = copy(state = Publishing(v))
           runtime.stage(nt)
         } else {
-          // However "publishing" stop is handled the old way.
+          // However "publishing" stop is handled without duplication.
           setState(Publishing(v))
           runtime.stage(this)
         }
