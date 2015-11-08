@@ -1,0 +1,89 @@
+import class ArrayList = "java.util.ArrayList"
+
+include "gui.inc"
+
+site acquireReleaseOnKillHandler(check :: lambda() :: Top, acquire :: lambda() :: Signal, release :: lambda() :: Top) =
+  acquire() >> ((check() ; release()) >> stop | signal)
+
+{-- 
+Call acquire then publish a callable that will call release and also call release if this 
+is killed. Release will never be called more than once.
+-}
+def acquireReleaseOnKill(acquire :: lambda() :: Signal, release :: lambda() :: Signal) = 
+  val f = Semaphore(0)
+  val check = Cell()
+  {|
+  site c() :: Top = Block()
+  check := c >> f.acquire()
+  |} >> stop |
+  acquireReleaseOnKillHandler(check.read(), acquire, release) >> f.release
+  
+class MonitorLock {
+  val lock = Semaphore(1)
+  def synchronized[T](f :: lambda() :: T) = 
+	  acquireReleaseOnKill(lock.acquire, lock.release) >earlyRelease> (
+	    val r = f() #
+	    (r ; signal) >> earlyRelease() >> r
+	  )
+  def synchronizedUntilHalt[T](f :: lambda() :: T) = 
+	  acquireReleaseOnKill(lock.acquire, lock.release) >earlyRelease> (
+	    val r = Channel() #
+	    (f() >v> r.put(v) >> stop ; r.close() | earlyRelease()) >> stop |
+	    repeat(r.get)
+	  )
+}
+
+def randomSleep() = 
+  Rwait(Random(5000))
+
+class MutableList extends MonitorLock {
+  val data = ArrayList()
+  
+  def add(v) = synchronized({ data.add(v) })
+  def each() = synchronizedUntilHalt({
+    val iter = data.iterator()
+    repeat({ iter.hasNext() >true> iter.next() })
+  })
+}
+
+class GUI {
+  val searchEntry = TextField()
+  val searchButton = Button("Search")
+  
+  val resultsList = ListComponent()
+  
+  val frame = Frame([searchEntry, searchButton, resultsList])
+  val _ = resultsList.add("Test") | searchButton.setEnabled(false) >> db.completed >> searchButton.setEnabled(true)
+  
+  val db :: Database
+    
+  val _ = repeat({
+    {| searchButton.onAction() |} >> searchButton.setEnabled(false) >>
+    resultsList.clear() >> 
+    db.search(searchEntry.getText()) >r> resultsList.add(r) >> stop ;
+    searchButton.setEnabled(true)
+  })
+  
+  def onExit() = frame.onClosing()
+}
+
+class Database {
+  val data = new MutableList
+  val completed = loadData() >s> data.add(s) >> stop ; signal
+  def loadData() = "test1" | "ABC" | "ab"
+  
+  def search(query) = completed >> data.each() >s> s.matches(query) >true> s 
+}
+
+class DatabaseSlow extends Database {
+  val completed = randomSleep() >> loadData() >s> randomSleep() >> data.add(s) >> stop ; signal
+  
+  def search(query) = completed >> data.each() >s> randomSleep() >> s.matches(query) >true> s 
+}
+
+{|
+val gui = new GUI {
+  val db = new DatabaseSlow
+}
+gui.onExit()
+|} >> stop

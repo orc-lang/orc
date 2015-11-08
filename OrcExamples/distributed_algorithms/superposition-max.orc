@@ -8,7 +8,7 @@
 
 include "processor-graph-superposables.inc"
 
--- Small distributed algorithm that can be mixed with the superposed computaitons
+-- Small distributed algorithm that can be mixed with the superposed computations
 
 def rnd() = Random(100)
 
