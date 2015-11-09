@@ -9,11 +9,14 @@ import class JComponent = "java.awt.Component"
 import class Color = "java.awt.Color"
 import class JFrame = "javax.swing.JFrame"
 import class JButton = "javax.swing.JButton"
+import class JTextField = "javax.swing.JTextField"
+import class JList = "javax.swing.JList"
 import class SwingUtilities = "javax.swing.SwingUtilities"
 import class WindowConstants = "javax.swing.WindowConstants"
 import class Window = "java.awt.Window"
 import class BoxLayout = "javax.swing.BoxLayout"
-import class CanvasImpl = "orc.lib.gui.CanvasImpl"
+import class CanvasImpl = "orc.lib.gui.CanvasImpl" 
+import class ListModelImpl = "orc.lib.gui.ListModelImpl" 
 
 import class Runnable = "java.lang.Runnable"
 
@@ -23,6 +26,7 @@ import site Block = "orc.lib.util.Block"
 import site ActionListenerAdapter = "orc.lib.gui.ActionListenerAdapter"
 import site WindowListenerAdapter = "orc.lib.gui.WindowListenerAdapter"
 import site MouseListenerAdapter = "orc.lib.gui.MouseListenerAdapter"
+import site ToStringAdapter = "orc.lib.gui.ToStringAdapter"
 
 site runOnKillHandler(check :: lambda() :: Top, callback :: lambda() :: Top) =
   (check() ; callback()) >> stop | signal
@@ -74,6 +78,10 @@ def installOnEDTUntilKill(install, uninstall, arg) =
 
 class Component {
   val impl :: JComponent
+
+  site setEnabled(b :: Boolean) = impl >> onEDTBlock({
+    impl.setEnabled(b)
+  })
 }
 
 class def Frame(children :: List[Component]) :: Frame extends Component {
@@ -119,6 +127,41 @@ class def Button(text :: String) :: Button extends Component {
   site actionPerformed(e) = actionChannel.put(e)  
   
   site onAction() = actionChannel.listen()
+}
+
+class def TextField() :: TextField extends Component {
+  val impl = onEDTBlock({ JTextField() })
+  
+  site setText(s :: String) = impl >> onEDT({
+    impl.setText(s)
+  })
+  site getText() = impl >> onEDTBlock({
+    impl.getText()
+  })
+  
+  val _ = installOnEDTUntilKill( impl.addActionListener, impl.removeActionListener, ActionListenerAdapter(this))
+  
+  val actionChannel = FanoutChannel()
+  site actionPerformed(e) = actionChannel.put(e)  
+  
+  site onAction() = actionChannel.listen()
+}
+
+class def ListComponent() :: ListComponent extends Component {
+  val (impl, model) = onEDTBlock({
+    val model = ListModelImpl() #
+    (JList(model), model)
+  })
+  
+  site clear() = model >> onEDTBlock({
+    model.clear()
+  })
+  site add(e) = model >> onEDT({
+    model.addElement(ToStringAdapter(e))
+  })
+  site elementsUpdated() = model >> onEDT({
+    model.elementsUpdated()
+  })
 }
 
 class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Component {
