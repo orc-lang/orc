@@ -68,6 +68,8 @@ class OrcCallWrapperGroup(parent: Group) extends Subgroup(parent) {
       case Bound(v) =>
         state = Completed
         v
+      case Completed =>
+        throw new AssertionError("The state is Completed at end of OrcCallWrapperGroup.await(). Await must have been called more than once.")
     }
   }
 
