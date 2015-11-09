@@ -57,33 +57,61 @@ class GUI {
   
   val db :: Database
     
+  def addResult(r) = resultsList.add(r)
+  
   val _ = repeat({
-    {| searchButton.onAction() |} >> searchButton.setEnabled(false) >>
+    {| searchButton.onAction() | searchEntry.onAction() |} >> 
+    searchButton.setEnabled(false) >>
     resultsList.clear() >> 
-    db.search(searchEntry.getText()) >r> resultsList.add(r) >> stop ;
+    db.search(".*" + searchEntry.getText() + ".*") >r> addResult(r) >> stop ;
     searchButton.setEnabled(true)
   })
   
   def onExit() = frame.onClosing()
 }
 
+class Result {
+  def toString() = name
+  
+  val name :: String
+}
+def Result(n :: String) :: Result = new Result { val name = n }
+
 class Database {
   val data = new MutableList
   val completed = loadData() >s> data.add(s) >> stop ; signal
   def loadData() = "test1" | "ABC" | "ab"
   
-  def search(query) = completed >> data.each() >s> s.matches(query) >true> s 
+  def search(query) = completed >> data.each() >s> s.matches(query) >true> Result(s) 
 }
 
 class DatabaseSlow extends Database {
-  val completed = randomSleep() >> loadData() >s> randomSleep() >> data.add(s) >> stop ; signal
+  def loadData() = randomSleep() >> super.loadData() >s> randomSleep() >> s
   
-  def search(query) = completed >> data.each() >s> randomSleep() >> s.matches(query) >true> s 
+  def search(query) = completed >> data.each() >s> randomSleep() >> s.matches(query) >true> (Println(s) >> stop | Result(s))
+}
+
+
+class GUIRating extends GUI {
+  def addResult(r) = super.addResult(r) | r.rating >> resultsList.elementsUpdated()
+}
+
+class ResultRating extends Result {
+  val rating :: Integer
+  -- Vtime would be useful here, I think.
+  def toString() = {| name + ", Rating: " + rating | Rwait(10) >> super.toString() |}
+}
+
+class DatabaseRating extends DatabaseSlow {
+  def search(query) = completed >> data.each() >s> randomSleep() >> s.matches(query) >true> new ResultRating {
+	val rating = randomSleep() >> Random(100)
+	val name = s
+  }
 }
 
 {|
-val gui = new GUI {
-  val db = new DatabaseSlow
+val gui = new GUIRating {
+  val db = new DatabaseRating
 }
 gui.onExit()
 |} >> stop
