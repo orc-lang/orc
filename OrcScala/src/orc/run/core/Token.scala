@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,17 +14,13 @@
 //
 package orc.run.core
 
-import orc.{ Schedulable, OrcRuntime, OrcEvent, CaughtEvent }
-import orc.ast.oil.nameless.{ Variable, UnboundVariable, Stop, Sequence, LateBind, Limit, Parallel, Otherwise, Hole, HasType, Expression, Def, DeclareType, DeclareDefs, Constant, Call, Argument }
-import orc.error.runtime.{ TokenException, StackLimitReachedError, ArityMismatchException, ArgumentTypeMismatchException }
+import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
+import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareDefs, DeclareType, Def, Expression, HasType, Hole, LateBind, Limit, Otherwise, Parallel, Sequence, Stop, UnboundVariable, Variable, VtimeZone }
 import orc.error.OrcException
-import orc.lib.time.{ Vtime, Vclock, Vawait }
-import orc.util.BlockableMapExtension.addBlockableMapToList
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
+import orc.lib.time.{ Vawait, Vtime }
+import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
-import orc.values.{ Signal, OrcRecord, Field }
-import orc.ast.oil.nameless.VtimeZone
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -639,7 +635,7 @@ class Token protected (
 }
 
 /**  */
-trait TokenState {
+sealed abstract class TokenState {
   val isLive: Boolean
 }
 
