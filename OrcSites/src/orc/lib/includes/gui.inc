@@ -159,6 +159,12 @@ class def ListComponent() :: ListComponent extends Component {
   site add(e) = model >> onEDT({
     model.addElement(ToStringAdapter(e))
   })
+  site setExtend(i, e) = model >> onEDTBlock({
+    model.setExtend(i, ToStringAdapter(e))
+  })
+  site set(i, e) = model >> onEDTBlock({
+    model.set(i, ToStringAdapter(e))
+  })
   site elementsUpdated() = model >> onEDT({
     model.elementsUpdated()
   })

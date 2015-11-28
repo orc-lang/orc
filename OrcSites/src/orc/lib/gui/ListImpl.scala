@@ -25,8 +25,13 @@ import orc.values.sites.Site1
 /**
   * @author amp
   */
-class ListModelImpl extends DefaultListModel {
+class ListModelImpl extends DefaultListModel[AnyRef] {
   def elementsUpdated() = fireContentsChanged(this, 0, getSize())
+  
+  def setExtend(i : Int, e : AnyRef) = {
+    while(size() <= i) addElement("")
+    set(i, e)
+  }
 }
 
 class ToStringAdapter(val deligate: OrcObjectInterface, val runtime: SupportForCallsIntoOrc) extends ListenerAdapter {
@@ -42,6 +47,7 @@ class ToStringAdapter(val deligate: OrcObjectInterface, val runtime: SupportForC
       deligate.toOrcSyntax()
   }
 }
+
 object ToStringAdapter extends Site1 {
   def call(arg: AnyRef, h: Handle) = {
     val runtime = h.runtime match {
