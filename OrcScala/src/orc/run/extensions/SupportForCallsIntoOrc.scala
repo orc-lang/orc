@@ -124,6 +124,16 @@ trait SupportForCallsIntoOrc extends OrcRuntime {
     callNode(node)
   }
 
+  /** Call a callable member of an Orc object with the given arguments and then return the first thing it publishes.
+    *
+    * This call blocks until the Orc code publishes for the first time. If the call halts without
+    * publishing this will return None.
+    */
+  def scheduleOrcMethod(obj: AnyRef, field: Field, arguments: List[AnyRef]): Unit = {
+    val node = FieldAccess(Constant(obj), field) >> Call(Variable(0), arguments map Constant, None)
+    scheduleNode(node)
+  }
+
   private def callNode(node: orc.ast.oil.nameless.Expression): Option[AnyRef] = {
     val rootGroup = root.getOrElse {
       throw new IllegalStateException("Cannot call into Orc because the root group does not exist (it has probably halted or been killed).")
@@ -133,5 +143,14 @@ trait SupportForCallsIntoOrc extends OrcRuntime {
     schedule(t)
     val result = wrapper.await()
     result
+  }
+  
+  private def scheduleNode(node: orc.ast.oil.nameless.Expression): Unit = {
+    val rootGroup = root.getOrElse {
+      throw new IllegalStateException("Cannot call into Orc because the root group does not exist (it has probably halted or been killed).")
+    }
+    val wrapper = new OrcCallWrapperGroup(rootGroup)
+    val t = new Token(node, wrapper)
+    schedule(t)
   }
 }
