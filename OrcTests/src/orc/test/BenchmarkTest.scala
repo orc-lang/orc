@@ -143,7 +143,12 @@ object BenchmarkTest {
       import scala.sys.process._
       s"taskset -a -c -p ${config.cpus.mkString(",")} $pid".!
     }
-
+    
+    // Warm up VM by running each test once
+    for ((testname, file) <- tests) {
+      val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))(config.copy(nRuns = 1))
+    }
+    
     // makeBindings(3, TokenInterpreterBackend),
 
     def write(s: String) = {

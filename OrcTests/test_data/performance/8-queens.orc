@@ -21,7 +21,7 @@ def queens(N) =
   extend([],N)
 
 val clock = Rclock().time
-collect(defer(queens, 8)) >x>
+collect(defer(queens, 6)) >x>
 Println("Time elapsed: " + clock() + "ms") >>
 each(x)
 
