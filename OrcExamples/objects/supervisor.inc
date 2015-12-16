@@ -98,6 +98,7 @@ class def Notifier() :: Notifier extends MonitorLock {
     {| newListener().acquire() |}
 }
 
+-- TODO: This is actually a clearable cell not a clearable ref.
 class def ClearableRef() :: ClearableRef {
   val ref = Ref(Cell())
   --val setNotifier = Notifier()
