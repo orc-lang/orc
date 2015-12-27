@@ -47,7 +47,8 @@ class StandardBackend extends Backend[Expression] {
     }
   })
 
-  def createRuntime(options: OrcExecutionOptions): Runtime[Expression] = new StandardOrcRuntime("Orc") with Runtime[Expression] {
+//FIXME:Revert this hack: orc.run.distrib.LeaderRuntime() c'tor should be StandardOrcRuntime("Orc")  
+  def createRuntime(options: OrcExecutionOptions): Runtime[Expression] = new orc.run.distrib.LeaderRuntime() with Runtime[Expression] {
     def run(code: orc.ast.oil.nameless.Expression, k: orc.OrcEvent => Unit): Unit = run(code, k, options)
     def runSynchronous(code: orc.ast.oil.nameless.Expression, k: orc.OrcEvent => Unit): Unit = runSynchronous(code, k, options)
   }
