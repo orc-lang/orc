@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,19 +25,19 @@ import orc.run.Logger
   * @author dkitchin
   */
 class Execution(
-  private[run] var _node: Expression,
-  private[run] var _options: OrcExecutionOptions,
+  val node: Expression,
+  val options: OrcExecutionOptions,
   private var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
   extends Group {
 
-  override val root = this
+//  override val root = this
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
-  def node = _node;
+//  def node = _node;
 
-  def options = _options;
+//  def options = _options;
 
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     notifyOrc(PublishedEvent(v.get))

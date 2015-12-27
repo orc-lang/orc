@@ -57,7 +57,7 @@ class Token protected (
 
   def sourcePosition = node.pos
 
-  val options = group.root.options
+  val options = group.options
 
   /** Execution of a token cannot indefinitely block the executing thread. */
   override val nonblocking = true

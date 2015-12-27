@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 23, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,8 +28,8 @@ trait SwappableASTs extends Orc {
 }
 
 object SwappableASTs {
-  def setExecutionNode(e: Execution, node: Expression) { e._node = node }
-  def setExecutionOptions(e: Execution, options: OrcExecutionOptions) { e._options = options }
+  def setExecutionNode(e: Execution, node: Expression) { ??? }//e._node = node }
+  def setExecutionOptions(e: Execution, options: OrcExecutionOptions) { ??? }//e._options = options }
   def setClosureDef(c: Closure, defs: List[Def]) { c.closureGroup._defs = defs }
   def setSequenceFrameNode(sf: SequenceFrame, node: Expression) { sf._node = node }
   def setFunctionFrameCallpoint(ff: FunctionFrame, callpoint: Expression) { ff._callpoint = callpoint }

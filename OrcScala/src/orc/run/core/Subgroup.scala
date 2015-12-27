@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,7 +20,8 @@ abstract class Subgroup(parent: Group) extends Group {
 
   override val runtime = parent.runtime
 
-  override val root = parent.root
+//  override val root = parent.root
+  override val options = parent.options
 
   /** An expensive walk-to-root check for alive state */
   override def checkAlive(): Boolean = super.checkAlive() && parent.checkAlive()

@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,9 +13,9 @@
 package orc.run.core
 
 import scala.collection.mutable
-
 import orc.OrcRuntime
 import orc.error.runtime.TokenLimitReachedError
+import orc.OrcExecutionOptions
 
 /** A Group is a structure associated with dynamic instances of an expression,
   * tracking all of the executions occurring within that expression.
@@ -31,8 +31,9 @@ trait Group extends GroupMember {
 
   val runtime: OrcRuntime
 
-  /** Find the root of this group tree. */
-  val root: Execution
+//  /** Find the root of this group tree. */
+//  val root: Execution
+  val options: OrcExecutionOptions
 
   private var alive = true
 
@@ -51,7 +52,8 @@ trait Group extends GroupMember {
       for (m <- members) {
         runtime.stage(m)
         /* Optimization: assume Tokens do not remove themselves from Groups */
-        if (root.options.maxTokens > 0 && m.isInstanceOf[Token]) root.tokenCount.decrementAndGet()
+//FIXME:Implement tokenCount
+//        if (options.maxTokens > 0 && m.isInstanceOf[Token]) root.tokenCount.decrementAndGet()
       }
       // TODO: members.clear() ?  Only needed for Tokens
     }
@@ -80,13 +82,14 @@ trait Group extends GroupMember {
       assert(!members.contains(m), s"Double Group.add of $m")
       members += m
     }
-    m match {
-      case t: Token if (root.options.maxTokens > 0) => {
-        if (root.tokenCount.incrementAndGet() > root.options.maxTokens)
-          throw new TokenLimitReachedError(root.options.maxTokens)
-      }
-      case _ => {}
-    }
+//FIXME:Implement tokenCount
+//    m match {
+//      case t: Token if (options.maxTokens > 0) => {
+//        if (root.tokenCount.incrementAndGet() > options.maxTokens)
+//          throw new TokenLimitReachedError(options.maxTokens)
+//      }
+//      case _ => {}
+//    }
   }
 
   def remove(m: GroupMember) {
@@ -94,12 +97,13 @@ trait Group extends GroupMember {
       members -= m
       if (members.isEmpty) { onHalt() }
     }
-    m match {
-      /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
-       * Thus, there is no kill-halt multiple remove issue for tokens.  */
-      case t: Token if (root.options.maxTokens > 0) => root.tokenCount.decrementAndGet()
-      case _ => {}
-    }
+//FIXME:Implement tokenCount
+//    m match {
+//      /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
+//       * Thus, there is no kill-halt multiple remove issue for tokens.  */
+//      case t: Token if (options.maxTokens > 0) => root.tokenCount.decrementAndGet()
+//      case _ => {}
+//    }
   }
 
   def inhabitants: List[Token] =
