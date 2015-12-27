@@ -27,9 +27,10 @@ import scala.util.parsing.input.Position;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") // We don't care about serialization compatibility of Orc Exceptions
 public abstract class OrcException extends Exception {
-	Position position;
+  private static final long serialVersionUID = -194692912947820229L;
+
+  Position position;
 
 	/**
      * Constructs a new OrcException with the specified detail message.  The

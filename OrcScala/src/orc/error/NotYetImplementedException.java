@@ -20,8 +20,9 @@ package orc.error;
  *
  * @author jthywiss
  */
-@SuppressWarnings("serial")
 public class NotYetImplementedException extends RuntimeException {
+  private static final long serialVersionUID = 4895445893333165772L;
+
   /**
    * Constructs an object of class NotYetImplementedException.
    */

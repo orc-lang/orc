@@ -20,10 +20,11 @@ import orc.error.OrcException;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public abstract class ExecutionException extends OrcException {
 
-	public ExecutionException(final String message) {
+public abstract class ExecutionException extends OrcException {
+  private static final long serialVersionUID = -9001694807470010314L;
+
+  public ExecutionException(final String message) {
 		super(message);
 	}
 

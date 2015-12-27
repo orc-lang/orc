@@ -23,10 +23,10 @@ import orc.error.compiletime.CompileLogger.Severity;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
 public abstract class CompilationException extends OrcException {
+  private static final long serialVersionUID = 3471866878600135322L;
 
-	public CompilationException(final String message) {
+  public CompilationException(final String message) {
 		super(message);
 	}
 

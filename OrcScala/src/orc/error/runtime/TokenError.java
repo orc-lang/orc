@@ -20,10 +20,11 @@ package orc.error.runtime;
  *
  * @author quark
  */
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public abstract class TokenError extends TokenException {
 
-	public TokenError(final String message) {
+public abstract class TokenError extends TokenException {
+  private static final long serialVersionUID = 5731144810559347732L;
+
+  public TokenError(final String message) {
 		super(message);
 	}
 

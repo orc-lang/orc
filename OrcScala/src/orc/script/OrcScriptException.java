@@ -29,9 +29,8 @@ import scala.util.parsing.input.Position;
  *
  * @author jthywiss
  */
-@SuppressWarnings("serial")
-// We don't care about serialization compatibility of Exceptions
 public class OrcScriptException extends ScriptException {
+  private static final long serialVersionUID = 8541712728830055894L;
 
   private final OrcException orcE;
 

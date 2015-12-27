@@ -46,36 +46,42 @@ trait SeverityInternal extends HaltingSeverity
 
 /** This Orc program is not syntactically valid.
   */
+@SerialVersionUID(1039317592598916147L)
 abstract class SyntacticException(message: String) extends CompilationException(message)
 
 /** Problem parsing the text of an Orc program. Mostly this
   * is a wrapper around the exceptions thrown by whatever
   * parsing library we use.
   */
+@SerialVersionUID(-705986615440958886L)
 class ParsingException(val message: String, val errorPos: Position)
   extends SyntacticException(message)
   with SeverityFatal { this.resetPosition(errorPos) }
 
 /** A record expression maps the same key more than once.
   */
+@SerialVersionUID(-9117016650562548269L)
 case class DuplicateKeyException(val duplicateKey: String)
   extends SyntacticException("Duplicate mapping for key " + duplicateKey + " in record. The rightmost mapping will be used.")
   with SeverityWarning
 
 /** A pattern, or set of pattern arguments, mentions the same variable more than once.
   */
+@SerialVersionUID(292803225394024041L)
 case class NonlinearPatternException(val repeatedName: String)
   extends SyntacticException("Nonlinear pattern: variable " + repeatedName + " occurs more than once.")
   with SeverityError
 
 /** A call pattern appears as a subpattern of an as pattern.
   */
+@SerialVersionUID(3135155295790873092L)
 case class CallPatternWithinAsPattern()
   extends SyntacticException("Call pattern occurs within as pattern. This can produce unexpected matching behavior.")
   with SeverityWarning
 
 /** A list of type formals mentions the same variable more than once.
   */
+@SerialVersionUID(7694819027283371220L)
 case class DuplicateTypeFormalException(val repeatedName: String)
   extends SyntacticException("Duplicate type formal: " + repeatedName + " occurs more than once.")
   with SeverityError
@@ -85,48 +91,61 @@ case class DuplicateTypeFormalException(val repeatedName: String)
   *
   * @author dkitchin
   */
+@SerialVersionUID(2031122784647692321L)
 case class ClauseArityMismatch()
   extends SyntacticException("Not all clauses of this function have the same number of arguments.")
   with SeverityFatal
 
 /** A clause can never be reached because the preceding clause matches all possible arguments.
   */
+@SerialVersionUID(-629891427544641940L)
 case class RedundantMatch()
   extends SyntacticException("Redundant match; this clause can never be reached.")
   with SeverityWarning
 
 /** A clause has redundant type information.
   */
+@SerialVersionUID(6431513589901637313L)
 abstract class RedundantTypeInformationException(message: String) extends SyntacticException(message) with SeverityWarning
+@SerialVersionUID(-7210254063454988009L)
 case class RedundantTypeParameters() extends RedundantTypeInformationException("Redundant type parameters")
+@SerialVersionUID(-8892724540647226616L)
 case class RedundantArgumentType() extends RedundantTypeInformationException("Redundant argument type")
+@SerialVersionUID(-8055167575332259977L)
 case class RedundantReturnType() extends RedundantTypeInformationException("Redundant return type")
+@SerialVersionUID(1850200423303914708L)
 case class UnusedFunctionSignature() extends RedundantTypeInformationException("Unused function signature")
 
+@SerialVersionUID(-6106643733414243406L)
 case class ClassDefInNonclassContext()
   extends SyntacticException("Cannot declare this clause as 'class'; preceding clauses were not declared as 'class'")
   with SeverityError
+@SerialVersionUID(-293992779672576271L)
 case class NonclassDefInClassContext()
   extends SyntacticException("This clause must be declared as 'class'; preceding clauses were declared as 'class'")
   with SeverityError
 
 /** Call to the Vclock quasi-site (in a sequential combinator) that is malformed
   */
+@SerialVersionUID(-2736987424427777920L)
 case class IncorrectVclockCall()
   extends SyntacticException("Vclock calls should be of the form: Vclock(SomeTimeOrder) >> e")
   with SeverityError
 
 /** Use of the Vclock quasi-site in an invalid location
   */
+@SerialVersionUID(-3646497129797531832L)
 case class InvalidVclockUse()
   extends SyntacticException("Vclock can only be used as a call on the left side of a sequential combinator")
   with SeverityError
 
 /** A variable is unbound.
   */
+@SerialVersionUID(7607784286527869926L)
 case class UnboundVariableException(val varName: String)
   extends SyntacticException("Variable " + varName + " is unbound")
   with SeverityError
+@SerialVersionUID(5097600012660280100L)
 case class UnboundTypeVariableException(val typevarName: String)
   extends SyntacticException("Type variable " + typevarName + " is unbound")
   with SeverityError
@@ -134,16 +153,19 @@ case class UnboundTypeVariableException(val typevarName: String)
 /** The compilation process has produced a malformed expression;
   * this is a fatal internal error, and not the fault of the user.
   */
+@SerialVersionUID(8051933862738751228L)
 case class MalformedExpression(complaint: String)
   extends SyntacticException(complaint)
   with SeverityInternal
 
 /** Unguarded recursion.
   */
+@SerialVersionUID(-4307748302868264406L)
 case class UnguardedRecursionException() extends SyntacticException("Unguarded recursion") with SeverityWarning
 
 /** Indicate a problem with include file open/read operations.
   */
+@SerialVersionUID(479336004840472249L)
 case class IncludeFileException(val includeFileName: String, cause: Throwable)
   extends CompilationException("Problem including " + includeFileName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
@@ -152,6 +174,7 @@ case class IncludeFileException(val includeFileName: String, cause: Throwable)
   * this would be a loadtime error, but currently site
   * resolution is done at compile time.
   */
+@SerialVersionUID(5710973571979789522L)
 case class SiteResolutionException(val siteName: String, cause: Throwable)
   extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal

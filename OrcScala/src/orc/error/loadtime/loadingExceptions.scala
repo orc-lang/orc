@@ -16,5 +16,6 @@ package orc.error.loadtime
 
 /** When reading OIL XML, it was found to be syntactically invalid.
   */
+@SerialVersionUID(-2514919839288618140L)
 case class OilParsingException(message: String)
   extends LoadingException(message)

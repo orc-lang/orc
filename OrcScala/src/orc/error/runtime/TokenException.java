@@ -25,9 +25,10 @@ import scala.util.parsing.input.Position;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") // We don't care about serialization compatibility of Orc Exceptions
 public abstract class TokenException extends ExecutionException {
-	public Position[] backtrace = new Position[0];
+  private static final long serialVersionUID = -9019214813154694088L;
+
+  public Position[] backtrace = new Position[0];
 
 	public TokenException(final String message) {
 		super(message);

@@ -155,7 +155,7 @@ class OrcEventAction {
   */
 trait OrcOptions extends OrcCompilationOptions with OrcExecutionOptions
 
-trait OrcCommonOptions {
+trait OrcCommonOptions extends Serializable {
   def filename: String
   def filename_=(newVal: String)
   def classPath: java.util.List[String]

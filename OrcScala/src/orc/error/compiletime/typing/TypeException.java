@@ -16,10 +16,11 @@ package orc.error.compiletime.typing;
 import scala.util.parsing.input.Position;
 import orc.error.compiletime.CompilationException;
 
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public abstract class TypeException extends CompilationException {
 
-	public TypeException(final String message) {
+public abstract class TypeException extends CompilationException {
+  private static final long serialVersionUID = 4486691396677409976L;
+
+  public TypeException(final String message) {
 		super(message);
 	}
 
