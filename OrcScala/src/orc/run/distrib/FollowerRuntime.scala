@@ -49,7 +49,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends StandardOrcRunti
         newConnection.close()
       }
     } catch {
-      case (e: IOException) => Logger.finer("Ignoring $e") /* Ignore close failures at this point */
+      case (e: IOException) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
     } finally {
       listener.close()
       Logger.info(s"Closed $listenAddress")

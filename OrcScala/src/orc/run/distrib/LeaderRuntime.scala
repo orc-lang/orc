@@ -102,7 +102,7 @@ class LeaderRuntime() extends StandardOrcRuntime("dOrc leader") with
         try {
           followerConnection.close()
         } catch {
-        case NonFatal(e) => Logger.finer("Ignoring $e") /* Ignore close failures at this point */
+        case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
         }
         Logger.info(s"Stopped reading events from ${followerConnection.socket}")
         followerConnections synchronized { !followerConnections.remove(followerConnection) }
