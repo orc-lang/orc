@@ -44,7 +44,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends StandardOrcRunti
         followDOrcLeader(newConnection)
       } catch {
         case e: InterruptedException => throw e
-        case e: Throwable => { newConnection.send("", new CaughtEvent(e)); throw e }
+        case e: Throwable => { newConnection.send(LeaderRuntime.NO_GROUP, new CaughtEvent(e)); throw e }
       } finally {
         newConnection.close()
       }
@@ -80,7 +80,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends StandardOrcRunti
     }
 
     val programAst = OrcXML.xmlToAst(XML.loadString(programOil))
-    val root = new DOrcFollowerExecution(programAst, options, { e => Logger.finer(s"eventHandler: sending ${(("", e))}"); leaderConnection.send(("", e)) }, this)
+    val root = new DOrcFollowerExecution(programAst, options, { e => Logger.finer(s"eventHandler: sending ${(("", e))}"); leaderConnection.send((LeaderRuntime.NO_GROUP, e)) }, this)
     installHandlers(root)
 
     programs.put(executionId, root)

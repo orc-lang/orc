@@ -14,10 +14,8 @@
 package orc.run.distrib
 
 import java.net.InetSocketAddress
-
 import scala.ref.WeakReference
 import scala.util.control.NonFatal
-
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
@@ -25,6 +23,7 @@ import orc.run.StandardOrcRuntime
 import orc.run.core.{ Execution, Token }
 import orc.run.extensions.SupportForDOrc
 import orc.util.{ ConnectionInitiator, SocketObjectConnection }
+import java.util.concurrent.atomic.AtomicLong
 
 /** Orc runtime engine leading a dOrc cluster.
   *
@@ -34,13 +33,13 @@ class LeaderRuntime() extends StandardOrcRuntime("dOrc leader") with
   SupportForDOrc {
 
   type ExecutionId = String
-  type GroupProxyId = String
+  type GroupProxyId = Long
 
   val followerConnections = scala.collection.mutable.Set.empty[SocketObjectConnection[(GroupProxyId, OrcEvent), OrcCmd]]
   val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
   override def run(programAst: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
-    val programOil = OrcXML.astToXml(programAst).toString();
+    val programOil = OrcXML.astToXml(programAst).toString()
     val thisRun = java.util.UUID.randomUUID().toString
     val followers = Set(new InetSocketAddress("localhost", 36721), new InetSocketAddress("localhost", 36722))
     followers foreach { f => followerConnections.add(ConnectionInitiator[(GroupProxyId, OrcEvent), OrcCmd](f)) }
@@ -52,16 +51,17 @@ class LeaderRuntime() extends StandardOrcRuntime("dOrc leader") with
     installHandlers(root)
     roots.put(new WeakReference(root), ())
 
-    followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
-    followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
-    followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
+    sendToken(new Token(programAst, root), followerConnections.head, thisRun, programAst)
+    //followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
+    //followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
+    //followerConnections foreach { c => sendToken(new Token(programAst, root), c, thisRun, programAst) }
 
     Logger.exiting(getClass.getName, "run")
   }
-  
-  protected def sendToken(token: Token, destination: SocketObjectConnection[(String, OrcEvent), OrcCmd], executionId: ExecutionId, programAst: Expression) {
+
+  protected def sendToken(token: Token, destination: SocketObjectConnection[(GroupProxyId, OrcEvent), OrcCmd], executionId: ExecutionId, programAst: Expression) {
     val group = token.getGroup
-    val proxyId = java.util.UUID.randomUUID().toString
+    val proxyId = LeaderRuntime.nextGroupProxyId.getAndIncrement()
     val rmtProxy = new RemoteGroupMembersProxy(group, { () => destination.send(KillGroupCmd(proxyId)) }, proxyId)
     proxiedGroupMembers.put(proxyId, rmtProxy)
 
@@ -89,7 +89,7 @@ class LeaderRuntime() extends StandardOrcRuntime("dOrc leader") with
           val msg = followerConnection.receive()
           Logger.finest(s"Read ${msg}")
           msg match {
-          case ("", event) => LeaderRuntime.this synchronized {
+          case (LeaderRuntime.NO_GROUP, event) => LeaderRuntime.this synchronized {
             k(event)
           }
           case (id, HaltedOrKilledEvent) => proxiedGroupMembers.get(id).kill()
@@ -127,4 +127,9 @@ class LeaderRuntime() extends StandardOrcRuntime("dOrc leader") with
     super.stop()
   }
 
+}
+
+object LeaderRuntime {
+  val nextGroupProxyId = new AtomicLong(12)
+  val NO_GROUP = 0L
 }
