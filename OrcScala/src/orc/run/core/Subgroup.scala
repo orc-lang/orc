@@ -10,9 +10,10 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
-import orc.{ OrcEvent, CaughtEvent }
+import orc.{ CaughtEvent, OrcEvent }
 
 /** @author dkitchin
   */
@@ -20,8 +21,7 @@ abstract class Subgroup(parent: Group) extends Group {
 
   override val runtime = parent.runtime
 
-//  override val root = parent.root
-  override val options = parent.options
+  override val execution = parent.execution
 
   /** An expensive walk-to-root check for alive state */
   override def checkAlive(): Boolean = super.checkAlive() && parent.checkAlive()

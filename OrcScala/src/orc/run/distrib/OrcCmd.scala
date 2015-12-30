@@ -14,20 +14,22 @@
 package orc.run.distrib
 
 import orc.OrcExecutionOptions
+import orc.OrcEvent
 
 /** Command sent to dOrc follower runtime engines.
   *
   * @author jthywiss
   */
 trait OrcCmd extends Serializable
-case class LoadProgramCmd(programId: LeaderRuntime#ExecutionId, programOil: String, options: OrcExecutionOptions) extends OrcCmd
-case class UnloadProgramCmd(programId: LeaderRuntime#ExecutionId) extends OrcCmd
-
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, followerExecutionNum: Int, programOil: String, options: OrcExecutionOptions) extends OrcCmd
+case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcCmd
 
 /** Command sent to dOrc follower runtime engines from leader or other followers.
   *
   * @author jthywiss
   */
 trait OrcPeerCmd extends OrcCmd
-case class HostTokenCmd(programId: LeaderRuntime#ExecutionId, movedToken: TokenReplacement) extends OrcPeerCmd
-case class KillGroupCmd(groupProxyId: LeaderRuntime#GroupProxyId) extends OrcPeerCmd
+case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: TokenReplacement) extends OrcPeerCmd
+case class NotifyGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId, event: OrcEvent) extends OrcPeerCmd
+case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
+case object EOF extends OrcPeerCmd

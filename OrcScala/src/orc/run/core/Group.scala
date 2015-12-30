@@ -10,12 +10,12 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 import scala.collection.mutable
-import orc.OrcRuntime
-import orc.error.runtime.TokenLimitReachedError
-import orc.OrcExecutionOptions
+
+import orc.{ OrcExecutionOptions, OrcRuntime }
 
 /** A Group is a structure associated with dynamic instances of an expression,
   * tracking all of the executions occurring within that expression.
@@ -29,11 +29,10 @@ trait Group extends GroupMember {
 
   val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
 
-  val runtime: OrcRuntime
-
-//  /** Find the root of this group tree. */
-//  val root: Execution
-  val options: OrcExecutionOptions
+  /** Find the root of this group tree. */
+  val execution: Execution
+  def runtime: OrcRuntime = execution.runtime
+  def options: OrcExecutionOptions = execution.options
 
   private var alive = true
 

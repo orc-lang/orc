@@ -4,25 +4,27 @@
 //
 // Created by amshali on Jul 12, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.ast.oil.xml
 
-import scala.language.implicitConversions
-import orc.compile.parse.OrcPosition
-import orc.compile.parse.PositionWithFilename
-import scala.util.parsing.input.NoPosition
-import scala.util.parsing.input.Position
-import scala.xml._
-import orc.ast.oil.nameless._
 import scala.collection.immutable.HashMap
-import scala.math.BigInt
-import scala.math.BigDecimal
+import scala.language.implicitConversions
+import scala.math.{ BigDecimal, BigInt }
+import scala.util.parsing.input.NoPosition
+import scala.xml.{ Elem, MinimizeMode, Node }
+import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
+import scala.xml.NodeSeq.seqToNodeSeq
+
 import orc.ast.hasOptionalVariableName
+import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, ClassType, Constant, DeclareDefs, DeclareType, Def, Expression, FunctionType, HasType, Hole, ImportedType, LateBind, Limit, NamelessAST, Otherwise, Parallel, RecordType, Sequence, Stop, Top, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
+import orc.compile.parse.PositionWithFilename
+import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException
 
 object OrcXML {
@@ -326,11 +328,8 @@ object OrcXML {
     }
   }
 
-  class PositionFilenameLineCol(fn: String, l: Int, c: Int) extends PositionWithFilename {
-    override val filename = fn
-    override def line = l
-    override def column = c
-    override def lineContents = ""
+  class PositionFilenameLineCol(override val filename: String, override val line: Int, override val column: Int) extends PositionWithFilename with Serializable {
+    override protected def lineContents = ""
     override def toString = filename + ":" + line + ":" + column
   }
 

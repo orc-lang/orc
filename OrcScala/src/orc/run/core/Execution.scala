@@ -10,11 +10,12 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 import java.util.logging.Level
 
-import orc.{ PublishedEvent, OrcRuntime, OrcExecutionOptions, OrcEvent, HaltedOrKilledEvent, CaughtEvent }
+import orc.{ CaughtEvent, HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime, PublishedEvent }
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
@@ -26,18 +27,16 @@ import orc.run.Logger
   */
 class Execution(
   val node: Expression,
-  val options: OrcExecutionOptions,
+  override val options: OrcExecutionOptions,
   private var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
   extends Group {
 
-//  override val root = this
+  override val execution = this
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
 //  def node = _node;
-
-//  def options = _options;
 
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     notifyOrc(PublishedEvent(v.get))

@@ -14,8 +14,7 @@
 package orc.util
 
 import java.io.{ ObjectInputStream, ObjectOutputStream }
-import java.net.{ InetAddress, InetSocketAddress, Socket }
-import java.net.ServerSocket
+import java.net.{ InetAddress, InetSocketAddress, ServerSocket, Socket }
 
 /** SocketObjectConnection, given an open Socket, provides Java object stream
   * send and receive operations over that socket.  The transmitted bytes are the
@@ -47,7 +46,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     oos.writeObject(obj)
     oos.flush()
     orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
-    /* Neet to do a TCP push, but can't from Java */
+    /* Need to do a TCP push, but can't from Java */
   }
 
   /** Close the stream and block until until all data is transmitted. Any
@@ -58,7 +57,6 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
   def close() {
     SocketObjectConnectionLogger.finer("SocketObjectConnection.close on " + socket)
     oos.flush()
-    socket.shutdownOutput()
     oos.close()
     ois.close()
     socket.close()
@@ -67,7 +65,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
   /** Close the stream immediately and return. Discard buffered
     * data. Any subsequent calls to send or receive will throw.
     */
-  def closeD() {
+  def abort() {
     SocketObjectConnectionLogger.finer("SocketObjectConnection.closeD on " + socket)
     socket.setSoLinger(false, 0)
     /* Intentionally not closing oos -- causes a flush */
@@ -94,8 +92,8 @@ object SocketObjectConnection {
 
     socket.setTcpNoDelay(true)
     socket.setKeepAlive(true)
-    /* Socket's PerformancePreferences and TrafficClass
-     * haven't been implemented yet, but set them for future use. */
+    /* Socket's PerformancePreferences hasn't been
+     * implemented yet, but set is for future use. */
     socket.setPerformancePreferences(1, 2, 0)
     socket.setTrafficClass(IPTOS_LOWDELAY)
     socket.setSoLinger(true, closeTimeout)

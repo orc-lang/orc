@@ -13,8 +13,8 @@
 
 package orc.run.distrib
 
-import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime, PublishedEvent }
-import orc.run.core.{ Group, GroupMember, Token }
+import orc.{ HaltedOrKilledEvent, OrcEvent, PublishedEvent }
+import orc.run.core.{ Execution, Group, GroupMember, Token }
 
 /** Proxy for a group the resides on a remote dOrc node.
   * RemoteGroupProxy is created locally when a token has been migrated from
@@ -25,7 +25,7 @@ import orc.run.core.{ Group, GroupMember, Token }
   *
   * @author jthywiss
   */
-class RemoteGroupProxy(val runtime: OrcRuntime, val options: OrcExecutionOptions, sendEventFunc: OrcEvent => Unit) extends Group {
+class RemoteGroupProxy(val execution: Execution, val remoteProxyId: DOrcExecution#GroupProxyId, sendEventFunc: OrcEvent => Unit) extends Group {
 
   /** An expensive walk-to-root check for alive state */
   override def checkAlive(): Boolean = ???
@@ -38,7 +38,7 @@ class RemoteGroupProxy(val runtime: OrcRuntime, val options: OrcExecutionOptions
 
   override def kill() = {
     Logger.entering(getClass.getName, "kill")
-    if (!isKilled) notifyOrc(HaltedOrKilledEvent)
+    /* All RemoteGroupProxy kills come from the remote site */
     super.kill()
   }
 
@@ -57,7 +57,6 @@ class RemoteGroupProxy(val runtime: OrcRuntime, val options: OrcExecutionOptions
 
 }
 
-
 /** Proxy for one or more remote members of a group (tokens and groups).
   * RemoteGroupMembersProxy is created when a token is migrated to another node.
   * As the migrated token continues to execute, this proxy may come to represent
@@ -68,7 +67,7 @@ class RemoteGroupProxy(val runtime: OrcRuntime, val options: OrcExecutionOptions
   *
   * @author jthywiss
   */
-class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val proxyId: LeaderRuntime#GroupProxyId) extends GroupMember {
+class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val thisProxyId: DOrcExecution#GroupProxyId) extends GroupMember {
   override val nonblocking = true
 
   private var alive = true
@@ -82,10 +81,21 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val p
     }
   }
 
-  def suspend() = ???
-  def resume() = ???
+  def suspend() = ??? /* Send suspend cmd to remote */
+  def resume() = ??? /* Send resume cmd to remote */
 
-  def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
+  def notifyOrc(event: OrcEvent) {
+    if (event == HaltedOrKilledEvent) {
+      synchronized {
+        if (alive) {
+          alive = false
+          parent.remove(this)
+        }
+      }
+    } else {
+      parent.notifyOrc(event)
+    }
+  }
 
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = synchronized { alive } && parent.checkAlive()

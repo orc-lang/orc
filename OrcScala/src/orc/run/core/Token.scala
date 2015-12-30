@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
@@ -17,6 +18,7 @@ import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareDefs, DeclareType
 import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
+import orc.run.distrib.{ DOrcExecution, Location, NoLocationAvailable, ValueLocator }
 import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 
@@ -53,11 +55,11 @@ class Token protected (
 
   var functionFramesPushed: Int = 0
 
-  val runtime: OrcRuntime = group.runtime
+  def runtime: OrcRuntime = group.runtime
 
   def sourcePosition = node.pos
 
-  val options = group.options
+  def options = group.options
 
   /** Execution of a token cannot indefinitely block the executing thread. */
   override val nonblocking = true
@@ -362,6 +364,23 @@ class Token protected (
   }
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
+    //FIXME:Refactor: Place in correct classes, not all here
+    def pickLocation(ls: Set[Location]) = ls.head
+
+    val valueLocator = runtime.asInstanceOf[ValueLocator]
+    val intersectLocs = (actuals map valueLocator.currentLocations).fold(valueLocator.currentLocations(s)){ _ & _ }
+    if (!(intersectLocs contains valueLocator.here)) {
+      if (intersectLocs.isEmpty) {
+        val intersectPermittedLocs = (actuals map valueLocator.permittedLocations).fold(valueLocator.permittedLocations(s)){ _ & _ }
+        if (intersectPermittedLocs.isEmpty) {
+          throw new NoLocationAvailable(s+:actuals)
+        }
+      }
+      val destination = pickLocation(intersectLocs)
+      this.group.execution.asInstanceOf[DOrcExecution].sendToken(this, destination)
+      return
+    }
+    //End of code needing refactoring
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
