@@ -1,6 +1,6 @@
 //
 // DOrcRuntime.scala -- Scala class DOrcRuntime
-// Project project_name
+// Project OrcScala
 //
 // Created by jthywiss on Dec 29, 2015.
 //

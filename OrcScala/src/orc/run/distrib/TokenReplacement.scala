@@ -1,6 +1,6 @@
 //
 // TokenReplacement.scala -- Scala class TokenReplacement
-// Project project_name
+// Project OrcScala
 //
 // Created by jthywiss on Dec 26, 2015.
 //

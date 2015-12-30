@@ -18,7 +18,6 @@ import java.net.{ InetSocketAddress, SocketException }
 
 import scala.collection.JavaConversions.enumerationAsScalaIterator
 import scala.ref.WeakReference
-import scala.util.control.NonFatal
 import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
@@ -45,7 +44,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
       try {
         followDOrcLeader(leaderLocation)
       } finally {
-        if (!leaderLocation.connection.closed) leaderLocation.connection.close()
+        if (!leaderLocation.connection.closed) { Logger.fine(s"followDOrcLeader returned, closing $leaderLocation"); leaderLocation.connection.close() }
         leaderLocation = null
       }
     } catch {
@@ -59,7 +58,8 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
   def followDOrcLeader(leaderLocation: LeaderLocation) {
     Logger.entering(getClass.getName, "followDOrcLeader")
     try {
-      while (!leaderLocation.connection.closed && !leaderLocation.connection.socket.isInputShutdown) {
+      var done = false
+      while (!done && !leaderLocation.connection.closed && !leaderLocation.connection.socket.isInputShutdown) {
         val cmd = try {
           leaderLocation.connection.receive()
         } catch {
@@ -69,17 +69,13 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
         cmd match {
           case LoadProgramCmd(xid, followerExecutionNum, oil, options) => loadProgram(leaderLocation, xid, followerExecutionNum, oil, options)
           case HostTokenCmd(xid, movedToken) => programs.get(xid).hostToken(leaderLocation, movedToken)
+          case NotifyGroupCmd(xid, gmpid, event) => programs.get(xid).notifyGroupMemberProxy(gmpid, event)
           case KillGroupCmd(xid, groupId) => programs.get(xid).killGroupProxy(groupId)
-          case UnloadProgramCmd(xid) => { unloadProgram(xid); leaderLocation.connection.close() }
-          case EOF => leaderLocation.connection.abort()
+          case UnloadProgramCmd(xid) => { unloadProgram(xid); done = true }
+          case EOF => done = true
         }
       }
     } finally {
-      try {
-        if (!leaderLocation.connection.closed) leaderLocation.connection.close()
-      } catch {
-        case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
-      }
       if (!programs.isEmpty) Logger.warning(s"Shutting down with ${programs.size} programs still loaded: ${programs.keys.mkString(",")}")
       programs.clear()
       stopScheduler()
@@ -96,6 +92,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
       case e1: SocketException => {
         if (!leaderLocation.connection.closed) {
           try {
+            Logger.fine(s"SocketException, aborting $leaderLocation")
             leaderLocation.connection.abort()
           } catch {
             case (e2: IOException) => Logger.finer(s"Ignoring $e2") /* Ignore close failures at this point */

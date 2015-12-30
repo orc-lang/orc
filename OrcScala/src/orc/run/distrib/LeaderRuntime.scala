@@ -23,8 +23,8 @@ import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
 import orc.error.runtime.ExecutionException
-import orc.run.core.{ Execution, Token }
-import orc.util.{ ConnectionInitiator, SocketObjectConnection }
+import orc.run.core.Token
+import orc.util.ConnectionInitiator
 
 /** Orc runtime engine leading a dOrc cluster.
   *
@@ -90,13 +90,13 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
               assert(xid == execution.executionId)
               execution.notifyOrc(event)
             }
-            case NotifyGroupCmd(xid, gmpid, event) => { assert(xid == execution.executionId); execution.proxiedGroupMembers.get(gmpid).notifyOrc(event) }
-            case EOF => followerLocation.connection.abort()
+            case NotifyGroupCmd(xid, gmpid, event) => { assert(xid == execution.executionId); execution.notifyGroupMemberProxy(gmpid, event) }
+            case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
           }
         }
       } finally {
         try {
-          if (!followerLocation.connection.closed) followerLocation.connection.close()
+            if (!followerLocation.connection.closed) { Logger.fine(s"ReceiveThread finally: Closing $followerLocation"); followerLocation.connection.close() } 
         } catch {
           case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
         }

@@ -1,6 +1,6 @@
 //
 // ValueLocator.scala -- Scala traits ValueLocator and Location
-// Project project_name
+// Project OrcScala
 //
 // Created by jthywiss on Dec 28, 2015.
 //

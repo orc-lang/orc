@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.{ OrcEvent, OrcExecutionOptions, OrcRuntime }
+import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime }
 import orc.ast.oil.nameless.Expression
 import orc.run.core.{ Execution, Token }
 
@@ -65,7 +65,8 @@ class DOrcExecution(
 
   def hostToken(origin: Location, movedToken: TokenReplacement) {
     Logger.entering(getClass.getName, "hostToken", Seq(origin, movedToken))
-    val newTokenGroup = proxiedGroupMembers.get(movedToken.tokenProxyId) match {
+    val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
+    val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
         val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, { e => origin.send(NotifyGroupCmd(executionId, movedToken.tokenProxyId, e)) } )
         proxiedGroups.put(movedToken.tokenProxyId, rgp)
@@ -74,9 +75,16 @@ class DOrcExecution(
       case gmp => gmp.parent
     }
     val newToken = movedToken.asToken(this.node, newTokenGroup)
+    if (lookedUpProxyGroupMember != null) {
+      /* Discard unused RemoteGroupMenbersProxy */
+      origin.send(NotifyGroupCmd(executionId, movedToken.tokenProxyId, HaltedOrKilledEvent))
+    }
     Logger.fine(s"scheduling $newToken")
     runtime.schedule(newToken)
   }
+
+  def notifyGroupMemberProxy(groupMemberProxyId: GroupProxyId, event: OrcEvent) = 
+    proxiedGroupMembers.get(groupMemberProxyId).notifyOrc(event)
 
   def killGroupProxy(proxyId: GroupProxyId) {
     proxiedGroups.get(proxyId).kill()

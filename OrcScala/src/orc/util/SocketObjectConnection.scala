@@ -66,7 +66,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     * data. Any subsequent calls to send or receive will throw.
     */
   def abort() {
-    SocketObjectConnectionLogger.finer("SocketObjectConnection.closeD on " + socket)
+    SocketObjectConnectionLogger.finer("SocketObjectConnection.abort on " + socket)
     socket.setSoLinger(false, 0)
     /* Intentionally not closing oos -- causes a flush */
     ois.close()
