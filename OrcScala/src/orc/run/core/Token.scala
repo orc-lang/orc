@@ -98,7 +98,7 @@ class Token protected (
     try {
       val recursing = toStringRecusionGuard.get
       toStringRecusionGuard.set(java.lang.Boolean.TRUE)
-      super.toString + (if (recursing eq null) s"(state=$state, node=$node, group=$group, clock=$clock)" else "")
+      super.toString + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, group=$group, clock=$clock)" else "")
     } finally {
       toStringRecusionGuard.remove()
     }

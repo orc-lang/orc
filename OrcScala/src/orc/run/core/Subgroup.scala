@@ -30,7 +30,7 @@ abstract class Subgroup(parent: Group) extends Group {
 
   override def kill() = synchronized { super.kill(); parent.remove(this) }
 
-  def notifyOrc(event: OrcEvent) = parent.notifyOrc(event)
+  def notifyOrc(event: OrcEvent) = execution.notifyOrc(event)
 
   def run() {
     try {
