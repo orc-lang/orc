@@ -13,23 +13,25 @@
 
 package orc.run.distrib
 
-import orc.OrcExecutionOptions
-import orc.OrcEvent
+import orc.{ OrcEvent, OrcExecutionOptions }
 
-/** Command sent to dOrc follower runtime engines.
+/** Command sent to dOrc runtime engines.
   *
   * @author jthywiss
   */
 trait OrcCmd extends Serializable
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, followerExecutionNum: Int, programOil: String, options: OrcExecutionOptions) extends OrcCmd
-case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcCmd
 
-/** Command sent to dOrc follower runtime engines from leader or other followers.
-  *
-  * @author jthywiss
-  */
-trait OrcPeerCmd extends OrcCmd
+trait OrcLeaderToFollowerCmd extends OrcCmd
+trait OrcFollowerToLeaderCmd extends OrcCmd
+trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
+
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, followerExecutionNum: Int, programOil: String, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd
+case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcLeaderToFollowerCmd
+
+case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEvent) extends OrcFollowerToLeaderCmd
+
 case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: TokenReplacement) extends OrcPeerCmd
-case class NotifyGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId, event: OrcEvent) extends OrcPeerCmd
+case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishingToken: TokenReplacement, value: Option[AnyRef]) extends OrcPeerCmd
 case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
+case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
 case object EOF extends OrcPeerCmd

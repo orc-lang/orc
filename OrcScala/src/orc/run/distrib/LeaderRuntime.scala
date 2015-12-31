@@ -32,7 +32,7 @@ import orc.util.ConnectionInitiator
   */
 class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
 
-  type MsgToLeader = OrcPeerCmd
+  type MsgToLeader = OrcFollowerToLeaderCmd
 
   val followerLocations = scala.collection.mutable.Set.empty[FollowerLocation]
 
@@ -50,7 +50,7 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
     followerLocations foreach { l => (new ReceiveThread(root, l, k)).start() }
 
     var flwrNum = 0
-    followerLocations foreach { _.connection.send(LoadProgramCmd(thisRunId, {flwrNum+=1;flwrNum}, programOil, options)) }
+    followerLocations foreach { _.connection.send(LoadProgramCmd(thisRunId, { flwrNum += 1; flwrNum }, programOil, options)) }
 
     installHandlers(root)
     roots.put(new WeakReference(root), ())
@@ -84,19 +84,20 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
           }
           Logger.finest(s"Read ${msg}")
           msg match {
-            case HostTokenCmd(xid, movedToken) => { assert(xid == execution.executionId); execution.hostToken(followerLocation, movedToken) }
-            case KillGroupCmd(xid, groupProxyId) => { assert(xid == execution.executionId); execution.killGroupProxy(groupProxyId) }
-            case NotifyGroupCmd(xid, DOrcExecution.NoGroupProxyId, event) => LeaderRuntime.this synchronized {
+            case NotifyLeaderCmd(xid, event) => LeaderRuntime.this synchronized {
               assert(xid == execution.executionId)
               execution.notifyOrc(event)
             }
-            case NotifyGroupCmd(xid, gmpid, event) => { assert(xid == execution.executionId); execution.notifyGroupMemberProxy(gmpid, event) }
+            case HostTokenCmd(xid, movedToken) => { assert(xid == execution.executionId); execution.hostToken(followerLocation, movedToken) }
+            case PublishGroupCmd(xid, gmpid, t, v) => { assert(xid == execution.executionId); execution.publishInGroup(gmpid, t, v) }
+            case KillGroupCmd(xid, gpid) => { assert(xid == execution.executionId); execution.killGroupProxy(gpid) }
+            case HaltGroupMemberProxyCmd(xid, gmpid) => { assert(xid == execution.executionId); execution.haltGroupMemberProxy(gmpid) }
             case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
           }
         }
       } finally {
         try {
-            if (!followerLocation.connection.closed) { Logger.fine(s"ReceiveThread finally: Closing $followerLocation"); followerLocation.connection.close() } 
+          if (!followerLocation.connection.closed) { Logger.fine(s"ReceiveThread finally: Closing $followerLocation"); followerLocation.connection.close() }
         } catch {
           case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
         }
@@ -138,9 +139,9 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
     super.stop()
   }
 
-  def here: Location = Here
-  def currentLocations(v: Any) = Set(Here)//followerLocations.toSet + here
-  def permittedLocations(v: Any) = followerLocations.toSet + here
+  override def here: Location = Here
+  override def currentLocations(v: Any) = Set(Here) //followerLocations.toSet + here
+  override def permittedLocations(v: Any) = followerLocations.toSet + here
 
   object Here extends Location {
     def send(message: OrcPeerCmd) = ???
@@ -149,5 +150,5 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
 
 class FollowerLocation(remoteSockAddr: InetSocketAddress) extends Location {
   val connection = ConnectionInitiator[LeaderRuntime#MsgToLeader, FollowerRuntime#MsgToFollower](remoteSockAddr)
-  def send(message: OrcPeerCmd) = connection.send(message)
+  override def send(message: OrcPeerCmd) = connection.send(message)
 }

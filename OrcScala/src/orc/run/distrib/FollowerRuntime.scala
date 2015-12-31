@@ -31,7 +31,7 @@ import orc.util.{ ConnectionListener, SocketObjectConnection }
   */
 class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOrc @ " + listenAddress.toString()) {
 
-  type MsgToFollower = OrcCmd
+  type MsgToFollower = OrcLeaderToFollowerCmd
 
   var leaderLocation: LeaderLocation = null
 
@@ -69,8 +69,9 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
         cmd match {
           case LoadProgramCmd(xid, followerExecutionNum, oil, options) => loadProgram(leaderLocation, xid, followerExecutionNum, oil, options)
           case HostTokenCmd(xid, movedToken) => programs.get(xid).hostToken(leaderLocation, movedToken)
-          case NotifyGroupCmd(xid, gmpid, event) => programs.get(xid).notifyGroupMemberProxy(gmpid, event)
-          case KillGroupCmd(xid, groupId) => programs.get(xid).killGroupProxy(groupId)
+          case PublishGroupCmd(xid, gmpid, t, v) => programs.get(xid).publishInGroup(gmpid, t, v)
+          case HaltGroupMemberProxyCmd(xid, gmpid) => programs.get(xid).haltGroupMemberProxy(gmpid)
+          case KillGroupCmd(xid, gpid) => programs.get(xid).killGroupProxy(gpid)
           case UnloadProgramCmd(xid) => { unloadProgram(xid); done = true }
           case EOF => done = true
         }
@@ -87,7 +88,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
   def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId)(event: OrcEvent) {
     Logger.entering(getClass.getName, "sendEvent")
     try {
-      leaderLocation.send(NotifyGroupCmd(executionId, groupProxyId, event))
+      leaderLocation.connection.send(NotifyLeaderCmd(executionId, event))
     } catch {
       case e1: SocketException => {
         if (!leaderLocation.connection.closed) {
@@ -138,14 +139,14 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
     }
   }
 
-  def here: Location = Here
-  def currentLocations(v: Any) = {
+  override def here: Location = Here
+  override def currentLocations(v: Any) = {
     if (v == orc.lib.util.Prompt) Set(leaderLocation) else
-    Set(here, leaderLocation)
+      Set(here, leaderLocation)
   }
-  def permittedLocations(v: Any) = {
+  override def permittedLocations(v: Any) = {
     if (v == orc.lib.util.Prompt) Set(leaderLocation) else
-    Set(here, leaderLocation)
+      Set(here, leaderLocation)
   }
 
   object Here extends Location {
@@ -162,7 +163,6 @@ object FollowerRuntime {
 
 }
 
-
 class LeaderLocation(val connection: SocketObjectConnection[FollowerRuntime#MsgToFollower, LeaderRuntime#MsgToLeader]) extends Location {
-  def send(message: OrcPeerCmd) = connection.send(message)
+  override def send(message: OrcPeerCmd) = connection.send(message)
 }

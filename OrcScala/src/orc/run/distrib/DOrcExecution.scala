@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime }
+import orc.{ OrcEvent, OrcExecutionOptions, OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.Expression
 import orc.run.core.{ Execution, Token }
 
@@ -60,7 +60,7 @@ class DOrcExecution(
     group.add(rmtProxy)
     group.remove(token)
 
-    destination.send(HostTokenCmd(executionId, new TokenReplacement(token, programAst, rmtProxy)))
+    destination.send(HostTokenCmd(executionId, new TokenReplacement(token, programAst, rmtProxy.thisProxyId)))
   }
 
   def hostToken(origin: Location, movedToken: TokenReplacement) {
@@ -68,7 +68,7 @@ class DOrcExecution(
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
     val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
-        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, { e => origin.send(NotifyGroupCmd(executionId, movedToken.tokenProxyId, e)) } )
+        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, sendPublish(origin, movedToken.tokenProxyId), sendHalt(origin, movedToken.tokenProxyId))
         proxiedGroups.put(movedToken.tokenProxyId, rgp)
         rgp
       }
@@ -77,23 +77,54 @@ class DOrcExecution(
     val newToken = movedToken.asToken(this.node, newTokenGroup)
     if (lookedUpProxyGroupMember != null) {
       /* Discard unused RemoteGroupMenbersProxy */
-      origin.send(NotifyGroupCmd(executionId, movedToken.tokenProxyId, HaltedOrKilledEvent))
+      origin.send(HaltGroupMemberProxyCmd(executionId, movedToken.tokenProxyId))
     }
     Logger.fine(s"scheduling $newToken")
     runtime.schedule(newToken)
   }
 
-  def notifyGroupMemberProxy(groupMemberProxyId: GroupProxyId, event: OrcEvent) = 
-    proxiedGroupMembers.get(groupMemberProxyId).notifyOrc(event)
+  def sendPublish(destination: Location, proxyId: GroupProxyId)(token: Token, v: Option[AnyRef]) {
+    destination.send(PublishGroupCmd(executionId, proxyId, new TokenReplacement(token, programAst, proxyId), v))
+  }
 
-  def killGroupProxy(proxyId: GroupProxyId) {
-    proxiedGroups.get(proxyId).kill()
-    proxiedGroups.remove(proxyId)
+  def publishInGroup(groupMemberProxyId: GroupProxyId, publishingToken: TokenReplacement, v: Option[AnyRef]) {
+    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken, v))
+    val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
+    val newToken = publishingToken.asPublishingToken(this.node, newTokenGroup, v)
+    Logger.fine(s"scheduling $newToken")
+    runtime.schedule(newToken)
+  }
+
+  def sendHalt(destination: Location, groupMemberProxyId: GroupProxyId)() {
+    destination.send(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
+  }
+
+  def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
+    Logger.entering(getClass.getName, "haltGroupMemberProxy", Seq(groupMemberProxyId.toString))
+    val g = proxiedGroupMembers.get(groupMemberProxyId)
+    if (g != null) {
+      runtime.schedule(new Schedulable { def run() = { g.halt() } })
+      proxiedGroupMembers.remove(groupMemberProxyId)
+    } else {
+      Logger.fine(s"halt group member proxy on unknown group member proxy $groupMemberProxyId")
+    }
   }
 
   def sendKill(destination: Location, proxyId: GroupProxyId)() {
     destination.send(KillGroupCmd(executionId, proxyId))
   }
+
+  def killGroupProxy(proxyId: GroupProxyId) {
+    Logger.entering(getClass.getName, "killGroupProxy", Seq(proxyId.toString))
+    val g = proxiedGroups.get(proxyId)
+    if (g != null) {
+      runtime.schedule(new Schedulable { def run() = { g.kill() } })
+      proxiedGroups.remove(proxyId)
+    } else {
+      Logger.fine(s"kill group on unknown group $proxyId")
+    }
+  }
+
 }
 
 object DOrcExecution {

@@ -15,16 +15,14 @@ package orc.run.distrib
 
 import orc.ast.AST
 import orc.ast.oil.nameless.Expression
-import orc.run.core.{ Binding, BindingFrame, BoundFuture, BoundStop, BoundValue, EmptyFrame, Frame, FunctionFrame, FutureFrame, Group, GroupFrame, Live, RightSidePublished, RightSideSilent, RightSideUnknown, SequenceFrame, Token, TokenState, VirtualClock }
+import orc.run.core.{ Binding, BindingFrame, BoundFuture, BoundStop, BoundValue, EmptyFrame, Frame, FunctionFrame, FutureFrame, Group, GroupFrame, Live, Publishing, RightSidePublished, RightSideSilent, RightSideUnknown, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *
   * @author jthywiss
   */
 @SerialVersionUID(-655352528693128511L)
-class TokenReplacement(t: Token, astRoot: Expression, tokenProxy: RemoteGroupMembersProxy) extends Serializable {
-
-  Logger.fine("TokenReplacement fields: " + getClass.getDeclaredFields.mkString("; "))
+class TokenReplacement(t: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId) extends Serializable {
 
   private def envHack(b: Binding): Binding = (b match {
     case BoundFuture(g) => {
@@ -64,9 +62,7 @@ class TokenReplacement(t: Token, astRoot: Expression, tokenProxy: RemoteGroupMem
 
   val stack = extractStack(t, astRoot)
   val env = (t.getEnv map envHack).toArray
-  val tokenProxyId = tokenProxy.thisProxyId
 
-  //val group = t.getGroup
   //val clock: VirtualClock = t.getClock
   //val state: TokenState =
   //assert(t.state == Live)
@@ -78,6 +74,13 @@ class TokenReplacement(t: Token, astRoot: Expression, tokenProxy: RemoteGroupMem
     new MigratedToken(_node, _stack, env.toList, newGroup /*, clock, state*/ )
   }
 
+  def asPublishingToken(astRoot: Expression, newGroup: Group, v: Option[AnyRef]) = {
+    val _node = AstNodeIndexing.lookupNodeInTree(astRoot, astNodeIndex).asInstanceOf[Expression]
+    val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.asFrame(stackTop, astRoot) }
+
+    //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
+    new MigratedToken(_node, GroupFrame(_stack), env.toList, newGroup, None /*clock*/ , Publishing(v))
+  }
 }
 
 /** A Token that was moved to this runtime engine from another.
@@ -130,20 +133,20 @@ protected abstract class FrameReplacement() {
   def asFrame(previous: Frame, ast: Expression): Frame
 }
 protected case object EmptyFrameReplacement extends FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression) = throw new AssertionError("EmptyFrameReplacement.asFrame called")
+  override def asFrame(previous: Frame, ast: Expression) = throw new AssertionError("EmptyFrameReplacement.asFrame called")
 }
 protected case class BindingFrameReplacement(n: Int) extends FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression) = BindingFrame(n, previous)
+  override def asFrame(previous: Frame, ast: Expression) = BindingFrame(n, previous)
 }
 protected case class SequenceFrameReplacement(nodeAddr: Seq[Int]) extends FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression) = SequenceFrame(AstNodeIndexing.lookupNodeInTree(ast, nodeAddr).asInstanceOf[Expression], previous)
+  override def asFrame(previous: Frame, ast: Expression) = SequenceFrame(AstNodeIndexing.lookupNodeInTree(ast, nodeAddr).asInstanceOf[Expression], previous)
 }
 protected case class FunctionFrameReplacement(callpointAddr: Seq[Int], env: Array[Binding]) extends FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression) = FunctionFrame(AstNodeIndexing.lookupNodeInTree(ast, callpointAddr).asInstanceOf[Expression], env.toList, previous)
+  override def asFrame(previous: Frame, ast: Expression) = FunctionFrame(AstNodeIndexing.lookupNodeInTree(ast, callpointAddr).asInstanceOf[Expression], env.toList, previous)
 }
 //  protected case class FutureFrameReplacement(k: (Option[AnyRef] => Unit)) extends FrameReplacement() {
 //    def asFrame(previous: Frame, ast: Expression) = FutureFrame(k, previous)
 //  }
 protected case object GroupFrameReplacement extends FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression) = GroupFrame(previous)
+  override def asFrame(previous: Frame, ast: Expression) = GroupFrame(previous)
 }
