@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 26, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -101,12 +101,12 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 }
 
 /** Possible states of a CallHandle */
-trait CallState { val isFinal: Boolean }
+sealed abstract class CallState { val isFinal: Boolean }
 
-trait NonterminalCallState extends CallState { val isFinal = false }
+sealed abstract class NonterminalCallState extends CallState { val isFinal = false }
 case object CallInProgress extends NonterminalCallState
 
-trait TerminalCallState extends CallState { val isFinal = true }
+sealed abstract class TerminalCallState extends CallState { val isFinal = true }
 case class CallReturnedValue(v: AnyRef) extends TerminalCallState
 case class CallRaisedException(e: OrcException) extends TerminalCallState
 case object CallSilent extends TerminalCallState

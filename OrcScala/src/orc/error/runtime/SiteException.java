@@ -20,10 +20,11 @@ package orc.error.runtime;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public class SiteException extends TokenException {
 
-	public SiteException(final String message) {
+public class SiteException extends TokenException {
+  private static final long serialVersionUID = 3279500025908698817L;
+
+  public SiteException(final String message) {
 		super(message);
 	}
 

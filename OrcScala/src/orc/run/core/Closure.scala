@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -204,7 +204,7 @@ class ClosureGroup(
 }
 
 object ClosureGroup {
-  sealed trait ClosureState
+  sealed abstract class ClosureState
   case class Blocked(blocker: Blocker) extends ClosureState
   case object Resolved extends ClosureState
   case object Started extends ClosureState

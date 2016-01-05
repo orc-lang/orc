@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Jan 22, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -119,7 +119,7 @@ class JoinItem(source: Join, index: Int) extends Blockable {
   }
 }
 
-class JoinState
+sealed abstract class JoinState
 case class JoinInProgress(remaining: Int) extends JoinState
 case object JoinComplete extends JoinState
 case object JoinHalted extends JoinState

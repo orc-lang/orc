@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,20 +20,33 @@ import scala.collection.TraversableLike
 import scala.collection.mutable.Builder
 import scala.collection.mutable.ListBuffer
 
-/** @author dkitchin
+/** A stack frame.
+  *
+  * Be careful when using a Frame as a collection; it does not have a builder.
+  * Also, the bottom frame in a stack (EmptyFrame) is invisible to iterators.
+  * 
+  * @author dkitchin
   */
 trait Frame extends Traversable[Frame] {
   def apply(t: Token, v: Option[AnyRef]): Unit
-  // Be careful when using a Frame as a collection; it does not have a builder
 }
 
+/** The no-op frame at the bottom of every stack.
+  *
+  * @author dkitchin
+  */
 case object EmptyFrame extends Frame {
   def apply(t: Token, v: Option[AnyRef]) = {
     throw new AssertionError("Cannot publish through an empty frame")
   }
-  def foreach[U](f: Frame => U) = {}
+  def foreach[U](f: Frame => U) = { }
 }
 
+/** A stack frame that has a predecessor.
+  * (I.e., any Frame other than EmptyFrame.)
+  *
+  * @author dkitchin
+  */
 trait CompositeFrame extends Frame {
   val previous: Frame
   def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
@@ -48,6 +61,7 @@ case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
     t.unbind(n)
     previous(t, v)
   }
+  override def toString = stringPrefix + "(" + n + ")"
 }
 
 /** @author dkitchin
@@ -84,6 +98,7 @@ case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: F
     t.pop()
     k(v)
   }
+  override def toString = stringPrefix + "(" + k + ")"
 }
 
 /** @author dkitchin
@@ -93,4 +108,5 @@ case class GroupFrame(val previous: Frame) extends CompositeFrame {
     t.pop()
     t.getGroup().publish(t, v)
   }
+  override def toString = stringPrefix + "()"
 }

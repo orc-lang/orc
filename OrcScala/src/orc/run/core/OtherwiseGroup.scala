@@ -6,7 +6,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -61,7 +61,7 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
 }
 
 /** Possible states of an OtherwiseGroup */
-class OtherwiseGroupState
+sealed abstract class OtherwiseGroupState
 case class LeftSideUnknown(r: Blockable) extends OtherwiseGroupState
 case object LeftSidePublished extends OtherwiseGroupState
 case object LeftSideSilent extends OtherwiseGroupState

@@ -29,9 +29,10 @@ import orc.values.Field;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial")
 public class Args implements Serializable {
-	Object[] values;
+  private static final long serialVersionUID = -5096125972360848153L;
+
+  Object[] values;
 
 	public Args(@SuppressWarnings("hiding") final List<Object> values) {
 		this.values = new Object[values.size()];

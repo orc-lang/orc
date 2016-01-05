@@ -82,7 +82,7 @@ trait CmdLineParser {
   // Command line operand and option definitions
   ////////
 
-  abstract class CmdLineOprdOpt(val argName: String, val usage: String, val required: Boolean, val hidden: Boolean) {
+  abstract class CmdLineOprdOpt(val argName: String, val usage: String, val required: Boolean, val hidden: Boolean) extends Serializable {
     def getValue: String
     def setValue(s: String): Unit
   }

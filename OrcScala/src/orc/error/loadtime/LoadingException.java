@@ -22,10 +22,11 @@ import orc.error.OrcException;
  *
  * @author dkitchin
  */
-@SuppressWarnings("serial") //We don't care about serialization compatibility of Orc Exceptions
-public abstract class LoadingException extends OrcException {
 
-	public LoadingException(final String message) {
+public abstract class LoadingException extends OrcException {
+  private static final long serialVersionUID = 8704123769097479728L;
+
+  public LoadingException(final String message) {
 		super(message);
 	}
 
