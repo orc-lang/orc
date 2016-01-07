@@ -44,7 +44,7 @@ abstract class Context {
    */
   def prepareSpawn(): Unit
   
-  def checkKilled(): Unit = {
+  def checkLive(): Unit = {
     if(! isLive()) {
       throw KilledException.SINGLETON
     }
