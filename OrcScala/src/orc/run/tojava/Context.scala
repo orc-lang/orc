@@ -11,7 +11,7 @@ import scala.util.parsing.input.Position
 import java.util.concurrent.atomic.AtomicInteger
 import orc.run.Logger
 
-trait Context {
+abstract class Context {
   import Context._
   
   val runtime: OrcRuntime
@@ -96,22 +96,25 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
 final class RootContext(override val runtime: OrcRuntime) extends Context {
   import Context._
   
-  val count = new AtomicInteger()
+  val count = new AtomicInteger(1)
   
   override def publish(v: AnyRef): Unit = {
     println(v)
   }
   
   override def halt(): Unit = {
-    Logger.info("Decr")
-    if(count.decrementAndGet() <= 0) {
+    val n = count.decrementAndGet() 
+    Logger.info(s"Decr $n")
+    if(n <= 0) {
+      Logger.info("Top level context complete.")
       runtime.stopScheduler()
     }
   }
 
   override def prepareSpawn(): Unit = {
-    count.incrementAndGet()
-    Logger.info("Incr")
+    val n = count.getAndIncrement()
+    Logger.info(s"Incr $n")
+    assert(n > 0, "Spawning is not allowed once we go to zero count. No zombies allowed!!!")
   }
   
   override def isLive(): Boolean = {

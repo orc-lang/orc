@@ -15,6 +15,7 @@
 
 package orc.test.tojava.manualtranslation;
 
+import orc.Main;
 import orc.run.StandardOrcRuntime;
 import orc.run.tojava.Context;
 import orc.run.tojava.ContextBase;
@@ -54,8 +55,22 @@ public class Example1 {
 
             @Override
             public void publish(final Object y) {
-              // [x + y]
-              site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(parent(), null));
+              // [x + y >v> Println(v)]
+              final class BranchContext3 extends ContextBase {
+                BranchContext3(Context ctx) {
+                  super(ctx);
+                }
+
+                @Override
+                public void publish(final Object v) {
+                  // [Println(v)]
+                  //site_Println.call(Cons("Print " + v, Nil()), new ContextHandle(parent(), null));
+                  System.out.println("Print " + v);
+                  new ContextHandle(parent(), null).publish();
+                }
+              }
+              final BranchContext3 ctx5 = new BranchContext3(parent());
+              site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx5, null));
             }
           }
           final BranchContext2 ctx4 = new BranchContext2(parent());
@@ -73,6 +88,7 @@ public class Example1 {
         } catch (HaltException e) {
         }
         ctx2.publish(const_a_2);
+        ctx2.halt();
       }
     }
   }
@@ -81,6 +97,7 @@ public class Example1 {
     StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
     OrcCmdLineOptions options = new OrcCmdLineOptions();
     options.parseRuntimeCmdLine(args);
+    Main.setupLogging(options);
     runtime.startScheduler(options);
     new Example1().call(new RootContext(runtime), new Object[] {});
   }
