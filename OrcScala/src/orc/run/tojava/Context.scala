@@ -10,6 +10,7 @@ import orc.error.OrcException
 import scala.util.parsing.input.Position
 import java.util.concurrent.atomic.AtomicInteger
 import orc.run.Logger
+import java.util.function.BiConsumer
 
 abstract class Context {
   import Context._
@@ -91,7 +92,11 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
   def hasRight(rightName: String): Boolean = ???
 }
 
-
+final class BranchContext(p: Context, publishImpl: BiConsumer[Context, AnyRef]) extends ContextBase(p) {
+  override def publish(v: AnyRef): Unit = {
+    publishImpl.accept(this, v)
+  }
+}
 
 final class RootContext(override val runtime: OrcRuntime) extends Context {
   import Context._
