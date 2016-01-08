@@ -19,8 +19,9 @@ import orc.Main;
 import orc.run.StandardOrcRuntime;
 import orc.run.tojava.BranchContext;
 import orc.run.tojava.Context;
-import orc.run.tojava.ContextBase;
 import orc.run.tojava.ContextHandle;
+import orc.run.tojava.ContextSchedulableRunnable;
+import orc.run.tojava.CounterContext;
 import orc.run.tojava.HaltException;
 import orc.run.tojava.OrcCmdLineOptions;
 import orc.run.tojava.RootContext;
@@ -52,18 +53,23 @@ public class Example1_NoClasses {
         });
         ctx4.spawn((ctx) -> {
           ctx.publish(const_a_2);
-          ctx.halt();
         });
         ctx4.publish(const_b_1);
       });
       {
+        //C We have 1 count in oldctx
+        CounterContext ctx6 = new CounterContext(ctx2, (ctx) -> ctx2.publish(const_a_2));
+        //C Now we have 2 counts in oldctx. One for this execution and one for the nested counter.
         try {
-          ctx2.publish(const_b_1);
-        } catch (HaltException e) {
+          ctx6.publish(const_b_1);
+        } finally {
+          // The finally is required so that the counter is properly decr when a kill happens.
+          //C We are leaving the scope of ctx. f may not be completed. But we can notify that this execution has stopped.
+          ctx6.halt();
         }
-        ctx2.publish(const_a_2);
-        ctx2.halt();
+        //C we return the count in oldctx to the caller.
       }
+
     }
   }
 
@@ -73,6 +79,8 @@ public class Example1_NoClasses {
     options.parseRuntimeCmdLine(args);
     Main.setupLogging(options);
     runtime.startScheduler(options);
-    new Example1_NoClasses().call(new RootContext(runtime), new Object[] {});
+    Context ctx = new RootContext(runtime);
+    runtime.schedule(new ContextSchedulableRunnable(ctx, () -> new Example1_NoClasses().call(ctx, new Object[] {})));
+    ctx.halt();
   }
 }

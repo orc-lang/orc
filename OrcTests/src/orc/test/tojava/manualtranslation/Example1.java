@@ -19,7 +19,9 @@ import orc.Main;
 import orc.run.StandardOrcRuntime;
 import orc.run.tojava.Context;
 import orc.run.tojava.ContextBase;
+import orc.run.tojava.ContextSchedulableRunnable;
 import orc.run.tojava.ContextHandle;
+import orc.run.tojava.CounterContextBase;
 import orc.run.tojava.HaltException;
 import orc.run.tojava.OrcCmdLineOptions;
 import orc.run.tojava.RootContext;
@@ -76,19 +78,34 @@ public class Example1 {
           final BranchContext2 ctx4 = new BranchContext2(parent());
           ctx4.spawn((ctx) -> {
             ctx.publish(const_a_2);
-            ctx.halt();
           });
           ctx4.publish(const_b_1);
         }
       }
       final BranchContext1 ctx2 = new BranchContext1(ctx1);
       {
-        try {
-          ctx2.publish(const_b_1);
-        } catch (HaltException e) {
+        //C We have 1 count in oldctx
+        final class CounterContext1 extends CounterContextBase {
+          CounterContext1(Context ctx) {
+            super(ctx);
+          }
+          
+          @Override
+          public void onContextHalted() {
+            ctx2.publish(const_a_2);
+            super.onContextHalted();
+          }
         }
-        ctx2.publish(const_a_2);
-        ctx2.halt();
+        CounterContext1 ctx6 = new CounterContext1(ctx2);
+        //C Now we have 2 counts in oldctx. One for this execution and one for the nested counter.
+        try {
+          ctx6.publish(const_b_1);
+        } finally {
+          // The finally is required so that the counter is properly decr when a kill happens.
+          //C We are leaving the scope of ctx. f may not be completed. But we can notify that this execution has stopped.
+          ctx6.halt();
+        }
+        //C we return the count in oldctx to the caller.
       }
     }
   }
@@ -99,6 +116,8 @@ public class Example1 {
     options.parseRuntimeCmdLine(args);
     Main.setupLogging(options);
     runtime.startScheduler(options);
-    new Example1().call(new RootContext(runtime), new Object[] {});
+    Context ctx = new RootContext(runtime);
+    runtime.schedule(new ContextSchedulableRunnable(ctx, () -> new Example1().call(ctx, new Object[] {})));
+    ctx.halt();
   }
 }

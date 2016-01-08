@@ -12,29 +12,25 @@ import java.util.concurrent.atomic.AtomicInteger
 import orc.run.Logger
 import java.util.function.BiConsumer
 
-abstract class Context {
-  import Context._
-  
+abstract class Context {  
   val runtime: OrcRuntime
   
   def publish(v: AnyRef): Unit
   def halt(): Unit
 
   def spawn(f: Consumer[Context]): Unit = {
-    prepareSpawn()
-    runtime.schedule(() => f.accept(this))
+    runtime.schedule(new ContextSchedulableFunc(this, () => f.accept(this)))
   }
   
   def spawnFuture(f: Consumer[Context]): Future = {
-    prepareSpawn()
     val fut = new Future(runtime)
-    runtime.schedule { () =>
+    runtime.schedule(new ContextSchedulableFunc(this, () =>
       f.accept(new ContextBase(this) {
         override def publish(v: AnyRef): Unit = {
           fut.bind(v)
         }
       })
-    }
+    ))
     fut
   }
   
@@ -98,21 +94,14 @@ final class BranchContext(p: Context, publishImpl: BiConsumer[Context, AnyRef]) 
   }
 }
 
-final class RootContext(override val runtime: OrcRuntime) extends Context {
-  import Context._
-  
+trait ContextCounterSupport extends Context {
   val count = new AtomicInteger(1)
-  
-  override def publish(v: AnyRef): Unit = {
-    println(v)
-  }
   
   override def halt(): Unit = {
     val n = count.decrementAndGet() 
     Logger.info(s"Decr $n")
     if(n <= 0) {
-      Logger.info("Top level context complete.")
-      runtime.stopScheduler()
+      onContextHalted();
     }
   }
 
@@ -123,17 +112,43 @@ final class RootContext(override val runtime: OrcRuntime) extends Context {
   }
   
   override def isLive(): Boolean = {
-    true
+    count.get() > 0
+  }
+
+  def onContextHalted(): Unit
+}
+
+final class CounterContext(p: Context, ctxHaltImpl: Consumer[Context]) extends ContextBase(p) with ContextCounterSupport {
+  parent.prepareSpawn()
+  
+  def onContextHalted(): Unit = {
+    ctxHaltImpl.accept(this)
+    // Notify parent that everything here has halted.
+    parent.halt()
+  }
+}
+
+abstract class CounterContextBase(p: Context) extends ContextBase(p) with ContextCounterSupport {
+  parent.prepareSpawn()
+  
+  def onContextHalted(): Unit = {
+    // Notify parent that everything here has halted.
+    parent.halt()
+  }
+}
+
+final class RootContext(override val runtime: OrcRuntime) extends Context with ContextCounterSupport {
+  override def publish(v: AnyRef): Unit = {
+    println(v)
+  }
+  
+  def onContextHalted(): Unit = {
+    Logger.info("Top level context complete.")
+    runtime.stopScheduler()
   }
 }
 
 object Context {
-  implicit final class FunctionSchedulable(f : () => Unit) extends Schedulable {
-    override val nonblocking = true
-    def run(): Unit = {
-      f()
-    }
-  }
 }
 
 
