@@ -39,8 +39,6 @@
         <fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
 		<fileset refid="orcsites.runtime.jars"/>
 		<pathelement location="${scala.compiler.jar}"/>
-        <fileset dir="tools" includes="*.jar"/>
-        <pathelement location="${orc.location.OrcScala}/tools/junit-4.5.jar"/>
     </path>
 
 

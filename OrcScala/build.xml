@@ -35,14 +35,12 @@
         <pathelement location="build/classes"/>
 		<fileset refid="orc.runtime.jars"/>
 		<pathelement location="${scala.compiler.jar}"/>
-        <fileset dir="tools" includes="*.jar"/>
     </path>
 
 	<path id="orc.tests.classpath" description="Test run classpath">
         <pathelement location="build/classes"/>
 		<fileset refid="orc.runtime.jars"/>
 	    <pathelement location="${orc.location.OrcTests}/build"/>
-	    <fileset dir="${orc.location.OrcTests}/tools" includes="*.jar"/>
     </path>
 
 	<!-- =================================
@@ -77,6 +75,7 @@
 		<exec executable="git" outputproperty="scmrevision">
 			<arg value="describe"/>
 			<arg value="--dirty"/>
+			<arg value="--tags"/>
 			<arg value="--always"/>
 		</exec>
 		<tstamp>

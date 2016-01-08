@@ -31,8 +31,4 @@ when running Orc.  Because of some weirdness with the classloader, you
 should not run Orc with the "-jar" option. Instead, run programs
 with the orc.Main class, for example:
 
-java -cp <path-to-Orc>/orc-2.1.0.jar:<path-to-Orc>/lib/\*:orc-sites-2.1.0.jar:lib/\* orc.Main examples/eliza.orc
-
-
---
-[$Id$]
+java -cp <path-to-Orc>/orc-2.1.1.jar:<path-to-Orc>/lib/\*:orc-sites-2.1.1.jar:lib/\* orc.Main examples/eliza.orc
