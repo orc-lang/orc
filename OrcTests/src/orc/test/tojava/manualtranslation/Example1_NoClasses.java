@@ -15,25 +15,23 @@
 
 package orc.test.tojava.manualtranslation;
 
-import orc.Main;
-import orc.run.StandardOrcRuntime;
+import static orc.run.tojava.Utilities.Cons;
+import static orc.run.tojava.Utilities.Nil;
+import static orc.run.tojava.Utilities.resolveOrcSite;
+
+import java.math.BigInteger;
+
 import orc.run.tojava.BranchContext;
 import orc.run.tojava.Context;
 import orc.run.tojava.ContextHandle;
-import orc.run.tojava.ContextSchedulableRunnable;
 import orc.run.tojava.CounterContext;
-import orc.run.tojava.HaltException;
-import orc.run.tojava.OrcCmdLineOptions;
-import orc.run.tojava.RootContext;
-import static orc.run.tojava.Utilities.*;
+import orc.run.tojava.OrcProgram;
 import orc.values.sites.Site;
-
-import java.math.BigInteger;
 
 /**
  * @author amp
  */
-public class Example1_NoClasses {
+public class Example1_NoClasses extends OrcProgram {
   static final Site   site_Ift     = resolveOrcSite("orc.lib.builtin.Ift");
   static final Site   site_Add     = resolveOrcSite("orc.lib.math.Add");
   static final Site   site_Greq    = resolveOrcSite("orc.lib.comp.Greq");
@@ -41,7 +39,9 @@ public class Example1_NoClasses {
   static final Object const_a_2    = BigInteger.valueOf(2);
   static final Object const_b_1    = BigInteger.valueOf(1);
 
-  void call(final Context ctx1, Object[] args) {
+  @Override
+  public void call(final Context ctx1) {
+    // [(1 ;; 2) >x> (1 | 2) >y> x + y >v> Println("Print " + v)]
     {
       final BranchContext ctx2 = new BranchContext(ctx1, (ctx2_, x) -> {
         final BranchContext ctx4 = new BranchContext(ctx1, (ctx4_, y) -> {
@@ -73,14 +73,8 @@ public class Example1_NoClasses {
     }
   }
 
+
   public static void main(String[] args) throws Exception {
-    StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
-    OrcCmdLineOptions options = new OrcCmdLineOptions();
-    options.parseRuntimeCmdLine(args);
-    Main.setupLogging(options);
-    runtime.startScheduler(options);
-    Context ctx = new RootContext(runtime);
-    runtime.schedule(new ContextSchedulableRunnable(ctx, () -> new Example1_NoClasses().call(ctx, new Object[] {})));
-    ctx.halt();
+    runProgram(args, new Example1_NoClasses());
   }
 }

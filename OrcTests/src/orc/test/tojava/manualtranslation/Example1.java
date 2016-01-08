@@ -15,25 +15,23 @@
 
 package orc.test.tojava.manualtranslation;
 
-import orc.Main;
-import orc.run.StandardOrcRuntime;
-import orc.run.tojava.Context;
-import orc.run.tojava.ContextBase;
-import orc.run.tojava.ContextSchedulableRunnable;
-import orc.run.tojava.ContextHandle;
-import orc.run.tojava.CounterContextBase;
-import orc.run.tojava.HaltException;
-import orc.run.tojava.OrcCmdLineOptions;
-import orc.run.tojava.RootContext;
-import static orc.run.tojava.Utilities.*;
-import orc.values.sites.Site;
+import static orc.run.tojava.Utilities.Cons;
+import static orc.run.tojava.Utilities.Nil;
+import static orc.run.tojava.Utilities.resolveOrcSite;
 
 import java.math.BigInteger;
+
+import orc.run.tojava.Context;
+import orc.run.tojava.ContextBase;
+import orc.run.tojava.ContextHandle;
+import orc.run.tojava.CounterContextBase;
+import orc.run.tojava.OrcProgram;
+import orc.values.sites.Site;
 
 /**
  * @author amp
  */
-public class Example1 {
+public class Example1 extends OrcProgram {
   static final Site   site_Ift     = resolveOrcSite("orc.lib.builtin.Ift");
   static final Site   site_Add     = resolveOrcSite("orc.lib.math.Add");
   static final Site   site_Greq    = resolveOrcSite("orc.lib.comp.Greq");
@@ -41,7 +39,9 @@ public class Example1 {
   static final Object const_a_2    = BigInteger.valueOf(2);
   static final Object const_b_1    = BigInteger.valueOf(1);
 
-  void call(final Context ctx1, Object[] args) {
+  @Override
+  public void call(final Context ctx1) {
+    // [(1 ;; 2) >x> (1 | 2) >y> x + y >v> Println("Print " + v)]
     {
       final class BranchContext1 extends ContextBase {
         BranchContext1(Context ctx) {
@@ -111,13 +111,6 @@ public class Example1 {
   }
 
   public static void main(String[] args) throws Exception {
-    StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
-    OrcCmdLineOptions options = new OrcCmdLineOptions();
-    options.parseRuntimeCmdLine(args);
-    Main.setupLogging(options);
-    runtime.startScheduler(options);
-    Context ctx = new RootContext(runtime);
-    runtime.schedule(new ContextSchedulableRunnable(ctx, () -> new Example1().call(ctx, new Object[] {})));
-    ctx.halt();
+    runProgram(args, new Example1());
   }
 }
