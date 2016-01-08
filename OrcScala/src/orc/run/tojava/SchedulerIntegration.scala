@@ -24,12 +24,24 @@ abstract class ContextSchedulable(ctx: Context) extends Schedulable {
 
 final class ContextSchedulableFunc(ctx: Context, f: () => Unit) extends ContextSchedulable(ctx) {
   def run(): Unit = {
-    f()
+    // Catch kills and continue.
+    try {
+      f()
+    } catch {
+      case _: KilledException =>
+        ()
+    }
   }
 }
 
 final class ContextSchedulableRunnable(ctx: Context, f: Runnable) extends ContextSchedulable(ctx) {
   def run(): Unit = {
-    f.run()
+    // Catch kills and continue.
+    try {
+      f.run()
+    } catch {
+      case _: KilledException =>
+        ()
+    }
   }
 }

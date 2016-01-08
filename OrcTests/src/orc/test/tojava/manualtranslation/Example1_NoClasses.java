@@ -25,7 +25,9 @@ import orc.run.tojava.BranchContext;
 import orc.run.tojava.Context;
 import orc.run.tojava.ContextHandle;
 import orc.run.tojava.CounterContext;
+import orc.run.tojava.KilledException;
 import orc.run.tojava.OrcProgram;
+import orc.run.tojava.TerminatorContext;
 import orc.values.sites.Site;
 
 /**
@@ -34,6 +36,7 @@ import orc.values.sites.Site;
 public class Example1_NoClasses extends OrcProgram {
   static final Site   site_Ift     = resolveOrcSite("orc.lib.builtin.Ift");
   static final Site   site_Add     = resolveOrcSite("orc.lib.math.Add");
+  static final Site   site_Sub     = resolveOrcSite("orc.lib.math.Sub");
   static final Site   site_Greq    = resolveOrcSite("orc.lib.comp.Greq");
   static final Site   site_Println = resolveOrcSite("orc.lib.str.Println");
   static final Object const_a_2    = BigInteger.valueOf(2);
@@ -41,7 +44,7 @@ public class Example1_NoClasses extends OrcProgram {
 
   @Override
   public void call(final Context ctx1) {
-    // [(1 ;; 2) >x> (1 | 2) >y> x + y >v> Println("Print " + v)]
+    // [(1 ;; 2) >x> (1 | 2) >y> {| x + y | x - y |} >v> Println("Print " + v)]
     {
       final BranchContext ctx2 = new BranchContext(ctx1, (ctx2_, x) -> {
         final BranchContext ctx4 = new BranchContext(ctx1, (ctx4_, y) -> {
@@ -49,7 +52,31 @@ public class Example1_NoClasses extends OrcProgram {
             System.out.println("Print " + v);
             new ContextHandle(ctx1, null).publish();
           });
-          site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx5, null));
+          //C The nested context does not need a count it will just pass all inc/dec to it's parent.
+          final TerminatorContext ctx6 = new TerminatorContext(ctx5);
+          try {
+            //C We now call an expression the normal way but in the new context
+            // [x + y | x - y]
+            ctx6.spawn((ctx) -> {
+              try {
+                Thread.sleep((int)(Math.random()*10));
+              } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+              }
+              site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx6, null));
+            });
+            try {
+              Thread.sleep((int)(Math.random()*10));
+            } catch (Exception e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+            site_Sub.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx6, null));
+          } catch (KilledException e) {
+            // just go from here. The exception means that the part of the expression running in this thread has halted, but nothing else.
+          }
+          //C fragment will either have been killed or returned on it's own. Either way we get the count back so we are done
         });
         ctx4.spawn((ctx) -> {
           ctx.publish(const_a_2);
