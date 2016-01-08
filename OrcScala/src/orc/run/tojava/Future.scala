@@ -26,7 +26,7 @@ import Future.Unbound
   * Note: This implementation is from the Porc implementation, so
   * it is slightly more optimized than most of the token interpreter.
   * Specifically the states are Ints to avoid the need for objects
-  * in the critial paths. The trade off is that Future contains an
+  * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
 final class Future(val runtime: OrcRuntime) extends OrcValue {
@@ -49,10 +49,13 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     }
     // We can access and clear _blocked without the lock because we are in a 
     // state that cannot change again.
-    if (done)
-      for (ctx <- _blocked)
+    if (done) {
+      for (ctx <- _blocked) {
         ctx.publish(v)
-    _blocked = null
+        ctx.halt()
+      }
+      _blocked = null
+    }
   }
 
   def stop() = {
@@ -67,10 +70,11 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     }
     // We can access and clear _blocked without the lock because we are in a 
     // state that cannot change again.
-    if (done)
+    if (done) {
       for (ctx <- _blocked)
         ctx.halt()
-    _blocked = null
+      _blocked = null
+    }
   }
 
   def forceIn(ctx: Context) = {
@@ -87,8 +91,7 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
 
     st match {
       case Bound => ctx.publish(_value)
-      case Halt => ctx.halt()
-      case Unbound => {}
+      case _ => {}
     }
   }
 
