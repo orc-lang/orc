@@ -49,6 +49,7 @@
 		<exec executable="git" outputproperty="scmrevision">
 			<arg value="describe"/>
 			<arg value="--dirty"/>
+			<arg value="--tags"/>
 			<arg value="--always"/>
 		</exec>
 		<jar jarfile="build/${target.name}.jar" basedir="build/classes" whenmanifestonly="fail" duplicate="fail" index="true" strict="fail">
