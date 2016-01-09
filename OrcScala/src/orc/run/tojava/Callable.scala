@@ -2,6 +2,8 @@ package orc.run.tojava
 
 import orc.values.sites.Site
 import orc.error.compiletime.SiteResolutionException
+import orc.values.sites.Effects
+import orc.error.runtime.UncallableValueException
 
 /**
  * @author amp
@@ -14,6 +16,10 @@ trait Callable {
 
 final class SiteCallable(s: Site) extends Callable {
   def call(ctx: Context, args: Array[AnyRef]) = {
+    // If this call could have effects check for kills.
+    if (s.effects != Effects.None)
+      ctx.checkLive();
+    
     ctx.prepareSpawn();
     // TODO: This should be optimized for cases where the args require less conversion.
     s.call(args.toList, new ContextHandle(ctx, null))
@@ -27,6 +33,22 @@ object Callable {
     } catch {
       case e: SiteResolutionException =>
         throw new Error(e)
+    }
+  }
+  def resolveJavaSite(n: String): Callable = {
+    try {
+      new SiteCallable(orc.values.sites.JavaSiteForm.resolve(n))
+    } catch {
+      case e: SiteResolutionException =>
+        throw new Error(e)
+    }
+  }
+  
+  def coerceToCallable(v: AnyRef): Callable = {
+    v match {
+      case c: Callable => c
+      case s: Site => new SiteCallable(s)
+      case _ => throw new UncallableValueException(v)
     }
   }
 }
