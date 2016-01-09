@@ -20,10 +20,12 @@ abstract class Context {
   def halt(): Unit
 
   def spawn(f: Consumer[Context]): Unit = {
+    checkLive();
     runtime.schedule(new ContextSchedulableFunc(this, () => f.accept(this)))
   }
 
   def spawnFuture(f: Consumer[Context]): Future = {
+    checkLive();
     val fut = new Future(runtime)
     runtime.schedule(new ContextSchedulableFunc(this, () =>
       f.accept(new ContextBase(this) {

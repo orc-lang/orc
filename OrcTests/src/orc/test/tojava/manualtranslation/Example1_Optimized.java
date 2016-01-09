@@ -27,7 +27,7 @@ import java.math.BigInteger;
 /**
  * @author amp
  */
-public class Example2 {
+public class Example1_Optimized {
   static final Site   site_Greq    = resolveOrcSite("orc.lib.builtin.Ift");
   static final Site   site_Ift     = resolveOrcSite("orc.lib.math.Add");
   static final Site   site_Add     = resolveOrcSite("orc.lib.comp.Greq");

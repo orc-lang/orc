@@ -1,6 +1,7 @@
 package orc.run.tojava
 
 import orc.Schedulable
+import orc.run.Logger
 
 /** @author amp
   */
@@ -24,6 +25,7 @@ abstract class ContextSchedulable(ctx: Context) extends Schedulable {
 
 final class ContextSchedulableFunc(ctx: Context, f: () => Unit) extends ContextSchedulable(ctx) {
   def run(): Unit = {
+    Logger.info(s"Starting ${f.getClass()}@${f.hashCode()}")
     // Catch kills and continue.
     try {
       f()
@@ -31,11 +33,13 @@ final class ContextSchedulableFunc(ctx: Context, f: () => Unit) extends ContextS
       case _: KilledException =>
         ()
     }
+    Logger.info(s"Finished ${f.getClass()}@${f.hashCode()}")
   }
 }
 
 final class ContextSchedulableRunnable(ctx: Context, f: Runnable) extends ContextSchedulable(ctx) {
   def run(): Unit = {
+    Logger.info(s"Starting $f")
     // Catch kills and continue.
     try {
       f.run()
@@ -43,5 +47,6 @@ final class ContextSchedulableRunnable(ctx: Context, f: Runnable) extends Contex
       case _: KilledException =>
         ()
     }
+    Logger.info(s"Finished $f")
   }
 }

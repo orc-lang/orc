@@ -48,7 +48,8 @@ public class Example1_NoClasses extends OrcProgram {
     {
       final BranchContext ctx2 = new BranchContext(ctx1, (ctx2_, x) -> {
         final BranchContext ctx4 = new BranchContext(ctx1, (ctx4_, y) -> {
-          final BranchContext ctx5 = new BranchContext(ctx1, (ctx5_, v) -> {           
+          final BranchContext ctx5 = new BranchContext(ctx1, (ctx5_, v) -> {
+            ctx5_.checkLive();
             System.out.println("Print " + v);
             new ContextHandle(ctx1, null).publish();
           });
@@ -61,7 +62,6 @@ public class Example1_NoClasses extends OrcProgram {
               try {
                 Thread.sleep((int)(Math.random()*10));
               } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
               }
               site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx6, null));
@@ -69,7 +69,6 @@ public class Example1_NoClasses extends OrcProgram {
             try {
               Thread.sleep((int)(Math.random()*10));
             } catch (Exception e) {
-              // TODO Auto-generated catch block
               e.printStackTrace();
             }
             site_Sub.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx6, null));
