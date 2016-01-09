@@ -17,6 +17,7 @@ package orc.test.tojava.manualtranslation;
 
 import java.math.BigInteger;
 
+import orc.run.tojava.JavaSchedulable;
 import orc.run.tojava.BranchContext;
 import orc.run.tojava.Callable;
 import orc.run.tojava.Context;
@@ -60,11 +61,13 @@ public class Example2_NoClasses extends OrcProgram {
             ctx4.publish(const_b_1);
           });
         // [Rwait(100)]
-        try {
-          Thread.sleep(5000);
-        } catch (Exception e) {
-        }
-        ctx5.publish(0);
+        ctx5.spawn((ctx) -> {
+          try {
+            Thread.sleep(5000);
+          } catch (Exception e) {
+          }
+          ctx.publish(0);
+        });
       });
     ctx2.publish(fut);
   }

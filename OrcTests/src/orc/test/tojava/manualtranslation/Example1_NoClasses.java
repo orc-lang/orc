@@ -25,7 +25,6 @@ import orc.run.tojava.CounterContext;
 import orc.run.tojava.KilledException;
 import orc.run.tojava.OrcProgram;
 import orc.run.tojava.TerminatorContext;
-import orc.values.sites.Site;
 
 /**
  * @author amp

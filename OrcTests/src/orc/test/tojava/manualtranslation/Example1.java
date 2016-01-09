@@ -23,7 +23,6 @@ import orc.run.tojava.ContextBase;
 import orc.run.tojava.ContextHandle;
 import orc.run.tojava.CounterContextBase;
 import orc.run.tojava.OrcProgram;
-import orc.values.sites.Site;
 
 /**
  * @author amp
