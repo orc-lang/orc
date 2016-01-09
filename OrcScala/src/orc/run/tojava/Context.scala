@@ -91,6 +91,7 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
       case _: KilledException =>
         ()
     }
+    super.halt()
   }
   
   def notifyOrc(event: OrcEvent): Unit = ???

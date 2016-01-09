@@ -15,12 +15,9 @@
 
 package orc.test.tojava.manualtranslation;
 
-import static orc.run.tojava.Utilities.Cons;
-import static orc.run.tojava.Utilities.Nil;
-import static orc.run.tojava.Utilities.resolveOrcSite;
-
 import java.math.BigInteger;
 
+import orc.run.tojava.Callable;
 import orc.run.tojava.Context;
 import orc.run.tojava.ContextBase;
 import orc.run.tojava.ContextHandle;
@@ -32,10 +29,11 @@ import orc.values.sites.Site;
  * @author amp
  */
 public class Example1 extends OrcProgram {
-  static final Site   site_Ift     = resolveOrcSite("orc.lib.builtin.Ift");
-  static final Site   site_Add     = resolveOrcSite("orc.lib.math.Add");
-  static final Site   site_Greq    = resolveOrcSite("orc.lib.comp.Greq");
-  static final Site   site_Println = resolveOrcSite("orc.lib.str.Println");
+  static final Callable site_Ift     = orc.run.tojava.Callable$.MODULE$.resolveOrcSite("orc.lib.builtin.Ift");
+  static final Callable site_Add     = orc.run.tojava.Callable$.MODULE$.resolveOrcSite("orc.lib.math.Add");
+  static final Callable site_Sub     = orc.run.tojava.Callable$.MODULE$.resolveOrcSite("orc.lib.math.Sub");
+  static final Callable site_Greq    = orc.run.tojava.Callable$.MODULE$.resolveOrcSite("orc.lib.comp.Greq");
+  static final Callable site_Println = orc.run.tojava.Callable$.MODULE$.resolveOrcSite("orc.lib.str.Println");
   static final Object const_a_2    = BigInteger.valueOf(2);
   static final Object const_b_1    = BigInteger.valueOf(1);
 
@@ -72,7 +70,7 @@ public class Example1 extends OrcProgram {
                 }
               }
               final BranchContext3 ctx5 = new BranchContext3(parent());
-              site_Add.call(Cons(x, Cons(y, Nil())), new ContextHandle(ctx5, null));
+              site_Add.call(ctx5, new Object[] { x, y });
             }
           }
           final BranchContext2 ctx4 = new BranchContext2(parent());
