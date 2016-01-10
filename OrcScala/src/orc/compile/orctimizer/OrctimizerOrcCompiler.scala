@@ -3,14 +3,15 @@ package orc.compile.orctimizer
 import orc.compile._
 import orc.ast.orctimizer
 import orc.error.compiletime.CompileLogger
+import orc.compile.tojava.OrctimizerToJava
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
   *
   * @author jthywiss
   */
-class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named.Expression]
-  with StandardOrcCompilerEnvInterface[orc.ast.orctimizer.named.Expression]
+class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
+  with StandardOrcCompilerEnvInterface[String]
   with CoreOrcCompilerPhases {
   val toOrctimizer = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orctimizer.named.Expression] {
     val phaseName = "translate"
@@ -18,6 +19,15 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
       { ast =>
         val translator = new OILToOrctimizer()
         translator(ast)(Map())
+      }
+  }
+
+  val toJava = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, String] {
+    val phaseName = "toJava"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        val translator = new OrctimizerToJava()
+        translator(ast)
       }
   }
 
@@ -138,7 +148,9 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[orc.ast.orctimizer.named
       optimize >>>
       outputIR(4) >>>
       unroll >>>
-      outputIR(4) >>>
+      outputIR(5) >>>
       optimize >>>
-      outputIR(5)
+      outputIR(6) >>>
+      toJava >>>
+      outputIR(7)
 }

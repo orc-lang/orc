@@ -4,6 +4,7 @@ import orc.values.sites.Site
 import orc.error.compiletime.SiteResolutionException
 import orc.values.sites.Effects
 import orc.error.runtime.UncallableValueException
+import orc.values.OrcRecord
 
 /**
  * @author amp
@@ -48,6 +49,7 @@ object Callable {
     v match {
       case c: Callable => c
       case s: Site => new SiteCallable(s)
+      case r: OrcRecord => ???
       case _ => throw new UncallableValueException(v)
     }
   }

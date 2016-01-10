@@ -28,13 +28,13 @@ import orc.compile.orctimizer.OrctimizerOrcCompiler
   *
   * @author amp
   */
-class OrctimizerBackend extends Backend[Expression] {
-  lazy val compiler: Compiler[Expression] = new OrctimizerOrcCompiler() with Compiler[Expression] {
+class OrctimizerBackend extends Backend[String] {
+  lazy val compiler: Compiler[String] = new OrctimizerOrcCompiler() with Compiler[String] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
-      compileLogger: CompileLogger, progress: ProgressMonitor): Expression = this(source, options, compileLogger, progress)
+      compileLogger: CompileLogger, progress: ProgressMonitor): String = this(source, options, compileLogger, progress)
   }
 
-  val serializer: Option[CodeSerializer[Expression]] = None
+  val serializer: Option[CodeSerializer[String]] = None
 
-  def createRuntime(options: OrcExecutionOptions): Runtime[Expression] = ???
+  def createRuntime(options: OrcExecutionOptions): Runtime[String] = ???
 }

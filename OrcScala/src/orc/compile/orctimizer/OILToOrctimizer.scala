@@ -21,7 +21,7 @@ import orc.lib.state.PublishIfNotSet
 import orc.lib.state.SetFlag
 import scala.collection.mutable
 
-/** @author dkitchin
+/** @author amp
   */
 // Conversions from named to nameless representations
 class OILToOrctimizer {
