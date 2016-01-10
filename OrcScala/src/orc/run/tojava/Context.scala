@@ -14,6 +14,9 @@ import java.util.function.BiConsumer
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.CaughtEvent
 import orc.lib.str.PrintEvent
+import orc.run.extensions.RwaitEvent
+import java.util.Timer
+import java.util.TimerTask
 
 abstract class Context {
   val runtime: OrcRuntime
@@ -100,17 +103,29 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
     event match {
       case CaughtEvent(e) => e.printStackTrace()
       case PrintEvent(s) => print(s)
+      case RwaitEvent(delay, h) => {
+        val callback =
+          new TimerTask() {
+            @Override
+            override def run() { h.publish() }
+          }
+        ContextHandle.timer.schedule(callback, delay.toLong)
+      }
       case o => {
         val e = new Exception("Unknown event: " + o)
         e.printStackTrace()
       }
     }
   }
-  def setQuiescent(): Unit = ???
+  def setQuiescent(): Unit = {}
 
   def !!(e: OrcException): Unit = e.printStackTrace()
 
-  def hasRight(rightName: String): Boolean = ???
+  def hasRight(rightName: String): Boolean = false
+}
+
+object ContextHandle {
+  val timer: Timer = new Timer()
 }
 
 final class BranchContext(p: Context, publishImpl: BiConsumer[Context, AnyRef]) extends ContextBase(p) {

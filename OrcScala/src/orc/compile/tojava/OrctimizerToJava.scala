@@ -14,11 +14,11 @@ class OrctimizerToJava {
     val constants = buildConstantPool()
     s"""
 // GENERATED!!
-import java.math.BigInteger;
-import java.math.BigDecimal;
-
 import orc.run.tojava.*;
 import orc.values.Field;
+import scala.math.BigInt$$;
+import scala.math.BigDecimal$$;
+
 
 public class $name extends OrcProgram {
   $constants
@@ -60,8 +60,8 @@ public class $name extends OrcProgram {
     constantCounter += 1; 
     val name = escapeIdent(s"C${constantCounter}_${Format.formatValue(v)}")
     val typ = v match {
-      case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character | _: BigInt 
-        | _: java.lang.Float | _: java.lang.Double | _: BigDecimal => """Number"""
+      case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
+        | _: java.lang.Float | _: java.lang.Double => """Number"""
       case _: String => "String"
       case _: java.lang.Boolean => "Boolean"
       case _: orc.values.Field => "Field"
@@ -69,8 +69,10 @@ public class $name extends OrcProgram {
       case _ => "Object"
     }
     val init = v match {
-      case i @ (_: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character | _: BigInt) => s"""new BigInteger("$i")"""
-      case n @ (_: java.lang.Float | _: java.lang.Double | _: BigDecimal) => s"""new BigDecimal("$n")"""
+      case i @ (_: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character) => s"""${i.getClass.getCanonicalName}.valueOf("$i")"""
+      case i: BigInt => s"""BigInt$$.MODULE$$.apply("$i")"""
+      case n @ (_: java.lang.Float | _: java.lang.Double) => s"""${n.getClass.getCanonicalName}.valueOf("$n")"""
+      case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
       case s: String => s""""$s""""
       case b: java.lang.Boolean => b.toString()
       case orc.values.Signal => "orc.values.Signal$.MODULE$"
@@ -85,7 +87,7 @@ public class $name extends OrcProgram {
   
   def buildConstantPool() = {
     val orderedEntries = constantPool.values.toSeq.sortBy(_.name)
-    orderedEntries.map(e => s"public static final ${e.typ} ${e.name} = ${e.initializer};").mkString("\n")
+    orderedEntries.map(e => s"private static final ${e.typ} ${e.name} = ${e.initializer};").mkString("\n")
   }
 
 
@@ -99,10 +101,10 @@ public class $name extends OrcProgram {
         a match {
           case a: Expression =>
             append(expression(a))
-          case s: String =>
-            append(s)
           case c: ConversionContext =>
             append(c.ctxname)
+          case v =>
+            append(v.toString)
         }
        append(p)
       }
@@ -111,16 +113,16 @@ public class $name extends OrcProgram {
   }
 
   def expression(expr: Expression)(implicit ctx: ConversionContext): String = {
-    expr match {
+    val code = expr match {
       case Stop() => ""
       case Call(target, args, typeargs) => {
         j"""
-        orc.run.tojava.Callable$$.MODULE$$.coerceToCallable(${argument(target)}).call($ctx, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        Callable$$.MODULE$$.coerceToCallable(${argument(target)}).call($ctx, new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case left || right => {
         j"""
-        $ctx.spawn(() -> { $left });
+        $ctx.spawn((${newVarName()}) -> { $left });
         $right;
         """
       }
@@ -146,10 +148,9 @@ public class $name extends OrcProgram {
       case Future(f) => {
         val newctx = ctx.newContext()
         j"""
-        Future fut = $ctx.spawnFuture(($newctx) -> {
+        $ctx.publish($ctx.spawnFuture(($newctx) -> {
           ${expression(f)(newctx)}
-        });
-        $ctx.publish(fut);
+        }));
         """
       }
       case Force(f) => {
@@ -171,7 +172,8 @@ public class $name extends OrcProgram {
         """
       }
       case DeclareDefs(defs, body) => {
-        ???
+        j"""${defs.map(orcdef(_)).mkString}
+        $body"""
       }
       case HasType(body, expectedType) => expression(body)
       case DeclareType(u, t, body) => expression(body)
@@ -189,30 +191,45 @@ public class $name extends OrcProgram {
       // We do not handle types
       case _ => "???"
     }
+    
+    s"""
+    /* 
+      ${expr.prettyprint()}
+    */ 
+    $code"""
+  }
+  
+  def getIdent(x: BoundVar) = {
+    x.optionalVariableName match {
+      case Some(n) => lookup(x)
+      case None => lookup(x)
+    }
   }
 
   def argument(a: Argument): String = {
     a match {
       case c@Constant(v) => lookup(c).name
-      case (x: BoundVar) => escapeIdent(x.optionalVariableName.getOrElse(lookup(x)))
+      case (x: BoundVar) => getIdent(x)
       case _ => ???
     }
   }
-
-  /*
-         case Def(f, formals, body, typeformals, argtypes, returntype) => {
-        val name = f.optionalVariableName.getOrElse(lookup(f))
-        "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
-          (returntype match {
-            case Some(t) => " :: " + reduce(t)
-            case None => ""
-          }) +
-          "\n" +
-          "def " + name + paren(formals) + " = " + reduce(body) +
-          "\n"
-      }
-   
-   */
+  
+  def orcdef(d: Def)(implicit ctx: ConversionContext): String = {         
+    val Def(f, formals, body, typeformals, argtypes, returntype) = d
+    val newctx = ctx.newContext()
+    val args = newVarName()
+    val wrapper = f.optionalVariableName.get
+    // FIXME: Probably wrong in a few cases.
+    val name = vars.getOrElseUpdate(f, f.optionalVariableName.get + "[0]")
+    // FIXME:HACK: This uses an array to allow recursive lambdas. There is probably a better way.
+    j"""
+    final Callable[] $wrapper = new Callable[1]; 
+    $name = ($newctx, $args) -> {
+      ${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n")}
+      $body
+    };
+    """
+  }
 }
 
 case class ConversionContext(parent: ConversionContext, ctxname: String) {
