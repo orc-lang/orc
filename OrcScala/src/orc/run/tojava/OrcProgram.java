@@ -16,6 +16,7 @@
 package orc.run.tojava;
 
 import orc.Main;
+import orc.OrcExecutionOptions;
 import orc.run.StandardOrcRuntime;
 import orc.util.PrintVersionAndMessageException;
 
@@ -26,25 +27,34 @@ import orc.util.PrintVersionAndMessageException;
  */
 abstract public class OrcProgram {
   public abstract void call(Context ctx);
+  
+  /**
+   * @param options 
+   * @throws PrintVersionAndMessageException
+   */
+  public RootContext run(OrcExecutionOptions options) throws PrintVersionAndMessageException {
+    final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
+    runtime.startScheduler(options);
+    final RootContext ctx = new RootContext(runtime);
+    runtime.schedule(new ContextSchedulableRunnable(ctx, new Runnable() {
+      @Override
+      public void run() {
+        call(ctx);
+      }
+    }));
+    ctx.halt();
+    return ctx;
+  }
 
   /**
    * @param args
    * @throws PrintVersionAndMessageException
    */
   public static void runProgram(final String[] args, final OrcProgram prog) throws PrintVersionAndMessageException {
-    final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
     final OrcCmdLineOptions options = new OrcCmdLineOptions();
     options.parseRuntimeCmdLine(args);
     Main.setupLogging(options);
-    runtime.startScheduler(options);
-    final Context ctx = new RootContext(runtime);
-    runtime.schedule(new ContextSchedulableRunnable(ctx, new Runnable() {
-      @Override
-      public void run() {
-        prog.call(ctx);
-      }
-    }));
-    ctx.halt();
+    prog.run(options);
   }
 
 }

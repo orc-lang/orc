@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import orc.run.Logger
 import java.util.function.BiConsumer
 import java.util.concurrent.atomic.AtomicBoolean
+import orc.CaughtEvent
+import orc.lib.str.PrintEvent
 
 abstract class Context {
   val runtime: OrcRuntime
@@ -94,10 +96,19 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
     super.halt()
   }
   
-  def notifyOrc(event: OrcEvent): Unit = ???
+  def notifyOrc(event: OrcEvent): Unit = {
+    event match {
+      case CaughtEvent(e) => e.printStackTrace()
+      case PrintEvent(s) => print(s)
+      case o => {
+        val e = new Exception("Unknown event: " + o)
+        e.printStackTrace()
+      }
+    }
+  }
   def setQuiescent(): Unit = ???
 
-  def !!(e: OrcException): Unit = ???
+  def !!(e: OrcException): Unit = e.printStackTrace()
 
   def hasRight(rightName: String): Boolean = ???
 }
@@ -156,6 +167,11 @@ final class RootContext(override val runtime: OrcRuntime) extends Context with C
   def onContextHalted(): Unit = {
     Logger.info("Top level context complete.")
     runtime.stopScheduler()
+    synchronized { notifyAll() }
+  }
+  
+  def waitForHalt(): Unit = {
+    synchronized { while(isLive()) wait() }
   }
 }
 

@@ -17,7 +17,6 @@ package orc.test.tojava.manualtranslation;
 
 import java.math.BigInteger;
 
-import orc.run.tojava.JavaSchedulable;
 import orc.run.tojava.BranchContext;
 import orc.run.tojava.Callable;
 import orc.run.tojava.Context;

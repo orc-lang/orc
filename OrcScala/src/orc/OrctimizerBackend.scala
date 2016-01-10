@@ -23,6 +23,8 @@ import orc.error.loadtime.{ LoadingException, OilParsingException }
 import orc.progress.ProgressMonitor
 import orc.run.StandardOrcRuntime
 import orc.compile.orctimizer.OrctimizerOrcCompiler
+import orc.compile.tojava.JavaCompiler
+import orc.run.tojava.RootContext
 
 /** A backend implementation using the Token interpreter.
   *
@@ -36,5 +38,15 @@ class OrctimizerBackend extends Backend[String] {
 
   val serializer: Option[CodeSerializer[String]] = None
 
-  def createRuntime(options: OrcExecutionOptions): Runtime[String] = ???
+  def createRuntime(options: OrcExecutionOptions): Runtime[String] = new Runtime[String] {
+    val compile = new JavaCompiler()
+    private def start(code: String, k: orc.OrcEvent => Unit): RootContext = {
+      val cls = compile(code)
+      val prog = cls.newInstance()
+      prog.run(options)
+    }
+    def run(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k)
+    def runSynchronous(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k).waitForHalt()
+    def stop() = ???
+  }
 }
