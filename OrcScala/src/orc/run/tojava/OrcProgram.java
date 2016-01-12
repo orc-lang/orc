@@ -29,12 +29,10 @@ abstract public class OrcProgram {
   public abstract void call(Context ctx);
   
   /**
-   * @param options 
+   * @param runtime 
    * @throws PrintVersionAndMessageException
    */
-  public RootContext run(OrcExecutionOptions options) throws PrintVersionAndMessageException {
-    final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
-    runtime.startScheduler(options);
+  public RootContext run(final StandardOrcRuntime runtime) throws PrintVersionAndMessageException {
     final RootContext ctx = new RootContext(runtime);
     runtime.schedule(new ContextSchedulableRunnable(ctx, new Runnable() {
       @Override
@@ -54,7 +52,9 @@ abstract public class OrcProgram {
     final OrcCmdLineOptions options = new OrcCmdLineOptions();
     options.parseRuntimeCmdLine(args);
     Main.setupLogging(options);
-    prog.run(options);
+    final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
+    runtime.startScheduler(options);
+    prog.run(runtime);
   }
 
 }

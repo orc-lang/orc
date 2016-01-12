@@ -38,15 +38,18 @@ class OrctimizerBackend extends Backend[String] {
 
   val serializer: Option[CodeSerializer[String]] = None
 
-  def createRuntime(options: OrcExecutionOptions): Runtime[String] = new Runtime[String] {
+  def createRuntime(options: OrcExecutionOptions): Runtime[String] = new StandardOrcRuntime("To Java") with Runtime[String] {
     val compile = new JavaCompiler()
+    startScheduler(options)
+    
     private def start(code: String, k: orc.OrcEvent => Unit): RootContext = {
       val cls = compile(code)
       val prog = cls.newInstance()
-      prog.run(options)
+      
+      prog.run(this)
     }
+    
     def run(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k)
     def runSynchronous(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k).waitForHalt()
-    def stop() = ???
   }
 }
