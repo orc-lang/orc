@@ -34,9 +34,10 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
 
   var _state = Unbound
   var _value: AnyRef = null
-  var _blocked: List[Context] = Nil
+  var _blocked: List[Blockable] = Nil
 
   def bind(v: AnyRef) = {
+    assert(!v.isInstanceOf[Future])
     val done = synchronized {
       if (_state == Unbound) {
         _state = Bound
@@ -50,9 +51,9 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     // We can access and clear _blocked without the lock because we are in a 
     // state that cannot change again.
     if (done) {
-      for (ctx <- _blocked) {
-        ctx.publish(v)
-        ctx.halt()
+      for (blocked <- _blocked) {
+        blocked.publish(v)
+        blocked.halt()
       }
       _blocked = null
     }
@@ -71,18 +72,18 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     // We can access and clear _blocked without the lock because we are in a 
     // state that cannot change again.
     if (done) {
-      for (ctx <- _blocked)
-        ctx.halt()
+      for (blocked <- _blocked)
+        blocked.halt()
       _blocked = null
     }
   }
 
-  def forceIn(ctx: Context) = {
+  def forceIn(blocked: Blockable) = {
     val st = synchronized {
       _state match {
         case Unbound => {
-          ctx.prepareSpawn()
-          _blocked ::= ctx
+          blocked.prepareSpawn()
+          _blocked ::= blocked
         }
         case _ => {}
       }
@@ -90,7 +91,7 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     }
 
     st match {
-      case Bound => ctx.publish(_value)
+      case Bound => blocked.publish(_value)
       case _ => {}
     }
   }

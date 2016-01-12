@@ -18,7 +18,7 @@ import orc.run.extensions.RwaitEvent
 import java.util.Timer
 import java.util.TimerTask
 
-abstract class Context {
+abstract class Context extends Blockable {
   val runtime: OrcRuntime
 
   def publish(v: AnyRef): Unit

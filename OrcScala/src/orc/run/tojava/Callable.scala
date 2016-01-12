@@ -19,11 +19,19 @@ final class SiteCallable(s: Site) extends Callable {
   def call(ctx: Context, args: Array[AnyRef]) = {
     // If this call could have effects check for kills.
     if (s.effects != Effects.None)
-      ctx.checkLive();
-    
+      ctx.checkLive()
+
     ctx.prepareSpawn();
-    // TODO: This should be optimized for cases where the args require less conversion.
-    s.call(args.toList, new ContextHandle(ctx, null))
+
+    new Join(args) {
+      def halt(): Unit = {
+        ctx.halt()
+      }
+      def done(): Unit = {
+        // TODO: This should be optimized for cases where the args require less conversion.
+        s.call(values.toList, new ContextHandle(ctx, null))
+      }
+    }
   }  
 }
 

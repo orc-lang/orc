@@ -10,7 +10,9 @@ import orc.values.sites.Site
 object Operations {
   def force(ctx: Context, v: AnyRef) = {
     v match {
-      case f: Future => f.forceIn(ctx)
+      case f: Future => 
+        ctx.checkLive()
+        f.forceIn(ctx)
       case _ => ctx.publish(v)
     }
   }
