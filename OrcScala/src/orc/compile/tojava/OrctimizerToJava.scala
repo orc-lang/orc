@@ -8,10 +8,15 @@ import orc.values.Field
 /** @author amp
   */
 class OrctimizerToJava {
+  import Deindent._
+  
+  // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
+  //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
+  
   def apply(prog: Expression): String = {
-    val code = expression(prog)(new ConversionContext(null, "ctx"))
+    val code = expression(prog)(new ConversionContext("ctx")).indent(2)
     val name = "Prog"
-    val constants = buildConstantPool()
+    val constants = buildConstantPool().indent(2)
     s"""
 // GENERATED!!
 import orc.run.tojava.*;
@@ -19,13 +24,12 @@ import orc.values.Field;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
 
-
 public class $name extends OrcProgram {
-  $constants
+$constants
 
   @Override
   public void call(final Context ctx) {
-    $code
+$code
   }
 
   public static void main(String[] args) throws Exception {
@@ -37,19 +41,28 @@ public class $name extends OrcProgram {
   
   
   def escapeIdent(s: String) = {
-    s.map({ c =>
-      if (c.isLetterOrDigit || c == '_') {
-        c.toString
-      } else {
-        "$" + c.toInt
+    val q = s.map({ c =>
+      c match {
+        case c if c.isLetterOrDigit || c == '_' => c.toString
+        case '$' => "$$"
+        case '.' => "$_"
+        case ''' => "$p"
+        case '`' => "$t"
+        case c => "$" + c.toInt
       }
     }).mkString
+    if (q(0).isLetter || q(0) == '_' || q(0) == '$')
+      q
+    else
+      "$s" + q
   }
+  
 
   val vars: mutable.Map[BoundVar, String] = new mutable.HashMap()
   var varCounter: Int = 0
-  def newVarName(): String = { varCounter += 1; "_t" + varCounter }
-  def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName())
+  def newVarName(prefix: String = "_t"): String = { varCounter += 1; escapeIdent(prefix) + "$c" + varCounter }
+  def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
+  // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
 
   val constantPool: mutable.Map[AnyRef, ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
@@ -58,7 +71,7 @@ public class $name extends OrcProgram {
   }
   def newConstant(v: AnyRef): ConstantPoolEntry = { 
     constantCounter += 1; 
-    val name = escapeIdent(s"C${constantCounter}_${Format.formatValue(v)}")
+    val name = escapeIdent(s"C_${Format.formatValue(v)}_${constantCounter}")
     val typ = v match {
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
         | _: java.lang.Float | _: java.lang.Double => """Number"""
@@ -70,8 +83,12 @@ public class $name extends OrcProgram {
     }
     val init = v match {
       case i @ (_: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character) => s"""${i.getClass.getCanonicalName}.valueOf("$i")"""
+      case i: BigInt if i.isValidLong => s"""BigInt$$.MODULE$$.apply(${i.toLong}L)"""
+      // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
       case i: BigInt => s"""BigInt$$.MODULE$$.apply("$i")"""
       case n @ (_: java.lang.Float | _: java.lang.Double) => s"""${n.getClass.getCanonicalName}.valueOf("$n")"""
+      case n : BigDecimal if n.isExactDouble => s"""BigDecimal$$.MODULE$$.apply(${n.toDouble})"""
+      // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
       case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
       case s: String => s""""$s""""
       case b: java.lang.Boolean => b.toString()
@@ -96,19 +113,21 @@ public class $name extends OrcProgram {
       sc.checkLengths(args)
       val sb = new StringBuilder
       import sb.append
-      append(sc.parts.head)
-      for ((a, p) <- args zip sc.parts.tail) {
+      for ((p, a) <- sc.parts.init zip args) {
         a match {
           case a: Expression =>
+            append(p)
             append(expression(a))
           case c: ConversionContext =>
+            append(p)
             append(c.ctxname)
           case v =>
+            append(p)
             append(v.toString)
         }
-       append(p)
       }
-      sb.mkString.stripPrefix("\n").stripLineEnd.trim
+      append(sc.parts.last)
+      sb.mkString
     }
   }
 
@@ -117,94 +136,89 @@ public class $name extends OrcProgram {
       case Stop() => ""
       case Call(target, args, typeargs) => {
         j"""
-        Callable$$.MODULE$$.coerceToCallable(${argument(target)}).call($ctx, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |Callable$$.MODULE$$.coerceToCallable(${argument(target)}).call($ctx, new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case left || right => {
         j"""
-        $ctx.spawn((${newVarName()}) -> { $left });
-        $right;
+        |$ctx.spawn((${newVarName()}) -> { 
+          |$left
+        |});
+        |${expression(right).deindentedAgressively};
         """
       }
       case Sequence(left, x, right) => {
         val newctx = ctx.newContext()
         j"""
-        final BranchContext $newctx = new BranchContext($ctx, (${newctx}_, ${argument(x)}) -> {
-          $right
-        });
-        ${expression(left)(newctx)}
+        |final BranchContext $newctx = new BranchContext($ctx, (${newctx}_, ${argument(x)}) -> {
+          |$right
+        |});
+        |${expression(left)(newctx).deindentedAgressively}
         """
       }
       case Limit(f) => {
-        val newctx = ctx.newContext()
+        val newctx = ctx.newContext(1)
         j"""      
-        final TerminatorContext $newctx = new TerminatorContext($ctx);
-        try {
-          ${expression(f)(newctx)}
-        } catch (KilledException e) {
-        }
+        |final TerminatorContext $newctx = new TerminatorContext($ctx);
+        |try {
+          |${expression(f)(newctx)}
+        |} catch (KilledException e) {}
         """
       }
       case Future(f) => {
-        val newctx = ctx.newContext()
+        val newctx = ctx.newContext(1)
         j"""
-        $ctx.publish($ctx.spawnFuture(($newctx) -> {
-          ${expression(f)(newctx)}
-        }));
+        |$ctx.publish($ctx.spawnFuture(($newctx) -> {
+          |${expression(f)(newctx)}
+        |}));
         """
       }
       case Force(f) => {
         j"""
-        Operations$$.MODULE$$.force($ctx, ${argument(f)});
+        |Operations$$.MODULE$$.force($ctx, ${argument(f)});
         """
       }
       case left Concat right => {
-        val newctx = ctx.newContext()
+        val newctx = ctx.newContext(1)
         j"""
-        CounterContext $newctx = new CounterContext($ctx, (${newctx}_) -> {
-          $right
-        });
-        try {
-          ${expression(left)(newctx)}
-        } finally {
-          $newctx.halt();
-        }
+        |CounterContext $newctx = new CounterContext($ctx, (${newctx}_) -> {
+          |$right
+        |});
+        |try {
+          |${expression(left)(newctx)}
+        |} finally {
+        |  $newctx.halt();
+        |}
         """
       }
       case DeclareDefs(defs, body) => {
-        j"""${defs.map(orcdef(_)).mkString}
-        $body"""
+        j"""
+        |${defs.map(orcdef(_)).mkString}
+        |${expression(body).deindentedAgressively}"""
       }
       case HasType(body, expectedType) => expression(body)
       case DeclareType(u, t, body) => expression(body)
       case VtimeZone(timeOrder, body) => ???
       case FieldAccess(o, f) => {
         j"""
-        Operations$$.MODULE$$.getField($ctx, ${argument(o)}, ${argument(Constant(f))});
+        |Operations$$.MODULE$$.getField($ctx, ${argument(o)}, ${argument(Constant(f))});
         """
       }
       case a: Argument => {
         j"""
-        $ctx.publish(${argument(a)});
+        |$ctx.publish(${argument(a)});
         """
       }
       // We do not handle types
       case _ => "???"
     }
     
-    s"""
-    /* 
-      ${expr.prettyprint()}
-    */ 
-    $code"""
+    //
+    val r = s"""/*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n${code.deindented}""".indent(2)
+    r
   }
   
-  def getIdent(x: BoundVar) = {
-    x.optionalVariableName match {
-      case Some(n) => lookup(x)
-      case None => lookup(x)
-    }
-  }
+  def getIdent(x: BoundVar): String = lookup(x)
 
   def argument(a: Argument): String = {
     a match {
@@ -217,28 +231,63 @@ public class $name extends OrcProgram {
   def orcdef(d: Def)(implicit ctx: ConversionContext): String = {         
     val Def(f, formals, body, typeformals, argtypes, returntype) = d
     val newctx = ctx.newContext()
-    val args = newVarName()
-    val wrapper = f.optionalVariableName.get
-    // FIXME: Probably wrong in a few cases.
-    val name = vars.getOrElseUpdate(f, f.optionalVariableName.get + "[0]")
-    // FIXME:HACK: This uses an array to allow recursive lambdas. There is probably a better way.
+    val args = newVarName("args")
+    val wrapper = newVarName(f.optionalVariableName.getOrElse("_f"))
+    val name = wrapper + "[0]"
+    vars(f) = name
+    // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
     j"""
-    final Callable[] $wrapper = new Callable[1]; 
-    $name = ($newctx, $args) -> {
-      ${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n")}
-      $body
-    };
-    """
+    |final Callable[] $wrapper = new Callable[1]; 
+    |$name = ($newctx, $args) -> {
+      |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
+      |$body
+    |};
+    """.deindented
   }
 }
 
-case class ConversionContext(parent: ConversionContext, ctxname: String) {
+case class ConversionContext(ctxname: String) {
   var nextChild: Int = 0
 
-  def newContext(): ConversionContext = {
+  def newContext(levelChange: Int = 0): ConversionContext = {
     nextChild += 1
-    ConversionContext(this, s"${ctxname}_$nextChild")
+    ConversionContext(s"${ctxname}_$nextChild")
   }
 }
 
 case class ConstantPoolEntry(value: AnyRef, typ: String, name: String, initializer: String)
+
+object Deindent {
+  val EmptyLine = raw"""(\p{Blank}*\n)+""".r
+  val EmptyLinesEnd = raw"""(\n\p{Blank}*)+\z""".r
+  val NonBlank = raw"""[^\p{Blank}]""".r
+  
+  implicit final class DeindentString(private val s: String) { 
+    def deindentedAgressively = {
+      val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
+      val indentSize = lines.map(l => NonBlank.findFirstMatchIn(l).map(_.start).getOrElse(0)).min
+      lines.map(_.substring(indentSize)).mkString("\n")
+    }
+    
+    def deindented = {
+      s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.stripMargin
+    }
+    
+    def indent(n: Int) = {
+      val lines = s.split('\n')
+      val p = " " * n
+      lines.map(p + _).mkString("\n")
+    }
+    
+    def withoutLeadingEmptyLines = {
+      EmptyLine.findPrefixMatchOf(s).map({ m =>
+        s.substring(m.end)
+      }).getOrElse(s)
+    }
+    def withoutTrailingEmptyLines = {
+      EmptyLinesEnd.findFirstMatchIn(s).map({ m =>
+        s.substring(0, m.start)
+      }).getOrElse(s)
+    }
+  }
+}
