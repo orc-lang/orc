@@ -15,11 +15,7 @@
 package orc.run.tojava
 
 import orc.OrcRuntime
-import orc.values.Format
-import orc.values.OrcValue
-import Future.Bound
-import Future.Halt
-import Future.Unbound
+import orc.values.{ Format, OrcValue }
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -36,6 +32,8 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
   var _value: AnyRef = null
   var _blocked: List[Blockable] = Nil
 
+  /** Bind this to a value and call publish and halt on each blocked Blockable.
+    */
   def bind(v: AnyRef) = {
     assert(!v.isInstanceOf[Future])
     val done = synchronized {
@@ -59,6 +57,8 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     }
   }
 
+  /** Bind this to stop and call halt on each blocked Blockable.
+    */
   def stop() = {
     val done = synchronized {
       if (_state == Unbound) {
@@ -78,11 +78,17 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     }
   }
 
+  /** Force this future into blocked.
+    *
+    * This may call publish in this thread if the future is already bound, or
+    * if this is unbound, it adds blocked to the blockers list to be called
+    * later.
+    */
   def forceIn(blocked: Blockable) = {
     val st = synchronized {
       _state match {
         case Unbound => {
-          blocked.prepareSpawn()
+          blocked.prepareSpawn() // Matched to: halt in bind and stop.
           _blocked ::= blocked
         }
         case _ => {}

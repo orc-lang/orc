@@ -1,16 +1,31 @@
 package orc.run.tojava
 
-/**
- * @author amp
- */
+/** Blockable represents any object that can block on something and then
+  * handle the result.
+  *
+  * @author amp
+  */
 trait Blockable {
+  /** Unblock with a publication.
+    *
+    * This does not imply halting: instead halt will be called as well if an
+    * explicit halt is needed.
+    */
   def publish(v: AnyRef): Unit
+
+  /** Halt the Blockable.
+    *
+    * This can occur without or without a publication. Every call to this must
+    * match a call to prepareSpawn().
+    */
   def halt(): Unit
 
-  /** Setup for a spawn, but don't actually spawn anything.
+  /** Setup for a later execution possibly in another thread.
     *
-    * This is used in Future and possibly other places to prepare for a later execution.
+    * This doesn't actually spawn anything, but prepares for waiting for
+    * execution in another thread of control, such as spawning a new execution.
     *
+    * Every call to this must be matched by a later call to halt().
     */
   def prepareSpawn(): Unit
 }

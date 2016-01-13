@@ -21,18 +21,18 @@ import orc.run.StandardOrcRuntime;
 import orc.util.PrintVersionAndMessageException;
 
 /**
+ * A Java base class for Orc programs. This This provides root context
+ * generation and a utility method for implementation main in the subclass.
  * 
- *
  * @author amp
  */
 abstract public class OrcProgram {
   public abstract void call(Context ctx);
-  
+
   /**
-   * @param runtime 
-   * @throws PrintVersionAndMessageException
+   * Run this program using the given runtime.
    */
-  public RootContext run(final StandardOrcRuntime runtime) throws PrintVersionAndMessageException {
+  public RootContext run(final StandardOrcRuntime runtime) {
     final RootContext ctx = new RootContext(runtime);
     runtime.schedule(new ContextSchedulableRunnable(ctx, new Runnable() {
       @Override
@@ -45,7 +45,10 @@ abstract public class OrcProgram {
   }
 
   /**
-   * @param args
+   * Run the given program instance without a runtime.
+   * 
+   * @param args The command line arguments used to start this program.
+   * 
    * @throws PrintVersionAndMessageException
    */
   public static void runProgram(final String[] args, final OrcProgram prog) throws PrintVersionAndMessageException {
