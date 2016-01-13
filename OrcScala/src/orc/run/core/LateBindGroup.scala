@@ -53,8 +53,8 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
     }
   }
 
-  // Specific to PruningGroups
-  def read(t: Blockable) = {
+  // Specific to LateBindGroups
+  def read(t: Blockable) {
     // result encodes what calls to t.awake* should be made after releasing the lock
     val result = synchronized {
       state match {
