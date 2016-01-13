@@ -8,7 +8,7 @@ import orc.values.Field
 /** @author amp
   */
 class OrctimizerToJava {
-  import Deindent._
+  import Deindent._, OrctimizerToJava._
   
   // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
   //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
@@ -24,7 +24,9 @@ import orc.values.Field;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
 
+
 public class $name extends OrcProgram {
+  private static final java.nio.charset.Charset UTF8 = java.nio.charset.Charset.forName("UTF-8");
 $constants
 
   @Override
@@ -39,28 +41,9 @@ $code
     """
   }
   
-  
-  def escapeIdent(s: String) = {
-    val q = s.map({ c =>
-      c match {
-        case c if c.isLetterOrDigit || c == '_' => c.toString
-        case '$' => "$$"
-        case '.' => "$_"
-        case ''' => "$p"
-        case '`' => "$t"
-        case c => "$" + c.toInt
-      }
-    }).mkString
-    if (q(0).isLetter || q(0) == '_' || q(0) == '$')
-      q
-    else
-      "$s" + q
-  }
-  
-
   val vars: mutable.Map[BoundVar, String] = new mutable.HashMap()
   var varCounter: Int = 0
-  def newVarName(prefix: String = "_t"): String = { varCounter += 1; escapeIdent(prefix) + "$c" + varCounter }
+  def newVarName(prefix: String = "_t"): String = { varCounter += 1; escapeIdent(prefix) + "$c" + counterToString(varCounter) }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
 
@@ -69,9 +52,9 @@ $code
   def strip$(s: String): String = {
     if (s.charAt(s.length - 1) == '$') s.substring(0, s.length - 1) else s
   }
-  def newConstant(v: AnyRef): ConstantPoolEntry = { 
-    constantCounter += 1; 
-    val name = escapeIdent(s"C_${Format.formatValue(v)}_${constantCounter}")
+  def newConstant(v: AnyRef): ConstantPoolEntry = {
+    constantCounter += 1
+    val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}")
     val typ = v match {
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
         | _: java.lang.Float | _: java.lang.Double => """Number"""
@@ -90,7 +73,8 @@ $code
       case n : BigDecimal if n.isExactDouble => s"""BigDecimal$$.MODULE$$.apply(${n.toDouble})"""
       // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
       case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
-      case s: String => s""""$s""""
+      case s: String if s.forall(c => c >= 32 && c < 127 && c != '\n' && c != '\\') => "\""+s+"\""
+      case s: String => s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
       case b: java.lang.Boolean => b.toString()
       case orc.values.Signal => "orc.values.Signal$.MODULE$"
       case orc.values.Field(s) => s"""new Field("$s")"""
@@ -240,10 +224,32 @@ $code
     |final Callable[] $wrapper = new Callable[1]; 
     |$name = ($newctx, $args) -> {
       |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
-      |$body
+      |${expression(body)(newctx)}
     |};
     """.deindented
   }
+}
+
+object OrctimizerToJava {
+  def escapeIdent(s: String) = {
+    val q = s.map({ c =>
+      c match {
+        case c if c.isLetterOrDigit || c == '_' => c.toString
+        case '$' => "$$"
+        case '.' => "$_"
+        case '-' => "$m"
+        case ''' => "$p"
+        case '`' => "$t"
+        case c => "$" + c.toHexString
+      }
+    }).mkString
+    if (q(0).isLetter || q(0) == '_' || q(0) == '$')
+      q
+    else
+      "$s" + q
+  }
+
+  def counterToString(i: Int) = java.lang.Integer.toString(i, 36)
 }
 
 case class ConversionContext(ctxname: String) {
@@ -251,9 +257,10 @@ case class ConversionContext(ctxname: String) {
 
   def newContext(levelChange: Int = 0): ConversionContext = {
     nextChild += 1
-    ConversionContext(s"${ctxname}_$nextChild")
+    ConversionContext(s"${ctxname}_${OrctimizerToJava.counterToString(nextChild)}")
   }
 }
+
 
 case class ConstantPoolEntry(value: AnyRef, typ: String, name: String, initializer: String)
 
