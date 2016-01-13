@@ -138,7 +138,6 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def hostToken(origin: Location, movedToken: TokenReplacement) {
-    Logger.entering(getClass.getName, "hostToken", Seq(origin, movedToken))
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
     val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
@@ -158,7 +157,6 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendPublish(destination: Location, proxyId: GroupProxyId)(token: Token, v: Option[AnyRef]) {
-    Logger.entering(getClass.getName, "sendPublish")
     destination.send(PublishGroupCmd(executionId, proxyId, new TokenReplacement(token, node, proxyId), v))
   }
 
@@ -171,12 +169,10 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendHalt(destination: Location, groupMemberProxyId: GroupProxyId)() {
-    Logger.entering(getClass.getName, "sendHalt")
     destination.send(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
-    Logger.entering(getClass.getName, "haltGroupMemberProxy", Seq(groupMemberProxyId.toString))
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.halt() } })
@@ -187,12 +183,10 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendKill(destination: Location, proxyId: GroupProxyId)() {
-    Logger.entering(getClass.getName, "sendKill")
     destination.send(KillGroupCmd(executionId, proxyId))
   }
 
   def killGroupProxy(proxyId: GroupProxyId) {
-    Logger.entering(getClass.getName, "killGroupProxy", Seq(proxyId.toString))
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.kill() } })

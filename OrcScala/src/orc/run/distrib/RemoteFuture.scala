@@ -39,7 +39,7 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
 
 }
 
-/** A remote reader that is blocked awating a local LateBindGroup value.
+/** A remote reader that is blocked awaiting a local LateBindGroup value.
   *
   * @author jthywiss
   */
@@ -118,23 +118,20 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId) = {
-    if (waitingReaders.contains(futureId)) {
-      waitingReaders.get(futureId)
-    } else {
+    if (!waitingReaders.contains(futureId)) {
       val newFuture = new RemoteFutureRef(this, futureId)
-      waitingReaders.put(futureId, newFuture)
-      newFuture
+      waitingReaders.putIfAbsent(futureId, newFuture)
+      /* Benign race here: A superfluous RemoteFutureRef could be created and disregarded. */
     }
+    waitingReaders.get(futureId)
   }
 
   def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId) {
-    Logger.entering(getClass.getName, "sendReadFuture")
     val homeLocation = homeLocationForRemoteFutureId(futureId)
     homeLocation.send(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: Int) {
-    Logger.entering(getClass.getName, "readFuture")
     servingFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
   }
 
@@ -144,7 +141,11 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
-    Logger.entering(getClass.getName, "deliverFutureResult")
-    waitingReaders.get(futureId).onResult(value)
+    val reader = waitingReaders.get(futureId)
+    if (reader != null) {
+      reader.onResult(value)
+    } else {
+      Logger.finer(s"deliverFutureResult reader not found, id=$futureId")
+    }
   }
 }

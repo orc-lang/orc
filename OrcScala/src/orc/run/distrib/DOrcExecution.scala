@@ -26,7 +26,7 @@ import orc.run.core.Execution
   * environment) is the bailiwick of Orc Runtimes.
   *
   * Am Execution (Distributer Orc progrm run) is identified by a execution ID
-  * UUID. Each runtime particiapting in an execution is assigned an
+  * UUID. Each runtime participating in an execution is assigned an
   * unique-to-that-execution follower number.  (The leader runtime for an
   * execution uses "follower" number zero.)
   *
