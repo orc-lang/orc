@@ -94,8 +94,7 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
     try {
       super.publish(v)
     } catch {
-      case _: KilledException =>
-        ()
+      case _: KilledException => {}
     }
     halt()
   }
@@ -143,7 +142,8 @@ trait ContextCounterSupport extends Context {
 
   override def halt(): Unit = {
     val n = count.decrementAndGet()
-    //Logger.info(s"Decr $n")
+    assert(n >= 0, "Halt is not allowed on already stopped CounterContexts")
+    Logger.info(s"Decr $n in $this")
     if (n <= 0) {
       onContextHalted();
     }
@@ -151,7 +151,7 @@ trait ContextCounterSupport extends Context {
 
   override def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
-    //Logger.info(s"Incr $n")
+    Logger.info(s"Incr $n in $this")
     assert(n > 0, "Spawning is not allowed once we go to zero count. No zombies allowed!!!")
   }
 
