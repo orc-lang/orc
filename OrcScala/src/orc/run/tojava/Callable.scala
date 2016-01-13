@@ -46,7 +46,7 @@ final class RuntimeCallable(s: AnyRef) extends Callable {
       // TODO: Optimized version for single argument
       new Join(args) {
         // A debug flag to make sure halt/done are called no more than once.
-        var called = new AtomicBoolean(false)
+        lazy val called = new AtomicBoolean(false)
 
         /** If the join halts then the context should be halted as well.
           */

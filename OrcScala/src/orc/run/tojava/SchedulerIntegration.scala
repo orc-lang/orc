@@ -14,13 +14,13 @@ abstract class ContextSchedulable(ctx: Context) extends Schedulable {
   /** When we are scheduled prepare for spawning.
     */
   override def onSchedule() = {
-    ctx.prepareSpawn()
+    ctx.prepareSpawn() // Matched to: halt in onComplete
   }
 
   /** When execution completes halt.
     */
   override def onComplete() = {
-    ctx.halt()
+    ctx.halt() // Matched to: prepareSpawn in onSchedule
   }
 }
 

@@ -92,11 +92,11 @@ abstract class ContextBase(val parent: Context) extends Context {
   }
 
   def halt(): Unit = {
-    parent.halt()
+    parent.halt() // Matched to: calls to prepareSpawn by induction.
   }
 
   def prepareSpawn(): Unit = {
-    parent.prepareSpawn()
+    parent.prepareSpawn() // Matched to: calls to halt by induction.
   }
 
   def isLive(): Boolean = {
@@ -157,6 +157,8 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
   def !!(e: OrcException): Unit = {
     Logger.log(Level.WARNING, "Exception in execution:", e)
     halt()
+    // Matched to: Every invocation is required to be proceeded by a 
+    //             prepareSpawn since it might spawn.
   }
 
   // TODO: Support rights.
@@ -202,8 +204,8 @@ trait ContextCounterSupport extends Context {
   override def halt(): Unit = {
     val n = count.decrementAndGet()
     assert(n >= 0, "Halt is not allowed on already stopped CounterContexts")
-    Logger.info(s"Decr $n in $this")
-    if (n <= 0) {
+    //Logger.finest(s"Decr $n in $this")
+    if (n == 0) {
       onContextHalted();
     }
   }
@@ -212,7 +214,7 @@ trait ContextCounterSupport extends Context {
     */
   override def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
-    Logger.info(s"Incr $n in $this")
+    //Logger.finest(s"Incr $n in $this")
     assert(n > 0, "Spawning is not allowed once we go to zero count. No zombies allowed!!!")
   }
 

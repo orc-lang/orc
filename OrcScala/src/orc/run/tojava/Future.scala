@@ -51,7 +51,7 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     if (done) {
       for (blocked <- _blocked) {
         blocked.publish(v)
-        blocked.halt()
+        blocked.halt() // Matched to: prepareSpawn in forceIn
       }
       _blocked = null
     }
@@ -73,7 +73,7 @@ final class Future(val runtime: OrcRuntime) extends OrcValue {
     // state that cannot change again.
     if (done) {
       for (blocked <- _blocked)
-        blocked.halt()
+        blocked.halt() // Matched to: prepareSpawn in forceIn
       _blocked = null
     }
   }

@@ -29,11 +29,15 @@ abstract class Join(inValues: Array[AnyRef]) {
   /** A Blockable that binds a specific element of values in publish().
     */
   final class JoinElement(i: Int) extends Blockable {
-    /** Bind value i to v.
+    /** The flag used to make sure publish/halt is only called once.
+      */
+    var bound = new AtomicBoolean(false)
+
+    /** Bind value i to v if this is not yet bound.
       *
       * If join has not halted we bind and check if we are done.
       */
-    def publish(v: AnyRef): Unit = {
+    def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
       // Check if we are halted then bind. This is an optimization since 
       // nUnbound can never reach 0 if we halted.
       if (!halted.get()) {
@@ -45,9 +49,11 @@ abstract class Join(inValues: Array[AnyRef]) {
         join.checkComplete(nUnbound.decrementAndGet())
       }
     }
-    /** Halt the whole join if it has not yet been halted.
+
+    /** Halt the whole join if it has not yet been halted and this has not yet
+      * been bound.
       */
-    def halt(): Unit = {
+    def halt(): Unit = if (bound.compareAndSet(false, true)) {
       // Halt if we have not already halted.
       if (halted.compareAndSet(false, true)) {
         join.halt()
@@ -74,7 +80,10 @@ abstract class Join(inValues: Array[AnyRef]) {
   }
   // Now decrement the unbound count by the number of non-futures we found.
   // And maybe finish immediately.
-  checkComplete(nUnbound.addAndGet(-nNonFutures))
+  if(nNonFutures > 0)
+    // Don't do this if it will not change the value. Otherwise this could
+    // cause multiple calls to done.
+    checkComplete(nUnbound.addAndGet(-nNonFutures))
 
   /** Check if we are done by looking at n which must be the current number of
     * unbound values.
