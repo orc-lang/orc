@@ -24,4 +24,6 @@ import orc.run.extensions.SupportForDOrc
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with ValueLocator with SupportForDOrc
+abstract class DOrcRuntime(engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with ValueLocator with SupportForDOrc {
+  val followerNumLocationMap: java.util.concurrent.ConcurrentHashMap[Int, Location]
+}

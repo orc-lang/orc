@@ -34,6 +34,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
   type MsgToFollower = OrcLeaderToFollowerCmd
 
   var leaderLocation: LeaderLocation = null
+  override val followerNumLocationMap = new java.util.concurrent.ConcurrentHashMap[Int, Location]()
 
   def listen() {
     Logger.info(s"Listening on $listenAddress")
@@ -59,6 +60,10 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
     Logger.entering(getClass.getName, "followDOrcLeader")
     try {
       var done = false
+
+      //FIXME: Add all other followers
+      followerNumLocationMap.put(0, leaderLocation)
+
       while (!done && !leaderLocation.connection.closed && !leaderLocation.connection.socket.isInputShutdown) {
         val cmd = try {
           leaderLocation.connection.receive()
@@ -69,9 +74,11 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
         cmd match {
           case LoadProgramCmd(xid, followerExecutionNum, oil, options) => loadProgram(leaderLocation, xid, followerExecutionNum, oil, options)
           case HostTokenCmd(xid, movedToken) => programs.get(xid).hostToken(leaderLocation, movedToken)
-          case PublishGroupCmd(xid, gmpid, t, v) => programs.get(xid).publishInGroup(gmpid, t, v)
+          case PublishGroupCmd(xid, gmpid, t, v) => programs.get(xid).publishInGroup(leaderLocation, gmpid, t, v)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs.get(xid).haltGroupMemberProxy(gmpid)
           case KillGroupCmd(xid, gpid) => programs.get(xid).killGroupProxy(gpid)
+          case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs.get(xid).readFuture(futureId, readerFollowerNum)
+          case DeliverFutureResultCmd(xid, futureId, value) => programs.get(xid).deliverFutureResult(futureId, value)
           case UnloadProgramCmd(xid) => { unloadProgram(xid); done = true }
           case EOF => done = true
         }
@@ -81,6 +88,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
       programs.clear()
       stopScheduler()
       super.stop()
+      followerNumLocationMap.clear()
     }
     Logger.exiting(getClass.getName, "followDOrcLeader")
   }

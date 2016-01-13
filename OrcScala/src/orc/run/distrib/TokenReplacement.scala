@@ -1,5 +1,5 @@
 //
-// TokenReplacement.scala -- Scala class TokenReplacement
+// TokenReplacement.scala -- Scala class TokenReplacement and its auxiliary classes
 // Project OrcScala
 //
 // Created by jthywiss on Dec 26, 2015.
@@ -24,32 +24,36 @@ import orc.run.core.{ Binding, BindingFrame, BoundFuture, BoundStop, BoundValue,
 @SerialVersionUID(-655352528693128511L)
 class TokenReplacement(t: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId) extends Serializable {
 
-  private def envHack(b: Binding): Binding = (b match {
+  protected def marshalBinding(b: Binding): BindingReplacement = (b match {
     case BoundFuture(g) => {
       g.state match {
         case RightSidePublished(None) => BoundStop
         case RightSidePublished(Some(v)) => BoundValue(v)
         case RightSideSilent => BoundStop
         case RightSideUnknown(_) => {
-          Logger.warning(s"$b not bound yet, replacing with stop")
-          BoundStop
+          val execution = g.execution.asInstanceOf[DOrcExecution]
+          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
+          BoundFutureReplacement(id)
         }
       }
     }
-    case x => x
+    case _ => b
   }) match {
+    case br: BindingReplacement => br
+    //FIXME: Make copy versus reference decision here
     case BoundValue(v) if (!v.isInstanceOf[java.io.Serializable]) => {
-      Logger.warning(s"$v not Serializable, replacing with stop")
-      BoundStop
+      //      new RemoteObjectReader(v, RemoteObjectRef.idFor(v))
+      val id = RemoteObjectRef.idForObject(v)
+      BoundRemoteReplacement(id)
     }
-    case x => x
+    case b: Binding with Serializable => SerializableBindingReplacement(b)
   }
 
-  private def stackHack(ast: Expression)(f: Frame): FrameReplacement = {
+  protected def marshalFrame(ast: Expression)(f: Frame): FrameReplacement = {
     f match {
       case BindingFrame(n, previous) => BindingFrameReplacement(n)
       case SequenceFrame(node, previous) => SequenceFrameReplacement(AstNodeIndexing.nodeIndexInTree(node, ast).get)
-      case FunctionFrame(callpoint, env, previous) => FunctionFrameReplacement(AstNodeIndexing.nodeIndexInTree(callpoint, ast).get, (env map envHack).toArray)
+      case FunctionFrame(callpoint, env, previous) => FunctionFrameReplacement(AstNodeIndexing.nodeIndexInTree(callpoint, ast).get, (env map marshalBinding).toArray)
       case FutureFrame(k, previous) => ??? //FIXME:Need to refactor FutureFrame to eliminate closures
       case GroupFrame(previous) => GroupFrameReplacement
     }
@@ -58,28 +62,30 @@ class TokenReplacement(t: Token, astRoot: Expression, val tokenProxyId: DOrcExec
   val astNodeIndex: Seq[Int] = AstNodeIndexing.nodeIndexInTree(t.getNode, astRoot).get
 
   /* N.B.: The stack's EmptyFrame will not appear in the array, because of Frame's iterator behavior */
-  private def extractStack(t: Token, astRoot: Expression) = (t.getStack.toArray.reverse) map stackHack(astRoot)
+  private def extractStack(t: Token, astRoot: Expression) = (t.getStack.toArray.reverse) map marshalFrame(astRoot)
 
   val stack = extractStack(t, astRoot)
-  val env = (t.getEnv map envHack).toArray
+  val env = t.getEnv.toArray map marshalBinding
 
   //val clock: VirtualClock = t.getClock
   //val state: TokenState =
   //assert(t.state == Live)
 
-  def asToken(astRoot: Expression, newGroup: Group) = {
+  def asToken(origin: Location, astRoot: Expression, newGroup: Group) = {
+    val dorcExecution = newGroup.execution.asInstanceOf[DOrcExecution]
     val _node = AstNodeIndexing.lookupNodeInTree(astRoot, astNodeIndex).asInstanceOf[Expression]
-    val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.asFrame(stackTop, astRoot) }
+    val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop, astRoot) }
 
-    new MigratedToken(_node, _stack, env.toList, newGroup /*, clock, state*/ )
+    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup /*, clock, state*/ )
   }
 
-  def asPublishingToken(astRoot: Expression, newGroup: Group, v: Option[AnyRef]) = {
+  def asPublishingToken(origin: Location, astRoot: Expression, newGroup: Group, v: Option[AnyRef]) = {
+    val dorcExecution = newGroup.execution.asInstanceOf[DOrcExecution]
     val _node = AstNodeIndexing.lookupNodeInTree(astRoot, astNodeIndex).asInstanceOf[Expression]
-    val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.asFrame(stackTop, astRoot) }
+    val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop, astRoot) }
 
     //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
-    new MigratedToken(_node, GroupFrame(_stack), env.toList, newGroup, None /*clock*/ , Publishing(v))
+    new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /*clock*/ , Publishing(v))
   }
 }
 
@@ -125,28 +131,54 @@ object AstNodeIndexing {
   }
 }
 
+/** Replacement for a Binding for use in serialization.
+  *
+  * @author jthywiss
+  */
+protected abstract class BindingReplacement() {
+  def unmarshalBinding(execution: DOrcExecution, origin: Location): Binding
+}
+
+protected case class SerializableBindingReplacement(b: Binding with Serializable) extends BindingReplacement() {
+  override def unmarshalBinding(execution: DOrcExecution, origin: Location) = b
+}
+
+protected case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends BindingReplacement() {
+  override def unmarshalBinding(execution: DOrcExecution, origin: Location) = {
+    //FIXME:Implement
+    Logger.warning(s"$remoteRemoteRefId not Serializable, replacing with stop")
+    BoundStop
+  }
+}
+
+protected case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends BindingReplacement() {
+  override def unmarshalBinding(execution: DOrcExecution, origin: Location) = {
+    BoundFuture(execution.futureForId(bindingId))
+  }
+}
+
 /** Replacement for a Frame for use in serialization.
   *
   * @author jthywiss
   */
 protected abstract class FrameReplacement() {
-  def asFrame(previous: Frame, ast: Expression): Frame
+  def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression): Frame
 }
 protected case object EmptyFrameReplacement extends FrameReplacement() {
-  override def asFrame(previous: Frame, ast: Expression) = throw new AssertionError("EmptyFrameReplacement.asFrame called")
+  override def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression) = throw new AssertionError("EmptyFrameReplacement.asFrame called")
 }
 protected case class BindingFrameReplacement(n: Int) extends FrameReplacement() {
-  override def asFrame(previous: Frame, ast: Expression) = BindingFrame(n, previous)
+  override def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression) = BindingFrame(n, previous)
 }
 protected case class SequenceFrameReplacement(nodeAddr: Seq[Int]) extends FrameReplacement() {
-  override def asFrame(previous: Frame, ast: Expression) = SequenceFrame(AstNodeIndexing.lookupNodeInTree(ast, nodeAddr).asInstanceOf[Expression], previous)
+  override def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression) = SequenceFrame(AstNodeIndexing.lookupNodeInTree(ast, nodeAddr).asInstanceOf[Expression], previous)
 }
-protected case class FunctionFrameReplacement(callpointAddr: Seq[Int], env: Array[Binding]) extends FrameReplacement() {
-  override def asFrame(previous: Frame, ast: Expression) = FunctionFrame(AstNodeIndexing.lookupNodeInTree(ast, callpointAddr).asInstanceOf[Expression], env.toList, previous)
+protected case class FunctionFrameReplacement(callpointAddr: Seq[Int], env: Array[BindingReplacement]) extends FrameReplacement() {
+  override def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression) = FunctionFrame(AstNodeIndexing.lookupNodeInTree(ast, callpointAddr).asInstanceOf[Expression], env.toList map { _.unmarshalBinding(execution, origin) }, previous)
 }
 //  protected case class FutureFrameReplacement(k: (Option[AnyRef] => Unit)) extends FrameReplacement() {
-//    def asFrame(previous: Frame, ast: Expression) = FutureFrame(k, previous)
+//    def unmarshalFrame(execution: DOrcExecution, previous: Frame, ast: Expression) = FutureFrame(k, previous)
 //  }
 protected case object GroupFrameReplacement extends FrameReplacement() {
-  override def asFrame(previous: Frame, ast: Expression) = GroupFrame(previous)
+  override def unmarshalFrame(execution: DOrcExecution, origin: Location, previous: Frame, ast: Expression) = GroupFrame(previous)
 }

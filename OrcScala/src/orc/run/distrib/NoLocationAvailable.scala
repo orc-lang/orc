@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.error.runtime.TokenException
 
-/** TODO:DESCRIBE
+/** Exception thrown when no allowed common location can be found to execute a dOrc operation.
   *
   * @author jthywiss
   */

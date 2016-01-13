@@ -1,5 +1,5 @@
 //
-// OrcCmd.scala -- Scala trait OrcCmd
+// OrcCmd.scala -- Scala trait OrcCmd and its subclasses
 // Project OrcScala
 //
 // Created by jthywiss on Dec 21, 2015.
@@ -34,4 +34,6 @@ case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: Toke
 case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishingToken: TokenReplacement, value: Option[AnyRef]) extends OrcPeerCmd
 case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
 case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
+case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: Int) extends OrcPeerCmd
+case class DeliverFutureResultCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) extends OrcPeerCmd
 case object EOF extends OrcPeerCmd
