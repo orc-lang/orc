@@ -17,6 +17,7 @@ import orc.lib.str.PrintEvent
 import orc.run.extensions.RwaitEvent
 import java.util.Timer
 import java.util.TimerTask
+import java.util.logging.Level
 
 abstract class Context extends Blockable {
   val runtime: OrcRuntime
@@ -96,7 +97,7 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
       case _: KilledException =>
         ()
     }
-    super.halt()
+    halt()
   }
   
   def notifyOrc(event: OrcEvent): Unit = {
@@ -119,7 +120,10 @@ final class ContextHandle(p: Context, val callSitePosition: Position) extends Co
   }
   def setQuiescent(): Unit = {}
 
-  def !!(e: OrcException): Unit = e.printStackTrace()
+  def !!(e: OrcException): Unit = {
+    Logger.log(Level.WARNING, "Exception in execution:", e)
+    halt()
+  }
 
   def hasRight(rightName: String): Boolean = false
 }
@@ -139,7 +143,7 @@ trait ContextCounterSupport extends Context {
 
   override def halt(): Unit = {
     val n = count.decrementAndGet()
-    Logger.info(s"Decr $n")
+    //Logger.info(s"Decr $n")
     if (n <= 0) {
       onContextHalted();
     }
@@ -147,7 +151,7 @@ trait ContextCounterSupport extends Context {
 
   override def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
-    Logger.info(s"Incr $n")
+    //Logger.info(s"Incr $n")
     assert(n > 0, "Spawning is not allowed once we go to zero count. No zombies allowed!!!")
   }
 
