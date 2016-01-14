@@ -2,8 +2,6 @@
 // Main.scala -- Scala object Main
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jul 20, 2010.
 //
 // Copyright (c) 2012 The University of Texas at Austin. All rights reserved.

@@ -1,7 +1,5 @@
 {- random-boolean.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 13, 2010 3:43:38 PM
  -}
 

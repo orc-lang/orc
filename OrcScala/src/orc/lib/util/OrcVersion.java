@@ -2,8 +2,6 @@
 // OrcVersion.java -- Java class OrcVersion
 // Project Orchard
 //
-// $Id$
-//
 // Created by jthywiss on Jan 20, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
@@ -30,21 +28,17 @@ import orc.values.sites.compatibility.Types;
  */
 public class OrcVersion extends EvalSite implements TypedSite {
 
-	/* (non-Javadoc)
-	 * @see orc.values.sites.compatibility.EvalSite#evaluate(orc.values.sites.compatibility.Args)
-	 */
-	@Override
-	public Object evaluate(Args args) throws TokenException {
-		if (args.size() != 0) {
-			throw new ArityMismatchException(0, args.size());
-		}
-		return orc.Main.orcImplName() + ' ' + orc.Main.orcVersion() + '\n' +
-			orc.Main.orcURL() + '\n' + orc.Main.orcCopyright();
-	}
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        if (args.size() != 0) {
+            throw new ArityMismatchException(0, args.size());
+        }
+        return orc.Main.orcImplName() + ' ' + orc.Main.orcVersion() + '\n' + orc.Main.orcURL() + '\n' + orc.Main.orcCopyright();
+    }
 
     @Override
     public Type orcType() {
-      return Types.function(Types.integer());
+        return Types.function(Types.integer());
     }
 
 }

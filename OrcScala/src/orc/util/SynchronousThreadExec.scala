@@ -2,8 +2,6 @@
 // SynchronousThreadExec.scala -- Scala object SynchronousThreadExec
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jul 23, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

@@ -1,7 +1,5 @@
 {- BoundedChannel.inc
  - 
- - $Id$
- - 
  - Created by misra on Mar 11, 2010 8:57:43 PM
  -}
 

@@ -2,8 +2,6 @@
 // JavaProxies.scala -- Scala class JavaProxy
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jul 9, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

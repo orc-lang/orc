@@ -2,8 +2,6 @@
 // Random.java -- Java class Random
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -25,35 +23,31 @@ import orc.values.sites.compatibility.Types;
 
 public class Random extends PartialSite implements TypedSite {
 
-	java.util.Random rnd;
+    java.util.Random rnd;
 
-	public Random() {
-		rnd = new java.util.Random();
-	}
+    public Random() {
+        rnd = new java.util.Random();
+    }
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		if (args.size() > 1) {
-			throw new ArityMismatchException(1, args.size());
-		}
-		if (args.size() == 0) {
-			return BigInteger.valueOf(rnd.nextInt());
-		}
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        if (args.size() > 1) {
+            throw new ArityMismatchException(1, args.size());
+        }
+        if (args.size() == 0) {
+            return BigInteger.valueOf(rnd.nextInt());
+        }
 
-		if (!(args.getArg(0) instanceof Number) ||
-		    args.longArg(0) > Integer.MAX_VALUE ||
-		    args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE ||
-		    ((Number) args.getArg(0)).doubleValue() <= 0.0 ||
-		    ((Number) args.getArg(0)).doubleValue() != Math.rint(((Number) args.getArg(0)).doubleValue()) ) {
-			throw new IllegalArgumentException("Random's argument must be an integer strictly between 0 and 2**31");
-		}
+        if (!(args.getArg(0) instanceof Number) || args.longArg(0) > Integer.MAX_VALUE || args.longArg(0) <= 0L || ((Number) args.getArg(0)).doubleValue() > Integer.MAX_VALUE || ((Number) args.getArg(0)).doubleValue() <= 0.0 || ((Number) args.getArg(0)).doubleValue() != Math.rint(((Number) args.getArg(0)).doubleValue())) {
+            throw new IllegalArgumentException("Random's argument must be an integer strictly between 0 and 2**31");
+        }
 
-		return BigInteger.valueOf(rnd.nextInt(args.intArg(0)));
-	}
+        return BigInteger.valueOf(rnd.nextInt(args.intArg(0)));
+    }
 
-	@Override
-	public Type orcType() {
-		return Types.overload(Types.function(Types.integer()), Types.function(Types.integer(), Types.integer()));
-	}
+    @Override
+    public Type orcType() {
+        return Types.overload(Types.function(Types.integer()), Types.function(Types.integer(), Types.integer()));
+    }
 
 }

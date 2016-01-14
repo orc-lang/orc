@@ -1,7 +1,5 @@
 {- kenken.orc -- "KenKen helper" Orc program
  - 
- - $Id$
- - 
  - Created by misra
  -}
 

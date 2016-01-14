@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding="UTF-8"?>
 <!-- eclipse.xsl - XSLT stylesheet - DocBook customization layer for Orc Eclipse help
 
-     $Id$
-
      Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in

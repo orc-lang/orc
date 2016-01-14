@@ -1,7 +1,5 @@
 {- barrier-sync.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 15, 2010 12:08:26 PM
  -}
 

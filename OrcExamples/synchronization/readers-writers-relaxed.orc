@@ -1,7 +1,5 @@
 {- readers-writers-relaxed.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 30, 2010 2:25:16 PM
  -}
 

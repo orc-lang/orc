@@ -2,8 +2,6 @@
 // Write.java -- Java class Write
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,18 +20,19 @@ import orc.values.sites.compatibility.Types;
 
 /**
  * Convert an Orc literal to a String.
+ * 
  * @author quark
  */
 public class Write extends EvalSite implements TypedSite {
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		final Object v = args.getArg(0);
-		return orc.values.Format.formatValue(v);
-	}
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        final Object v = args.getArg(0);
+        return orc.values.Format.formatValue(v);
+    }
 
-	@Override
-	public Type orcType() {
-		return Types.function(Types.top(), Types.string());
-	}
+    @Override
+    public Type orcType() {
+        return Types.function(Types.top(), Types.string());
+    }
 }

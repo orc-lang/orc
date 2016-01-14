@@ -2,8 +2,6 @@
 // TokenException.java -- Java class TokenException
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -26,43 +24,44 @@ import scala.util.parsing.input.Position;
  * @author dkitchin
  */
 public abstract class TokenException extends ExecutionException {
-  private static final long serialVersionUID = -9019214813154694088L;
+    private static final long serialVersionUID = -9019214813154694088L;
 
-  public Position[] backtrace = new Position[0];
+    public Position[] backtrace = new Position[0];
 
-	public TokenException(final String message) {
-		super(message);
-	}
+    public TokenException(final String message) {
+        super(message);
+    }
 
-	public TokenException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
+    public TokenException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * @return "position: ClassName: detailMessage (newline) position.longString [if available] (newline) Orc stack trace..."
-	 */
-	@Override
-	public String getMessageAndDiagnostics() {
-		return getMessageAndPositon() + "\n" + getOrcStacktraceAsString();
-	}
+    /**
+     * @return 
+     *         "position: ClassName: detailMessage (newline) position.longString [if available] (newline) Orc stack trace..."
+     */
+    @Override
+    public String getMessageAndDiagnostics() {
+        return getMessageAndPositon() + "\n" + getOrcStacktraceAsString();
+    }
 
-	/**
-	 * @return A string with a line for each stack element, in the format
-	 *         "\tcalled at "position
-	 */
-	public String getOrcStacktraceAsString() {
-		final StringBuilder sb = new StringBuilder();
-		for (final Position t : backtrace) {
-			sb.append("\tcalled at " + t + "\n");
-		}
-		return sb.toString();
-	}
+    /**
+     * @return A string with a line for each stack element, in the format
+     *         "\tcalled at "position
+     */
+    public String getOrcStacktraceAsString() {
+        final StringBuilder sb = new StringBuilder();
+        for (final Position t : backtrace) {
+            sb.append("\tcalled at " + t + "\n");
+        }
+        return sb.toString();
+    }
 
-	public void setBacktrace(@SuppressWarnings("hiding") final Position[] backtrace) {
-		this.backtrace = backtrace;
-	}
+    public void setBacktrace(@SuppressWarnings("hiding") final Position[] backtrace) {
+        this.backtrace = backtrace;
+    }
 
-	public Position[] getBacktrace() {
-		return backtrace;
-	}
+    public Position[] getBacktrace() {
+        return backtrace;
+    }
 }

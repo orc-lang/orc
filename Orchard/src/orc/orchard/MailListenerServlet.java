@@ -2,8 +2,6 @@
 // MailListenerServlet.java -- Java class MailListenerServlet
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -28,53 +26,48 @@ import orc.lib.orchard.MailListenerFactory.MailListener;
 /**
  * Works with {@link MailListenerFactory} to provide non-polling notification of
  * new messages.
- *
- * <p>This should be called with a GET parameter to, whose value is the recipient
- * address where the mail was received. This is used to look up the {@link MailListener}
- * for that address and deliver the message to it.
+ * <p>
+ * This should be called with a GET parameter to, whose value is the recipient
+ * address where the mail was received. This is used to look up the
+ * {@link MailListener} for that address and deliver the message to it.
  *
  * @author quark
  */
 @SuppressWarnings("serial")
 public class MailListenerServlet extends HttpServlet {
-	protected static Logger logger = Logger.getLogger("orc.orchard.MailListenerServlet");
+    protected static Logger logger = Logger.getLogger("orc.orchard.MailListenerServlet");
 
-	@Override
-	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-		// initialize and check parameters
-		final String to = request.getQueryString();
-		if (to == null) {
-			throw new ServletException("Recipient missing.");
-		}
-		final Object global = AbstractExecutorService.globals.get(to);
-		if (global == null) {
-			throw new ServletException("Recipient not recognized.");
-		}
-		if (!(global instanceof MailListener)) {
-			throw new ServletException("Recipient not recognized.");
-		}
+    @Override
+    protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        // initialize and check parameters
+        final String to = request.getQueryString();
+        if (to == null) {
+            throw new ServletException("Recipient missing.");
+        }
+        final Object global = AbstractExecutorService.globals.get(to);
+        if (global == null) {
+            throw new ServletException("Recipient not recognized.");
+        }
+        if (!(global instanceof MailListener)) {
+            throw new ServletException("Recipient not recognized.");
+        }
 
-		// process the message
-		final MailListener receiver = (MailListener) global;
-		try {
-			if (!receiver.put(request.getInputStream())) {
-				throw new ServletException("Inbox is full");
-			} else {
-				logger.fine("MailListenerServlet: Processed message for " + to);
-			}
-		} catch (final MessagingException e) {
-			throw new ServletException(e);
-		}
-	}
+        // process the message
+        final MailListener receiver = (MailListener) global;
+        try {
+            if (!receiver.put(request.getInputStream())) {
+                throw new ServletException("Inbox is full");
+            } else {
+                logger.fine("MailListenerServlet: Processed message for " + to);
+            }
+        } catch (final MessagingException e) {
+            throw new ServletException(e);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.GenericServlet#getServletInfo()
-	 */
-	@Override
-	public String getServletInfo() {
-		return OrchardProperties.getProperty("war.manifest.Implementation-Version") +
-				" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") +
-				"  Copyright The University of Texas at Austin";
-	}
+    @Override
+    public String getServletInfo() {
+        return OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") + "  Copyright The University of Texas at Austin";
+    }
 
 }

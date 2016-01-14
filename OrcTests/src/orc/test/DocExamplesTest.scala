@@ -2,8 +2,6 @@
 // DocExamplesTest.scala -- Scala object DocExamplesTest
 // Project OrcTests
 //
-// $Id$
-//
 // Created by dkitchin on Apr 04, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

@@ -1,8 +1,6 @@
 BUILD.txt -- Project build notes
 Project OrcEclipse
 
-$Id$
-
 The Orc programming language Eclipse plug-in project
 
 From the Orc team in the Department of Computer Science

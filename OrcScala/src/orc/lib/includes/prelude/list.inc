@@ -2,8 +2,6 @@
 -- list.inc -- Orc standard prelude include, lists section
 -- Project OrcScala
 --
--- $Id$
---
 -- Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 --
 -- Use and redistribution of this file is governed by the license terms in

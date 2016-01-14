@@ -2,8 +2,6 @@
 // DocParsers.scala -- Scala object DocParsers
 // Project OrcDocgen
 //
-// $Id$
-//
 // Created by dkitchin on Dec 16, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

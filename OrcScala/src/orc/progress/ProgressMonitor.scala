@@ -2,8 +2,6 @@
 // ProgressMonitor.scala -- Scala trait ProgressMonitor and object NullProgressMonitor
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Aug 5, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

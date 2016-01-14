@@ -2,8 +2,6 @@
 // LoadingException.java -- Java class LoadingException
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -16,18 +14,17 @@ package orc.error.loadtime;
 import orc.error.OrcException;
 
 /**
- * Exceptions generated while creating an execution
- * graph from a portable representation, in preparation
- * for execution.
+ * Exceptions generated while creating an execution graph from a portable
+ * representation, in preparation for execution.
  *
  * @author dkitchin
  */
 
 public abstract class LoadingException extends OrcException {
-  private static final long serialVersionUID = 8704123769097479728L;
+    private static final long serialVersionUID = 8704123769097479728L;
 
-  public LoadingException(final String message) {
-		super(message);
-	}
+    public LoadingException(final String message) {
+        super(message);
+    }
 
 }

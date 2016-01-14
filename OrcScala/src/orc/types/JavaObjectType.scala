@@ -2,8 +2,6 @@
 // JvmObjectType.scala -- Scala class JvmObjectType
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Nov 29, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

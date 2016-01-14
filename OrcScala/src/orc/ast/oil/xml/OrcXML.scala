@@ -2,8 +2,6 @@
 // OrcXML.scala -- Scala object OrcXML
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amshali on Jul 12, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

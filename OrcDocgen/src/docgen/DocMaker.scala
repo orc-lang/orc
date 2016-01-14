@@ -2,8 +2,6 @@
 // DocMaker.scala -- Scala class DocMaker
 // Project OrcDocgen
 //
-// $Id$
-//
 // Created by dkitchin on Dec 16, 2010.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.

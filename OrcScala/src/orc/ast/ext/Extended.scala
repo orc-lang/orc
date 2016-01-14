@@ -2,8 +2,6 @@
 // Extended.scala -- Scala class and objects for the Orc extended AST
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on May 19, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

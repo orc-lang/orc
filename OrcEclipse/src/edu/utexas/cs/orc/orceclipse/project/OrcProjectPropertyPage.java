@@ -2,8 +2,6 @@
 // OrcProjectPropertyPage.java -- Java class OrcProjectPropertyPage
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Sep 6, 2009.
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
@@ -35,56 +33,45 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
  * @author jthywiss
  */
 public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements IWorkbenchPropertyPage {
-	private IProject project;
+    private IProject project;
 
-	/**
-	 * Constructs an object of class OrcProjectPropertyPage.
-	 *
-	 */
-	public OrcProjectPropertyPage() {
-		super();
-	}
+    /**
+     * Constructs an object of class OrcProjectPropertyPage.
+     */
+    public OrcProjectPropertyPage() {
+        super();
+    }
 
-	/*
-	 *  (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchPropertyPage#getElement()
-	 */
-	@Override
-	public IAdaptable getElement() {
-		return project;
-	}
+    @Override
+    public IAdaptable getElement() {
+        return project;
+    }
 
-	/**
-	 * Sets the element that owns properties shown on this page.
-	 * <p>
-	 * In the case of <code>OrcProjectPropertyPage</code>, this must be a project.
-	 * A <code>ClassCastException</code> will result from setting an object that
-	 * does not implement {@link IProject}.
-	 *
-	 * @param element the project
-	 */
-	@Override
-	public void setElement(final IAdaptable element) {
-		this.project = (IProject) element;
-	}
+    /**
+     * Sets the element that owns properties shown on this page.
+     * <p>
+     * In the case of <code>OrcProjectPropertyPage</code>, this must be a
+     * project. A <code>ClassCastException</code> will result from setting an
+     * object that does not implement {@link IProject}.
+     *
+     * @param element the project
+     */
+    @Override
+    public void setElement(final IAdaptable element) {
+        this.project = (IProject) element;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.preference.FieldEditorPreferencePage#createFieldEditors()
-	 */
-	@Override
-	protected void createFieldEditors() {
-		addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_TypeCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(OrcConfigSettings.RECURSION_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_RecursionCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(OrcConfigSettings.PRELUDE_ATTR_NAME, Messages.OrcProjectPropertyPage_UseStdPreludeLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new OrcPathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathDescription, getFieldEditorParent()));
-		addField(new OrcPathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SitePathDescription, getFieldEditorParent()));
-	}
+    @Override
+    protected void createFieldEditors() {
+        addField(new BooleanFieldEditor(OrcConfigSettings.TYPE_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_TypeCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+        addField(new BooleanFieldEditor(OrcConfigSettings.RECURSION_CHECK_ATTR_NAME, Messages.OrcProjectPropertyPage_RecursionCheckLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+        addField(new BooleanFieldEditor(OrcConfigSettings.PRELUDE_ATTR_NAME, Messages.OrcProjectPropertyPage_UseStdPreludeLabel, BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+        addField(new OrcPathEditor(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME, Messages.OrcProjectPropertyPage_IncludePathLabel, Messages.OrcProjectPropertyPage_IncludePathDescription, getFieldEditorParent()));
+        addField(new OrcPathEditor(OrcConfigSettings.SITE_CLASSPATH_ATTR_NAME, Messages.OrcProjectPropertyPage_SiteClassPathLabel, Messages.OrcProjectPropertyPage_SitePathDescription, getFieldEditorParent()));
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.preference.PreferencePage#doGetPreferenceStore()
-	 */
-	@Override
-	protected IPreferenceStore doGetPreferenceStore() {
-		return new ScopedPreferenceStore(new ProjectScope(project), Activator.getInstance().getLanguageID());
-	}
+    @Override
+    protected IPreferenceStore doGetPreferenceStore() {
+        return new ScopedPreferenceStore(new ProjectScope(project), Activator.getInstance().getLanguageID());
+    }
 }

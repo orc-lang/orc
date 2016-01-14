@@ -2,8 +2,6 @@
 // Blockable.scala -- Scala trait Blockable
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Dec 14, 2012.
 //
 // Copyright (c) 2012 The University of Texas at Austin. All rights reserved.

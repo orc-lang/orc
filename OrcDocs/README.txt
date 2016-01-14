@@ -63,8 +63,6 @@ PROCEDURES FOR ADDING A NEW SECTION TO THE REFERENCE MANUAL/USER GUIDE:
       For example:
          <!-- ug.language.orc.xml - DocBook source for the Orc user guide
 
-         $Id$
-
          Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 
          Use and redistribution of this file is governed by the license terms in

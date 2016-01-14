@@ -2,8 +2,6 @@
 // Input.scala -- Scala classes, traits, and objects relating to parser input sources
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 6, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

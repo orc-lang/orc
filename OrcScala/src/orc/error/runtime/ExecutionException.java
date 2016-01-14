@@ -2,8 +2,6 @@
 // ExecutionException.java -- Java class ExecutionException
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,14 +20,14 @@ import orc.error.OrcException;
  */
 
 public abstract class ExecutionException extends OrcException {
-  private static final long serialVersionUID = -9001694807470010314L;
+    private static final long serialVersionUID = -9001694807470010314L;
 
-  public ExecutionException(final String message) {
-		super(message);
-	}
+    public ExecutionException(final String message) {
+        super(message);
+    }
 
-	public ExecutionException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
+    public ExecutionException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 
 }

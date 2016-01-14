@@ -2,8 +2,6 @@
 // QuotaException.java -- Java class QuotaException
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,10 +12,10 @@
 package orc.orchard.errors;
 
 public class QuotaException extends Exception {
-	public QuotaException() {
-	}
+    public QuotaException() {
+    }
 
-	public QuotaException(final String arg0) {
-		super(arg0);
-	}
+    public QuotaException(final String arg0) {
+        super(arg0);
+    }
 }

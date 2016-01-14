@@ -2,8 +2,6 @@
 // TranslateVclock.scala -- Scala class TranslateVclock
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jan 25, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

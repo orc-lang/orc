@@ -2,8 +2,6 @@
 // JMXDescription.java -- Java annotation type JMXDescription
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -25,11 +23,12 @@ import java.lang.annotation.Target;
 
 /**
  * Provide the description for an MBean operation.
+ * 
  * @author quark
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ CONSTRUCTOR, METHOD, PARAMETER, TYPE })
 public @interface JMXDescription {
-	String value();
+    String value();
 }

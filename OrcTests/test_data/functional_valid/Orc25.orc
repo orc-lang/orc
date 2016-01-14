@@ -1,7 +1,5 @@
 {- Orc25.orc -- Simple test for Orc virtual time
  - 
- - $Id$
- - 
  - Created by amshali
  -}
 

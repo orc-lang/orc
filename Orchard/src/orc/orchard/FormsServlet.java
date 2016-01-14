@@ -2,8 +2,6 @@
 // FormsServlet.java -- Java class FormsServlet
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -25,19 +23,14 @@ import orc.lib.orchard.forms.FormSenderSite;
 @SuppressWarnings("serial")
 public class FormsServlet extends HttpServlet {
 
-	@Override
-	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-		FormSenderSite.service(request, response);
-	}
+    @Override
+    protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        FormSenderSite.service(request, response);
+    }
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.GenericServlet#getServletInfo()
-	 */
-	@Override
-	public String getServletInfo() {
-		return OrchardProperties.getProperty("war.manifest.Implementation-Version") +
-				" rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") +
-				"  Copyright The University of Texas at Austin";
-	}
+    @Override
+    public String getServletInfo() {
+        return OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") + "  Copyright The University of Texas at Austin";
+    }
 
 }

@@ -1,7 +1,5 @@
 {- Stopwatch.inc -- Orc include file stopwatch.inc
  -
- - $Id$
- -
  - Created by misra on Mar 15, 2010 4:10:00 PM
  -}
 

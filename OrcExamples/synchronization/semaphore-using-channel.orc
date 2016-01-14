@@ -1,7 +1,5 @@
 {- semaphore-using-channel.orc
  - 
- - $Id$
- - 
  - Created by misra on Apr 15, 2010 2:08:35 PM
  -}
 

@@ -2,8 +2,6 @@
 // tryorc-menu.js -- JavaScript source for the "Try Orc" Orchard Web interface
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in

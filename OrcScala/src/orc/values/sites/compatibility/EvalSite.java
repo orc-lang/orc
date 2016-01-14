@@ -2,8 +2,6 @@
 // EvalSite.java -- Java class EvalSite
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 2, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
@@ -19,16 +17,14 @@ import orc.Handle;
 import orc.error.runtime.TokenException;
 
 /**
- *
- *
  * @author jthywiss
  */
 public abstract class EvalSite extends SiteAdaptor {
 
-	@Override
-	public void callSite(final Args args, final Handle caller) throws TokenException {
-		caller.publish(object2value(evaluate(args)));
-	}
+    @Override
+    public void callSite(final Args args, final Handle caller) throws TokenException {
+        caller.publish(object2value(evaluate(args)));
+    }
 
-	public abstract Object evaluate(Args args) throws TokenException;
+    public abstract Object evaluate(Args args) throws TokenException;
 }

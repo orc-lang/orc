@@ -1,7 +1,5 @@
 {- java_call.orc -- Test Orc to Java bridge facility
  - 
- - $Id$
- - 
  - Created by jthywiss on Jul 14, 2010 8:48:56 PM
  -}
 

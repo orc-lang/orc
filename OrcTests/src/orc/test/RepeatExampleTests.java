@@ -2,8 +2,6 @@
 // RepeatExampleTests.java -- Java class RepeatExampleTests
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,7 +20,7 @@ import junit.framework.Test;
  * @author jthywiss
  */
 public class RepeatExampleTests {
-	public static Test suite() {
-		return new RepeatedTest(ExamplesTest.suite(), 500);
-	}
+    public static Test suite() {
+        return new RepeatedTest(ExamplesTest.suite(), 500);
+    }
 }

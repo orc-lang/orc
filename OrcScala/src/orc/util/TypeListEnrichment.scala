@@ -2,8 +2,6 @@
 // TypeListEnrichment.scala -- Scala object TypeListEnrichment
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jan 30, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

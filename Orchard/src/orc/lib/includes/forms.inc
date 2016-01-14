@@ -1,7 +1,4 @@
 -- forms.inc
---
--- $Id$
---
 
 include "date.inc"
 

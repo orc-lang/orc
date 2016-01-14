@@ -2,8 +2,6 @@
 // SemaphoreType.scala -- Scala object SemaphoreType
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Dec 3, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

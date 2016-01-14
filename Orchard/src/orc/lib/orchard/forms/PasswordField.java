@@ -2,8 +2,6 @@
 // PasswordField.java -- Java class PasswordField
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -19,12 +17,12 @@ import java.io.PrintWriter;
 import orc.lib.net.XMLUtils;
 
 public class PasswordField extends Textbox {
-	public PasswordField(final String key, final String label) {
-		super(key, label);
-	}
+    public PasswordField(final String key, final String label) {
+        super(key, label);
+    }
 
-	@Override
-	public void renderControl(final PrintWriter out) throws IOException {
-		out.write("<input type='password'" + " id='" + key + "'" + " name='" + key + "'" + " value='" + XMLUtils.escapeXML(posted) + "'" + ">");
-	}
+    @Override
+    public void renderControl(final PrintWriter out) throws IOException {
+        out.write("<input type='password'" + " id='" + key + "'" + " name='" + key + "'" + " value='" + XMLUtils.escapeXML(posted) + "'" + ">");
+    }
 }

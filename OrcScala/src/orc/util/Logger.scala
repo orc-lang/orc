@@ -2,8 +2,6 @@
 // Logger.scala -- Scala class Logger
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jul 10, 2010.
 //
 // Copyright (c) 2016 The University of Texas at Austin. All rights reserved.

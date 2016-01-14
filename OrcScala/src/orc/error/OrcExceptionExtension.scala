@@ -2,8 +2,6 @@
 // OrcExceptionExtension.scala -- Scala class ExtendedOrcException and object OrcExceptionExtension
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Aug 16, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

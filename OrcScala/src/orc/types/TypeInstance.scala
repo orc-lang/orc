@@ -2,8 +2,6 @@
 // TypeInstance.scala -- Scala class TypeInstance
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Nov 26, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

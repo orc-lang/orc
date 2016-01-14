@@ -1,7 +1,5 @@
 {- multidimensional-array.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 10, 2010 3:02:30 PM
  -}
 

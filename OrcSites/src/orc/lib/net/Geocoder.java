@@ -2,8 +2,6 @@
 // Geocoder.java -- Java class Geocoder
 // Project OrcSites
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -27,29 +25,29 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author quark
  */
 public class Geocoder {
-	private static String baseURL = "http://geocoder.us/service/csv/geocode?";
+    private static String baseURL = "http://geocoder.us/service/csv/geocode?";
 
-	private static OrcTuple parseCSV(final String csv) {
-		final String[] parts = csv.split(",");
-		if (parts.length < 3) {
-			return null;
-		}
-		try {
-			return SiteAdaptor.makePair(Double.parseDouble(parts[0].trim()), Double.parseDouble(parts[1].trim()));
-		} catch (final NumberFormatException e) {
-			return null;
-		}
-	}
+    private static OrcTuple parseCSV(final String csv) {
+        final String[] parts = csv.split(",");
+        if (parts.length < 3) {
+            return null;
+        }
+        try {
+            return SiteAdaptor.makePair(Double.parseDouble(parts[0].trim()), Double.parseDouble(parts[1].trim()));
+        } catch (final NumberFormatException e) {
+            return null;
+        }
+    }
 
-	public static OrcTuple locateAddress(final String address) throws IOException {
-		return parseCSV(HTTPUtils.getURL(new URL(baseURL + "address=" + URLEncoder.encode(address, "UTF-8"))));
-	}
+    public static OrcTuple locateAddress(final String address) throws IOException {
+        return parseCSV(HTTPUtils.getURL(new URL(baseURL + "address=" + URLEncoder.encode(address, "UTF-8"))));
+    }
 
-	public static OrcTuple locateCity(final String city, final String state) throws IOException {
-		return parseCSV(HTTPUtils.getURL(new URL(baseURL + "city=" + URLEncoder.encode(city, "UTF-8") + "&state=" + URLEncoder.encode(state, "UTF-8"))));
-	}
+    public static OrcTuple locateCity(final String city, final String state) throws IOException {
+        return parseCSV(HTTPUtils.getURL(new URL(baseURL + "city=" + URLEncoder.encode(city, "UTF-8") + "&state=" + URLEncoder.encode(state, "UTF-8"))));
+    }
 
-	public static OrcTuple locateZip(final String zip) throws IOException {
-		return parseCSV(HTTPUtils.getURL(new URL(baseURL + "zip=" + URLEncoder.encode(zip, "UTF-8"))));
-	}
+    public static OrcTuple locateZip(final String zip) throws IOException {
+        return parseCSV(HTTPUtils.getURL(new URL(baseURL + "zip=" + URLEncoder.encode(zip, "UTF-8"))));
+    }
 }

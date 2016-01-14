@@ -2,8 +2,6 @@
 // mock-executor.js -- JavaScript source to simulate the executor service
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in

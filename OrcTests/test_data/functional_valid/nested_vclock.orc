@@ -1,7 +1,5 @@
 {- nested_vclock.orc -- Orc test of nested virtual clocks
  - 
- - $Id$
- - 
  - Created by quark
  -}
 

@@ -1,7 +1,5 @@
 {- eventful.orc -- Orc program that fetches performing_arts events in Austin tomorrow listed by Eventful
  - 
- - $Id$
- - 
  - Created by jthywiss on Jan 13, 2013 2:08:15 PM
  -}
 

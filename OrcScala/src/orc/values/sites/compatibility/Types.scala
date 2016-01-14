@@ -2,8 +2,6 @@
 // Types.scala -- Scala object Types
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Nov 30, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

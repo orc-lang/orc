@@ -2,8 +2,6 @@
 // loadingExceptions.scala -- Scala child classes of LoadingException
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Dec 9, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding="UTF-8"?>
 <!-- ebnf-custom.xsl - XSLT stylesheet - Orc customization of DocBook FO EBNF stylesheet 
 
-     $Id$
-     
      Derived from docbook-xsl-ns version 1.76.1 fo/ebnf.xsl r6910
   -->
 

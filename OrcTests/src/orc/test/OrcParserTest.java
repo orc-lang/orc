@@ -2,8 +2,6 @@
 // OrcParserTest.java -- Java class OrcParserTest
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,6 +20,9 @@ import java.util.LinkedList;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import scala.util.parsing.combinator.Parsers;
+
 import orc.compile.CompilerOptions;
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcFileInputContext;
@@ -29,7 +30,6 @@ import orc.compile.parse.OrcProgramParser;
 import orc.error.compiletime.ExceptionCompileLogger;
 import orc.error.compiletime.ParsingException;
 import orc.script.OrcBindings;
-import scala.util.parsing.combinator.Parsers;
 
 /**
  * This validates the parser simply by trying to parse everything in the
@@ -63,7 +63,7 @@ public class OrcParserTest {
                 public void runTest() throws ParsingException, IOException {
                     final OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
                     options.filename_$eq(file.toString());
-                    Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, co, envServices);
+                    final Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, co, envServices);
                     if (!file.getAbsolutePath().contains(File.separatorChar + "functional_invalid" + File.separatorChar)) {
                         assertTrue("Parsing unsucessful: " + pr.toString(), pr.successful());
                     } else {

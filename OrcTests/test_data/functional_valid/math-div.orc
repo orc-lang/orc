@@ -1,7 +1,5 @@
 {- math-div.orc -- Orc program testing the division operator
  - 
- - $Id$
- - 
  - Created by jthywiss on Dec 16, 2012 8:22:35 PM
  -}
 

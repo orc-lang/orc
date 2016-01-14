@@ -2,8 +2,6 @@
 // Error.scala -- Scala object Error
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Dec 16, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

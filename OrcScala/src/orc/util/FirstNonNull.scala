@@ -2,8 +2,6 @@
 // FirstNonNull.scala -- Scala object FirstNonNull
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jul 26, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

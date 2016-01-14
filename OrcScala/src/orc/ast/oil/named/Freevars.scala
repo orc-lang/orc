@@ -2,8 +2,6 @@
 // Freevars.scala -- Scala traits hasVars, hasFreeVars, hasFreeTypeVars, hasUnboundVars, hasUnboundTypeVars
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jul 13, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

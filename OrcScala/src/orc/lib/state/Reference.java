@@ -2,8 +2,6 @@
 // Reference.java -- Java interface Reference
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,7 +12,7 @@
 package orc.lib.state;
 
 public interface Reference<E> {
-	public E read();
+    public E read();
 
-	public void write(E value);
+    public void write(E value);
 }

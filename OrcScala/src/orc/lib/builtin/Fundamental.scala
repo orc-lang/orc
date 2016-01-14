@@ -2,8 +2,6 @@
 // Fundamental.scala -- Scala objects Ift, Iff, Eq, and Let
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jun 24, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

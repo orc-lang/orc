@@ -2,8 +2,6 @@
 // SwappableASTs.scala -- Scala trait/object SwappableASTs
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Oct 23, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

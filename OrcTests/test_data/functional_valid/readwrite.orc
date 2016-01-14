@@ -1,7 +1,5 @@
 {- readwrite.orc -- Simple test for Orc Read and Write sites
  - 
- - $Id$
- - 
  - Created by quark
  -}
 

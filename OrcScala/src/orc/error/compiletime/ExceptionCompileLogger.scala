@@ -2,8 +2,6 @@
 // ExceptionCompileLogger.scala -- Scala class ExceptionCompileLogger
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 8, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
@@ -27,39 +25,24 @@ import orc.compile.parse.OrcInputContext
 class ExceptionCompileLogger() extends CompileLogger {
   private var maxSeverity = Severity.UNKNOWN;
 
-  /* (non-Javadoc)
-   * @see orc.error.compiletime.CompileLogger#beginProcessing(OrcInputContext)
-   */
   def beginProcessing(inputContext: OrcInputContext) {
     maxSeverity = Severity.UNKNOWN;
   }
 
-  /* (non-Javadoc)
-   * @see orc.error.compiletime.CompileLogger#endProcessing(OrcInputContext)
-   */
   def endProcessing(inputContext: OrcInputContext) {
     // Nothing needed
   }
 
-  /* (non-Javadoc)
-   * @see orc.error.compiletime.CompileLogger#beginDependency(OrcInputContext)
-   */
   def beginDependency(inputContext: OrcInputContext) {
     // Nothing needed
   }
 
-  /* (non-Javadoc)
-   * @see orc.error.compiletime.CompileLogger#endDependency(OrcInputContext)
-   */
   def endDependency(inputContext: OrcInputContext) {
     // Nothing needed
   }
 
   class GenericCompilationException(message: String) extends CompilationException(message)
 
-  /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
-     */
   def recordMessage(severity: Severity, code: Int, message: String, location: Position, astNode: AST, exception: Throwable) {
 
     maxSeverity = if (severity.ordinal() > maxSeverity.ordinal()) severity else maxSeverity
@@ -78,30 +61,18 @@ class ExceptionCompileLogger() extends CompileLogger {
     } // else disregard
   }
 
-  /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, Throwable)
-     */
   def recordMessage(severity: Severity, code: Int, message: String, location: Position, exception: Throwable) {
     recordMessage(severity, code, message, location, null, exception)
   }
 
-  /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST)
-     */
   def recordMessage(severity: Severity, code: Int, message: String, location: Position, astNode: AST) {
     recordMessage(severity, code, message, location, astNode, null)
   }
 
-  /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#recordMessage(orc.error.compiletime.CompileLogger.Severity, int, java.lang.String)
-     */
   def recordMessage(severity: Severity, code: Int, message: String) {
     recordMessage(severity, code, message, null, null, null)
   }
 
-  /* (non-Javadoc)
-     * @see orc.error.compiletime.CompileLogger#getMaxSeverity()
-     */
   def getMaxSeverity(): Severity = maxSeverity
 
 }

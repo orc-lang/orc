@@ -2,8 +2,6 @@
 // ReadXML.scala -- Scala class ReadXML
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Nov 17, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

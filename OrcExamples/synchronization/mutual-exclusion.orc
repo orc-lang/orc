@@ -1,7 +1,5 @@
 {- mutual-exclusion.orc
  - 
- - $Id$
- - 
  - Created by misra on Apr 15, 2010 2:13:49 PM
  -}
 

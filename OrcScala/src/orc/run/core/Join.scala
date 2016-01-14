@@ -2,8 +2,6 @@
 // Join.scala -- Scala class Join
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jan 22, 2013.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

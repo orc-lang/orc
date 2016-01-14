@@ -2,8 +2,6 @@
 // JMXParam.java -- Java annotation type JMXParam
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -21,10 +19,11 @@ import java.lang.annotation.Target;
 
 /**
  * Provide the name for an MBean operation parameter.
+ * 
  * @author quark
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ PARAMETER })
 public @interface JMXParam {
-	String value();
+    String value();
 }

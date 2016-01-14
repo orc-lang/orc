@@ -2,8 +2,6 @@
 // Semaphore.java -- Java class Semaphore
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -33,114 +31,114 @@ import orc.values.sites.compatibility.SiteAdaptor;
 @SuppressWarnings("hiding")
 public class Semaphore extends EvalSite implements TypedSite {
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		final int initialValue = args.intArg(0);
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        final int initialValue = args.intArg(0);
 
-		if (args.size() != 1) {
-			throw new ArityMismatchException(1, args.size());
-		}
+        if (args.size() != 1) {
+            throw new ArityMismatchException(1, args.size());
+        }
 
-		if (initialValue >= 0) {
-			return new SemaphoreInstance(initialValue);
-		} else {
-			throw new IllegalArgumentException("Semaphore requires a non-negative argument");
-		}
+        if (initialValue >= 0) {
+            return new SemaphoreInstance(initialValue);
+        } else {
+            throw new IllegalArgumentException("Semaphore requires a non-negative argument");
+        }
 
-	}
+    }
 
-	@Override
-	public Type orcType() {
-		return SemaphoreType.getBuilder();
-	}
+    @Override
+    public Type orcType() {
+        return SemaphoreType.getBuilder();
+    }
 
-	protected class SemaphoreInstance extends DotSite {
+    protected class SemaphoreInstance extends DotSite {
 
-		protected final Queue<Handle> waiters = new LinkedList<Handle>();
-		protected final Queue<Handle> snoopers = new LinkedList<Handle>();
+        protected final Queue<Handle> waiters = new LinkedList<Handle>();
+        protected final Queue<Handle> snoopers = new LinkedList<Handle>();
 
-		/* Invariant: n >= 0 */
-		protected int n;
+        /* Invariant: n >= 0 */
+        protected int n;
 
-		/* Precondition: n >= 0 */
-		SemaphoreInstance(final int n) {
-			this.n = n;
-		}
+        /* Precondition: n >= 0 */
+        SemaphoreInstance(final int n) {
+            this.n = n;
+        }
 
-		@Override
-		protected void addMembers() {
-			addMember("acquire", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle waiter) {
-					synchronized (SemaphoreInstance.this) {
-						if (0 == n) {
-							waiter.setQuiescent();
-							waiters.offer(waiter);
-							if (!snoopers.isEmpty()) {
-								for (final Handle snooper : snoopers) {
-									snooper.publish(signal());
-								}
-								snoopers.clear();
-							}
-						} else {
-							--n;
-							waiter.publish(signal());
-						}
-					}
-				}
-			});
-			addMember("acquireD", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle waiter) {
-					synchronized (SemaphoreInstance.this) {
-						if (0 == n) {
-							waiter.halt();
-						} else {
-							--n;
-							waiter.publish(signal());
-						}
-					}
-				}
-			});
-			addMember("release", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle sender) throws TokenException {
-					synchronized (SemaphoreInstance.this) {
-						if (waiters.isEmpty()) {
-							++n;
-						} else {
-							final Handle waiter = waiters.poll();
-							waiter.publish(signal());
-						}
-						sender.publish(signal());
-					}
-				}
-			});
-			addMember("snoop", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle snooper) throws TokenException {
-					synchronized (SemaphoreInstance.this) {
-						if (waiters.isEmpty()) {
-							snooper.setQuiescent();
-							snoopers.offer(snooper);
-						} else {
-							snooper.publish(signal());
-						}
-					}
-				}
-			});
-			addMember("snoopD", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle caller) throws TokenException {
-					synchronized (SemaphoreInstance.this) {
-						if (waiters.isEmpty()) {
-							caller.halt();
-						} else {
-							caller.publish(signal());
-						}
-					}
-				}
-			});
-		}
-	}
+        @Override
+        protected void addMembers() {
+            addMember("acquire", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle waiter) {
+                    synchronized (SemaphoreInstance.this) {
+                        if (0 == n) {
+                            waiter.setQuiescent();
+                            waiters.offer(waiter);
+                            if (!snoopers.isEmpty()) {
+                                for (final Handle snooper : snoopers) {
+                                    snooper.publish(signal());
+                                }
+                                snoopers.clear();
+                            }
+                        } else {
+                            --n;
+                            waiter.publish(signal());
+                        }
+                    }
+                }
+            });
+            addMember("acquireD", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle waiter) {
+                    synchronized (SemaphoreInstance.this) {
+                        if (0 == n) {
+                            waiter.halt();
+                        } else {
+                            --n;
+                            waiter.publish(signal());
+                        }
+                    }
+                }
+            });
+            addMember("release", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle sender) throws TokenException {
+                    synchronized (SemaphoreInstance.this) {
+                        if (waiters.isEmpty()) {
+                            ++n;
+                        } else {
+                            final Handle waiter = waiters.poll();
+                            waiter.publish(signal());
+                        }
+                        sender.publish(signal());
+                    }
+                }
+            });
+            addMember("snoop", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle snooper) throws TokenException {
+                    synchronized (SemaphoreInstance.this) {
+                        if (waiters.isEmpty()) {
+                            snooper.setQuiescent();
+                            snoopers.offer(snooper);
+                        } else {
+                            snooper.publish(signal());
+                        }
+                    }
+                }
+            });
+            addMember("snoopD", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle caller) throws TokenException {
+                    synchronized (SemaphoreInstance.this) {
+                        if (waiters.isEmpty()) {
+                            caller.halt();
+                        } else {
+                            caller.publish(signal());
+                        }
+                    }
+                }
+            });
+        }
+    }
 }

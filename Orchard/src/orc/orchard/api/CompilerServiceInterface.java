@@ -2,8 +2,6 @@
 // CompilerServiceInterface.java -- Java interface CompilerServiceInterface
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -20,13 +18,15 @@ import orc.orchard.errors.InvalidProgramException;
 
 /**
  * Compile program text into OIL format.
+ * 
  * @author quark
  */
 public interface CompilerServiceInterface extends Remote {
-	/**
-	 * Compile program text.
-	 * @return compiled program
-	 * @throws InvalidProgramException in case of compilation error.
-	 */
-	public String compile(String devKey, String program) throws InvalidProgramException, RemoteException;
+    /**
+     * Compile program text.
+     * 
+     * @return compiled program
+     * @throws InvalidProgramException in case of compilation error.
+     */
+    public String compile(String devKey, String program) throws InvalidProgramException, RemoteException;
 }

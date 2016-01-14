@@ -1,7 +1,4 @@
 -- date.inc
---
--- $Id$
---
 
 import class DateTimeFormat = "org.joda.time.format.DateTimeFormat"
 import class DateTime = "org.joda.time.DateTime"

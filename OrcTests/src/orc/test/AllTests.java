@@ -2,8 +2,6 @@
 // AllTests.java -- Java class AllTests
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -18,9 +16,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses( { OrcParserTest.class, ExamplesTest.class, XMLExamplesTest.class, TypedExamplesTest.class, DocExamplesTest.class })
+@Suite.SuiteClasses({ OrcParserTest.class, ExamplesTest.class, XMLExamplesTest.class, TypedExamplesTest.class, DocExamplesTest.class })
 public class AllTests {
-	public static void main(final String[] args) {
-		JUnitCore.main(AllTests.class.getSimpleName());
-	}
+    public static void main(final String[] args) {
+        JUnitCore.main(AllTests.class.getSimpleName());
+    }
 }

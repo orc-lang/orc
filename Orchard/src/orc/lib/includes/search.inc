@@ -1,7 +1,4 @@
 -- search.inc
---
--- $Id$
---
 
 include "net.inc"
 

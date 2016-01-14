@@ -2,8 +2,6 @@
 // PrettyPrint.scala -- Scala class PrettyPrint
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jun 7, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

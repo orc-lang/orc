@@ -2,8 +2,6 @@
 // InvalidJobStateException.java -- Java class InvalidJobStateException
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,7 +12,7 @@
 package orc.orchard.errors;
 
 public class InvalidJobStateException extends Exception {
-	public InvalidJobStateException(final String arg0) {
-		super(arg0);
-	}
+    public InvalidJobStateException(final String arg0) {
+        super(arg0);
+    }
 }

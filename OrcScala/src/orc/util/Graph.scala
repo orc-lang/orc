@@ -2,8 +2,6 @@
 // Graph.scala -- Scala class Graph, object Direction, and class Node
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jul 10, 2010.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.

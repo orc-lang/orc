@@ -2,8 +2,6 @@
 // NotEq.scala -- Scala object Inequal
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 9, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

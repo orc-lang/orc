@@ -2,8 +2,6 @@
 // IntegerField.java -- Java class IntegerField
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -18,24 +16,24 @@ import java.io.PrintWriter;
 
 public class IntegerField extends SingleField<Integer> {
 
-	public IntegerField(final String key, final String label) {
-		super(key, label, "");
-	}
+    public IntegerField(final String key, final String label) {
+        super(key, label, "");
+    }
 
-	@Override
-	public void renderControl(final PrintWriter out) throws IOException {
-		out.write("<input type='textbox'" + " id='" + key + "'" + " name='" + key + "'" + " value='" + posted + "'" + ">");
-	}
+    @Override
+    public void renderControl(final PrintWriter out) throws IOException {
+        out.write("<input type='textbox'" + " id='" + key + "'" + " name='" + key + "'" + " value='" + posted + "'" + ">");
+    }
 
-	@Override
-	public Integer requestToValue(final String posted) throws ValidationException {
-		try {
-			if (posted.equals("")) {
-				return null;
-			}
-			return Integer.parseInt(posted);
-		} catch (final NumberFormatException e) {
-			throw new ValidationException(label + " must be an integer.");
-		}
-	}
+    @Override
+    public Integer requestToValue(final String posted) throws ValidationException {
+        try {
+            if (posted.equals("")) {
+                return null;
+            }
+            return Integer.parseInt(posted);
+        } catch (final NumberFormatException e) {
+            throw new ValidationException(label + " must be an integer.");
+        }
+    }
 }

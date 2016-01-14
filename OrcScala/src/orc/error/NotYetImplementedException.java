@@ -2,8 +2,6 @@
 // NotYetImplementedException.java -- Java class NotYetImplementedException
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 11, 2010.
 //
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
@@ -21,21 +19,21 @@ package orc.error;
  * @author jthywiss
  */
 public class NotYetImplementedException extends RuntimeException {
-  private static final long serialVersionUID = 4895445893333165772L;
+    private static final long serialVersionUID = 4895445893333165772L;
 
-  /**
-   * Constructs an object of class NotYetImplementedException.
-   */
-  public NotYetImplementedException() {
-    super(Thread.currentThread().getStackTrace()[2].toString()+" not yet implemented");
-  }
+    /**
+     * Constructs an object of class NotYetImplementedException.
+     */
+    public NotYetImplementedException() {
+        super(Thread.currentThread().getStackTrace()[2].toString() + " not yet implemented");
+    }
 
-  /**
-   * Constructs an object of class NotYetImplementedException.
-   *
-   * @param message
-   */
-  public NotYetImplementedException(String message) {
-    super(Thread.currentThread().getStackTrace()[2].toString()+": "+message);
-  }
+    /**
+     * Constructs an object of class NotYetImplementedException.
+     *
+     * @param message
+     */
+    public NotYetImplementedException(final String message) {
+        super(Thread.currentThread().getStackTrace()[2].toString() + ": " + message);
+    }
 }

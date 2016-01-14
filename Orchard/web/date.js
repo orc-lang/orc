@@ -2,8 +2,6 @@
 // date.js -- JavaScript source to display and read dates in various formats
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in

@@ -1,7 +1,5 @@
 {- general-rendezvous.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 15, 2010 5:19:55 PM
  -}
 

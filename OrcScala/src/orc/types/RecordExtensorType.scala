@@ -2,8 +2,6 @@
 // RecordExtensorType.scala -- Scala class RecordExtensorType
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Mar 30, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

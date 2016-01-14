@@ -2,8 +2,6 @@
 // Checkbox.java -- Java class Checkbox
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -18,17 +16,17 @@ import java.io.PrintWriter;
 
 public class Checkbox extends SingleField<Boolean> {
 
-	public Checkbox(final String key, final String label) {
-		super(key, label, null);
-	}
+    public Checkbox(final String key, final String label) {
+        super(key, label, null);
+    }
 
-	@Override
-	public void renderControl(final PrintWriter out) throws IOException {
-		out.write("<input type='checkbox'" + " id='" + key + "'" + " name='" + key + "'" + (posted == null ? "" : " checked") + ">");
-	}
+    @Override
+    public void renderControl(final PrintWriter out) throws IOException {
+        out.write("<input type='checkbox'" + " id='" + key + "'" + " name='" + key + "'" + (posted == null ? "" : " checked") + ">");
+    }
 
-	@Override
-	public Boolean requestToValue(final String posted) throws ValidationException {
-		return posted != null;
-	}
+    @Override
+    public Boolean requestToValue(final String posted) throws ValidationException {
+        return posted != null;
+    }
 }

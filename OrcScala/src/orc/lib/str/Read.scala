@@ -2,8 +2,6 @@
 // Read.scala -- Scala object Read
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Jun 9, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

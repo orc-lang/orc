@@ -2,8 +2,6 @@
 // OrcProgramProblem.java -- Java class OrcProgramProblem
 // Project Orchard
 //
-// $Id$
-//
 // Created by jthywiss on Dec 12, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
@@ -16,19 +14,18 @@
 package orc.orchard.errors;
 
 /**
- * A problem in an Orc program.
- *
- * Similar to CompileMessage, but suitable for JAXB marshaling.
+ * A problem in an Orc program. Similar to CompileMessage, but suitable for JAXB
+ * marshaling.
  *
  * @author jthywiss
  */
 public abstract class OrcProgramProblem {
-	public int severity;
-	public int code;
-	public String message;
-	public String filename;
-	public int line;
-	public int column;
-	public String longMessage;
-	public String orcWikiHelpPageName;
+    public int severity;
+    public int code;
+    public String message;
+    public String filename;
+    public int line;
+    public int column;
+    public String longMessage;
+    public String orcWikiHelpPageName;
 }

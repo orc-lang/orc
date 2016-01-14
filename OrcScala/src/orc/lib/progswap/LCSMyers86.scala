@@ -2,8 +2,6 @@
 // LCS.scala -- Scala trait LCS and object LCSMyers86
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in

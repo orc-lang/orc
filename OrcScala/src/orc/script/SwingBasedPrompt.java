@@ -2,8 +2,6 @@
 // SwingBasedPrompt.java -- Java class SwingBasedPrompt
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -28,82 +26,82 @@ import javax.swing.SwingUtilities;
  * publishes nothing.
  */
 public class SwingBasedPrompt {
-	protected static final String promptIconName = "orcPromptIcon.png";
-	protected static final Icon promptIcon = new ImageIcon(SwingBasedPrompt.class.getResource(promptIconName));
+    protected static final String promptIconName = "orcPromptIcon.png";
+    protected static final Icon promptIcon = new ImageIcon(SwingBasedPrompt.class.getResource(promptIconName));
 
-	public static String runPromptDialog(final String title, final String message) throws InterruptedException {
-		final PromptWindowController pwc = new PromptWindowController(title, message, promptIcon);
-		// Runs pwc.run on the AWT/Swing event dispatch thread
-		SwingUtilities.invokeLater(pwc);
-		// Blocks until dialog done
-		return pwc.getResult();
-	}
+    public static String runPromptDialog(final String title, final String message) throws InterruptedException {
+        final PromptWindowController pwc = new PromptWindowController(title, message, promptIcon);
+        // Runs pwc.run on the AWT/Swing event dispatch thread
+        SwingUtilities.invokeLater(pwc);
+        // Blocks until dialog done
+        return pwc.getResult();
+    }
 }
 
 class PromptWindowController implements Runnable {
-		private final String title;
-		private final String message;
-		private String result;
-		private JOptionPane pane;
-		private JDialog dialog;
-		private boolean done;
-		private final Icon icon;
+    private final String title;
+    private final String message;
+    private String result;
+    private JOptionPane pane;
+    private JDialog dialog;
+    private boolean done;
+    private final Icon icon;
 
-		protected PromptWindowController(final String dialogTitle, final String dialogMessage, final Icon dialogIcon) {
-			super();
-			this.title = dialogTitle;
-			this.message = dialogMessage;
-			this.icon = dialogIcon;
-		}
+    protected PromptWindowController(final String dialogTitle, final String dialogMessage, final Icon dialogIcon) {
+        super();
+        this.title = dialogTitle;
+        this.message = dialogMessage;
+        this.icon = dialogIcon;
+    }
 
-		synchronized protected String getResult() throws InterruptedException {
-			while (!done) {
-				wait();
-			}
-			return result;
-		}
+    synchronized protected String getResult() throws InterruptedException {
+        while (!done) {
+            wait();
+        }
+        return result;
+    }
 
-		protected void startDialog() {
-			pane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, icon, null, null);
+    protected void startDialog() {
+        pane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, JOptionPane.OK_CANCEL_OPTION, icon, null, null);
 
-			pane.setWantsInput(true);
-			pane.setSelectionValues(null);
-			pane.setInitialSelectionValue(null);
-			pane.setComponentOrientation(JOptionPane.getRootFrame().getComponentOrientation());
+        pane.setWantsInput(true);
+        pane.setSelectionValues(null);
+        pane.setInitialSelectionValue(null);
+        pane.setComponentOrientation(JOptionPane.getRootFrame().getComponentOrientation());
 
-			dialog = pane.createDialog(title);
-			dialog.setModalityType(ModalityType.MODELESS);
-			dialog.setLocationByPlatform(true);
+        dialog = pane.createDialog(title);
+        dialog.setModalityType(ModalityType.MODELESS);
+        dialog.setLocationByPlatform(true);
 
-			pane.selectInitialValue();
-			dialog.addComponentListener(new ComponentAdapter() {
-				@Override
-				public void componentHidden(final ComponentEvent e) {
-					endDialog();
-				}
-			});
+        pane.selectInitialValue();
+        dialog.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentHidden(final ComponentEvent e) {
+                endDialog();
+            }
+        });
 
-			dialog.setVisible(true);
-		}
+        dialog.setVisible(true);
+    }
 
-		protected void endDialog() {
-			dialog.dispose();
+    protected void endDialog() {
+        dialog.dispose();
 
-			final Object value = pane.getInputValue();
+        final Object value = pane.getInputValue();
 
-			if (value == JOptionPane.UNINITIALIZED_VALUE) {
-				result = null;
-			} else {
-				result = (String) value;
-			}
-			done = true;
-			synchronized (this) {
-				notifyAll();
-			}
-		}
+        if (value == JOptionPane.UNINITIALIZED_VALUE) {
+            result = null;
+        } else {
+            result = (String) value;
+        }
+        done = true;
+        synchronized (this) {
+            notifyAll();
+        }
+    }
 
-		@Override
-		public void run() {
-			startDialog();
-		}
+    @Override
+    public void run() {
+        startDialog();
+    }
 }

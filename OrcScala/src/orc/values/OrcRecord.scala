@@ -2,8 +2,6 @@
 // OrcRecord.scala -- Scala class OrcRecord
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jul 10, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

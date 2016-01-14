@@ -1,7 +1,5 @@
 {- halt_semantics.orc -- Orc program halt_semantics
  - 
- - $Id$
- - 
  - Created by dkitchin on Jan 23, 2013 2:27:00 AM
  -}
 

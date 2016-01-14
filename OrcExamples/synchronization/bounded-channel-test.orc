@@ -1,7 +1,5 @@
 {- bounded-channel-test.orc -- Orc program to test BoundedChannel
  - 
- - $Id$
- - 
  - Split from BoundedChannel.orc, Created by misra on Mar 11, 2010 8:57:43 PM
  -}
 

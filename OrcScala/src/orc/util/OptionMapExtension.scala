@@ -2,8 +2,6 @@
 // OptionMapExtension.scala -- Scala object OptionMapExtension
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on May 19, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

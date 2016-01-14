@@ -2,8 +2,6 @@
 // ClassForms.scala -- Scala object ClassForms
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Aug 5, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

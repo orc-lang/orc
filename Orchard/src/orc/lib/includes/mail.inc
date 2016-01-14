@@ -1,7 +1,4 @@
 -- mail.inc
---
--- $Id$
---
 
 import site MailerFactory = "orc.lib.net.MailerFactory"
 import site MailListener = "orc.lib.orchard.MailListenerFactory"

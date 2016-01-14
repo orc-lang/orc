@@ -2,8 +2,6 @@
 // ExamplesTest.java -- Java class ExamplesTest
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -21,8 +19,8 @@ import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
 
 /**
- * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
- * Each program is given at most 10 seconds to complete.
+ * Test Orc by running annotated sample programs from the "../OrcExamples"
+ * directory. Each program is given at most 10 seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
@@ -32,11 +30,11 @@ import orc.test.TestUtils.OrcTestCase;
  */
 public class ExamplesTest {
 
-	public static Test suite() {
-		return TestUtils.buildSuite(ExamplesTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
-	}
+    public static Test suite() {
+        return TestUtils.buildSuite(ExamplesTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
+    }
 
-	public static class ExamplesTestCase extends OrcTestCase {
+    public static class ExamplesTestCase extends OrcTestCase {
         /* No overrides */
     }
 }

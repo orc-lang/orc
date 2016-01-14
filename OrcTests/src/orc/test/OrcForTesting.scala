@@ -2,8 +2,6 @@
 // OrcForTesting.scala -- Scala object OrcForTesting
 // Project OrcTests
 //
-// $Id$
-//
 // Created by jthywiss on Jul 22, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

@@ -2,8 +2,6 @@
 // Prompt.scala -- Scala object Prompt, class PromptEvent, and trait PromptCallback
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jan 20, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

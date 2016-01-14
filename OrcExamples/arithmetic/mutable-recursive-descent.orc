@@ -1,7 +1,5 @@
 {- mutable-recursive-descent.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 11, 2010 12:31:15 PM
  -}
 

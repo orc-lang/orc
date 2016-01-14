@@ -2,8 +2,6 @@
 // ThreadWaiter.java -- Java class ThreadWaiter
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -15,20 +13,21 @@ package orc.orchard;
 
 /**
  * Use Java wait/notify to implement suspend/resume.
+ * 
  * @see Waiter
  * @author quark
  */
 public class ThreadWaiter implements Waiter {
-	private Object monitor;
+    private Object monitor;
 
-	@Override
-	public void suspend(final Object monitor) throws InterruptedException {
-		this.monitor = monitor;
-		this.monitor.wait();
-	}
+    @Override
+    public void suspend(final Object monitor) throws InterruptedException {
+        this.monitor = monitor;
+        this.monitor.wait();
+    }
 
-	@Override
-	public void resume() {
-		this.monitor.notify();
-	}
+    @Override
+    public void resume() {
+        this.monitor.notify();
+    }
 }

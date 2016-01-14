@@ -2,8 +2,6 @@
 // Resolver.scala -- Scala trait Resolver
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jan 18, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

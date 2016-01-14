@@ -2,8 +2,6 @@
 // OrcLaunchConfigurationTabGroup.java -- Java class OrcLaunchConfigurationTabGroup
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Aug 4, 2009.
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
@@ -21,28 +19,24 @@ import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 
 /**
- * The group of tabs comprising the Orc launch configuration options user interface.
+ * The group of tabs comprising the Orc launch configuration options user
+ * interface.
  *
  * @author jthywiss
  */
 public class OrcLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchConfigurationTabGroup#createTabs(org.eclipse.debug.ui.ILaunchConfigurationDialog, java.lang.String)
-	 */
-	@Override
-	public void createTabs(final ILaunchConfigurationDialog dialog, final String mode) {
-		final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-				new OrcGeneralLaunchConfigurationTab(),
-				//new JavaMainTab(),
-				//new JavaArgumentsTab(),
-				//new JavaJRETab(),
-				new OrcRuntimeClasspathTab(),
-				//new SourceLookupTab(),
-				//new EnvironmentTab(),
-				new CommonTab(),
-		};
-		setTabs(tabs);
-	}
+    @Override
+    public void createTabs(final ILaunchConfigurationDialog dialog, final String mode) {
+        final ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { new OrcGeneralLaunchConfigurationTab(),
+                //new JavaMainTab(),
+                //new JavaArgumentsTab(),
+                //new JavaJRETab(),
+                new OrcRuntimeClasspathTab(),
+                //new SourceLookupTab(),
+                //new EnvironmentTab(),
+                new CommonTab(), };
+        setTabs(tabs);
+    }
 
 }

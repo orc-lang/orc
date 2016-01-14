@@ -2,8 +2,6 @@
 // FormData.java -- Java interface FormData
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -18,13 +16,13 @@ import java.util.List;
 import org.apache.commons.fileupload.FileItem;
 
 public interface FormData {
-	public FileItem getItem(String key);
+    public FileItem getItem(String key);
 
-	public FileItem[] getItems(String key);
+    public FileItem[] getItems(String key);
 
-	public List<FileItem> getItems();
+    public List<FileItem> getItems();
 
-	public String getParameter(String key);
+    public String getParameter(String key);
 
-	public String[] getParameterValues(String key);
+    public String[] getParameterValues(String key);
 }

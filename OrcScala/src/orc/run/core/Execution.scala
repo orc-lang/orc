@@ -2,8 +2,6 @@
 // Execution.scala -- Scala class Execution
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Aug 12, 2011.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

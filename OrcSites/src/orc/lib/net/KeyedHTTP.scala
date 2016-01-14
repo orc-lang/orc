@@ -2,8 +2,6 @@
 // KeyedHTTP.scala -- Java class KeyedHTTP
 // Project OrcSites
 //
-// $Id$
-//
 // Created by dkitchin on Apr 3, 2012.
 //
 // Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
@@ -49,15 +47,15 @@ import orc.error.runtime.SiteException
   * with some modified behaviors:
   *
   * 1) Any HTTP instance created by this site acquires an extra query parameter
-  *    corresponding to the .name property, with a value given by the .value
-  *    property.
+  *   corresponding to the .name property, with a value given by the .value
+  *   property.
   * 2) The url field of HTTP instances created by this site is blank,
-  *    to avoid exposing the .value embedded in the query string.
+  *   to avoid exposing the .value embedded in the query string.
   * 3) HTTP instances created by this site must use the domain name given
-  *    by the .domain property. If the domain name differs, the instance
-  *    creation fails.
+  *   by the .domain property. If the domain name differs, the instance
+  *   creation fails.
   * 4) This site must take exactly two parameters when constructing an
-  *    HTTP instance.
+  *   HTTP instance.
   *
   * Given these restrictions, the secret embedded in .value is thus inaccessible
   * to end users.

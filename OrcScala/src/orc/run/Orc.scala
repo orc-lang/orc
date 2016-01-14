@@ -2,8 +2,6 @@
 // Orc.scala -- Scala class Orc
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on May 10, 2010.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

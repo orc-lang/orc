@@ -2,8 +2,6 @@
 // WriteJSON.scala -- Scala object WriteJSON
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Mar 3, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

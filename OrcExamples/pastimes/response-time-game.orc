@@ -1,7 +1,5 @@
 {- response-time-game.orc
  -
- - $Id$
- -
  - Created by misra on Jul 9, 2010 10:33:45 AM
  -}
 

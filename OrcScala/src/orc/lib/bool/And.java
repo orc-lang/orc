@@ -2,8 +2,6 @@
 // And.java -- Java class And
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,17 +12,13 @@
 package orc.lib.bool;
 
 /**
- *
  * @author dkitchin
  */
 public class And extends BoolBinopSite {
 
-	/* (non-Javadoc)
-	 * @see orc.lib.bool.BoolBinopSite#compute(boolean, boolean)
-	 */
-	@Override
-	public boolean compute(final boolean a, final boolean b) {
-		return a && b;
-	}
+    @Override
+    public boolean compute(final boolean a, final boolean b) {
+        return a && b;
+    }
 
 }

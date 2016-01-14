@@ -2,8 +2,6 @@
 // XMLExamplesTest.java -- Java class XMLExamplesTest
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -16,22 +14,25 @@ package orc.test;
 import java.io.File;
 import java.lang.reflect.Field;
 
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
 import junit.framework.Test;
+
 import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
-import orc.script.OrcScriptEngine;
 import orc.script.OrcBindings;
+import orc.script.OrcScriptEngine;
 import orc.test.TestUtils.OrcTestCase;
-
-import javax.xml.validation.*;
-import javax.xml.transform.stream.StreamSource;
 
 import org.xml.sax.SAXException;
 
 /**
- * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
- * Each program is compiled, written to XML, subjected to validation against
- * an XML schema, and then read back as an AST. This second AST is run.
+ * Test Orc by running annotated sample programs from the "../OrcExamples"
+ * directory. Each program is compiled, written to XML, subjected to validation
+ * against an XML schema, and then read back as an AST. This second AST is run.
  * Each program is given at most 10 seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
@@ -41,9 +42,9 @@ import org.xml.sax.SAXException;
  * @author quark, srosario, amshali, dkitchin, jthywiss
  */
 public class XMLExamplesTest {
-	public static Test suite() {
+    public static Test suite() {
         return TestUtils.buildSuite(XMLExamplesTest.class.getSimpleName(), XMLExamplesTestCase.class, new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
-	}
+    }
 
     public static class XMLExamplesTestCase extends OrcTestCase {
         @Override
@@ -59,19 +60,18 @@ public class XMLExamplesTest {
             final ClassLoader clX = Thread.currentThread().getContextClassLoader();
             final ClassLoader clY = getClass().getClassLoader();
             final ClassLoader clZ = ClassLoader.getSystemClassLoader();
-            final ClassLoader classLoader = clX != null ? clX : (clY != null ? clY : clZ);
+            final ClassLoader classLoader = clX != null ? clX : clY != null ? clY : clZ;
             final java.io.InputStream xsdStream = classLoader.getResource("orc/ast/oil/xml/oil.xsd").openStream();
 
             // Schema validation
             try {
-              final SchemaFactory schemaFactory = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-              final Schema schema = schemaFactory.newSchema(new StreamSource(xsdStream));
-              final Validator validator = schema.newValidator();
-              final StreamSource xmlsource = new StreamSource(new java.io.StringReader(xmlFromExpr.toString()));
-              validator.validate(xmlsource);
-            }
-            catch (SAXException e) {
-              throw new AssertionError("XML validation failed: " + e.getMessage());
+                final SchemaFactory schemaFactory = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                final Schema schema = schemaFactory.newSchema(new StreamSource(xsdStream));
+                final Validator validator = schema.newValidator();
+                final StreamSource xmlsource = new StreamSource(new java.io.StringReader(xmlFromExpr.toString()));
+                validator.validate(xmlsource);
+            } catch (final SAXException e) {
+                throw new AssertionError("XML validation failed: " + e.getMessage());
             }
 
             // XML -> AST
@@ -86,18 +86,18 @@ public class XMLExamplesTest {
         }
     }
 
-	static Expression getAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
-		// Violate access controls of OrcCompiledScript.astRoot field
-		final Field codeField = compiledScript.getClass().getDeclaredField("code");
-		codeField.setAccessible(true);
-		return (Expression) codeField.get(compiledScript);
-	}
+    static Expression getAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+        // Violate access controls of OrcCompiledScript.astRoot field
+        final Field codeField = compiledScript.getClass().getDeclaredField("code");
+        codeField.setAccessible(true);
+        return (Expression) codeField.get(compiledScript);
+    }
 
-	static void setAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
-		// Violate access controls of OrcCompiledScript.astRoot field
+    static void setAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
+        // Violate access controls of OrcCompiledScript.astRoot field
         final Field codeField = compiledScript.getClass().getDeclaredField("code");
         codeField.setAccessible(true);
         codeField.set(compiledScript, astRoot);
-	}
+    }
 
 }

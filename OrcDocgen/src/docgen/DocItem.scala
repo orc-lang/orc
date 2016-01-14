@@ -2,8 +2,6 @@
 // DocItem.scala -- Scala trait DocItem and children
 // Project OrcDocgen
 //
-// $Id$
-//
 // Created by dkitchin on Dec 17, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

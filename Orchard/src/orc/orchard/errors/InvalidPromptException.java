@@ -2,8 +2,6 @@
 // InvalidPromptException.java -- Java class InvalidPromptException
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,6 +12,6 @@
 package orc.orchard.errors;
 
 public class InvalidPromptException extends Exception {
-	public InvalidPromptException() {
-	}
+    public InvalidPromptException() {
+    }
 }

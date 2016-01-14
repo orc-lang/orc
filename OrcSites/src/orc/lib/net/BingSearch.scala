@@ -2,8 +2,6 @@
 // BingSearch.scala -- Scala class BingSearch
 // Project OrcSites
 //
-// $Id$
-//
 // Created by amp on Dec 27, 2012.
 //
 // Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
@@ -75,7 +73,6 @@ object BingSearch {
 }
 
 /**
-  *
   * @author amp
   */
 class BingSearch(user: String, key: String, source: String) extends PartialSite with SpecificArity with TypedSite {

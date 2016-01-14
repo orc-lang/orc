@@ -2,8 +2,6 @@
 // Rwait.scala -- Scala objects Rwait and Rclock, and class Rtime
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jan 13, 2011.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

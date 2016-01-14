@@ -2,8 +2,6 @@
 // OrcCompiler.scala -- Scala classes CoreOrcCompiler and StandardOrcCompiler
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on May 26, 2010.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

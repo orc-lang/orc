@@ -2,8 +2,6 @@
 // CompileLogger.java -- Java interface CompileLogger
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -13,9 +11,10 @@
 
 package orc.error.compiletime;
 
+import scala.util.parsing.input.Position;
+
 import orc.ast.AST;
 import orc.compile.parse.OrcInputContext;
-import scala.util.parsing.input.Position;
 
 /**
  * Interface to environment's message mechanism for compiler diagnostics. This

@@ -2,8 +2,6 @@
 // PrintlnEvent.java -- Java class PrintlnEvent
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -14,30 +12,29 @@
 package orc.orchard.events;
 
 /**
- * Whenever a "print" or "println" site is called,
- * the output is buffered and sent to the client with
- * println events. Well-written Orc programs should
- * use publications to communicate with the client,
- * but using prints is convenient for short scripts.
+ * Whenever a "print" or "println" site is called, the output is buffered and
+ * sent to the client with println events. Well-written Orc programs should use
+ * publications to communicate with the client, but using prints is convenient
+ * for short scripts.
  *
  * @author quark
  */
 public class PrintlnEvent extends JobEvent {
-	/**
-	 * The newline terminator is implicit, so that the client can use whatever
-	 * newlines are appropriate for their environment.
-	 */
-	public String line;
+    /**
+     * The newline terminator is implicit, so that the client can use whatever
+     * newlines are appropriate for their environment.
+     */
+    public String line;
 
-	public PrintlnEvent() {
-	}
+    public PrintlnEvent() {
+    }
 
-	public PrintlnEvent(final String line) {
-		this.line = line;
-	}
+    public PrintlnEvent(final String line) {
+        this.line = line;
+    }
 
-	@Override
-	public <E> E accept(final Visitor<E> visitor) {
-		return visitor.visit(this);
-	}
+    @Override
+    public <E> E accept(final Visitor<E> visitor) {
+        return visitor.visit(this);
+    }
 }

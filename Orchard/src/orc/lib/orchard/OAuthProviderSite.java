@@ -2,8 +2,6 @@
 // OAuthProviderSite.java -- Java class OAuthProviderSite
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -21,6 +19,7 @@ import net.oauth.OAuth;
 import net.oauth.OAuth.Parameter;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
+
 import orc.Handle;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
@@ -31,73 +30,74 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 public class OAuthProviderSite extends SiteAdaptor {
-//	public static class PendingOAuthAccessor {
-//		public OAuthAccessor accessor;
-//		public LinkedBlockingQueue<OAuthAccessor> ready;
-//	}
+//    public static class PendingOAuthAccessor {
+//        public OAuthAccessor accessor;
+//        public LinkedBlockingQueue<OAuthAccessor> ready;
+//    }
 
-	/**
-	 * This provider uses Orc events to launch a browser
-	 * and prompt the user to confirm authorization.
-	 */
-	public static class WebOAuthProvider extends OAuthProvider {
-		private final Job job;
+    /**
+     * This provider uses Orc events to launch a browser and prompt the user to
+     * confirm authorization.
+     */
+    public static class WebOAuthProvider extends OAuthProvider {
+        private final Job job;
 
-		public WebOAuthProvider(final Job job, final String properties) throws IOException {
-			super(properties);
-			this.job = job;
-		}
+        public WebOAuthProvider(final Job job, final String properties) throws IOException {
+            super(properties);
+            this.job = job;
+        }
 
-		protected void addMembers() {
-			addMember("authenticate", new SiteAdaptor() {
-				@Override
-				public void callSite(final Args args, final Handle caller) throws TokenException {
-					try {
-						final String consumer = args.stringArg(0);
-						final List<OAuth.Parameter> request = OAuth.newList();
-				        for (int p = 1; p + 1 < args.size(); p += 2) {
-				        	request.add(new Parameter(args.stringArg(p), args.stringArg(p + 1)));
-				        }
-						final OAuthAccessor accessor = oauth.newAccessor(consumer);
-						final LinkedBlockingQueue ready = new LinkedBlockingQueue();
-						final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, job);
-						// get a request token
-						oauth.obtainRequestToken(accessor, request, callbackURL);
-						// request authorization and wait for response
-						caller.notifyOrc(new orc.lib.web.BrowseEvent(oauth.getAuthorizationURL(accessor, callbackURL)));
-						ready.take();
-						// get the access token
-						oauth.obtainAccessToken(accessor);
-						caller.publish(accessor);
-					} catch (final IOException e) {
-						throw new JavaException(e);
-					} catch (final OAuthException e) {
-						throw new JavaException(e);
-					} catch (InterruptedException e) {
-						throw new JavaException(e);
-					}
-				}
-			});
-		}
-	}
+        @Override
+        protected void addMembers() {
+            addMember("authenticate", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final Handle caller) throws TokenException {
+                    try {
+                        final String consumer = args.stringArg(0);
+                        final List<OAuth.Parameter> request = OAuth.newList();
+                        for (int p = 1; p + 1 < args.size(); p += 2) {
+                            request.add(new Parameter(args.stringArg(p), args.stringArg(p + 1)));
+                        }
+                        final OAuthAccessor accessor = oauth.newAccessor(consumer);
+                        final LinkedBlockingQueue ready = new LinkedBlockingQueue();
+                        final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, job);
+                        // get a request token
+                        oauth.obtainRequestToken(accessor, request, callbackURL);
+                        // request authorization and wait for response
+                        caller.notifyOrc(new orc.lib.web.BrowseEvent(oauth.getAuthorizationURL(accessor, callbackURL)));
+                        ready.take();
+                        // get the access token
+                        oauth.obtainAccessToken(accessor);
+                        caller.publish(accessor);
+                    } catch (final IOException e) {
+                        throw new JavaException(e);
+                    } catch (final OAuthException e) {
+                        throw new JavaException(e);
+                    } catch (final InterruptedException e) {
+                        throw new JavaException(e);
+                    }
+                }
+            });
+        }
+    }
 
-	@Override
-	public void callSite(final Args args, final Handle caller) throws TokenException {
-		try {
-			/**
-			 * This implementation of OAuthProvider
-			 */
-			final Job job = Job.getJobFromHandle(caller);
-			if (job == null) {
-				caller.halt();
-				return;
-			}
-			caller.publish(new WebOAuthProvider(job,
-			// force root-relative resource path
-					"/" + args.stringArg(0)));
-		} catch (final IOException e) {
-			throw new JavaException(e);
-		}
-	}
+    @Override
+    public void callSite(final Args args, final Handle caller) throws TokenException {
+        try {
+            /**
+             * This implementation of OAuthProvider
+             */
+            final Job job = Job.getJobFromHandle(caller);
+            if (job == null) {
+                caller.halt();
+                return;
+            }
+            caller.publish(new WebOAuthProvider(job,
+            // force root-relative resource path
+                    "/" + args.stringArg(0)));
+        } catch (final IOException e) {
+            throw new JavaException(e);
+        }
+    }
 
 }

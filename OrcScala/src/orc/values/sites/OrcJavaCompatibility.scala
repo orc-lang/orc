@@ -2,8 +2,6 @@
 // OrcJavaCompatibility.scala -- Scala object OrcJavaCompatibility
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Dec 8, 2010.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.

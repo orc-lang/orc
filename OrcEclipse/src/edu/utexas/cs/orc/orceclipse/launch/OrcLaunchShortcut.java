@@ -2,8 +2,6 @@
 // OrcLaunchShortcut.java -- Java class OrcLaunchShortcut
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Aug 5, 2009.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
@@ -58,116 +56,110 @@ import edu.utexas.cs.orc.orceclipse.Messages;
  */
 public class OrcLaunchShortcut implements ILaunchShortcut {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.jface.viewers.ISelection, java.lang.String)
-	 */
-	@Override
-	public void launch(final ISelection selection, final String mode) {
-		// Make sure the selection is the active resource, so the launch
-		// delegate knows who to launch.
-		// Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
+    @Override
+    public void launch(final ISelection selection, final String mode) {
+        // Make sure the selection is the active resource, so the launch
+        // delegate knows who to launch.
+        // Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
 
-		try {
-			final IFile file = (IFile) ((IAdaptable) ((IStructuredSelection) selection).getFirstElement()).getAdapter(IFile.class);
-			launch(file, mode);
-		} catch (final ClassCastException e) {
-			// Ignore -- got something not launchable
-			Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection); //$NON-NLS-1$
-			ErrorDialog.openError(Display.getCurrent().getActiveShell(), Messages.OrcLaunchShortcut_UnableToLaunchTitle, Messages.OrcLaunchShortcut_UnableToLaunchMessage, null);
-		} catch (final NullPointerException e) {
-			// Ignore -- got nothing
-		}
-	}
+        try {
+            final IFile file = (IFile) ((IAdaptable) ((IStructuredSelection) selection).getFirstElement()).getAdapter(IFile.class);
+            launch(file, mode);
+        } catch (final ClassCastException e) {
+            // Ignore -- got something not launchable
+            Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection); //$NON-NLS-1$
+            ErrorDialog.openError(Display.getCurrent().getActiveShell(), Messages.OrcLaunchShortcut_UnableToLaunchTitle, Messages.OrcLaunchShortcut_UnableToLaunchMessage, null);
+        } catch (final NullPointerException e) {
+            // Ignore -- got nothing
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.debug.ui.ILaunchShortcut#launch(org.eclipse.ui.IEditorPart, java.lang.String)
-	 */
-	@Override
-	public void launch(final IEditorPart editor, final String mode) {
-		launch((IFile) editor.getAdapter(IFile.class), mode);
-	}
+    @Override
+    public void launch(final IEditorPart editor, final String mode) {
+        launch((IFile) editor.getAdapter(IFile.class), mode);
+    }
 
-	/**
-	 * @param file Orc file to launch
-	 * @param mode Launch mode to use (run, debug, profile, etc.)
-	 */
-	public void launch(final IFile file, final String mode) {
-		final List<ILaunchConfiguration> configs = getCandidates(file, mode);
-		if (configs != null) {
-			ILaunchConfiguration config = null;
-			final int count = configs.size();
-			if (count == 1) {
-				config = configs.get(0);
-			} else if (count > 1) {
-				config = chooseConfiguration(configs);
-				if (config == null) {
-					return;
-				}
-			}
-			if (config == null) {
-				config = createConfiguration(file, mode);
-			}
-			if (config != null) {
-				DebugUITools.launch(config, mode);
-			}
-		}
-	}
+    /**
+     * @param file Orc file to launch
+     * @param mode Launch mode to use (run, debug, profile, etc.)
+     */
+    public void launch(final IFile file, final String mode) {
+        final List<ILaunchConfiguration> configs = getCandidates(file, mode);
+        if (configs != null) {
+            ILaunchConfiguration config = null;
+            final int count = configs.size();
+            if (count == 1) {
+                config = configs.get(0);
+            } else if (count > 1) {
+                config = chooseConfiguration(configs);
+                if (config == null) {
+                    return;
+                }
+            }
+            if (config == null) {
+                config = createConfiguration(file, mode);
+            }
+            if (config != null) {
+                DebugUITools.launch(config, mode);
+            }
+        }
+    }
 
-	/**
-	 * @param file File being launched
-	 * @param mode Launch mode
-	 * @return The chosen Orc launch configuration
-	 */
-	protected List<ILaunchConfiguration> getCandidates(final IFile file, final String mode) {
-		List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
-		try {
-			final ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(OrcLaunchDelegate.getLaunchConfigType());
-			candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
-			for (final ILaunchConfiguration config : configs) {
-				// FUTURE: If needed, filter here.
-				candidateConfigs.add(config);
-			}
-		} catch (final CoreException e) {
-			Activator.log(e);
-		}
-		return candidateConfigs;
-	}
+    /**
+     * @param file File being launched
+     * @param mode Launch mode
+     * @return The chosen Orc launch configuration
+     */
+    protected List<ILaunchConfiguration> getCandidates(final IFile file, final String mode) {
+        List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
+        try {
+            final ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(OrcLaunchDelegate.getLaunchConfigType());
+            candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
+            for (final ILaunchConfiguration config : configs) {
+                // FUTURE: If needed, filter here.
+                candidateConfigs.add(config);
+            }
+        } catch (final CoreException e) {
+            Activator.log(e);
+        }
+        return candidateConfigs;
+    }
 
-	/**
-	 * @param configList List of launch configs to show the user
-	 * @return User's chosen launch config
-	 */
-	protected ILaunchConfiguration chooseConfiguration(final List<ILaunchConfiguration> configList) {
-		final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
-		final ElementListSelectionDialog dialog = new ElementListSelectionDialog(Display.getCurrent().getActiveShell(), labelProvider);
-		dialog.setElements(configList.toArray());
-		dialog.setTitle(Messages.OrcLaunchShortcut_SelectLaunchConfigTitle);
-		dialog.setMessage(Messages.OrcLaunchShortcut_SelectLaunchConfigMessage);
-		dialog.setMultipleSelection(false);
-		final int result = dialog.open();
-		labelProvider.dispose();
-		if (result == Window.OK) {
-			return (ILaunchConfiguration) dialog.getFirstResult();
-		}
-		return null;
-	}
+    /**
+     * @param configList List of launch configs to show the user
+     * @return User's chosen launch config
+     */
+    protected ILaunchConfiguration chooseConfiguration(final List<ILaunchConfiguration> configList) {
+        final IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
+        final ElementListSelectionDialog dialog = new ElementListSelectionDialog(Display.getCurrent().getActiveShell(), labelProvider);
+        dialog.setElements(configList.toArray());
+        dialog.setTitle(Messages.OrcLaunchShortcut_SelectLaunchConfigTitle);
+        dialog.setMessage(Messages.OrcLaunchShortcut_SelectLaunchConfigMessage);
+        dialog.setMultipleSelection(false);
+        final int result = dialog.open();
+        labelProvider.dispose();
+        if (result == Window.OK) {
+            return (ILaunchConfiguration) dialog.getFirstResult();
+        }
+        return null;
+    }
 
-	/**
-	 * @param file File being run/debuged
-	 * @param mode Launch mode
-	 * @return A new launch config suitable for this file
-	 */
-	protected ILaunchConfiguration createConfiguration(final IFile file, final String mode) {
-		ILaunchConfiguration config = null;
-		ILaunchConfigurationWorkingCopy wc = null;
-		try {
-			final ILaunchConfigurationType configType = OrcLaunchDelegate.getLaunchConfigType();
-			wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateLaunchConfigurationName(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
-			OrcLaunchDelegate.setDefaults(wc);
-			config = wc.doSave();
-		} catch (final CoreException e) {
-			Activator.log(e);
-		}
-		return config;
-	}
+    /**
+     * @param file File being run/debuged
+     * @param mode Launch mode
+     * @return A new launch config suitable for this file
+     */
+    protected ILaunchConfiguration createConfiguration(final IFile file, final String mode) {
+        ILaunchConfiguration config = null;
+        ILaunchConfigurationWorkingCopy wc = null;
+        try {
+            final ILaunchConfigurationType configType = OrcLaunchDelegate.getLaunchConfigType();
+            wc = configType.newInstance(null, DebugPlugin.getDefault().getLaunchManager().generateLaunchConfigurationName(Messages.OrcLaunchShortcut_OrcProgramLaunchConfigName));
+            OrcLaunchDelegate.setDefaults(wc);
+            config = wc.doSave();
+        } catch (final CoreException e) {
+            Activator.log(e);
+        }
+        return config;
+    }
 }

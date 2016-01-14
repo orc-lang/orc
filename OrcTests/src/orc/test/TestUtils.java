@@ -2,8 +2,6 @@
 // TestUtils.java -- Java class TestUtils
 // Project OrcTests
 //
-// $Id$
-//
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -19,36 +17,38 @@ import java.util.LinkedList;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
 import orc.error.compiletime.CompilationException;
 import orc.script.OrcBindings;
 
 public final class TestUtils {
-	private TestUtils() {
-		/* Only static members*/
-	}
+    private TestUtils() {
+        /* Only static members */
+    }
 
-	abstract public static class OrcTestCase extends TestCase {
-	    /**
-	     * The timeout to use for testing. This provides a central location to change it.
-	     */
-	    public static final long TESTING_TIMEOUT = 15L;
-	    
+    abstract public static class OrcTestCase extends TestCase {
+        /**
+         * The timeout to use for testing. This provides a central location to
+         * change it.
+         */
+        public static final long TESTING_TIMEOUT = 15L;
+
         protected String suiteName;
-	    protected File orcFile;
-	    protected ExpectedOutput expecteds;
-	    protected OrcBindings bindings;
+        protected File orcFile;
+        protected ExpectedOutput expecteds;
+        protected OrcBindings bindings;
 
         OrcTestCase() {
-	        super();
-	    }
+            super();
+        }
 
-        void otcInit(String suiteName1, String testName, File orcFile1, ExpectedOutput expecteds1, OrcBindings bindings1) {
+        void otcInit(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
             setName(testName);
             this.suiteName = suiteName1;
             this.orcFile = orcFile1;
             this.expecteds = expecteds1;
             this.bindings = bindings1;
-	    }
+        }
 
         @Override
         public void runTest() throws Throwable {
@@ -58,18 +58,18 @@ public final class TestUtils {
                 if (!expecteds.contains(actual)) {
                     throw new AssertionError("Unexpected output:\n" + actual);
                 }
-            } catch (CompilationException ce) {
+            } catch (final CompilationException ce) {
                 throw new AssertionError(ce.getMessageAndDiagnostics());
             }
         }
 
         @Override
         public String toString() {
-          return getName() + "(" + suiteName + ")";
+            return getName() + "(" + suiteName + ")";
         }
     }
 
-    public static TestSuite buildSuite(final String suitename, Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
+    public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
         final TestSuite suite = new TestSuite(suitename);
         for (final File examplePath : examplePaths) {
             final LinkedList<File> files = new LinkedList<File>();
@@ -93,14 +93,16 @@ public final class TestUtils {
                 OrcTestCase tc;
                 try {
                     tc = testCaseClass.newInstance();
-                } catch (InstantiationException e) {
-                    // Shouldn't happen -- class is a sibling inner class of this class
+                } catch (final InstantiationException e) {
+                    // Shouldn't happen -- class is a sibling inner class of
+                    // this class
                     throw new AssertionError(e);
-                } catch (IllegalAccessException e) {
-                    // Shouldn't happen -- class is a sibling inner class of this class
+                } catch (final IllegalAccessException e) {
+                    // Shouldn't happen -- class is a sibling inner class of
+                    // this class
                     throw new AssertionError(e);
                 }
-                final String testname = file.toString().startsWith(examplePath.getPath()+File.separator) ? file.toString().substring(examplePath.getPath().length()+1) : file.toString();
+                final String testname = file.toString().startsWith(examplePath.getPath() + File.separator) ? file.toString().substring(examplePath.getPath().length() + 1) : file.toString();
                 tc.otcInit(suitename, testname, file, expecteds, bindings);
                 nestedSuite.addTest(tc);
             }
@@ -108,21 +110,21 @@ public final class TestUtils {
         return suite;
     }
 
-	public static void findOrcFiles(final File base, final LinkedList<File> files) {
-		if (base.isFile() && base.getPath().endsWith(".orc")) {
-			files.add(base);
-			return;
-		}
-		final File[] list = base.listFiles();
-		if (list == null) {
-			return;
-		}
-		for (final File file : list) {
-			if (file.isDirectory()) {
-				findOrcFiles(file, files);
-			} else if (file.getPath().endsWith(".orc")) {
-				files.add(file);
-			}
-		}
-	}
+    public static void findOrcFiles(final File base, final LinkedList<File> files) {
+        if (base.isFile() && base.getPath().endsWith(".orc")) {
+            files.add(base);
+            return;
+        }
+        final File[] list = base.listFiles();
+        if (list == null) {
+            return;
+        }
+        for (final File file : list) {
+            if (file.isDirectory()) {
+                findOrcFiles(file, files);
+            } else if (file.getPath().endsWith(".orc")) {
+                files.add(file);
+            }
+        }
+    }
 }

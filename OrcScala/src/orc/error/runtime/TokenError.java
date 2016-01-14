@@ -2,8 +2,6 @@
 // TokenError.java -- Java class TokenError
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,13 +20,13 @@ package orc.error.runtime;
  */
 
 public abstract class TokenError extends TokenException {
-  private static final long serialVersionUID = 5731144810559347732L;
+    private static final long serialVersionUID = 5731144810559347732L;
 
-  public TokenError(final String message) {
-		super(message);
-	}
+    public TokenError(final String message) {
+        super(message);
+    }
 
-	public TokenError(final String message, final Throwable cause) {
-		super(message, cause);
-	}
+    public TokenError(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 }

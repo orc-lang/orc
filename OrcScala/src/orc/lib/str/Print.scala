@@ -2,8 +2,6 @@
 // Print.scala -- Scala object Print, and class PrintEvent
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jan 18, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

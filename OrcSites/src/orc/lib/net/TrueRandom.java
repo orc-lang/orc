@@ -2,8 +2,6 @@
 // TrueRandom.java -- Java class TrueRandom
 // Project OrcSites
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -23,17 +21,17 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 
 public class TrueRandom extends EvalSite {
-	private static String baseURL = "http://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
+    private static String baseURL = "http://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		try {
-			final String number = HTTPUtils.getURL(new URL(baseURL + "&min=" + args.longArg(0) + "&max=" + (args.longArg(1) - 1)));
-			return new Long(number.trim());
-		} catch (final MalformedURLException e) {
-			throw new JavaException(e);
-		} catch (final IOException e) {
-			throw new JavaException(e);
-		}
-	}
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        try {
+            final String number = HTTPUtils.getURL(new URL(baseURL + "&min=" + args.longArg(0) + "&max=" + (args.longArg(1) - 1)));
+            return new Long(number.trim());
+        } catch (final MalformedURLException e) {
+            throw new JavaException(e);
+        } catch (final IOException e) {
+            throw new JavaException(e);
+        }
+    }
 }

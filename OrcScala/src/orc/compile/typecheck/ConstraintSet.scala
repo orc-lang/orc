@@ -2,8 +2,6 @@
 // ConstraintSet.scala -- Scala class ConstraintSet
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Nov 28, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

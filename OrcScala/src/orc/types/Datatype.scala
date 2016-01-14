@@ -2,8 +2,6 @@
 // Datatype.scala -- Scala trait Datatype and child classes
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Dec 5, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

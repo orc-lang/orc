@@ -1,7 +1,5 @@
 {- d.inc -- Part of the include test case
  - 
- - $Id$
- - 
  - Created by jthywiss on Aug 4, 2010 10:26:27 AM
  -}
 

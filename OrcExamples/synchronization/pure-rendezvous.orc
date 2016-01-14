@@ -1,7 +1,5 @@
 {- pure-rendezvous.orc
  - 
- - $Id$
- - 
  - Created by misra on Mar 10, 2010 8:03:02 PM
  -}
 

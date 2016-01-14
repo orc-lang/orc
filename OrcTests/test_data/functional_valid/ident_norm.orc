@@ -1,7 +1,5 @@
 {- ident_norm.orc -- Orc compiler test case program
  - 
- - $Id$
- - 
  - Created by jthywiss on Dec 17, 2010 6:18:57 PM
  -}
 

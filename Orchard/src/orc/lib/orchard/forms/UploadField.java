@@ -2,8 +2,6 @@
 // UploadField.java -- Java class UploadField
 // Project Orchard
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -20,22 +18,22 @@ import java.util.List;
 import org.apache.commons.fileupload.FileItem;
 
 public class UploadField extends Field<FileItem> {
-	public UploadField(final String key, final String label) {
-		super(key, label, null);
-	}
+    public UploadField(final String key, final String label) {
+        super(key, label, null);
+    }
 
-	@Override
-	public void renderControl(final PrintWriter out) throws IOException {
-		out.write("<input type='file' name='" + key + "'>");
-	}
+    @Override
+    public void renderControl(final PrintWriter out) throws IOException {
+        out.write("<input type='file' name='" + key + "'>");
+    }
 
-	@Override
-	public boolean needsMultipartEncoding() {
-		return true;
-	}
+    @Override
+    public boolean needsMultipartEncoding() {
+        return true;
+    }
 
-	@Override
-	public void readRequest(final FormData request, final List errors) {
-		value = request.getItem(key);
-	}
+    @Override
+    public void readRequest(final FormData request, final List errors) {
+        value = request.getItem(key);
+    }
 }

@@ -1,7 +1,5 @@
 {- vclock_designate_closures.orc -- Orc program vclock_designate_closures
  - 
- - $Id$
- - 
  - Created by amp on Sep 17, 2013 1:26:07 PM
  -}
 

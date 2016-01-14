@@ -2,8 +2,6 @@
 // UUID.java -- Java class UUID
 // Project OrcScala
 //
-// $Id$
-//
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
@@ -22,16 +20,17 @@ import orc.values.sites.compatibility.Types;
 
 /**
  * Generate random UUIDs.
+ * 
  * @author quark
  */
 public class UUID extends EvalSite implements TypedSite {
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
-		return java.util.UUID.randomUUID().toString();
-	}
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
+        return java.util.UUID.randomUUID().toString();
+    }
 
-	@Override
-	public Type orcType() {
-		return Types.function(Types.string());
-	}
+    @Override
+    public Type orcType() {
+        return Types.function(Types.string());
+    }
 }
