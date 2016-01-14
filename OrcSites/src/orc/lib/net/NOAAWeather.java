@@ -330,7 +330,7 @@ public class NOAAWeather {
 	private static <E extends Parameter> E[] during(final Interval<DateTime> time, final E[] parameters) {
 		final ArrayList<E> out = new ArrayList<E>();
 		for (int i = 0; i < parameters.length; ++i) {
-			if (time.intersects(parameters[i].time)) {
+			if (time.intersects(parameters[i].getTime())) {
 				out.add(parameters[i]);
 			}
 		}

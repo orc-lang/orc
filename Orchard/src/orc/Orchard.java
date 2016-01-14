@@ -50,7 +50,7 @@ public class Orchard {
 			} else {
 				try {
 					port = Integer.valueOf(args[0]);
-				} catch (final NumberFormatException _) {
+				} catch (final NumberFormatException nfe) {
 					printUsage();
 					return;
 				}

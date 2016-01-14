@@ -38,7 +38,7 @@ public class Div extends EvalSite implements TypedSite {
 		public Number apply(final BigDecimal a, final BigDecimal b) {
 			try {
 				return a.divide(b);
-			} catch (final ArithmeticException _) {
+			} catch (final ArithmeticException ae) {
 				// an exception is thrown if the dividend is
 				// not representable as a finite decimal, so
 				// in that case we convert to double.

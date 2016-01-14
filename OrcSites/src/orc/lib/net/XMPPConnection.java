@@ -154,7 +154,7 @@ public class XMPPConnection extends EvalSite {
 		 * tokens waiting on the received site if any, otherwise they are buffed.
 		 */
 		@Override
-		public void processMessage(final Chat _, final Message message) {
+		public void processMessage(final Chat chat, final Message message) {
 			//System.out.println(getClass().getSimpleName()+" processMessage ihc="+System.identityHashCode(this));
 			synchronized (received) {
 				final Object v = message.getBody();

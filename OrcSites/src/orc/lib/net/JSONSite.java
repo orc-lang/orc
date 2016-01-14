@@ -51,7 +51,7 @@ class JSONSite extends EvalSite {
 				Object e;
 				try {
 					e = a.get(i);
-				} catch (final JSONException _) {
+				} catch (final JSONException je) {
 					// the index does not exist
 					e = null;
 				}

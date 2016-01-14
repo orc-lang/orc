@@ -64,7 +64,7 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
 			final DateTime start = new DateTime(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 0, 0, 0);
 			final DateTime end = start.plusHours(1);
 			return new Interval<DateTime>(start, end);
-		} catch (final NumberFormatException _) {
+		} catch (final NumberFormatException nfe) {
 			return new Interval(new DateTime());
 		}
 	}
