@@ -56,3 +56,5 @@ help/**  linguist-documentation
 licenses/**  linguist-documentation
 OrcDocs/**  linguist-documentation
 Website/**  linguist-documentation
+
+Website/robots.txt  eol=crlf
