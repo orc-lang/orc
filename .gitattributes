@@ -33,9 +33,12 @@
 # Third-party files
 
 lib/**   linguist-vendored
+libs/**   linguist-vendored
 tools/** linguist-vendored
-docbook-xml/**  linguist-vendored
-docbook-xsl/**  linguist-vendored
+OrcDocs/docbook-xml/**  linguist-vendored
+OrcDocs/docbook-xsl/**  linguist-vendored
+Orchard/src/org/**  linguist-vendored
+OrcSites/src/net/**  linguist-vendored
 
 
 # Documentation files
