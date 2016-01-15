@@ -30,10 +30,10 @@
 
 # Third-party files
 
-lib/*   linguist-vendored
-tools/* linguist-vendored
-docbook-xml/*  linguist-vendored
-docbook-xsl/*  linguist-vendored
+lib/**   linguist-vendored
+tools/** linguist-vendored
+docbook-xml/**  linguist-vendored
+docbook-xsl/**  linguist-vendored
 
 
 # Documentation files
@@ -52,5 +52,7 @@ README.txt  text linguist-documentation
 about.html  text linguist-documentation
 licenses.yml  text linguist-documentation
 
-help/  linguist-documentation
-licenses/  linguist-documentation
+help/**  linguist-documentation
+licenses/**  linguist-documentation
+OrcDocs/**  linguist-documentation
+Website/**  linguist-documentation
