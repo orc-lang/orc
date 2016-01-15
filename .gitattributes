@@ -1,0 +1,56 @@
+# .gitattributes -- git attibute to pathname mapping
+
+
+# Do end-of-line character normalization on all text files
+
+*       text=auto encoding=UTF-8
+
+
+# Common file types in Orc repos
+
+*.xml   text 
+*.html  text diff=html
+*.xsl   text
+*.orc   text linguist-language=Orc
+*.java  text diff=java
+*.scala text
+*.png   binary
+*.gif   binary
+*.jar   binary
+*.txt   text
+*.svg   text
+*.js    text
+*.inc   text linguist-language=Orc
+*.prefs text
+*.pdf   binary
+*.css   text
+*.properties  text
+*.bib   text diff=bibtex
+
+
+# Third-party files
+
+lib/*   linguist-vendored
+tools/* linguist-vendored
+docbook-xml/*  linguist-vendored
+docbook-xsl/*  linguist-vendored
+
+
+# Documentation files
+
+*.md   text linguist-documentation
+*.creole  text linguist-documentation
+
+BUILD   text linguist-documentation
+BUILD.txt  text linguist-documentation
+INSTALL text linguist-documentation
+INSTALL.txt  text linguist-documentation
+LICENSE text linguist-documentation
+LICENSE.txt  text linguist-documentation
+README  text linguist-documentation
+README.txt  text linguist-documentation
+about.html  text linguist-documentation
+licenses.yml  text linguist-documentation
+
+help/  linguist-documentation
+licenses/  linguist-documentation
