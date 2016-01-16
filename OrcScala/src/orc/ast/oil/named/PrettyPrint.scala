@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jun 7, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,8 +12,8 @@
 //
 package orc.ast.oil.named
 
-import orc.ast.oil.named._
-import scala.collection.mutable._
+import scala.collection.mutable.{ HashMap, Map }
+
 import orc.values.Format
 
 /** Nicer printing for named OIL syntax trees.
@@ -52,11 +52,11 @@ class PrettyPrint {
           }) +
           paren(args)
       }
-      case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
+      case Parallel(left, right) => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
       case LateBind(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "<| " + reduce(right) + ")"
       case Limit(f) => "limit(" + reduce(f) + ")"
-      case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
+      case Otherwise(left, right) => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))

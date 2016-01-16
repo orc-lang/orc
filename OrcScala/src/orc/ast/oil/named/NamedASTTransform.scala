@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 12, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -90,11 +90,11 @@ trait NamedASTTransform extends NamedASTFunction {
           val newtypeargs = typeargs map { _ map { recurse(_) } }
           Call(newtarget, newargs, newtypeargs)
         }
-        case left || right => recurse(left) || recurse(right)
-        case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
-        case left < x <| right => transform(left, x :: context, typecontext) < x <| recurse(right)
+        case Parallel(left, right) => Parallel(recurse(left), recurse(right))
+        case Sequence(left, x, right) => Sequence(recurse(left), x, transform(right, x :: context, typecontext))
+        case LateBind(left, x, right) => LateBind(transform(left, x :: context, typecontext), x, recurse(right))
         case Limit(f) => Limit(recurse(f))
-        case left ow right => recurse(left) ow recurse(right)
+        case Otherwise(left, right) => Otherwise(recurse(left), recurse(right))
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
@@ -107,6 +107,7 @@ trait NamedASTTransform extends NamedASTFunction {
           DeclareType(u, newt, newbody)
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
+        case Hole(context, typecontext) => Hole(context, typecontext)
         case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
       }
     }

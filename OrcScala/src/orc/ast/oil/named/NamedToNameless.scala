@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,11 +27,11 @@ trait NamedToNameless {
       case Stop() => nameless.Stop()
       case a: Argument => namedToNameless(a, context)
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
-      case left || right => nameless.Parallel(toExp(left), toExp(right))
-      case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
-      case left < x <| right => nameless.LateBind(namedToNameless(left, x :: context, typecontext), toExp(right))
+      case Parallel(left, right) => nameless.Parallel(toExp(left), toExp(right))
+      case Sequence(left, x, right) => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
+      case LateBind(left, x, right) => nameless.LateBind(namedToNameless(left, x :: context, typecontext), toExp(right))
       case Limit(f) => nameless.Limit(toExp(f))
-      case left ow right => nameless.Otherwise(toExp(left), toExp(right))
+      case Otherwise(left, right) => nameless.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
         val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }

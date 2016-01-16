@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,10 +12,8 @@
 //
 package orc.ast.oil.nameless
 
-import scala.Range
 import orc.ast.oil.named
-import orc.ast.oil.named.BoundVar
-import orc.ast.oil.named.BoundTypevar
+import orc.ast.oil.named.{ BoundTypevar, BoundVar }
 
 /** @author dkitchin
   */
@@ -33,17 +31,17 @@ trait NamelessToNamed {
         val newtypeargs = typeargs map { _ map { namelessToNamed(_, typecontext) } }
         named.Call(newtarget, newargs, newtypeargs)
       }
-      case left || right => named.Parallel(recurse(left), recurse(right))
-      case left >> right => {
+      case Parallel(left, right) => named.Parallel(recurse(left), recurse(right))
+      case Sequence(left, right) => {
         val x = new BoundVar()
         named.Sequence(recurse(left), x, namelessToNamed(right, x :: context, typecontext))
       }
-      case left <<| right => {
+      case LateBind(left, right) => {
         val x = new BoundVar()
         named.LateBind(namelessToNamed(left, x :: context, typecontext), x, recurse(right))
       }
       case Limit(f) => named.Limit(recurse(f))
-      case left ow right => named.Otherwise(recurse(left), recurse(right))
+      case Otherwise(left, right) => named.Otherwise(recurse(left), recurse(right))
       case DeclareDefs(openvars, defs, body) => {
         val opennames = openvars map context
         val defnames = defs map { _ => new BoundVar() }

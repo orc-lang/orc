@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 4, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,22 +40,23 @@ trait Guarding {
           true
         }
       }
-      case left || right => {
+      case Parallel(left, right) => {
         val l = check(left)
         val r = check(right)
         l && r
       }
-      case left > x > right => {
+      case Sequence(left, x, right) => {
         val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case left < x < right => {
+      case LateBind(left, x, right) => {
         val l = check(left)
         val r = check(right)
         l && r
       }
-      case left ow right => {
+      case Limit(expr) => check(expr)
+      case Otherwise(left, right) => {
         val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
@@ -67,6 +68,7 @@ trait Guarding {
       }
       case DeclareType(_, _, body) => check(body)
       case HasType(body, _) => check(body)
+      case Hole(_, _) => false
       case VtimeZone(timeOrder, body) => check(body)
     }
   }

@@ -4,7 +4,7 @@
 //
 // Created by amp on Sep 24, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,11 +12,9 @@
 //
 package orc.compile.translate
 
-import orc.error.compiletime.CompilationException
-import orc.error.compiletime.ContinuableSeverity
-
-import orc.ast.oil4c.{ named => named4c }
 import orc.ast.oil.{ named => named5c }
+import orc.ast.oil4c.{ named => named4c }
+import orc.error.compiletime.{ CompilationException, ContinuableSeverity }
 
 /** Translate Orc4C into Orc5C by splitting the pruning combinator into latebind and limit.
   *
@@ -38,15 +36,15 @@ class SplitPrune(val reportProblem: CompilationException with ContinuableSeverit
       case Stop() => named5c.Stop()
       case a: Argument => namedToOrc5C(a, context)
       case Call(target, args, typeargs) => named5c.Call(toArg(target), args map toArg, typeargs map { _ map toType })
-      case left || right => named5c.Parallel(toExp(left), toExp(right))
-      case left > x > right =>
+      case Parallel(left, right) => named5c.Parallel(toExp(left), toExp(right))
+      case Sequence(left, x, right) =>
         val newx = new named5c.BoundVar(x.optionalVariableName)
         named5c.Sequence(toExp(left), newx, namedToOrc5C(right, context + ((x, newx)), typecontext))
-      case left < x < right =>
+      case Prune(left, x, right) =>
         val newx = new named5c.BoundVar(x.optionalVariableName)
         named5c.LateBind(namedToOrc5C(left, context + ((x, newx)), typecontext), newx,
           named5c.Limit(toExp(right)))
-      case left ow right => named5c.Otherwise(toExp(left), toExp(right))
+      case Otherwise(left, right) => named5c.Otherwise(toExp(left), toExp(right))
       case DeclareDefs(defs, body) => {
         val defnames = defs map { _.name }
         val newdefnames = defnames map { n => new named5c.BoundVar(n.optionalVariableName) }

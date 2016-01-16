@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on May 24, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,19 +14,19 @@
 package orc.compile.typecheck
 
 import scala.language.reflectiveCalls
+import scala.math.{ BigDecimal, BigInt }
+
 import orc.ast.oil4c.{ named => syntactic }
-import orc.ast.oil4c.named.{ Expression, Stop, Hole, Call, ||, ow, <, >, VtimeZone, DeclareDefs, HasType, DeclareType, Constant, UnboundVar, Def, FoldedCall, FoldedLambda }
-import orc.types._
-import orc.error.compiletime.typing._
-import orc.error.compiletime.{ UnboundVariableException, UnboundTypeVariableException, CompilationException, ContinuableSeverity }
-import orc.error.OrcExceptionExtension._
-import orc.util.OptionMapExtension._
-import orc.values.{ Signal, Field }
-import scala.math.BigInt
-import scala.math.BigDecimal
+import orc.ast.oil4c.named.{ Constant, DeclareDefs, DeclareType, Def, Expression, FoldedCall, FoldedLambda, HasType, Hole, Otherwise, Parallel, Prune, Sequence, Stop, UnboundVar, VtimeZone }
+import orc.compile.typecheck.ConstraintSet.meetAll
+import orc.compile.typecheck.Typeloader.{ lift, liftEither, liftJavaType, reify }
+import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{ CompilationException, ContinuableSeverity, UnboundVariableException }
+import orc.error.compiletime.typing.{ ArgumentArityException, FunctionTypeExpectedException, NoMinimalTypeWarning, OverloadedTypeException, TypeArgumentArityException, TypeException, UncallableTypeException, UnspecifiedArgTypesException, UnspecifiedReturnTypeException }
+import orc.types.{ BooleanType, Bot, CallableType, Contravariant, Covariant, FieldType, FunctionType, IntegerConstantType, IntegerType, Invariant, JavaObjectType, NullType, NumberType, OverloadedType, RecordType, SignalType, StrictType, StringType, Top, TupleType, Type, TypeInstance, TypeOperator, TypeVariable }
+import orc.util.OptionMapExtension.addOptionMapToList
+import orc.values.{ Field, Signal }
 import orc.values.sites.TypedSite
-import orc.compile.typecheck.ConstraintSet._
-import orc.compile.typecheck.Typeloader._
 
 /** Typechecker for Orc expressions.
   *
@@ -74,22 +74,22 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           case FoldedCall(target, args, typeArgs) => {
             typeFoldedCall(target, args, typeArgs, None, expr)
           }
-          case left || right => {
+          case Parallel(left, right) => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)
             (newLeft || newRight, typeLeft join typeRight)
           }
-          case left ow right => {
+          case Otherwise(left, right) => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)
             (newLeft ow newRight, typeLeft join typeRight)
           }
-          case left > x > right => {
+          case Sequence(left, x, right) => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
             (newLeft > x > newRight, typeRight)
           }
-          case left < x < right => {
+          case Prune(left, x, right) => {
             val (newRight, typeRight) = typeSynthExpr(right)
             val (newLeft, typeLeft) = typeSynthExpr(left)(context + ((x, typeRight)), typeContext, typeOperatorContext)
             (newLeft < x < newRight, typeLeft)
@@ -140,22 +140,22 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T), expr)
           e
         }
-        case left || right => {
+        case Parallel(left, right) => {
           val newLeft = typeCheckExpr(left, T)
           val newRight = typeCheckExpr(right, T)
           newLeft || newRight
         }
-        case left ow right => {
+        case Otherwise(left, right) => {
           val newLeft = typeCheckExpr(left, T)
           val newRight = typeCheckExpr(right, T)
           newLeft ow newRight
         }
-        case left > x > right => {
+        case Sequence(left, x, right) => {
           val (newLeft, typeLeft) = typeSynthExpr(left)
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
         }
-        case left < x < right => {
+        case Prune(left, x, right) => {
           val (newRight, typeRight) = typeSynthExpr(right)
           val newLeft = typeCheckExpr(left, T)(context + ((x, typeRight)), typeContext, typeOperatorContext)
           newLeft < x < newRight

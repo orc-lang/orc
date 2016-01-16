@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,11 +13,10 @@
 
 package orc.ast.oil.nameless
 
-import orc.ast.oil._
-import orc.ast.AST
-import orc.ast.hasOptionalVariableName
+import orc.ast.oil.named
+import orc.ast.{ AST, hasOptionalVariableName }
 
-trait hasFreeVars {
+sealed trait hasFreeVars {
   val freevars: Set[Int]
 
   /* Reduce this set of indices by n levels. */
@@ -29,11 +28,11 @@ sealed abstract class NamelessAST extends AST {
 
   override val subtrees: Iterable[NamelessAST] = this match {
     case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
-    case left || right => List(left, right)
+    case Parallel(left, right) => List(left, right)
     case Sequence(left, right) => List(left, right)
     case LateBind(left, right) => List(left, right)
     case Limit(f) => List(f)
-    case left ow right => List(left, right)
+    case Otherwise(left, right) => List(left, right)
     case DeclareDefs(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case HasType(body, expectedType) => List(body, expectedType)
@@ -70,12 +69,13 @@ sealed abstract class Expression extends NamelessAST
       case Stop() => Set.empty
       case Constant(_) => Set.empty
       case Variable(i) => Set(i)
+      case UnboundVariable(_) => Set.empty // freevars does not include UnboundVariables 
       case Call(target, args, typeArgs) => target.freevars ++ (args flatMap { _.freevars })
-      case f || g => f.freevars ++ g.freevars
-      case f >> g => f.freevars ++ shift(g.freevars, 1)
-      case f <<| g => shift(f.freevars, 1) ++ g.freevars
+      case Parallel(f, g) => f.freevars ++ g.freevars
+      case Sequence(f, g) => f.freevars ++ shift(g.freevars, 1)
+      case LateBind(f, g) => shift(f.freevars, 1) ++ g.freevars
       case Limit(f) => f.freevars
-      case f ow g => f.freevars ++ g.freevars
+      case Otherwise(f, g) => f.freevars ++ g.freevars
       case DeclareDefs(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
@@ -91,6 +91,7 @@ sealed abstract class Expression extends NamelessAST
     * The context ctx is a stack of optional bindings.
     * The binding is Some(v) if the variable at that depth is to be replaced by v.
     * The binding is None if the variable at that depth is to remain unchanged.
+    * Ignores any UnboundVariables.
     */
   def subst(ctx: List[Option[AnyRef]]): Expression = {
     this -> {
@@ -105,14 +106,15 @@ sealed abstract class Expression extends NamelessAST
         } else {
           Variable(i)
         }
+      case UnboundVariable(name) => UnboundVariable(name) // subst ignores UnboundVariables
       case Call(target, args, typeArgs) => {
         Call(target.subst(ctx).asInstanceOf[Argument], args map { _.subst(ctx).asInstanceOf[Argument] }, typeArgs)
       }
-      case f || g => f.subst(ctx) || g.subst(ctx)
-      case f >> g => f.subst(ctx) >> g.subst(None :: ctx)
-      case f <<| g => f.subst(None :: ctx) <<| g.subst(ctx)
+      case Parallel(f, g) => Parallel(f.subst(ctx), g.subst(ctx))
+      case Sequence(f, g) => Sequence(f.subst(ctx), g.subst(None :: ctx))
+      case LateBind(f, g) => LateBind(f.subst(None :: ctx), g.subst(ctx))
       case Limit(f) => Limit(f.subst(ctx))
-      case f ow g => f.subst(ctx) ow g.subst(ctx)
+      case Otherwise(f, g) => Otherwise(f.subst(ctx), g.subst(ctx))
       case DeclareDefs(openvars, defs, body) => {
         val newctx = (for (_ <- defs) yield None).toList ::: ctx
         val newdefs = {
@@ -135,44 +137,44 @@ sealed abstract class Expression extends NamelessAST
 
   def prettyprint() = this.withNames.prettyprint()
 }
-case class Stop() extends Expression
-case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
-case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
-case class LateBind(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
-case class Limit(f: Expression) extends Expression
-case class Otherwise(left: Expression, right: Expression) extends Expression
-case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
-case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
-case class HasType(body: Expression, expectedType: Type) extends Expression
-case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
-case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+sealed case class Stop() extends Expression
+sealed case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
+sealed case class Parallel(left: Expression, right: Expression) extends Expression
+sealed case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+sealed case class LateBind(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+sealed case class Limit(f: Expression) extends Expression
+sealed case class Otherwise(left: Expression, right: Expression) extends Expression
+sealed case class DeclareDefs(unclosedVars: List[Int], defs: List[Def], body: Expression) extends Expression
+sealed case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
+sealed case class HasType(body: Expression, expectedType: Type) extends Expression
+sealed case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
+sealed case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
 sealed abstract class Argument extends Expression
-case class Constant(value: AnyRef) extends Argument
-case class Variable(index: Int) extends Argument with hasOptionalVariableName {
+sealed case class Constant(value: AnyRef) extends Argument
+sealed case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
 }
-case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
+sealed case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
   optionalVariableName = Some(name)
 }
 
 sealed abstract class Type extends NamelessAST with NamelessToNamed {
   lazy val withNames: named.Type = namelessToNamed(this, Nil)
 }
-case class Top() extends Type
-case class Bot() extends Type
-case class TypeVar(index: Int) extends Type with hasOptionalVariableName
-case class TupleType(elements: List[Type]) extends Type
-case class RecordType(entries: Map[String, Type]) extends Type
-case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
-case class AssertedType(assertedType: Type) extends Type
-case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
-case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
-case class ImportedType(classname: String) extends Type
-case class ClassType(classname: String) extends Type
-case class VariantType(typeFormalArity: Int, variants: List[(String, List[Type])]) extends Type
-case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
+sealed case class Top() extends Type
+sealed case class Bot() extends Type
+sealed case class TypeVar(index: Int) extends Type with hasOptionalVariableName
+sealed case class TupleType(elements: List[Type]) extends Type
+sealed case class RecordType(entries: Map[String, Type]) extends Type
+sealed case class TypeApplication(tycon: Int, typeactuals: List[Type]) extends Type
+sealed case class AssertedType(assertedType: Type) extends Type
+sealed case class FunctionType(typeFormalArity: Int, argTypes: List[Type], returnType: Type) extends Type
+sealed case class TypeAbstraction(typeFormalArity: Int, t: Type) extends Type
+sealed case class ImportedType(classname: String) extends Type
+sealed case class ClassType(classname: String) extends Type
+sealed case class VariantType(typeFormalArity: Int, variants: List[(String, List[Type])]) extends Type
+sealed case class UnboundTypeVariable(name: String) extends Type with hasOptionalVariableName {
   optionalVariableName = Some(name)
 }
 

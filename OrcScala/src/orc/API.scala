@@ -13,17 +13,17 @@
 
 package orc
 
-import java.io.IOException
-import java.io.File
-import scala.collection.JavaConversions._
+import java.io.{ File, IOException }
+
+import scala.util.parsing.input.Position
+
+import orc.ast.oil.nameless.Expression
 import orc.compile.parse.OrcInputContext
 import orc.error.OrcException
-import orc.error.compiletime.{ CompilationException, CompileLogger }
+import orc.error.compiletime.CompileLogger
 import orc.error.runtime.ExecutionException
-import orc.ast.oil.nameless.Expression
 import orc.progress.ProgressMonitor
 import orc.values.Signal
-import scala.util.parsing.input.Position
 
 /** The interface from a caller to the Orc compiler
   */
@@ -60,6 +60,7 @@ trait OrcRuntimeRequires extends InvocationBehavior
 /** Define invocation behaviors for a runtime
   */
 trait InvocationBehavior {
+  /** Called to handle a site call.  Called on a thread that can block, if needed. */
   /* By default, an invocation halts silently. This will be overridden by other traits. */
   def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
 }
