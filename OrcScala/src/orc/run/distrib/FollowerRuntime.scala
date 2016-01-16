@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -33,8 +33,8 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
 
   type MsgToFollower = OrcLeaderToFollowerCmd
 
-  var leaderLocation: LeaderLocation = null
-  override val followerNumLocationMap = new java.util.concurrent.ConcurrentHashMap[Int, Location]()
+  protected var leaderLocation: LeaderLocation = null
+  override protected val followerNumLocationMap = new java.util.concurrent.ConcurrentHashMap[Int, Location]()
 
   def listen() {
     Logger.info(s"Listening on $listenAddress")
@@ -119,6 +119,9 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
 
   def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, followerExecutionNum: Int, programOil: String, options: OrcExecutionOptions) {
     Logger.entering(getClass.getName, "loadProgram")
+
+    followerNumLocationMap.put(followerExecutionNum, here)
+
     assert(programs.isEmpty()) /* For now */
     if (programs.isEmpty()) {
       Logger.fine(s"starting scheduler")
@@ -126,7 +129,7 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
     }
 
     val programAst = OrcXML.xmlToAst(XML.loadString(programOil))
-    val root = new DOrcFollowerExecution(executionId, followerExecutionNum, programAst, options, sendEvent(leaderLocation, executionId, DOrcExecution.NoGroupProxyId), this)
+    val root = new DOrcFollowerExecution(executionId, followerExecutionNum, programAst, options, sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId), this)
     installHandlers(root)
 
     programs.put(executionId, root)
@@ -147,19 +150,6 @@ class FollowerRuntime(listenAddress: InetSocketAddress) extends DOrcRuntime("dOr
     }
   }
 
-  override def here: Location = Here
-  override def currentLocations(v: Any) = {
-    if (v == orc.lib.util.Prompt) Set(leaderLocation) else
-      Set(here, leaderLocation)
-  }
-  override def permittedLocations(v: Any) = {
-    if (v == orc.lib.util.Prompt) Set(leaderLocation) else
-      Set(here, leaderLocation)
-  }
-
-  object Here extends Location {
-    def send(message: OrcPeerCmd) = ???
-  }
 }
 
 object FollowerRuntime {

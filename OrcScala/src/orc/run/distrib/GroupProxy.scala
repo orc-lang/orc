@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 25, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -118,8 +118,8 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 trait GroupProxyManager { self: DOrcExecution =>
   type GroupProxyId = Long
 
-  val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]
-  val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
+  protected val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]
+  protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
   def sendToken(token: Token, destination: Location) {
     Logger.entering(getClass.getName, "sendToken")

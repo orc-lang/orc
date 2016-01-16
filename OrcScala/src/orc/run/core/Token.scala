@@ -365,19 +365,27 @@ class Token protected (
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
     //FIXME:Refactor: Place in correct classes, not all here
+    /* Maybe there's an extension mechanism we need to add to Orc here.
+     * 'Twould be nice to also move the Vclock hook below to this mechanism. */
     def pickLocation(ls: Set[Location]) = ls.head
 
-    val valueLocator = runtime.asInstanceOf[ValueLocator]
-    val intersectLocs = (actuals map valueLocator.currentLocations).fold(valueLocator.currentLocations(s)){ _ & _ }
-    if (!(intersectLocs contains valueLocator.here)) {
-      if (intersectLocs.isEmpty) {
-        val intersectPermittedLocs = (actuals map valueLocator.permittedLocations).fold(valueLocator.permittedLocations(s)){ _ & _ }
-        if (intersectPermittedLocs.isEmpty) {
-          throw new NoLocationAvailable(s+:actuals)
+    val dOrcExecution = group.execution.asInstanceOf[DOrcExecution]
+    val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)){ _ & _ }
+    if (!(intersectLocs contains dOrcExecution.runtime.here)) {
+      val candidateDestinations = {
+        if (intersectLocs.nonEmpty) {
+          intersectLocs
+        } else {
+          val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)){ _ & _ }
+          if (intersectPermittedLocs.nonEmpty) {
+            intersectPermittedLocs
+          } else {
+            throw new NoLocationAvailable(s+:actuals)
+          }
         }
       }
-      val destination = pickLocation(intersectLocs)
-      this.group.execution.asInstanceOf[DOrcExecution].sendToken(this, destination)
+      val destination = pickLocation(candidateDestinations)
+      dOrcExecution.sendToken(this, destination)
       return
     }
     //End of code needing refactoring

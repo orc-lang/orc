@@ -23,7 +23,7 @@ import orc.run.core.{ Blockable, Blocker }
   * @author jthywiss
   */
 trait RemoteRef extends Blocker {
-  type RemoteRefId
+  type RemoteRefId = Long
   //  val homeLocation: Location
   val remoteRefId: RemoteRefId
   //  def get(): AnyRef
@@ -61,18 +61,41 @@ trait RemoteRefIdManager { self: DOrcExecution =>
   *
   * @author jthywiss
   */
-class RemoteObjectRef(val homeLocation: Location, val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
-  type RemoteRefId = Long
+class RemoteObjectRef(val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
+  override type RemoteRefId = Long
   override val runtime: OrcRuntime = ???
   override def check(t: Blockable): Unit = ???
 }
 
-object RemoteObjectRef {
-  def idForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
+
+/** A mix-in to manage remote object references.
+  *
+  * @author jthywiss
+  */
+trait RemoteObjectManager { self: DOrcExecution =>
+
+  // These two maps are inverses of each other
+  protected val remotedObjects = new java.util.concurrent.ConcurrentHashMap[AnyRef, RemoteObjectRef#RemoteRefId]
+  protected val remotedObjectIds = new java.util.concurrent.ConcurrentHashMap[RemoteObjectRef#RemoteRefId, AnyRef]
+  protected val remotedObjectUpdateLock = new Object()
+
+  def remoteIdForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
+    Logger.entering(getClass.getName, "idForObject")
     obj match {
-      case rg: RemoteObjectRef => rg.remoteRefId
-      case _ => ???
+      case ro: RemoteObjectRef => ro.remoteRefId
+      case _ => remotedObjectUpdateLock synchronized {
+        if (remotedObjects.contains(obj)) {
+          remotedObjects.get(obj)
+        } else {
+          val newObjId = freshRemoteObjectId()
+          remotedObjects.put(obj, newObjId)
+          remotedObjectIds.put(newObjId, obj)
+          newObjId
+        }
+      }
     }
   }
-  def objectForId(objectId: RemoteObjectRef#RemoteRefId): AnyRef = ???
+
+  def localObjectForRemoteId(objectId: RemoteObjectRef#RemoteRefId): Option[AnyRef] = Option(remotedObjectIds.get(objectId))
+
 }

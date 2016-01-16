@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,6 +12,8 @@
 //
 
 package orc.run.distrib
+
+import scala.collection.JavaConversions.collectionAsScalaIterable
 
 import orc.run.StandardOrcRuntime
 import orc.run.extensions.SupportForDOrc
@@ -24,6 +26,18 @@ import orc.run.extensions.SupportForDOrc
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with ValueLocator with SupportForDOrc {
-  val followerNumLocationMap: java.util.concurrent.ConcurrentHashMap[Int, Location]
+abstract class DOrcRuntime(engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with SupportForDOrc {
+
+  protected val followerNumLocationMap: java.util.concurrent.ConcurrentHashMap[Int, Location]
+
+  def locationForFollowerNum(followerNum: Int): Location = followerNumLocationMap.get(followerNum)
+
+  val here: Location = Here
+  
+  def allLocations = collectionAsScalaIterable(followerNumLocationMap.values).toSet
+
+  object Here extends Location {
+    def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+  }
+
 }

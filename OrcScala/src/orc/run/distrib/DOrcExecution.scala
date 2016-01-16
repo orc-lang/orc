@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,25 +32,50 @@ import orc.run.core.Execution
   *
   * @author jthywiss
   */
-class DOrcExecution(
-  val executionId: DOrcExecution#ExecutionId,
-  val followerExecutionNum: Int,
-  override val node: Expression,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  runtime: DOrcRuntime)
+abstract class DOrcExecution(
+    val executionId: DOrcExecution#ExecutionId,
+    val followerExecutionNum: Int,
+    override val node: Expression,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    override val runtime: DOrcRuntime)
   extends Execution(node, options, eventHandler, runtime)
-  with GroupProxyManager with RemoteFutureManager with RemoteRefIdManager {
+  with ValueLocator
+  with GroupProxyManager
+  with RemoteFutureManager
+  with RemoteObjectManager
+  with RemoteRefIdManager {
 
   type ExecutionId = String
 
-  def locationForFollowerNum(followerNum: Int): Location = runtime.followerNumLocationMap.get(followerNum)
+  def locationForFollowerNum(followerNum: Int): Location = runtime.locationForFollowerNum(followerNum)
+
+
+  private val hereSet: Set[Location] = Set(runtime.here)
+  override def currentLocations(v: Any) = {
+    val cl = v match {
+      case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
+      case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
+      case _ => hereSet
+    }
+    Logger.finer(s"currentLocations($v)=$cl")
+    cl
+  }
+  override def permittedLocations(v: Any): Set[Location] = {
+    val pl = v match {
+      case plp: LocationPolicy => plp.permittedLocations()
+      case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
+      case _ => runtime.allLocations
+    }
+    Logger.finer(s"permittedLocations($v)=$pl")
+    pl
+  }
 
 }
 
 object DOrcExecution {
   def freshExecutionId() = java.util.UUID.randomUUID().toString
-  val NoGroupProxyId: DOrcExecution#GroupProxyId = 0L
+  val noGroupProxyId: DOrcExecution#GroupProxyId = 0L
 }
 
 /** DOrcExecution in the dOrc LeaderRuntime.  This is the "true" root group.
@@ -62,7 +87,7 @@ class DOrcLeaderExecution(
   programAst: Expression,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
-  runtime: DOrcRuntime)
+  runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) {
 
 }
@@ -78,7 +103,7 @@ class DOrcFollowerExecution(
   programAst: Expression,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
-  runtime: DOrcRuntime)
+  runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 
   override def onHalt() { /* Group halts are not significant here, disregard */ }

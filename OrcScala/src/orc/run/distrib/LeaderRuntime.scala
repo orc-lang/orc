@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -35,7 +35,7 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
 
   type MsgToLeader = OrcFollowerToLeaderCmd
 
-  override val followerNumLocationMap = new java.util.concurrent.ConcurrentHashMap[Int, Location]()
+  override protected val followerNumLocationMap = new java.util.concurrent.ConcurrentHashMap[Int, Location]()
 
   override def run(programAst: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
     val programOil = OrcXML.astToXml(programAst).toString()
@@ -44,6 +44,7 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
 
     {
       var flwrNum = 0
+      followerNumLocationMap.put(0, here)
       followers foreach { f => followerNumLocationMap.put({ flwrNum += 1; flwrNum }, new FollowerLocation(f)) }
     }
 
@@ -67,8 +68,8 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
     Logger.exiting(getClass.getName, "run")
   }
 
-  protected def followerLocations = collectionAsScalaIterable(followerNumLocationMap.values).asInstanceOf[Iterable[FollowerLocation]]
-  protected def followerEntries = collectionAsScalaIterable(followerNumLocationMap.entrySet).asInstanceOf[Iterable[java.util.Map.Entry[Int, FollowerLocation]]]
+  protected def followerLocations = collectionAsScalaIterable(followerNumLocationMap.values).filterNot({ _ == here }).asInstanceOf[Iterable[FollowerLocation]]
+  protected def followerEntries = collectionAsScalaIterable(followerNumLocationMap.entrySet).filterNot({ _.getValue == here }).asInstanceOf[Iterable[java.util.Map.Entry[Int, FollowerLocation]]]
 
   protected def handleExecutionEvent(executionId: DOrcExecution#ExecutionId, event: OrcEvent) {
     Logger.fine(s"Execution got $event")
@@ -150,13 +151,6 @@ class LeaderRuntime() extends DOrcRuntime("dOrc leader") {
     super.stop()
   }
 
-  override def here: Location = Here
-  override def currentLocations(v: Any) = Set(Here) //followerLocations.toSet + here
-  override def permittedLocations(v: Any) = followerLocations.toSet + here
-
-  object Here extends Location {
-    def send(message: OrcPeerCmd) = ???
-  }
 }
 
 class FollowerLocation(remoteSockAddr: InetSocketAddress) extends Location {

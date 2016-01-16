@@ -21,7 +21,7 @@ import orc.run.core.{ Blockable, Blocker, LateBindGroup, RightSidePublished, Rig
   * @author jthywiss
   */
 class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends LateBindGroup(execution) with RemoteRef {
-  type RemoteRefId = Long
+  override type RemoteRefId = Long
 
   execution.sendReadFuture(remoteRefId)
   execution.remove(this) // Don't hold the execution open simply because this ref exists
@@ -94,16 +94,18 @@ class RemoteFutureReader(g: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId
 trait RemoteFutureManager { self: DOrcExecution =>
 
   // These two maps are inverses of each other (sorta)
-  val servingGroups = new java.util.concurrent.ConcurrentHashMap[LateBindGroup, RemoteFutureRef#RemoteRefId]
-  val servingFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
+  protected val servingGroups = new java.util.concurrent.ConcurrentHashMap[LateBindGroup, RemoteFutureRef#RemoteRefId]
+  protected val servingFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
+  protected val servingGroupsFuturesUpdateLock = new Object()
 
-  val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
+  protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
+  protected val waitingReadersUpdateLock = new Object()
 
   def ensureFutureIsRemotelyAccessibleAndGetId(g: LateBindGroup) = {
     Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     g match {
       case rg: RemoteFutureRef => rg.remoteRefId
-      case _ => {
+      case _ => servingGroupsFuturesUpdateLock synchronized {
         if (servingGroups.contains(g)) {
           servingGroups.get(g)
         } else {
@@ -118,10 +120,11 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId) = {
-    if (!waitingReaders.contains(futureId)) {
-      val newFuture = new RemoteFutureRef(this, futureId)
-      waitingReaders.putIfAbsent(futureId, newFuture)
-      /* Benign race here: A superfluous RemoteFutureRef could be created and disregarded. */
+    waitingReadersUpdateLock synchronized {
+      if (!waitingReaders.contains(futureId)) {
+        val newFuture = new RemoteFutureRef(this, futureId)
+        waitingReaders.putIfAbsent(futureId, newFuture)
+      }
     }
     waitingReaders.get(futureId)
   }

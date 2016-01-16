@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 26, 2015.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,16 +22,17 @@ import orc.run.core.{ Binding, BindingFrame, BoundFuture, BoundStop, BoundValue,
   * @author jthywiss
   */
 @SerialVersionUID(-655352528693128511L)
-class TokenReplacement(t: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId) extends Serializable {
+class TokenReplacement(token: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId) extends Serializable {
 
-  protected def marshalBinding(b: Binding): BindingReplacement = (b match {
+  // Logger.fine("TokenReplacement fields: " + getClass.getDeclaredFields.mkString("; "))
+
+  protected def marshalBinding(execution: DOrcExecution)(b: Binding): BindingReplacement = (b match {
     case BoundFuture(g) => {
       g.state match {
         case RightSidePublished(None) => BoundStop
         case RightSidePublished(Some(v)) => BoundValue(v)
         case RightSideSilent => BoundStop
         case RightSideUnknown(_) => {
-          val execution = g.execution.asInstanceOf[DOrcExecution]
           val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
           BoundFutureReplacement(id)
         }
@@ -40,32 +41,41 @@ class TokenReplacement(t: Token, astRoot: Expression, val tokenProxyId: DOrcExec
     case _ => b
   }) match {
     case br: BindingReplacement => br
+    case BoundValue(ro: RemoteObjectRef) => {
+      BoundRemoteReplacement(ro.remoteRefId)
+    }
     //FIXME: Make copy versus reference decision here
     case BoundValue(v) if (!v.isInstanceOf[java.io.Serializable]) => {
-      //      new RemoteObjectReader(v, RemoteObjectRef.idFor(v))
-      val id = RemoteObjectRef.idForObject(v)
+      val id = execution.remoteIdForObject(v)
       BoundRemoteReplacement(id)
     }
-    case b: Binding with Serializable => SerializableBindingReplacement(b)
+    case b: Binding with Serializable => {
+      val br = SerializableBindingReplacement(b)
+      b match {
+        case BoundValue(mn: DOrcMarshallingNotifications) => mn.marshalled()
+        case _ => {/* Nothing to do */}
+      }
+      br
+    }
   }
 
-  protected def marshalFrame(ast: Expression)(f: Frame): FrameReplacement = {
+  protected def marshalFrame(execution: DOrcExecution, ast: Expression)(f: Frame): FrameReplacement = {
     f match {
       case BindingFrame(n, previous) => BindingFrameReplacement(n)
       case SequenceFrame(node, previous) => SequenceFrameReplacement(AstNodeIndexing.nodeIndexInTree(node, ast).get)
-      case FunctionFrame(callpoint, env, previous) => FunctionFrameReplacement(AstNodeIndexing.nodeIndexInTree(callpoint, ast).get, (env map marshalBinding).toArray)
+      case FunctionFrame(callpoint, env, previous) => FunctionFrameReplacement(AstNodeIndexing.nodeIndexInTree(callpoint, ast).get, (env map marshalBinding(execution)).toArray)
       case FutureFrame(k, previous) => ??? //FIXME:Need to refactor FutureFrame to eliminate closures
       case GroupFrame(previous) => GroupFrameReplacement
     }
   }
 
-  val astNodeIndex: Seq[Int] = AstNodeIndexing.nodeIndexInTree(t.getNode, astRoot).get
+  val astNodeIndex: Seq[Int] = AstNodeIndexing.nodeIndexInTree(token.getNode, astRoot).get
 
   /* N.B.: The stack's EmptyFrame will not appear in the array, because of Frame's iterator behavior */
-  private def extractStack(t: Token, astRoot: Expression) = (t.getStack.toArray.reverse) map marshalFrame(astRoot)
+  private def extractStack(t: Token, astRoot: Expression) = (t.getStack.toArray.reverse) map marshalFrame((t.getGroup.execution.asInstanceOf[DOrcExecution]), astRoot)
 
-  val stack = extractStack(t, astRoot)
-  val env = t.getEnv.toArray map marshalBinding
+  val stack = extractStack(token, astRoot)
+  val env = token.getEnv.toArray map marshalBinding(token.getGroup.execution.asInstanceOf[DOrcExecution])
 
   //val clock: VirtualClock = t.getClock
   //val state: TokenState =
@@ -140,14 +150,23 @@ protected abstract class BindingReplacement() {
 }
 
 protected case class SerializableBindingReplacement(b: Binding with Serializable) extends BindingReplacement() {
-  override def unmarshalBinding(execution: DOrcExecution, origin: Location) = b
+  override def unmarshalBinding(execution: DOrcExecution, origin: Location) = {
+    b match {
+      case BoundValue(mn: DOrcMarshallingNotifications) => mn.unmarshalled()
+      case _ => {/* Nothing to do */}
+    }
+    b
+  }
 }
 
 protected case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: Location) = {
-    //FIXME:Implement
-    Logger.warning(s"$remoteRemoteRefId not Serializable, replacing with stop")
-    BoundStop
+    execution.localObjectForRemoteId(remoteRemoteRefId) match {
+      case Some(v) => BoundValue(v)
+      case None =>
+        Logger.finest(s"Binding placeholder for remote object $remoteRemoteRefId")
+        BoundValue(new RemoteObjectRef(remoteRemoteRefId))
+    }
   }
 }
 
