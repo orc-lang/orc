@@ -5,6 +5,8 @@
  - Created by amp on Aug 15, 2012 10:25:54 AM
  -}
 
+include "timeIt.inc"
+
 type Complex = (Number, Number)
 
 def plus(Complex, Complex) :: Complex
@@ -18,9 +20,9 @@ def distance((ar, ai)) = (ar**2 + ai**2) ** 0.5
 
 val threshold = 100
 val steps = 10
-val size = 24
-val resolution = 0.125 -- 3.0 / size
-val offset = 12 -- size / 2.0
+val size = 64
+val resolution = 3.0 / size
+val offset = size / 2.0
 
 def point(c :: Complex) =
 	def inner(z :: Complex, n :: Integer) :: Boolean = 
@@ -39,9 +41,11 @@ def tableToList(n, t) = t(n-1) : tableToList(n-1, t)
 def showRow(l :: List[Boolean]) = afold(lambda(x::String, y::String) = x + y, 
 			map(lambda(x::Boolean) = if x then "@" else ".", l))
 
-tableToList(size, Table(size, row)) >ll>
-map(compose(showRow, lambda(t :: lambda(Integer) :: Boolean) = tableToList(size, t)), ll) >ls>
-Println(unlines(ls))
+timeIt(lambda() =
+  tableToList(size, Table(size, row)) >ll>
+  map(compose(showRow, lambda(t :: lambda(Integer) :: Boolean) = tableToList(size, t)), ll) >ls>
+  Println(unlines(ls))
+)
 
 | 
 Println("size = " + size + ", resolution = " + resolution + ", offset = " + offset)

@@ -12,7 +12,7 @@ object Operations {
     v match {
       case f: Future =>
         // TODO: I don't think checkLive is required here and it might be more expensive than just forcing.
-        ctx.checkLive()
+        //ctx.checkLive() //Disabled to allow more inlining by the JIT.
         f.forceIn(ctx)
       case _ => ctx.publish(v)
     }
