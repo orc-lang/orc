@@ -34,7 +34,7 @@ class RemoteGroupProxy(override val execution: Execution, val remoteProxyId: DOr
   override def publish(t: Token, v: Option[AnyRef]) = synchronized {
     Logger.entering(getClass.getName, "publish", Seq(t, v))
     pubFunc(t, v)
-    t.halt() //FIXME: Should we halt or just remove?
+    t.halt()
   }
 
   override def kill() = {
@@ -121,7 +121,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   protected val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]
   protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
-  def sendToken(token: Token, destination: Location) {
+  def sendToken(token: Token, destination: PeerLocation) {
     Logger.entering(getClass.getName, "sendToken")
     val group = token.getGroup
     val proxyId = group match {
@@ -137,7 +137,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     destination.send(HostTokenCmd(executionId, new TokenReplacement(token, node, rmtProxy.thisProxyId)))
   }
 
-  def hostToken(origin: Location, movedToken: TokenReplacement) {
+  def hostToken(origin: PeerLocation, movedToken: TokenReplacement) {
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
     val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
@@ -156,11 +156,11 @@ trait GroupProxyManager { self: DOrcExecution =>
     runtime.schedule(newToken)
   }
 
-  def sendPublish(destination: Location, proxyId: GroupProxyId)(token: Token, v: Option[AnyRef]) {
+  def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, v: Option[AnyRef]) {
     destination.send(PublishGroupCmd(executionId, proxyId, new TokenReplacement(token, node, proxyId), v))
   }
 
-  def publishInGroup(origin: Location, groupMemberProxyId: GroupProxyId, publishingToken: TokenReplacement, v: Option[AnyRef]) {
+  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishingToken: TokenReplacement, v: Option[AnyRef]) {
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken, v))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
     val newToken = publishingToken.asPublishingToken(origin, node, newTokenGroup, v)
@@ -168,7 +168,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     runtime.schedule(newToken)
   }
 
-  def sendHalt(destination: Location, groupMemberProxyId: GroupProxyId)() {
+  def sendHalt(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
     destination.send(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
@@ -182,7 +182,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     }
   }
 
-  def sendKill(destination: Location, proxyId: GroupProxyId)() {
+  def sendKill(destination: PeerLocation, proxyId: GroupProxyId)() {
     destination.send(KillGroupCmd(executionId, proxyId))
   }
 

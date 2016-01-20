@@ -45,9 +45,9 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   */
 class RemoteFutureReader(g: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
 
-  protected val readerLocations = new scala.collection.mutable.HashSet[Location]()
+  protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
-  def addReader(l: Location) = synchronized {
+  def addReader(l: PeerLocation) = synchronized {
     readerLocations += l
     if (readerLocations.size == 1) {
       g.read(this)
@@ -134,11 +134,11 @@ trait RemoteFutureManager { self: DOrcExecution =>
     homeLocation.send(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
-  def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: Int) {
+  def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId) {
     servingFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
   }
 
-  def sendFutureResult(readers: Traversable[Location], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
+  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
     Logger.entering(getClass.getName, "sendFutureResult")
     readers foreach { _.send(DeliverFutureResultCmd(executionId, futureId, value)) }
   }

@@ -18,8 +18,8 @@ package orc.run.distrib
   * @author jthywiss
   */
 trait ValueLocator {
-  def currentLocations(v: Any): Set[Location]
-  def permittedLocations(v: Any): Set[Location]
+  def currentLocations(v: Any): Set[PeerLocation]
+  def permittedLocations(v: Any): Set[PeerLocation]
 }
 
 /** A Distributed Orc runtime participating in this cluster of runtimes.
@@ -27,8 +27,8 @@ trait ValueLocator {
   *
   * @author jthywiss
   */
-trait Location {
-  def send(message: OrcPeerCmd)
+trait Location[-M <: OrcCmd] {
+  def send(message: M)
 }
 
 /** Provides the set of Locations that can feasibly have a copy of this value.
@@ -36,7 +36,7 @@ trait Location {
   * @author jthywiss
   */
 trait LocationPolicy {
-  def permittedLocations(): Set[Location]
+  def permittedLocations(): Set[PeerLocation]
 }
 
 trait MigrationDecision

@@ -13,6 +13,8 @@
 
 package orc.run.distrib
 
+import java.net.InetSocketAddress
+
 import orc.{ OrcEvent, OrcExecutionOptions }
 
 /** Command sent to dOrc runtime engines.
@@ -25,11 +27,15 @@ trait OrcLeaderToFollowerCmd extends OrcCmd
 trait OrcFollowerToLeaderCmd extends OrcCmd
 trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
 
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, followerExecutionNum: Int, programOil: String, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd
+case class AddPeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress) extends OrcLeaderToFollowerCmd
+case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeaderToFollowerCmd
+
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programOil: String, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd
 case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcLeaderToFollowerCmd
 
 case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEvent) extends OrcFollowerToLeaderCmd
 
+case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivingRuntimeId: DOrcRuntime#RuntimeId) extends OrcPeerCmd
 case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: TokenReplacement) extends OrcPeerCmd
 case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishingToken: TokenReplacement, value: Option[AnyRef]) extends OrcPeerCmd
 case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd

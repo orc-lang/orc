@@ -26,18 +26,17 @@ import orc.run.extensions.SupportForDOrc
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with SupportForDOrc {
+abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with SupportForDOrc {
 
-  protected val followerNumLocationMap: java.util.concurrent.ConcurrentHashMap[Int, Location]
+  /* For now, runtime IDs and Execution follower numbers are the same.  When
+   * we host more than one execution in an engine, they will be different. */
 
-  def locationForFollowerNum(followerNum: Int): Location = followerNumLocationMap.get(followerNum)
+  type RuntimeId = Int
 
-  val here: Location = Here
-  
-  def allLocations = collectionAsScalaIterable(followerNumLocationMap.values).toSet
+  def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation
 
-  object Here extends Location {
-    def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-  }
+  def allLocations: Set[PeerLocation]
+
+  val here: PeerLocation
 
 }

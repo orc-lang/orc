@@ -18,7 +18,7 @@ import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareDefs, DeclareType
 import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
-import orc.run.distrib.{ DOrcExecution, Location, NoLocationAvailable, ValueLocator }
+import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 
@@ -367,7 +367,7 @@ class Token protected (
     //FIXME:Refactor: Place in correct classes, not all here
     /* Maybe there's an extension mechanism we need to add to Orc here.
      * 'Twould be nice to also move the Vclock hook below to this mechanism. */
-    def pickLocation(ls: Set[Location]) = ls.head
+    def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     val dOrcExecution = group.execution.asInstanceOf[DOrcExecution]
     val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)){ _ & _ }

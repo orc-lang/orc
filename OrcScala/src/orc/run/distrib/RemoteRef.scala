@@ -41,7 +41,7 @@ trait RemoteRefIdManager { self: DOrcExecution =>
 
   protected def freshRemoteRefId() = remoteRefIdCounter.getAndIncrement()
 
-  protected def homeLocationForRemoteRef(id: Long): Location = {
+  protected def homeLocationForRemoteRef(id: Long): PeerLocation = {
     val followerNum = id / 10000000000L
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
     locationForFollowerNum(followerNum.toInt)
@@ -66,7 +66,6 @@ class RemoteObjectRef(val remoteRefId: RemoteObjectRef#RemoteRefId) extends Remo
   override val runtime: OrcRuntime = ???
   override def check(t: Blockable): Unit = ???
 }
-
 
 /** A mix-in to manage remote object references.
   *

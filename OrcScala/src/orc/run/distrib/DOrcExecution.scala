@@ -48,10 +48,9 @@ abstract class DOrcExecution(
 
   type ExecutionId = String
 
-  def locationForFollowerNum(followerNum: Int): Location = runtime.locationForFollowerNum(followerNum)
+  def locationForFollowerNum(followerNum: DOrcRuntime#RuntimeId): PeerLocation = runtime.locationForRuntimeId(followerNum)
 
-
-  private val hereSet: Set[Location] = Set(runtime.here)
+  private val hereSet: Set[PeerLocation] = Set(runtime.here)
   override def currentLocations(v: Any) = {
     val cl = v match {
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
@@ -61,7 +60,7 @@ abstract class DOrcExecution(
     Logger.finer(s"currentLocations($v)=$cl")
     cl
   }
-  override def permittedLocations(v: Any): Set[Location] = {
+  override def permittedLocations(v: Any): Set[PeerLocation] = {
     val pl = v match {
       case plp: LocationPolicy => plp.permittedLocations()
       case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
