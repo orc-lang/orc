@@ -31,7 +31,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
     */
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
-  def runSynchronous(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
+  def runSynchronous(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()
@@ -42,7 +42,7 @@ trait SupportForSynchronousExecution extends OrcRuntime {
         case HaltedOrKilledEvent => { doneSignal.signal() }
         case _ => {}
       }
-      k(event)
+      eventHandler(event)
     }
     try {
       this.run(node, syncAction, options)

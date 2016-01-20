@@ -25,10 +25,10 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
   /** Execution groups (group tree roots) are tracked for monitoring/debugging */
   var roots = new java.util.concurrent.ConcurrentHashMap[WeakReference[Execution], Unit]
 
-  def run(node: Expression, k: OrcEvent => Unit, options: OrcExecutionOptions) {
+  def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
 
-    val root = new Execution(node, options, k, this)
+    val root = new Execution(node, options, eventHandler, this)
     installHandlers(root)
 
     roots.put(new WeakReference(root), ())

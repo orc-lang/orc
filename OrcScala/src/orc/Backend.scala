@@ -89,7 +89,7 @@ trait Runtime[-CompiledCode] {
     * <code>k</code> will be called from many threads.
     */
   @throws(classOf[ExecutionException])
-  def run(code: CompiledCode, k: OrcEvent => Unit): Unit
+  def run(code: CompiledCode, eventHandler: OrcEvent => Unit): Unit
 
   /** Execute <code>code</code> synchrously not returning until execution is complete.
     * <code>k</code> will be called from many threads, but will not be called after
@@ -97,7 +97,7 @@ trait Runtime[-CompiledCode] {
     */
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
-  def runSynchronous(code: CompiledCode, k: OrcEvent => Unit): Unit
+  def runSynchronous(code: CompiledCode, eventHandler: OrcEvent => Unit): Unit
 
   /** Stop the runtime and any currently running executions. Once this is called all
     * other calls to this runtime will fail.
