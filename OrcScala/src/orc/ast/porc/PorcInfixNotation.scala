@@ -29,8 +29,9 @@ object in {
 
 trait PorcInfixValue {
   this: Value =>
-  def apply(arg: Value*) = Call(this, arg.toList)
-  def sitecall(p: Value, arg: Value*) = SiteCall(this, arg.toList, p)
+  def apply(arg: Value) = Call(this, arg)
+  def sitecall(p: Value, c: Value, t: Value, arg: Value*) = SiteCall(this, p, c, t, arg.toList)
+  def sitecalldirect(arg: Value*) = SiteCallDirect(this, arg.toList)
 }
 trait PorcInfixExpr {
   this: Expr =>
@@ -41,9 +42,7 @@ object PorcInfixNotation {
   implicit val reflectiveCalls = scala.language.reflectiveCalls
 
   def let(defs: (Var, Expr)*)(body: Expr): Expr = if (defs.isEmpty) body else Let(defs.head._1, defs.head._2, let(defs.tail: _*)(body))
-  def lambda(args: Var*)(body: Expr): Expr = Lambda(args.toList, body)
-
-  def restoreCounter(a: Expr)(b: Expr): RestoreCounter = RestoreCounter(a, b)
+  def continuation(arg: Var)(body: Expr): Expr = Continuation(arg, body)
 }
 
 object LetIn {
@@ -54,19 +53,11 @@ object LetIn {
     case _ => None
   }
 }
-object LambdaIn {
+object ContinuationIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (l@Lambda(args, b)) in ctx =>
-      val bodyctx = ctx extendBindings args.map(LambdaArgumentBound(ctx, l, _))
-      Some(args, bodyctx, b in bodyctx)
-    case _ => None
-  }
-}
-
-object IfIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (l@If(p, t, e)) in ctx =>
-      Some(p in ctx, t in ctx, e in ctx)
+    case (l@Continuation(arg, b)) in ctx =>
+      val bodyctx = ctx extendBindings List(ContinuationArgumentBound(ctx, l, arg))
+      Some(arg, bodyctx, b in bodyctx)
     case _ => None
   }
 }
@@ -89,15 +80,32 @@ object SiteIn {
   }
 }
 
-
 object SiteDefIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@SiteDef(n, args, p, b)) in ctx =>
-      val bodyctx = ctx setCounterTerminator(s) extendBindings args.map(SiteArgumentBound(ctx, s, _)) extendBindings List(SitePublishBound(ctx, s))
-      Some(n, args, p, bodyctx, b in bodyctx)
+    case SiteDefDirectIn(n, args, ctx, b) => Some(n, args, ctx, b)
+    case SiteDefCPSIn(n, _, _, _, args, ctx, b) => Some(n, args, ctx, b)
     case _ => None
   }
 }
+
+object SiteDefCPSIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (s : SiteDefCPS) in ctx =>
+      val bodyctx = ctx extendBindings (s.arguments :+ s.pArg  :+ s.cArg :+ s.tArg).map(SiteArgumentBound(ctx, s, _))
+      Some(s.name, s.pArg, s.cArg, s.tArg, s.arguments, bodyctx, s.body in bodyctx)
+    case _ => None
+  }
+}
+
+object SiteDefDirectIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (s : SiteDefDirect) in ctx =>
+      val bodyctx = ctx extendBindings s.arguments.map(SiteArgumentBound(ctx, s, _))
+      Some(s.name, s.arguments, bodyctx, s.body in bodyctx)
+    case _ => None
+  }
+}
+
 
 object CallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
@@ -108,13 +116,13 @@ object CallIn {
 
 object SiteCallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@SiteCall(t, args, p)) in ctx => Some(t in ctx, args, p, ctx)
+    case SiteCall(target, p, c, t, args) in ctx => Some(target in ctx, p, c, t, args, ctx)
     case _ => None
   }
 }
-object DirectSiteCallIn {
+object SiteCallDirectIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@DirectSiteCall(t, args)) in ctx => Some(t in ctx, args, ctx)
+    case SiteCallDirect(t, args) in ctx => Some(t in ctx, args, ctx)
     case _ => None
   }
 }
@@ -131,82 +139,40 @@ object TryOnKilledIn {
     case _ => None
   } 
 }
-
-/*object ProjectIn {
+object TryFinallyIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@Project(n, v)) in ctx =>
-      Some(n, v in ctx)
+    case TryFinally(b, h) in ctx => Some(b in ctx, h in ctx)
     case _ => None
-  }
-}*/
+  } 
+}
 
 
 // ==================== PROCESS ===================
 
 object SpawnIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@Spawn(t)) in ctx => Some(t in ctx)
+    case Spawn(c, t, e) in ctx => Some(c in ctx, t in ctx, e in ctx)
     case _ => None
   }
 }
 
 object NewCounterIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@NewCounter(k)) in ctx => Some(k in ctx.setCounter(n))
-    case _ => None
-  }
-}
-
-/*object NewCounterDisconnectedIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@NewCounterDisconnected(k)) in ctx => Some(k in ctx.setCounter(n))
-    case _ => None
-  }
-}*/
-
-object RestoreCounterIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@RestoreCounter(ze, no)) in ctx =>
-      val bodyctx = ctx.setCounter(n)
-      Some(ze in bodyctx, no in bodyctx)
-    case _ => None
-  }
-}
-
-object SetCounterHaltIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@SetCounterHalt(v)) in ctx => Some(v in ctx)
+    case NewCounter(c, h) in ctx => Some(c in ctx, h in ctx)
     case _ => None
   }
 }
 
 object NewTerminatorIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@NewTerminator(k)) in ctx =>
-      val bodyctx = ctx.setTerminator(n)
-      Some(k in bodyctx)
-    case _ => None
-  }
-}
-
-object AddKillHandlerIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@AddKillHandler(u, m)) in ctx => Some(u in ctx, m in ctx)
-    case _ => None
-  }
-}
-object IsKilledIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@IsKilled(t)) in ctx => Some(t in ctx)
+    case NewTerminator(t) in ctx => Some(t in ctx)
     case _ => None
   }
 }
 
 object KillIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@Kill(ze, no)) in ctx =>
-      val bodyctx = ctx.setTerminator(n)
-      Some(ze in bodyctx, no in bodyctx)
+    case Kill(t) in ctx => Some(t in ctx)
     case _ => None
   }
 }
@@ -216,56 +182,7 @@ object KillIn {
 
 object ForceIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case Force(f, b) in ctx => Some(f, ctx, b in ctx)
+    case Force(p, c, f) in ctx => Some(p in ctx, c in ctx, f in ctx)
     case _ => None
   }
 }
-
-object ResolveIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case Resolve(f, b) in ctx => Some(f in ctx, b in ctx)
-    case _ => None
-  }
-}
-
-object BindIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case Bind(f, v) in ctx => Some(f in ctx, v in ctx)
-    case _ => None
-  }
-}
-
-object StopIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case Stop(f) in ctx => Some(f in ctx)
-    case _ => None
-  }
-}
-
-
-// ==================== FLAG ===================
-
-object SetFlagIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case SetFlag(flag) in ctx => Some(flag in ctx)
-    case _ => None
-  }
-}
-
-object ReadFlagIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case (n@ReadFlag(flag)) in ctx => Some(flag in ctx)
-    case _ => None
-  }
-}
-
-
-// ==================== EXT ====================
-
-object ExternalCallIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
-    case ExternalCall(site, args, p) in ctx => Some(site, args, ctx, p in ctx)
-    case _ => None
-  }
-}
-

@@ -63,56 +63,37 @@ class PrettyPrint {
       
       case Let(x, v, b) => rd"let $x = ${reduce(v, i+3)} in\n$ind$b"
       case Site(l, b) => rd"site ${l.map(reduce(_, i+3)).mkString(";\n"+indent(i+2))}\n${indent(i+2)} in\n$ind${reduce(b, i)}"
-      case SiteDef(name, args, p, body) => rd"$name (${args.map(reduce(_, i)).mkString(", ")}) $p =\n$ind$body"
+      case SiteDefCPS(name, p, c, t, args, body) => rd"$name ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
+      case SiteDefDirect(name, args, body) => rd"direct $name (${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
       
-      case Lambda(args, b) => rd"\u03BB(${args.map(reduce(_, i)).mkString(", ")}).\n$ind$b"
+      case Continuation(arg, b) => rd"\u03BB($arg).\n$ind$b"
 
-      case Call(t, a) => rd"$t (${a.map(reduce(_, i)).mkString(", ")})"
-      case SiteCall(t, a, p) => rd"sitecall $t (${a.map(reduce(_, i)).mkString(", ")}) $p"
-      case DirectSiteCall(t, a) => rd"directsitecall $t (${a.map(reduce(_, i)).mkString(", ")})"
-      
-      //case Project(n, v) => rd"project_$n $v"
+      case Call(t, a) => rd"$t ($a)"
+      case SiteCall(target, p, c, t, args) => rd"sitecall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
+      case SiteCallDirect(target, args) => rd"sitecall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
       
       case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
       
-      case If(b, t, e) => rd"if $b then\n${indent(i+2)}${reduce(t, i+2)}\n${ind}else\n${indent(i+2)}${reduce(e, i+2)}"
       case TryOnKilled(b, h) => rd"try\n${indent(i+2)}${reduce(b, i+2)}\n${ind}onKilled\n${indent(i+2)}${reduce(h, i+2)}"
       case TryOnHalted(b, h) => rd"try\n${indent(i+2)}${reduce(b, i+2)}\n${ind}onHalted\n${indent(i+2)}${reduce(h, i+2)}"
+      case TryFinally(b, h) => rd"try\n${indent(i+2)}${reduce(b, i+2)}\n${ind}finally\n${indent(i+2)}${reduce(h, i+2)}"
       
-      case Spawn(v) => rd"spawn $v"
+      case Spawn(c, t, e) => rd"spawn $c $t {\n${indent(i+2)}${reduce(e, i+2)}\n$ind}"
         
-      case NewCounter(k) => rd"counter in\n$ind$k"
-      //case NewCounterDisconnected(k) => rd"counter disconnected in\n$ind$k"
-      case RestoreCounter(a, b) => rd"restoreCounter {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
-      case SetCounterHalt(v) => rd"setCounterHalt $v"
-      case DecrCounter() => "decrCounter"
-      case CallCounterHalt() => "callCounterHalt"
-      case CallParentCounterHalt() => "callParentCounterHalt"
-      case MakeCounterTopLevel() => "makeCounterTopLevel"
+      case NewCounter(c, h) => rd"counter $c { $h }"
+      case Halt(c) => rd"halt $c"
 
-      case NewTerminator(k) => rd"terminator in\n$ind$k"
-      case GetTerminator() => "getTerminator"
-      case Kill(a, b) => rd"kill {\n${indent(i+1)}${reduce(a, i+1)}\n$ind}{\n${indent(i+1)}${reduce(b, i+1)}\n$ind}"
-      case Killed() => "killed"
-      case CheckKilled() => "checkKilled"
-      case AddKillHandler(u, m) => rd"addKillHandler $u $m"
-      case IsKilled(t) => rd"isKilled $t"
+      case NewTerminator(t) => rd"terminator $t"
+      case Kill(t) => rd"kill $t"
 
-      case NewFuture() => "newFuture"
-      case Force(vs, b) => rd"force (${vs.map(reduce(_, i)).mkString(", ")}) $b"
-      case Resolve(f, b) => rd"resolve $f $b"
-      case Bind(f, v) => rd"bind $f $v"
-      case Stop(f) => rd"stop $f"
+      case SpawnFuture(c, t, pArg, e) => rd"spawnFuture $c $t ($pArg) {\n${indent(i+2)}${reduce(e, i+2)}\n$ind}"
       
-      case NewFlag() => "newFlag"
-      case SetFlag(f) => rd"setFlag $f"
-      case ReadFlag(f) => rd"readFlag $f"
-
-      case ExternalCall(s, args, p) => rd"external $s (${args.map(reduce(_, i)).mkString(", ")}) $p"
-
+      case Force(p, c, f) => rd"force $p $c $f"
+      case GetField(p, c, o, f) => rd"getField $p $c $o$f"
+      
       case v if v.productArity == 0 => v.productPrefix
 
-      case _ => ???
+      case v => throw new NotImplementedError("Cannot convert: " + v.getClass.toString)
     })
   }
 }

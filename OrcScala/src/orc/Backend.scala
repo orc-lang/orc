@@ -33,7 +33,8 @@ sealed trait BackendType
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
     "token" -> TokenInterpreterBackend,
-    "orctimizer" -> OrctimizerInterpreterBackend
+    "orctimizer" -> OrctimizerInterpreterBackend,
+    "porc" -> PorcCompilerBackend
     )
 
   def fromString(s: String) = {
@@ -55,6 +56,13 @@ case object TokenInterpreterBackend extends BackendType {
   */
 case object OrctimizerInterpreterBackend extends BackendType {
   override val toString = "Orctimizer"
+  def it = this
+}
+
+/** The target based on the Orctimizer and porc.
+  */
+case object PorcCompilerBackend extends BackendType {
+  override val toString = "Porc"
   def it = this
 }
 

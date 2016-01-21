@@ -180,8 +180,11 @@ $code
         |${defs.map(orcdef(_)).mkString}
         |${expression(body).deindentedAgressively}"""
       }
+
+      // We do not handle types
       case HasType(body, expectedType) => expression(body)
       case DeclareType(u, t, body) => expression(body)
+      
       case VtimeZone(timeOrder, body) => ???
       case FieldAccess(o, f) => {
         j"""
@@ -193,7 +196,6 @@ $code
         |$ctx.publish(${argument(a)});
         """
       }
-      // We do not handle types
       case _ => "???"
     }
     

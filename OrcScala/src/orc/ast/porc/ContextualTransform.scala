@@ -73,52 +73,52 @@ trait ContextualTransform {
         Site(ls1, transformExpr(b.e in ctx1))
       }
 
-      case CallIn(t, a, ctx) => Call(transformValue(t), a map { v => transformValue(v in ctx) })
-      case SiteCallIn(t, a, p, ctx) => SiteCall(transformValue(t), a map { v => transformValue(v in ctx) }, transformValue(p in ctx))
-      case DirectSiteCallIn(t, a, ctx) => DirectSiteCall(transformValue(t), a map { v => transformValue(v in ctx) })
+      case CallIn(t, a, ctx) => Call(transformValue(t), transformValue(a in ctx))
+      case SiteCallIn(target, p, c, t, args, ctx) => SiteCall(transformValue(target), transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), args map { v => transformValue(v in ctx) })
+      case SiteCallDirectIn(t, a, ctx) => SiteCallDirect(transformValue(t), a map { v => transformValue(v in ctx) })
 
-      case LambdaIn(args, ctx, b) => Lambda(args map {v => transformVariable(v in ctx)}, transformExpr(b))
+      case ContinuationIn(arg, ctx, b) => Continuation(transformVariable(arg in ctx), transformExpr(b))
 
       case SequenceIn(l, ctx) => {
         Sequence(l map {e => transformExpr(e in ctx)})
       }
 
-      case If(b, t, e) in ctx => If(transformValue(b in ctx), transformExpr(t in ctx), transformExpr(e in ctx))
       case TryOnKilled(b, h) in ctx => TryOnKilled(transformExpr(b in ctx), transformExpr(h in ctx))
       case TryOnHalted(b, h) in ctx => TryOnHalted(transformExpr(b in ctx), transformExpr(h in ctx))
       
 
       //case ProjectIn(n, v) => Project(n, transformValue(v))
       
-      case SpawnIn(v) => Spawn(transformVariable(v))
+      case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
         
-      case NewCounterIn(e) => NewCounter(transformExpr(e))
-      //case NewCounterDisconnectedIn(k) => NewCounterDisconnected(transformCommand(k))
-      case RestoreCounterIn(a, b) => RestoreCounter(transformExpr(a), transformExpr(b))
-      case SetCounterHaltIn(v) => SetCounterHalt(transformVariable(v))
+      case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
+      case Halt(c) in ctx => Halt(transformValue(c in ctx))
 
-      case NewTerminatorIn(k) => NewTerminator(transformExpr(k))
-      case AddKillHandlerIn(u, m) => AddKillHandler(transformValue(u), transformValue(m))
-      case IsKilledIn(t) => IsKilled(transformVariable(t))
-      case KillIn(a, b) => Kill(transformExpr(a), transformExpr(b))
+      case NewTerminatorIn(t) => NewTerminator(transformValue(t))
+      case KillIn(t) => Kill(transformValue(t))
         
-      case ForceIn(vs, ctx, b) => Force(vs map (v => transformValue(v in ctx)), transformValue(b))
-      case ResolveIn(f, b) => Resolve(transformValue(f), transformValue(b))
-      case BindIn(f, v) => Bind(transformVariable(f), transformValue(v))
-      case StopIn(f) => Stop(transformVariable(f))
+      case ForceIn(p, c, f) => Force(transformValue(p), transformValue(c), transformValue(f))
+      //case ResolveIn(f, b) => Resolve(transformValue(f), transformValue(b))
       
-      case SetFlagIn(f) => SetFlag(transformVariable(f))
-      case ReadFlagIn(f) => ReadFlag(transformVariable(f))
-
-      case ExternalCallIn(s, args, ctx, p) => ExternalCall(s, args map (v => transformValue(v in ctx)), transformValue(p))
-
       case e in _ if e.productArity == 0 => e
     })(expr)
   }
   
   def transformSiteDef(expr: WithContext[SiteDef]): SiteDef = {
     order[SiteDef](callHandler, {
-      case SiteDefIn(name, args, pArg, ctx, body) => SiteDef(transformVariable(name in ctx), args map { v => transformVariable(v in ctx) }, transformVariable(pArg in ctx), transformExpr(body))
+      case SiteDefCPSIn(name, p, c, t, args, ctx, body) => 
+        SiteDefCPS(
+            transformVariable(name in ctx), 
+            transformVariable(p in ctx),
+            transformVariable(c in ctx),
+            transformVariable(t in ctx),
+            args map { v => transformVariable(v in ctx) }, 
+            transformExpr(body))
+      case SiteDefDirectIn(name, args, ctx, body) => 
+        SiteDefDirect(
+            transformVariable(name in ctx), 
+            args map { v => transformVariable(v in ctx) },
+            transformExpr(body))
     })(expr)
   }
 
@@ -127,7 +127,6 @@ trait ContextualTransform {
       case (n @ OrcValue(_)) in _ => n
       //case (n @ Tuple(vs)) in ctx => Tuple(vs.map(v => transformValue(v in ctx)))
       case (v @ Unit()) in _ => v 
-      case (v @ Bool(_)) in _ => v 
       case (v: Var) in ctx => v
     })(expr)
   }

@@ -2,6 +2,7 @@ package orc.compile.orctimizer
 
 import orc.compile._
 import orc.ast.orctimizer
+import orc.ast.porc
 import orc.error.compiletime.CompileLogger
 import orc.compile.tojava.OrctimizerToJava
 
@@ -153,4 +154,49 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       outputIR(6) >>>
       toJava >>>
       outputIR(7)
+}
+
+class PorcOrcCompiler() extends OrctimizerOrcCompiler {
+  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.Expr] {
+    val phaseName = "translate"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        val translator = new OrctimizerToPorc()
+        translator(ast)
+      }
+  }
+
+  val porcToJava = new CompilerPhase[CompilerOptions, porc.Expr, String] {
+    val phaseName = "toJava"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        ""
+      }
+  }
+
+  override val phases =
+    parse.timePhase >>>
+      translate.timePhase >>>
+      vClockTrans.timePhase >>>
+      noUnboundVars.timePhase >>>
+      fractionDefs.timePhase >>>
+      typeCheck.timePhase >>>
+      outputIR(1) >>>
+      splitPrune.timePhase >>>
+      noUnguardedRecursion.timePhase >>>
+      removeUnusedDefs.timePhase >>>
+      removeUnusedTypes.timePhase >>>
+      outputIR(2) >>>
+      toOrctimizer >>>
+      outputIR(3) >>>
+      optimize >>>
+      outputIR(4) >>>
+      unroll >>>
+      outputIR(5) >>>
+      optimize >>>
+      outputIR(6) >>>
+      toPorc >>>
+      outputIR(7) >>>
+      porcToJava >>>
+      outputIR(8)
 }

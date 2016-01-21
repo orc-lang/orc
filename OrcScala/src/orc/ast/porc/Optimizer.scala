@@ -15,7 +15,7 @@
 package orc.ast.porc
 
 import orc.values.sites.{ Site => OrcSite }
-import orc.values.sites.DirectSite
+//TODO: import orc.values.sites.DirectSite
 import orc.compile.CompilerOptions
 
 trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) {
@@ -67,7 +67,7 @@ case class Optimizer(co: CompilerOptions) {
   val InlineLet = OptFull("inline-let") { (expr, a) =>
     import a.ImplicitResults._
     expr match {
-      case LetIn(x in _, lam @ LambdaIn(formals, _, impl), scope) =>
+      case LetIn(x in _, lam @ ContinuationIn(formal, _, impl), scope) =>
         def size = impl.cost
         lazy val (noncompatReferences, compatReferences, compatCallsCost) = {
           var refs = 0
@@ -106,8 +106,8 @@ case class Optimizer(co: CompilerOptions) {
 
         val doInline = new ContextualTransform.NonDescending {
           override def onExpr = {
-            case Call(`x`, args) in usectx if usectx.compatibleFor(impl)(expr.ctx) =>
-              impl.substAll((formals zip args).toMap)
+            case Call(`x`, arg) in usectx if usectx.compatibleFor(impl)(expr.ctx) =>
+              impl.substAll(Map((formal, arg)))
           }
         }
 
@@ -124,6 +124,9 @@ case class Optimizer(co: CompilerOptions) {
         None
     }
   }
+
+  /*
+  This may not be needed because site inlining is already done in Orc5C
 
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
 
@@ -145,8 +148,6 @@ case class Optimizer(co: CompilerOptions) {
     }
   }
 
-  /*
-  This may not be needed because site inlining is already done in Orc5C
   
   val siteInlineThreshold = 50
   val siteInlineCodeExpansionThreshold = 50
@@ -179,8 +180,7 @@ case class Optimizer(co: CompilerOptions) {
   }
    */
 
-  val allOpts = List(SpecializeSiteCall, InlineSpawn, EtaReduce, ForceElim, VarLetElim,
-    InlineLet, LetElim, SiteElim, OnHaltedElim)
+  val allOpts = List(EtaReduce, VarLetElim, InlineLet, LetElim, SiteElim, OnHaltedElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -236,7 +236,7 @@ object Optimizer {
   }
 
   val EtaReduce = Opt("eta-reduce") {
-    case (LambdaIn(formals, _, CallIn(t, args, _)), a) if args.toList == formals.toList => t
+    case (ContinuationIn(formal, _, CallIn(t, arg, _)), a) if arg == formal => t
   }
 
   val LetElim = Opt("let-elim") {
@@ -250,12 +250,8 @@ object Optimizer {
     case (SiteIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
   }
 
-  val ForceElim = Opt("force-elim") {
-    case (ForceIn(List(), _, b), a) => b()
-    case (ForceIn(args, ctx, b), a) if args.forall(v => a(v in ctx).isNotFuture) => b(args: _*)
-    // FIXME: Add form that removes the variables that are not futures but leaves the futures.
-  }
-
+  /*
+   * TODO:
   val SpecializeSiteCall = Opt("specialize-sitecall") {
     case (SiteCallIn(OrcValue(s: OrcSite) in _, args, p, ctx), a) =>
       import PorcInfixNotation._
@@ -293,6 +289,7 @@ object Optimizer {
       else
         CheckKilled() ::: impl
   }
+  */
 
   val OnHaltedElim = OptFull("onhalted-elim") { (e, a) =>
     e match {

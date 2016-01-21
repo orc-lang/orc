@@ -53,11 +53,7 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
   // TODO: add enclosing exception context, this will not effect compatibility since it is always dynamic anyway
 
   def compatibleFor(e: Expr)(o: TransformContext): Boolean = {
-    val fc = e.referencesCounter
-    val ft = e.referencesTerminator
-    compatibleForSite(e)(o) &&
-      (!fc || enclosingCounter == o.enclosingCounter) &&
-      (!ft || enclosingTerminator == o.enclosingTerminator)
+    compatibleForSite(e)(o)
   }
   def compatibleForSite(e: Expr)(o: TransformContext): Boolean = {
     val fv = e.freevars
@@ -149,30 +145,24 @@ case class RecursiveSiteBound(ctx: TransformContext, ast: Site, d: SiteDef) exte
 case class SiteArgumentBound(ctx: TransformContext, ast: SiteDef, variable: Var) extends Binding {
   assert(ast.arguments.contains(variable))
 }
-case class SitePublishBound(ctx: TransformContext, ast: SiteDef) extends Binding {
-  def variable: Var = ast.pArg
-}
 
-case class LambdaArgumentBound(ctx: TransformContext, ast: Lambda, variable: Var) extends Binding {
-  assert(ast.arguments.contains(variable))
+case class ContinuationArgumentBound(ctx: TransformContext, ast: Continuation, variable: Var) extends Binding {
+  assert(ast.argument == variable)
 }
 
 final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
   def subtrees: Iterable[WithContext[PorcAST]] = this match {
     case LetIn(x, v, b) => Seq(v, b)
     case SiteIn(l, ctx, b) => l.map(_ in ctx).toSeq :+ b
-    case SiteDefIn(n, args, p, _, b) => Seq(b)
+    case SiteDefIn(n, args, ctx, b) => Seq(b)
 
-    case CallIn(t, a, ctx) => Seq(t) ++ a.map(_ in ctx)
-    case SiteCallIn(t, a, p, ctx) => Seq(t, p in ctx) ++ a.map(_ in ctx)
-    case DirectSiteCallIn(t, a, ctx) => Seq(t) ++ a.map(_ in ctx)
+    case CallIn(t, a, ctx) => Seq(t) :+ (a in ctx)
+    case SiteCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
+    case SiteCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
 
-    case LambdaIn(args, ctx, b) => Seq(b)
+    case ContinuationIn(args, ctx, b) => Seq(b)
 
-    case NewCounterIn(e) => Seq(e)
-    case RestoreCounterIn(a, b) => Seq(a, b)
-    case NewTerminatorIn(k) => Seq(k)
-    case KillIn(a, b) => Seq(a, b)
+    case NewCounterIn(c, h) => Seq(h)
 
     case e in ctx => e.subtrees.collect { case e : PorcAST => e in ctx }
   }

@@ -20,6 +20,7 @@ import orc.ast.hasOptionalVariableName
 import orc.values.sites
 import orc.ast.PrecomputeHashcode
 import java.util.logging.Level
+import orc.values.Field
 
 /**
   * @author amp
@@ -29,7 +30,7 @@ sealed abstract class PorcAST extends AST with Product with WithContextInfixComb
   override def toString() = prettyprint()
 
   var number: Option[Int] = None
-
+  
   /** Assign numbers in depth first order stating at 0.
     */
   def assignNumbers() {
@@ -62,7 +63,7 @@ trait UnnumberedPorcAST extends PorcAST {
 }
 
 // ==================== CORE ===================
-sealed abstract class Expr extends PorcAST with FreeVariables with ReferencesRegisters with Substitution[Expr] with Product with PrecomputeHashcode with PorcInfixExpr
+sealed abstract class Expr extends PorcAST with FreeVariables with Substitution[Expr] with Product with PrecomputeHashcode with PorcInfixExpr
 
 sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST //with Substitution[Value]
 case class OrcValue(value: AnyRef) extends Value
@@ -73,7 +74,6 @@ object Tuple {
 }*/
 
 case class Unit() extends Value
-case class Bool(b: Boolean) extends Value
 
 class Var(optionalName: Option[String] = None) extends Value with hasOptionalVariableName {
   optionalVariableName = optionalName match {
@@ -102,8 +102,9 @@ object Var {
   }
 }
 
-case class Call(target: Value, argument: List[Value]) extends Expr
+case class Call(target: Value, argument: Value) extends Expr
 case class Let(x: Var, v: Expr, body: Expr) extends Expr
+
 case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST {
   //assert(!es.isEmpty)
   
@@ -127,64 +128,42 @@ object Sequence {
   }
 }
 
-case class Lambda(arguments: List[Var], body: Expr) extends Expr
+case class Continuation(argument: Var, body: Expr) extends Expr
 
 case class Site(defs: List[SiteDef], body: Expr) extends Expr
-case class SiteDef(name: Var, arguments: List[Var], pArg: Var, body: Expr) extends PorcAST
+sealed abstract class SiteDef extends PorcAST {
+  def name: Var
+  def arguments: List[Var]
+  def body: Expr
+}
+final case class SiteDefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends SiteDef
+final case class SiteDefDirect(name: Var, arguments: List[Var], body: Expr) extends SiteDef
 
-case class SiteCall(target: Value, arguments: List[Value], pArg: Value) extends Expr
-case class DirectSiteCall(target: Value, arguments: List[Value]) extends Expr
-
-//case class Project(n: Int, v: Value) extends Expr
-case class If(b: Value, thn: Expr, els: Expr) extends Expr
+case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr
+case class SiteCallDirect(target: Value, arguments: List[Value]) extends Expr
 
 // ==================== PROCESS ===================
 
-case class Spawn(target: Var) extends Expr
+case class Spawn(cArg: Value, tArg: Value, body: Expr) extends Expr
 
-case class NewCounter(e: Expr) extends Expr
-//TODO: case class NewCounterDisconnected(k: Command) extends Command with hasSimpleContinuation
-case class DecrCounter() extends Expr
-case class RestoreCounter(zeroBranch: Expr, nonzeroBranch: Expr) extends Expr
-case class SetCounterHalt(haltCont: Var) extends Expr
-case class CallCounterHalt() extends Expr
-case class CallParentCounterHalt() extends Expr
-
-case class MakeCounterTopLevel() extends Expr
-
-case class NewTerminator(e: Expr) extends Expr
-case class GetTerminator() extends Expr
-case class Kill(before: Expr, after: Expr) extends Expr
-object Kill {
-  /*def apply(before: Expr)(after: Expr): Kill = {
-    Kill(before, after)
-  }*/
-}
-case class Killed() extends Expr
-case class CheckKilled() extends Expr
+case class NewTerminator(parent: Value) extends Expr
+case class Kill(t: Value) extends Expr
 case class TryOnKilled(body: Expr, handler: Expr) extends Expr
 
-case class IsKilled(t: Var) extends Expr
-
-case class Halted() extends Expr
+case class NewCounter(parent: Value, haltCont: Expr) extends Expr
+case class Halt(c: Value) extends Expr
 case class TryOnHalted(body: Expr, handler: Expr) extends Expr
 
-case class AddKillHandler(t: Value, v: Value) extends Expr
+case class TryFinally(body: Expr, handler: Expr) extends Expr
 
 // ==================== FUTURE ===================
 
-case class NewFuture() extends Expr
-case class Force(futures: List[Value], bound: Value) extends Expr
-case class Resolve(future: Value, bound: Value) extends Expr
-case class Bind(future: Var, value: Value) extends Expr
-case class Stop(future: Var) extends Expr
+case class SpawnFuture(c: Value, t: Value, pArg: Var, expr: Expr) extends Expr
+case class Force(p: Value, c: Value, future: Value) extends Expr
 
-// ==================== FLAG ===================
+case class GetField(p: Value, c: Value, future: Value, field: Field) extends Expr
 
-case class NewFlag() extends Expr
-case class SetFlag(flag: Var) extends Expr
-case class ReadFlag(flag: Var) extends Expr
+case class Resolve(c: Value, t: Value, future: Value, expr: Expr) extends Expr
 
-// ==================== EXT ====================
+case class ForceMany(c: Value, t: Value, futures: List[Value], args: List[Var], expr: Expr) extends Expr
 
-case class ExternalCall(site: sites.Site, arguments: List[Value], p: Value) extends Expr

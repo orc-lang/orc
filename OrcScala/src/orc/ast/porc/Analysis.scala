@@ -65,7 +65,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   
   
   def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(nonFuture(e), nonHalt(e), cost(e), fastTerminating(e))
+    AnalysisResults(nonFuture(e), false, Int.MaxValue, false) // nonHalt(e), cost(e), fastTerminating(e))
   }
   
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -75,14 +75,16 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   def nonFuture(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     e match {
-      case (_:OrcValue | _:Bool | _:Unit) in _ => true
+      case (_:OrcValue | _:Unit) in _ => true
       case (v:Var) in ctx  => ctx(v) match {
-        case _ : LambdaArgumentBound | _ : SiteBound | _ : RecursiveSiteBound => true
+        case _ : ContinuationArgumentBound | _ : SiteBound | _ : RecursiveSiteBound => true
         case _ => false // This needs types.
       }
       case _ => false
     }
   }
+  
+  /*
   def nonHalt(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     // TODO: Fill this out to be a more accurate analysis. It should be a type analysis.
@@ -166,6 +168,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case _ => 0
     }) + (cs.map( _.cost ).sum)
   }
+  */
 }
 
 
