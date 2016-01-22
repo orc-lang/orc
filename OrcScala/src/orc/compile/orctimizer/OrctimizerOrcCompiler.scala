@@ -5,6 +5,7 @@ import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
 import orc.compile.tojava.OrctimizerToJava
+import orc.compile.tojava.PorcToJava
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -170,10 +171,52 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "toJava"
     override def apply(co: CompilerOptions) =
       { ast =>
-        ""
+        val translator = new PorcToJava()
+        translator(ast)
       }
   }
-
+  
+  val optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.ast.porc.Expr] {
+    import orc.ast.porc._
+    val phaseName = "optimize"
+    override def apply(co: CompilerOptions) = { ast =>
+      val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
+   
+      def opt(prog : Expr, pass : Int) : Expr = {
+        val analyzer = new Analyzer
+        val stats = Map(
+            "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
+            "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
+            "closures" -> Analysis.count(prog, _.isInstanceOf[Let]),
+            "sites" -> Analysis.count(prog, _.isInstanceOf[Site]),
+            "nodes" -> Analysis.count(prog, (_ => true)),
+            "cost" -> analyzer(prog in TransformContext()).cost
+          )
+        val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc Optimization Pass $pass: $s")
+        //println("-------==========")
+        //println(prog)
+        //println("-------==========")
+        
+        val prog1 = Optimizer(co)(prog, analyzer)
+        orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
+        if(prog1 == prog || pass > maxPasses)
+          prog1
+        else {
+          opt(prog1, pass+1)
+        }
+      }
+      
+      val e = if(co.options.optimizationFlags("porc").asBool())
+        opt(ast, 1)
+      else
+        ast
+      
+      TransformContext.clear()
+      e.assignNumbers()
+      e
+    }
+  }
   override val phases =
     parse.timePhase >>>
       translate.timePhase >>>
@@ -196,6 +239,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       optimize >>>
       outputIR(6) >>>
       toPorc >>>
+      outputIR(7) >>>
+      optimizePorc >>>
       outputIR(7) >>>
       porcToJava >>>
       outputIR(8)

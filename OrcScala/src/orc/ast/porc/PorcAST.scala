@@ -167,3 +167,12 @@ case class Resolve(c: Value, t: Value, future: Value, expr: Expr) extends Expr
 
 case class ForceMany(c: Value, t: Value, futures: List[Value], args: List[Var], expr: Expr) extends Expr
 
+// ==================== TYPE ===================
+/*
+sealed abstract class Type extends PorcAST
+
+case class ContinuationType() extends Type
+case class SiteType() extends Type
+case class CounterType() extends Type
+case class TerminatorType() extends Type
+*/

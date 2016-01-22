@@ -5,6 +5,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import orc.error.compiletime.SiteResolutionException
 import orc.values.sites.{ Effects, Site }
 
+trait Continuation {
+  def call(v: AnyRef)
+}
+
+
 // TODO: It might be good to have calls randomly schedule themselves to unroll the stack.
 /** An object that can be called directly from within the tojava runtime.
   *
@@ -88,18 +93,6 @@ object Callable {
         throw new Error(e)
     }
   }
-
-  /** Coerce any value to a Callable.
-    *
-    * If it is a Callable, just use that. Otherwise assume it is a Java object
-    * we would like to call and wrap it for a runtime based invocation.
-    */
-  def coerceToCallable(v: AnyRef): Callable = {
-    v match {
-      case c: Callable => c
-      // TODO: We may want to optimize cases like records and site calls.
-      //case s: Site => new SiteCallable(s)
-      case v => new RuntimeCallable(v)
-    }
-  }
+  
+  def coerceToCallable(v: AnyRef): Callable = Coercions.coerceToCallable(v)
 }
