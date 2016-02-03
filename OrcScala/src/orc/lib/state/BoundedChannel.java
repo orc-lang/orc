@@ -96,8 +96,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("getD", new SiteAdaptorFunctional() {
-				@Override
+			addMember("getD", new SiteAdaptor() {
+			    @Override
 				public void callSite(final Args args, final Handle reader) {
 					synchronized (ChannelInstance.this) {
 						if (contents.isEmpty()) {
@@ -141,8 +141,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 					}
 				}
 			});
-			addMember("putD", new SiteAdaptorFunctional() {
-				@Override
+			addMember("putD", new SiteAdaptor() {
+                @Override
 				public void callSite(final Args args, final Handle writer) throws TokenException {
 					synchronized (ChannelInstance.this) {
 						final Object item = args.getArg(0);
