@@ -158,7 +158,7 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
 }
 
 class PorcOrcCompiler() extends OrctimizerOrcCompiler {
-  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.Expr] {
+  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.SiteDefCPS] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -167,7 +167,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
 
-  val porcToJava = new CompilerPhase[CompilerOptions, porc.Expr, String] {
+  val porcToJava = new CompilerPhase[CompilerOptions, porc.SiteDefCPS, String] {
     val phaseName = "toJava"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -176,7 +176,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
   
-  val optimizePorc = new CompilerPhase[CompilerOptions, orc.ast.porc.Expr, orc.ast.porc.Expr] {
+  val optimizePorc = new CompilerPhase[CompilerOptions, porc.SiteDefCPS, porc.SiteDefCPS] {
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
@@ -208,13 +208,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
       
       val e = if(co.options.optimizationFlags("porc").asBool())
-        opt(ast, 1)
+        opt(ast.body, 1)
       else
-        ast
+        ast.body
       
       TransformContext.clear()
       e.assignNumbers()
-      e
+      ast.copy(body = e)
     }
   }
   override val phases =

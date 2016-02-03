@@ -12,18 +12,19 @@ case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var) {
 /** @author amp
   */
 class OrctimizerToPorc {
-  def apply(prog: Expression): porc.Expr = {
+  def apply(prog: Expression): porc.SiteDefCPS = {
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
-    expression(prog)(ConversionContext(p = newP, c = newC, t = newT))
+    val body = expression(prog)(ConversionContext(p = newP, c = newC, t = newT))
+    porc.SiteDefCPS(newVarName("Prog"), newP, newC, newT, Nil, body)
   }
   
   val vars: mutable.Map[BoundVar, porc.Var] = new mutable.HashMap()
   var varCounter: Int = 0
   def newVarName(prefix: String = "_t"): porc.Var = {
     varCounter += 1
-    new porc.Var(prefix + "_" + varCounter)
+    new porc.Var(Some(prefix + "_" + varCounter))
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
 
@@ -66,7 +67,7 @@ class OrctimizerToPorc {
       }
       case left Concat right => {
         val newC = newVarName("C")
-        let((newC, porc.NewCounter(ctx.c, expression(right)))) {
+        let((newC, porc.NewCounter(ctx.c, expression(left)))) {
           porc.TryFinally(expression(right)(ctx.copy(c = newC)), porc.Halt(newC))
         }
       }
@@ -80,7 +81,7 @@ class OrctimizerToPorc {
       
       case VtimeZone(timeOrder, body) => ???
       case FieldAccess(o, f) => {
-        porc.GetField(ctx.p, ctx.c, argument(o), f)
+        porc.GetField(ctx.p, ctx.c, ctx.t, argument(o), f)
       }
       case a: Argument => {
         ctx.p(argument(a))

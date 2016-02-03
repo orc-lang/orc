@@ -29,3 +29,9 @@ trait Blockable {
     */
   def prepareSpawn(): Unit
 }
+
+final class PCBlockable(p: Continuation, c: Counter) extends Blockable {
+  def publish(v: AnyRef): Unit = p.call(v)
+  def halt(): Unit = c.halt()
+  def prepareSpawn(): Unit = c.prepareSpawn()
+}

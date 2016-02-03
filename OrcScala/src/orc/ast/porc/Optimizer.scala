@@ -180,7 +180,7 @@ case class Optimizer(co: CompilerOptions) {
   }
    */
 
-  val allOpts = List(EtaReduce, VarLetElim, InlineLet, LetElim, SiteElim, OnHaltedElim)
+  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineLet, LetElim, SiteElim, OnHaltedElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -202,7 +202,7 @@ object Optimizer {
       case _ => None
     }
   }
-  
+
   object LetStackIn {
     def unapply(e: WithContext[PorcAST]): Some[(Seq[(Option[WithContext[Var]], WithContext[Expr])], WithContext[PorcAST])] = e match {
       case LetIn(x, v, b) =>
@@ -215,12 +215,12 @@ object Optimizer {
       case _ => Some((Seq(), e))
     }
   }
-  
+
   object LetStack {
     def apply(bindings: Seq[(Option[WithContext[Var]], WithContext[Expr])], b: Expr) = {
       bindings.foldRight(b)((bind, b) => {
         bind match {
-          case (Some(x), v) => 
+          case (Some(x), v) =>
             Let(x, v, b)
           case (None, v) =>
             v ::: b
@@ -250,57 +250,31 @@ object Optimizer {
     case (SiteIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
   }
 
-  /*
-   * TODO:
-  val SpecializeSiteCall = Opt("specialize-sitecall") {
-    case (SiteCallIn(OrcValue(s: OrcSite) in _, args, p, ctx), a) =>
-      import PorcInfixNotation._
-      val pp = new Var("pp")
-      val (xs, ys) = (args collect {
-        case x: Var => (x, new Var())
-      }).unzip
+  val SpecializeSiteCall = OptFull("specialize-sitecall") { (e, a) =>
+    e match {
+      case SiteCallIn(target in _, p, c, t, args, ctx) =>
+        import PorcInfixNotation._
+        import a.ImplicitResults._
 
-      def pickArg(a: Value) = {
-        if (xs contains a) {
-          ys(xs.indexOf(a))
+        if ((target in ctx).siteMetadata.map(_.isDirectCallable).getOrElse(false)) {
+          val v = new Var()
+          Some(
+            TryOnHalted({
+              let((v, SiteCallDirect(target, args))) {
+                p(v)
+              }
+            }, Unit()))
         } else {
-          a
+          None
         }
-      }
-
-      val callArgs = args map pickArg
-      val callImpl = s match {
-        case s: DirectSite => {
-          val v = new Var("v")
-          TryOnHalted({
-            let((v, DirectSiteCall(OrcValue(s), callArgs))) {
-              p(v)
-            }
-          }, Unit())
-        }
-        case _ => ExternalCall(s, callArgs, p)
-      }
-
-      val impl = let((pp, lambda(ys: _*) { callImpl })) {
-        Force(xs, pp)
-      }
-      if (s.effectFree)
-        impl
-      else
-        CheckKilled() ::: impl
+      case _ => None
+    }
   }
-  */
 
   val OnHaltedElim = OptFull("onhalted-elim") { (e, a) =>
     e match {
       case TryOnHaltedIn(LetStackIn(bindings, TryOnHaltedIn(b, h1)), h2) if h1.e == h2.e =>
         Some(TryOnHalted(LetStack(bindings, b), h2))
-      /*case TryOnHaltedIn(LetStackIn(bindings, core), h2) =>
-        Logger.info(s"Failed to match: ${bindings.collect { case (x, v) => (x.map(_.e), v.e) }}\ncore: ${core.e}\nh: ${h2.e}")
-        None
-      case TryOnHaltedIn(_, _) =>
-        Logger.info(s"Failed to match: ${e.e}")
-        None*/
       case _ => None
     }
   }

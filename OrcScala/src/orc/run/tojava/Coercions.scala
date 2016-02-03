@@ -18,7 +18,7 @@ object Coercions {
     }
   }
   
-  def coerceToDirectCallable(v: AnyRef): Callable = ???
+  def coerceToDirectCallable(v: AnyRef): AnyRef = ???
   def coerceToContinuation(v: AnyRef): Continuation = v.asInstanceOf[Continuation]
   def coerceToTerminator(v: AnyRef): Terminator = v.asInstanceOf[Terminator]
   def coerceToCounter(v: AnyRef): Counter = v.asInstanceOf[Counter]

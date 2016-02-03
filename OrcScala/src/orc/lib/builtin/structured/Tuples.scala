@@ -27,6 +27,8 @@ object TupleConstructor extends TotalSite with TypedSite with FunctionalSite wit
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
 
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args))
+  
   def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
   }

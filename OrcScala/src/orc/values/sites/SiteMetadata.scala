@@ -75,4 +75,13 @@ trait SiteMetadata {
   def timeToPublish: Delay = Delay.Blocking
   def timeToHalt: Delay = Delay.Blocking
   def effects: Effects = Effects.Anytime
+  def isDirectCallable: Boolean = false
+  
+  /** Return a metadata about a site returned from a call to this site with args.
+   *  
+   *  A None argument says that any value may be passed in this position at runtime.
+   *  
+   *  A None return value means that this call may not return a site (or other callable value).
+   */
+  def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = None
 }

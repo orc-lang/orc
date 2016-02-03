@@ -53,6 +53,12 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
 
 // TODO: Implement compile time evaluation of select sites.
 
+/* Assumptions in the optimizer:
+ * 
+ * No call (def or site) can publish a future.
+ * 
+ */
+
 /**
   *
   * @author amp
@@ -142,16 +148,32 @@ abstract class Optimizer(co: CompilerOptions) {
         Some(g)
       case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
       case ForceAt((x: BoundVar) in ctx) => {
-        // Search the context for a SeqBound of force(x)
-        val bindOpt = ctx.bindings find {
-          case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
-          case _ => false
+        val cannotBeFuture = ctx(x) match {
+          case Bindings.SeqBound(fromCtx, from > _ > _) =>
+            from match {
+              case Call(_, _, _) => 
+                // This assumes that no call will ever return a future. This means that no optimization can make defs publish futures.
+                true
+              case _ => false
+            }
+          case _ => false          
         }
         
-        bindOpt map {
-          case Bindings.SeqBound(_, _ > y > _) => {
-            // Just replace this force with y that was already bound to the force.
-            y
+        if (cannotBeFuture) {
+          Some(x)
+        } else {
+          // Search the context for a SeqBound of force(x)
+          val bindOpt = ctx.bindings find {
+            case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
+            case _ => false
+          }
+          
+  
+          bindOpt map {
+            case Bindings.SeqBound(_, _ > y > _) => {
+              // Just replace this force with y that was already bound to the force.
+              y
+            }
           }
         }
       }

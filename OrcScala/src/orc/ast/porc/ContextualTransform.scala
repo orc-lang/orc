@@ -85,9 +85,8 @@ trait ContextualTransform {
 
       case TryOnKilled(b, h) in ctx => TryOnKilled(transformExpr(b in ctx), transformExpr(h in ctx))
       case TryOnHalted(b, h) in ctx => TryOnHalted(transformExpr(b in ctx), transformExpr(h in ctx))
+      case TryFinally(b, h) in ctx => TryFinally(transformExpr(b in ctx), transformExpr(h in ctx))
       
-
-      //case ProjectIn(n, v) => Project(n, transformValue(v))
       
       case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
         
@@ -99,6 +98,8 @@ trait ContextualTransform {
         
       case ForceIn(p, c, f) => Force(transformValue(p), transformValue(c), transformValue(f))
       //case ResolveIn(f, b) => Resolve(transformValue(f), transformValue(b))
+
+      case GetField(p, c, t, o, f) in ctx => GetField(transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), transformValue(o in ctx), f)
       
       case e in _ if e.productArity == 0 => e
     })(expr)

@@ -16,74 +16,105 @@ package orc.ast.porc
 
 import scala.collection.mutable
 import orc.values.Field
-import orc.values.sites.{Site => OrcSite}
+import orc.values.sites.{ Site => OrcSite }
+import orc.values.sites.SiteMetadata
 
 case class AnalysisResults(
-    isNotFuture: Boolean,
-    doesNotThrowHalt: Boolean,
-    cost: Int,
-    fastTerminating: Boolean
-    ) {
+  isNotFuture: Boolean,
+  doesNotThrowHalt: Boolean,
+  cost: Int,
+  fastTerminating: Boolean,
+  siteMetadata: Option[SiteMetadata]) {
 }
 
 sealed trait AnalysisProvider[E <: PorcAST] {
   outer =>
-  def apply(e: WithContext[E]) : AnalysisResults
-  def get(e: WithContext[E]) : Option[AnalysisResults]
-  
+  def apply(e: WithContext[E]): AnalysisResults
+  def get(e: WithContext[E]): Option[AnalysisResults]
+
   object ImplicitResults {
     import scala.language.implicitConversions
-    implicit def expressionCtxWithResults(e : WithContext[E]): AnalysisResults = apply(e) 
+    implicit def expressionCtxWithResults(e: WithContext[E]): AnalysisResults = apply(e)
   }
-  
-  def withDefault : AnalysisProvider[E] = {
+
+  def withDefault: AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]) : AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue, false))
-      def get(e: WithContext[E]) : Option[AnalysisResults] = outer.get(e)
+      def apply(e: WithContext[E]): AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue, false, None))
+      def get(e: WithContext[E]): Option[AnalysisResults] = outer.get(e)
     }
   }
 }
 
-/**
- * A cache for storing all the results of a bunch of expressions.
- */
+/** A cache for storing all the results of a bunch of expressions.
+  */
 class Analyzer extends AnalysisProvider[PorcAST] {
   val cache = mutable.Map[WithContext[PorcAST], AnalysisResults]()
-  def apply(e : WithContext[PorcAST]) = {
+  def apply(e: WithContext[PorcAST]) = {
     cache.get(e) match {
       case Some(r) => {
         r
       }
       case None => {
         val r = analyze(e)
-        cache += e -> r 
+        cache += e -> r
         r
       }
     }
   }
-  def get(e : WithContext[PorcAST]) = Some(apply(e))
-  
-  
-  def analyze(e : WithContext[PorcAST]) : AnalysisResults = {
-    AnalysisResults(nonFuture(e), false, Int.MaxValue, false) // nonHalt(e), cost(e), fastTerminating(e))
+  def get(e: WithContext[PorcAST]) = Some(apply(e))
+
+  def analyze(e: WithContext[PorcAST]): AnalysisResults = {
+    AnalysisResults(nonFuture(e), false, Int.MaxValue, false, siteMetadata(e)) // nonHalt(e), cost(e), fastTerminating(e))
   }
-  
+
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
     val m = (formals zip vs).toMap
     s.collect(m).collect { case v: Var => v }
   }
-  def nonFuture(e : WithContext[PorcAST]): Boolean = {
+
+  def nonFuture(e: WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     e match {
-      case (_:OrcValue | _:Unit) in _ => true
-      case (v:Var) in ctx  => ctx(v) match {
-        case _ : ContinuationArgumentBound | _ : SiteBound | _ : RecursiveSiteBound => true
+      case (_: OrcValue | _: Unit) in _ => true
+      case (v: Var) in ctx => ctx(v) match {
+        case _: ContinuationArgumentBound | _: SiteBound | _: RecursiveSiteBound => true
         case _ => false // This needs types.
       }
       case _ => false
     }
   }
-  
+
+  def siteMetadata(e: WithContext[PorcAST]): Option[SiteMetadata] = {
+    import ImplicitResults._
+    e match {
+      case OrcValue(s: SiteMetadata) in _ => Some(s)
+      case (x: Var) in ctx => ctx(x) match {
+        case LetBound(ctx2, Let(_, v, b)) =>
+          (v in ctx2).siteMetadata
+        case _ => None
+      }
+      case SiteCallIn(target, p, c, t, args, ctx) =>
+        target.siteMetadata flatMap { sm =>
+          sm.returnMetadata(args.map {
+            _ match {
+              case OrcValue(v) => Some(v)
+              case _ => None
+            }
+          })
+        }
+      case SiteCallDirectIn(target, args, ctx) =>
+        target.siteMetadata flatMap { sm =>
+          sm.returnMetadata(args.map {
+            _ match {
+              case OrcValue(v) => Some(v)
+              case _ => None
+            }
+          })
+        }
+      case _ => None
+    }
+  }
+
   /*
   def nonHalt(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
@@ -171,14 +202,13 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   */
 }
 
-
 object Analysis {
-  def count(t : PorcAST, p : (Expr => Boolean)) : Int = {
+  def count(t: PorcAST, p: (Expr => Boolean)): Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
     (t match {
-      case e : Expr if p(e) => 1
+      case e: Expr if p(e) => 1
       case _ => 0
     }) +
-    (cs.map( count(_, p) ).sum)
+      (cs.map(count(_, p)).sum)
   }
 }

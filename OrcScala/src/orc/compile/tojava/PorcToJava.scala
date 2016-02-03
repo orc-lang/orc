@@ -13,11 +13,12 @@ class PorcToJava {
   // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
   //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
   
-  def apply(prog: Expr): String = {
-    val code = expression(prog).indent(2)
+  def apply(prog: SiteDefCPS): String = {
+    assert(prog.arguments.isEmpty)
+    val code = expression(prog.body).indent(2)
     val name = "Prog"
     val constants = buildConstantPool().indent(2)
-    s"""
+    j"""
 // GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
@@ -30,7 +31,8 @@ public class $name extends OrcProgram {
 $constants
 
   @Override
-  public void call(final ToJavaRuntime runtime) {
+  public void call(ToJavaRuntime $runtime, Continuation ${argument(prog.pArg)}, Counter ${argument(prog.cArg)}, Terminator ${argument(prog.tArg)}, Object[] __args) {
+    // Name: ${prog.name.optionalVariableName.getOrElse("")}
 $code
   }
 
@@ -122,12 +124,12 @@ $code
       }
       case SiteCall(target, p, c, t, args) => {
         j"""
-        |$coerceToCallable(${argument(target)}).call($runtime, ${argument(p)}, ${argument(c)}, ${argument(t)}, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |$coerceToCallable(${argument(target)}).call($runtime, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case SiteCallDirect(target, args) => {
         j"""
-        |$coerceToDirectCallable(${argument(target)}).directcall(new Object[] { ${args.map(argument(_)).mkString(",")} })
+        |$coerceToDirectCallable(${argument(target)}).directcall($runtime, new Object[] { ${args.map(argument(_)).mkString(",")} })
         """
       }
       case Let(x, v, b) => {
@@ -149,7 +151,7 @@ $code
       case Let(x, v, b) => {
         j"""
         |Callable ${argument(x)} = $v;
-        |$b
+        |${expression(b).deindentedAgressively}
         """
       }
       case Site(defs, body) => {
@@ -167,7 +169,7 @@ $code
       }
 
       case NewTerminator(t) => {
-        j"""new Terminator($coerceToTerminator(${argument(t)}))"""
+        j"""new TerminatorNested($coerceToTerminator(${argument(t)}))"""
       }
       case Kill(t) => {
         j"""$coerceToTerminator(${argument(t)}).kill();"""
@@ -175,9 +177,9 @@ $code
       
       case NewCounter(c, h) => {
         j"""
-        |new Counter($coerceToCounter(${argument(c)}, () -> {
+        |new CounterNested($coerceToCounter(${argument(c)}), () -> {
           |$h
-        |}))"""
+        |})"""
       }
       case Halt(c) => {
         j"""$coerceToCounter(${argument(c)}).halt();"""
@@ -194,12 +196,12 @@ $code
       }
       case Force(p, c, f) => {
         j"""
-        |$runtime.force(${argument(p)}, ${argument(c)}, ${argument(f)});
+        |$runtime.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
         """
       }
-      case GetField(p, c, o, f) => {
+      case GetField(p, c, t, o, f) => {
         j"""
-        |$runtime.getField(${argument(p)}, ${argument(c)}, ${argument(o)}, ${lookup(f).name});
+        |$runtime.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});
         """
       }
 
@@ -239,8 +241,8 @@ $code
       case _ => "???"
     }
     
-    //
-    val r = s"""/*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n${code.deindented}""".indent(2)
+    ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
+    val r = s"""${code.deindented}""".indent(2)
     r
   }
   
@@ -289,7 +291,7 @@ $code
 }
 
 object PorcToJava {
-  val runtime = "runtime"
+  val runtime = "__runtime"
   val coerceToContinuation = "Coercions$.MODULE$.coerceToContinuation"
   val coerceToCallable = "Coercions$.MODULE$.coerceToCallable"
   val coerceToDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable"

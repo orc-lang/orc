@@ -26,6 +26,7 @@ import orc.types.Type
 import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
+import orc.run.tojava.HaltException
 
 trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], h: Handle): Unit
@@ -37,6 +38,14 @@ trait Site extends OrcValue with SiteMetadata {
       throw new RightException(rightName);
     }
   }
+}
+
+trait DirectSite extends Site {
+  override val isDirectCallable = true
+  
+  def call(args: List[AnyRef], h: Handle): Unit // This could be implemented here if it was useful
+  
+  def calldirect(args: List[AnyRef]): AnyRef
 }
 
 /* A site which provides type information. */
@@ -56,13 +65,21 @@ trait SpecificArity extends Site {
 }
 
 /* Enforce totality */
-trait TotalSite extends Site {
+trait TotalSite extends DirectSite {
   def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
       h.publish(evaluate(args))
     } catch {
       case (e: OrcException) => h !! e
+    }
+  }
+  def calldirect(args: List[AnyRef]): AnyRef =  {
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    try {
+      evaluate(args)
+    } catch {
+      case e: Exception => throw new HaltException(e)
     }
   }
 
@@ -72,12 +89,23 @@ trait TotalSite extends Site {
 }
 
 /* Enforce nonblocking, but do not enforce totality */
-trait PartialSite extends Site {
+trait PartialSite extends DirectSite {
   def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
       case Some(v) => h.publish(v)
       case None => h.halt
+    }
+  }
+  def calldirect(args: List[AnyRef]): AnyRef =  {
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    try {
+      evaluate(args) match {
+        case Some(v) => v
+        case None => throw HaltException.SINGLETON
+      }
+    } catch {
+      case e: Exception => throw new HaltException(e)
     }
   }
 

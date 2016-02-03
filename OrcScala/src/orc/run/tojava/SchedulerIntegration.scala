@@ -7,20 +7,20 @@ import orc.run.Logger
   *
   * @author amp
   */
-abstract class ContextSchedulable(ctx: Context) extends Schedulable {
+abstract class CounterSchedulable(c: Counter) extends Schedulable {
   // We known we are non-blocking because all Orc Java code is non-blocking.
   override val nonblocking = true
 
   /** When we are scheduled prepare for spawning.
     */
   override def onSchedule() = {
-    ctx.prepareSpawn() // Matched to: halt in onComplete
+    c.prepareSpawn() // Matched to: halt in onComplete
   }
 
   /** When execution completes halt.
     */
   override def onComplete() = {
-    ctx.halt() // Matched to: prepareSpawn in onSchedule
+    c.halt() // Matched to: prepareSpawn in onSchedule
   }
 }
 
@@ -30,7 +30,7 @@ abstract class ContextSchedulable(ctx: Context) extends Schedulable {
   *
   * @author amp
   */
-final class ContextSchedulableFunc(ctx: Context, f: () => Unit) extends ContextSchedulable(ctx) {
+final class CounterSchedulableFunc(c: Counter, f: () => Unit) extends CounterSchedulable(c) {
   /** Call the provided implementation and ignore KilledException.
     *
     * The exception is ignored because if something is killed it is fine to
@@ -54,7 +54,7 @@ final class ContextSchedulableFunc(ctx: Context, f: () => Unit) extends ContextS
   *
   * @author amp
   */
-final class ContextSchedulableRunnable(ctx: Context, f: Runnable) extends ContextSchedulable(ctx) {
+final class CounterSchedulableRunnable(c: Counter, f: Runnable) extends CounterSchedulable(c) {
   /** Call the provided implementation and ignore KilledException.
     *
     * The exception is ignored because if something is killed it is fine to

@@ -26,21 +26,20 @@ import orc.util.PrintVersionAndMessageException;
  * 
  * @author amp
  */
-abstract public class OrcProgram {
-  public abstract void call(Context ctx);
-
+abstract public class OrcProgram implements Callable {
   /**
    * Run this program using the given runtime.
    */
   public RootContext run(final StandardOrcRuntime runtime) {
-    final RootContext ctx = new RootContext(runtime);
-    runtime.schedule(new ContextSchedulableRunnable(ctx, new Runnable() {
+    final ToJavaRuntime tjruntime = new ToJavaRuntime(runtime);
+    final RootContext ctx = new RootContext(tjruntime);
+    runtime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
       @Override
       public void run() {
-        call(ctx);
+        call(tjruntime, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
       }
     }));
-    ctx.halt();
+    ctx.c().halt();
     return ctx;
   }
 

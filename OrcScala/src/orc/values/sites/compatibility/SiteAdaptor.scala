@@ -23,21 +23,18 @@ import orc.values.Signal
 import orc.values.OrcTuple
 import orc.error.runtime.TokenException
 import orc.types.Type
+import orc.values.sites.FunctionalSite
+import orc.values.sites.DirectSite
 
 /** Adapts old OrcJava sites to the new OrcScala site interface
   *
   * @author jthywiss
   */
 abstract class SiteAdaptor extends Site {
+  import SiteAdaptor._
 
   def call(args: List[AnyRef], h: Handle) {
-    val jl = new java.util.ArrayList[Object](args.size)
-    for (arg <- args) arg match {
-      case i: scala.math.BigInt => jl.add(i.bigInteger)
-      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
-      case _ => jl.add(arg)
-    }
-    callSite(new Args(jl), h)
+    callSite(convertArgs(args), h)
   }
 
   /** Must be implemented by subclasses to implement the site behavior
@@ -83,4 +80,31 @@ object SiteAdaptor {
 
   def nilList[T](): List[T] = Nil
 
+  def convertArgs(args: List[AnyRef]) = {
+    val jl = new java.util.ArrayList[Object](args.size)
+    for (arg <- args) arg match {
+      case i: scala.math.BigInt => jl.add(i.bigInteger)
+      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
+      case _ => jl.add(arg)
+    }
+    new Args(jl)
+  }
+}
+
+abstract class SiteAdaptorFunctional extends SiteAdaptor with FunctionalSite
+
+abstract class EvalSite extends SiteAdaptor with DirectSite {
+  import SiteAdaptor._
+
+  @throws(classOf[TokenException])
+  def callSite(args: Args, caller: Handle): Unit = {
+    caller.publish(object2value(evaluate(args)))
+  }
+
+  @throws(classOf[TokenException])
+  def evaluate(args: Args): Object
+
+  def calldirect(args: List[AnyRef]): AnyRef = {
+    object2value(evaluate(convertArgs(args)))
+  }
 }
