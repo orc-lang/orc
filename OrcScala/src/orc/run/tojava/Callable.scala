@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import orc.error.compiletime.SiteResolutionException
 import orc.values.sites.{ Effects, Site }
 import orc.values.sites.SiteMetadata
+import orc.values.sites.DirectSite
 
 trait Continuation {
   def call(v: AnyRef)
@@ -42,7 +43,7 @@ trait DirectCallable {
     * halting. If this does schedule later execution then this will handle
     * the spawn on ctx correctly (prepareSpawn() and halt()).
     */
-  def directcall(runtime: ToJavaRuntime, args: Array[AnyRef])
+  def directcall(runtime: ToJavaRuntime, args: Array[AnyRef]): AnyRef
 }
 
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
@@ -50,8 +51,8 @@ trait DirectCallable {
   * This uses the token interpreters site invocation code and hence uses
   * several shims to convert from one API to another.
   */
-final class RuntimeCallable(s: AnyRef) extends Callable {
-  def call(runtime: ToJavaRuntime, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
+class RuntimeCallable(s: AnyRef) extends Callable {
+  final def call(runtime: ToJavaRuntime, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
     s match {
       case s: SiteMetadata if s.effects == Effects.None => {}
@@ -88,12 +89,27 @@ final class RuntimeCallable(s: AnyRef) extends Callable {
   }
 }
 
+/** A Callable implementation that uses ctx.runtime to handle the actual call.
+  *
+  * This uses the token interpreters site invocation code and hence uses
+  * several shims to convert from one API to another.
+  */
+final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with DirectCallable {
+  def directcall(runtime: ToJavaRuntime, args: Array[AnyRef]) = {
+    s.calldirect(args.toList)
+  }
+}
+
 object Callable {
   /** Resolve an Orc Site name to a Callable.
     */
   def resolveOrcSite(n: String): Callable = {
     try {
-      new RuntimeCallable(orc.values.sites.OrcSiteForm.resolve(n))
+      val s = orc.values.sites.OrcSiteForm.resolve(n)
+      s match {
+        case s: DirectSite => new RuntimeDirectCallable(s)
+        case _ => new RuntimeCallable(s)
+      }
     } catch {
       case e: SiteResolutionException =>
         throw new Error(e)
@@ -104,7 +120,11 @@ object Callable {
     */
   def resolveJavaSite(n: String): Callable = {
     try {
-      new RuntimeCallable(orc.values.sites.JavaSiteForm.resolve(n))
+      val s = orc.values.sites.JavaSiteForm.resolve(n)
+      s match {
+        case s: DirectSite => new RuntimeDirectCallable(s)
+        case _ => new RuntimeCallable(s)
+      }
     } catch {
       case e: SiteResolutionException =>
         throw new Error(e)

@@ -129,13 +129,13 @@ $code
       }
       case SiteCallDirect(target, args) => {
         j"""
-        |$coerceToDirectCallable(${argument(target)}).directcall($runtime, new Object[] { ${args.map(argument(_)).mkString(",")} })
+        |$coerceToDirectCallable(${argument(target)}).directcall($runtime, new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case Let(x, v, b) => {
         j"""
         |Object ${argument(x)} = $v;
-        |$b
+        |${expression(b).deindentedAgressively}
         """
       }
       case Sequence(es) => {
@@ -146,12 +146,6 @@ $code
         |(Continuation)((${argument(arg)}) -> {
           |$b
         |})
-        """
-      }
-      case Let(x, v, b) => {
-        j"""
-        |Callable ${argument(x)} = $v;
-        |${expression(b).deindentedAgressively}
         """
       }
       case Site(defs, body) => {
@@ -191,7 +185,7 @@ $code
         j"""
         |$runtime.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(p)}) -> {
           |$e
-        |})
+        |});
         """
       }
       case Force(p, c, f) => {
@@ -230,7 +224,7 @@ $code
         j"""
         |try {
           |$b
-        |} catch(HaltedException __e) {
+        |} catch(HaltException __e) {
           |$h
         |}
         """

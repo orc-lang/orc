@@ -1,5 +1,7 @@
 package orc.run.tojava
 
+import orc.values.sites.DirectSite
+
 /**
  * @author amp
  */
@@ -18,7 +20,15 @@ object Coercions {
     }
   }
   
-  def coerceToDirectCallable(v: AnyRef): AnyRef = ???
+  def coerceToDirectCallable(v: AnyRef): DirectCallable = {
+    v match {
+      case c: DirectCallable => c
+      // TODO: We may want to optimize cases like records and site calls.
+      //case s: Site => new SiteCallable(s)
+      case v: DirectSite => new RuntimeDirectCallable(v)
+    }
+  }
+  
   def coerceToContinuation(v: AnyRef): Continuation = v.asInstanceOf[Continuation]
   def coerceToTerminator(v: AnyRef): Terminator = v.asInstanceOf[Terminator]
   def coerceToCounter(v: AnyRef): Counter = v.asInstanceOf[Counter]
