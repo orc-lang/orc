@@ -18,13 +18,11 @@ class PorcToJava {
     val code = expression(prog.body).indent(2)
     val name = "Prog"
     val constants = buildConstantPool().indent(2)
-    j"""
-// GENERATED!!
+    val source = j"""// GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
-
 
 public class $name extends OrcProgram {
   private static final java.nio.charset.Charset UTF8 = java.nio.charset.Charset.forName("UTF-8");
@@ -41,6 +39,12 @@ $code
   }
 }
     """
+    var lineNo = 3 // TODO: This offset is a hack to handle the fact some lines are added elsewhere before compilation.
+    source.map(_ match {
+      case '\n' => lineNo += 1; "\n"
+      case '\u00ff' => lineNo.toString
+      case c => c.toString
+    }).mkString("")
   }
   
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
@@ -236,7 +240,9 @@ $code
     }
     
     ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
-    val r = s"""${code.deindented}""".indent(2)
+    val cleanedcode = code.deindented
+    val prefix = if (cleanedcode.count(_ == '\n') > 0) expr.number.map("// Porc Number " + _ + ", Java Line \u00ff\n").getOrElse("") else ""
+    val r = (prefix + cleanedcode).indent(2)
     r
   }
   

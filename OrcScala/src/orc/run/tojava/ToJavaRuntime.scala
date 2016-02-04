@@ -70,7 +70,7 @@ class ToJavaRuntime(val runtime: OrcRuntime) {
       case r: OrcRecord => {
         // This just optimizes the record case.
         r.entries.get(f.field) match {
-          case Some(w) => p.call(v)
+          case Some(w) => p.call(w)
           case None => {}
         }
       }
