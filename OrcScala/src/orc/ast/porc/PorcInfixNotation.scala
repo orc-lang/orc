@@ -156,6 +156,15 @@ object SpawnIn {
   }
 }
 
+object SpawnFutureIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case SpawnFuture(c, t, pArg, e) in ctx =>
+      val bodyCtx = ctx extendBindings List() // TODO: Actually bind the arg here.
+      Some(c in ctx, t in ctx, pArg, e in bodyCtx)
+    case _ => None
+  }
+}
+
 object NewCounterIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case NewCounter(c, h) in ctx => Some(c in ctx, h in ctx)

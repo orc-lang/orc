@@ -67,8 +67,8 @@ class OrctimizerToPorc {
       }
       case left Concat right => {
         val newC = newVarName("C")
-        let((newC, porc.NewCounter(ctx.c, expression(left)))) {
-          porc.TryFinally(expression(right)(ctx.copy(c = newC)), porc.Halt(newC))
+        let((newC, porc.NewCounter(ctx.c, expression(right)))) {
+          porc.TryFinally(expression(left)(ctx.copy(c = newC)), porc.Halt(newC))
         }
       }
       case DeclareDefs(defs, body) => {

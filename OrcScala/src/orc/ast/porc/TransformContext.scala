@@ -143,7 +143,7 @@ case class RecursiveSiteBound(ctx: TransformContext, ast: Site, d: SiteDef) exte
 }
 
 case class SiteArgumentBound(ctx: TransformContext, ast: SiteDef, variable: Var) extends Binding {
-  assert(ast.arguments.contains(variable))
+  assert(ast.allArguments.contains(variable))
 }
 
 case class ContinuationArgumentBound(ctx: TransformContext, ast: Continuation, variable: Var) extends Binding {

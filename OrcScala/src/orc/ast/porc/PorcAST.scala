@@ -135,8 +135,12 @@ sealed abstract class SiteDef extends PorcAST {
   def name: Var
   def arguments: List[Var]
   def body: Expr
+  
+  def allArguments: List[Var] = arguments
 }
-final case class SiteDefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends SiteDef
+final case class SiteDefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends SiteDef {
+  override def allArguments: List[Var] = pArg :: cArg :: tArg :: arguments
+}
 final case class SiteDefDirect(name: Var, arguments: List[Var], body: Expr) extends SiteDef
 
 case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr

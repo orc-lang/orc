@@ -89,6 +89,7 @@ trait ContextualTransform {
       
       
       case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
+      case SpawnFutureIn(c, t, pArg, e) => SpawnFuture(transformValue(c), transformValue(t), pArg, transformExpr(e))
         
       case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
       case Halt(c) in ctx => Halt(transformValue(c in ctx))

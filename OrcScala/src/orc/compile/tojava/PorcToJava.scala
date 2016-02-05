@@ -260,19 +260,21 @@ $code
     d match {
       case SiteDefCPS(name, p, c, t, formals, b) => {
         val args = newVarName("args")
+        val rt = newVarName("rt")
         val wrapper = newVarName(name.optionalVariableName.getOrElse("_f"))
         val accessname = wrapper + "[0]"
         vars(name) = accessname
         // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
         |final Callable[] $wrapper = new Callable[1]; 
-        |$accessname = (${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
+        |$accessname = ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
           |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
           |${expression(b)}
         |};
         """.deindented
       }
       case SiteDefDirect(name, formals, b) => {
+        val rt = newVarName("rt")
         val args = newVarName("args")
         val wrapper = newVarName(name.optionalVariableName.getOrElse("_f"))
         val accessname = wrapper + "[0]"
@@ -280,7 +282,7 @@ $code
         // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
         |final DirectCallable[] $wrapper = new DirectCallable[1]; 
-        |$accessname = ($args) -> {
+        |$accessname = ($rt, $args) -> {
           |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
           |${expression(b)}
         |};
