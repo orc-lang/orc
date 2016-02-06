@@ -33,7 +33,7 @@ case class OptFull(name: String)(f: (WithContext[Expr], AnalysisProvider[PorcAST
 /** @author amp
   */
 case class Optimizer(co: CompilerOptions) {
-  def apply(e: Expr, analysis: AnalysisProvider[PorcAST]): Expr = {
+  def apply(e: PorcAST, analysis: AnalysisProvider[PorcAST]): PorcAST = {
     val trans = new ContextualTransform.Pre {
       override def onExpr = {
         case (e: WithContext[Expr]) => {
@@ -111,7 +111,7 @@ case class Optimizer(co: CompilerOptions) {
           }
         }
 
-        //Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
+        Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
         if (compatReferences > 0 && codeExpansion <= letInlineCodeExpansionThreshold) {
           if (noncompatReferences > 0)
             Some(Let(x, lam, doInline(scope)))
@@ -251,22 +251,19 @@ object Optimizer {
   }
 
   val SpecializeSiteCall = OptFull("specialize-sitecall") { (e, a) =>
+    import a.ImplicitResults._
+    import PorcInfixNotation._
     e match {
-      case SiteCallIn(target in _, p, c, t, args, ctx) =>
-        import PorcInfixNotation._
-        import a.ImplicitResults._
-
-        if ((target in ctx).siteMetadata.map(_.isDirectCallable).getOrElse(false)) {
-          val v = new Var()
-          Some(
-            TryOnHalted({
-              let((v, SiteCallDirect(target, args))) {
-                p(v)
-              }
-            }, Unit()))
-        } else {
-          None
-        }
+      case SiteCallIn(target, p, c, t, args, ctx) 
+          if target.isNotFuture && args.forall(v => (v in ctx).isNotFuture) &&
+             target.siteMetadata.map(_.isDirectCallable).getOrElse(false)=>
+        val v = new Var()
+        Some(
+          TryOnHalted({
+            let((v, SiteCallDirect(target, args))) {
+              p(v)
+            }
+          }, Unit()))
       case _ => None
     }
   }

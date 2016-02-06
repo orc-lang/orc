@@ -64,7 +64,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   def get(e: WithContext[PorcAST]) = Some(apply(e))
 
   def analyze(e: WithContext[PorcAST]): AnalysisResults = {
-    AnalysisResults(nonFuture(e), false, Int.MaxValue, false, siteMetadata(e)) // nonHalt(e), cost(e), fastTerminating(e))
+    AnalysisResults(nonFuture(e), false, cost(e), false, siteMetadata(e)) // nonHalt(e), cost(e), fastTerminating(e))
   }
 
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -171,7 +171,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case NewTerminatorIn(b) => b.fastTerminating
       case _ => true
     }
-  }
+  }*/
   
   val closureCost = 5
   val spawnCost = 4
@@ -190,16 +190,16 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case _ : Spawn => spawnCost
       case _ : Force | _ : Resolve => forceCost
       case _ : Kill => killCost
-      case _ : Lambda | _ : Site => closureCost
+      case _ : Continuation | _ : Site | _ : NewCounter => closureCost
+      case _ : NewTerminator => closureCost
       case _ : Call => callCost
-      case _ : ExternalCall | _ : SiteCall => externalCallCost
-      case _ : RestoreCounter | _ : CheckKilled | _ : CallCounterHalt | 
-        _: DecrCounter | _:MakeCounterTopLevel | _: IsKilled =>
-        atomicOperation
+      case _ : SiteCallDirect => externalCallCost
+      case _ : SiteCall => externalCallCost + spawnCost
+      case _ : Kill | _ : Halt => atomicOperation
       case _ => 0
     }) + (cs.map( _.cost ).sum)
   }
-  */
+  
 }
 
 object Analysis {

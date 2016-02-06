@@ -182,7 +182,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
    
-      def opt(prog : Expr, pass : Int) : Expr = {
+      def opt(prog : SiteDefCPS, pass : Int) : SiteDefCPS = {
         val analyzer = new Analyzer
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
@@ -198,7 +198,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         //println(prog)
         //println("-------==========")
         
-        val prog1 = Optimizer(co)(prog, analyzer)
+        val prog1 = Optimizer(co)(prog, analyzer).asInstanceOf[SiteDefCPS]
         orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
         if(prog1 == prog || pass > maxPasses)
           prog1
@@ -208,13 +208,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
       
       val e = if(co.options.optimizationFlags("porc").asBool())
-        opt(ast.body, 1)
+        opt(ast, 1)
       else
-        ast.body
+        ast
       
       TransformContext.clear()
       e.assignNumbers()
-      ast.copy(body = e)
+      e
     }
   }
   override val phases =

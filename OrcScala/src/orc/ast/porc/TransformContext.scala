@@ -150,6 +150,10 @@ case class ContinuationArgumentBound(ctx: TransformContext, ast: Continuation, v
   assert(ast.argument == variable)
 }
 
+case class SpawnFutureBound(ctx: TransformContext, ast: SpawnFuture, variable: Var) extends Binding {
+  assert(ast.pArg == variable)
+}
+
 final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
   def subtrees: Iterable[WithContext[PorcAST]] = this match {
     case LetIn(x, v, b) => Seq(v, b)
@@ -159,6 +163,8 @@ final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
     case CallIn(t, a, ctx) => Seq(t) :+ (a in ctx)
     case SiteCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
     case SiteCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
+    
+    case SpawnFutureIn(c, t, pArg, expr) => Seq(c, t, expr)
 
     case ContinuationIn(args, ctx, b) => Seq(b)
 

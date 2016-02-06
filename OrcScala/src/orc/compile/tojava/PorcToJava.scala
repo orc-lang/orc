@@ -79,14 +79,13 @@ $code
       case n : BigDecimal if n.isExactDouble => s"""BigDecimal$$.MODULE$$.apply(${n.toDouble})"""
       // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
       case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
-      case s: String if s.forall(c => c >= 32 && c < 127 && c != '\n' && c != '\\') => "\""+s+"\""
-      case s: String => s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
       case b: java.lang.Boolean => b.toString()
+      case s: String => stringAsJava(s)
       case orc.values.Signal => "orc.values.Signal$.MODULE$"
-      case orc.values.Field(s) => s"""new Field("$s")"""
-      case x: orc.values.sites.JavaClassProxy => s"""Callable$$.MODULE$$.resolveJavaSite("${x.name}")"""
-      case x: orc.values.sites.Site => s"""Callable$$.MODULE$$.resolveOrcSite("${strip$(x.getClass().getName)}")"""
-      case _ => throw new AssertionError("Could not serialize value " + v.toString + " to a Java initializer.")
+      case orc.values.Field(s) => s"""new Field(${stringAsJava(s)})"""
+      case x: orc.values.sites.JavaClassProxy => s"""Callable$$.MODULE$$.resolveJavaSite(${stringAsJava(x.name)})"""
+      case x: orc.values.sites.Site => s"""Callable$$.MODULE$$.resolveOrcSite(${stringAsJava(strip$(x.getClass().getName))})"""
+      case _ => throw new AssertionError("Could not convert value " + v.toString + " to a Java initializer.")
     }
     ConstantPoolEntry(v, typ, name, init)
   }
@@ -143,7 +142,7 @@ $code
         """
       }
       case Sequence(es) => {
-        es.map(expression(_)).mkString("\n")
+        es.map(expression(_)).mkString("\n").deindentedAgressively
       }
       case Continuation(arg, b) => {
         j"""
@@ -319,5 +318,14 @@ object PorcToJava {
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)
+  
+  def stringAsUTF8Array(s: String): String =
+    s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
+  def stringAsJava(s: String): String = {
+    if (s.forall(c => c >= 32 && c < 127 && c != '\n' && c != '\\'))
+      "\""+s+"\""
+    else 
+      stringAsUTF8Array(s)
+  }
 }
 
