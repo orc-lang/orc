@@ -293,7 +293,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f ConcatAt g =>
         f.timeToPublish min (f.timeToHalt max g.timeToPublish)
       case LimitAt(f) =>
-        f.timeToPublish
+        f.timeToPublish min f.timeToHalt
       case Force(x: BoundVar) in ctx =>
         ctx(x) match {
           case Bindings.SeqBound(sctx, Sequence(Future(source), _, _)) =>
@@ -536,14 +536,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
                  Bindings.RecursiveDefBound(_, _, _) => {
               Delay.NonBlocking
             }
-            /*
-            case Bindings.DefBound(ctx, decls, d) => {
-              val DeclareDefsAt(_, dctx, _) = decls in ctx
-              val DefAt(_, _, body, _, _, _, _) = d in dctx
-              body.valueForceDelay
-            }
-            */
-            case _ => Delay.Blocking
+            // TODO: Prove that no called value will publish a future.
+            case _ => Delay.NonBlocking
           }
           case _ => Delay.Blocking
         }        

@@ -21,7 +21,7 @@ abstract class Counter {
     */
   def halt(): Unit = {
     val n = count.decrementAndGet()
-    Logger.log(Level.FINEST, s"Decr $n in $this", new Exception)
+    //Logger.log(Level.FINEST, s"Decr $n in $this", new Exception)
     assert(n >= 0, s"Halt is not allowed on already stopped CounterContexts $this")
     if (n == 0) {
       onContextHalted();
@@ -32,7 +32,7 @@ abstract class Counter {
     */
   def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
-    Logger.log(Level.FINEST, s"Incr $n in $this", new Exception)
+    //Logger.log(Level.FINEST, s"Incr $n in $this", new Exception)
     assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
   }
 

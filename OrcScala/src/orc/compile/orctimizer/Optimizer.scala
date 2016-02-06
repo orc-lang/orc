@@ -177,15 +177,6 @@ abstract class Optimizer(co: CompilerOptions) {
           }
         }
       }
-      /*
-      case ForceAt(c@Constant(_) in ctx) => Some(c)
-      case ForceAt((x: BoundVar) in ctx) => ctx(x).nonRecursive match {
-        case Bindings.SeqBound(ctx, Call(Constant(_: Site), _, _) > _ > _) => Some(x)
-        case Bindings.SeqBound(ctx, FieldAccess(_, _) > _ > _) => Some(x)
-        case Bindings.SeqBound(ctx, Force(_) > _ > _) => Some(x)
-        case _ => None
-      }
-      */
       case _ => None
     }
   }
@@ -599,17 +590,20 @@ abstract class Optimizer(co: CompilerOptions) {
   val TupleElim = OptFull("tuple-elim") { (e, a) =>
     import a.ImplicitResults._, Bindings._
     e match {
-      case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx if (v in ctx).nonBlockingPublish => 
-        val i = num.toInt
+      //case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx 
+      case CallAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _)
+          if (v in ctx).nonBlockingPublish => 
+        val i = bi.toInt
         ctx(v) match {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) 
             if i < args.size && (args(i) in tctx).nonBlockingPublish => 
-              Some(args(i))
+              Some(Force(args(i)))
           case _ => None
         }
-      case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
+      //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
+      case CallAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) > x > e
           if (v in ctx).nonBlockingPublish && !e.freeVars.contains(x) => 
-        val i = num.toInt
+        val i = bi.toInt
         ctx(v) match {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
           case _ => None
@@ -621,28 +615,9 @@ abstract class Optimizer(co: CompilerOptions) {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
           case _ => None
         }
-        /*
-      case CallAt(Constant(TupleConstructor) in _, args, _, ctx) 
-              if args.size > 0 && args.forall(_.isInstanceOf[BoundVar]) =>
-        def lookup(v: BoundVar) = ctx(v) match {
-          case SeqBound(tctx, Call(Constant(GetElem), List(v: BoundVar, Constant(bi: BigInt)), _) > `v` > _) => 
-            Some((v, bi))
-          case _ => None
-        }
-        
-        val vars = args.flatMap { 
-          case v: BoundVar => lookup(v)
-          case _ => None
-        }
-
-        vars.groupBy(_._1).toSeq match {
-          case Seq((tv, inds)) => 
-            e.typeOf(tv).runtimeType match {
-              case types.TupleType(ts) if inds == (0 until ts.size) => Some(tv)))
-              case _ => None
-            }
-        }
-        */
+      // TODO: I may need a special case for removing tuple constructors.
+      //case CallAt(Constant(TupleConstructor) in _, args, _, ctx) > x > e 
+      //        if args.size > 0 && args.forall(_.isInstanceOf[BoundVar]) && !e.freeVars.contains(x) =>
       case _ => None
     }
   }

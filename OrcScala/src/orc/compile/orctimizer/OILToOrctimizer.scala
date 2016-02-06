@@ -63,9 +63,11 @@ class OILToOrctimizer {
             case c: Constant =>
               apply(c)
             case _ =>
-              val newArg = new orct.BoundVar(Some(s"f_$arg"))
+              /*val newArg = new orct.BoundVar(Some(s"f_$arg"))
               bindings += ((arg, newArg))
               newArg
+              */
+              apply(arg)
           }
         }
         
@@ -73,16 +75,16 @@ class OILToOrctimizer {
         val call = orct.Call(newTarget, newArgs, typeargs map { _ map apply })
         
         // Generate forcing operations for arguments
-        val argsBound = bindings.foldRight(call: orct.Expression) { (as, acc) =>
+        /*val argsBound = bindings.foldRight(call: orct.Expression) { (as, acc) =>
           val (arg, newArg) = as
           orct.Sequence(orct.Future(orct.Force(apply(arg))), newArg, acc)
-        }
+        }*/
         
         // Force target if needed
         forceTarget map { t =>
-          orct.Sequence(orct.Force(apply(target)), t, argsBound)
+          orct.Sequence(orct.Force(apply(target)), t, call)
         } getOrElse {
-          argsBound
+          call
         }
       }
       case left || right => orct.Parallel(apply(left), apply(right))

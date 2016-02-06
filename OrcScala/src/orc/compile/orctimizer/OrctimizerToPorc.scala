@@ -6,7 +6,7 @@ import scala.collection.mutable
 import orc.values.Field
 import orc.ast.porc
 
-case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var) {
+case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var, recursives: Set[BoundVar]) {
 }
 
 /** @author amp
@@ -16,7 +16,7 @@ class OrctimizerToPorc {
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
-    val body = expression(prog)(ConversionContext(p = newP, c = newC, t = newT))
+    val body = expression(prog)(ConversionContext(p = newP, c = newC, t = newT, recursives = Set()))
     porc.SiteDefCPS(newVarName("Prog"), newP, newC, newT, Nil, body)
   }
   
@@ -33,7 +33,8 @@ class OrctimizerToPorc {
     val code = expr match {
       case Stop() => porc.Unit()
       case Call(target, args, typeargs) => {
-        porc.SiteCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
+        val call = porc.SiteCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
+        porc.Spawn(ctx.c, ctx.t, call)
       }
       case left || right => {
         porc.Spawn(ctx.c, ctx.t, expression(left)) :::
@@ -106,7 +107,7 @@ class OrctimizerToPorc {
     val newT = newVarName("T")
     val args = formals.map(lookup)
     val name = lookup(f)
-    porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT)))
+    porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives + f)))
   }
 }
 
