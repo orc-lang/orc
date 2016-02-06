@@ -9,28 +9,57 @@ import java.net.URI
 import javax.tools.JavaFileObject.Kind
 import java.net.URLClassLoader
 import java.nio.charset.StandardCharsets
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.Path
+import java.nio.file.FileVisitResult
+import java.nio.file.attribute.BasicFileAttributes
+import java.io.IOException
+import java.util.logging.Level
+import orc.compile.Logger
 
 /** @author amp
   */
 class JavaCompiler {
   import scala.collection.JavaConversions._
-  
+
   val pkgName = "orctojavaoutput"
   val className = "Prog"
+
+  def deleteDirectoryRecursive(p: Path) = {
+    Files.walkFileTree(p, new SimpleFileVisitor[Path]() {
+      override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      override def postVisitDirectory(dir: Path, exc: IOException): FileVisitResult = {
+        Files.delete(dir);
+        return FileVisitResult.CONTINUE;
+      }
+    })
+  }
 
   def apply(rawcode: String): Class[_ <: OrcProgram] = {
     val code = s"package $pkgName;\n\n$rawcode"
     val compiler = ToolProvider.getSystemJavaCompiler()
     val tempDir = Files.createTempDirectory("orc")
-    // FIXME: This leaves temporary files laying around for some reason.
-    tempDir.toFile.deleteOnExit()
     val options = Seq("-d", tempDir.toAbsolutePath.toString())
     val compilationUnits = Seq(InMemoryJavaFileObject(className, code))
     val task = compiler.getTask(null, null, null, options, null, compilationUnits)
     task.call()
-    
-    // Write out code file next to bytecode
-    Files.write(tempDir.resolve(s"$pkgName/$className.java"), code.getBytes(StandardCharsets.UTF_8))
+
+    if (Logger.julLogger.isLoggable(Level.INFO)) {
+      // Write out code file next to bytecode
+      val javaFile = tempDir.resolve(s"$pkgName/$className.java")
+      Files.write(javaFile, code.getBytes(StandardCharsets.UTF_8))
+    }
+
+    // Setup a hook to delete the class and source (if written)
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = {
+        deleteDirectoryRecursive(tempDir)
+      }
+    })
 
     val cl = new URLClassLoader(Array(tempDir.toUri().toURL()))
     cl.loadClass(s"$pkgName.$className").asSubclass(classOf[OrcProgram])
