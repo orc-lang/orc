@@ -1,6 +1,8 @@
 package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicInteger
+import orc.run.Logger
+import java.util.logging.Level
 
 /**
  * @author amp
@@ -19,8 +21,8 @@ abstract class Counter {
     */
   def halt(): Unit = {
     val n = count.decrementAndGet()
-    assert(n >= 0, "Halt is not allowed on already stopped CounterContexts")
-    //Logger.finest(s"Decr $n in $this")
+    Logger.log(Level.FINEST, s"Decr $n in $this", new Exception)
+    assert(n >= 0, s"Halt is not allowed on already stopped CounterContexts $this")
     if (n == 0) {
       onContextHalted();
     }
@@ -30,8 +32,8 @@ abstract class Counter {
     */
   def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
-    //Logger.finest(s"Incr $n in $this")
-    assert(n > 0, "Spawning is not allowed once we go to zero count. No zombies allowed!!!")
+    Logger.log(Level.FINEST, s"Incr $n in $this", new Exception)
+    assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
   }
 
   /** Called when this whole context has halted.
@@ -43,10 +45,14 @@ abstract class Counter {
  * @author amp
  */
 final class CounterNested(parent: Counter, haltContinuation: Runnable) extends Counter {
+  // Matched against: onContextHalted call to halt
+  parent.prepareSpawn()
+  
   /** Called when this whole context has halted.
     */
   def onContextHalted(): Unit = {
     haltContinuation.run()
+    // Matched against: constructor call to prepareSpawn
     parent.halt()
   }
 }
