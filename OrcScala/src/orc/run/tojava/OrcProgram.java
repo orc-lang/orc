@@ -17,7 +17,6 @@ package orc.run.tojava;
 
 import orc.Main;
 import orc.OrcEvent;
-import orc.OrcExecutionOptions;
 import orc.run.StandardOrcRuntime;
 import orc.util.PrintVersionAndMessageException;
 import scala.Function1;
@@ -39,7 +38,10 @@ abstract public class OrcProgram implements Callable {
     tjruntime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
       @Override
       public void run() {
-        call(ctx, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
+        try {
+          call(ctx, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
+        } catch (KilledException e) {
+        }
       }
     }));
     ctx.c().halt();

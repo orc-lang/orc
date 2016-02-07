@@ -51,7 +51,11 @@ final class CounterNested(parent: Counter, haltContinuation: Runnable) extends C
   /** Called when this whole context has halted.
     */
   def onContextHalted(): Unit = {
-    haltContinuation.run()
+    try {
+      haltContinuation.run()    
+    } catch {
+      case _: KilledException => ()
+    }
     // Matched against: constructor call to prepareSpawn
     parent.halt()
   }

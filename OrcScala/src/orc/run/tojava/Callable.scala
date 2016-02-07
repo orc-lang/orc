@@ -5,11 +5,13 @@ import orc.error.compiletime.SiteResolutionException
 import orc.values.sites.{ Effects, Site }
 import orc.values.sites.SiteMetadata
 import orc.values.sites.DirectSite
+import orc.error.OrcException
+import orc.error.runtime.JavaException
+import orc.CaughtEvent
 
 trait Continuation {
   def call(v: AnyRef)
 }
-
 
 // TODO: It might be good to have calls randomly schedule themselves to unroll the stack.
 /** An object that can be called directly from within the tojava runtime.
@@ -96,7 +98,17 @@ class RuntimeCallable(s: AnyRef) extends Callable {
   */
 final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with DirectCallable {
   def directcall(execution: Execution, args: Array[AnyRef]) = {
-    s.calldirect(args.toList)
+    try {
+      s.calldirect(args.toList)
+    } catch {
+      case e: InterruptedException => 
+        throw e
+      case e: HaltException => 
+        throw e
+      case e: Exception => 
+        execution.notifyOrc(CaughtEvent(e))
+        throw HaltException.SINGLETON
+    }
   }
 }
 

@@ -152,7 +152,20 @@ $code
         """
       }
       case Site(defs, body) => {
+        val decls = (for (d <- defs) yield {
+          val wrapper = newVarName(d.name.optionalVariableName.getOrElse("_f"))
+          vars(d.name) = wrapper + "[0]"
+          // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
+          d match {
+            case _: SiteDefCPS =>
+              j"""final Callable[] $wrapper = new Callable[1];"""
+            case _: SiteDefDirect =>
+              j"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
+          }
+        }).mkString("\n")
+        
         j"""
+        |$decls
         |${defs.map(orcdef(_)).mkString}
         |${expression(body).deindentedAgressively}"""
       }
@@ -260,13 +273,9 @@ $code
       case SiteDefCPS(name, p, c, t, formals, b) => {
         val args = newVarName("args")
         val rt = newVarName("rt")
-        val wrapper = newVarName(name.optionalVariableName.getOrElse("_f"))
-        val accessname = wrapper + "[0]"
-        vars(name) = accessname
         // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
-        |final Callable[] $wrapper = new Callable[1]; 
-        |$accessname = ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
+        |${vars(name)} = ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
           |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
           |${expression(b)}
         |};
@@ -275,13 +284,9 @@ $code
       case SiteDefDirect(name, formals, b) => {
         val rt = newVarName("rt")
         val args = newVarName("args")
-        val wrapper = newVarName(name.optionalVariableName.getOrElse("_f"))
-        val accessname = wrapper + "[0]"
-        vars(name) = accessname
         // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
-        |final DirectCallable[] $wrapper = new DirectCallable[1]; 
-        |$accessname = ($rt, $args) -> {
+        |${vars(name)} = ($rt, $args) -> {
           |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
           |${expression(b)}
         |};

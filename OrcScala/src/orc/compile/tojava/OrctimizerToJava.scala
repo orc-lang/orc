@@ -275,7 +275,11 @@ object Deindent {
     def deindentedAgressively = {
       val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
       val indentSize = lines.map(l => NonBlank.findFirstMatchIn(l).map(_.start).getOrElse(Int.MaxValue)).min
-      lines.map(_.substring(indentSize)).mkString("\n")
+      if (indentSize == Int.MaxValue) {
+        lines.mkString("\n")
+      } else {
+        lines.map(_.substring(indentSize)).mkString("\n")
+      }
     }
     
     def deindented = {

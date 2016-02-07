@@ -79,13 +79,8 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
   // TODO: Support VTime
   def setQuiescent(): Unit = {}
 
-  /** Print a warning and halt if there is an exception.
-    */
   def !!(e: OrcException): Unit = {
-    Logger.log(Level.WARNING, "Exception in execution:", e)
-    c.halt()
-    // Matched to: Every invocation is required to be proceeded by a 
-    //             prepareSpawn since it might spawn.
+    notifyOrc(CaughtEvent(e))
   }
 
   // TODO: Support rights.
@@ -94,7 +89,4 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
   def isLive: Boolean = {
     t.isLive()
   }
-}
-
-object PCTHandle {
 }
