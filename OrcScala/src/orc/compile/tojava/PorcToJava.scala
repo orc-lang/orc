@@ -29,7 +29,7 @@ public class $name extends OrcProgram {
 $constants
 
   @Override
-  public void call(ToJavaRuntime $runtime, Continuation ${argument(prog.pArg)}, Counter ${argument(prog.cArg)}, Terminator ${argument(prog.tArg)}, Object[] __args) {
+  public void call(Execution $execution, Continuation ${argument(prog.pArg)}, Counter ${argument(prog.cArg)}, Terminator ${argument(prog.tArg)}, Object[] __args) {
     // Name: ${prog.name.optionalVariableName.getOrElse("")}
 $code
   }
@@ -127,12 +127,12 @@ $code
       }
       case SiteCall(target, p, c, t, args) => {
         j"""
-        |$coerceToCallable(${argument(target)}).call($runtime, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |$coerceToCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case SiteCallDirect(target, args) => {
         j"""
-        |$coerceToDirectCallable(${argument(target)}).directcall($runtime, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |$coerceToDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case Let(x, v, b) => {
@@ -159,7 +159,7 @@ $code
 
       case Spawn(c, t, b) => {
         j"""
-        |$runtime.spawn($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), () -> { 
+        |$execution.spawn($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), () -> { 
           |$b
         |});
         """
@@ -186,19 +186,19 @@ $code
       
       case SpawnFuture(c, t, p, e) => {
         j"""
-        |$runtime.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(p)}) -> {
+        |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(p)}) -> {
           |$e
         |});
         """
       }
       case Force(p, c, f) => {
         j"""
-        |$runtime.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
+        |$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
         """
       }
       case GetField(p, c, t, o, f) => {
         j"""
-        |$runtime.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});
+        |$execution.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});
         """
       }
 
@@ -292,7 +292,7 @@ $code
 }
 
 object PorcToJava {
-  val runtime = "__runtime"
+  val execution = "exec"
   val coerceToContinuation = "Coercions$.MODULE$.coerceToContinuation"
   val coerceToCallable = "Coercions$.MODULE$.coerceToCallable"
   val coerceToDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable"

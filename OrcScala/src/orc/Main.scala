@@ -63,8 +63,15 @@ object Main {
       }
 
       val printPubs = new OrcDesktopEventAction() {
-        override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
-        override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err, options.showJavaStackTrace); Console.err.flush() }
+        override def published(value: AnyRef) { 
+          println(Format.formatValue(value))
+          Console.out.flush()
+        }
+        override def caught(e: Throwable) { 
+          Console.out.flush()
+          printException(e, Console.err, options.showJavaStackTrace)
+          Console.err.flush() 
+        }
       }
       compiledOrc.run(printPubs)
 

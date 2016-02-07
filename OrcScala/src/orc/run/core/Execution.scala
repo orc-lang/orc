@@ -29,9 +29,9 @@ import orc.run.Logger
 class Execution(
   private[run] var _node: Expression,
   private[run] var _options: OrcExecutionOptions,
-  private var eventHandler: OrcEvent => Unit,
+  protected var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
-  extends Group {
+  extends Group with EventHandler {
 
   override val root = this
 
@@ -64,19 +64,9 @@ class Execution(
     case e => oldHandler(e)
   }
 
-  def installHandler(newHandler: PartialFunction[OrcEvent, Unit]) = {
-    val oldHandler = eventHandler
-    eventHandler = { e => if (newHandler isDefinedAt e) newHandler(e) else oldHandler(e) }
-  }
-
-  def notifyOrc(event: OrcEvent) {
-    try {
-      if (event == DumpState) dumpState()
-      eventHandler(event)
-    } catch {
-      case e: InterruptedException => throw e
-      case e: Throwable => { Logger.log(Level.SEVERE, "Event handler abnormal termination", e); throw e }
-    }
+  override def notifyOrc(event: OrcEvent) {
+    if (event == DumpState) dumpState()
+    super.notifyOrc(event)
   }
 
   def dumpState() {

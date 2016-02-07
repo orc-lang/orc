@@ -23,8 +23,9 @@ import orc.error.loadtime.{ LoadingException, OilParsingException }
 import orc.progress.ProgressMonitor
 import orc.run.StandardOrcRuntime
 import orc.compile.tojava.JavaCompiler
-import orc.run.tojava.RootContext
 import orc.compile.orctimizer.PorcOrcCompiler
+import orc.run.tojava.ToJavaRuntime
+import orc.run.tojava.Execution
 
 /** A backend implementation using the Token interpreter.
   *
@@ -40,13 +41,15 @@ class PorcBackend extends Backend[String] {
 
   def createRuntime(options: OrcExecutionOptions): Runtime[String] = new StandardOrcRuntime("To Java via Porc") with Runtime[String] {
     val compile = new JavaCompiler()
+    val tjruntime = new ToJavaRuntime(this)
     startScheduler(options)
     
-    private def start(code: String, k: orc.OrcEvent => Unit): RootContext = {
+    private def start(code: String, k: orc.OrcEvent => Unit): Execution = {
       val cls = compile(code)
       val prog = cls.newInstance()
       
-      prog.run(this)
+      // TODO: Remove this weird type hack.
+      prog.run(tjruntime, k.asInstanceOf[OrcEvent => scala.runtime.BoxedUnit])
     }
     
     def run(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k)

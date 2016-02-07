@@ -25,7 +25,7 @@ import orc.values.{ Format, OrcValue }
   * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future(val runtime: OrcRuntime) extends OrcValue {
+final class Future() extends OrcValue {
   import Future._
 
   var _state = Unbound

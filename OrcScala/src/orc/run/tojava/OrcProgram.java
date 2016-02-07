@@ -16,9 +16,13 @@
 package orc.run.tojava;
 
 import orc.Main;
+import orc.OrcEvent;
 import orc.OrcExecutionOptions;
 import orc.run.StandardOrcRuntime;
 import orc.util.PrintVersionAndMessageException;
+import scala.Function1;
+import scala.NotImplementedError;
+import scala.runtime.BoxedUnit;
 
 /**
  * A Java base class for Orc programs. This This provides root context
@@ -30,13 +34,12 @@ abstract public class OrcProgram implements Callable {
   /**
    * Run this program using the given runtime.
    */
-  public RootContext run(final StandardOrcRuntime runtime) {
-    final ToJavaRuntime tjruntime = new ToJavaRuntime(runtime);
-    final RootContext ctx = new RootContext(tjruntime);
-    runtime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
+  public Execution run(final ToJavaRuntime tjruntime, Function1<OrcEvent, BoxedUnit> k) {
+    final Execution ctx = new Execution(tjruntime, k);
+    tjruntime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
       @Override
       public void run() {
-        call(tjruntime, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
+        call(ctx, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
       }
     }));
     ctx.c().halt();
@@ -56,7 +59,8 @@ abstract public class OrcProgram implements Callable {
     Main.setupLogging(options);
     final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
     runtime.startScheduler(options);
-    prog.run(runtime);
+    throw new NotImplementedError("Implement this");
+    //prog.run(runtime);
   }
 
 }

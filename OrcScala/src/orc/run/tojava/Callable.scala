@@ -26,7 +26,7 @@ trait Callable {
     * halting. If this does schedule later execution then this will handle
     * the spawn on ctx correctly (prepareSpawn() and halt()).
     */
-  def call(runtime: ToJavaRuntime, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef])
+  def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef])
 }
 
 /** An object that can be called directly from within the tojava runtime.
@@ -43,7 +43,7 @@ trait DirectCallable {
     * halting. If this does schedule later execution then this will handle
     * the spawn on ctx correctly (prepareSpawn() and halt()).
     */
-  def directcall(runtime: ToJavaRuntime, args: Array[AnyRef]): AnyRef
+  def directcall(execution: Execution, args: Array[AnyRef]): AnyRef
 }
 
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
@@ -52,7 +52,7 @@ trait DirectCallable {
   * several shims to convert from one API to another.
   */
 class RuntimeCallable(s: AnyRef) extends Callable {
-  final def call(runtime: ToJavaRuntime, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
+  final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
     s match {
       case s: SiteMetadata if s.effects == Effects.None => {}
@@ -61,10 +61,10 @@ class RuntimeCallable(s: AnyRef) extends Callable {
 
     // Prepare to spawn because the invoked site might do that.
     c.prepareSpawn();
-    // Matched to: halt in ContextHandle or below in Join subclass.
+    // Matched to: halt in PCTHandle or below in Join subclass.
 
     if (args.length == 0) {
-      runtime.runtime.invoke(new PCTHandle(p, c, t, null), s, Nil)
+      execution.invoke(new PCTHandle(execution, p, c, t, null), s, Nil)
     } else {
       // TODO: Optimized version for single argument
       new Join(args) {
@@ -82,7 +82,7 @@ class RuntimeCallable(s: AnyRef) extends Callable {
           */
         def done(): Unit = {
           assert(called.compareAndSet(false, true), "halt()/done() may only be called once.")
-          runtime.runtime.invoke(new PCTHandle(p, c, t, null), s, values.toList)
+          execution.invoke(new PCTHandle(execution, p, c, t, null), s, values.toList)
         }
       }
     }
@@ -95,7 +95,7 @@ class RuntimeCallable(s: AnyRef) extends Callable {
   * several shims to convert from one API to another.
   */
 final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with DirectCallable {
-  def directcall(runtime: ToJavaRuntime, args: Array[AnyRef]) = {
+  def directcall(execution: Execution, args: Array[AnyRef]) = {
     s.calldirect(args.toList)
   }
 }

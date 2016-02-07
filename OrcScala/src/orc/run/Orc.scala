@@ -21,6 +21,7 @@ import orc.run.core.{ Token, Execution }
 import scala.collection.mutable.SynchronizedSet
 import scala.collection.mutable.HashSet
 import scala.ref.WeakReference
+import orc.run.core.EventHandler
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
 
@@ -47,6 +48,6 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
     * Traits which add support for more events will override this
     * method and introduce more handlers.
     */
-  def installHandlers(host: Execution) {}
+  def installHandlers(host: EventHandler) {}
 
 }
