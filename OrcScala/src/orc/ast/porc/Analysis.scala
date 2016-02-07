@@ -18,6 +18,7 @@ import scala.collection.mutable
 import orc.values.Field
 import orc.values.sites.{ Site => OrcSite }
 import orc.values.sites.SiteMetadata
+import orc.values.sites.Delay
 
 case class AnalysisResults(
   isNotFuture: Boolean,
@@ -64,7 +65,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   def get(e: WithContext[PorcAST]) = Some(apply(e))
 
   def analyze(e: WithContext[PorcAST]): AnalysisResults = {
-    AnalysisResults(nonFuture(e), false, cost(e), false, siteMetadata(e)) // nonHalt(e), cost(e), fastTerminating(e))
+    AnalysisResults(nonFuture(e), false, cost(e), fastTerminating(e), siteMetadata(e)) // nonHalt(e)
   }
 
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -142,36 +143,40 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case (NewFlag() | NewFuture()) in _ => true
       case _ => false
     }
-  }
+  }  
+  */
   
   def fastTerminating(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     e match {
-      case DirectSiteCallIn(OrcValue(t:OrcSite) in _, _, _) if !t.immediateHalt => false
-      case SiteCallIn((t: Var) in ctx, _, _, _) => ctx(t) match {
-        case RecursiveSiteBound(_, _, _) => false
-        case _ => true
+      case SiteCallDirectIn(target, args, _) if target.siteMetadata.map(_.timeToHalt == Delay.NonBlocking).getOrElse(false) => {
+        true
       }
-      case KillIn(b, a) => false
+      case SiteCallIn((target: Var) in ctx, p, c, t, args, _) => ctx(target) match {
+        case SiteBound(_, _, _) => true
+        case _ => false
+      }
+      case SiteCallIn(OrcValue(_) in _, p, c, t, args, _) => true
 
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
         case LetBound(dctx, l) => 
-          val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
+          val LetIn(_, ContinuationIn(_, _, b), _) = l in dctx
           b.fastTerminating
         case _ => false
       }
       
-      case IfIn(p, t, e) => t.fastTerminating && e.fastTerminating
       case TryOnHaltedIn(b, h) => b.fastTerminating && h.fastTerminating
       case TryOnKilledIn(b, h) => b.fastTerminating && h.fastTerminating
       case LetIn(_, v, b) => v.fastTerminating && b.fastTerminating
       case SequenceIn(l, ctx) => l forall (e => (e in ctx).fastTerminating)
-      case RestoreCounterIn(b, a) => b.fastTerminating && a.fastTerminating
-      case NewCounterIn(b) => b.fastTerminating
+      case NewCounterIn(_, b) => b.fastTerminating
       case NewTerminatorIn(b) => b.fastTerminating
-      case _ => true
+      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force) in _ => {
+        true
+      }
+      case _ => false
     }
-  }*/
+  }
   
   val closureCost = 5
   val spawnCost = 4

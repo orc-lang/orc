@@ -34,6 +34,8 @@ porc:site-elim
 porc:onhalted-elim
 porc:inline-let
 porc:let-inline-expansion-threshold=10
+porc:inline-spawn
+porc:spawn-inline-threshold=30
 porc:specialize-sitecall
 porc:force-elim
 porc:max-passes=8

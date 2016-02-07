@@ -125,29 +125,24 @@ case class Optimizer(co: CompilerOptions) {
     }
   }
 
-  /*
-  This may not be needed because site inlining is already done in Orc5C
-
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
-
+  
   val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case SpawnIn((t: Var) in ctx) => ctx(t) match {
-        case LetBound(dctx, l @ Let(`t`, Lambda(_, _), _)) => {
-          val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
-          val c = b.cost
-          if (c <= spawnCostInlineThreshold && b.fastTerminating)
-            Some(t())
+      case SpawnIn(c, t, e) => {
+          val c = e.cost
+          if (c <= spawnCostInlineThreshold && e.fastTerminating)
+            Some(e)
           else
             None
-        }
-        case _ => None
       }
       case _ => None
     }
   }
 
+  /*
+  This may not be needed because site inlining is already done in Orc5C
   
   val siteInlineThreshold = 50
   val siteInlineCodeExpansionThreshold = 50
@@ -180,7 +175,7 @@ case class Optimizer(co: CompilerOptions) {
   }
    */
 
-  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineLet, LetElim, SiteElim, OnHaltedElim)
+  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineSpawn, InlineLet, LetElim, SiteElim, OnHaltedElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -256,7 +251,7 @@ object Optimizer {
     e match {
       case SiteCallIn(target, p, c, t, args, ctx) 
           if target.isNotFuture && args.forall(v => (v in ctx).isNotFuture) &&
-             target.siteMetadata.map(_.isDirectCallable).getOrElse(false)=>
+             target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
         val v = new Var()
         Some(
           TryOnHalted({
