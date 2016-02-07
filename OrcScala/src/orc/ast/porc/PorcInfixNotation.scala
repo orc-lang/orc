@@ -89,7 +89,8 @@ object SiteDefIn {
 }
 
 object SiteDefCPSIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
+  type MatchResult = Option[(Var, Var, Var, Var, List[Var], TransformContext, WithContext[Expr])]
+  def unapply(e: WithContext[PorcAST]): MatchResult = e match {
     case (s : SiteDefCPS) in ctx =>
       val bodyctx = ctx extendBindings (s.arguments :+ s.pArg  :+ s.cArg :+ s.tArg).map(SiteArgumentBound(ctx, s, _))
       Some(s.name, s.pArg, s.cArg, s.tArg, s.arguments, bodyctx, s.body in bodyctx)
@@ -98,14 +99,14 @@ object SiteDefCPSIn {
 }
 
 object SiteDefDirectIn {
-  def unapply(e: WithContext[PorcAST]) = e match {
+  type MatchResult = Option[(Var, List[Var], TransformContext, WithContext[Expr])]
+  def unapply(e: WithContext[PorcAST]): MatchResult = e match {
     case (s : SiteDefDirect) in ctx =>
       val bodyctx = ctx extendBindings s.arguments.map(SiteArgumentBound(ctx, s, _))
       Some(s.name, s.arguments, bodyctx, s.body in bodyctx)
     case _ => None
   }
 }
-
 
 object CallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
