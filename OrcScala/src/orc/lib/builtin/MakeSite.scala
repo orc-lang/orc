@@ -23,12 +23,8 @@ import orc.values.Format
 import orc.types.UnaryCallableType
 import orc.types.FunctionType
 import orc.types.Type
-import orc.run.extensions.InstanceEvent
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.run.extensions.InstanceEvent
-import orc.run.extensions.InstanceEvent
 import orc.run.core.Closure
-import orc.run.extensions.InstanceEvent
 
 // MakeSite site
 
@@ -59,7 +55,8 @@ class RunLikeSite(closure: Closure) extends UntypedSite {
   override def name = "class " + Format.formatValue(closure)
 
   def call(args: List[AnyRef], caller: Handle) {
-    caller.notifyOrc(InstanceEvent(closure, args, caller))
+    ///caller.notifyOrc(InstanceEvent(closure, args, caller))
+    ???
   }
 
 }
