@@ -17,6 +17,7 @@ import java.util.logging.Level
 import orc.run.core.EventHandler
 import orc.run.Orc
 import orc.Schedulable
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** @author amp
   */
@@ -51,36 +52,47 @@ class ToJavaRuntime(private val runtime: Orc) {
   final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = runtime.invoke(h, v, vs)
 }
 
-/** An implementation of site call Handle which is also a tojava Context.
-  */
-final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Terminator, val callSitePosition: Position) extends Handle {
+final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Terminator, val callSitePosition: Position) extends Handle with Terminatable {
+  val halted = new AtomicBoolean(false)
+  
+  t.addChild(this)
+  
   /** Handle a site call publication.
     *
     * The semantics of a publication for a handle include halting so add that.
     */
   override def publish(v: AnyRef) = {
-    // Catch and ignore killed exceptions since the site call itself should not be killed.
-    try {
-      p.call(v)
-    } catch {
-      case _: KilledException => {}
+    if (halted.compareAndSet(false, true)) {
+      // Catch and ignore killed exceptions since the site call itself should not be killed.
+      try {
+        p.call(v)
+      } catch {
+        case _: KilledException => {}
+      }
+      c.halt()
+      // Matched to: Every invocation is required to be proceeded by a 
+      //             prepareSpawn since it might spawn.
     }
-    c.halt()
-    // Matched to: Every invocation is required to be proceeded by a 
-    //             prepareSpawn since it might spawn.
   }
 
+  def kill(): Unit = halt
+  
   def halt: Unit = {
-    c.halt()
+    if (halted.compareAndSet(false, true)) {
+      c.halt()
+    }
   }
 
-  def notifyOrc(event: OrcEvent): Unit = execution.notifyOrc(event)
+  def notifyOrc(event: OrcEvent): Unit = {
+    execution.notifyOrc(event)
+  }
 
   // TODO: Support VTime
   def setQuiescent(): Unit = {}
 
   def !!(e: OrcException): Unit = {
     notifyOrc(CaughtEvent(e))
+    halt
   }
 
   // TODO: Support rights.

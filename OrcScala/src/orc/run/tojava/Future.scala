@@ -98,6 +98,7 @@ final class Future() extends OrcValue {
 
     st match {
       case Bound => blocked.publish(_value)
+      case Halt => blocked.halt()
       case _ => {}
     }
   }
@@ -105,7 +106,7 @@ final class Future() extends OrcValue {
   override def toOrcSyntax() = {
     synchronized { _state } match {
       case Bound => Format.formatValue(_value)
-      case Halt => "stop"
+      case Halt => "$stop$"
       case Unbound => "$unbound$"
     }
   }

@@ -2,16 +2,24 @@ package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+trait Terminatable {
+  def kill(): Unit
+}
+
 /** The a termination tracker.
   *
   * @author amp
   */
-class Terminator {
+class Terminator extends Terminatable {
   private[this] var isLiveFlag = true
-  private[this] var children: List[Terminator] = Nil
+  // TODO: children can theoretically grow without bound. We need to actually remove the children when they are gone.
+  private[this] var children: List[Terminatable] = Nil
 
-  def addChild(child: Terminator) = synchronized {
-    checkLive()
+  def addChild(child: Terminatable) = synchronized {
+    if (!isLive()) {
+      child.kill()
+      checkLive()
+    }
     children ::= child
   }
 

@@ -5,14 +5,9 @@ import orc.values.Format
 import scala.collection.mutable
 import orc.values.Field
 import orc.ast.porc
-import orc.error.compiletime.CompilationException
-import orc.error.compiletime.SeverityFatal
+import orc.error.compiletime.FeatureNotSupportedException
 
 case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var, recursives: Set[BoundVar]) {
-}
-
-case class FeatureNotSupportedException(feature: String, ast: NamedAST) extends CompilationException(s"$feature is unsupported") with SeverityFatal {
-  setPosition(ast.pos)
 }
 
 /** @author amp
@@ -88,7 +83,7 @@ class OrctimizerToPorc {
       case DeclareType(u, t, body) => expression(body)
       
       case VtimeZone(timeOrder, body) => 
-        throw new FeatureNotSupportedException("Virtual time", expr)
+        throw new FeatureNotSupportedException("Virtual time", expr.pos)
         
       case FieldAccess(o, f) => {
         porc.GetField(ctx.p, ctx.c, ctx.t, argument(o), f)

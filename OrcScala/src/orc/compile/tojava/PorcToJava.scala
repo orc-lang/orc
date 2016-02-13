@@ -85,6 +85,7 @@ $code
       case orc.values.Field(s) => s"""new Field(${stringAsJava(s)})"""
       case x: orc.values.sites.JavaClassProxy => s"""Callable$$.MODULE$$.resolveJavaSite(${stringAsJava(x.name)})"""
       case x: orc.values.sites.Site => s"""Callable$$.MODULE$$.resolveOrcSite(${stringAsJava(strip$(x.getClass().getName))})"""
+      case null => "null"
       case _ => throw new AssertionError("Could not convert value " + v.toString + " to a Java initializer.")
     }
     ConstantPoolEntry(v, typ, name, init)

@@ -1,6 +1,7 @@
 package orc.run.tojava
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
+import orc.run.Logger
 
 /** Join a number of futures by blocking on all of them simultaneously.
   *
@@ -38,6 +39,7 @@ abstract class Join(inValues: Array[AnyRef]) {
       * If join has not halted we bind and check if we are done.
       */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
+      Logger.finest(s"JoinElement $i published: $v")
       // Check if we are halted then bind. This is an optimization since 
       // nUnbound can never reach 0 if we halted.
       if (!halted.get()) {
@@ -54,8 +56,10 @@ abstract class Join(inValues: Array[AnyRef]) {
       * been bound.
       */
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
+      Logger.finest(s"JoinElement $i halted")
       // Halt if we have not already halted.
       if (halted.compareAndSet(false, true)) {
+        Logger.finest(s"Finished join with halt")
         join.halt()
       }
     }
@@ -64,6 +68,8 @@ abstract class Join(inValues: Array[AnyRef]) {
     // in the context of the count held by join.
     def prepareSpawn(): Unit = {}
   }
+  
+  Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
 
   // Start all the required forces.
   var nNonFutures = 0
@@ -91,6 +97,7 @@ abstract class Join(inValues: Array[AnyRef]) {
   final def checkComplete(n: Int): Unit = {
     assert(n >= 0)
     if (n == 0) {
+      Logger.finest(s"Finished join with: ${values.mkString(", ")}")
       done()
     }
   }

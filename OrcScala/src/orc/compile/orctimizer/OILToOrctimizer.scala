@@ -20,6 +20,8 @@ import orc.lib.state.NewFlag
 import orc.lib.state.PublishIfNotSet
 import orc.lib.state.SetFlag
 import scala.collection.mutable
+import orc.lib.builtin.MakeSite
+import orc.error.compiletime.FeatureNotSupportedException
 
 /** @author amp
   */
@@ -47,14 +49,17 @@ class OILToOrctimizer {
       case Call(target, args, typeargs) => {
         // Compute the target value and a flag to state of it should be forced
         val (newTarget, forceTarget) = target match {
-            case (c: Constant) =>
-              (apply(c), None)
-            case (x: BoundVar) if isDef(x) =>
-              (apply(x), None)
-            case _ =>
-              val t = new orct.BoundVar(Some(s"f_$target"))
-              (t, Some(t))
-          }
+          case Constant(MakeSite) =>
+            throw new FeatureNotSupportedException("Classes or MakeSite", e.pos)
+
+          case (c: Constant) =>
+            (apply(c), None)
+          case (x: BoundVar) if isDef(x) =>
+            (apply(x), None)
+          case _ =>
+            val t = new orct.BoundVar(Some(s"f_$target"))
+            (t, Some(t))
+        }
 
         // Compute the set of arguments and collect arguments that need forcing
         val bindings = new collection.mutable.ListBuffer[(Argument, orct.BoundVar)]()

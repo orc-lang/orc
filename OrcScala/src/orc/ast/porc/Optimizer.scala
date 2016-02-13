@@ -111,7 +111,7 @@ case class Optimizer(co: CompilerOptions) {
           }
         }
 
-        Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
+        //Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
         if (compatReferences > 0 && codeExpansion <= letInlineCodeExpansionThreshold) {
           if (noncompatReferences > 0)
             Some(Let(x, lam, doInline(scope)))

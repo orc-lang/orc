@@ -178,3 +178,7 @@ case class IncludeFileException(val includeFileName: String, cause: Throwable)
 case class SiteResolutionException(val siteName: String, cause: Throwable)
   extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
+
+case class FeatureNotSupportedException(feature: String, pos: Position) 
+  extends CompilationException(s"$feature is unsupported") 
+  with SeverityFatal { this.resetPosition(pos) }
