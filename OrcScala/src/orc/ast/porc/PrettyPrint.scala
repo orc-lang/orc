@@ -86,7 +86,7 @@ class PrettyPrint {
       case NewTerminator(t) => rd"terminator $t"
       case Kill(t) => rd"kill $t"
 
-      case SpawnFuture(c, t, pArg, e) => rd"spawnFuture $c $t ($pArg) {\n${indent(i+2)}${reduce(e, i+2)}\n$ind}"
+      case SpawnFuture(c, t, pArg, cArg, e) => rd"spawnFuture $c $t ($pArg, $cArg) {\n${indent(i+2)}${reduce(e, i+2)}\n$ind}"
       
       case Force(p, c, f) => rd"force $p $c $f"
       case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"

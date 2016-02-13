@@ -65,7 +65,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   def get(e: WithContext[PorcAST]) = Some(apply(e))
 
   def analyze(e: WithContext[PorcAST]): AnalysisResults = {
-    AnalysisResults(nonFuture(e), false, cost(e), fastTerminating(e), siteMetadata(e)) // nonHalt(e)
+    AnalysisResults(nonFuture(e), nonHalt(e), cost(e), fastTerminating(e), siteMetadata(e))
   }
 
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -116,14 +116,16 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     }
   }
 
-  /*
   def nonHalt(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     // TODO: Fill this out to be a more accurate analysis. It should be a type analysis.
     e match {
-      case (_:OrcValue | _:Bool | _:Unit | _:Var) in _ => true
-      case LambdaIn(_, _, _) => true
+      case (_:OrcValue | _:Unit | _:Var) in _ => true
+      case ContinuationIn(_, _, _) => true
+      case SiteCallIn(_, _, _, _, _, _) => true
+      case SiteCallDirectIn(target, _, _) => target.siteMetadata.map(_.publications > 0).getOrElse(false)
       
+      /*
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
         case LetBound(dctx, l) => 
           val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
@@ -141,10 +143,10 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case NewCounterIn(b) => b.doesNotThrowHalt
       case NewTerminatorIn(b) => b.doesNotThrowHalt
       case (NewFlag() | NewFuture()) in _ => true
+      */
       case _ => false
     }
   }  
-  */
   
   def fastTerminating(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._

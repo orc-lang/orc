@@ -163,10 +163,13 @@ $code
               j"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
           }
         }).mkString("\n")
+        val fvs = expr.freevars
+        // TODO: Mutual recursive closures may have problems. Check forcing a mutually recursive closure.
+        // TODO: It might be better to build a special join object that represents all the values we are closing over. Then all closures can use it instead of building a resolver for each.
         
         j"""
         |$decls
-        |${defs.map(orcdef(_)).mkString}
+        |${defs.map(orcdef(_, fvs)).mkString}
         |${expression(body).deindentedAgressively}"""
       }
 
@@ -197,9 +200,9 @@ $code
 
       // ==================== FUTURE ===================
       
-      case SpawnFuture(c, t, p, e) => {
+      case SpawnFuture(c, t, pArg, cArg, e) => {
         j"""
-        |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(p)}) -> {
+        |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
           |$e
         |});
         """
@@ -268,26 +271,26 @@ $code
     }
   }
   
-  def orcdef(d: SiteDef): String = {
+  def orcdef(d: SiteDef, freevars: Set[Var]): String = {
+    val args = newVarName("args")
+    val rt = newVarName("rt")
+    val freevarsStr = j"new Object[] { ${freevars.map(argument).mkString(", ")} }"
+    val renameargs = d.arguments.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)
+    // We assume that previous generated code has defined a mutable variable named by vars(name)
+    // This will set it to close the recursion.
     d match {
       case SiteDefCPS(name, p, c, t, formals, b) => {
-        val args = newVarName("args")
-        val rt = newVarName("rt")
-        // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
-        |${vars(name)} = ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
-          |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
+        |${vars(name)} = new ForcableCallable($freevarsStr, ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
+          |$renameargs
           |${expression(b)}
-        |};
+        |});
         """.deindented
       }
       case SiteDefDirect(name, formals, b) => {
-        val rt = newVarName("rt")
-        val args = newVarName("args")
-        // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
         j"""
-        |${vars(name)} = ($rt, $args) -> {
-          |${formals.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)}
+        |${vars(name)} = new ForcableDirectCallable($freevarsStr, ($rt, $args) -> {
+          |$renameargs
           |${expression(b)}
         |};
         """.deindented        

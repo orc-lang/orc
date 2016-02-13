@@ -48,6 +48,19 @@ trait DirectCallable {
   def directcall(execution: Execution, args: Array[AnyRef]): AnyRef
 }
 
+trait ForcableCallableBase {
+  val closedValues: Array[AnyRef]
+}
+
+final class ForcableCallable(val closedValues: Array[AnyRef], impl: Callable) extends Callable with ForcableCallableBase {
+  def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]): Unit = 
+    impl.call(execution, p, c, t, args)
+}
+final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: DirectCallable) extends DirectCallable with ForcableCallableBase {
+  def directcall(execution: Execution, args: Array[AnyRef]): AnyRef =
+    impl.directcall(execution, args)
+}
+
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
   *
   * This uses the token interpreters site invocation code and hence uses

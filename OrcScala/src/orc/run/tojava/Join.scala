@@ -108,3 +108,72 @@ abstract class Join(inValues: Array[AnyRef]) {
   def halt(): Unit
 }
 
+
+/** Join a number of futures by blocking on all of them simultaneously waiting for them to ALL either be 
+  * bound or halt.
+  *
+  * @param inValues a list of value which may contain futures. All the futures in this array will be blocked on.
+  *
+  * This class must be subclassed to implement done.
+  *
+  * @author amp
+  */
+abstract class Resolve(inValues: Array[AnyRef]) {
+  /* This does not do real halts or spawns. Instead it assumes it can spawn
+   * if needed and will always call halt or done (but not both) when it is
+   * completed.
+   */
+
+  // The number of unbound values in values.
+  var nUnbound = new AtomicInteger(inValues.size)
+
+  /** A Blockable that binds a specific element of values in publish().
+    */
+  final class JoinElement() extends Blockable {
+    /** The flag used to make sure publish/halt is only called once.
+      */
+    var bound = new AtomicBoolean(false)
+
+    def publish(v: AnyRef): Unit = halt()
+
+    def halt(): Unit = if (bound.compareAndSet(false, true)) {
+      checkComplete(nUnbound.decrementAndGet())
+    }
+
+    // We can ignore prepareSpawn since all the executions are being performed
+    // in the context of the count held by join.
+    def prepareSpawn(): Unit = {}
+  }
+
+  // Start all the required forces.
+  var nNonFutures = 0
+  for (v <- inValues) v match {
+    case f: Future => {
+      f.forceIn(new JoinElement())
+    }
+    case _ => {
+      nNonFutures += 1
+    }
+  }
+  // Now decrement the unbound count by the number of non-futures we found.
+  // And maybe finish immediately.
+  if(nNonFutures > 0)
+    // Don't do this if it will not change the value. Otherwise this could
+    // cause multiple calls to done.
+    checkComplete(nUnbound.addAndGet(-nNonFutures))
+
+  /** Check if we are done by looking at n which must be the current number of
+    * unbound values.
+    */
+  final def checkComplete(n: Int): Unit = {
+    assert(n >= 0)
+    if (n == 0) {
+      done()
+    }
+  }
+
+  /** Handle a successful completion.
+    */
+  def done(): Unit
+}
+

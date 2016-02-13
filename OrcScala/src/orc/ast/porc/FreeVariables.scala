@@ -26,9 +26,12 @@ trait FreeVariables {
     val s = mutable.Set[Var]()
     (new ContextualTransform.NonDescending {
       override def onVar = {
-        case (v : Var) in _ => s += v; v
+        case (v : Var) in ctx if !ctx.contains(v) => 
+          s += v
+          v
       }
     })(this)
+    //Logger.finest(s"$this has free vars ${s.toSet}")
     s.toSet
   }
 }

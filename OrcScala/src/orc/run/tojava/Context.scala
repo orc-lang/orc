@@ -71,16 +71,26 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
     *
     * This is very similar to spawn().
     */
-  def spawnFuture(c: Counter, t: Terminator, f: Consumer[Continuation]): Future = {
+  def spawnFuture(c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
     t.checkLive();
     val fut = new Future()
-    runtime.schedule(new CounterSchedulableFunc(c, () =>
-      f.accept(new Continuation {
+    runtime.schedule(new CounterSchedulableFunc(c, () => {
+      val p = new Continuation {
         // This special context just binds the future on publication.
         override def call(v: AnyRef): Unit = {
           fut.bind(v)
         }
-      })))
+      }
+      val newC = new CounterNestedBase(c) {
+        override def onContextHalted(): Unit = {
+          fut.stop()
+          super.onContextHalted()
+        }
+      }
+      f.accept(p, newC)
+      // Matches: the starting count of newC
+      newC.halt()
+    }))
     fut
   }
 
@@ -90,6 +100,18 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
     v match {
       case f: Future =>
         f.forceIn(new PCBlockable(p, c))
+      case f: ForcableCallableBase =>
+        c.prepareSpawn()
+        new Resolve(f.closedValues) {
+          def done(): Unit = {
+            try {
+              p.call(v)
+            } catch {
+              case _: KilledException => {}
+            }
+            c.halt()
+          }
+        }
       case _ => p.call(v)
     }
   }

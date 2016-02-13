@@ -63,7 +63,7 @@ trait ContextualTransform {
   def transformExpr(expr: WithContext[Expr]): Expr = {
     order[Expr](callHandler, {
       case LetIn(x, v, b) => {
-        val e1 = Let(transformVariable(x), transformExpr(v), b)
+        val e1 = Let(x, transformExpr(v), b)
         Let(e1.x, e1.v, transformExpr(b.e in x.ctx + LetBound(x.ctx, e1)))
       }
       case s@SiteIn(l, ctx, b) => {
@@ -77,7 +77,7 @@ trait ContextualTransform {
       case SiteCallIn(target, p, c, t, args, ctx) => SiteCall(transformValue(target), transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), args map { v => transformValue(v in ctx) })
       case SiteCallDirectIn(t, a, ctx) => SiteCallDirect(transformValue(t), a map { v => transformValue(v in ctx) })
 
-      case ContinuationIn(arg, ctx, b) => Continuation(transformVariable(arg in ctx), transformExpr(b))
+      case ContinuationIn(arg, ctx, b) => Continuation(arg in ctx, transformExpr(b))
 
       case SequenceIn(l, ctx) => {
         Sequence(l map {e => transformExpr(e in ctx)})
@@ -89,7 +89,10 @@ trait ContextualTransform {
       
       
       case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
-      case SpawnFutureIn(c, t, pArg, e) => SpawnFuture(transformValue(c), transformValue(t), pArg, transformExpr(e))
+      case SpawnFutureIn(c, t, pArg, cArg, e) => {
+        // TODO: This is actually wrong. IT needs to make an intermediate node for the context of e. Like let does.
+        SpawnFuture(transformValue(c), transformValue(t), pArg, cArg, transformExpr(e))
+      }
         
       case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
       case Halt(c) in ctx => Halt(transformValue(c in ctx))
@@ -110,16 +113,16 @@ trait ContextualTransform {
     order[SiteDef](callHandler, {
       case SiteDefCPSIn(name, p, c, t, args, ctx, body) => 
         SiteDefCPS(
-            transformVariable(name in ctx), 
-            transformVariable(p in ctx),
-            transformVariable(c in ctx),
-            transformVariable(t in ctx),
-            args map { v => transformVariable(v in ctx) }, 
+            name, 
+            p,
+            c,
+            t,
+            args, 
             transformExpr(body))
       case SiteDefDirectIn(name, args, ctx, body) => 
         SiteDefDirect(
-            transformVariable(name in ctx), 
-            args map { v => transformVariable(v in ctx) },
+            name, 
+            args,
             transformExpr(body))
     })(expr)
   }

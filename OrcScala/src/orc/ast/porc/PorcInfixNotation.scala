@@ -159,9 +159,9 @@ object SpawnIn {
 
 object SpawnFutureIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@SpawnFuture(c, t, pArg, e)) in ctx =>
-      val bodyCtx = ctx extendBindings List(SpawnFutureBound(ctx, s, pArg))
-      Some(c in ctx, t in ctx, pArg, e in bodyCtx)
+    case (s@SpawnFuture(c, t, pArg, cArg, e)) in ctx =>
+      val bodyCtx = ctx extendBindings List(SpawnFutureBound(ctx, s, pArg), SpawnFutureBound(ctx, s, cArg))
+      Some(c in ctx, t in ctx, pArg, cArg, e in bodyCtx)
     case _ => None
   }
 }

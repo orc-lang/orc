@@ -151,7 +151,7 @@ case class ContinuationArgumentBound(ctx: TransformContext, ast: Continuation, v
 }
 
 case class SpawnFutureBound(ctx: TransformContext, ast: SpawnFuture, variable: Var) extends Binding {
-  assert(ast.pArg == variable)
+  assert(ast.pArg == variable || ast.cArg == variable)
 }
 
 final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
@@ -164,7 +164,7 @@ final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
     case SiteCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
     case SiteCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
     
-    case SpawnFutureIn(c, t, pArg, expr) => Seq(c, t, expr)
+    case SpawnFutureIn(c, t, pArg, cArg, expr) => Seq(c, t, expr)
 
     case ContinuationIn(args, ctx, b) => Seq(b)
 

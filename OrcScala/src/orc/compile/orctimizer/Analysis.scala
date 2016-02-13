@@ -278,6 +278,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
+      case VtimeZone(_, e) in ctx =>
+        (e in ctx).timeToHalt
     }
   }
 
@@ -341,6 +343,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
+      case VtimeZone(_, e) in ctx =>
+        (e in ctx).timeToPublish
     }
   }
 
@@ -404,6 +408,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case FieldAccess(_, _) in _ =>
         Range(0, 1)
+      case VtimeZone(_, e) in ctx =>
+        (e in ctx).publications
     }
   }
 
@@ -472,6 +478,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
       case FieldAccess(_, _) in _ =>
         Map()
+      case VtimeZone(_, _) in _ =>
+        Map()
     }
   }
 
@@ -518,6 +526,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Effects.None
       case FieldAccess(_, _) in _ =>
         Effects.None
+      case VtimeZone(_, e) in ctx =>
+        (e in ctx).effects
     }
   }
 
@@ -601,6 +611,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
+      case VtimeZone(_, _) in _ =>
+        Delay.Blocking
     }
   }
 }
