@@ -187,7 +187,9 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
             "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
-            "closures" -> Analysis.count(prog, _.isInstanceOf[Let]),
+            "closures" -> Analysis.count(prog, _.isInstanceOf[Continuation]),
+            "indirect calls" -> Analysis.count(prog, _.isInstanceOf[SiteCall]),
+            "direct calls" -> Analysis.count(prog, _.isInstanceOf[SiteCallDirect]),
             "sites" -> Analysis.count(prog, _.isInstanceOf[Site]),
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> analyzer(prog in TransformContext()).cost

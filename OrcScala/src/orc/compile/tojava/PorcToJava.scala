@@ -330,10 +330,27 @@ object PorcToJava {
   
   def stringAsUTF8Array(s: String): String =
     s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
+  
+  val safeChars = " \t._;:${}()[]-+/*,&^%#@!=?<>|~`"
+  def escapeChar(c: Char): String = c match {
+    case _ if (c.isLetterOrDigit || (safeChars contains c)) => c.toString
+    case '\n' => "\\n"
+    case '\r' => "\\r"
+    case '\f' => "\\f"
+    case '\b' => "\\b"
+    case '\'' => "\\'"
+    case '\"' => "\\\""
+    case '\\' => "\\\\"
+    case _ => s"\\u${c.toInt.formatted("%04d")}"
+  }
+  
+  /** Convert a string to an executable Java expression that produces that string.
+   */
   def stringAsJava(s: String): String = {
-    if (s.forall(c => (c.isLetterOrDigit || c == ' ' || c == '\t') && c >= 32 && c < 127))
-      "\""+s+"\""
-    else 
+    // We will generate an escaped string unless we have surrogates. It might work with escapes, but just going UTF8 seems better.
+    if (s.forall(!_.isSurrogate))
+      "\""+s.map(escapeChar).mkString("")+"\""
+    else
       stringAsUTF8Array(s)
   }
 }
