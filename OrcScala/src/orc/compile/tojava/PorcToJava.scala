@@ -331,7 +331,7 @@ object PorcToJava {
   def stringAsUTF8Array(s: String): String =
     s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
   def stringAsJava(s: String): String = {
-    if (s.forall(c => c >= 32 && c < 127 && c != '\n' && c != '\\'))
+    if (s.forall(c => (c.isLetterOrDigit || c == ' ' || c == '\t') && c >= 32 && c < 127))
       "\""+s+"\""
     else 
       stringAsUTF8Array(s)
