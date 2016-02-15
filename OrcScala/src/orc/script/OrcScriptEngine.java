@@ -86,7 +86,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
   }
 
   public class OrcCompiledScript extends CompiledScript {
-    private final CompiledCode code;
+    final CompiledCode code;
 
     /**
      * Constructs an object of class OrcCompiledScript.
@@ -368,4 +368,14 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
   }
 
+  /**
+   * Import an existing compiled object into a new OrcCompiledScript.
+   */
+  @SuppressWarnings("unchecked")
+  public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
+    if(script instanceof OrcScriptEngine.OrcCompiledScript)
+      return new OrcCompiledScript(((OrcCompiledScript)script).code);
+    else
+      throw new IllegalArgumentException("Provided compiled script is not of the correct time.");
+  }   
 }
