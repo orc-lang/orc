@@ -288,6 +288,12 @@ class StructurePairSite(
     "unapply" -> unapplySite.orcType())
 }
 
+
+trait HasFields extends Site {
+  def getField(f: Field): AnyRef
+  def hasField(f: Field): Boolean
+}
+
 trait NonBlockingSite extends Site {
   override def timeToPublish: Delay = Delay.NonBlocking
   override def timeToHalt: Delay = Delay.NonBlocking

@@ -13,6 +13,9 @@ import orc.values.Field
 import orc.Handle
 import orc.OrcEvent
 import orc.PublishedEvent
+import orc.values.sites.HasFields
+import orc.error.runtime.NoSuchMemberException
+import orc.run.tojava.Wrapper
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -123,23 +126,23 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
     * returning does not imply this has halted.
     */
   def getField(p: Continuation, c: Counter, t: Terminator, v: AnyRef, f: Field) = {
-    v match {
-      case r: OrcRecord => {
-        // This just optimizes the record case.
-        r.entries.get(f.field) match {
-          case Some(w) => p.call(w)
-          case None => {}
-        }
+    Wrapper.unwrap(v) match {
+      case r: HasFields if r.hasField(f) => {
+        p.call(r.getField(f))
       }
       case _ => {
         // Use the old style call with field to get the value.
-        val callable = Coercions.coerceToCallable(v)
-        callable.call(this, p, c, t, Array[AnyRef](f))
+        //val callable = Coercions.coerceToCallable(v)
+        //callable.call(this, p, c, t, Array[AnyRef](f))
+        throw new NoSuchMemberException(v, f.field)
       }
     }
   }
 
-  final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = runtime.invoke(h, v, vs)
+  final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = {
+    assert(if (vs.size == 1) !vs.head.isInstanceOf[Field] else true) 
+    runtime.invoke(h, v, vs)
+  }
 }
 
 

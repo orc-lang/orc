@@ -9,6 +9,8 @@ import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.CaughtEvent
 import orc.values.OrcRecord
+import orc.values.sites.HasFields
+import orc.values.Field
 
 trait Continuation {
   def call(v: AnyRef)
@@ -67,10 +69,11 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
   * This uses the token interpreters site invocation code and hence uses
   * several shims to convert from one API to another.
   */
-class RuntimeCallable(s: AnyRef) extends Callable {
+class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
+  private val site = Callable.findSite(underlying)
   final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
-    s match {
+    site match {
       case s: SiteMetadata if s.effects == Effects.None => {}
       case _ => t.checkLive()
     }
@@ -80,7 +83,7 @@ class RuntimeCallable(s: AnyRef) extends Callable {
     // Matched to: halt in PCTHandle or below in Join subclass.
 
     if (args.length == 0) {
-      execution.invoke(new PCTHandle(execution, p, c, t, null), s, Nil)
+      execution.invoke(new PCTHandle(execution, p, c, t, null), site, Nil)
     } else {
       // TODO: Optimized version for single argument
       new Join(args) {
@@ -98,11 +101,13 @@ class RuntimeCallable(s: AnyRef) extends Callable {
           */
         def done(): Unit = {
           assert(called.compareAndSet(false, true), "halt()/done() may only be called once.")
-          execution.invoke(new PCTHandle(execution, p, c, t, null), s, values.toList)
+          execution.invoke(new PCTHandle(execution, p, c, t, null), site, values.toList)
         }
       }
     }
   }
+  
+  override def toString: String = s"${getClass.getName}($underlying)"
 }
 
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
@@ -110,10 +115,11 @@ class RuntimeCallable(s: AnyRef) extends Callable {
   * This uses the token interpreters site invocation code and hence uses
   * several shims to convert from one API to another.
   */
-final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with DirectCallable {
+final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with DirectCallable with Wrapper {
+  private val site = Callable.findSite(u)
   def directcall(execution: Execution, args: Array[AnyRef]) = {
     try {
-      s.calldirect(args.toList)
+      site.calldirect(args.toList)
     } catch {
       case e: InterruptedException => 
         throw e
@@ -130,9 +136,16 @@ final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with
 }
 
 object Callable {
-  private def findSite(s: Site): Site = s match {
-    case OrcRecord(entries) if entries contains "apply" => entries("apply") match {
+  def findSite(s: AnyRef): AnyRef = s match {
+    case r: HasFields if r.hasField(Field("apply")) => r.getField(Field("apply")) match {
       case applySite: Site => findSite(applySite)
+      case _ => s
+    }
+    case _ => s
+  }
+  def findSite(s: DirectSite): DirectSite = s match {
+    case r: HasFields if r.hasField(Field("apply")) => r.getField(Field("apply")) match {
+      case applySite: DirectSite => findSite(applySite)
       case _ => s
     }
     case _ => s
@@ -142,7 +155,7 @@ object Callable {
     */
   def resolveOrcSite(n: String): Callable = {
     try {
-      val s = findSite(orc.values.sites.OrcSiteForm.resolve(n))
+      val s = orc.values.sites.OrcSiteForm.resolve(n)
       s match {
         case s: DirectSite => new RuntimeDirectCallable(s)
         case _ => new RuntimeCallable(s)
@@ -157,7 +170,7 @@ object Callable {
     */
   def resolveJavaSite(n: String): Callable = {
     try {
-      val s = findSite(orc.values.sites.JavaSiteForm.resolve(n))
+      val s = orc.values.sites.JavaSiteForm.resolve(n)
       s match {
         case s: DirectSite => new RuntimeDirectCallable(s)
         case _ => new RuntimeCallable(s)

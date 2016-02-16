@@ -64,10 +64,18 @@ sealed abstract class NamedDeclaration extends Declaration {
   val name: String
 }
 
-sealed abstract class DefDeclaration extends NamedDeclaration
-case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends DefDeclaration
+sealed abstract class DefDeclaration extends NamedDeclaration {
+  def arity: Int
+}
+case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration {
+  def arity = formals.size
+}
+case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration {
+  def arity = formals.size
+}
+case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends DefDeclaration {
+  def arity = argtypes.size
+}
 
 // Convenience extractor for sequences of definitions enclosing some scope
 object DefGroup {

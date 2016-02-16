@@ -20,6 +20,9 @@ import orc.Handle;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.error.runtime.NoSuchMemberException;
+import orc.values.Field;
+import orc.lib.state.Ref.RefInstance;
+import orc.values.sites.HasFields;
 
 /**
  * Dot-accessible sites should extend this class and declare their Orc-available
@@ -33,7 +36,7 @@ import orc.error.runtime.NoSuchMemberException;
  *
  * @author dkitchin
  */
-public abstract class DotSite extends SiteAdaptor {
+public abstract class DotSite extends SiteAdaptor implements HasFields {
 
 	Map<String, Object> methodMap;
 
@@ -79,4 +82,13 @@ public abstract class DotSite extends SiteAdaptor {
 		throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
 	}
 
+	@Override
+    public Object getField(Field f) {
+      return getMember(f.field());
+    }
+	
+    @Override
+    public boolean hasField(Field f) {
+      return methodMap.containsKey(f.field());
+    }
 }

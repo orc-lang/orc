@@ -444,7 +444,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           }
           callstr.updated(v, ForceType.Immediately(true))
         }
-        case v: BoundVar => Map((v, ForceType.Immediately(true)))
         case _ => Map()
       }
       case f || g =>
