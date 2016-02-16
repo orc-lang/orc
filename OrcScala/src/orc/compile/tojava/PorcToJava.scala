@@ -250,10 +250,11 @@ $code
         |try {
           |$b
         |} catch(HaltException $e) {
-          |$execution.notifyOrc(new CaughtEvent($e.getCause()));
+          |assert $e.getCause() == null;
           |$h
         |}
         """
+          //$execution.notifyOrc(new CaughtEvent($e.getCause()));
       }
 
       case Unit() => ""

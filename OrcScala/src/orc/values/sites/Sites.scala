@@ -27,6 +27,7 @@ import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
 import orc.run.tojava.HaltException
+import orc.run.tojava.ExceptionHaltException
 
 trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], h: Handle): Unit
@@ -81,7 +82,7 @@ trait TotalSite extends DirectSite {
     } catch {
       case e: Exception => 
         //throw HaltException.SINGLETON
-        throw new HaltException(e)
+        throw new ExceptionHaltException(e)
     }
   }
 
@@ -109,7 +110,7 @@ trait PartialSite extends DirectSite {
     } catch {
       case e: Exception => 
         //throw HaltException.SINGLETON
-        throw new HaltException(e)
+        throw new ExceptionHaltException(e)
     }
   }
 

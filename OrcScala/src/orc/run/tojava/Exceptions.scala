@@ -2,13 +2,19 @@ package orc.run.tojava
 
 /** Notify the enclosing code that this direct form Orc code has halted.
   */
-class HaltException(e: Throwable) extends RuntimeException(e) {
+class HaltException() extends RuntimeException() {
+}
+
+/** Notify the enclosing code that this direct form Orc code has halted due to an expected exception in the Java code.
+	*/
+class ExceptionHaltException(e: Throwable) extends HaltException {
+  initCause(e)
 }
 
 object HaltException {
   /** A singleton instance of HaltException to avoid allocation.
     */
-  val SINGLETON = new HaltException(new Exception())
+  val SINGLETON = new HaltException()
   /* NOTE: Using a singleton is the "right thing" for performance, 
    * however it makes the stacks wrong. You can change this to a def 
    * to get the stacks right.

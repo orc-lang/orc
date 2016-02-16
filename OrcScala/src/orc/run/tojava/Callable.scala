@@ -8,6 +8,7 @@ import orc.values.sites.DirectSite
 import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.CaughtEvent
+import orc.values.OrcRecord
 
 trait Continuation {
   def call(v: AnyRef)
@@ -116,6 +117,9 @@ final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with
     } catch {
       case e: InterruptedException => 
         throw e
+      case e: ExceptionHaltException if e.getCause() != null => 
+        execution.notifyOrc(CaughtEvent(e.getCause()))
+        throw HaltException.SINGLETON
       case e: HaltException => 
         throw e
       case e: Exception => 
@@ -126,11 +130,19 @@ final class RuntimeDirectCallable(s: DirectSite) extends RuntimeCallable(s) with
 }
 
 object Callable {
+  private def findSite(s: Site): Site = s match {
+    case OrcRecord(entries) if entries contains "apply" => entries("apply") match {
+      case applySite: Site => findSite(applySite)
+      case _ => s
+    }
+    case _ => s
+  }
+  
   /** Resolve an Orc Site name to a Callable.
     */
   def resolveOrcSite(n: String): Callable = {
     try {
-      val s = orc.values.sites.OrcSiteForm.resolve(n)
+      val s = findSite(orc.values.sites.OrcSiteForm.resolve(n))
       s match {
         case s: DirectSite => new RuntimeDirectCallable(s)
         case _ => new RuntimeCallable(s)
@@ -145,7 +157,7 @@ object Callable {
     */
   def resolveJavaSite(n: String): Callable = {
     try {
-      val s = orc.values.sites.JavaSiteForm.resolve(n)
+      val s = findSite(orc.values.sites.JavaSiteForm.resolve(n))
       s match {
         case s: DirectSite => new RuntimeDirectCallable(s)
         case _ => new RuntimeCallable(s)
