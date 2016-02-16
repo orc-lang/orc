@@ -78,7 +78,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     e match {
       case (_: OrcValue | _: Unit) in _ => true
       case (v: Var) in ctx => ctx(v) match {
-        case _: ContinuationArgumentBound | _: SiteBound | _: RecursiveSiteBound => true
+        //case _: ContinuationArgumentBound | _: SiteBound | _: RecursiveSiteBound => true
         case _ => false // This needs types.
       }
       case _ => false

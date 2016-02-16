@@ -10,3 +10,11 @@ orct:par-elim
 orct:constant-propogation
 orct:limit-elim
 orct:max-passes=5
+porc
+porc:eta-reduce
+porc:var-let-elim 
+porc:let-elim 
+porc:inline-spawn
+porc:spawn-inline-threshold=30
+porc:specialize-sitecall
+porc:max-passes=5

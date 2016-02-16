@@ -76,7 +76,7 @@ class InsufficientArgsException(val missingArg: Int, val arityProvided: Int) ext
 /**
   */
 @SerialVersionUID(3541986342001858412L)
-class MalformedArrayAccessException(val args: List[AnyRef]) extends RuntimeTypeException("Array access requires a single Integer as an argument")
+class MalformedArrayAccessException(val args: List[AnyRef]) extends RuntimeTypeException(s"Array access requires a single Integer as an argument, got: ${args.mkString(", ")}")
 
 @SerialVersionUID(3367335446781496570L)
 class BadArrayElementTypeException(val badType: String) extends TokenException("Unrecognized array element type: " + badType)

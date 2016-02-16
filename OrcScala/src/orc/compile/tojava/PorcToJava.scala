@@ -21,6 +21,7 @@ class PorcToJava {
     val source = j"""// GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
+import orc.CaughtEvent;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
 
@@ -53,7 +54,7 @@ $code
   def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
 
-  val constantPool: mutable.Map[AnyRef, ConstantPoolEntry] = new mutable.HashMap()
+  val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
   def strip$(s: String): String = {
     if (s.charAt(s.length - 1) == '$') s.substring(0, s.length - 1) else s
@@ -63,7 +64,7 @@ $code
     val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}")
     val typ = v match {
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
-        | _: java.lang.Float | _: java.lang.Double => """Number"""
+        | _: java.lang.Float | _: java.lang.Double | _: BigInt | _: BigDecimal => """Number"""
       case _: String => "String"
       case _: java.lang.Boolean => "Boolean"
       case _: orc.values.Field => "Field"
@@ -90,8 +91,10 @@ $code
     }
     ConstantPoolEntry(v, typ, name, init)
   }
-  def lookup(f: Field) = constantPool.getOrElseUpdate(f, newConstant(f))
-  def lookup(v: OrcValue) = constantPool.getOrElseUpdate(v.value, newConstant(v.value))
+  def lookup(f: Field) = constantPool.getOrElseUpdate((classOf[Field], f), newConstant(f))
+  def lookup(v: OrcValue) = {
+    constantPool.getOrElseUpdate((if (v != null) v.value.getClass else classOf[Null], v.value), newConstant(v.value))
+  }
   
   def buildConstantPool() = {
     val orderedEntries = constantPool.values.toSeq.sortBy(_.name)
@@ -241,10 +244,13 @@ $code
         """
       }
       case TryOnHalted(b, h) => {
+        // TODO: Injecting the notify call here is odd. It adds reporting semantics to TryOnHalted.
+        val e = newVarName("e")
         j"""
         |try {
           |$b
-        |} catch(HaltException __e) {
+        |} catch(HaltException $e) {
+          |$execution.notifyOrc(new CaughtEvent($e.getCause()));
           |$h
         |}
         """

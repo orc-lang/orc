@@ -79,7 +79,9 @@ trait TotalSite extends DirectSite {
     try {
       evaluate(args)
     } catch {
-      case e: Exception => throw new HaltException(e)
+      case e: Exception => 
+        //throw HaltException.SINGLETON
+        throw new HaltException(e)
     }
   }
 
@@ -105,7 +107,9 @@ trait PartialSite extends DirectSite {
         case None => throw HaltException.SINGLETON
       }
     } catch {
-      case e: Exception => throw new HaltException(e)
+      case e: Exception => 
+        //throw HaltException.SINGLETON
+        throw new HaltException(e)
     }
   }
 
