@@ -26,33 +26,43 @@ import orc.compile.tojava.JavaCompiler
 import orc.compile.orctimizer.PorcOrcCompiler
 import orc.run.tojava.ToJavaRuntime
 import orc.run.tojava.Execution
+import orc.run.tojava.OrcProgram
 
 /** A backend implementation using the Token interpreter.
   *
   * @author amp
   */
-class PorcBackend extends Backend[String] {
-  lazy val compiler: Compiler[String] = new PorcOrcCompiler() with Compiler[String] {
+class PorcBackend extends Backend[PorcBackend.CompiledOrcProgram] {
+  import PorcBackend.CompiledOrcProgram
+  
+  lazy val compiler: Compiler[CompiledOrcProgram] = new PorcOrcCompiler() with Compiler[CompiledOrcProgram] {
+    val javaCompiler = new JavaCompiler()
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
-      compileLogger: CompileLogger, progress: ProgressMonitor): String = this(source, options, compileLogger, progress)
+      compileLogger: CompileLogger, progress: ProgressMonitor): CompiledOrcProgram = {
+      val code = this(source, options, compileLogger, progress)
+      val cls = javaCompiler(code)
+      cls
+    }
   }
 
-  val serializer: Option[CodeSerializer[String]] = None
+  val serializer: Option[CodeSerializer[CompiledOrcProgram]] = None
 
-  def createRuntime(options: OrcExecutionOptions): Runtime[String] = new StandardOrcRuntime("To Java via Porc") with Runtime[String] {
-    val compile = new JavaCompiler()
+  def createRuntime(options: OrcExecutionOptions): Runtime[CompiledOrcProgram] = new StandardOrcRuntime("To Java via Porc") with Runtime[CompiledOrcProgram] {
     val tjruntime = new ToJavaRuntime(this)
     startScheduler(options)
     
-    private def start(code: String, k: orc.OrcEvent => Unit): Execution = {
-      val cls = compile(code)
+    private def start(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Execution = {
       val prog = cls.newInstance()
       
       // TODO: Remove this weird type hack.
       prog.run(tjruntime, k.asInstanceOf[OrcEvent => scala.runtime.BoxedUnit])
     }
     
-    def run(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k)
-    def runSynchronous(code: String, k: orc.OrcEvent => Unit): Unit = start(code, k).waitForHalt()
+    def run(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Unit = start(cls, k)
+    def runSynchronous(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Unit = start(cls, k).waitForHalt()
   }
+}
+
+object PorcBackend {
+  type CompiledOrcProgram = Class[_ <: OrcProgram]
 }
