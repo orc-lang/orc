@@ -40,6 +40,7 @@ public class PorcExamplesTest {
 
     // Turn on typechecking
     bindings.backend_$eq(PorcCompilerBackend.it());
+    bindings.optimizationLevel_$eq(1);
 
     return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
   }

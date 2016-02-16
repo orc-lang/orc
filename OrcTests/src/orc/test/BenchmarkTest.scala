@@ -195,7 +195,7 @@ object BenchmarkTest {
             compileCode(file, bindings)
           }
           System.gc()
-          if (timedout > config.nRuns / 3) {
+          if (timedout >= 1) {
             println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
             (compTime, config.timeout.toDouble)
           } else {
