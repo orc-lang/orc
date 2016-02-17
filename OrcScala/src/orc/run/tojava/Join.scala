@@ -76,7 +76,11 @@ abstract class Join(inValues: Array[AnyRef]) {
   for ((v, i) <- inValues.zipWithIndex) v match {
     case f: Future => {
       // Force f so it will bind the correct index.
-      f.forceIn(new JoinElement(i))
+      // TODO: This is a hack. Not sure how to fix it though. The adding of the element and the check for completeness of the future must be atomic.
+      val e = new JoinElement(i)
+      val filled = f.forceIn(e)
+      if (filled)
+        e.halt()
     }
     case _ => {
       // v is not a future so just bind it.

@@ -16,6 +16,7 @@ import orc.PublishedEvent
 import orc.values.sites.HasFields
 import orc.error.runtime.NoSuchMemberException
 import orc.run.tojava.Wrapper
+import orc.CaughtEvent
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -90,9 +91,12 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
           super.onContextHalted()
         }
       }
-      f.accept(p, newC)
-      // Matches: the starting count of newC
-      newC.halt()
+      try {
+        f.accept(p, newC)
+      } finally {
+        // Matches: the starting count of newC
+        newC.halt()
+      }
     }))
     fut
   }
@@ -111,8 +115,9 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
               p.call(v)
             } catch {
               case _: KilledException => {}
+            } finally {
+              c.halt()
             }
-            c.halt()
           }
         }
       case _ => p.call(v)
@@ -131,10 +136,7 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
         p.call(r.getField(f))
       }
       case _ => {
-        // Use the old style call with field to get the value.
-        //val callable = Coercions.coerceToCallable(v)
-        //callable.call(this, p, c, t, Array[AnyRef](f))
-        throw new NoSuchMemberException(v, f.field)
+        notifyOrc(CaughtEvent(new NoSuchMemberException(v, f.field)))
       }
     }
   }

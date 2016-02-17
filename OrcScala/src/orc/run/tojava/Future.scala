@@ -83,8 +83,10 @@ final class Future() extends OrcValue {
     * This may call publish in this thread if the future is already bound, or
     * if this is unbound, it adds blocked to the blockers list to be called
     * later.
+    * 
+    * Return true if the value was already available.
     */
-  def forceIn(blocked: Blockable) = {
+  def forceIn(blocked: Blockable): Boolean = {
     val st = synchronized {
       _state match {
         case Unbound => {
@@ -97,9 +99,18 @@ final class Future() extends OrcValue {
     }
 
     st match {
-      case Bound => blocked.publish(_value)
-      case Halt => blocked.halt()
-      case _ => {}
+      case Bound => {
+        blocked.publish(_value)
+        true
+      }
+      case Halt => {
+        // If the state was Halt then just return without publishing.
+        // We never prepareSpawn'd so we don't need to halt.
+        true
+      }
+      case _ => {
+        false
+      }
     }
   }
 

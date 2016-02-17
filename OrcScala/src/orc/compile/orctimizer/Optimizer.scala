@@ -433,8 +433,10 @@ abstract class Optimizer(co: CompilerOptions) {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           val cost = Analysis.cost(body)
+          // If the body contains references to any other def in the recursive group.
+          // TODO: This only really needs to check for calls I think.
           val bodyfree = body.freeVars
-          val recursive = bodyfree.contains(d.name)
+          val recursive = decls.defs exists { d1 => bodyfree.contains(d1.name) }
           val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
           val hasDefArg = args.exists { 
             case x: BoundVar => ctx(x) match {

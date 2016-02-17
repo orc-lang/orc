@@ -93,7 +93,7 @@ $code
   }
   def lookup(f: Field) = constantPool.getOrElseUpdate((classOf[Field], f), newConstant(f))
   def lookup(v: OrcValue) = {
-    constantPool.getOrElseUpdate((if (v != null) v.value.getClass else classOf[Null], v.value), newConstant(v.value))
+    constantPool.getOrElseUpdate((if (v.value != null) v.value.getClass else classOf[Null], v.value), newConstant(v.value))
   }
   
   def buildConstantPool() = {
