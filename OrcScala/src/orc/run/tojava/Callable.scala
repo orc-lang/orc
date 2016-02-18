@@ -70,7 +70,7 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
   * several shims to convert from one API to another.
   */
 class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
-  private val site = Callable.findSite(underlying)
+  private lazy val site = Callable.findSite(underlying)
   final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
     site match {
@@ -116,7 +116,7 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
   * several shims to convert from one API to another.
   */
 final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with DirectCallable with Wrapper {
-  private val site = Callable.findSite(u)
+  private lazy val site = Callable.findSite(u)
   def directcall(execution: Execution, args: Array[AnyRef]) = {
     try {
       site.calldirect(args.toList)
@@ -137,7 +137,8 @@ final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with
 
 object Callable {
   def findSite(s: AnyRef): AnyRef = s match {
-    case r: HasFields if r.hasField(Field("apply")) => r.getField(Field("apply")) match {
+    case r: HasFields if r.hasField(Field("apply")) => 
+      r.getField(Field("apply")) match {
       case applySite: Site => findSite(applySite)
       case _ => s
     }

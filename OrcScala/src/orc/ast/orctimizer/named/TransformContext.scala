@@ -20,6 +20,7 @@ import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
 import orc.util.SingletonCache
 import orc.error.compiletime.UnboundTypeVariableException
+import orc.compile.Logger
 
 
 /** The context in which an expression appears.
@@ -95,6 +96,13 @@ object TransformContext {
     def bindings = prev.bindings ++ nbindings
     
     override def toString = s"(${nbindings.mkString(",")})+$prev"
+    
+    override def equals(o: Any): Boolean = o match {
+      case ExtendBindings(onb, op) if hashCode == o.hashCode => {
+        nbindings == onb && prev == op
+      }
+      case _ => false
+    }
   }
   case class ExtendTypeBindings(nbindings: ArrayBuffer[TypeBinding], prev: TransformContext) extends TransformContext {
     def apply(v: BoundVar) = prev(v)

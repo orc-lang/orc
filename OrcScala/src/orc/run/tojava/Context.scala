@@ -17,6 +17,8 @@ import orc.values.sites.HasFields
 import orc.error.runtime.NoSuchMemberException
 import orc.run.tojava.Wrapper
 import orc.CaughtEvent
+import orc.values.sites.JavaCall
+import orc.values.OrcValue
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -135,8 +137,14 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
       case r: HasFields if r.hasField(f) => {
         p.call(r.getField(f))
       }
-      case _ => {
+      case _: OrcValue => {
+        // OrcValues must HasFields to have fields accessed.
         notifyOrc(CaughtEvent(new NoSuchMemberException(v, f.field)))
+      }
+      case o => {
+        // TODO: This should actually check if it exists and throw the error here:
+        // notifyOrc(CaughtEvent(new NoSuchMemberException(v, f.field)))
+        p.call(JavaCall.getField(o, f))
       }
     }
   }

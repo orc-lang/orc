@@ -239,7 +239,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           target match {
             case c@Constant(s: Site) if !s.isInstanceOf[HasFields] => Call(c, as, newtypeargs)
             case v: BoundVar if boundDefs.contains(v) => Call(v, as, newtypeargs)
-            case _ => Call(Constant(builtin.ProjectClosure), List(target), None) > f > Call(f, as, newtypeargs)
+            case _ => Call(target, as, newtypeargs)
+            // TODO: This does the same thing in every case, so I want to switch to a ProjectClosure style encoding?
+            //Call(Constant(builtin.ProjectClosure), List(target), None) > f > Call(f, as, newtypeargs)
           }
         })
       }

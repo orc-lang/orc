@@ -46,10 +46,6 @@ object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
    */
   def apply(target: Object, args: List[AnyRef], h: Handle): Boolean = {
     args match {
-      case List(OrcField(memberName)) => {
-        h.publish(new JavaMemberProxy(target, memberName))
-        true
-      }
       case List(i: BigInt) if (target.getClass.isArray) => {
         h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
         true
@@ -67,6 +63,10 @@ object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
       }
       case _ => false
     }
+  }
+  
+  def getField(target: Object, f: OrcField) = {
+    new JavaMemberProxy(target, f.field)
   }
 }
 
@@ -153,7 +153,7 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
   *
   * @author jthywiss
   */
-case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSite {
+case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSite with HasFields {
 
   override def javaClass = theObject.getClass()
 
@@ -164,7 +164,14 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
   }
 
   def orcType = liftJavaType(javaClass)
-
+  
+  def getField(f: OrcField): AnyRef = {
+    JavaCall.getField(theObject, f)
+  }
+  def hasField(f: OrcField) = {
+    // TODO: We probably shouldn't leave this check until the member proxy is accessed.
+    true
+  }
 }
 
 /** An Orc field lookup result from a Java object
@@ -192,10 +199,15 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
       return new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]])
 
     val javaField = javaClass.getField(memberName)
-    submemberName match {
-      case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
-      case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
-      case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
+    
+    if(Modifier.isPublic(javaField.getModifiers())) {
+      submemberName match {
+        case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
+        case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
+        case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
+      }
+    } else {
+      throw new NoSuchFieldException(submemberName)
     }
   }
   def hasField(f: OrcField) = {

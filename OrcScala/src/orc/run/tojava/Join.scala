@@ -39,7 +39,7 @@ abstract class Join(inValues: Array[AnyRef]) {
       * If join has not halted we bind and check if we are done.
       */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
-      Logger.finest(s"JoinElement $i published: $v")
+      //Logger.finest(s"JoinElement $i published: $v")
       // Check if we are halted then bind. This is an optimization since 
       // nUnbound can never reach 0 if we halted.
       if (!halted.get()) {
@@ -56,10 +56,10 @@ abstract class Join(inValues: Array[AnyRef]) {
       * been bound.
       */
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
-      Logger.finest(s"JoinElement $i halted")
+      //Logger.finest(s"JoinElement $i halted")
       // Halt if we have not already halted.
       if (halted.compareAndSet(false, true)) {
-        Logger.finest(s"Finished join with halt")
+        //Logger.finest(s"Finished join with halt")
         join.halt()
       }
     }
@@ -69,7 +69,7 @@ abstract class Join(inValues: Array[AnyRef]) {
     def prepareSpawn(): Unit = {}
   }
   
-  Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
+  //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
 
   // Start all the required forces.
   var nNonFutures = 0
@@ -101,7 +101,7 @@ abstract class Join(inValues: Array[AnyRef]) {
   final def checkComplete(n: Int): Unit = {
     assert(n >= 0)
     if (n == 0) {
-      Logger.finest(s"Finished join with: ${values.mkString(", ")}")
+      //Logger.finest(s"Finished join with: ${values.mkString(", ")}")
       done()
     }
   }
