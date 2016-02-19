@@ -44,6 +44,7 @@ abstract public class OrcProgram implements Callable {
         }
       }
     }));
+    // Matched to: Initial count of Execution created above.
     ctx.c().halt();
     return ctx;
   }

@@ -79,7 +79,7 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
     }
 
     // Prepare to spawn because the invoked site might do that.
-    c.prepareSpawn();
+    c.prepareSpawn()
     // Matched to: halt in PCTHandle or below in Join subclass.
 
     if (args.length == 0) {

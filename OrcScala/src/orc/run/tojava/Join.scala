@@ -80,6 +80,7 @@ abstract class Join(inValues: Array[AnyRef]) {
       val e = new JoinElement(i)
       val filled = f.forceIn(e)
       if (filled)
+        // This halt is safe because halt after publish is normal and forceIn will already have published if needed.
         e.halt()
     }
     case _ => {
@@ -160,7 +161,12 @@ abstract class Resolve(inValues: Array[AnyRef]) {
   var nNonFutures = 0
   for (v <- inValues) v match {
     case f: Future => {
-      f.forceIn(new JoinElement())
+      // TODO: This is a hack. Not sure how to fix it though. The adding of the element and the check for completeness of the future must be atomic.
+      val e = new JoinElement()
+      val filled = f.forceIn(e)
+      if (filled)
+        // This halt is safe because halt after publish is normal and forceIn will already have published if needed.
+        e.halt()
     }
     case _ => {
       nNonFutures += 1

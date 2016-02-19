@@ -24,7 +24,7 @@ import orc.values.OrcValue
   *
   * It implements top-level publication and halting.
   */
-final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEvent => Unit) extends EventHandler {
+final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: OrcEvent => Unit) extends EventHandler {
   root =>
   private var isDone = false
   
@@ -88,6 +88,7 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
         }
       }
       val newC = new CounterNestedBase(c) {
+        // Initial count matches: halt() in finally below.
         override def onContextHalted(): Unit = {
           fut.stop()
           super.onContextHalted()
@@ -110,6 +111,7 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
       case f: Future =>
         f.forceIn(new PCBlockable(p, c))
       case f: ForcableCallableBase =>
+        // Matches: Call to halt in Resolve subclass below
         c.prepareSpawn()
         new Resolve(f.closedValues) {
           def done(): Unit = {
@@ -118,6 +120,7 @@ final class Execution(runtime: ToJavaRuntime, protected var eventHandler: OrcEve
             } catch {
               case _: KilledException => {}
             } finally {
+              // Matches: Call to prepareSpawn above this class.
               c.halt()
             }
           }
