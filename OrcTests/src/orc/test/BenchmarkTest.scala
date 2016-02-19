@@ -37,7 +37,7 @@ case class BenchmarkConfig(cpus: Seq[Int], backend: BackendType, optLevel: Int, 
   timeout: Long = 180L, nRuns: Int = 12, nDroppedRuns: Int = 4, outputCompileTime: Boolean = false,
   outputHeader: Boolean = true) {
   def name = s"$backend -O$optLevel on ${cpus.size} cpus"
-
+  
   def asArguments: Seq[String] = Seq[String](
     "-o", output.getAbsolutePath(),
     "-p", cpus.mkString(","),
@@ -54,6 +54,8 @@ case class BenchmarkConfig(cpus: Seq[Int], backend: BackendType, optLevel: Int, 
 /** @author amp
   */
 object BenchmarkTest {
+  object Logger extends orc.util.Logger("orc.test.benchmark")
+
   case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double) {
     override def toString: String = {
       productIterator.mkString(",")
@@ -195,7 +197,7 @@ object BenchmarkTest {
             compileCode(file, bindings)
           }
           System.gc()
-          if (timedout >= 1) {
+          if (timedout >= 2) {
             println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
             (compTime, config.timeout.toDouble)
           } else {
@@ -214,7 +216,11 @@ object BenchmarkTest {
       }
 
       // If we have enough drop the first (before sorting) to allow for JVM warm up.
-      val (compTimes, runTimes) = if (times.size > 5) times.tail.unzip else times.unzip
+      val (compTimes, runTimes) = if (times.size > 5) {
+        val t = times.tail.unzip
+        Logger.info(s"Dropping leading measurement: ${times.head._2} :: ${t._2}")
+        t
+      } else times.unzip
 
       val (avgCompTime, sdCompTime) = medianAverage(compTimes)
       val (avgRunTime, sdRunTime) = medianAverage(runTimes)
@@ -267,13 +273,19 @@ object BenchmarkTest {
 
   def medianAverage(times: Seq[Double])(implicit config: BenchmarkConfig) = {
     assert(config.nDroppedRuns % 2 == 0)
-    val medians = if (times.size > config.nDroppedRuns)
-      times.sorted.drop(config.nDroppedRuns / 2).dropRight(config.nDroppedRuns / 2)
-    else
+    val toDrop = config.nDroppedRuns / 2
+    val medians = if (times.size > config.nDroppedRuns) {
+      val s = times.sorted
+      val core = s.drop(toDrop).dropRight(toDrop)
+      Logger.info(s"Dropping low and high measurement: ${s.take(toDrop)} ::: ${core} ::: ${s.takeRight(toDrop)}")
+      core
+    } else {
       times
+    }
 
     val avg = medians.sum / medians.size
     val stddev = medians.map(x => (x - avg).abs).sum / medians.size
+    Logger.info(s"Averaging $medians: avg $avg, stddev $stddev")
     (avg, stddev)
   }
 }

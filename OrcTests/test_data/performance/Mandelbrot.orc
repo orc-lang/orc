@@ -40,11 +40,11 @@ def tableToList(n, t) = t(n-1) : tableToList(n-1, t)
 
 def showRow(l :: List[Boolean]) = afold(lambda(x::String, y::String) = x + y, 
 			map(lambda(x::Boolean) = if x then "@" else ".", l))
-
-timeIt(lambda() =
-  tableToList(size, Table(size, row)) >ll>
-  map(compose(showRow, lambda(t :: lambda(Integer) :: Boolean) = tableToList(size, t)), ll) >ls>
-  Println(unlines(ls))
+#
+(
+tableToList(size, Table(size, row)) >ll>
+map(compose(showRow, lambda(t :: lambda(Integer) :: Boolean) = tableToList(size, t)), ll) >ls>
+Println(unlines(ls))
 )
 
 | 

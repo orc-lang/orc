@@ -12,17 +12,17 @@ type Getter[A] = lambda() :: A
 
 def Null[A]() = null :!: A 
 
-def class Fanout[A](c :: Getter[A], cs :: List[Putter[A]]) =
+def Fanout[A](c :: Getter[A], cs :: List[Putter[A]]) = signal |
   repeat(lambda() = c() >x> 
-    collect(lambda() = each(cs) >c'> c'(x)))
+    collect(lambda() = each(cs) >c'> c'(x))) >> stop
 
-def class Fanin[A](cs :: List[Getter[A]], c :: Putter[A]) =
-  each(cs) >c'> repeat(lambda() = c'() >x> c(x)) 
+def Fanin[A](cs :: List[Getter[A]], c :: Putter[A]) = signal |
+  each(cs) >c'> repeat(lambda() = c'() >x> c(x)) >> stop
 
-def class Trans[A, B](f :: lambda(A) :: B, in :: Getter[A], out :: Putter[B]) =
-  repeat(lambda() = out(f(in())))
+def Trans[A, B](f :: lambda(A) :: B, in :: Getter[A], out :: Putter[B]) = signal |
+  repeat(lambda() = out(f(in()))) >> stop
 
-def class UniqueMerge[A](is :: List[Getter[A]], o :: Putter[A]) = 
+def UniqueMerge[A](is :: List[Getter[A]], o :: Putter[A]) = signal | (
   val tops = Array[A](length(is))
   
   def fillTops() =
@@ -45,6 +45,7 @@ def class UniqueMerge[A](is :: List[Getter[A]], o :: Putter[A]) =
   repeat(lambda() = 
     --Println(arrayToList(tops)) >> 
     getMin() >x> o(x)
+  ) >> stop
   )
 
 def collectN[A](Integer, lambda() :: A) :: List[A]

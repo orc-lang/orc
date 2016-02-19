@@ -25,7 +25,3 @@ timeIt(lambda() =
   |
   head(chans).put(-100000)
 )
-
-{-
-BENCHMARK
--}
