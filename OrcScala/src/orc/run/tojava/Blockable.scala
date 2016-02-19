@@ -31,7 +31,16 @@ trait Blockable {
 }
 
 final class PCBlockable(p: Continuation, c: Counter) extends Blockable {
-  def publish(v: AnyRef): Unit = p.call(v)
-  def halt(): Unit = c.halt()
+  def publish(v: AnyRef): Unit = {
+    // Prevent KilledException from propagating into the code using the Blockable.
+    try {
+      p.call(v)
+    } catch {
+      case _: KilledException => {}
+    }
+  }
+  def halt(): Unit = {
+    c.halt()
+  }
   def prepareSpawn(): Unit = c.prepareSpawn()
 }

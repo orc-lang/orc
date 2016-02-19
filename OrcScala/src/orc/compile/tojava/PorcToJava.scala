@@ -49,8 +49,17 @@ $code
   }
   
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
+  val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
-  def newVarName(prefix: String = "_t"): String = { varCounter += 1; escapeIdent(prefix) + "$c" + counterToString(varCounter) }
+  def newVarName(prefix: String = "_t"): String = { 
+    val p = escapeIdent(prefix)
+    val name = if (usedNames contains p) {
+      varCounter += 1
+      p + "$c" + counterToString(varCounter)
+    } else p
+    usedNames += name
+    name
+  }
   def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
 

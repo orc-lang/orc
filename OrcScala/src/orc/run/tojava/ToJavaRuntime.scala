@@ -39,17 +39,24 @@ class ToJavaRuntime(private val runtime: Orc) {
 
   def shutdown() = synchronized {
     runtime.stopScheduler()
-    timer.cancel()
     isDone = true
   }
-
-  /** A timer instance to implement Rwait events.
-    */
-  val timer: Timer = new Timer()
 
   final def installHandlers(h: EventHandler) = runtime.installHandlers(h)
   final def schedule(s: Schedulable) = runtime.schedule(s)
   final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = runtime.invoke(h, v, vs)
+  
+  if (Logger.julLogger.isLoggable(Level.FINE)) {
+    val t = new Thread() {
+      override def run(): Unit = {
+        Thread.sleep(10*1000)
+        Counter.report()
+      }
+    }
+    t.setDaemon(true)
+    t.setName("Counter Reporter")
+    t.start()
+  }
 }
 
 final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Terminator, val callSitePosition: Position) extends Handle with Terminatable {
@@ -63,12 +70,14 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
     */
   override def publish(v: AnyRef) = {
     if (halted.compareAndSet(false, true)) {
-      // Catch and ignore killed exceptions since the site call itself should not be killed.
-      try {
-        p.call(v)
-      } catch {
-        case _: KilledException => {}
-      }
+      execution.runtime.schedule(new CounterSchedulableFunc(c, () => {
+        // Catch and ignore killed exceptions since the site call itself should not be killed.
+        try {
+          p.call(v)
+        } catch {
+          case _: KilledException => {}
+        }
+      }))
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a 
       //             prepareSpawn since it might spawn.
@@ -80,6 +89,8 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
   def halt: Unit = {
     if (halted.compareAndSet(false, true)) {
       c.halt()
+      // Matched to: Every invocation is required to be proceeded by a 
+      //             prepareSpawn since it might spawn.
     }
   }
 

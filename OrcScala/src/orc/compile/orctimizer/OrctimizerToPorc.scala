@@ -34,8 +34,20 @@ class OrctimizerToPorc {
     val code = expr match {
       case Stop() => porc.Unit()
       case Call(target, args, typeargs) => {
-        val call = porc.SiteCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
-        porc.Spawn(ctx.c, ctx.t, call)
+        target match {
+          case target: BoundVar if ctx.recursives contains target => {
+            // For recusive functions spawn before calling and spawn before passing on the publication.
+            // This provides trampolining.
+            val newP = newVarName("P")
+            val v = newVarName("temp")
+            let((newP, porc.Continuation(v, porc.Spawn(ctx.c, ctx.t, ctx.p(v))))) {
+              val call = porc.SiteCall(argument(target), newP, ctx.c, ctx.t, args.map(argument(_)))
+              porc.Spawn(ctx.c, ctx.t, call)
+            }
+          }
+          case _ => 
+            porc.SiteCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
+        }
       }
       case left || right => {
         porc.Spawn(ctx.c, ctx.t, expression(left)) :::
@@ -75,7 +87,7 @@ class OrctimizerToPorc {
         }
       }
       case DeclareDefs(defs, body) => {
-        porc.Site(defs.map(orcdef), expression(body))
+        porc.Site(defs.map(orcdef(defs.map(_.name), _)), expression(body))
       }
 
       // We do not handle types
@@ -104,14 +116,14 @@ class OrctimizerToPorc {
     }
   }
   
-  def orcdef(d: Def)(implicit ctx: ConversionContext): porc.SiteDef = {         
+  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.SiteDef = {         
     val Def(f, formals, body, typeformals, argtypes, returntype) = d
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
     val args = formals.map(lookup)
     val name = lookup(f)
-    porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives + f)))
+    porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
   }
 }
 

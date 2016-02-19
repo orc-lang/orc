@@ -263,7 +263,7 @@ class OrctimizerAnalysisTest {
     val f = Call(Constant(TupleConstructor), List(Constant(Field("apply")), id), None)
     val e = Future(Constant("")) > y > DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
     val a = getInContext(e, f)
-    assertEquals(Range(0, 1), a.publications)
+    assertEquals(Range(1, 1), a.publications)
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
