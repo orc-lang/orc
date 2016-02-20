@@ -4,7 +4,6 @@ import orc.compile._
 import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
-import orc.compile.tojava.OrctimizerToJava
 import orc.compile.tojava.PorcToJava
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
@@ -12,7 +11,7 @@ import orc.compile.tojava.PorcToJava
   *
   * @author jthywiss
   */
-class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
+abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
   with StandardOrcCompilerEnvInterface[String]
   with CoreOrcCompilerPhases {
   val toOrctimizer = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orctimizer.named.Expression] {
@@ -21,15 +20,6 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       { ast =>
         val translator = new OILToOrctimizer()
         translator(ast)(Map())
-      }
-  }
-
-  val toJava = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, String] {
-    val phaseName = "toJava"
-    override def apply(co: CompilerOptions) =
-      { ast =>
-        val translator = new OrctimizerToJava()
-        translator(ast)
       }
   }
 
@@ -128,33 +118,6 @@ class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       e
     }
   }
-  ////////
-  // Compose phases into a compiler
-  ////////
-
-  val phases =
-    parse.timePhase >>>
-      translate.timePhase >>>
-      vClockTrans.timePhase >>>
-      noUnboundVars.timePhase >>>
-      fractionDefs.timePhase >>>
-      typeCheck.timePhase >>>
-      outputIR(1) >>>
-      splitPrune.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
-      removeUnusedDefs.timePhase >>>
-      removeUnusedTypes.timePhase >>>
-      outputIR(2) >>>
-      toOrctimizer >>>
-      outputIR(3) >>>
-      optimize >>>
-      outputIR(4) >>>
-      unroll >>>
-      outputIR(5) >>>
-      optimize >>>
-      outputIR(6) >>>
-      toJava >>>
-      outputIR(7)
 }
 
 class PorcOrcCompiler() extends OrctimizerOrcCompiler {
@@ -219,7 +182,11 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       e
     }
   }
-  override val phases =
+
+  ////////
+  // Compose phases into a compiler
+  ////////
+  val phases =
     parse.timePhase >>>
       translate.timePhase >>>
       vClockTrans.timePhase >>>

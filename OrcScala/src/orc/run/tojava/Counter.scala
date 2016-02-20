@@ -48,9 +48,6 @@ object Counter {
   }
 }
 
-//There appears to be a race that results in a counter being left with a stray count.
-//Hamming triggers it.
-
 /**
  * @author amp
  */

@@ -34,9 +34,7 @@ import javax.script.ScriptException;
 
 import orc.Backend;
 import orc.BackendType;
-import orc.OrctimizerBackend;
 import orc.PorcBackend;
-import orc.OrctimizerInterpreterBackend;
 import orc.PorcCompilerBackend;
 import orc.Runtime;
 import orc.Compiler;
@@ -308,8 +306,6 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         backendType = k;
         if(k == TokenInterpreterBackend.it())
           _backend = (Backend<CompiledCode>)new StandardBackend();
-        else if(k == OrctimizerInterpreterBackend.it())
-          _backend = (Backend<CompiledCode>)new OrctimizerBackend();
         else if(k == PorcCompilerBackend.it())
           _backend = (Backend<CompiledCode>)new PorcBackend();
         else

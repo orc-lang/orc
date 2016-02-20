@@ -371,3 +371,43 @@ object PorcToJava {
   }
 }
 
+case class ConstantPoolEntry(value: AnyRef, typ: String, name: String, initializer: String)
+
+object Deindent {
+  val EmptyLine = raw"""(\p{Blank}*\n)+""".r
+  val EmptyLinesEnd = raw"""(\n\p{Blank}*)+\z""".r
+  val NonBlank = raw"""[^\p{Blank}]""".r
+  
+  implicit final class DeindentString(private val s: String) { 
+    def deindentedAgressively = {
+      val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
+      val indentSize = lines.map(l => NonBlank.findFirstMatchIn(l).map(_.start).getOrElse(Int.MaxValue)).min
+      if (indentSize == Int.MaxValue) {
+        lines.mkString("\n")
+      } else {
+        lines.map(_.substring(indentSize)).mkString("\n")
+      }
+    }
+    
+    def deindented = {
+      s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.stripMargin
+    }
+    
+    def indent(n: Int) = {
+      val lines = s.split('\n')
+      val p = " " * n
+      lines.map(p + _).mkString("\n")
+    }
+    
+    def withoutLeadingEmptyLines = {
+      EmptyLine.findPrefixMatchOf(s).map({ m =>
+        s.substring(m.end)
+      }).getOrElse(s)
+    }
+    def withoutTrailingEmptyLines = {
+      EmptyLinesEnd.findFirstMatchIn(s).map({ m =>
+        s.substring(0, m.start)
+      }).getOrElse(s)
+    }
+  }
+}
