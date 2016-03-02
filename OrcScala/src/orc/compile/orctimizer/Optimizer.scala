@@ -118,9 +118,7 @@ abstract class Optimizer(co: CompilerOptions) {
             && Analysis.cost(g) <= flattenThreshold => 
               g > x > f
               */
-    case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
-            && a(g).nonBlockingPublish => 
-              g > x > f
+    case (e, a) if false => e
   }
   val FutureElim = Opt("future-elim") {
     // TODO: Add a halts with analysis (like I had back in the day) which will tell us if we can eliminate futures that may not publish.
@@ -473,8 +471,8 @@ abstract class Optimizer(co: CompilerOptions) {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           def cost = Analysis.cost(body)
-          if (Analysis.cost(body) > unrollCostThreshold) {
-            Logger.finer(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold")
+          if (cost > unrollCostThreshold) {
+            Logger.finer(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold)")
             None
           } else {
             Some(buildInlineDef(d, args, targs, declsctx, a))

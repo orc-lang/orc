@@ -102,15 +102,15 @@ trait PartialSite extends DirectSite {
   }
   def calldirect(args: List[AnyRef]): AnyRef =  {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    try {
-      evaluate(args) match {
-        case Some(v) => v
-        case None => throw HaltException.SINGLETON
-      }
+    (try {
+      evaluate(args) 
     } catch {
       case e: Exception => 
         //throw HaltException.SINGLETON
         throw new ExceptionHaltException(e)
+    }) match {
+      case Some(v) => v
+      case None => throw HaltException.SINGLETON
     }
   }
 

@@ -11,6 +11,7 @@ import orc.CaughtEvent
 import orc.values.OrcRecord
 import orc.values.sites.HasFields
 import orc.values.Field
+import orc.run.Logger
 
 trait Continuation {
   def call(v: AnyRef)
@@ -118,19 +119,28 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
 final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with DirectCallable with Wrapper {
   private lazy val site = Callable.findSite(u)
   def directcall(execution: Execution, args: Array[AnyRef]) = {
+    Logger.fine(s"Direct calling: $u(${args.mkString(", ")})")
     try {
-      site.calldirect(args.toList)
+      val v = try {
+        site.calldirect(args.toList)
+      } catch {
+        case e: InterruptedException => 
+          throw e
+        case e: ExceptionHaltException if e.getCause() != null => 
+          execution.notifyOrc(CaughtEvent(e.getCause()))
+          throw HaltException.SINGLETON
+        case e: HaltException => 
+          throw e
+        case e: Exception => 
+          execution.notifyOrc(CaughtEvent(e))
+          throw HaltException.SINGLETON
+      }
+      Logger.fine(s"Direct call returned successfully: $u(${args.mkString(", ")}) = $v")
+      v
     } catch {
-      case e: InterruptedException => 
+      case e: Exception =>
+        Logger.fine(s"Direct call halted: $u(${args.mkString(", ")}) -> $e")
         throw e
-      case e: ExceptionHaltException if e.getCause() != null => 
-        execution.notifyOrc(CaughtEvent(e.getCause()))
-        throw HaltException.SINGLETON
-      case e: HaltException => 
-        throw e
-      case e: Exception => 
-        execution.notifyOrc(CaughtEvent(e))
-        throw HaltException.SINGLETON
     }
   }
 }

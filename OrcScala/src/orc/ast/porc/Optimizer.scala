@@ -235,7 +235,8 @@ object Optimizer {
   }
 
   val LetElim = Opt("let-elim") {
-    case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt => b
+    //case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt && a(v).sideEffectFree => b
+    case (LetIn(x, ContinuationIn(_, _, _), b), a) if !b.freevars.contains(x) => b
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
   }
   val VarLetElim = Opt("var-let-elim") {

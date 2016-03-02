@@ -77,8 +77,13 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     import ImplicitResults._
     e match {
       case (_: OrcValue | _: Unit) in _ => true
+      case (_: SiteCallDirect) in _ => true
       case (v: Var) in ctx => ctx(v) match {
-        //case _: ContinuationArgumentBound | _: SiteBound | _: RecursiveSiteBound => true
+        //case ContinuationArgumentBound(ctx, ) => true
+        case LetBound(lctx, l) => {
+          val LetIn(x, v, _) = l in lctx
+          v.isNotFuture
+        }
         case _ => false // This needs types.
       }
       case _ => false

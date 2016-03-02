@@ -45,6 +45,8 @@ final class Flag {
   
   @inline
   def get() = _value.get()
+  
+  override def toString = s"<Flag: ${get()}>"
 }
 
 /**
