@@ -121,8 +121,8 @@ abstract class Optimizer(co: CompilerOptions) {
     case (e, a) if false => e
   }
   val FutureElim = Opt("future-elim") {
-    // TODO: Add a halts with analysis (like I had back in the day) which will tell us if we can eliminate futures that may not publish.
-    case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && (a(g).publications only 1) => g > x > f
+    case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && (a(g).publications <= 1) => g > x > f
+    case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(false) && (a(g).publications only 1) => g > x > f
     case (FutureAt(g) > x > f, a) if a(g).nonBlockingPublish && (a(g).publications only 1) => g > x > f
     case (FutureAt(g) > x > f, a) if !(f.freeVars contains x) => f || (g >> Stop()) 
     case (FutureAt(g) > x > (Stop() in _), a) => g > x > Stop()

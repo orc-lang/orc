@@ -66,7 +66,7 @@ trait SpecificArity extends Site {
 }
 
 /* Enforce totality */
-trait TotalSite extends DirectSite {
+trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
@@ -92,7 +92,7 @@ trait TotalSite extends DirectSite {
 }
 
 /* Enforce nonblocking, but do not enforce totality */
-trait PartialSite extends DirectSite {
+trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: List[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
@@ -301,6 +301,9 @@ trait NonBlockingSite extends Site {
 
 trait EffectFreeSite extends Site {
   override def effects: Effects = Effects.None
+}
+trait EffectFreeAfterPubSite extends Site {
+  override def effects: Effects = Effects.BeforePub
 }
 
 trait TalkativeSite extends Site {
