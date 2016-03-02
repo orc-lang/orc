@@ -336,10 +336,7 @@ object PorcToJava {
         case c => "$" + c.toHexString
       }
     }).mkString
-    if (q(0).isLetter || q(0) == '_' || q(0) == '$')
-      q
-    else
-      "$s" + q
+    "$s" + q
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)

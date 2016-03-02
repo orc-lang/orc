@@ -22,10 +22,15 @@ class OrctimizerToPorc {
   }
   
   val vars: mutable.Map[BoundVar, porc.Var] = new mutable.HashMap()
+  val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
   def newVarName(prefix: String = "_t"): porc.Var = {
-    varCounter += 1
-    new porc.Var(Some(prefix + "_" + varCounter))
+    val name = if (usedNames contains prefix) {
+      varCounter += 1
+      prefix + "_" + varCounter
+    } else prefix
+    usedNames += name
+    new porc.Var(Some(name))
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
 
