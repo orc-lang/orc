@@ -39,7 +39,7 @@ import orc.TokenInterpreterBackend
 object AllBenchmarkTests {
   case class AllBenchmarkConfig(cpuCounts: Seq[Int], backends: Seq[BackendType], optLevels: Seq[Int],
     output: File,
-    timeout: Long = 180L, nRuns: Int = 5, nDroppedRuns: Int = 2, outputCompileTime: Boolean = false,
+    timeout: Long = 120L, nRuns: Int = 5, nDroppedRuns: Int = 2, outputCompileTime: Boolean = false,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
@@ -92,10 +92,10 @@ object AllBenchmarkTests {
 
     val defaultOutputFile = new File(s"allbenchmarks-${dateFormatter.format(new Date())}.csv")
     implicit val config = processArgs(args, AllBenchmarkConfig(
-      Seq(1, 2, 4, 8).reverse, Seq(TokenInterpreterBackend, PorcCompilerBackend),
-      Seq(0, 1, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
+      Seq(1, 2, 4, 8).reverse, Seq(PorcCompilerBackend),
+      Seq(2, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
 
-    println("Running configs:\n" + config.configs.map(_.asArguments.mkString(" ")).mkString("\n"))
+    println(s"Running configs: (${config.configs.size})\n${config.configs.map(_.asArguments.mkString(" ")).mkString("\n")}")
       
     for (conf <- config.configs) {
       import scala.sys.process._
