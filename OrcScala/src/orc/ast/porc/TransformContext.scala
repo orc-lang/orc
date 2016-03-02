@@ -20,6 +20,7 @@ import scala.collection.mutable
 import orc.ast.PrecomputeHashcode
 import scala.ref.WeakReference
 import orc.util.SingletonCache
+import java.util.logging.Level
 
 /** The context in which analysis is occuring.
   */
@@ -30,11 +31,13 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
   def contains(e: Var): Boolean
 
   def extendBindings(bs: Seq[Binding]): TransformContext = {
-    normalize(ExtendBindings(new ArrayBuffer() ++ bs, this))
+    normalize(ExtendBindings(bs.toList, this))
   }
   def +(b: Binding): TransformContext = {
-    normalize(ExtendBindings(ArrayBuffer(b), this))
+    normalize(ExtendBindings(List(b), this))
   }
+  
+  def lookupBoundTo(v: Expr): Option[LetBound]    
 
   def enclosingTerminator: Option[PorcAST]
   def setTerminator(n: PorcAST): TransformContext = {
@@ -68,11 +71,29 @@ object TransformContext {
   def apply(): TransformContext = Empty
 
   val cache = new SingletonCache[TransformContext]()
-  //mutable.WeakHashMap[TransformContext, WeakReference[TransformContext]]()
+  var maxCacheSize = 0
 
   // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
-    cache.normalize(c)
+    val r = cache.normalize(c)
+    if ((r eq c) && Logger.julLogger.isLoggable(Level.FINER)) {
+      c match {
+        case ExtendBindings((ctop: LetBound) :: _, _) => {
+          val messages = for ((ext, i) <- cache.items.collect({ case e@ExtendBindings((b: LetBound) :: _, _) => (e, b) }) if i.ast == ctop.ast) yield {
+            s"Found match: $ext"
+          }
+          if(messages.size > 1) {
+            Logger.finer(s"Looking for contexts which match: $ctop\n${messages.mkString("\n")}")
+          }
+        }
+        case _ => {}
+      }
+    }
+    if (cache.size > maxCacheSize + 500) {
+      Logger.fine(s"Porc context cache is ${cache.size} elements.")
+      maxCacheSize = cache.size
+    }
+    r
   }
   
   def clear() {
@@ -90,11 +111,13 @@ object TransformContext {
     def enclosingTerminator = None
     def enclosingCounter = None
 
+    def lookupBoundTo(v: Expr): Option[LetBound] = None
+
     def size = 0
     def bindings: Set[Binding] = Set()
   }
 
-  case class ExtendBindings(nbindings: ArrayBuffer[Binding], prev: TransformContext) extends TransformContext {
+  case class ExtendBindings(nbindings: List[Binding], prev: TransformContext) extends TransformContext {
     def apply(v: Var) = nbindings.find(_.variable == v).getOrElse(prev(v))
     def contains(v: Var): Boolean = nbindings.find(_.variable == v).isDefined || prev.contains(v)
 
@@ -103,13 +126,30 @@ object TransformContext {
 
     def size = nbindings.length + prev.size
     def bindings = prev.bindings ++ nbindings
+
+    def lookupBoundTo(v: Expr): Option[LetBound] = {
+      val thisRes = nbindings.collect({
+        case b@LetBound(_, Let(_, lv, _)) if lv == v => b
+      }).headOption
+      if (thisRes.isDefined)
+        thisRes
+      else
+        prev.lookupBoundTo(v)
+    }
+
+    override def +(b: Binding): TransformContext = {
+      normalize(ExtendBindings(b :: nbindings, prev))
+    }
   }
+  
   case class SetCounterTerminator(enclosingCounter: Option[PorcAST], enclosingTerminator: Option[PorcAST], prev: TransformContext) extends TransformContext {
     def apply(v: Var) = prev(v)
     def contains(v: Var): Boolean = prev.contains(v)
 
     def size = prev.size
     def bindings = prev.bindings
+
+    def lookupBoundTo(v: Expr): Option[LetBound] = prev.lookupBoundTo(v)
   }
 }
 
@@ -131,6 +171,7 @@ case class StrictBound(ctx: TransformContext, ast: Expr, variable: Var) extends 
 
 case class LetBound(ctx: TransformContext, ast: Let) extends Binding {
   def variable: Var = ast.x
+  def value = ast.v
 }
 
 case class SiteBound(ctx: TransformContext, ast: Site, d: SiteDef) extends Binding {
@@ -154,7 +195,12 @@ case class SpawnFutureBound(ctx: TransformContext, ast: SpawnFuture, variable: V
   assert(ast.pArg == variable || ast.cArg == variable)
 }
 
-final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) {
+//case class BoundTo(ctx: TransformContext, ast: Let) extends PrecomputeHashcode {
+//  def variable = ast.x
+//  def value = ast.v
+//}
+
+final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) extends PrecomputeHashcode {
   def subtrees: Iterable[WithContext[PorcAST]] = this match {
     case LetIn(x, v, b) => Seq(v, b)
     case SiteIn(l, ctx, b) => l.map(_ in ctx).toSeq :+ b

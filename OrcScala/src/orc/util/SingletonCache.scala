@@ -32,6 +32,10 @@ class SingletonCache[T <: AnyRef] {
     }.get.getOrElse(c)
   }
   
+  def size = cache.size
+
+  def items = cache.keys
+  
   def clear() {
     cache.clear()
   }

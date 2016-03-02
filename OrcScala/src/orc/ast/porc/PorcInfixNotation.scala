@@ -49,14 +49,15 @@ object LetIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (l@Let(x, v, b)) in ctx =>
       val bodyctx = ctx + LetBound(ctx, l)
-      Some(x in ctx, v in ctx, b in bodyctx)
+      //val valctx = ctx + BoundTo(ctx, l)
+      Some(x in ctx, v in bodyctx, b in bodyctx)
     case _ => None
   }
 }
 object ContinuationIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (l@Continuation(arg, b)) in ctx =>
-      val bodyctx = ctx extendBindings List(ContinuationArgumentBound(ctx, l, arg))
+      val bodyctx = ctx + ContinuationArgumentBound(ctx, l, arg)
       Some(arg, bodyctx, b in bodyctx)
     case _ => None
   }
@@ -74,7 +75,7 @@ object SiteIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case (s@Site(ds, b)) in ctx =>
       val bodyctx = ctx extendBindings ds.map(SiteBound(ctx, s, _))
-      val sitectx = ctx extendBindings (ds.map(RecursiveSiteBound(ctx, s, _)))
+      val sitectx = ctx extendBindings ds.map(RecursiveSiteBound(ctx, s, _))
       Some(ds, sitectx, b in bodyctx)
     case _ => None
   }

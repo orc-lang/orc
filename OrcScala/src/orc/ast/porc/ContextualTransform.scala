@@ -64,7 +64,8 @@ trait ContextualTransform {
     order[Expr](callHandler, {
       case LetIn(x, v, b) => {
         val e1 = Let(x, transformExpr(v), b)
-        Let(e1.x, e1.v, transformExpr(b.e in x.ctx + LetBound(x.ctx, e1)))
+        val bctx = x.ctx + LetBound(x.ctx, e1)
+        Let(e1.x, e1.v, transformExpr(b.e in bctx))
       }
       case s@SiteIn(l, ctx, b) => {
         val ls1 = l map { v => transformSiteDef(v in ctx) }
