@@ -53,6 +53,11 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
       case (a, _) => None // Not a Tuple
     }
 
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
+    case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toList))
+    case _ => None
+  }
+  
   def orcType() = new BinaryCallableType with StrictType {
     def call(r: Type, s: Type): Type = {
       (r, s) match {

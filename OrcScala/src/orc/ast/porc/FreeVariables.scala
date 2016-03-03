@@ -24,6 +24,7 @@ trait FreeVariables {
   this: Expr =>
   lazy val freevars: Set[Var] = {
     val s = mutable.Set[Var]()
+    // TODO: Do not use ContextualTransform here. It will generate a bunch of useless contexts.
     (new ContextualTransform.NonDescending {
       override def onVar = {
         case (v : Var) in ctx if !ctx.contains(v) => 

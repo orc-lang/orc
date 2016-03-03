@@ -23,7 +23,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       }
   }
 
-  lazy val optimize = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
+  def optimize(pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
     import orctimizer.named._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
@@ -79,7 +79,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         }
       }
       
-      val e = if(co.options.optimizationFlags("orct").asBool())
+      val e = if(co.options.optimizationFlags("orct").asBool() && pred(co))
         opt(ast, 1)
       else
         ast
@@ -201,12 +201,12 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       outputIR(2) >>>
       toOrctimizer >>>
       outputIR(3) >>>
-      optimize >>>
+      optimize() >>>
       outputIR(4) >>>
       unroll >>>
-      outputIR(5) >>>
-      optimize >>>
-      outputIR(6) >>>
+      outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       toPorc >>>
       outputIR(7) >>>
       optimizePorc >>>

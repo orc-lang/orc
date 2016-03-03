@@ -66,4 +66,5 @@ object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
     new FunctionType(List(X), List(ListType(X)), TupleType(List(X, ListType(X))))
   }
 
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(List(null, null)))
 }

@@ -121,10 +121,10 @@ abstract class Optimizer(co: CompilerOptions) {
     case (e, a) if false => e
   }
   val FutureElim = Opt("future-elim") {
+    case (FutureAt(g) > x > f, a) if !(f.freeVars contains x) => f || (g >> Stop()) 
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && (a(g).publications <= 1) => g > x > f
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(false) && (a(g).publications only 1) => g > x > f
     case (FutureAt(g) > x > f, a) if a(g).nonBlockingPublish && (a(g).publications only 1) => g > x > f
-    case (FutureAt(g) > x > f, a) if !(f.freeVars contains x) => f || (g >> Stop()) 
     case (FutureAt(g) > x > (Stop() in _), a) => g > x > Stop()
   }
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
@@ -233,10 +233,17 @@ abstract class Optimizer(co: CompilerOptions) {
       a(f).timeToHalt == Delay.NonBlocking => 
         Stop()
   }
-  val SeqElim = Opt("seq-elim") {
-    case (f > x > g, a) if a(f).silent => f
-    case (f > x > g, a) if a(f).effectFree && a(f).nonBlockingPublish && 
-      (a(f).publications only 1) && a(f).nonBlockingHalt && !g.freeVars.contains(x) => g
+  val SeqElim = OptFull("seq-elim") { (e, a) =>
+    import a.ImplicitResults._
+    e match {
+      case f > x > g if f.silent => Some(f)
+      case f > x > g if f.effectFree && f.nonBlockingPublish && 
+        (f.publications only 1) && f.nonBlockingHalt && !g.freeVars.contains(x) => Some(g)
+      case f > x > g =>
+        Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
+        None
+      case _ => None
+    }
   }
   val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
     import a.ImplicitResults._

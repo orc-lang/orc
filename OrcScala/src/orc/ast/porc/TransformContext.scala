@@ -73,7 +73,7 @@ object TransformContext {
   val cache = new SingletonCache[TransformContext]()
   var maxCacheSize = 0
 
-  // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare than we win.
+  // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare then we win.
   private[TransformContext] def normalize(c: TransformContext) = {
     val r = cache.normalize(c)
     if ((r eq c) && Logger.julLogger.isLoggable(Level.FINER)) {
@@ -89,7 +89,7 @@ object TransformContext {
         case _ => {}
       }
     }
-    if (cache.size > maxCacheSize + 500) {
+    if (cache.size > maxCacheSize + 500 && Logger.julLogger.isLoggable(Level.FINE)) {
       Logger.fine(s"Porc context cache is ${cache.size} elements.")
       maxCacheSize = cache.size
     }

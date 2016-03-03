@@ -22,6 +22,7 @@ import orc.values.sites.Site
 import orc.values.sites.Delay
 import orc.values.sites.Effects
 import orc.values.sites.Range
+import orc.values.sites.SiteMetadata
 
 sealed trait ForceType {
   val haltsWith = false
@@ -118,6 +119,10 @@ trait AnalysisResults {
   /** How many times will this expression publish?
     */
   def publications: Range
+  
+  /** Metadata on the site published by this expression if available.
+    */
+  def siteMetadata: Option[SiteMetadata]
 
   /** Does this expression force the variable <code>x</code> before performing any visible
     * action other than halting?
@@ -150,7 +155,8 @@ case class AnalysisResultsConcrete(
   effects: Effects,
   publications: Range,
   forceTypes: Map[BoundVar, ForceType],
-  valueForceDelay: Delay) extends AnalysisResults {
+  valueForceDelay: Delay,
+  siteMetadata: Option[SiteMetadata]) extends AnalysisResults {
   // TODO: Add validity checks to catch unreasonable combinations of values
 }
 
@@ -214,7 +220,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   //       means flow analyses MUST occur across function boundries.
 
   def analyze(e: WithContext[Expression]): AnalysisResults = {
-    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), valueForceDelay(e))
+    AnalysisResultsConcrete(timeToHalt(e), timeToPublish(e), effects(e), publications(e), forces(e), valueForceDelay(e), siteMetadata(e))
   }
 
   // TODO: This is missing cases throughout and needs to be checked for currectness in all analyses!!
@@ -241,17 +247,15 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (x in ctx).valueForceDelay
       case Future(f) in ctx =>
         (f in ctx).timeToHalt
-      case CallAt(target in _, args, _, ctx) => {
+      case CallAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
-        val siteRunTime = (target match {
-          case Constant(s: Site) => s.timeToHalt min args.foldRight(Delay.Blocking: Delay) { (a, others) =>
+        // TODO: Needs cases for def calls.
+        val siteRunTime = target.siteMetadata.map(s => {
+          s.timeToHalt min args.foldRight(Delay.Blocking: Delay) { (a, others) =>
             if (a.publications only 0) a.valueForceDelay min others
             else others
           }
-          // TODO: Needs cases for def calls.
-          case _ => 
-            Delay.Blocking
-        })
+        }).getOrElse(Delay.Blocking)
         val argForceTime = args.foldRight(Delay.NonBlocking: Delay) {
           (a, acc) => a.valueForceDelay max acc
         }
@@ -310,18 +314,13 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       case Future(f) in ctx =>
         Delay.NonBlocking
-      case CallAt(target in _, args, _, ctx) => {
+      case CallAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
-
-        target match {
-          case Constant(s: Site) => 
-            s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) { 
-              (a, acc) => a.valueForceDelay max acc 
-            }
-          case v: BoundVar => 
-            Delay.Blocking
-          case _ => Delay.Blocking
-        }
+        target.siteMetadata.map(s => {
+          s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) { 
+            (a, acc) => a.valueForceDelay max acc 
+          }
+        }).getOrElse(Delay.Blocking)
       }
       case DeclareDefsAt(defs, _, body) =>
         body.timeToPublish
@@ -353,19 +352,16 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     e match {
       case Stop() in _ =>
         Range(0, 0)
-      case CallAt(target in _, args, _, ctx) => {
+      case CallAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
-        (target match {
-          case Constant(s: Site) => {
+        target.siteMetadata.map(s => {
             if (args.forall(a => a.publications > 0))
               s.publications
             else if (args.exists(a => a.publications only 0))
               Range(0, 0)
             else
               s.publications.mayHalt
-          }
-          case _ => Range(0, None)
-        })
+        }).getOrElse(Range(0, None))
       }
       case LimitAt(f) =>
         f.publications.limitTo(1)
@@ -406,8 +402,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case Bindings.ArgumentBound(_, _, _) => 
           Range(1, 1)
       }
-      case FieldAccess(_, _) in _ =>
-        Range(0, 1)
+      case FieldAccess(target, f) in ctx =>
+        val fieldMetadata = (target in ctx).siteMetadata.flatMap(_.fieldMetadata(f))
+        if (fieldMetadata.isDefined)
+          Range(1, 1)
+        else
+          Range(0, 1)
       case VtimeZone(_, e) in ctx =>
         (e in ctx).publications
     }
@@ -421,7 +421,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Constant(_) in _ =>
         Map()
       case CallAt(target in _, args, _, ctx) => target match {
-        case Constant(s: Site) => {
+        case t if (t in ctx).siteMetadata.isDefined => {
           val vars = (args collect { case v: BoundVar => v })
           val mayStops = vars filter { v => !((v in ctx).publications > 0) }
           mayStops match {
@@ -452,9 +452,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             f.forceTypes, g.forceTypes)
       // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
       case f ConcatAt g =>
+        // Take the minimum force of f and g (shifted by the halt time of f).
+        // And never claim to halt with anything.
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
-            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) })
+            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) }).mapValues(_.nonHalting)
       case f > x > g =>
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
@@ -487,10 +489,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     e match {
       case Stop() in _ =>
         Effects.None
-      case CallAt(target in _, args, _, _) => (target match {
-        case Constant(s: Site) => s.effects
-        case _ => Effects.Anytime
-      })
+      case CallAt(target, args, _, _) => 
+        target.siteMetadata.map(_.effects).getOrElse(Effects.Anytime)
       case f || g =>
         f.effects max g.effects
       case f > x > g if f.publications only 0 =>
@@ -537,7 +537,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       case CallAt(target in _, args, _, ctx) => 
         target match {
-          case Constant(s: Site) => 
+          case t if (t in ctx).siteMetadata.isDefined =>
             Delay.NonBlocking // Sites never make futures
           case v: BoundVar => ctx(v) match {
             // TODO: I need to prove that all calls will actually return concrete values that will not block.
@@ -614,6 +614,40 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.Blocking
     }
   }
+  
+  def siteMetadata(e: WithContext[Expression]): Option[SiteMetadata] = {
+    import ImplicitResults._
+    e match {
+      case Constant(s: SiteMetadata) in _ => Some(s)
+      case (x: BoundVar) in ctx => ctx(x) match {
+        case Bindings.SeqBound(sctx, s) =>
+          (s.left in sctx).siteMetadata
+        case _ =>
+          None
+      }
+      case CallAt(target, args, _, ctx) =>
+        target.siteMetadata flatMap { sm =>
+          sm.returnMetadata(args.map {
+            _ match {
+              case Constant(v) => Some(v)
+              case _ => None
+            }
+          })
+        }
+      case FieldAccess(target, f) in ctx =>
+        (target in ctx).siteMetadata flatMap { sm =>
+          sm.fieldMetadata(f)
+        }
+      case LimitAt(f) =>
+        f.siteMetadata
+      case Future(f) in ctx =>
+        (f in ctx).siteMetadata
+      case f > x > g =>
+        g.siteMetadata
+      case _ => None
+    }
+  }
+
 }
 
 object Analysis {

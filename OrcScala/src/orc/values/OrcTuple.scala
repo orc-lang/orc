@@ -19,6 +19,7 @@ import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.TupleIndexOutOfBoundsException
+import orc.values.sites.SiteMetadata
 
 /**
   *

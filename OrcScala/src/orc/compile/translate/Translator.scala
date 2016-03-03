@@ -373,13 +373,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         case ext.TuplePattern(ps) => {
           /* Test that the pattern's size matches the focus tuple's size */
           val tuplesize = Constant(BigInt(ps.size))
-          val sizecheck = { callTupleArityChecker(focus, tuplesize) >> _ }
+          val tupletmp = new BoundVar()
+          val sizecheck = { callTupleArityChecker(focus, tuplesize) > tupletmp > _ }
 
           /* Match each element of the tuple against its corresponding pattern */
           var elements = id
           for ((p, i) <- ps.zipWithIndex) {
             val y = new BoundVar()
-            val bindElement: Conversion = { makeNth(focus, i) > y > _ }
+            val bindElement: Conversion = { makeNth(tupletmp, i) > y > _ }
             elements = elements compose bindElement compose unravel(p, y)
           }
 

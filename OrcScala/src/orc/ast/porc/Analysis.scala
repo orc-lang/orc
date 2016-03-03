@@ -91,6 +91,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
               case SiteCall(_, p, _, _, _) if p == x.e => true
               case Force(p, _, _) if p == x.e => true
               case Call(p, OrcValue(_)) if p == x.e => true
+              case GetField(p, _, _, _, _) if p == x.e => true
               case _ => false
             })
             nRefs == nNonFutureRefs
