@@ -30,7 +30,7 @@ def makeRandomArray(n) =
   a
 
 def runTest() =
-  timeIt(lambda() = makeRandomArray(1000)) >a>
+  timeIt(lambda() = makeRandomArray(5000)) >a>
   --Println(arrayToList(a)) >>
   timeIt(lambda() = quicksort(a))
   --Println(arrayToList(a))

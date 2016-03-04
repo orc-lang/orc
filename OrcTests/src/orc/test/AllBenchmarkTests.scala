@@ -39,12 +39,13 @@ import orc.TokenInterpreterBackend
 object AllBenchmarkTests {
   case class AllBenchmarkConfig(cpuCounts: Seq[Int], backends: Seq[BackendType], optLevels: Seq[Int],
     output: File,
-    timeout: Long = 120L, nRuns: Int = 5, nDroppedRuns: Int = 2, outputCompileTime: Boolean = false,
+    timeout: Long = 120L, nRuns: Int = 5, nDroppedRuns: Int = 2, nDroppedWarmups: Int = 1, outputCompileTime: Boolean = false,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
         BenchmarkConfig(0 until cpuCount, backend, optLevel, timeout = timeout, nRuns = nRuns,
-          nDroppedRuns = nDroppedRuns, outputCompileTime = outputCompileTime, output = output,
+          nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups, 
+          outputCompileTime = outputCompileTime, output = output,
           outputHeader = false)
       }
 
@@ -63,7 +64,7 @@ object AllBenchmarkTests {
     })
   }
 
-  val dateFormatter = new SimpleDateFormat("yyyy-MM-dd.HH-mm-ss")
+  val dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
 
   def main(args: Array[String]) {
     def processArgs(args: Seq[String], conf: AllBenchmarkConfig): AllBenchmarkConfig = args match {
@@ -77,6 +78,8 @@ object AllBenchmarkTests {
         processArgs(rest, conf.copy(timeout = arg.toLong))
       case "-r" +: arg +: rest =>
         processArgs(rest, conf.copy(nRuns = arg.toInt))
+      case "-w" +: arg +: rest =>
+        processArgs(rest, conf.copy(nDroppedWarmups = arg.toInt))
       case "-d" +: arg +: rest =>
         processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
       case "-C" +: rest =>
@@ -90,7 +93,7 @@ object AllBenchmarkTests {
         conf
     }
 
-    val defaultOutputFile = new File(s"allbenchmarks-${dateFormatter.format(new Date())}.csv")
+    val defaultOutputFile = new File(s"allbenchmarks_${dateFormatter.format(new Date())}.csv")
     implicit val config = processArgs(args, AllBenchmarkConfig(
       Seq(1, 2, 4, 8).reverse, Seq(PorcCompilerBackend),
       Seq(2, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))

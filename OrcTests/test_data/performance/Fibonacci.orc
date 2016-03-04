@@ -32,7 +32,7 @@ fibPair(1000) >x> Println(x) >> stop
 
 ;
 
-fibNaive(19) >x> Println(x) >> stop
+fibNaive(20) >x> Println(x) >> stop
 
 {-
 OUTPUT:

@@ -35,7 +35,7 @@ import orc.TokenInterpreterBackend
 
 case class BenchmarkConfig(cpus: Seq[Int], backend: BackendType, optLevel: Int, output: File, tests: Int = Int.MaxValue,
   timeout: Long = 180L, nRuns: Int = 12, nDroppedRuns: Int = 4, outputCompileTime: Boolean = false,
-  outputHeader: Boolean = true) {
+  outputHeader: Boolean = true, nDroppedWarmups: Int = 1) {
   def name = s"$backend -O$optLevel on ${cpus.size} cpus"
   
   def asArguments: Seq[String] = Seq[String](
@@ -46,7 +46,8 @@ case class BenchmarkConfig(cpus: Seq[Int], backend: BackendType, optLevel: Int, 
     "-#", tests.toString,
     "-t", timeout.toString,
     "-r", nRuns.toString,
-    "-d", nDroppedRuns.toString) ++
+    "-d", nDroppedRuns.toString,
+    "-w", nDroppedWarmups.toString) ++
     (if (outputCompileTime) Seq("-C") else Seq()) ++
     (if (outputHeader) Seq() else Seq("-H"))
 }
@@ -109,6 +110,8 @@ object BenchmarkTest {
         processArgs(rest, conf.copy(nRuns = arg.toInt))
       case "-d" +: arg +: rest =>
         processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
+      case "-w" +: arg +: rest =>
+        processArgs(rest, conf.copy(nDroppedWarmups = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
       case "-H" +: rest =>
@@ -216,11 +219,11 @@ object BenchmarkTest {
       }
 
       // If we have enough drop the first (before sorting) to allow for JVM warm up.
-      val (compTimes, runTimes) = if (times.size > 5) {
-        val t = times.tail.unzip
-        Logger.info(s"Dropping leading measurement: ${times.head._2} :: ${t._2}")
+      val (compTimes, runTimes) = {
+        val t = times.drop(config.nDroppedWarmups).unzip
+        Logger.info(s"Dropping leading measurement: ${times.take(config.nDroppedWarmups).map(_._2)} ::: ${t._2}")
         t
-      } else times.unzip
+      }
 
       val (avgCompTime, sdCompTime) = medianAverage(compTimes)
       val (avgRunTime, sdRunTime) = medianAverage(runTimes)
