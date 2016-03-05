@@ -125,6 +125,9 @@ abstract class Optimizer(co: CompilerOptions) {
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(true) && (a(g).publications <= 1) => g > x > f
     case (FutureAt(g) > x > f, a) if a(f).forces(x) == ForceType.Immediately(false) && (a(g).publications only 1) => g > x > f
     case (FutureAt(g) > x > f, a) if a(g).nonBlockingPublish && (a(g).publications only 1) => g > x > f
+    case (FutureAt(g) > x > f, a) if a(g).nonBlockingPublish && (a(g).publications <= 1) && a(g).forces(x).haltsWith => 
+      Logger.info(s"Eliminating future based on non-blocking and haltsWith: ${Future(g) > x > f} ${a(g).nonBlockingPublish} && ${a(g).publications} && ${a(g).forces(x)}")
+      g > x > f
     case (FutureAt(g) > x > (Stop() in _), a) => g > x > Stop()
   }
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
@@ -143,7 +146,7 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._
     e match {
       case ForceAt((v: BoundVar) in _) > x > g 
-          if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually && g.effectFree => 
+          if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
         Some(g)
       case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
       case ForceAt((x: BoundVar) in ctx) => {
@@ -153,6 +156,7 @@ abstract class Optimizer(co: CompilerOptions) {
               case Call(_, _, _) => 
                 // This assumes that no call will ever return a future. This means that no optimization can make defs publish futures.
                 true
+              case FieldAccess(_, _) => true
               case _ => false
             }
           case _ => false          
@@ -184,7 +188,7 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._
     val freevars = e.freeVars
     val vars = e.forceTypes.flatMap {
-      case (v, t) if freevars.contains(v) && t <= ForceType.Eventually => Some(v)
+      case (v, t) if freevars.contains(v) && t <= ForceType.Eventually(false) => Some(v)
       case _ => None
     }
     e match {
@@ -332,7 +336,7 @@ abstract class Optimizer(co: CompilerOptions) {
   }
 
   val LiftUnrelated = Opt("lift-unrelated") {
-    case (e@(g > x > Pars(es, ctx)), a) if a(g).nonBlockingPublish && 
+    case (e@(g > x > Pars(es, ctx)), a) if a(g).nonBlockingPublish && (a(g).publications only 1) && 
             es.exists(e => !e.freeVars.contains(x)) => {
       val (f, h) = es.partition(e => e.freeVars.contains(x))
       (f.isEmpty, h.isEmpty) match {

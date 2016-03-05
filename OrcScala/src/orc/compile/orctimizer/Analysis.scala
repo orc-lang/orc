@@ -29,10 +29,10 @@ sealed trait ForceType {
   def max(o: ForceType): ForceType
   def min(o: ForceType): ForceType
 
-  def nonHalting: ForceType = this
+  def withHalting(b: Boolean): ForceType = this
   def delayBy(d: Delay): ForceType = d match {
     case Delay.NonBlocking => this
-    case Delay.Blocking => this max ForceType.Eventually
+    case Delay.Blocking => this max ForceType.Eventually(this.haltsWith)
     case Delay.Forever => this max ForceType.Never
   }
  
@@ -46,19 +46,24 @@ object ForceType {
       case Immediately(_) => Immediately(haltsWith && o.haltsWith)
       case _ => o
     }
-    def min(o: ForceType): ForceType = Immediately(haltsWith || o.haltsWith)
-
-    override def nonHalting = Immediately(false)
-  }
-  case object Eventually extends ForceType {
-    def max(o: ForceType): ForceType = o match {
-      case Never => o
+    def min(o: ForceType): ForceType = o match {
+      case Immediately(_) => Immediately(haltsWith || o.haltsWith)
       case _ => this
+    }
+
+    override def withHalting(b: Boolean): ForceType = Immediately(b)
+  }
+  case class Eventually(override val haltsWith: Boolean) extends ForceType {
+    def max(o: ForceType): ForceType = o match {
+      case _ => Eventually(haltsWith && o.haltsWith)
+      case Never => o
     }
     def min(o: ForceType): ForceType = o match {
-      case Immediately(_) => o
+      case Immediately(_) => Immediately(haltsWith || o.haltsWith)
       case _ => this
     }
+    
+    override def withHalting(b: Boolean): ForceType = Eventually(b)
   }
   case object Never extends ForceType {
     def max(o: ForceType): ForceType = this
@@ -448,15 +453,15 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case f || g =>
         ForceType.mergeMaps(
-            _ max _, ForceType.Immediately(false), 
+            _ max _, ForceType.Never, 
             f.forceTypes, g.forceTypes)
       // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
       case f ConcatAt g =>
         // Take the minimum force of f and g (shifted by the halt time of f).
-        // And never claim to halt with anything.
+        // And never claim to halt with anything in g.
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
-            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) }).mapValues(_.nonHalting)
+            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt).withHalting(false) })
       case f > x > g =>
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
@@ -468,7 +473,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Force(a) in _ =>
         Map()
       case Future(f) in ctx =>
-        (f in ctx).forceTypes.mapValues { t => t max ForceType.Immediately(false) }
+        (f in ctx).forceTypes.mapValues { t => t max ForceType.Eventually(false) }
       case DeclareDefsAt(defs, defsctx, body) =>
         body.forceTypes
       case DeclareTypeAt(_, _, b) =>
