@@ -445,6 +445,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
                 }).toMap
               }
             }
+            // TODO: The system really needs some limited recursive analysis.
+//            case Bindings.RecursiveDefBound(ctx, _, d) => d in ctx match {
+//              case DefAt(name in _, formals, body, _, _, _, _) => {
+//                assert(name == v)
+//              }
+//            }
             case _ => Map[BoundVar, ForceType]()
           }
           callstr.updated(v, ForceType.Immediately(true))
@@ -488,7 +494,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
     }
   }
-
+  
   def effects(e: WithContext[Expression]): Effects = {
     import ImplicitResults._
     e match {

@@ -16,6 +16,7 @@ orct:inline-def
 orct:inline-threshold=10
 orct:higher-order-inline-threshold=50
 orct:future-elim
+orct:unused-future-elim
 orct:future-force-elim
 orct:force-elim
 orct:lift-force
