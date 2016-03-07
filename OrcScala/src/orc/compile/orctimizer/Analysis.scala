@@ -55,8 +55,8 @@ object ForceType {
   }
   case class Eventually(override val haltsWith: Boolean) extends ForceType {
     def max(o: ForceType): ForceType = o match {
-      case _ => Eventually(haltsWith && o.haltsWith)
       case Never => o
+      case _ => Eventually(haltsWith && o.haltsWith)
     }
     def min(o: ForceType): ForceType = o match {
       case Immediately(_) => Immediately(haltsWith || o.haltsWith)
@@ -467,7 +467,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         // And never claim to halt with anything in g.
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
-            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt).withHalting(false) })
+            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) }).mapValues { _.withHalting(false) }
       case f > x > g =>
         ForceType.mergeMaps(
             _ min _, ForceType.Never,

@@ -76,7 +76,7 @@ object TransformContext {
   // This is a very important optimization as contexts are constantly compared to each other and if that's a pointer compare then we win.
   private[TransformContext] def normalize(c: TransformContext) = {
     val r = cache.normalize(c)
-    if ((r eq c) && Logger.julLogger.isLoggable(Level.FINER)) {
+    /*if ((r eq c) && Logger.julLogger.isLoggable(Level.FINER)) {
       c match {
         case ExtendBindings((ctop: LetBound) :: _, _) => {
           val messages = for ((ext, i) <- cache.items.collect({ case e@ExtendBindings((b: LetBound) :: _, _) => (e, b) }) if i.ast == ctop.ast) yield {
@@ -88,7 +88,7 @@ object TransformContext {
         }
         case _ => {}
       }
-    }
+    }*/
     if (cache.size > maxCacheSize + 500 && Logger.julLogger.isLoggable(Level.FINE)) {
       Logger.fine(s"Porc context cache is ${cache.size} elements.")
       maxCacheSize = cache.size

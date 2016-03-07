@@ -280,7 +280,7 @@ abstract class Optimizer(co: CompilerOptions) {
       case f > x > g if f.effectFree && f.nonBlockingPublish && 
         (f.publications only 1) && f.nonBlockingHalt && !g.freeVars.contains(x) => Some(g)
       case f > x > g =>
-        Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
+        //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
         None
       case _ => None
     }
