@@ -48,18 +48,20 @@ class OILToOrctimizer {
       case a: Argument => orct.Force(apply(a))
       case Call(target, args, typeargs) => {
         // Compute the target value and a flag to state of it should be forced
-        val (newTarget, forceTarget) = target match {
+        target match {
           case Constant(MakeSite) =>
             throw new FeatureNotSupportedException("Classes or MakeSite", e.pos)
-
-          case (c: Constant) =>
-            (apply(c), None)
-          case (x: BoundVar) if isDef(x) =>
-            (apply(x), None)
-          case _ =>
-            val t = new orct.BoundVar(Some(s"f_$target"))
-            (t, Some(t))
+          case _ => {}
         }
+//        val (newTarget, forceTarget) = target match {
+////          case (c: Constant) =>
+////            (apply(c), None)
+////          case (x: BoundVar) if isDef(x) =>
+////            (apply(x), None)
+//          case _ =>
+//            val t = new orct.BoundVar(Some(s"f_$target"))
+//            (t, Some(t))
+//        }
 
         // Compute the set of arguments and collect arguments that need forcing
         val bindings = new collection.mutable.ListBuffer[(Argument, orct.BoundVar)]()
@@ -77,7 +79,7 @@ class OILToOrctimizer {
         }
         
         // Build the actual call
-        val call = orct.Call(newTarget, newArgs, typeargs map { _ map apply })
+        val call = orct.Call(apply(target), newArgs, typeargs map { _ map apply })
         
         // Generate forcing operations for arguments
         /*val argsBound = bindings.foldRight(call: orct.Expression) { (as, acc) =>
@@ -86,15 +88,16 @@ class OILToOrctimizer {
         }*/
         
         // Force target if needed
-        forceTarget map { t =>
-          orct.Sequence(orct.Force(apply(target)), t, call)
-        } getOrElse {
-          call
-        }
+        //forceTarget map { t =>
+        //  orct.Sequence(orct.Force(apply(target)), t, call)
+        //} getOrElse {
+        call
+        //}
       }
       case left || right => orct.Parallel(apply(left), apply(right))
       case left > x > right => {
         val bctx = ctx + ((x, e))
+        
         orct.Sequence(apply(left), apply(x), apply(right)(bctx)) 
       }
       case left < x <| right => {

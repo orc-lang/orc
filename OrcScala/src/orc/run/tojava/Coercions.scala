@@ -16,6 +16,7 @@ object Coercions {
       case c: Callable => c
       // TODO: We may want to optimize cases like records and site calls.
       //case s: Site => new SiteCallable(s)
+      case f: Future => new FutureCallable(f)
       case v => new RuntimeCallable(v)
     }
   }
@@ -25,6 +26,7 @@ object Coercions {
       case c: DirectCallable => c
       // TODO: We may want to optimize cases like records and site calls.
       //case s: Site => new SiteCallable(s)
+      case f: Future => throw new IllegalArgumentException(s"Cannot direct call a future: $f")
       case v: DirectSite => new RuntimeDirectCallable(v)
     }
   }

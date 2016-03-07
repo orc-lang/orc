@@ -145,6 +145,20 @@ final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with
   }
 }
 
+// FIXME: I think this is a bit of a hack. I think more low lever operation could be better than generating these intermediate operations at runtime.
+class FutureCallable(val underlying: Future) extends Callable {
+  final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
+    underlying.forceIn(new PCBlockable(new Continuation {
+      def call(v: AnyRef) = {
+        Coercions.coerceToCallable(v).call(execution, p, c, t, args)
+      }
+    }, c))
+  }
+  
+  override def toString: String = s"${getClass.getName}($underlying)"
+}
+
+
 object Callable {
   def findSite(s: AnyRef): AnyRef = s match {
     case r: HasFields if r.hasField(Field("apply")) => 
