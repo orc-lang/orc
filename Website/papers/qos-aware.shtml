@@ -44,8 +44,8 @@
 <h1>QoS-Aware Management of Monotonic Service Orchestrations</h1>
 
 <p>This page is supplemental material to:
-A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "QoS-Aware Management of Monotonic Service Orchestrations,"
-To appear in <span class="venue"><a href="http://www.springer.com/engineering/circuits+%26+systems/journal/10703">Formal Methods in System Design</a></span>, 2013.</p>
+A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "<a href="http://link.springer.com/article/10.1007/s10703-013-0191-7">QoS-Aware Management of Monotonic Service Orchestrations</a>,"
+In <span class="venue">Formal Methods in System Design</span>, 44:1–43, 2013.</p>
 
 <p>The code presented here is from Appendix B of the paper, with
 <code>Println</code> output added to illuminate the events occurring during
