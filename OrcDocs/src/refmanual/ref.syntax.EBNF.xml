@@ -410,7 +410,7 @@
 		<production xml:id="ebnf.type.record">
 		  <lhs><link linkend="ref.data.record.type">RecordType</link></lhs>
 		  <rhs>
-		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>=</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>.}</code>
+		    <code>{.</code> <nonterminal def="#ebnf.key">Key</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>,</code> <emphasis role="bold">&#x2026;</emphasis> <code>,</code>  <nonterminal def="#ebnf.key">Key</nonterminal> <code>::</code> <nonterminal def="#ebnf.type">Type</nonterminal> <code>.}</code>
 		  </rhs>
 		</production>
 		
