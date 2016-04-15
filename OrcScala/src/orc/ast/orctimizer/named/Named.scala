@@ -37,8 +37,8 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case Sequence(left, x, right) => List(left, x, right)
     case Limit(f) => List(f)
     case Force(f) => List(f)
-    case Future(f) => List(f)
-    case left Concat right => List(left, right)
+    case Future(x, f, g) => List(f, g)
+    case left Otherwise right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case FieldAccess(o, f) => List(o)
@@ -93,8 +93,9 @@ case class Parallel(left: Expression, right: Expression) extends Expression
 case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 case class Limit(expr: Expression) extends Expression
-case class Concat(left: Expression, right: Expression) extends Expression
-case class Future(expr: Expression) extends Expression
+case class Future(x: BoundVar, left: Expression, right: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class Otherwise(left: Expression, right: Expression) extends Expression
 case class Force(v: Argument) extends Expression
 
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression

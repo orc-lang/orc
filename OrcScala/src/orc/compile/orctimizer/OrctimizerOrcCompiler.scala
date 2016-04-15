@@ -38,7 +38,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case _ => false
             }),
             "futures" -> Analysis.count(prog, {
-              case Future(_) => true
+              case Future(_, _, _) => true
               case _ => false
             }),
             "forces" -> Analysis.count(prog, {
@@ -57,8 +57,8 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case f > x > g => true
               case _ => false
             }),
-            "concats" -> Analysis.count(prog, {
-              case f Concat g => true
+            "otherwises" -> Analysis.count(prog, {
+              case f Otherwise g => true
               case _ => false
             }),
             "nodes" -> Analysis.count(prog, (_ => true)),

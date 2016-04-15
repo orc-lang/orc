@@ -93,6 +93,8 @@ class OrctimizerAnalysisTest {
     assertEquals(Range(1, 1), a.publications)
   }
   
+  /*
+  
   @Test
   def analyzeFuture(): Unit = {
     val f = Future(Call(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None))
@@ -141,6 +143,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Set(x), a.freeVars)
     assertEquals(ForceType.Eventually, a.forces(x))
   }
+  */
   
   @Test
   def analyzeLimit(): Unit = {
@@ -150,6 +153,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Effects.BeforePub, a.effects)
   }
   
+  /*
   @Test
   def analyzePar(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -200,6 +204,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.Blocking, a.timeToPublish)
     assertEquals(ForceType.Eventually, a.forces(x))
   }
+  */
   
   @Test
   def analyzeStopSeq(): Unit = {
@@ -239,6 +244,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
   
+  /*
   @Test
   def analyzeClosurePub(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -287,6 +293,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
+  */
   
   @Test
   def analyzeComplex1(): Unit = {

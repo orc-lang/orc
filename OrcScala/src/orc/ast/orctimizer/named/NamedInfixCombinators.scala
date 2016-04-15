@@ -31,7 +31,7 @@ trait NamedInfixCombinators {
       def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
     }
   
-  def concat(g: Expression) = Concat(this, g)
+  def otw(g: Expression) = Otherwise(this, g)
 }
 
 // Infix combinator extractors
@@ -97,8 +97,9 @@ object LimitAt {
 }
 object FutureAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Future(f)) in ctx => {
-      Some(f in ctx)
+    case (n@Future(x, f, g)) in ctx => {
+      val newctx = ctx + Bindings.FutureBound(ctx, n)
+      Some(x, f in ctx, g in newctx)
     }
     case _ => None
   }
@@ -119,9 +120,9 @@ object CallAt {
     case _ => None
   }
 }
-object ConcatAt {
+object OtherwiseAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Concat(f, g)) in ctx => {
+    case (n@Otherwise(f, g)) in ctx => {
       Some(f in ctx, g in ctx)
     }
     case _ => None

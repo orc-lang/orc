@@ -6,6 +6,11 @@ import scala.collection.mutable
 import orc.values.Field
 import orc.ast.porc
 import orc.error.compiletime.FeatureNotSupportedException
+import orc.ast.porc.TryOnHalted
+import orc.ast.porc.SiteCallDirect
+import orc.lib.state.NewFlag
+import orc.lib.state.PublishIfNotSet
+import orc.lib.state.SetFlag
 
 case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var, recursives: Set[BoundVar]) {
 }
@@ -55,7 +60,8 @@ class OrctimizerToPorc {
         }
       }
       case left || right => {
-        porc.Spawn(ctx.c, ctx.t, expression(left)) :::
+        // TODO: While it sound to never add a spawn here it might be good to add them sometimes.
+        expression(left) :::
           expression(right)
       }
       case Sequence(left, x, right) => {
@@ -74,21 +80,39 @@ class OrctimizerToPorc {
           porc.TryOnKilled(expression(f)(ctx.copy(t = newT, p = newP)), porc.Unit())
         }
       }
-      case Future(f) => {
-        val fut = newVarName("fut")
+      case Future(x, f, g) => {
+        val fut = lookup(x)
         val newP = newVarName("P")
         val newC = newVarName("C")
         let((fut, porc.SpawnFuture(ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))))) {
-          ctx.p(fut)
+          expression(g)
         }
       }
       case Force(f) => {
         porc.Force(ctx.p, ctx.c, argument(f))
       }
-      case left Concat right => {
+      case left Otherwise right => {
         val newC = newVarName("C")
-        let((newC, porc.NewCounter(ctx.c, expression(right)))) {
-          porc.TryFinally(expression(left)(ctx.copy(c = newC)), porc.Halt(newC))
+        val flag = newVarName("flag")
+
+        val cl = {
+          val newP = newVarName("P")
+          val v = newVarName()
+          let((newP, porc.Continuation(v, setFlag(flag) ::: ctx.p(v)))) {
+            expression(left)(ctx.copy(p = newP, c = newC))
+          }
+        }
+        val cr = {
+          TryOnHalted({
+            publishIfNotSet(flag) ::: 
+            expression(right)
+          }, porc.Unit())
+        }
+
+        let((flag, newFlag())) {
+          let((newC, porc.NewCounter(ctx.c, cr))) {
+            porc.TryFinally(cl, porc.Halt(newC))
+          }
         }
       }
       case DeclareDefs(defs, body) => {
@@ -130,5 +154,16 @@ class OrctimizerToPorc {
     val name = lookup(f)
     porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
   }
+  
+  private def newFlag(): SiteCallDirect = {
+    SiteCallDirect(porc.OrcValue(NewFlag), List())
+  }
+  private def setFlag(flag: porc.Var): SiteCallDirect = {
+    SiteCallDirect(porc.OrcValue(SetFlag), List(flag))
+  }
+  private def publishIfNotSet(flag: porc.Var): SiteCallDirect = {
+    SiteCallDirect(porc.OrcValue(PublishIfNotSet), List(flag))
+  }
+
 }
 

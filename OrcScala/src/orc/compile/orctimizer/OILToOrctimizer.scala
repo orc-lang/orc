@@ -16,9 +16,6 @@ package orc.compile.orctimizer
 
 import orc.ast.oil.named._
 import orc.ast.orctimizer.{named => orct}
-import orc.lib.state.NewFlag
-import orc.lib.state.PublishIfNotSet
-import orc.lib.state.SetFlag
 import scala.collection.mutable
 import orc.lib.builtin.MakeSite
 import orc.error.compiletime.FeatureNotSupportedException
@@ -26,17 +23,7 @@ import orc.error.compiletime.FeatureNotSupportedException
 /** @author amp
   */
 // Conversions from named to nameless representations
-class OILToOrctimizer {
-  private def newFlag() = {
-    orct.Call(orct.Constant(NewFlag), List(), None)
-  }
-  private def setFlag(flag: orct.BoundVar) = {
-    orct.Call(orct.Constant(SetFlag), List(flag), None)
-  }
-  private def publishIfNotSet(flag: orct.BoundVar) = {
-    orct.Call(orct.Constant(PublishIfNotSet), List(flag), None)
-  }
-  
+class OILToOrctimizer {  
   private def isDef(b: BoundVar)(implicit ctx: Map[BoundVar, Expression]) = ctx.get(b) match {
     case Some(_: DeclareDefs) => true
     case _ => false
@@ -102,15 +89,11 @@ class OILToOrctimizer {
       }
       case left < x <| right => {
         val bctx = ctx + ((x, e))
-        orct.Sequence(orct.Future(apply(right)), apply(x), apply(left)(bctx))
+        orct.Future(apply(x), apply(right), apply(left)(bctx))
       }
       case Limit(f) => orct.Limit(apply(f))
       case left ow right => 
-        val x = new orct.BoundVar()
-        val flag = new orct.BoundVar()
-        val cl = orct.Sequence(apply(left), x, orct.Sequence(setFlag(flag), new orct.BoundVar(), x))
-        val cr = orct.Sequence(publishIfNotSet(flag), new orct.BoundVar(), apply(right))
-        orct.Sequence(newFlag(), flag, orct.Concat(cl, cr))
+        orct.Otherwise(apply(left), apply(right))
       case DeclareDefs(defs, body) => {
         val bctx = ctx ++ (defs map { d => (d.name, e) })        
         orct.DeclareDefs(defs map { apply(_)(bctx) }, apply(body)(bctx))

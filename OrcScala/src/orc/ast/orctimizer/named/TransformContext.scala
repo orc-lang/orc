@@ -143,6 +143,10 @@ object Bindings {
     val variable = ast.x
   }
   
+  case class FutureBound(ctx: TransformContext, ast: Future) extends Binding {
+    val variable = ast.x
+  }
+  
   case class DefBound(ctx: TransformContext, ast: DeclareDefs, d: Def) extends Binding {
     assert(ast.defs.contains(d))
     def variable = d.name
