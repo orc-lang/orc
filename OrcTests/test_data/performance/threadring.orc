@@ -33,8 +33,8 @@ threadRingRunner(5000) >>
 threadRingRunner(50000) >> stop
 {-
 OUTPUT:
-498
-444
+474
+204
 -}
 {-
 BENCHMARK
