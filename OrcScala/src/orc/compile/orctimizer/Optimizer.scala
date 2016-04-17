@@ -122,7 +122,6 @@ abstract class Optimizer(co: CompilerOptions) {
               */
     case (e, a) if false => e
   }
-  // FIXME: Some optimization is generating a free variable.
   val FutureElim = OptFull("future-elim") { (e, a) =>
     import a.ImplicitResults._
     (e, a) match {
@@ -513,6 +512,8 @@ abstract class Optimizer(co: CompilerOptions) {
       case Some(as) => (d.typeformals:List[Typevar]) zip as
       case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
     }
+    
+    Logger.finer(s"Inlining:\n$d\nwith args $args $targs")
 
     val boundVarCache = collection.mutable.HashMap[BoundVar, BoundVar]()
     def replaceVar(x: BoundVar) = {          
@@ -529,7 +530,8 @@ abstract class Optimizer(co: CompilerOptions) {
     
     val trans = new ContextualTransform.Pre {
       override def onExpression(implicit ctx: TransformContext) = {
-        case e@(left > x > right) => left > replaceVar(x) > right
+        case left > x > right => left > replaceVar(x) > right
+        case Future(x, left, right) => Future(replaceVar(x), left, right)
       }
       
       override def onDef(implicit ctx: TransformContext) = {
@@ -543,7 +545,9 @@ abstract class Optimizer(co: CompilerOptions) {
       }
     }
 
-    trans(bodyWithValArgs.substAllTypes(typeSubst.toMap))
+    val result = trans(bodyWithValArgs.substAllTypes(typeSubst.toMap))
+    Logger.finer(s"Inlined:\n$result")
+    result
   }
 
   def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareDefs, 
