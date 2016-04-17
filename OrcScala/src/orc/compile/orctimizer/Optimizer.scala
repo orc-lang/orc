@@ -139,7 +139,7 @@ abstract class Optimizer(co: CompilerOptions) {
           val result = byImmediate1 || byImmediate2 || byNonBlocking1 || byNonBlocking2
           if (byImmediate1 || byImmediate2) {
             interestingElimables += 1
-            //Logger.info(s"Elimable by: $byImmediate1 || $byImmediate2 || $byNonBlocking1 || $byNonBlocking2\n$p")
+            Logger.fine(s"Elimable by: $byImmediate1 || $byImmediate2 || $byNonBlocking1 || $byNonBlocking2\n$p")
           } 
           result
         }
@@ -149,9 +149,10 @@ abstract class Optimizer(co: CompilerOptions) {
         if (!elim.isEmpty) {
           // Build (very schematically):
           // keeps >> elims with future stripped >> core
-          val result = Futures(keep, Seqs(elim, core))
-          if(interestingElimables > 1 && !keep.isEmpty)
-            Logger.info(s"Eliminating futures: $futs\n${e.e}\n====>\n${keep.mkString(" >>\n")} >> --\n${elim.mkString(" >>\n")} >> --\n${core.e}")
+          val rest :+ toElim = elim
+          val result = Futures(keep ++ rest, Seqs(Seq(toElim), core))
+          if(interestingElimables > 1)
+            Logger.fine(s"Eliminating futures: $futs\n${e.e}\n====>\n${keep.mkString(" >>\n")} >> --\n${elim.mkString(" >>\n")} >> --\n${core.e}")
           Some(result)
         } else None
       }

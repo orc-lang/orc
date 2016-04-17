@@ -302,7 +302,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case f > x > g =>
         f.timeToPublish max g.timeToPublish
       case FutureAt(x, f, g) =>
-        Delay.NonBlocking
+        g.timeToPublish
       case f OtherwiseAt g =>
         f.timeToPublish min (f.timeToHalt max g.timeToPublish)
       case LimitAt(f) =>
@@ -335,16 +335,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (b in ctx).timeToPublish
       case Constant(_) in _ =>
         Delay.NonBlocking
-      case (v: BoundVar) in ctx => ctx(v) match {
-        case Bindings.SeqBound(_, _)
-          | Bindings.DefBound(_, _, _)
-          | Bindings.RecursiveDefBound(_, _, _) =>
-          Delay.NonBlocking
-        case Bindings.ArgumentBound(_, _, _) => 
-          Delay.NonBlocking
-        case _ =>
-          Delay.Blocking
-      }
+      case (v: BoundVar) in ctx => 
+        Delay.NonBlocking
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
       case VtimeZone(_, e) in ctx =>
