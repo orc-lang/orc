@@ -457,7 +457,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         else
           ForceType.mergeMaps(
               _ min _, ForceType.Never,
-              f.forceTypes, g.forceTypes.mapValues { t => t max ForceType.Eventually(false) })
+              f.forceTypes, g.forceTypes.mapValues { t => t max ForceType.Eventually(false) }).mapValues { _.withHalting(false) }
       case f > x > g =>
         ForceType.mergeMaps(
             _ min _, ForceType.Never,
