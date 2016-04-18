@@ -48,13 +48,13 @@ def UniqueMerge[A](is :: List[Getter[A]], o :: Putter[A]) = signal | (
   ) >> stop
   )
 
-def collectN[A](Integer, lambda() :: A) :: List[A]
-def collectN(n, f) = 
+def getN[A](Integer, Channel[A]) :: List[A]
+def getN(n, chan) = 
   val cnt = Counter(n)
   val c = Channel[A]() #
   (l >> c.close() >> l) <l< (
     cnt.onZero() >> c.getAll() |
-   	f() >x> c.put(x) >> cnt.dec() >> stop
+   	repeat(lambda() = chan.get() >x> c.put(x) >> cnt.dec()) >> stop
   )
 
 def makeChannels[A](n :: Integer) = collect(lambda() = upto(n) >> Channel[A]())
@@ -67,7 +67,7 @@ Trans(lambda(x :: Integer) = x*2, x2.get, x2'.put) >> stop |
 Trans(lambda(x :: Integer) = x*3, x3.get, x3'.put) >> stop | 
 Trans(lambda(x :: Integer) = x*5, x5.get, x5'.put) >> stop |
  
-collectN(1500, lambda() = repeat(out'.get)) >x> Println(x) >>
+getN(1500, out') >x> Println(x) >>
 -- The getAll is required because there may be values in the channel and that will cause close to block.
 each(chans) >c> (c.getAll() >> stop | c.close())
 
