@@ -12,6 +12,7 @@ orct:seq-elim-var
 orct:stop-elim
 orct:constant-propogation
 orct:limit-elim
+orct:limit-compiler-choice
 orct:inline-def
 orct:inline-threshold=10
 orct:higher-order-inline-threshold=50
