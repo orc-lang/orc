@@ -271,6 +271,7 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
   // Compiler methods
   ////////
 
+  // FIXME: This returns null on failure. This is NOT scala style. Bad programmer who ever did this.
   @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
     //Logger.config(options)

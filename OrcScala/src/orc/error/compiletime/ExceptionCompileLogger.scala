@@ -55,8 +55,6 @@ class ExceptionCompileLogger() extends CompileLogger {
     // Nothing needed
   }
 
-  class GenericCompilationException(message: String) extends CompilationException(message)
-
   /* (non-Javadoc)
      * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
      */
@@ -64,18 +62,7 @@ class ExceptionCompileLogger() extends CompileLogger {
 
     maxSeverity = if (severity.ordinal() > maxSeverity.ordinal()) severity else maxSeverity
 
-    if (severity.ordinal() >= Severity.WARNING.ordinal()) {
-      if (exception != null) {
-        throw exception;
-      } else {
-        // We don't have an exception to throw -- use our "fake" one
-        val e = new GenericCompilationException(message)
-        if (location != null) {
-          e.setPosition(location)
-        }
-        throw e
-      }
-    } // else disregard
+    ExceptionCompileLogger.throwExceptionIfNeeded(Severity.WARNING, severity, message, location, exception)
   }
 
   /* (non-Javadoc)
@@ -104,4 +91,23 @@ class ExceptionCompileLogger() extends CompileLogger {
      */
   def getMaxSeverity(): Severity = maxSeverity
 
+}
+
+object ExceptionCompileLogger {  
+  class GenericCompilationException(message: String) extends CompilationException(message)
+
+  def throwExceptionIfNeeded(minSeverity: Severity, severity: Severity, message: String, location: Position, exception: Throwable) {
+    if (severity.ordinal() >= minSeverity.ordinal()) {
+      if (exception != null) {
+        throw exception;
+      } else {
+        // We don't have an exception to throw -- use our "fake" one
+        val e = new GenericCompilationException(message)
+        if (location != null) {
+          e.setPosition(location)
+        }
+        throw e
+      }
+    } // else disregard
+  }
 }

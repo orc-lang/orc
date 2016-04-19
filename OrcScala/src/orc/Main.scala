@@ -27,6 +27,7 @@ import orc.util.CmdLineUsageException
 import orc.util.PrintVersionAndMessageException
 import orc.run.OrcDesktopEventAction
 import orc.ast.oil.xml.OrcXML
+import orc.error.compiletime.CompilationException
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -80,6 +81,7 @@ object Main {
       case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
       case e: FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
       case e: ScriptException if (e.getCause == null) => Console.err.println(e.getMessage)
+      case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => {} // Ignore compilation errors. They will already have been printed.
       case e: ScriptException => printException(e.getCause, Console.err, false)
     }
   }

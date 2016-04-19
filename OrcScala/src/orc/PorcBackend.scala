@@ -40,8 +40,12 @@ class PorcBackend extends Backend[PorcBackend.CompiledOrcProgram] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
       compileLogger: CompileLogger, progress: ProgressMonitor): CompiledOrcProgram = {
       val code = this(source, options, compileLogger, progress)
-      val cls = javaCompiler(code)
-      cls
+      if (code != null) {
+        val cls = javaCompiler(code)
+        cls
+      } else {
+        null
+      }
     }
   }
 

@@ -20,7 +20,10 @@ import java.util.LinkedList;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import orc.error.compiletime.CompilationException;
+import orc.error.compiletime.FeatureNotSupportedException;
 import orc.script.OrcBindings;
+
+import static org.junit.Assume.*;
 
 public final class TestUtils {
 	private TestUtils() {
@@ -58,8 +61,10 @@ public final class TestUtils {
                 if (!expecteds.contains(actual)) {
                     throw new AssertionError("Unexpected output:\n" + actual);
                 }
+            } catch (FeatureNotSupportedException ce) {
+                assumeNoException(ce);
             } catch (CompilationException ce) {
-                throw new AssertionError(ce.getMessageAndDiagnostics());
+                throw new AssertionError(ce);
             }
         }
 

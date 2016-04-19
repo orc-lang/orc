@@ -43,6 +43,7 @@ import orc.OrcEventAction;
 import orc.StandardBackend;
 import orc.TokenInterpreterBackend;
 import orc.error.OrcException;
+import orc.error.compiletime.CompilationException;
 import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;
@@ -236,6 +237,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     } catch (final ScriptException e) {
       throw e;
     } catch (final IOException e) {
+      throw new ScriptException(e);
+    } catch (final CompilationException e) {
       throw new ScriptException(e);
     }
   }
