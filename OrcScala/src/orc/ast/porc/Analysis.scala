@@ -80,24 +80,9 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case (_: SiteCallDirect) in _ => true
       case (v: Var) in ctx => ctx(v) match {
         // Somehow hack in enough context dependance to catch obvious cases of arguments that have nonfuture args.
-        case ContinuationArgumentBound(ctx, cont, _) => ctx.lookupBoundTo(cont) match {
-          case Some(LetBound(bctx, l_)) => {
-            val LetIn(x, _, b) = l_ in bctx
-            //b.notCalledWithFuture(x)
-            // Do this analysis here because otherwise we infinitely recurse with the LetBound handling below.
-            // TODO: Make this do a real analysis not just check one case.
-            val nRefs = Analysis.count(b, _ == x.e)
-            val nNonFutureRefs = Analysis.count(b, _ match {
-              case SiteCall(_, p, _, _, _) if p == x.e => true
-              case Force(p, _, _, _) if p == x.e => true
-              case Call(p, OrcValue(_)) if p == x.e => true
-              case GetField(p, _, _, _, _) if p == x.e => true
-              case _ => false
-            })
-            nRefs == nNonFutureRefs
-          }
-          case None => false
-        }
+        case ContinuationArgumentBound(ctx, cont, _) => 
+          // Continuation args can never be a future or an unresolved closure because they are publication values
+          true
         case LetBound(lctx, l) => {
           val LetIn(x, v, _) = l in lctx
           v.isNotFuture
