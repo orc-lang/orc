@@ -163,7 +163,7 @@ case class TryFinally(body: Expr, handler: Expr) extends Expr
 // ==================== FUTURE ===================
 
 case class SpawnFuture(c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
-case class Force(p: Value, c: Value, future: Value) extends Expr
+case class Force(p: Value, c: Value, future: Value, forceClosures: Boolean) extends Expr
 
 case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
 

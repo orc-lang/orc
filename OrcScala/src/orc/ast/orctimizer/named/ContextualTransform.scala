@@ -70,7 +70,7 @@ trait ContextualTransform extends NamedASTFunction {
         case left || right => recurse(left) || recurse(right)
         case e@(left > x > right) => recurse(left) > x > transform(right)(ctx + SeqBound(ctx, e.asInstanceOf[Sequence]))
         case Limit(f) => Limit(recurse(f))
-        case Force(f) => Force(recurse(f))
+        case Force(f, b) => Force(recurse(f), b)
         case e@Future(x, left, right) => Future(x, recurse(left), transform(right)(ctx + FutureBound(ctx, e)))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case e@DeclareDefs(defs, body) => {

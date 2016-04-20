@@ -250,7 +250,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.timeToHalt max g.timeToHalt // TODO: IT may be possible to tighten this.
       case LimitAt(f) =>
         f.timeToHalt min f.timeToPublish
-      case Force(x) in ctx =>
+      case Force(x, _) in ctx =>
         (x in ctx).valueForceDelay
       case CallAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
@@ -307,7 +307,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.timeToPublish min (f.timeToHalt max g.timeToPublish)
       case LimitAt(f) =>
         f.timeToPublish min f.timeToHalt
-      case Force(x: BoundVar) in ctx =>
+      case Force(x: BoundVar, _) in ctx =>
         ctx(x) match {
           case Bindings.FutureBound(sctx, Future(_, source, _)) =>
             (source in sctx).timeToPublish
@@ -317,7 +317,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           case _ =>
             Delay.Blocking
         }
-      case Force(x: Constant) in ctx =>
+      case Force(x: Constant, _) in ctx =>
         Delay.NonBlocking
       case CallAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
@@ -362,7 +362,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case LimitAt(f) =>
         f.publications.limitTo(1)
-      case Force(x: BoundVar) in ctx => ctx(x) match {
+      case Force(x: BoundVar, _) in ctx => ctx(x) match {
         case Bindings.DefBound(_, _, _)
           | Bindings.RecursiveDefBound(_, _, _) => 
           Range(1, 1)
@@ -371,9 +371,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case _ => 
           Range(0, 1)
       }
-      case Force(Constant(_)) in ctx => 
+      case Force(Constant(_), _) in ctx => 
         Range(1, 1)
-      case Force(_) in ctx => 
+      case Force(_, _) in ctx => 
         Range(0, 1)
       case f || g =>
         f.publications + g.publications
@@ -464,9 +464,10 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
       case LimitAt(f) =>
         f.forceTypes
-      case Force(a: BoundVar) in ctx =>
+      case Force(a: BoundVar, _) in ctx =>
         Map((a, ForceType.Immediately(true)))
-      case Force(a) in _ =>
+        // TODO: These may also wait on the content of closures which could be useful. (for functions returning functions for instance)
+      case Force(a, _) in _ =>
         Map()
       case FutureAt(x, f, g) =>
         val fForces = f.forceTypes.mapValues { t => t max ForceType.Eventually(false) }
@@ -509,7 +510,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case LimitAt(f) =>
         f.effects min Effects.BeforePub
-      case Force(a) in _ =>
+      case Force(a, _) in _ =>
         Effects.None
       case FutureAt(x, f, g) => g.effects max (f.effects match {
         case Effects.BeforePub =>
@@ -572,7 +573,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           Delay.Blocking
       case LimitAt(f) =>
         f.valueForceDelay
-      case Force(a) in _ =>
+      case Force(a, _) in _ =>
         Delay.NonBlocking
       case FutureAt(x, f, g) =>
         g.valueForceDelay

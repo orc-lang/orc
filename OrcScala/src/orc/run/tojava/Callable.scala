@@ -53,6 +53,11 @@ trait DirectCallable {
 }
 
 trait ForcableCallableBase {
+  /** The set of values that this closure holds references too.
+    *
+    * This must be complete in the sense that no value in this list
+    * references another possible future that is not in this list.
+    */
   val closedValues: Array[AnyRef]
 }
 

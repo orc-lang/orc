@@ -230,6 +230,7 @@ class OrctimizerAnalysisTest {
     // So nothing worth testing here.
   }
   
+  /*
   @Test
   def analyzeDefPub(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -244,7 +245,6 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
   
-  /*
   @Test
   def analyzeClosurePub(): Unit = {
     val x = new BoundVar(Some("x"))

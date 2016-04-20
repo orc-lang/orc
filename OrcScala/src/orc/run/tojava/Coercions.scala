@@ -1,6 +1,7 @@
 package orc.run.tojava
 
 import orc.values.sites.DirectSite
+import orc.run.Logger
 
 /**
  * @author amp
@@ -16,7 +17,10 @@ object Coercions {
       case c: Callable => c
       // TODO: We may want to optimize cases like records and site calls.
       //case s: Site => new SiteCallable(s)
-      case f: Future => new FutureCallable(f)
+      case f: Future => {
+        Logger.warning(s"Generating FutureCallable. The translation should force all targets before call.\n$f")
+        new FutureCallable(f)
+      }
       case v => new RuntimeCallable(v)
     }
   }

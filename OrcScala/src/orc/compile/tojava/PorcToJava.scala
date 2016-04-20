@@ -5,6 +5,9 @@ import orc.values.Format
 import scala.collection.mutable
 import orc.values.Field
 
+
+// Add context to convertion to carry the closed variables of sites.
+
 /** @author amp
   */
 class PorcToJava {
@@ -15,6 +18,7 @@ class PorcToJava {
   
   def apply(prog: SiteDefCPS): String = {
     assert(prog.arguments.isEmpty)
+    implicit val ctx = ConversionContext(Map())
     val code = expression(prog.body).indent(2)
     val name = "Prog"
     val constants = buildConstantPool().indent(2)
@@ -112,7 +116,7 @@ $code
 
 
   implicit class Interpolator(private val sc: StringContext) {
-    def j(args: Any*): String = {
+    def j(args: Any*)(implicit ctx: ConversionContext): String = {
       sc.checkLengths(args)
       val sb = new StringBuilder
       import sb.append
@@ -131,7 +135,7 @@ $code
     }
   }
 
-  def expression(expr: Expr): String = {
+  def expression(expr: Expr)(implicit ctx: ConversionContext): String = {
     val code = expr match {
       case Call(target, arg) => {
         j"""
@@ -176,14 +180,16 @@ $code
               j"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
           }
         }).mkString("\n")
-        val fvs = expr.freevars
-        // TODO: Mutual recursive closures may have problems. Check forcing a mutually recursive closure.
+        // TODO: This gets all free variables regardless of where they came from. Some may be known not to be futures. Getting access to analysis would allow us to use isNotFuture.
+        val fvs = closedVars(defs.flatMap(d => d.body.freevars -- d.allArguments).toSet)
         // TODO: It might be better to build a special join object that represents all the values we are closing over. Then all closures can use it instead of building a resolver for each.
         
+        val newctx = ctx.copy(closedVars = ctx.closedVars ++ defs.map(d => (d.name, fvs)))
+            
         j"""
         |$decls
-        |${defs.map(orcdef(_, fvs)).mkString}
-        |${expression(body).deindentedAgressively}"""
+        |${defs.map(orcdef(_, fvs)(newctx)).mkString}
+        |${expression(body)(newctx).deindentedAgressively}"""
       }
 
       case Spawn(c, t, b) => {
@@ -220,9 +226,14 @@ $code
         |});
         """
       }
-      case Force(p, c, f) => {
+      case Force(p, c, f, true) => {
         j"""
         |$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
+        """
+      }
+      case Force(p, c, f, false) => {
+        j"""
+        |$execution.forceForCall($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
         """
       }
       case GetField(p, c, t, o, f) => {
@@ -253,17 +264,15 @@ $code
         """
       }
       case TryOnHalted(b, h) => {
-        // TODO: Injecting the notify call here is odd. It adds reporting semantics to TryOnHalted.
         val e = newVarName("e")
         j"""
         |try {
           |$b
         |} catch(HaltException $e) {
-          |assert $e.getCause() == null;
+        |  assert $e.getCause() == null;
           |$h
         |}
         """
-          //$execution.notifyOrc(new CaughtEvent($e.getCause()));
       }
 
       case Unit() => ""
@@ -288,10 +297,10 @@ $code
     }
   }
   
-  def orcdef(d: SiteDef, freevars: Set[Var]): String = {
+  def orcdef(d: SiteDef, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
     val args = newVarName("args")
     val rt = newVarName("rt")
-    val freevarsStr = j"new Object[] { ${freevars.map(argument).mkString(", ")} }"
+    val freevarsStr = j"new Object[] { ${closedVars.map(argument).mkString(", ")} }"
     val renameargs = d.arguments.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)
     // We assume that previous generated code has defined a mutable variable named by vars(name)
     // This will set it to close the recursion.
@@ -313,6 +322,10 @@ $code
         """.deindented        
       }
     }
+  }
+  
+  def closedVars(freeVars: Set[Var])(implicit ctx: ConversionContext): Set[Var] = {
+    freeVars.flatMap { x => ctx.closedVars.get(x).getOrElse(Set(x)) }
   }
 }
 
@@ -366,6 +379,8 @@ object PorcToJava {
     else
       stringAsUTF8Array(s)
   }
+  
+  case class ConversionContext(closedVars: Map[Var, Set[Var]])
 }
 
 case class ConstantPoolEntry(value: AnyRef, typ: String, name: String, initializer: String)

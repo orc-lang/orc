@@ -89,7 +89,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
             val nRefs = Analysis.count(b, _ == x.e)
             val nNonFutureRefs = Analysis.count(b, _ match {
               case SiteCall(_, p, _, _, _) if p == x.e => true
-              case Force(p, _, _) if p == x.e => true
+              case Force(p, _, _, _) if p == x.e => true
               case Call(p, OrcValue(_)) if p == x.e => true
               case GetField(p, _, _, _, _) if p == x.e => true
               case _ => false

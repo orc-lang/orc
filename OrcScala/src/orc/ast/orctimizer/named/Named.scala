@@ -36,7 +36,7 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case left || right => List(left, right)
     case Sequence(left, x, right) => List(left, x, right)
     case Limit(f) => List(f)
-    case Force(f) => List(f)
+    case Force(f, _) => List(f)
     case Future(x, f, g) => List(f, g)
     case left Otherwise right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
@@ -96,7 +96,7 @@ case class Limit(expr: Expression) extends Expression
 case class Future(x: BoundVar, left: Expression, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class Force(v: Argument) extends Expression
+case class Force(v: Argument, forceClosures: Boolean) extends Expression 
 
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression

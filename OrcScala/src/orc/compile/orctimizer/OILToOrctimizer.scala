@@ -32,7 +32,7 @@ class OILToOrctimizer {
   def apply(e: Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
-      case a: Argument => orct.Force(apply(a))
+      case a: Argument => orct.Force(apply(a), true)
       case Call(target, args, typeargs) => {
         // Compute the target value and a flag to state of it should be forced
         target match {
@@ -40,51 +40,29 @@ class OILToOrctimizer {
             throw new FeatureNotSupportedException("Classes or MakeSite", e.pos)
           case _ => {}
         }
-//        val (newTarget, forceTarget) = target match {
-////          case (c: Constant) =>
-////            (apply(c), None)
-////          case (x: BoundVar) if isDef(x) =>
-////            (apply(x), None)
-//          case _ =>
-//            val t = new orct.BoundVar(Some(s"f_$target"))
-//            (t, Some(t))
-//        }
-
-        // Compute the set of arguments and collect arguments that need forcing
-        val bindings = new collection.mutable.ListBuffer[(Argument, orct.BoundVar)]()
-        val newArgs = args map { arg =>
-          arg match {
-            case c: Constant =>
-              apply(c)
-            case _ =>
-              /*val newArg = new orct.BoundVar(Some(s"f_$arg"))
-              bindings += ((arg, newArg))
-              newArg
-              */
-              apply(arg)
-          }
+        val (newTarget, forceTarget) = target match {
+          case (c: Constant) =>
+            (apply(c), None)
+          case (x: BoundVar) if isDef(x) =>
+            (apply(x), None)
+          case _ =>
+            val t = new orct.BoundVar(Some(s"f_$target"))
+            (t, Some(t))
         }
-        
+
         // Build the actual call
-        val call = orct.Call(apply(target), newArgs, typeargs map { _ map apply })
-        
-        // Generate forcing operations for arguments
-        /*val argsBound = bindings.foldRight(call: orct.Expression) { (as, acc) =>
-          val (arg, newArg) = as
-          orct.Sequence(orct.Future(orct.Force(apply(arg))), newArg, acc)
-        }*/
-        
+        val call = orct.Call(newTarget, args map apply, typeargs map { _ map apply })
+
         // Force target if needed
-        //forceTarget map { t =>
-        //  orct.Sequence(orct.Force(apply(target)), t, call)
-        //} getOrElse {
-        call
-        //}
+        forceTarget map { t =>
+          orct.Sequence(orct.Force(apply(target), false), t, call)
+        } getOrElse {
+          call
+        }
       }
       case left || right => orct.Parallel(apply(left), apply(right))
       case left > x > right => {
         val bctx = ctx + ((x, e))
-        
         orct.Sequence(apply(left), apply(x), apply(right)(bctx)) 
       }
       case left < x <| right => {
@@ -105,7 +83,7 @@ class OILToOrctimizer {
       case VtimeZone(timeOrder, body) => orct.VtimeZone(apply(timeOrder), apply(body))
       case FieldAccess(o, f) => {
         val t = new orct.BoundVar(Some(s"f_$o"))
-        orct.Force(apply(o)) > t > orct.FieldAccess(t, f)
+        orct.Force(apply(o), true) > t > orct.FieldAccess(t, f)
       }
     }    
   }

@@ -104,12 +104,12 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     fut
   }
 
-  /** Force a value if it is a future.
+  /** Force a value if it is a future or resolve it if it's a closure.
+    * 
+    * If v is ForcableCallableBase it must have a correct and complete closedValues.
     */
   def force(p: Continuation, c: Counter, v: AnyRef) = {
     v match {
-      case f: Future =>
-        f.forceIn(new PCBlockable(p, c))
       case f: ForcableCallableBase =>
         // Matches: Call to halt in Resolve subclass below
         c.prepareSpawn()
@@ -125,6 +125,16 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
             }
           }
         }
+      case _ => forceForCall(p, c, v)
+    }
+  }
+
+  /** Force a value if it is a future.
+    */
+  def forceForCall(p: Continuation, c: Counter, v: AnyRef) = {
+    v match {
+      case f: Future =>
+        f.forceIn(new PCBlockable(p, c))
       case _ => p.call(v)
     }
   }

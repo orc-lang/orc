@@ -193,7 +193,7 @@ object KillIn {
 
 object ForceIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case Force(p, c, f) in ctx => Some(p in ctx, c in ctx, f in ctx)
+    case Force(p, c, f, b) in ctx => Some(p in ctx, c in ctx, f in ctx, b)
     case _ => None
   }
 }

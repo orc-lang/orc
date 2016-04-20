@@ -88,7 +88,7 @@ class PrettyPrint {
 
       case SpawnFuture(c, t, pArg, cArg, e) => rd"spawnFuture $c $t ($pArg, $cArg) {\n${indent(i+2)}${reduce(e, i+2)}\n$ind}"
       
-      case Force(p, c, f) => rd"force $p $c $f"
+      case Force(p, c, f, b) => rd"force[${if (b) "publish" else "call"}] $p $c $f"
       case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"
       
       case v if v.productArity == 0 => v.productPrefix

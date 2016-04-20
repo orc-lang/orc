@@ -58,7 +58,7 @@ class PrettyPrint {
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
       case Limit(f) => "{|" + reduce(f) + "|}"
       case Future(x, f, g) => "future " + reduce(x) + " = " + reduce(f) + " #\n" + reduce(g)
-      case Force(f) => "force(" + reduce(f) + ")"
+      case Force(f, b) => "force(" + reduce(f) + ", " + (if(b) "closure" else "future only") + ")"
       case left Otherwise right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {

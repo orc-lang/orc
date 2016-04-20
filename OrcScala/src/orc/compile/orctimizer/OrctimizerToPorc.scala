@@ -88,8 +88,8 @@ class OrctimizerToPorc {
           expression(g)
         }
       }
-      case Force(f) => {
-        porc.Force(ctx.p, ctx.c, argument(f))
+      case Force(f, forceClosures) => {
+        porc.Force(ctx.p, ctx.c, argument(f), forceClosures)
       }
       case left Otherwise right => {
         val newC = newVarName("C")

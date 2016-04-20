@@ -165,23 +165,25 @@ abstract class Optimizer(co: CompilerOptions) {
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case FutureAt(ForceAt((x: BoundVar) in ctx)) => ctx(x) match {
-        case Bindings.FutureBound(ctx, _) => Some(x)
-        case b if isClosureBinding(b) => Some(x)
-        case Bindings.ArgumentBound(ctx, _, _) => Some(x)
-        case _ => None
-      }
+      case FutureAt(x, ForceAt((y: BoundVar) in ctx, true), r) => 
+        def successRes = Some(r.subst(y, x))
+        ctx(y) match {
+          case Bindings.FutureBound(ctx, _) => successRes
+          case b if isClosureBinding(b) => successRes
+          case Bindings.ArgumentBound(ctx, _, _) => successRes
+          case _ => None
+        }
       case _ => None
     }
   }
   val ForceElim =  OptFull("force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case ForceAt((v: BoundVar) in _) > x > g 
+      case ForceAt((v: BoundVar) in _, _) > x > g 
           if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
         Some(g)
-      case ForceAt(v) if v.valueForceDelay == Delay.NonBlocking => Some(v)
-      case ForceAt((x: BoundVar) in ctx) => {
+      case ForceAt(v, _) if v.valueForceDelay == Delay.NonBlocking => Some(v)
+      case ForceAt((x: BoundVar) in ctx, forceClosures) => {
         val cannotBeFuture = ctx(x) match {
           case Bindings.SeqBound(fromCtx, from > _ > _) =>
             from match {
@@ -197,9 +199,9 @@ abstract class Optimizer(co: CompilerOptions) {
         if (cannotBeFuture) {
           Some(x)
         } else {
-          // Search the context for a SeqBound of force(x)
+          // Search the context for a SeqBound of force(x) which has at least as strong a force type
           val bindOpt = ctx.bindings find {
-            case Bindings.SeqBound(_, Force(`x`) > _ > _) => true
+            case Bindings.SeqBound(_, Force(`x`, fc) > _ > _) if !forceClosures || fc => true
             case _ => false
           }
           
@@ -228,7 +230,8 @@ abstract class Optimizer(co: CompilerOptions) {
         val forceLimit = ForceType.Immediately(true)
         val (bestVar, matchingEs) = vars.map({ v =>
           val alreadyLifted = ctx.bindings exists {
-            case Bindings.SeqBound(_, Force(`v`) > _ > _) => true
+            // TODO: The full force requirement may be too strong
+            case Bindings.SeqBound(_, Force(`v`, true) > _ > _) => true 
             case _ => false
           }
           if (alreadyLifted || (v in ctx).valueForceDelay == Delay.NonBlocking) (v, 0)
@@ -241,15 +244,16 @@ abstract class Optimizer(co: CompilerOptions) {
           // But I leave checks for clarity.
           val (forcers, nonforcers) = es.partition(e => (e in ctx).forces(bestVar) <= forceLimit)
           
+          // TODO: Allow lifting non-closure-forcing forces.
           def processedForcers = {
             val y = new BoundVar()
             val trans = new ContextualTransform.NonDescending {
               override def onExpressionCtx = {
-                case ForceAt(`bestVar` in _) => 
+                case ForceAt(`bestVar` in _, true) => 
                   y
               }
             }
-            Force(bestVar) > y > trans(Pars(forcers))
+            Force(bestVar, true) > y > trans(Pars(forcers))
           }
           (forcers.size, nonforcers.isEmpty) match {
             case (n, _) if n <= 1 => None
@@ -376,7 +380,7 @@ abstract class Optimizer(co: CompilerOptions) {
         val newargs = for (a <- args) yield {
           a match {
             case x: BoundVar => ctx(x) match {
-              case Bindings.SeqBound(_, Force(v) > _ > _) => v
+              case Bindings.SeqBound(_, Force(v, _) > _ > _) => v
               case _ => x
             }
             case _ => a
@@ -387,59 +391,6 @@ abstract class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
-  
-  // This only implements the very simplest way of detecting when the Flag will never be set or never be used.
-  // This could be made smarter number of other ways. However note that because of dead code elimination this
-  // will catch the main case where something that never publishes controls SetFlag.
-  val FlagElim = OptFull("flag-elim") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case CallAt(Constant(NewFlag) in _, _, _, ctx) > x > e => {
-        var hasSet = false
-        var hasCheck = false
-        var hasOther = false
-        (new ContextualTransform.NonDescending {
-          override def onExpressionCtx = {
-            case CallAt(Constant(SetFlag) in _, List(`x`), _, ctx) => {
-              hasSet = true
-              Stop()
-            }
-            case CallAt(Constant(PublishIfNotSet) in _, List(`x`), _, ctx) => {
-              hasCheck = true
-              Stop()
-            }
-            case `x` => {
-              hasOther = true
-              Stop()
-            }
-          }
-          override def onArgument(implicit ctx: TransformContext) = {
-            case `x` => {
-              hasOther = true
-              x
-            }
-          }
-        })(e)
-        //Logger.finer(s"Checked flag $x: set $hasSet check $hasCheck other $hasOther")
-        if(!hasOther && (hasSet || hasCheck) && (!hasSet || !hasCheck)) {
-          // If one or the other, but not both are set
-          val s = if (hasCheck) PublishIfNotSet else SetFlag
-          Some((new ContextualTransform.NonDescending {
-            override def onExpressionCtx = {
-              case CallAt(Constant(`s`) in _, List(`x`), _, ctx) => {
-                Constant(Signal)
-              }
-            }
-          })(e))
-        } else {
-          None
-        }
-      }
-      case _ => None
-    }
-  }
-
-
   
   val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
   val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(100)
@@ -460,7 +411,7 @@ abstract class Optimizer(co: CompilerOptions) {
           val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
           val hasDefArg = args.exists { 
             case x: BoundVar => ctx(x) match {
-              case Bindings.SeqBound(yctx, Force(y: BoundVar) > _ > _) => isClosureBinding(yctx(y))
+              case Bindings.SeqBound(yctx, Force(y: BoundVar, _) > _ > _) => isClosureBinding(yctx(y))
               case b => isClosureBinding(b)
             }
             case _ => false
@@ -625,7 +576,7 @@ abstract class Optimizer(co: CompilerOptions) {
         ctx(v) match {
           case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) 
             if i < args.size && (args(i) in tctx).nonBlockingPublish => 
-              Some(Force(args(i)))
+              Some(Force(args(i), true))
           case _ => None
         }
       //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
@@ -662,8 +613,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
       LimitCompChoice, LimitElim, ConstProp, 
       StopEquiv, StopElim,
       SeqExp, SeqElim, SeqElimVar,
-      InlineDef, TypeElim,
-      FlagElim
+      InlineDef, TypeElim
       )
 
   val opts = allOpts.filter{ o =>

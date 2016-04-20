@@ -106,8 +106,8 @@ object FutureAt {
 }
 object ForceAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Force(f)) in ctx => {
-      Some(f in ctx)
+    case (n@Force(f, b)) in ctx => {
+      Some(f in ctx, b)
     }
     case _ => None
   }

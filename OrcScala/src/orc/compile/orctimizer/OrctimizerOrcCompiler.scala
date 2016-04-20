@@ -42,7 +42,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case _ => false
             }),
             "forces" -> Analysis.count(prog, {
-              case Force(_) => true
+              case Force(_, _) => true
               case _ => false
             }),
             "stops" -> Analysis.count(prog, {
