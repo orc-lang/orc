@@ -214,79 +214,79 @@ Language</a><br />
 <a name="Community" id="Community"></a><h1>Publications from the broader Orc community (i.e., not the Orc team at UT Austin) <small>(<a href="#top">top</a>)</small></h1>
 
 <ul>
-	<li>AlTurki, Musab A.; Meseguer, Jos&eacute;. Executable Rewriting Logic Semantics of Orc and Formal Analysis of Orc Programs. <cite>Journal of Logical and Algebraic Methods in Programming</cite>. 2015 Jul; <b>84</b>(4):505&ndash;533. doi:10.1016/j.jlamp.2015.03.003.</li>
+	<li>AlTurki, Musab A.; Meseguer, Jos&eacute;. Executable Rewriting Logic Semantics of Orc and Formal Analysis of Orc Programs. <span class="venue">Journal of Logical and Algebraic Methods in Programming</span>. 2015 Jul; <b>84</b>(4):505&ndash;533. doi:10.1016/j.jlamp.2015.03.003.</li>
 </ul>
 
 <ul>
-	<li>AlTurki, Musab A.; Alzuhaibi, Omar. Towards Formal Verification of Orchestration Computations Using the K Framework. In: Bj&oslash;rner, Nikolaj; de Boer, Frank D., eds.. <cite>FM 2015: Formal Methods - 20th International Symposium</cite>; 2015 Jun 24&ndash;26; Oslo, Norway. Springer; 2015. p. 40&ndash;56. (Lecture Notes in Computer Science; vol. 9109). doi:10.1007/978-3-319-19249-9_4.</li>
+	<li>AlTurki, Musab A.; Alzuhaibi, Omar. Towards Formal Verification of Orchestration Computations Using the K Framework. In: Bj&oslash;rner, Nikolaj; de Boer, Frank D., eds.. <span class="venue">FM 2015: Formal Methods - 20th International Symposium</span>; 2015 Jun 24&ndash;26; Oslo, Norway. Springer; 2015. p. 40&ndash;56. (Lecture Notes in Computer Science; vol. 9109). doi:10.1007/978-3-319-19249-9_4.</li>
 </ul>
 
 <ul>
-	<li>Perrin, Matthieu; Jard, Claude; Most&eacute;faoui, Achour. Tracking Causal Dependencies in Web Services Orchestrations Defined in Orc. In: Bouajjani, Ahmed; Fauconnier, Hugues, eds.. <cite>Networked Systems: Third International Conference, NETYS 2015</cite>; 2015 May 13&ndash;15; Agadir, Morocco. Springer; 2015. p. 382&ndash;396. (Lecture Notes in Computer Science; vol. 9466). doi:10.1007/978-3-319-26850-7_26.</li>
+	<li>Perrin, Matthieu; Jard, Claude; Most&eacute;faoui, Achour. Tracking Causal Dependencies in Web Services Orchestrations Defined in Orc. In: Bouajjani, Ahmed; Fauconnier, Hugues, eds.. <span class="venue">Networked Systems: Third International Conference, NETYS 2015</span>; 2015 May 13&ndash;15; Agadir, Morocco. Springer; 2015. p. 382&ndash;396. (Lecture Notes in Computer Science; vol. 9466). doi:10.1007/978-3-319-26850-7_26.</li>
 </ul>
 
 <ul>
-	<li>You, Zhen; Xue, Jinyun; Hu, Qimin; Hong, Yi. Formal Semantics of Orc Based on TLA+. In: Liu, Shaoying; Duan, Zhenhua, eds.. <cite>Structured Object-Oriented Formal Language and Method: 4th International Workshop, SOFL+MSVL 2014</cite>; 2014 Nov 6; Luxembourg. Springer; 2014. p. 147&ndash;163. (Lecture Notes in Computer Science; vol. 8979). doi:10.1007/978-3-319-17404-4_10.</li>
+	<li>You, Zhen; Xue, Jinyun; Hu, Qimin; Hong, Yi. Formal Semantics of Orc Based on TLA+. In: Liu, Shaoying; Duan, Zhenhua, eds.. <span class="venue">Structured Object-Oriented Formal Language and Method: 4th International Workshop, SOFL+MSVL 2014</span>; 2014 Nov 6; Luxembourg. Springer; 2014. p. 147&ndash;163. (Lecture Notes in Computer Science; vol. 8979). doi:10.1007/978-3-319-17404-4_10.</li>
 </ul>
 
 <ul>
-	<li>Gabarr&oacute;, Joaquim; Serna, Maria J.; Stewart, Alan. Analysing Web-Orchestrations Under Stress Using Uncertainty Profiles. <cite>The Computer Journal</cite>. 2014 Nov; <b>57</b>(11):1591&ndash;1615. doi:10.1093/comjnl/bxt063.</li>
+	<li>Gabarr&oacute;, Joaquim; Serna, Maria J.; Stewart, Alan. Analysing Web-Orchestrations Under Stress Using Uncertainty Profiles. <span class="venue">The Computer Journal</span>. 2014 Nov; <b>57</b>(11):1591&ndash;1615. doi:10.1093/comjnl/bxt063.</li>
 </ul>
 
 <ul>
-	<li>Dong, Jin Song; Liu, Yang; Sun, Jun; Zhang, Xian. Towards Verification of Computation Orchestration. <cite>Formal Aspects of Computing</cite>. 2014 Jul; <b>26</b>(4):729&ndash;759. doi:10.1007/s00165-013-0280-9.</li>
+	<li>Dong, Jin Song; Liu, Yang; Sun, Jun; Zhang, Xian. Towards Verification of Computation Orchestration. <span class="venue">Formal Aspects of Computing</span>. 2014 Jul; <b>26</b>(4):729&ndash;759. doi:10.1007/s00165-013-0280-9.</li>
 </ul>
 
 <ul>
-	<li>Li, Qin; Zhao, Yongxin; Zhu, Huibiao; He, Jifeng. A UTP Semantic Model for Orc Language with Execution Status and Fault Handling. <cite>Frontiers of Computer Science</cite>. 2014; <b>8</b>(5):709&ndash;725. doi: 10.1007/s11704-014-3385-2.</li>
+	<li>Li, Qin; Zhao, Yongxin; Zhu, Huibiao; He, Jifeng. A UTP Semantic Model for Orc Language with Execution Status and Fault Handling. <span class="venue">Frontiers of Computer Science</span>. 2014; <b>8</b>(5):709&ndash;725. doi: 10.1007/s11704-014-3385-2.</li>
 </ul>
 
 <ul>
-	<li>Stewart, Alan; Gabarr&oacute;, Joaquim; Keenan, Anthony. Reasoning about Orchestrations of Web Services Using Partial Correctness. <cite>Formal Aspects of Computing</cite>. 2013 Nov; <b>25</b>(6):833&ndash;846. doi:10.1007/s00165-011-0212-5.</li>
+	<li>Stewart, Alan; Gabarr&oacute;, Joaquim; Keenan, Anthony. Reasoning about Orchestrations of Web Services Using Partial Correctness. <span class="venue">Formal Aspects of Computing</span>. 2013 Nov; <b>25</b>(6):833&ndash;846. doi:10.1007/s00165-011-0212-5.</li>
 </ul>
 
 <ul>
-	<li>Nicola, Rocco De; Margheri, Andrea; Tiezzi, Francesco. Orchestrating Tuple-Based Languages. In: Bruni, Roberto; Sassone, Vladimiro, eds.. <cite>Trustworthy Global Computing: 6th International Symposium, TGC 2011</cite>; 2011 Jun 9&ndash;10; Aachen, Germany. Springer; 2011. p. 160&ndash;178. (Lecture Notes in Computer Science; vol. 7173). doi:10.1007/978-3-642-30065-3_10.</li>
+	<li>Nicola, Rocco De; Margheri, Andrea; Tiezzi, Francesco. Orchestrating Tuple-Based Languages. In: Bruni, Roberto; Sassone, Vladimiro, eds.. <span class="venue">Trustworthy Global Computing: 6th International Symposium, TGC 2011</span>; 2011 Jun 9&ndash;10; Aachen, Germany. Springer; 2011. p. 160&ndash;178. (Lecture Notes in Computer Science; vol. 7173). doi:10.1007/978-3-642-30065-3_10.</li>
 </ul>
 
 <ul>
-	<li>Li, Qin; Zhu, Huibiao; He, Jifeng. A Denotational Semantical Model for Orc Language. In: Cavalcanti, Ana; D&eacute;harbe, David; Gaudel, Marie-Claude; Woodcock, Jim, eds.. <cite>Theoretical Aspects of Computing - ICTAC 2010: 7th International Colloquium</cite>; 2010 Sep 1&ndash;3; Natal, Rio Grande do Norte, Brazil. Springer; 2010. p. 106&ndash;120. (Lecture Notes in Computer Science; vol. 6255). doi:10.1007/978-3-642-14808-8_8.</li>
+	<li>Li, Qin; Zhu, Huibiao; He, Jifeng. A Denotational Semantical Model for Orc Language. In: Cavalcanti, Ana; D&eacute;harbe, David; Gaudel, Marie-Claude; Woodcock, Jim, eds.. <span class="venue">Theoretical Aspects of Computing - ICTAC 2010: 7th International Colloquium</span>; 2010 Sep 1&ndash;3; Natal, Rio Grande do Norte, Brazil. Springer; 2010. p. 106&ndash;120. (Lecture Notes in Computer Science; vol. 6255). doi:10.1007/978-3-642-14808-8_8.</li>
 </ul>
 
 <ul>
-	<li>Vardoulakis, Dimitrios; Wand, Mitchell. A Compositional Trace Semantics for Orc. In: Lea, Doug; Zavattaro, Gianluigi, eds.. <cite>Coordination Models and Languages: 10th International Conference, COORDINATION 2008</cite>; 2008 Jun 4&ndash;6; Oslo, Norway. Springer; 2008. p. 331&ndash;346. (Lecture Notes in Computer Science; vol. 5052). doi:10.1007/978-3-540-68265-3_21.</li>
+	<li>Vardoulakis, Dimitrios; Wand, Mitchell. A Compositional Trace Semantics for Orc. In: Lea, Doug; Zavattaro, Gianluigi, eds.. <span class="venue">Coordination Models and Languages: 10th International Conference, COORDINATION 2008</span>; 2008 Jun 4&ndash;6; Oslo, Norway. Springer; 2008. p. 331&ndash;346. (Lecture Notes in Computer Science; vol. 5052). doi:10.1007/978-3-540-68265-3_21.</li>
 </ul>
 
 <ul>
-	<li>AlTurki, Musab; Meseguer, Jos&eacute;. Reduction Semantics and Formal Analysis of Orc Programs. <cite>Electronic Notes in Theoretical Computer Science</cite>. 2008; <b>200</b>(3):25&ndash;41. doi:10.1016/j.entcs.2008.04.091.</li>
+	<li>AlTurki, Musab; Meseguer, Jos&eacute;. Reduction Semantics and Formal Analysis of Orc Programs. <span class="venue">Electronic Notes in Theoretical Computer Science</span>. 2008; <b>200</b>(3):25&ndash;41. doi:10.1016/j.entcs.2008.04.091.</li>
 </ul>
 
 <ul>
-	<li>Aldinucci, Marco; Danelutto, Marco; Kilpatrick, Peter; Dazzi, Patrizio. From Orc Models To Distributed Grid Java Code. In: Gorlatch, Sergei; Fragopoulou, Paraskevi; Priol, Thierry, eds.. <cite>Grid Computing - Achievements and Prospects: CoreGRID Integration Workshop 2008</cite>; 2008 Apr 2&ndash;4; Hersonissos, Crete, Greece. Springer; 2008. p. 13&ndash;24. doi:10.1007/978-0-387-09457-1_2.</li>
+	<li>Aldinucci, Marco; Danelutto, Marco; Kilpatrick, Peter; Dazzi, Patrizio. From Orc Models To Distributed Grid Java Code. In: Gorlatch, Sergei; Fragopoulou, Paraskevi; Priol, Thierry, eds.. <span class="venue">Grid Computing - Achievements and Prospects: CoreGRID Integration Workshop 2008</span>; 2008 Apr 2&ndash;4; Hersonissos, Crete, Greece. Springer; 2008. p. 13&ndash;24. doi:10.1007/978-0-387-09457-1_2.</li>
 </ul>
 
 <ul>
-	<li>Proen&ccedil;a, Jos&eacute;; Clarke, Dave. Coordination Models Orc and Reo Compared. <cite>Electronic Notes in Theoretical Computer Science</cite>. 2008 Apr; <b>194</b>(4):57&ndash;76. doi:10.1016/j.entcs.2008.03.099.</li>
+	<li>Proen&ccedil;a, Jos&eacute;; Clarke, Dave. Coordination Models Orc and Reo Compared. <span class="venue">Electronic Notes in Theoretical Computer Science</span>. 2008 Apr; <b>194</b>(4):57&ndash;76. doi:10.1016/j.entcs.2008.03.099.</li>
 </ul>
 
 <ul>
-	<li>Aldinucci, Marco; Danelutto, Marco; Kilpatrick, Peter. Adding Metadata to Orc to Support Reasoning About Grid Programs. In: Priol, Thierry; Vanneschi, Marco, eds.. <cite>Towards Next Generation Grids: Proceedings of the CoreGRID Symposium 2007</cite>; 2007 Aug 27&ndash;28; Rennes, France. Springer; 2007. p. 205&ndash;214. doi:10.1007/978-0-387-72498-0_19.</li>
+	<li>Aldinucci, Marco; Danelutto, Marco; Kilpatrick, Peter. Adding Metadata to Orc to Support Reasoning About Grid Programs. In: Priol, Thierry; Vanneschi, Marco, eds.. <span class="venue">Towards Next Generation Grids: Proceedings of the CoreGRID Symposium 2007</span>; 2007 Aug 27&ndash;28; Rennes, France. Springer; 2007. p. 205&ndash;214. doi:10.1007/978-0-387-72498-0_19.</li>
 </ul>
 
 <ul>
-	<li>AlTurki, Musab; Meseguer, Jos&eacute;. Real-Time Rewriting Semantics of Orc. In: Leuschel, Michael; Podelski, Andreas, eds.. <cite>Proceedings of the 9th International ACM SIGPLAN Conference on Principles and Practice of Declarative Programming (PPDP&rsquo;07)</cite>; 2007 Jul 14&ndash;16; Wroclaw, Poland. ACM; 2007. p. 131&ndash;142. doi:10.1145/1273920.1273938.</li>
+	<li>AlTurki, Musab; Meseguer, Jos&eacute;. Real-Time Rewriting Semantics of Orc. In: Leuschel, Michael; Podelski, Andreas, eds.. <span class="venue">Proceedings of the 9th International ACM SIGPLAN Conference on Principles and Practice of Declarative Programming (PPDP&rsquo;07)</span>; 2007 Jul 14&ndash;16; Wroclaw, Poland. ACM; 2007. p. 131&ndash;142. doi:10.1145/1273920.1273938.</li>
 </ul>
 
 <ul>
-	<li>Stewart, Alan; Gabarr&oacute;, Joaquim; Clint, Maurice; Harmer, Terence J.; Kilpatrick, Peter; Perrott, Ronald H. Managing Grid Computations: An Orc-Based Approach. In: Guo, Minyi; Yang, Laurence Tianruo; Martino, Beniamino Di; Zima, Hans P.; Dongarra, Jack; Tang, Feilong, eds.. <cite>Parallel and Distributed Processing and Applications: 4th International Symposium, ISPA 2006</cite>; 2006 Dec 4&ndash;6; Sorrento, Italy. Springer; 2006. p. 278&ndash;291. (Lecture Notes in Computer Science; vol. 4330). doi:10.1007/ 11946441_29.</li>
+	<li>Stewart, Alan; Gabarr&oacute;, Joaquim; Clint, Maurice; Harmer, Terence J.; Kilpatrick, Peter; Perrott, Ronald H. Managing Grid Computations: An Orc-Based Approach. In: Guo, Minyi; Yang, Laurence Tianruo; Martino, Beniamino Di; Zima, Hans P.; Dongarra, Jack; Tang, Feilong, eds.. <span class="venue">Parallel and Distributed Processing and Applications: 4th International Symposium, ISPA 2006</span>; 2006 Dec 4&ndash;6; Sorrento, Italy. Springer; 2006. p. 278&ndash;291. (Lecture Notes in Computer Science; vol. 4330). doi:10.1007/ 11946441_29.</li>
 </ul>
 
 <ul>
-	<li>Dong, Jin Song; Liu, Yang; Sun, Jun; Zhang, Xian. Verification of Computation Orchestration via Timed Automata. In: Liu, Zhiming; He, Jifeng, eds.. <cite>Formal Methods and Software Engineering: 8th International Conference on Formal Engineering Methods, ICFEM 2006</cite>; 2006 Nov 1&ndash;3; Macao, China. Springer; 2006. p. 226&ndash;245. (Lecture Notes in Computer Science; vol. 4260). doi:10.1007/11901433_13.</li>
+	<li>Dong, Jin Song; Liu, Yang; Sun, Jun; Zhang, Xian. Verification of Computation Orchestration via Timed Automata. In: Liu, Zhiming; He, Jifeng, eds.. <span class="venue">Formal Methods and Software Engineering: 8th International Conference on Formal Engineering Methods, ICFEM 2006</span>; 2006 Nov 1&ndash;3; Macao, China. Springer; 2006. p. 226&ndash;245. (Lecture Notes in Computer Science; vol. 4260). doi:10.1007/11901433_13.</li>
 </ul>
 
 <ul>
-	<li>Bruni, Roberto; Melgratti, Hern&aacute;n C.; Tuosto, Emilio. Translating Orc Features into Petri Nets and the Join Calculus. In: Bravetti, Mario; N&uacute;&ntilde;ez, Manuel; Zavattaro, Gianluigi, eds.. <cite>Web Services and Formal Methods: Third International Workshop, WS-FM 2006</cite>; 2006 Sep 8&ndash;9; Vienna, Austria. Springer; 2006. p. 123&ndash;137. (Lecture Notes in Computer Science; vol. 4184). doi:10.1007/11841197_8.</li>
+	<li>Bruni, Roberto; Melgratti, Hern&aacute;n C.; Tuosto, Emilio. Translating Orc Features into Petri Nets and the Join Calculus. In: Bravetti, Mario; N&uacute;&ntilde;ez, Manuel; Zavattaro, Gianluigi, eds.. <span class="venue">Web Services and Formal Methods: Third International Workshop, WS-FM 2006</span>; 2006 Sep 8&ndash;9; Vienna, Austria. Springer; 2006. p. 123&ndash;137. (Lecture Notes in Computer Science; vol. 4184). doi:10.1007/11841197_8.</li>
 </ul>
 
 
