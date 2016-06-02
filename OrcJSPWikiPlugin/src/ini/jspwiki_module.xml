@@ -3,12 +3,10 @@
    <plugin class="orc.jspwiki.Orc">
       <author>Adrian Quark</author>
       <alias>orc</alias>
-      <minVersion>2.4</minVersion>
-      <maxVersion>2.8</maxVersion>
+      <minVersion>2.10</minVersion>
    </plugin>
    <plugin class="orc.jspwiki.WorkflowEmailNotifier">
       <author>John Thywissen</author>
-      <minVersion>2.6</minVersion>
-      <maxVersion>2.8</maxVersion>
+      <minVersion>2.10</minVersion>
    </plugin>
 </modules>

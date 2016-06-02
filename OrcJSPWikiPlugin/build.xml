@@ -4,6 +4,11 @@
 		Ant build file for Orc binary distribution.
 	</description>
 	<target name="jar" description="generate the distribution">
-		<jar jarfile="orc-jspwiki.jar" basedir="build"></jar>
+		<jar jarfile="orc-jspwiki.jar" basedir="build" whenmanifestonly="fail" duplicate="fail" index="true">
+			<manifest>
+				<attribute name="Implementation-Title" value="JSPWiki plug-in for the Orc programming language"/>
+				<attribute name="Implementation-Vendor" value="The University of Texas at Austin"/>
+			</manifest>
+		</jar>
 	</target>
 </project>

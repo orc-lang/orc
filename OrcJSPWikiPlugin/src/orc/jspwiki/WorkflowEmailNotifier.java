@@ -27,24 +27,24 @@ import java.util.Set;
 
 import javax.mail.MessagingException;
 
-import com.ecyrd.jspwiki.TextUtil;
-import com.ecyrd.jspwiki.WikiContext;
-import com.ecyrd.jspwiki.WikiEngine;
-import com.ecyrd.jspwiki.auth.AuthenticationManager;
-import com.ecyrd.jspwiki.auth.NoSuchPrincipalException;
-import com.ecyrd.jspwiki.auth.authorize.Group;
-import com.ecyrd.jspwiki.event.WikiEvent;
-import com.ecyrd.jspwiki.event.WikiEventListener;
-import com.ecyrd.jspwiki.event.WorkflowEvent;
-import com.ecyrd.jspwiki.plugin.InitializablePlugin;
-import com.ecyrd.jspwiki.plugin.PluginException;
-import com.ecyrd.jspwiki.plugin.WikiPlugin;
-import com.ecyrd.jspwiki.util.MailUtil;
-import com.ecyrd.jspwiki.util.WikiBackgroundThread;
-import com.ecyrd.jspwiki.workflow.Decision;
-import com.ecyrd.jspwiki.workflow.Fact;
-import com.ecyrd.jspwiki.workflow.Step;
-import com.ecyrd.jspwiki.workflow.Workflow;
+import org.apache.wiki.WikiBackgroundThread;
+import org.apache.wiki.WikiContext;
+import org.apache.wiki.WikiEngine;
+import org.apache.wiki.api.exceptions.PluginException;
+import org.apache.wiki.api.plugin.InitializablePlugin;
+import org.apache.wiki.api.plugin.WikiPlugin;
+import org.apache.wiki.auth.AuthenticationManager;
+import org.apache.wiki.auth.NoSuchPrincipalException;
+import org.apache.wiki.auth.authorize.Group;
+import org.apache.wiki.event.WikiEvent;
+import org.apache.wiki.event.WikiEventListener;
+import org.apache.wiki.event.WorkflowEvent;
+import org.apache.wiki.util.MailUtil;
+import org.apache.wiki.util.TextUtil;
+import org.apache.wiki.workflow.Decision;
+import org.apache.wiki.workflow.Fact;
+import org.apache.wiki.workflow.Step;
+import org.apache.wiki.workflow.Workflow;
 
 /**
  * This JSPWiki plugin sends e-mail notification messages to the assigned users
@@ -69,6 +69,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 	@Override
 	public synchronized void initialize(final WikiEngine engine) throws PluginException {
 		assert ourWatcher == null : "Multiple initialize of WorkflowEmailNotifier plugin";
+
 		ourWatcher = new WorkflowEmailNotifierWatcher(engine);
 		ourWatcher.start();
 	}
@@ -107,7 +108,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 		}
 
 		/* (non-Javadoc)
-		 * @see com.ecyrd.jspwiki.util.WikiBackgroundThread#startupTask()
+		 * @see org.apache.wiki.util.WikiBackgroundThread#startupTask()
 		 */
 		@Override
 		public void startupTask() throws Exception {
@@ -115,7 +116,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 		}
 
 		/* (non-Javadoc)
-		 * @see com.ecyrd.jspwiki.util.WikiBackgroundThread#backgroundTask()
+		 * @see org.apache.wiki.util.WikiBackgroundThread#backgroundTask()
 		 */
 		@SuppressWarnings("boxing")
 		@Override
@@ -144,7 +145,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 		}
 
 		/* (non-Javadoc)
-		 * @see com.ecyrd.jspwiki.util.WikiBackgroundThread#shutdownTask()
+		 * @see org.apache.wiki.util.WikiBackgroundThread#shutdownTask()
 		 */
 		@Override
 		public void shutdownTask() throws Exception {
@@ -222,7 +223,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 			content.append(" , log in, and select Workflow from the \"More\" menu.\n");
 
 			try {
-				MailUtil.sendMessage(getEngine(), mailToString.toString(), subject.toString(), content.toString());
+				MailUtil.sendMessage(getEngine().getWikiProperties(), mailToString.toString(), subject.toString(), content.toString());
 			} catch (final MessagingException e) {
 				getEngine().getServletContext().log("WorkflowEmailNotifier wiki plugin: Exception when sending mail message: " + e, e);
 			}
@@ -261,7 +262,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 
 		protected class WorkflowEventListener implements WikiEventListener {
 			/* (non-Javadoc)
-			 * @see com.ecyrd.jspwiki.event.WikiEventListener#actionPerformed(com.ecyrd.jspwiki.event.WikiEvent)
+			 * @see org.apache.wiki.event.WikiEventListener#actionPerformed(org.apache.wiki.event.WikiEvent)
 			 */
 			@SuppressWarnings("boxing")
 			@Override
@@ -270,7 +271,7 @@ public class WorkflowEmailNotifier implements WikiPlugin, InitializablePlugin {
 				case WorkflowEvent.ABORTED:
 				case WorkflowEvent.RUNNING:
 				case WorkflowEvent.COMPLETED:
-					final Workflow wfProcInst = ((WorkflowEvent) event).getWorkflow();
+					final Workflow wfProcInst = (Workflow) event.getSource();
 					synchronized (notifiedWfIds) {
 						notifiedWfIds.remove(wfProcInst.getId());
 					}

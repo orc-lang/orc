@@ -15,10 +15,10 @@ package orc.jspwiki;
 
 import java.util.Map;
 
-import com.ecyrd.jspwiki.TextUtil;
-import com.ecyrd.jspwiki.WikiContext;
-import com.ecyrd.jspwiki.plugin.PluginException;
-import com.ecyrd.jspwiki.plugin.WikiPlugin;
+import org.apache.wiki.WikiContext;
+import org.apache.wiki.api.exceptions.PluginException;
+import org.apache.wiki.api.plugin.WikiPlugin;
+import org.apache.wiki.util.TextUtil;
 
 /**
  * This is a plugin for JSPWiki which enables syntax like this:
@@ -46,15 +46,15 @@ import com.ecyrd.jspwiki.plugin.WikiPlugin;
 public class Orc implements WikiPlugin {
 	private final static String HAS_ORC = "orc.jspwiki.HAS_ORC";
 	@Override
-	public String execute(final WikiContext ctx, final Map props) throws PluginException {
-		String baseURL = (String)props.get("baseURL");
+	public String execute(final WikiContext ctx, final Map<String, String> props) throws PluginException {
+		String baseURL = props.get("baseURL");
 		if (baseURL == null) baseURL = "/orchard/";
 		StringBuilder out = new StringBuilder();
 		// hack to ensure the browser closes any previous paragraph tags
 		out.append("<div>");
 		if (ctx.getVariable(HAS_ORC) == null) {
 			// add required css and js files
-			ctx.setVariable(HAS_ORC, true);
+			ctx.setVariable(HAS_ORC, Boolean.TRUE);
 			out.append("<script src=\"" +
 					baseURL + "orc.js\" " +
 					"type=\"text/javascript\"></script>\n");
@@ -73,14 +73,14 @@ public class Orc implements WikiPlugin {
 					"</script>");
 		}
 		String tag = "pre";
-		String editable = (String)props.get("editable");
+		String editable = props.get("editable");
 		if (editable != null && !editable.equals("false")) {
 			tag = "textarea";
 		}
-		String height = (String)props.get("height");
-		String runnable = (String)props.get("runnable");
-		String spoiler = (String)props.get("spoiler");
-		String body = (String)props.get("_body");
+		String height = props.get("height");
+		String runnable = props.get("runnable");
+		String spoiler = props.get("spoiler");
+		String body = props.get("_body");
 		if (body != null) {
 			if (spoiler != null) {
 				out.append("<a href=\"#\" onclick=\"orcSpoiler(this)\">" + spoiler + "</a>");
