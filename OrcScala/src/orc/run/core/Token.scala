@@ -369,24 +369,28 @@ class Token protected (
      * 'Twould be nice to also move the Vclock hook below to this mechanism. */
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
-    val dOrcExecution = group.execution.asInstanceOf[DOrcExecution]
-    val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)){ _ & _ }
-    if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-      val candidateDestinations = {
-        if (intersectLocs.nonEmpty) {
-          intersectLocs
-        } else {
-          val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)){ _ & _ }
-          if (intersectPermittedLocs.nonEmpty) {
-            intersectPermittedLocs
-          } else {
-            throw new NoLocationAvailable(s+:actuals)
+    group.execution match {
+      case dOrcExecution: DOrcExecution => {
+        val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)){ _ & _ }
+        if (!(intersectLocs contains dOrcExecution.runtime.here)) {
+          val candidateDestinations = {
+              if (intersectLocs.nonEmpty) {
+                intersectLocs
+              } else {
+                val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)){ _ & _ }
+                if (intersectPermittedLocs.nonEmpty) {
+                  intersectPermittedLocs
+                } else {
+                  throw new NoLocationAvailable(s+:actuals)
+                }
+              }
           }
+          val destination = pickLocation(candidateDestinations)
+              dOrcExecution.sendToken(this, destination)
+              return
         }
       }
-      val destination = pickLocation(candidateDestinations)
-      dOrcExecution.sendToken(this, destination)
-      return
+      case _ => /* */
     }
     //End of code needing refactoring
     s match {
