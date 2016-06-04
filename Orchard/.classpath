@@ -5,56 +5,20 @@
 	<classpathentry kind="lib" path="/OrcScala/lib/scala-parser-combinators_2.11-1.0.4.jar"/>
 	<classpathentry kind="lib" path="/OrcScala/lib/scala-reflect.jar"/>
 	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/FastInfoset.jar"/>
-	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/collections/api-release/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/fileupload/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-io-1.4.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/io/api-release/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/lang/api-release/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://jakarta.apache.org/oro/api/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-xjc.jar"/>
-	<classpathentry kind="lib" path="lib/jaxws-rt.jar"/>
-	<classpathentry kind="lib" path="lib/postgresql-8.3-603.jdbc3.jar"/>
-	<classpathentry kind="lib" path="lib/resolver.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://xml.apache.org/commons/components/apidocs/resolver/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/stax-ex.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="https://stax-ex.dev.java.net/nonav/maven/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/streambuffer.jar"/>
-	<classpathentry kind="lib" path="lib/velocity-1.5.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://velocity.apache.org/engine/releases/velocity-1.5/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/jetty-6.1.22.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-j2se6-6.1.11.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-6.1.22.jar"/>
-	<classpathentry kind="lib" path="lib/servlet-api-2.5-20081211.jar"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload-1.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-xjc-2.2.11.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws-rt-2.2.10.jar"/>
+	<classpathentry kind="lib" path="lib/stax-ex-1.7.7.jar"/>
+	<classpathentry kind="lib" path="lib/streambuffer-1.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/velocity-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-spi-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlet-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.3-1103.jdbc3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
 	<classpathentry kind="src" path="src"/>

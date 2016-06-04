@@ -72,7 +72,7 @@ final class ClientGenerator {
 
     private void writeOperation(JsonOperation op, boolean next, PrintWriter os) {
         String reqName = model.convention.x2j.get(
-            ((WSDLBoundOperationImpl)op.operation).getReqPayloadName());
+            ((WSDLBoundOperationImpl)op.operation).getRequestPayloadName());
 
         shift(os);
         os.printf("%s : function(obj, onResult, onError) {\n", op.methodName);

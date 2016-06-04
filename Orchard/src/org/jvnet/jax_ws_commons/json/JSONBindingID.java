@@ -1,6 +1,6 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.istack.NotNull;
+import com.sun.istack.internal.NotNull;
 import com.sun.xml.ws.api.BindingID;
 import com.sun.xml.ws.api.SOAPVersion;
 import com.sun.xml.ws.api.WSBinding;

@@ -12,7 +12,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.mapped.MappedNamespaceConvention;
-import org.codehaus.jettison.mapped.NullNamespaceContext;
+//import org.codehaus.jettison.mapped.NullNamespaceContext;
 
 /**
  * ORC: Convert XML events into a JSON object.
@@ -26,7 +26,7 @@ import org.codehaus.jettison.mapped.NullNamespaceContext;
 public class MappedXMLStreamWriter extends AbstractXMLStreamWriter {
 	private MappedNamespaceConvention convention;
 	protected Writer writer;
-	private NamespaceContext namespaceContext = new NullNamespaceContext();
+	private NamespaceContext namespaceContext;// = new NullNamespaceContext();
 	/**
 	 * What key is used for text content, when an element has both text and
 	 * other content?

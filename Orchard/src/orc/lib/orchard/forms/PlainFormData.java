@@ -2,7 +2,7 @@
 // PlainFormData.java -- Java class PlainFormData
 // Project Orchard
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -24,6 +24,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemHeaders;
 
 public class PlainFormData implements FormData {
     private final HttpServletRequest request;
@@ -74,6 +75,8 @@ public class PlainFormData implements FormData {
 class PlainFileItem implements FileItem {
     private String name;
     private final String value;
+    private FileItemHeaders headers;
+
 
     public PlainFileItem(final String name, final String value) {
         super();
@@ -154,5 +157,15 @@ class PlainFileItem implements FileItem {
     @Override
     public void write(final File arg0) throws Exception {
         throw new UnsupportedOperationException("write not supported for plain form data");
+    }
+
+    @Override
+    public FileItemHeaders getHeaders() {
+        return headers;
+    }
+
+    @Override
+    public void setHeaders(FileItemHeaders headers) {
+        this.headers = headers;        
     }
 }

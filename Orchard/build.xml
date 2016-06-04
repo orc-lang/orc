@@ -27,7 +27,7 @@
 
 	<union id="orchard.extra.jars" description="JARs needed by Orchard in the container's classpath">
 		<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
-		<fileset dir="${orc.location.OrcSites}/lib" includes="*.jar"/>  <!-- N.B. jaxws-json needs jettison-1.0.1.jar outside the WAR -->
+		<fileset dir="${orc.location.OrcSites}/lib" includes="*.jar"/>  <!-- N.B. jaxws-json needs jettison-*.jar outside the WAR -->
 		<fileset dir="${basedir}">
 			<include name="lib/*.jar"/>
 			<include name="lib/jaxws-json.jar"/>
@@ -117,14 +117,14 @@
           target: minify
          ================================= -->
 	<target name="minify" description="Minify JavaScript files">
-		<java jar="tools/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+		<java jar="tools/yuicompressor-2.4.8.jar" fork="yes" failonerror="true">
 			<arg value="--type"/>
 			<arg value="js"/>
 			<arg value="web/orc-ready.js"/>
 			<arg value="-o"/>
 			<arg value="web/orc-ready-min.js"/>
 		</java>
-		<java jar="tools/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+		<java jar="tools/yuicompressor-2.4.8.jar" fork="yes" failonerror="true">
 			<arg value="--type"/>
 			<arg value="js"/>
 			<arg value="web/orc-parser.js"/>
@@ -132,7 +132,7 @@
 			<arg value="web/orc-parser-min.js"/>
 		</java>
 		<!-- codemirror and codemirror-extra -->
-		<java jar="tools/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+		<java jar="tools/yuicompressor-2.4.8.jar" fork="yes" failonerror="true">
 			<arg value="--type"/>
 			<arg value="js"/>
 			<arg value="web/codemirror/codemirror.js"/>
@@ -149,7 +149,7 @@
 				<exclude name="codemirror.js"/>
 			</fileset>
 		</concat>
-		<java jar="tools/yuicompressor-2.3.6.jar" fork="yes" failonerror="true">
+		<java jar="tools/yuicompressor-2.4.8.jar" fork="yes" failonerror="true">
 			<arg value="--type"/>
 			<arg value="js"/>
 			<arg value="build/codemirror-extra.tmp"/>

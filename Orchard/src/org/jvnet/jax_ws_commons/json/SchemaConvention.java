@@ -7,7 +7,7 @@ import org.codehaus.jettison.mapped.MappedNamespaceConvention;
 import org.codehaus.jettison.mapped.MappedXMLStreamReader;
 import org.codehaus.jettison.mapped.MappedXMLStreamWriter;
 
-import com.sun.xml.bind.api.impl.NameConverter;
+import com.sun.xml.internal.bind.api.impl.NameConverter;
 
 import javax.xml.namespace.QName;
 import java.util.Arrays;

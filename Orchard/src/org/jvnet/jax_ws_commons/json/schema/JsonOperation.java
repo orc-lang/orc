@@ -7,8 +7,10 @@ import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSSchemaSet;
 
 import javax.jws.soap.SOAPBinding.Style;
+
 import java.beans.Introspector;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Represents the JSON type signature of an operation.
@@ -40,9 +42,9 @@ public class JsonOperation {
      * Infer the JavaScript type from the given parts set.
      *
      */
-    private JsonType build(String name, XSSchemaSet schemas, Map<String, WSDLPart> parts, JsonTypeBuilder builder, Style style) {
+    private JsonType build(String name, XSSchemaSet schemas, Map<String, ? extends WSDLPart> map, JsonTypeBuilder builder, Style style) {
         CompositeJsonType wrapper = new CompositeJsonType(name);
-        for(Map.Entry<String,WSDLPart> in : parts.entrySet() ) {
+        for(Entry<String, ? extends WSDLPart> in : map.entrySet() ) {
             if(!in.getValue().getBinding().isBody())
                 continue;   // JSON binding has no header support for now.
             WSDLPartDescriptor d = in.getValue().getDescriptor();

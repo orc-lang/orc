@@ -13,7 +13,7 @@
 	</servlet>
 	<servlet>
 		<servlet-name>static</servlet-name>
-		<servlet-class>org.mortbay.jetty.servlet.DefaultServlet</servlet-class>
+		<servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 		<init-param>
 			<param-name>aliases</param-name>

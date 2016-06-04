@@ -1,6 +1,6 @@
 package org.jvnet.jax_ws_commons.json;
 
-import com.sun.istack.NotNull;
+import com.sun.istack.internal.NotNull;
 import com.sun.xml.ws.transport.http.HttpAdapter;
 import com.sun.xml.ws.transport.http.HttpMetadataPublisher;
 import com.sun.xml.ws.transport.http.WSHTTPConnection;

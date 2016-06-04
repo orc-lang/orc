@@ -1,28 +1,47 @@
 Orchard build-time only
-	yuicompressor-2.3.6.jar
+	yuicompressor-2.4.8.jar
 
 Orchard SOAP
-	stax-ex.jar
-	streambuffer.jar
-	FastInfoset.jar
-	resolver.jar
-	commons-logging-1.1.1.jar
-	commons-discovery-0.2.jar
+	stax-ex-1.7.7.jar [build-time & run-time]
+	streambuffer-1.5.3.jar [build-time & run-time]
+	FastInfoset-1.2.13.jar [run-time only]
+	commons-logging-1.1.1.jar  [via OrcSites] [run-time only]
+	commons-discovery-0.2.jar  [via OrcSites] [run-time only]
+	jaxb-core-2.2.11.jar [run-time only]
+	jaxb-impl-2.2.11.jar [run-time only]
+	jaxb-xjc-2.2.11.jar [build-time & run-time]
+	jaxws-rt-2.2.10.jar [build-time & run-time]
+	gmbal-api-only-3.2.0-b003.jar [run-time only]
+	ha-api-3.1.9.jar [run-time only]
+	management-api-3.2.1-b002.jar [run-time only]
+	policy-2.5.jar [run-time only]
 
 Orchard JSON (requires Orchard SOAP)
-    jettison-1.0.1.jar  [via OrcSites]
-	velocity-1.5.jar
-	commons-collections-3.2.1.jar
-	commons-lang-2.4.jar
-	jakarta-oro-2.0.8.jar
-	jaxb-xjc.jar
+    jettison-1.3.7.jar  [via OrcSites] [run-time only]
+	velocity-1.7.jar [build-time & run-time]
+	commons-collections-3.2.2.jar [run-time only]
+	commons-lang-2.6.jar [run-time only]
 
 Web Forms File Upload
-	commons-fileupload-1.2.1.jar
-	commons-io-1.4.jar
+	commons-fileupload-1.3.2.jar [build-time & run-time]
+	commons-io-2.5.jar [build-time & run-time]
 
 Orchard standalone apps
-	jetty-6.1.22.jar
-	jetty-j2se6-6.1.11.jar
-	jetty-util-6.1.22.jar
-	servlet-api-2.5-20081211.jar
+	jetty-http-9.3.9.v20160517.jar [run-time only]
+	jetty-http-spi-9.3.9.v20160517.jar [build-time & run-time]
+	jetty-io-9.3.9.v20160517.jar [run-time only]
+	jetty-jmx-9.3.9.v20160517.jar [run-time only]
+	jetty-security-9.3.9.v20160517.jar [run-time only]
+	jetty-server-9.3.9.v20160517.jar [build-time & run-time]
+	jetty-servlet-9.3.9.v20160517.jar [build-time & run-time]
+	jetty-util-9.3.9.v20160517.jar [build-time & run-time]
+	jetty-webapp-9.3.9.v20160517.jar [build-time & run-time]
+	jetty-xml-9.3.9.v20160517.jar [run-time only]
+	servlet-api-3.1.jar [build-time & run-time]
+
+Account database interface:
+	postgresql-9.3-1103.jdbc3.jar [build-time & run-time]
+
+Built here:
+	jaxws-json.jar
+	orchard-logging.jar

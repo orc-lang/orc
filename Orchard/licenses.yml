@@ -13,79 +13,79 @@
 # notes: any notes about why the dependency is needed
 ---
 
-files: [jaxws-api.jar, jaxws-rt.jar, jaxws-tools.jar, jsr181-api.jar, jsr250-api.jar, http.jar, FastInfoset.jar, saaj-impl.jar, sjsxp.jar, stax-ex.jar, streambuffer.jar]
-project: JAXWS Reference Implementation
-version: 2.1.3
+files: [FastInfoset-1.2.13.jar, gmbal-api-only-3.2.0-b003.jar, ha-api-3.1.9.jar, jaxb-core-2.2.11.jar, jaxb-impl-2.2.11.jar, jaxb-xjc-2.2.11.jar, jaxws-rt-2.2.10.jar, management-api-3.2.1-b002.jar, policy-2.5.jar, stax-ex-1.7.7.jar, streambuffer-1.5.3.jar]
+project: JAX-WS Reference Implementation
+version: 2.2.10
 url: https://jax-ws.java.net
-license: GPLv2+classpath.txt
+license: CDDL+GPLv2.txt
 phase: link
 notes: Used by SOAP web service.
 
 ---
 
-files: [resolver.jar]
-project: Apache XML Commons Resolver
-version: 1.2
-url: https://xerces.apache.org/xml-commons/
-license: ASF2.0.txt
-phase: link
-notes: Dependency of jaxws-rt.jar.
-
----
-
-files: [jetty-6.1.22.jar, jetty-util-6.1.22.jar, jetty-j2se6-6.1.11.jar]
+files: [jetty-http-9.3.9.v20160517.jar, jetty-http-spi-9.3.9.v20160517.jar, jetty-io-9.3.9.v20160517.jar, jetty-jmx-9.3.9.v20160517.jar, jetty-security-9.3.9.v20160517.jar, jetty-server-9.3.9.v20160517.jar, jetty-servlet-9.3.9.v20160517.jar, jetty-util-9.3.9.v20160517.jar, jetty-webapp-9.3.9.v20160517.jar, jetty-xml-9.3.9.v20160517.jar, servlet-api-3.1.jar]
 project: Jetty
-version: 6.1.22
-url: http://www.mortbay.org/jetty/
-license: ASF2.0.txt
+version: 9.3.9
+url: https://www.eclipse.org/jetty/
+license: EPLv10+ASLv20.html
 phase: link
 notes: Used for OrchardDemo local server.
 
 ---
 
-files: [velocity-1.5.jar, jakarta-oro-2.0.8.jar, commons-lang-2.4.jar, commons-collections-3.2.1.jar]
+files: [velocity-1.7.jar]
 project: Apache Velocity
-version: 1.5
-url: https://commons.apache.org/collections/
+version: 1.7
+url: https://velocity.apache.org
 license: ASF2.0.txt
 phase: link
 notes: Used for JSON web service.
 
 ---
 
-files: [commons-fileupload-1.2.1.jar]
+files: [commons-collections-3.2.2.jar]
+project: Apache Commons Collections
+version: 3.2.2
+url: https://commons.apache.org/proper/commons-collections/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of Apache Velocity
+
+---
+
+files: [commons-fileupload-1.3.2.jar]
 project: Apache Commons FileUpload
-version: 1.2.1
-url: https://commons.apache.org/fileupload/
+version: 1.3.2
+url: https://commons.apache.org/proper/commons-fileupload/
 license: ASF2.0.txt
 phase: link
 notes: Used for File Upload web forms widget.
 
 ---
 
-files: [commons-io-1.4.jar]
+files: [commons-io-2.5.jar]
 project: Apache Commons IO
-version: 1.4
-url: https://commons.apache.org/io/
+version: 2.5
+url: https://commons.apache.org/proper/commons-io/
 license: ASF2.0.txt
 phase: link
-notes: Dependency of commons-fileupload-1.2.1.jar
+notes: Dependency of Apache Commons FileUpload
 
 ---
 
-files: [servlet-api-2.5-20081211.jar]
-project: Java Servlet API
-version: 2.5
-url: https://java.sun.com/products/servlet/
-license: SunBCL-servlet.txt
-phase: extend
-notes: Used for various servlets.
+files: [commons-lang-2.6.jar]
+project: Apache Commons Lang
+version: 2.6
+url: https://commons.apache.org/proper/commons-lang/
+license: ASF2.0.txt
+phase: link
+notes: Dependency of Apache Velocity
 
 ---
 
-files: [postgresql-8.3-603.jdbc3.jar]
+files: [postgresql-9.3-1103.jdbc3.jar]
 project: PostgreSQL JDBC Interface
-version: 8.3-603
+version: 9.3-1103
 url: https://jdbc.postgresql.org/
 license: BSD-postgresql.txt
 phase: link
@@ -93,9 +93,9 @@ notes: Used for accounts database.
 
 ---
 
-files: [yuicompressor-2.3.6.jar]
+files: [yuicompressor-2.4.8.jar]
 project: YUI Compressor
-version: 2.3.6
+version: 2.4.8
 url: https://yui.github.io/yuicompressor/
 license: BSD-YUI.txt
 phase: build

@@ -68,28 +68,26 @@ container of your choosing.
 
 Note: You will need to tell your JAX-WS implementation and servlet
       container to use the same HTTP server.  For Jetty, you'll
-      need the J2SE6 module (see note below), and add the following to
-      the Configure Server element of jetty.xml:
+      need its HTTP SPI JAR (see note below), and add the following
+      to the Configure Server element of jetty.xml:
 
-    <!-- Use Jetty as Java 6 HTTP server provider - JAX-WS uses this for Endpoint publishing -->
-    <Call class="org.mortbay.jetty.j2se6.JettyHttpServerProvider" name="setServer">
+    <!-- Use Jetty as the Java HTTP server provider - JAX-WS uses this for Endpoint publishing -->
+    <Call class="org.eclipse.jetty.http.spi.JettyHttpServerProvider" name="setServer">
         <Arg><Ref id="Server"/></Arg>
     </Call>
 
-Note: The J2SE6 module is found in Jetty's contrib directory. Do not
-      use a J2SE6 version after 6.1.20 -- the code was mangled in .21
-      and still is in .22.  (Later versions of Jetty itself are OK.)
-      There's a Jetty 7 equivalent, the "j2sehttpspi" module, but I
-      haven't tried it yet.
+Note: The Jetty HTTP SPI JAR is _NOT_ found in Jetty's distribution,
+      but in the Maven Central Repository at URL:
+      http://central.maven.org/maven2/org/eclipse/jetty/jetty-http-spi/ 
 
-      We've also included a subset of Jetty and its J2SE6 module in the
-      ZIP archive.
+      We've also included a subset of Jetty and its HTTP SPI module in
+      the ZIP archive.
 
 Logging, for Jetty:  Orc and Orchard use java.util.logging, and Jetty
-has its own org.mortbay.log interface. In our production environment,
-we pass the JVM arguments (via JAVA_OPTIONS in /etc/default/jetty6):
--Djava.util.logging.config.file=/usr/share/jetty6/etc/logging.properties
--Dorg.mortbay.log.class=orc.SyslogishJettyLogger
+has its own ...jetty.util.log interface. In our production environment,
+we pass the JVM arguments (via JAVA_OPTIONS in /etc/default/jetty):
+-Djava.util.logging.config.file=/opt/web/orc-base/etc/logging.properties
+-Dorg.eclipse.jetty.util.log.class=orc.SyslogishJettyLogger
 The logging.properties file referenced above sets up a ConsoleHandler
 with our custom SyslogishFormatter, rather than Java's SimpleFormatter.
 Note that these custom classes must be on the classpath before the
@@ -97,6 +95,6 @@ java.util.logging.LogManager.class and org.mortbay.log.Log classes are
 initialized.  The Java formatter needs to be on the boot classpath if
 it's referenced in the JVM's logging config file, since that's read at
 JVM startup. The Jetty start.jar code does not reference
-org.mortbay.log.Log, so the standard Jetty classloading features, such
-as putting classfiles or JARs under jetty.home/lib/ext, will work for
-the custom Jetty Logger.
+org.eclipse.jetty.util.log.Log, so the standard Jetty classloading
+features, such as putting classfiles or JARs under jetty.home/lib/ext,
+will work for the custom Jetty Logger.

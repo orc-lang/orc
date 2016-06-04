@@ -15,7 +15,7 @@
  * Actually orc.js loads a minified version of this
  * generated with the following command:
  *
- * java -jar ../lib/yuicompressor-2.3.6.jar --type js orc-ready.js > orc-ready-min.js
+ * java -jar ../lib/yuicompressor-2.4.8.jar --type js orc-ready.js > orc-ready-min.js
  */
 jQuery(function ($) {
 

@@ -13,19 +13,19 @@
 # notes: any notes about why the dependency is needed
 ---
 
-files: [axis.jar, jaxrpc.jar]
+files: [axis-1.4.jar, axis-jaxrpc-1.4.jar]
 project: Apache Axis
 version: 1.4
-url: https://ws.apache.org/axis/
+url: https://axis.apache.org/axis/
 license: ASF2.0.txt
 phase: link
 notes: Used for Webservice site.
 
 ---
 
-files: [wsdl4j-1.6.1]
+files: [wsdl4j-1.6.3]
 project: WSDL4J
-version: 1.6.1
+version: 1.6.3
 url: https://sourceforge.net/projects/wsdl4j
 license: CPL1.txt
 phase: link
@@ -45,7 +45,7 @@ notes: Used for music calendar demo.
 
 files: [htmlparser.jar]
 project: HTML Parser
-version: 1.6?
+version: 1.6
 url: http://htmlparser.sourceforge.net/
 license: CPL1.txt
 phase: link
@@ -53,10 +53,10 @@ notes: Used for music calendar demo.
 
 ---
 
-files: [jettison-1.0.1.jar]
+files: [jettison-1.3.7.jar]
 project: Jettison
-version: 1.0.1
-url: https://docs.codehaus.org/display/JETTISON/Home
+version: 1.3.7
+url: https://github.com/codehaus/jettison
 license: ASF2.0.txt
 phase: link
 notes: Used for implementation of Webservice.
@@ -66,28 +66,28 @@ notes: Used for implementation of Webservice.
 files: [joda-time-1.5.2.jar]
 project: Joda Time
 version: 1.5.2
-url: http://joda-time.sourceforge.net/
+url: http://www.joda.org/joda-time/
 license: ASF2.0.txt
 phase: link
 notes: Used by Orc programs for date/time datatypes.
 
 ---
 
-files: [mail.jar]
+files: [javax.mail-1.5.5.jar]
 project: JavaMail API
-version: 1.4.1
-url: https://java.sun.com/products/javamail/
-license: SunSLA-JavaMail.txt
+version: 1.5.5
+url: https://java.net/projects/javamail/pages/Home
+license: CDDL+GPL_1_1.html
 phase: link
 notes: Used for SendMail site.
 
 ---
 
-files: [mimepull.jar]
+files: [mimepull-1.9.6.jar]
 project: MIME pull
-version: 1.3?
-url: https://mimepull.dev.java.net
-license: GPLv2+classpath.txt
+version: 1.9.6
+url: https://mimepull.java.net
+license: CDDL+GPL_1_1.html
 phase: link
 notes: Used for SendMail site.
 
@@ -103,10 +103,10 @@ notes: Used for Google calendar authentication.
 
 ---
 
-files: [commons-discovery-0.2.jar]
+files: [commons-discovery-0.5.jar]
 project: Apache Commons Discovery
-version: 0.2
-url: https://commons.apache.org/discovery/
+version: 0.5
+url: http://commons.apache.org/proper/commons-discovery/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of axis.jar.
@@ -133,10 +133,10 @@ notes: Dependency of oauth-1.2.jar
 
 ---
 
-files: [commons-logging-1.1.1.jar]
+files: [commons-logging-1.2.jar]
 project: Apache Commons Logging
-version: 1.1.1
-url: https://commons.apache.org/logging/
+version: 1.2
+url: https://commons.apache.org/proper/commons-logging/
 license: ASF2.0.txt
 phase: link
 notes: Dependency of axis.jar and oauth-1.2.jar
@@ -163,10 +163,10 @@ notes: Used for Eliza demo.
 
 ---
 
-files: [eclipse-ecj.jar]
+files: [ecj-4.5.2.jar]
 project: Eclipse JDT Batch Compiler
-version: 3.3.0
-url: https://www.eclipse.org/jdt/core/index.php
+version: 4.5.2
+url: https://projects.eclipse.org/projects/eclipse.jdt.core
 license: EPL1.txt
 phase: link
 notes: Used to compile webservice proxies.
