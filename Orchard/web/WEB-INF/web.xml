@@ -3,7 +3,7 @@
 <!-- web.xml - Java Web application (WAR) deployment descriptor
      Project Orchard
 
-     Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,12 @@
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd"
-         version="2.5">
+         version="2.5"
+         metadata-complete="true">
+	<context-param>
+		<param-name>org.eclipse.jetty.jsp.precompiled</param-name>
+		<param-value>true</param-value>
+	</context-param>
     <!-- WSServletContextListener and WSServlet are implementation-specific (non-portable) for Sun's "Metro" JAX-WS RI -->
     <!-- Until we move to JSR 109 annotations, we're stuck with non-portable WS declarations -->
 	<listener>
