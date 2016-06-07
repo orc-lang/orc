@@ -23,6 +23,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
@@ -67,7 +68,10 @@ public class Orchard {
     }
 
     protected static void setupLogging() throws SecurityException {
-        // Consistent syslog-ish logging format for JUL and Jetty
+        // For consistency, point Jetty logging at java.util.log
+        org.eclipse.jetty.util.log.Log.setLog(new JavaUtilLog());
+
+        // Now, set up java.util.log
         for (final java.util.logging.Handler handler : Logger.getLogger("").getHandlers()) {
             if (handler instanceof java.util.logging.ConsoleHandler) {
                 handler.setLevel(Level.ALL);
@@ -76,7 +80,6 @@ public class Orchard {
         }
         orchardLogger = Logger.getLogger("orc.orchard");
         orchardLogger.setLevel(Level.FINER);
-        org.eclipse.jetty.util.log.Log.setLog(new SyslogishJettyLogger());
     }
 
     protected static void startJetty(final int port) throws URISyntaxException, Exception {

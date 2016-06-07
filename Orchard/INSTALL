@@ -94,25 +94,23 @@ The standard way is to use logging shims to get all types of logging
 (jul, log4j, slf4j, logback, and Commons Logging) captured into your
 preferred logging backend.  See the Jetty documentation, Logging chapter.
 
-Alternatively, you can use our two custom classes.  For the Jetty Web
-server, set these JVM args via JAVA_OPTIONS in /etc/default/jetty:
-
--Xbootclasspath/a:${JETTY_BASE}/lib/orchard-logging.jar:${JETTY_HOME}/lib/jetty-util-${JETTY_VERSION}.jar
--Djava.util.logging.config.file=${JETTY_BASE}/etc/logging.properties
--Dorg.eclipse.jetty.util.log.class=orc.SyslogishJettyLogger
-
-The logging.properties file referenced above sets up a ConsoleHandler
-with our custom SyslogishFormatter:
+If your logging backend is java.util.logging, we also provide a syslog-
+format inspired Formatter, orc.SyslogishFormatter. To use this, just
+add entries like the followon to your java.util.logging.config.file:
 
 handlers=java.util.logging.ConsoleHandler
 java.util.logging.ConsoleHandler.level=ALL
 java.util.logging.ConsoleHandler.formatter=orc.SyslogishFormatter
 
 A potential problem point if you experiment with setting up logging:
-If you, like above, have a logging.config.file that is configured at
-JVM startup, then all referenced classes (and their dependencies) need
-to be on the JVM boot class path.  Thus, the "-Xbootclasspath/a" JVM
-arg listed above.
+If you have a logging.config.file that is configured at JVM startup,
+then all referenced classes (and their dependencies) need to be on the
+JVM boot class path.  For the Jetty Web server, set these JVM args via
+JAVA_OPTIONS in /etc/default/jetty:
+
+-Xbootclasspath/a:${JETTY_BASE}/lib/orchard-logging.jar:${JETTY_HOME}/lib/jetty-util-${JETTY_VERSION}.jar
+-Djava.util.logging.config.file=${JETTY_BASE}/etc/logging.properties
+-Dorg.eclipse.jetty.util.log.class=orc.org.eclipse.jetty.util.log.JavaUtilLog
 
 
 SEE THE ORC WEB SITE FOR ASSISTANCE: https://orc.csres.utexas.edu/
