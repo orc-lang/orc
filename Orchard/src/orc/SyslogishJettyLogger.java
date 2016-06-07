@@ -20,7 +20,9 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 
+import org.eclipse.jetty.util.log.AbstractLogger;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 
@@ -29,10 +31,10 @@ import org.eclipse.jetty.util.log.Logger;
  *
  * @author jthywiss
  */
-public class SyslogishJettyLogger implements Logger {
+public class SyslogishJettyLogger extends AbstractLogger implements Logger {
 
     private final String loggerName;
-    private boolean debugEnabled = false;
+    private int currentLevel = LEVEL_INFO;
     private static String lineSeparator = System.getProperty("line.separator");
     private final Calendar timestamp = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ROOT);
 
@@ -42,14 +44,55 @@ public class SyslogishJettyLogger implements Logger {
 
     public SyslogishJettyLogger(final String name) {
         loggerName = name == null ? "" : name;
+
+        initLoggingLevel();
+    }
+
+    protected void initLoggingLevel() {
+        int level = lookupLoggingLevel(this.loggerName);
+        if (level == LEVEL_DEFAULT) {
+            level = lookupLoggingLevel("log");
+            if (level == LEVEL_DEFAULT) {
+                level = LEVEL_INFO;
+            }
+        }
+    }
+
+    // Derived from org.eclipse.jetty.util.log.AbstractLogger
+    public static int lookupLoggingLevel(final String name) {
+        // Calculate the level this named logger should operate under.
+        // Checking with FQCN first, then each package segment from longest to
+        // shortest.
+        String nameSegment = name;
+
+        while (nameSegment != null && nameSegment.length() > 0) {
+            final String levelStr = LogManager.getLogManager().getProperty(nameSegment + ".LEVEL");
+            // System.err.printf("[StdErrLog.CONFIG] Checking for property [%s.LEVEL] = %s%n",nameSegment,levelStr);
+            final int level = getLevelId(nameSegment + ".LEVEL", levelStr);
+            if (level != -1) {
+                return level;
+            }
+
+            // Trim and try again.
+            final int idx = nameSegment.lastIndexOf('.');
+            if (idx >= 0) {
+                nameSegment = nameSegment.substring(0, idx);
+            } else {
+                nameSegment = null;
+            }
+        }
+
+        // Default Logging Level
+        return LEVEL_DEFAULT;
     }
 
     @Override
-    public Logger getLogger(final String name) {
-        if ((name == null || name.isEmpty()) && this.loggerName == null || name != null && name.equals(this.loggerName)) {
-            return this;
-        }
-        return new SyslogishJettyLogger(name);
+    protected Logger newLogger(final String fullname) {
+        final SyslogishJettyLogger logger = new SyslogishJettyLogger(fullname);
+
+        logger.currentLevel = currentLevel;
+
+        return logger;
     }
 
     @Override
@@ -64,20 +107,26 @@ public class SyslogishJettyLogger implements Logger {
 
     @Override
     public boolean isDebugEnabled() {
-        return debugEnabled;
+        return currentLevel <= LEVEL_DEBUG;
     }
 
     @Override
     public void setDebugEnabled(final boolean enabled) {
-        debugEnabled = enabled;
+        if (enabled) {
+            currentLevel = LEVEL_DEBUG;
+        } else {
+            initLoggingLevel();
+        }
     }
 
     @Override
     public void warn(final String msg, final Throwable thrown) {
-        if (thrown instanceof RuntimeException || thrown instanceof Error) {
-            publish(Level.SEVERE, msg, thrown);
-        } else {
-            publish(Level.WARNING, msg, thrown);
+        if (currentLevel <= LEVEL_WARN) {
+            if (thrown instanceof RuntimeException || thrown instanceof Error) {
+                publish(Level.SEVERE, msg, thrown);
+            } else {
+                publish(Level.WARNING, msg, thrown);
+            }
         }
     }
 
@@ -88,12 +137,16 @@ public class SyslogishJettyLogger implements Logger {
 
     @Override
     public void warn(final String msg, final Object... args) {
-        publish(Level.WARNING, msg, null, args);
+        if (currentLevel <= LEVEL_WARN) {
+            publish(Level.WARNING, msg, null, args);
+        }
     }
 
     @Override
     public void info(final String msg, final Object... args) {
-        publish(Level.INFO, msg, null, args);
+        if (currentLevel <= LEVEL_INFO) {
+            publish(Level.INFO, msg, null, args);
+        }
     }
 
     @Override
@@ -103,42 +156,40 @@ public class SyslogishJettyLogger implements Logger {
 
     @Override
     public void info(final String msg, final Throwable thrown) {
-        publish(Level.INFO, msg, thrown);
+        if (currentLevel <= LEVEL_INFO) {
+            publish(Level.INFO, msg, thrown);
+        }
     }
 
     @Override
     public void debug(final String msg, final Object... args) {
-        if (debugEnabled) {
+        if (currentLevel <= LEVEL_DEBUG) {
             publish(Level.FINER, msg, null, args);
         }
     }
 
     @Override
     public void debug(final String msg, final long arg) {
-        if (debugEnabled) {
+        if (currentLevel <= LEVEL_DEBUG) {
             publish(Level.FINER, msg, null, arg);
         }
     }
 
     @Override
     public void debug(final Throwable thrown) {
-        if (debugEnabled) {
-            debug(Log.EXCEPTION, thrown);
-        }
+        debug(Log.EXCEPTION, thrown);
     }
 
     @Override
     public void debug(final String msg, final Throwable thrown) {
-        if (debugEnabled) {
+        if (currentLevel <= LEVEL_DEBUG) {
             publish(Level.FINER, msg, thrown);
         }
     }
 
     @Override
     public void ignore(final Throwable thrown) {
-        if (debugEnabled) {
-            debug(Log.IGNORED, thrown);
-        }
+        debug(Log.IGNORED, thrown);
     }
 
     protected void publish(final Level level, final String message, final Throwable thrown, final Object... args) {
@@ -243,7 +294,7 @@ public class SyslogishJettyLogger implements Logger {
         while (ix < stack.length) {
             final StackTraceElement frame = stack[ix];
             final String cname = frame.getClassName();
-            if (cname.equals(getClass().getName()) || cname.startsWith("org.mortbay.log.")) {
+            if (cname.equals(getClass().getName()) || cname.startsWith("org.eclipse.jetty.util.log.")) {
                 break;
             }
             ix++;
@@ -252,7 +303,7 @@ public class SyslogishJettyLogger implements Logger {
         while (ix < stack.length) {
             final StackTraceElement frame = stack[ix];
             final String cname = frame.getClassName();
-            if (!cname.equals(getClass().getName()) && !cname.startsWith("org.mortbay.log.")) {
+            if (!cname.equals(getClass().getName()) && !cname.startsWith("org.eclipse.jetty.util.log.")) {
                 // We've found the relevant frame.
                 return frame;
             }
