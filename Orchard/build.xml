@@ -20,29 +20,6 @@
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
 
-	<union id="orchard.war.jars" description="JARs packaged in the Orchard WAR">
-		<fileset dir="${orc.location.OrcScala}/build" includes="orc-${orc.version}.jar"/>
-		<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
-	</union>
-
-	<union id="orchard.extra.jars" description="JARs needed by Orchard in the container's classpath">
-		<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
-		<fileset dir="${orc.location.OrcSites}/lib" includes="*.jar"/>  <!-- N.B. jaxws-json needs jettison-*.jar outside the WAR -->
-		<fileset dir="${basedir}">
-			<include name="lib/*.jar"/>
-			<include name="lib/jaxws-json.jar"/>
-			<include name="lib/orchard-logging.jar"/>
-			<!-- only used in demo jar -->
-			<exclude name="lib/jetty-*.jar"/>
-			<exclude name="lib/servlet-api*.jar"/>
-		</fileset>
-	</union>
-
-	<fileset id="orchard-demo.extra.jars" dir="lib" description="JARs needed for the standalone Orchard demo apps">
-		<include name="jetty-*.jar"/>
-		<include name="servlet-api*.jar"/>
-	</fileset>
-
 	<path id="wsgen.classpath" description="Classpath needed to run wsgen on Orchard">
 		<pathelement location="build/classes"/>
 		<pathelement location="${orc.location.OrcScala}/build/orc-${orc.version}.jar"/>
@@ -114,6 +91,17 @@
 	</target>
 
 	<!-- =================================
+          target: orchard-logging
+         ================================= -->
+	<target name="orchard-logging" description="Build orchard-logging JAR">
+		<jar destfile="lib/orchard-logging.jar" whenmanifestonly="fail" duplicate="fail" index="true">
+			<fileset dir="build/classes">
+				<include name="orc/Syslogish*"/>
+			</fileset>
+		</jar>
+	</target>
+
+	<!-- =================================
           target: minify
          ================================= -->
 	<target name="minify" description="Minify JavaScript files">
@@ -164,9 +152,44 @@
 	</target>
 
 	<!-- =================================
+          target: lib-dirs
+         ================================= -->
+	<target name="lib-dirs" depends="wsgen,properties,jaxws-json,orchard-logging,minify" description="Collect JARs into various lib directories">
+		<copy preservelastmodified="true" todir="build/lib/orchard" flatten="true">
+			<fileset dir="${orc.location.OrcScala}/build" includes="orc-${orc.version}.jar"/>
+			<fileset dir="${orc.location.OrcSites}/build" includes="orc-sites-${orc.version}.jar"/>
+		</copy>
+		<copy preservelastmodified="true" todir="build/lib/orchard-war-internal-jars" flatten="true">
+			<fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
+			<fileset dir="${orc.location.OrcSites}/lib" includes="*.jar"/>  <!-- N.B. jaxws-json needs jettison-*.jar outside the WAR -->
+			<fileset dir="${basedir}">
+				<include name="lib/*.jar"/>
+				<include name="lib/jaxws-json.jar"/>
+				<include name="lib/orchard-logging.jar"/>
+				<!-- only used in demo jar -->
+				<exclude name="lib/jetty-*.jar"/>
+				<exclude name="lib/servlet-api*.jar"/>
+			</fileset>
+		</copy>
+		<copy preservelastmodified="true" todir="build/lib/orchard-war-external-jars" flatten="true">
+			<fileset dir="${orc.location.OrcSites}/lib" includes="jettison-*.jar"/>  <!-- N.B. jaxws-json needs jettison-*.jar outside the WAR -->
+			<fileset dir="${basedir}">
+				<include name="lib/jaxws-json.jar"/>
+				<include name="lib/orchard-logging.jar"/>
+			</fileset>
+		</copy>
+		<copy preservelastmodified="true" todir="build/lib/orchard-demo-extra-jars" flatten="true">
+			<fileset dir="${basedir}">
+				<include name="lib/servlet-api*.jar"/>
+				<include name="lib/jetty-*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- =================================
           target: war
          ================================= -->
-	<target name="war" depends="wsgen,properties,jaxws-json,minify" description="Build orchard.war">
+	<target name="war" depends="wsgen,properties,jaxws-json,minify,lib-dirs" description="Build orchard.war">
 		<exec executable="git" outputproperty="scmrevision">
 			<arg value="describe"/>
 			<arg value="--dirty"/>
@@ -192,25 +215,9 @@
 				<exclude name="org/jvnet/**"/>
 				<exclude name="META-INF/**"/>
 			</classes>
-			<!-- <lib refid="orchard.war.jars"/> -->
-			<lib dir="${orc.location.OrcScala}/build/">
-				<include name="orc-${orc.version}.jar"/>
-			</lib>
-			<lib dir="${orc.location.OrcSites}/build/">
-				<include name="orc-sites-${orc.version}.jar"/>
-			</lib>
+			<lib dir="build/lib/orchard"/>
+			<lib dir="build/lib/orchard-war-internal-jars"/>
 		</war>
-	</target>
-
-	<!-- =================================
-          target: orchard-logging
-         ================================= -->
-	<target name="orchard-logging" description="Build orchard-logging JAR">
-		<jar destfile="lib/orchard-logging.jar" whenmanifestonly="fail" duplicate="fail" index="true">
-			<fileset dir="build/classes">
-				<include name="orc/Syslogish*"/>
-			</fileset>
-		</jar>
 	</target>
 
 	<!-- =================================
@@ -263,16 +270,17 @@
 	<!-- =================================
           target: zip
          ================================= -->
-    <target name="zip" depends="demo-jar" description="Build orchard.zip for distribution">
+    <target name="zip" depends="lib-dirs,demo-jar" description="Build orchard.zip for distribution">
     	<delete file="build/${target.name}.zip"/>
-        <zip destfile="build/${target.name}.zip" duplicate="fail">
+        <zip destfile="build/${target.name}.zip" duplicate="preserve">
         	<zipfileset prefix="${target.name}" file="build/orchard.war"/>
         	<zipfileset prefix="${target.name}" file="build/${target.name}-demo.jar"/>
         	<zipfileset prefix="${target.name}" file="build/demo-root.war"/>
-        	<!-- TODO: Use the already-defined resource collections instead of the next three zipfilesets -->
-    		<zipfileset prefix="${target.name}/lib" dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
-    		<zipfileset prefix="${target.name}/lib" dir="${orc.location.OrcSites}/lib" includes="*.jar"/>
-    		<zipfileset prefix="${target.name}/lib" dir="lib" includes="*.jar"/>
+    		<zipfileset prefix="${target.name}/lib" dir="build/lib/orchard"/>
+    		<zipfileset prefix="${target.name}/lib" dir="build/lib/orchard-war-internal-jars"/>
+    		<zipfileset prefix="${target.name}/lib" dir="build/lib/orchard-war-external-jars"/>
+    		<zipfileset prefix="${target.name}/lib" dir="build/lib/orchard-demo-extra-jars"/>
+    		<zipfileset prefix="${target.name}/lib-ext" dir="build/lib/orchard-war-external-jars"/>
 			<zipfileset prefix="${target.name}" dir=".">
 				<include name="README"/>
 				<include name="LICENSE"/>
@@ -291,8 +299,9 @@
 	<!-- =================================
           target: demo-app
          ================================= -->
+	<!-- TODO: REWRITE THIS TARGET TO USE THE 'javapackager' JDK TOOL -->
 	<!-- WARNING: This target requires UNIX's cp and tar utilities, for permission and symlink reasons. -->
-	<target name="demo-app" depends="demo-jar" description="Make a Mac OS X application">
+	<target name="demo-app" depends="lib-dirs,demo-jar" description="Make a Mac OS X application">
 		<fail message="The 'demo-app' target can only be built on UNIX-like platforms">
 			<condition><not><os family="unix"/></not></condition>
 		</fail>
@@ -311,11 +320,13 @@
 				<exclude name="**/JavaApplicationStub"/>
 			</fileset>
 		</copy>
-		<pathconvert property="orchard.extra.jars.JAVAROOT" refid="orchard.extra.jars">
+		<pathconvert property="orchard.extra.jars.JAVAROOT">
+			<fileset dir="build/lib/orchard-war-external-jars"/>
 			<flattenmapper/>
 			<map from="" to="$JAVAROOT/"/>
 		</pathconvert>
-		<pathconvert property="orchard-demo.extra.jars.JAVAROOT" refid="orchard-demo.extra.jars">
+		<pathconvert property="orchard-demo.extra.jars.JAVAROOT">
+			<fileset dir="build/lib/orchard-demo-extra-jars"/>
 			<flattenmapper/>
 			<map from="" to="$JAVAROOT/"/>
 		</pathconvert>
@@ -348,8 +359,8 @@
 				<include name="orchard.war"/>
 				<include name="demo-root.war"/>
 			</fileset>
-			<resources refid="orchard.extra.jars"/>
-			<resources refid="orchard-demo.extra.jars"/>
+    		<fileset dir="build/lib/orchard-war-external-jars"/>
+    		<fileset dir="build/lib/orchard-demo-extra-jars"/>
 		</copy>
 		<!-- create tgz package -->
 		<exec executable="tar" dir="build" failonerror="true">
@@ -360,7 +371,7 @@
 	<!-- =================================
           target: all
          ================================= -->
-    <target name="all" depends="zip,demo-app" description="Build all targets"/>
+    <target name="all" depends="zip" description="Build all targets"/>
 
 	<!-- =================================
           target: clean

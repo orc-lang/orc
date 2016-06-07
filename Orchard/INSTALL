@@ -83,18 +83,36 @@ Note: The Jetty HTTP SPI JAR is _NOT_ found in Jetty's distribution,
       We've also included a subset of Jetty and its HTTP SPI module in
       the ZIP archive.
 
-Logging, for Jetty:  Orc and Orchard use java.util.logging, and Jetty
-has its own ...jetty.util.log interface. In our production environment,
-we pass the JVM arguments (via JAVA_OPTIONS in /etc/default/jetty):
--Djava.util.logging.config.file=/opt/web/orc-base/etc/logging.properties
+
+OPTIONAL: CONSISTENT LOGGING FOR JETTY AND ORC  
+
+Orc and Orchard use java.util.logging, but Jetty has its own 
+...jetty.util.log interface. This will result in messy, inconsistent log
+entries unless you fix it.
+
+The standard way is to use logging shims to get all types of logging 
+(jul, log4j, slf4j, logback, and Commons Logging) captured into your
+preferred logging backend.  See the Jetty documentation, Logging chapter.
+
+Alternatively, you can use our two custom classes.  For the Jetty Web
+server, set these JVM args via JAVA_OPTIONS in /etc/default/jetty:
+
+-Xbootclasspath/a:${JETTY_BASE}/lib/orchard-logging.jar:${JETTY_HOME}/lib/jetty-util-${JETTY_VERSION}.jar
+-Djava.util.logging.config.file=${JETTY_BASE}/etc/logging.properties
 -Dorg.eclipse.jetty.util.log.class=orc.SyslogishJettyLogger
+
 The logging.properties file referenced above sets up a ConsoleHandler
-with our custom SyslogishFormatter, rather than Java's SimpleFormatter.
-Note that these custom classes must be on the classpath before the
-java.util.logging.LogManager.class and org.mortbay.log.Log classes are
-initialized.  The Java formatter needs to be on the boot classpath if
-it's referenced in the JVM's logging config file, since that's read at
-JVM startup. The Jetty start.jar code does not reference
-org.eclipse.jetty.util.log.Log, so the standard Jetty classloading
-features, such as putting classfiles or JARs under jetty.home/lib/ext,
-will work for the custom Jetty Logger.
+with our custom SyslogishFormatter:
+
+handlers=java.util.logging.ConsoleHandler
+java.util.logging.ConsoleHandler.level=ALL
+java.util.logging.ConsoleHandler.formatter=orc.SyslogishFormatter
+
+A potential problem point if you experiment with setting up logging:
+If you, like above, have a logging.config.file that is configured at
+JVM startup, then all referenced classes (and their dependencies) need
+to be on the JVM boot class path.  Thus, the "-Xbootclasspath/a" JVM
+arg listed above.
+
+
+SEE THE ORC WEB SITE FOR ASSISTANCE: https://orc.csres.utexas.edu/
