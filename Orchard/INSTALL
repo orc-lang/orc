@@ -94,23 +94,24 @@ The standard way is to use logging shims to get all types of logging
 (jul, log4j, slf4j, logback, and Commons Logging) captured into your
 preferred logging backend.  See the Jetty documentation, Logging chapter.
 
-If your logging backend is java.util.logging, we also provide a syslog-
-format inspired Formatter, orc.SyslogishFormatter. To use this, just
-add entries like the followon to your java.util.logging.config.file:
+If your logging backend is java.util.logging, you may like our syslog-
+format inspired java.util.logging.Formatter, orc.SyslogishFormatter. To
+use it, just set it as the formatter on you hander, like this (in your
+Java logging config file):
 
-handlers=java.util.logging.ConsoleHandler
-java.util.logging.ConsoleHandler.level=ALL
-java.util.logging.ConsoleHandler.formatter=orc.SyslogishFormatter
+handlers=java.util.logging.FileHandler
+java.util.logging.FileHandler.level=ALL
+java.util.logging.FileHandler.formatter=orc.SyslogishFormatter
 
 A potential problem point if you experiment with setting up logging:
 If you have a logging.config.file that is configured at JVM startup,
 then all referenced classes (and their dependencies) need to be on the
-JVM boot class path.  For the Jetty Web server, set these JVM args via
-JAVA_OPTIONS in /etc/default/jetty:
+JVM boot class path.
 
--Xbootclasspath/a:${JETTY_BASE}/lib/orchard-logging.jar:${JETTY_HOME}/lib/jetty-util-${JETTY_VERSION}.jar
--Djava.util.logging.config.file=${JETTY_BASE}/etc/logging.properties
--Dorg.eclipse.jetty.util.log.class=orc.org.eclipse.jetty.util.log.JavaUtilLog
+For the Jetty standalone Web server, set JVM args via JAVA_OPTIONS in
+/etc/default/jetty.  For example:
+
+JAVA_OPTIONS="-server -Xmx2304M -Xbootclasspath/a:${JETTY_BASE}/lib/orchard-logging.jar -Djava.awt.headless=true -Djava.util.logging.config.file=${JETTY_BASE}/etc/jetty-logging.properties -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.JavaUtilLog"
 
 
 SEE THE ORC WEB SITE FOR ASSISTANCE: https://orc.csres.utexas.edu/
