@@ -133,9 +133,9 @@ notes: Used for web forms date widget.
 
 ---
 
-files: [web/jquery-1.7.1.min.js]
+files: [web/jquery-1.12.4.min.js]
 project: jQuery
-version: 1.7.1
+version: 1.12.4
 url: https://jquery.com/
 license: MIT-jquery.txt
 phase: link

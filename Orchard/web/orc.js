@@ -2,7 +2,7 @@
 // orc.js -- JavaScript source for the "Try Orc" Orchard Web interface
 // Project Orchard
 //
-// Copyright (c) 2008 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -51,7 +51,7 @@ var baseUrl = mock ? mock : "/orchard/";
 var devKey = docCookies.hasItem("OrchardDevKey") ? docCookies.getItem("OrchardDevKey") : "";
 
 // load our dependencies
-document.write("<script src='", baseUrl, "jquery-1.7.1.min.js'><\/script>");
+document.write("<script src='", baseUrl, "jquery-1.12.4.min.js'><\/script>");
 document.write("<script src='", baseUrl, (mock?"codemirror/codemirror.js":"codemirror-min.js"), "'><\/script>");
 // load the rest of our code after jQuery and other services are ready
 document.write("<script src='", baseUrl, (mock?"orc-ready.js":"orc-ready-min.js"), "'><\/script>");
