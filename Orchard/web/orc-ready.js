@@ -374,8 +374,13 @@ function orcify(code, defaultConfig) {
     var orcWikiUri = "https://orc.csres.utexas.edu/wiki/Wiki.jsp?page="
 
     function renderError(response, code, exception) {
-        if (response && response.detail && response.detail.exception && (response.detail.exception["@class"] == "orc.orchard.errors.InvalidProgramException" || response.detail.exception["@class"] == "orc.orchard.errors.InvalidOilException")) {
-            var problems = response.detail[response.detail.exception["@class"].substring(response.detail.exception["@class"].lastIndexOf(".")+1)].problems;
+        if (response && response.detail && (response.detail["InvalidProgramException"] || response.detail["InvalidOilException"])) {
+            if (response.detail["InvalidOilException"]) {
+                var problems = response.detail["InvalidProgramException"].problems
+            }
+            if (response.detail["InvalidProgramException"]) {
+                var problems = response.detail["InvalidProgramException"].problems
+            }
             if (problems) {
                 problems = toArray(problems);
                 for (var i in problems) {

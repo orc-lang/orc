@@ -87,8 +87,8 @@
 		req.onreadystatechange = function() {
 			if (req.readyState == 4) {
 				try {
-					var response = req.responseText
-						? eval('('+req.responseText+')')
+					var response = req.response
+						? window.JSON.parse(req.response + "")
 						: null;
 					if (req.status == 200) {
 						if (onResult) onResult(response);
