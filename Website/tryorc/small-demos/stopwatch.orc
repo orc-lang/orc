@@ -91,9 +91,9 @@ include "net.inc"
 val Google = GoogleSearchFactory("orc/orchard/orchard.properties")
 
 val sw = Stopwatch()
-def test(s,v) =
+def test(s, v1, v2) =
   sw.reset() >>
-  sw.start() >> s(v) >> sw.pause()
+  sw.start() >> s(v1, v2) >> sw.pause()
 
-test(Google,"Edsger W. Dijkstra") >t>
+test(Google, "Edsger W. Dijkstra", 1) >t>
 ("time taken = " + t)

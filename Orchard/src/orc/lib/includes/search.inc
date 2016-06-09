@@ -3,12 +3,11 @@
 include "net.inc"
 
 def Google(term) =
-  def shorten(result) = (result.titleNoFormatting, result.url)
-  val search = GoogleSearchFactory("orc/orchard/orchard.properties")
-  search(term)  >pages>
-  each(take(1, pages))  >results>
-  map(shorten, results())
+  def shorten(result) = (result.title, result.link)
+  val GoogleSearch = GoogleSearchFactory("orc/orchard/orchard.properties")
+  GoogleSearch(term, 1)  >results>
+  map(shorten, results)
 
 def Bing(term) =
-  val search = BingWebSearchFactoryPropertyFile("orc/orchard/orchard.properties")
-  search(term)
+  val BingWebSearch = BingWebSearchFactoryPropertyFile("orc/orchard/orchard.properties")
+  BingWebSearch(term)
