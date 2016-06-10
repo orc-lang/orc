@@ -43,12 +43,10 @@ public class OrchardWebAppContextListener implements ServletContextListener {
         }
         try {
             final InputStream manifestStream = event.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF");
-            logger.log(Level.SEVERE, "manifestStream="+manifestStream);
             if (manifestStream != null) {
                 final Manifest warManifest = new Manifest(manifestStream);
                 for (final Object key : warManifest.getMainAttributes().keySet()) {
                     final String propName = "war.manifest." + key;
-                    logger.log(Level.SEVERE, "propName="+propName);
                     OrchardProperties.setProperty(propName, warManifest.getMainAttributes().get(key).toString());
                 }
             } else {
