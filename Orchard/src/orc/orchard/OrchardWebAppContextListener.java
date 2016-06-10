@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 24, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -43,10 +43,12 @@ public class OrchardWebAppContextListener implements ServletContextListener {
         }
         try {
             final InputStream manifestStream = event.getServletContext().getResourceAsStream("/META-INF/MANIFEST.MF");
+            logger.log(Level.SEVERE, "manifestStream="+manifestStream);
             if (manifestStream != null) {
                 final Manifest warManifest = new Manifest(manifestStream);
                 for (final Object key : warManifest.getMainAttributes().keySet()) {
                     final String propName = "war.manifest." + key;
+                    logger.log(Level.SEVERE, "propName="+propName);
                     OrchardProperties.setProperty(propName, warManifest.getMainAttributes().get(key).toString());
                 }
             } else {
@@ -60,7 +62,7 @@ public class OrchardWebAppContextListener implements ServletContextListener {
     }
 
     private String getOrchardFullVersionString() {
-        return OrchardProperties.getProperty("war.manifest.Implementation-Title") + " " + OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision");
+        return OrchardProperties.getProperty("war.manifest.Implementation-Title") + " " + OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SCM-Revision");
     }
 
     @Override

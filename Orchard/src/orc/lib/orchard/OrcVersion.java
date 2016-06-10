@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jan 20, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -34,7 +34,7 @@ public class OrcVersion extends EvalSite implements TypedSite {
         if (args.size() != 0) {
             throw new ArityMismatchException(0, args.size());
         }
-        return OrchardProperties.getProperty("war.manifest.Implementation-Title") + ' ' + OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SVN-Revision") + '\n' + orc.Main.orcImplName() + ' ' + orc.Main.orcVersion() + '\n' + orc.Main.orcURL() + '\n' + orc.Main.orcCopyright();
+        return OrchardProperties.getProperty("war.manifest.Implementation-Title") + ' ' + OrchardProperties.getProperty("war.manifest.Implementation-Version") + " rev. " + OrchardProperties.getProperty("war.manifest.SCM-Revision") + '\n' + orc.Main.orcImplName() + ' ' + orc.Main.orcVersion() + '\n' + orc.Main.orcURL() + '\n' + orc.Main.orcCopyright();
     }
 
     @Override
