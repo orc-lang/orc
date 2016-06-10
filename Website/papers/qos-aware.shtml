@@ -44,7 +44,7 @@
 <h1>QoS-Aware Management of Monotonic Service Orchestrations</h1>
 
 <p>This page is supplemental material to:
-A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "<a href="http://link.springer.com/article/10.1007/s10703-013-0191-7">QoS-Aware Management of Monotonic Service Orchestrations</a>,"
+A. Benveniste, C. Jard, A. Kattepur, S. Rosario, and J.A. Thywissen, "<a href="https://link.springer.com/article/10.1007/s10703-013-0191-7">QoS-Aware Management of Monotonic Service Orchestrations</a>,"
 In <span class="venue">Formal Methods in System Design</span>, 44:1-43, 2013.</p>
 
 <p>The code presented here is from Appendix B of the paper, with
@@ -399,10 +399,10 @@ simulateOrders(0, numSimulatedOrders)
 <h1>Get Involved</h1>
 
 <ul class="block">
-	<li><a href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=News">News</a></li>
-	<li><a href="../wiki">Wiki</a></li>
-	<li><a href="http://groups.google.com/group/orc-lang/">Mailing List</a></li>
-	<li><a href="http://orc.googlecode.com">Google Code Project</a></li>
+	<li><a href="/wiki/Wiki.jsp?page=News">News</a></li>
+	<li><a href="/wiki">Wiki</a></li>
+	<li><a href="https://groups.google.com/group/orc-lang/">Mailing List</a></li>
+	<li><a href="https://github.com/orc-lang">Orc on GitHub</a></li>
 </ul>
 
 <h1>Contact Us</h1>
