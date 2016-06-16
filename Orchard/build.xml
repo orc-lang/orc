@@ -301,7 +301,7 @@
          ================================= -->
 	<!-- TODO: REWRITE THIS TARGET TO USE THE 'javapackager' JDK TOOL -->
 	<!-- WARNING: This target requires UNIX's cp and tar utilities, for permission and symlink reasons. -->
-	<target name="demo-app" depends="lib-dirs,demo-jar" description="Make a Mac OS X application">
+	<target name="demo-app" depends="lib-dirs,demo-jar" description="Make a macOS application">
 		<fail message="The 'demo-app' target can only be built on UNIX-like platforms">
 			<condition><not><os family="unix"/></not></condition>
 		</fail>

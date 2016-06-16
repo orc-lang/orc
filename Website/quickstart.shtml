@@ -16,7 +16,7 @@ instructions assume version 3.7.2, but other versions should behave similarly.
 </li>
 <li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.10.1.
 Note that the Scala Eclipse plug in <a href="https://www.assembla.com/spaces/scala-ide/wiki/Setup">works better with a modified eclipse.ini</a>.</li>
-<li>A Subversion distribution that includes the <code>svnversion</code> command.  Most UNIX systems (including Mac OS X),
+<li>A Subversion distribution that includes the <code>svnversion</code> command.  Most UNIX systems (including macOS),
 Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,
 require one to install a <a href="https://subversion.apache.org/packages.html">Subversion client</a>.</li>
 </ol>

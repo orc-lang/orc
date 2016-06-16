@@ -11,7 +11,7 @@ Welcome! This archive includes Web services and job servers
 for the Orc language.
 
 There are three products in this archive:
-1. A Mac OS X application that provides a stand-alone demonstration of
+1. A macOS application that provides a stand-alone demonstration of
    the Orchard environment.
 2. A set of JAR/WAR files that provide a stand-alone demonstration of
    the Orchard environment.

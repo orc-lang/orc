@@ -25,12 +25,12 @@ sensitive data, so they are not provided in the distribution.  A
 is your OAuth Java keystore.
 
 
-TO BUILD & RUN THE MAC OS X STANDALONE DEMO APPLICATION
+TO BUILD & RUN THE MACOS STANDALONE DEMO APPLICATION
 
 Do a "clean" build and then use the Ant target "demo-app" to build a
 .tgz (gzip'ed tar) archive of the application.
 
-Un-archive and run the Orchard Mac OS X app, and it will open your
+Un-archive and run the Orchard macOS app, and it will open your
 default browser to a demo page running in an an embedded HTTP/servlet
 server on your workstation, port 8080.
 

@@ -19,7 +19,7 @@ directory.
 Orc can be used in several different ways:
 - Eclipse IDE plug-in
 - Command line JVM invocation
-- Mac OS X application
+- macOS application
 - Embedded in other applications
 - Web interface
 - SOAP/JSON/RMI
