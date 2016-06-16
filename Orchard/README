@@ -18,7 +18,7 @@ There are three products in this archive:
 3. A set of JAR/WAR files that can be deployed into a Java Servlet
    container that provide the Orchard environment.
 
-Orchard runs in a Java SE 6 runtime environment.  Required JARs are
+Orchard runs in a Java SE 8 runtime environment.  Required JARs are
 included here, in the "lib" directory.
 
 See the file INSTALL for details.

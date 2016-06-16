@@ -18,7 +18,7 @@
 			<section xml:id="ref.syntax.lexical.inputstream">
 				<title>Input Byte Stream</title>
 				<para>
-					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.0 running on Java SE 6 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
+					Orc can read source code input byte streams from a number of types of sources. For example, Orc 2.1 running on Java SE 8 accepts input from local files, FTP, Gopher, HTTP, and JAR files.
 					Orc source code input byte streams must encode a Unicode character sequence using the <link xlink:href="http://www.unicode.org/versions/Unicode5.2.0/ch03.pdf">UTF-8</link> encoding form. No other encoding is supported. HTTP headers specifying other charsets are ignored. 
 				</para>
 			</section>

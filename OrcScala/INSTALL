@@ -10,7 +10,7 @@
 OVERVIEW
 --------
 
-Orc runs in a Java SE 6 runtime environment.  Required JARs are
+Orc runs in a Java SE 8 runtime environment.  Required JARs are
 included here, in the "lib" directory.
 
 Read one of the following sections depending on your environment.

@@ -10,7 +10,7 @@
 Welcome! This archive includes the compiler and runtime engine for the
 Orc language, along with the standard Orc library.
 
-Orc runs in a Java SE 6 runtime environment.  Required JARs are
+Orc runs in a Java SE 8 runtime environment.  Required JARs are
 included here, in the "lib" directory.
 
 There are numerous examples of Orc programs included in the "examples"
