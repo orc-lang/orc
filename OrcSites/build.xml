@@ -3,7 +3,7 @@
 <!-- build.xml - Ant buildfile (additional tasks for project build)
      Project OrcSites
 
-     Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -21,8 +21,9 @@
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
 
-	<!-- Try to locate Scala in the current Eclipse build -->
-    <property name="scala.compiler.jar" value="${eclipse.home}/plugins/org.scala-ide.scala.compiler_2.8.0.jar"/>
+	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
+    <property name="scala.compiler.jar" value="lib/scala-compiler.jar"/>
+    -->
 
 	<fileset id="orcsites.runtime.jars" dir="lib" description="JARs needed by OrcSites in its classpath at runtime">
 		<include name="*.jar"/>
@@ -36,7 +37,6 @@
 		<pathelement location="${orc.location.OrcScala}/build/classes"/>
         <fileset dir="${orc.location.OrcScala}/lib" includes="*.jar"/>
 		<fileset refid="orcsites.runtime.jars"/>
-		<pathelement location="${scala.compiler.jar}"/>
     </path>
 
 
@@ -79,7 +79,7 @@
 		<javadoc destdir="build/javadoc"
 				author="true"
 				access="protected"
-				source="1.6"
+				source="1.8"
 				sourcepath="src"
 				splitindex="true"
 				windowtitle="{$ant.project.name} ${orc.version}"
@@ -100,14 +100,20 @@
           target: zip
          ================================= -->
 	<target name="zip" depends="jar" description="Build ZIP archive for distribution">
+		<copy file="README" todir="build">
+			<filterset>
+				<filter token="orc-sites.jar" value="${target.name}.jar"/>
+				<filter token="orc.jar" value="orc-${orc.version}.jar"/>
+			</filterset>
+		</copy>
     	<delete file="build/${target.name}.zip"/>
 		<zip zipfile="build/${target.name}.zip" duplicate="fail">
 			<zipfileset prefix="${target.name}" dir="build">
+				<include name="README"/>
 				<include name="${target.name}.jar"/>
 			</zipfileset>
 			<zipfileset prefix="${target.name}/lib" refid="orcsites.runtime.jars"/>
 			<zipfileset prefix="${target.name}" dir=".">
-				<include name="README"/>
 				<include name="LICENSE"/>
 				<include name="licenses.yml"/>
 				<include name="licenses/**"/>

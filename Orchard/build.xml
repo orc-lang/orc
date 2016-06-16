@@ -3,7 +3,7 @@
 <!-- build.xml - Ant buildfile (additional tasks for project build)
      Project Orchard
 
-     Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -271,8 +271,18 @@
           target: zip
          ================================= -->
     <target name="zip" depends="lib-dirs,demo-jar" description="Build orchard.zip for distribution">
+		<copy file="README" todir="build">
+			<filterset><filter token="orc.version" value="${orc.version}"/></filterset>
+		</copy>
+		<copy file="INSTALL" todir="build">
+			<filterset><filter token="orc.version" value="${orc.version}"/></filterset>
+		</copy>
     	<delete file="build/${target.name}.zip"/>
         <zip destfile="build/${target.name}.zip" duplicate="preserve">
+			<zipfileset prefix="${target.name}" dir="build">
+				<include name="README"/>
+				<include name="INSTALL"/>
+			</zipfileset>
         	<zipfileset prefix="${target.name}" file="build/orchard.war"/>
         	<zipfileset prefix="${target.name}" file="build/${target.name}-demo.jar"/>
         	<zipfileset prefix="${target.name}" file="build/demo-root.war"/>
@@ -282,9 +292,7 @@
     		<zipfileset prefix="${target.name}/lib" dir="build/lib/orchard-demo-extra-jars"/>
     		<zipfileset prefix="${target.name}/lib-ext" dir="build/lib/orchard-war-external-jars"/>
 			<zipfileset prefix="${target.name}" dir=".">
-				<include name="README"/>
 				<include name="LICENSE"/>
-				<include name="INSTALL"/>
 				<include name="examples/**"/>
 				<include name="licenses.yml"/>
 				<include name="licenses/**"/>
