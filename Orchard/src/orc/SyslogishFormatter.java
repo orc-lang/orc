@@ -43,10 +43,10 @@ public class SyslogishFormatter extends Formatter {
         timestamp.setTimeInMillis(record.getMillis());
         sb.append(timestamp.get(Calendar.YEAR));
         sb.append('-');
-        if (timestamp.get(Calendar.MONTH) < 10) {
+        if (timestamp.get(Calendar.MONTH) + 1 < 10) {
             sb.append('0');
         }
-        sb.append(timestamp.get(Calendar.MONTH));
+        sb.append(timestamp.get(Calendar.MONTH) + 1);
         sb.append('-');
         if (timestamp.get(Calendar.DAY_OF_MONTH) < 10) {
             sb.append('0');
