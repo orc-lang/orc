@@ -27,7 +27,6 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceStatus;
 import org.eclipse.core.resources.IResourceVisitor;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -36,6 +35,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -48,6 +48,7 @@ import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
 import edu.utexas.cs.orc.orceclipse.ImpToOrcProgressAdapter;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
  * Incremental builder for Orc source code.
@@ -80,6 +81,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      */
     public static final String COMPILE_EXCEPTION_NAME = Activator.getInstance().getID() + ".compileexceptionname"; //$NON-NLS-1$
 
+    private static ImageDescriptor ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR = Activator.getInstance().getImageRegistry().getDescriptor(OrcResources.ORC_PLUGIN_ICON);
+
     /**
      * The MessageConsoleStream used for Orc builder and compiler output.
      */
@@ -89,6 +92,9 @@ public class OrcBuilder extends IncrementalProjectBuilder {
 
     private static boolean DEBUG = false;
 
+    /**
+     * Constructs an OrcBuilder.  Builder instances are managed by Eclipse, which requires a public, no-argument constructor.
+     */
     public OrcBuilder() {
         super();
     }
@@ -96,30 +102,21 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     /**
      * Runs this builder in the specified manner.
      * <p>
-     * If the build kind is {@link #INCREMENTAL_BUILD} or {@link #AUTO_BUILD},
-     * the <code>getDelta</code> method can be used during the invocation of
-     * this method to obtain information about what changes have occurred since
-     * the last invocation of this method. Any resource delta acquired is valid
-     * only for the duration of the invocation of this method. A
-     * {@link #FULL_BUILD} has no associated build delta.
+     * If the build kind is <code>INCREMENTAL_BUILD</code> or
+     * <code>AUTO_BUILD</code>, the <code>getDelta</code> method can be used
+     * during the invocation of this method to obtain information about what
+     * changes have occurred since the last invocation of this method. Any
+     * resource delta acquired is valid only for the duration of the invocation
+     * of this method. A <code>FULL_BUILD</code> has no associated build delta.
      * </p>
      * <p>
      * After completing a build, this builder may return a list of projects for
-     * which it requires a resource delta the next time it is run. This
-     * builder's project is implicitly included and need not be specified. The
-     * build mechanism will attempt to maintain and compute deltas relative to
-     * the identified projects when asked the next time this builder is run.
-     * Builders must re-specify the list of interesting projects every time they
-     * are run as this is not carried forward beyond the next build. Projects
-     * mentioned in return value but which do not exist will be ignored and no
-     * delta will be made available for them.
+     * which it requires a resource delta the next time it is run.
      * </p>
      * <p>
      * This method is long-running; progress and cancellation are provided by
-     * the given progress monitor. All builders should report their progress and
-     * honor cancel requests in a timely manner. Cancelation requests should be
-     * propagated to the caller by throwing
-     * <code>OperationCanceledException</code>.
+     * the given progress monitor. Cancellation requests are propagated to the
+     * caller by throwing <code>OperationCanceledException</code>.
      * </p>
      * <p>
      * All builders should try to be robust in the face of trouble. In
@@ -132,17 +129,9 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * </p>
      *
      * @param kind the kind of build being requested. Valid values are
-     *            <ul>
-     *            <li>{@link #FULL_BUILD} - indicates a full build.</li>
-     *            <li>{@link #INCREMENTAL_BUILD}- indicates an incremental
-     *            build.</li>
-     *            <li>{@link #AUTO_BUILD} - indicates an automatically triggered
-     *            incremental build (autobuilding on).</li>
-     *            </ul>
-     * @param args a table of builder-specific arguments keyed by argument name
-     *            (key type: <code>String</code>, value type:
-     *            <code>String</code>); <code>null</code> is equivalent to an
-     *            empty map
+     *            FULL_BUILD, INCREMENTAL_BUILD, and AUTO_BUILD.
+     * @param args a table of builder-specific arguments. Ignored by this
+     *            builder.
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. This method will call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
@@ -151,7 +140,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      *            reported and that the operation cannot be cancelled.
      * @return the list of projects for which this builder would like deltas the
      *         next time it is run or <code>null</code> if none
-     * @exception CoreException if this build fails.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      * @see IProject#build(int, String, Map, IProgressMonitor)
      */
     @Override
@@ -184,11 +174,16 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
+     * Perform a full build. A full build discards all previously built state
+     * and builds all resources again. Resource deltas are not applicable for
+     * this kind of build.
+     * 
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
-     * @throws CoreException
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      */
     protected void fullBuild(final IProgressMonitor monitor) throws CoreException {
         checkCancel(monitor);
@@ -207,12 +202,18 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
+     * Perform an incremental build. Incremental builds use an
+     * {@link IResourceDelta} that describes what resources have changed since
+     * the last build. The builder calculates what resources are affected by the
+     * delta, and rebuilds the affected resources.
+     *
      * @param delta
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
-     * @throws CoreException
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      */
     protected void incrementalBuild(final IResourceDelta delta, final IProgressMonitor monitor) throws CoreException {
         checkCancel(monitor);
@@ -247,6 +248,16 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
+     * Get a list of projects for which this builder requires a resource delta
+     * the next time it is run. This builder's project is implicitly included
+     * and need not be specified. The build mechanism will attempt to maintain
+     * and compute deltas relative to the identified projects when asked the
+     * next time this builder is run. Builders must re-specify the list of
+     * interesting projects every time they are run as this is not carried
+     * forward beyond the next build. Projects mentioned in return value but
+     * which do not exist will be ignored and no delta will be made available
+     * for them.
+     *
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
@@ -260,23 +271,20 @@ public class OrcBuilder extends IncrementalProjectBuilder {
 
     /**
      * Clean is an opportunity for a builder to discard any additional state
-     * that has been computed as a result of previous builds. It is recommended
-     * that builders override this method to delete all derived resources
-     * created by previous builds, and to remove all markers of type
-     * {@link IMarker#PROBLEM} that were created by previous invocations of the
-     * builder. The platform will take care of discarding the builder's last
-     * built state (there is no need to call <code>forgetLastBuiltState</code>).
-     * </p>
+     * that has been computed as a result of previous builds. This method
+     * deletes all derived resources created by previous builds, and removes all
+     * markers of type {@link IMarker#PROBLEM} that were created by previous
+     * invocations of the builder. The platform will take care of discarding the
+     * builder's last built state (there is no need to call
+     * <code>forgetLastBuiltState</code>). </p>
      * <p>
      * This method is called as a result of invocations of
      * <code>IWorkspace.build</code> or <code>IProject.build</code> where the
-     * build kind is {@link #CLEAN_BUILD}.
+     * build kind is <code>CLEAN_BUILD</code>.
      * <p>
      * This method is long-running; progress and cancellation are provided by
-     * the given progress monitor. All builders should report their progress and
-     * honor cancel requests in a timely manner. Cancellation requests should be
-     * propagated to the caller by throwing
-     * <code>OperationCanceledException</code>.
+     * the given progress monitor. Cancellation requests are propagated to the
+     * caller by throwing <code>OperationCanceledException</code>.
      * </p>
      *
      * @param monitor the progress monitor to use for reporting progress to the
@@ -285,10 +293,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      *            the given monitor, so it must be newly created. Accepts
      *            <code>null</code>, indicating that no progress should be
      *            reported and that the operation cannot be cancelled.
-     * @exception CoreException if this build fails.
-     * @see IWorkspace#build(int, IProgressMonitor)
-     * @see #CLEAN_BUILD
-     * @since 3.0
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      */
     @Override
     protected void clean(final IProgressMonitor monitor) throws CoreException {
@@ -315,26 +321,34 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
+     * Allocate a container for collectResource calls.
+     *
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
-     * @return Fresh resource container to be used for builder
+     * @return fresh resource container to be used for collectResource calls
+     * @see #collectResource(IResource, Set, IProgressMonitor)
      */
     protected Set<IFile> startCollectingResources(final IProgressMonitor monitor) {
         return new HashSet<IFile>();
     }
 
     /**
-     * @param resource
-     * @param collectedResources
+     * Examine a resource that may need to be rebuilt, and add it (if needed) to
+     * the given collection of to-be-rebuilt resources.
+     *
+     * @param resource A changed IResource
+     * @param collectedResources the Set of to-be-rebuilt IFiles up to now,
+     *            which may be modified if resource needs to be rebuilt
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
      * @return <code>true</code> if the resource's members should be visited;
      *         <code>false</code> if they should be skipped.
-     * @throws CoreException
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      */
     protected boolean collectResource(final IResource resource, final Set<IFile> collectedResources, final IProgressMonitor monitor) throws CoreException {
         checkCancel(monitor);
@@ -354,26 +368,32 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * @param collectedResources
+     * Take any needed actions after all the collectResource calls are complete.
+     *
+     * @param collectedResources the Set of to-be-rebuilt IFiles
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
+     * @see #collectResource(IResource, Set, IProgressMonitor)
      */
     protected void finishCollectingResources(final Set<IFile> collectedResources, final IProgressMonitor monitor) {
         // Nothing needed at the moment
     }
 
     /**
-     * @param collectedResources
+     * From a collection of to-be-rebuilt resources, call compiler to build
+     * project.
+     *
+     * @param collectedResources a Set of to-be-rebuilt IFiles
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
-     * @throws CoreException
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
      */
     protected void buildFromResources(final Set<IFile> collectedResources, final IProgressMonitor monitor) throws CoreException {
-        // TODO Auto-generated method stub
         final int workPerResource = (BUILD_TOTAL_WORK - BUILD_TOTAL_WORK / 20) / collectedResources.size();
         final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, workPerResource);
         for (final IFile file : collectedResources) {
@@ -387,8 +407,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
      * never return true for the same file.
      *
-     * @param file
-     * @return true iff an arbitrary file is a Orc source file.
+     * @param file the IFile to check
+     * @return true iff an arbitrary file is a Orc source file
      */
     protected boolean isSourceFile(final IFile file) {
 
@@ -420,7 +440,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
      * never return true for the same file.
      *
-     * @param file
+     * @param file the IFile to check
      * @return true iff the given file is a source file that this builder should
      *         scan for dependencies, but not compile as a top-level compilation
      *         unit.
@@ -430,8 +450,10 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * @param resource
-     * @return true iff this resource identifies the output folder
+     * Check if a resource is a build output folder.
+     *
+     * @param resource the IResource to check
+     * @return true iff this resource identifies an output folder
      */
     protected boolean isOutputFolder(final IResource resource) {
         return false; // No output folders in Orc projects (for now)
@@ -440,12 +462,13 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     /**
      * Compile one Orc file.
      *
-     * @param file
+     * @param file the IFile to compile
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. This method will call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor, so it must be newly created. Must not be
      *            <code>null</code>.
+     * @exception OperationCanceledException when operation is cancelled
      */
     protected void compile(final IFile file, final IProgressMonitor monitor) {
         checkCancel(monitor);
@@ -493,7 +516,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      *
      * @param monitor the progress monitor to check. Accepts <code>null</code>,
      *            indicating that the operation cannot be cancelled.
-     * @throws OperationCanceledException
+     * @throws OperationCanceledException when monitor is requesting
+     *             cancellation
      */
     public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
         if (monitor != null && monitor.isCanceled()) {
@@ -502,11 +526,13 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * @return
+     * Get the output stream for Orc builder message output.
+     *
+     * @return the MessageConsoleStream
      */
     protected MessageConsoleStream getConsoleStream() {
         if (orcBuildConsoleStream == null) {
-            orcBuildConsoleStream = new MessageConsole(Messages.OrcBuilder_OrcCompilerConsoleName, null /* imageDescriptor */).newMessageStream();
+            orcBuildConsoleStream = new MessageConsole(Messages.OrcBuilder_OrcCompilerConsoleName, ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR).newMessageStream();
         }
         return orcBuildConsoleStream;
     }

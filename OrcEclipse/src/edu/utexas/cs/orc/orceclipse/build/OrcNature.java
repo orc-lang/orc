@@ -33,14 +33,27 @@ public class OrcNature implements IProjectNature {
     /** The project to which this project nature applies. */
     private IProject project;
 
+    /**
+     * Constructs an OrcNature.  Nature instances are managed by Eclipse, which requires a public, no-argument constructor.
+     */
     public OrcNature() {
         super();
     }
 
+    /**
+     * Get the nature ID for the Orc project nature.
+     * 
+     * @return the nature ID string
+     */
     static public String getNatureID() {
         return natureID;
     }
 
+    /**
+     * Get the builder ID for the Orc project builder.
+     * 
+     * @return the builder ID string
+     */
     static public String getBuilderID() {
         return OrcBuilder.BUILDER_ID;
     }
@@ -131,8 +144,8 @@ public class OrcNature implements IProjectNature {
     /**
      * Adds the Orc project nature ID to the given project.
      *
-     * @param project
-     * @throws CoreException
+     * @param project the IProject to add the Orc project nature ID to.
+     * @throws CoreException if getting or setting the ProjectDescription fails 
      */
     static public void addToProject(final IProject project) throws CoreException {
         final IProjectDescription description = project.getDescription();

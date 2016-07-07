@@ -151,11 +151,25 @@ public class Activator extends PluginBase {
         return new String(fileContentsBuffer, 0, fileSize);
     }
 
+    /**
+     * Check if a file is an Orc source file (not including Orc includes).
+     * 
+     * @param file the IPath to check
+     * @return true iff file is an Orc source file
+     * @see #isOrcIncludeFile(IPath) 
+     */
     public static boolean isOrcSourceFile(final IPath file) {
         //TODO: Use extensions declared in plugin.xml?
         return "orc".equals(file.getFileExtension()); //$NON-NLS-1$
     }
 
+    /**
+     * Check if a file is an Orc include file.
+     * 
+     * @param file the IPath to check
+     * @return true iff file is an Orc include file
+     * @see #isOrcSourceFile(IPath) 
+     */
     public static boolean isOrcIncludeFile(final IPath file) {
         return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
     }
