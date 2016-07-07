@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 
+import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.build.OrcNature;
 
@@ -62,7 +63,11 @@ public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
         } catch (final CoreException e) {
             // This is OK, it means we don't have javanature
         }
-        new OrcNature().addToProject(fProject);
+        try {
+            OrcNature.addToProject(fProject);
+        } catch (final CoreException e) {
+            Activator.logAndShow(e);
+        }
     }
 
     @Override

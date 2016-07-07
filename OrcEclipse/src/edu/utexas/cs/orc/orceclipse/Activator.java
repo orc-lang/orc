@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -149,6 +149,11 @@ public class Activator extends PluginBase {
         final char fileContentsBuffer[] = new char[fileStream.available()];
         final int fileSize = fileReader.read(fileContentsBuffer);
         return new String(fileContentsBuffer, 0, fileSize);
+    }
+
+    public static boolean isOrcSourceFile(final IPath file) {
+        //TODO: Use extensions declared in plugin.xml?
+        return "orc".equals(file.getFileExtension()); //$NON-NLS-1$
     }
 
     public static boolean isOrcIncludeFile(final IPath file) {

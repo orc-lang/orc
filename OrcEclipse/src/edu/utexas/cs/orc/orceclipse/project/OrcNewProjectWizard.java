@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 20, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,8 +32,8 @@ public class OrcNewProjectWizard extends BasicNewProjectResourceWizard {
     public boolean performFinish() {
         final boolean finishAccepted = super.performFinish();
         if (getNewProject() != null) {
-            new OrcNature().addToProject(getNewProject());
             try {
+                OrcNature.addToProject(getNewProject());
                 getNewProject().setDefaultCharset("UTF-8", new NullProgressMonitor()); //$NON-NLS-1$
             } catch (final CoreException e) {
                 Activator.logAndShow(e);
