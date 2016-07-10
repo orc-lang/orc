@@ -19,7 +19,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 
 /**
  * Orc project nature. When a project is configured with the Orc nature, it will
@@ -28,13 +28,14 @@ import edu.utexas.cs.orc.orceclipse.Activator;
  * @see org.eclipse.core.resources.IProjectNature
  */
 public class OrcNature implements IProjectNature {
-    private static final String natureID = Activator.getInstance().getID() + ".project.orcNature"; //$NON-NLS-1$
+    private static final String natureID = OrcPlugin.getID() + ".project.orcNature"; //$NON-NLS-1$
 
     /** The project to which this project nature applies. */
     private IProject project;
 
     /**
-     * Constructs an OrcNature.  Nature instances are managed by Eclipse, which requires a public, no-argument constructor.
+     * Constructs an OrcNature. Nature instances are managed by Eclipse, which
+     * requires a public, no-argument constructor.
      */
     public OrcNature() {
         super();
@@ -42,7 +43,7 @@ public class OrcNature implements IProjectNature {
 
     /**
      * Get the nature ID for the Orc project nature.
-     * 
+     *
      * @return the nature ID string
      */
     static public String getNatureID() {
@@ -51,7 +52,7 @@ public class OrcNature implements IProjectNature {
 
     /**
      * Get the builder ID for the Orc project builder.
-     * 
+     *
      * @return the builder ID string
      */
     static public String getBuilderID() {
@@ -145,7 +146,7 @@ public class OrcNature implements IProjectNature {
      * Adds the Orc project nature ID to the given project.
      *
      * @param project the IProject to add the Orc project nature ID to.
-     * @throws CoreException if getting or setting the ProjectDescription fails 
+     * @throws CoreException if getting or setting the ProjectDescription fails
      */
     static public void addToProject(final IProject project) throws CoreException {
         final IProjectDescription description = project.getDescription();

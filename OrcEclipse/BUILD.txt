@@ -9,16 +9,6 @@ at The University of Texas at Austin.
 --------
 
 
-PREREQUISITE:
-
-Install IMP, the Eclipse IDE Meta-tooling Platform from the IMP Eclipse
-Update Site (Eclipse menu item Help > Install new Software...)  Add the
-site with Name: IMP Update Site,
-          URL: http://download.eclipse.org/technology/imp/updates/
-From that site, select all categories and install.
-
-
-
 BUILD PROCEDURE -- FOR A LOCAL BUILD:
 
 Note: This Eclipse plug-in will build in the Eclipse IDE.  There is no

@@ -1,5 +1,5 @@
 //
-// Activator.java -- Java class Activator
+// OrcPlugin.java -- Java class OrcPlugin
 // Project OrcEclipse
 //
 // Created by jthywiss on Jul 27, 2009.
@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.imp.runtime.PluginBase;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 import org.osgi.framework.BundleContext;
@@ -34,23 +34,22 @@ import org.osgi.framework.BundleContext;
  *
  * @author jthywiss
  */
-public class Activator extends PluginBase {
+public class OrcPlugin extends AbstractUIPlugin {
 
     // These must correspond to the values in plugin.xml
     private static final String pluginID = "edu.utexas.cs.orc.orceclipse"; //$NON-NLS-1$
-    private static final String languageName = "Orc"; //$NON-NLS-1$
 
     /**
      * The unique instance of this plugin class
      */
-    protected static Activator pluginInstance;
+    protected static OrcPlugin pluginInstance;
 
     /**
      * @return The unique instance of this plugin class
      */
-    public static Activator getInstance() {
+    public static OrcPlugin getInstance() {
         if (pluginInstance == null) {
-            pluginInstance = new Activator();
+            pluginInstance = new OrcPlugin();
         }
         return pluginInstance;
     }
@@ -58,7 +57,7 @@ public class Activator extends PluginBase {
     /**
      * This class is a singleton -- call getInstance, not this constructor.
      */
-    public Activator() {
+    public OrcPlugin() {
         super();
         pluginInstance = this;
     }
@@ -69,18 +68,13 @@ public class Activator extends PluginBase {
         OrcConfigSettings.initDefaultPrefs();
     }
 
-    @Override
-    public String getID() {
-        return pluginID;
-    }
-
-    /*
-     * This is really language NAME, not ID -- PluginBase named the method
-     * incorrectly.
+    /**
+     * Get the plug-in ID, which is the OSGi Bundle-SymbolicName
+     *
+     * @return the plugin ID string
      */
-    @Override
-    public String getLanguageID() {
-        return languageName;
+    public static String getID() {
+        return pluginID;
     }
 
     /**
@@ -93,25 +87,13 @@ public class Activator extends PluginBase {
     }
 
     /**
-     * Logs an internal error with the specified message.
-     *
-     * @param message the error message to log
-     */
-    public static void logErrorMessage(final String message) {
-        getInstance().writeErrorMsg(message);
-    }
-
-    /**
      * Logs an internal error with the specified throwable
      *
      * @param e the exception to be logged
      */
     public static void log(final Throwable e) {
-        if (e instanceof CoreException) {
-            getInstance().logException(e.getMessage(), e);
-        } else {
-            getInstance().logException(Messages.Activator_InternalError, e);
-        }
+        final String msg = e instanceof CoreException ? e.getMessage() : Messages.Activator_InternalError;
+        log(new Status(IStatus.ERROR, getID(), 0, msg, e));
     }
 
     /**
@@ -125,7 +107,7 @@ public class Activator extends PluginBase {
         if (e instanceof CoreException) {
             msg = e.getLocalizedMessage();
         }
-        StatusManager.getManager().handle(new Status(IStatus.ERROR, Activator.getInstance().getID(), msg, e), StatusManager.SHOW);
+        StatusManager.getManager().handle(new Status(IStatus.ERROR, getID(), msg, e), StatusManager.SHOW);
     }
 
     @Override
@@ -153,41 +135,46 @@ public class Activator extends PluginBase {
 
     /**
      * Check if a file is an Orc source file (not including Orc includes).
-     * 
+     *
      * @param file the IPath to check
      * @return true iff file is an Orc source file
-     * @see #isOrcIncludeFile(IPath) 
+     * @see #isOrcIncludeFile(IPath)
      */
     public static boolean isOrcSourceFile(final IPath file) {
-        //TODO: Use extensions declared in plugin.xml?
+        // TODO: Use extensions declared in plugin.xml?
         return "orc".equals(file.getFileExtension()); //$NON-NLS-1$
     }
 
     /**
      * Check if a file is an Orc include file.
-     * 
+     *
      * @param file the IPath to check
      * @return true iff file is an Orc include file
-     * @see #isOrcSourceFile(IPath) 
+     * @see #isOrcSourceFile(IPath)
      */
     public static boolean isOrcIncludeFile(final IPath file) {
         return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
     }
 
 //    public static final PrintWriter errWriter = new PrintWriter(new FileWriter(FileDescriptor.err), true);
-//    public static final PrintStream errStream = new PrintStream(new FileOutputStream(FileDescriptor.err), true);
-//    public static void debugEnter(Object... args) {
+//
+//    public static void debugEnter(final Object... args) {
 //        String argString = Arrays.deepToString(args);
-//        argString = argString.substring(1, argString.length()-1);
-//        debugWrite("("+argString+")"); //$NON-NLS-1$ //$NON-NLS-2$
+//        argString = argString.substring(1, argString.length() - 1);
+//        debugWrite("(" + argString + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 //    }
-//    public static void debugMsg(String message) {
-//        debugWrite(": "+message); //$NON-NLS-1$
+//
+//    public static void debugMsg(final String message) {
+//        debugWrite(": " + message); //$NON-NLS-1$
 //    }
-//    private static void debugWrite(String string) {
+//
+//    private static void debugWrite(final String string) {
 //        final StackTraceElement caller = new Throwable("Get stack trace").getStackTrace()[2]; //$NON-NLS-1$
 //        String className = caller.getClassName();
-//        if (className.startsWith(pluginID)) className = className.substring(pluginID.length()+1);
-//        errWriter.println(className+"."+caller.getMethodName()+string); //$NON-NLS-1$
+//        if (className.startsWith(pluginID)) {
+//            className = className.substring(pluginID.length() + 1);
+//        }
+//        errWriter.println(className + "." + caller.getMethodName() + string); //$NON-NLS-1$
 //    }
+
 }

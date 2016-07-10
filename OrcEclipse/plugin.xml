@@ -3,7 +3,7 @@
 <!-- plugin.xml - Eclipse plug-in manifest
      Project OrcEclipse
 
-     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -11,17 +11,6 @@
   -->
 <plugin>
 
-   <extension
-         point="org.eclipse.imp.runtime.languageDescription">
-      <language
-            url="https://orc.csres.utexas.edu/"
-            icon="icons/orc_file_obj.gif"
-            extensions="orc,inc"
-            description="A language for distributed and concurrent programming from The University of Texas at Austin."
-            natureID="edu.utexas.cs.orc.orceclipse.project.orcNature"
-            language="Orc">
-      </language>
-   </extension>
    <extension
          id="edit.contentTypes"
          name="Orc content types"
@@ -64,31 +53,31 @@
       </fileTypes>
    </extension>
    <extension
-         id="OrcEclipse.parser"
-         name="Orc Parser Wrapper"
-         point="org.eclipse.imp.runtime.parser">
-      <parserWrapper
-            class="edu.utexas.cs.orc.orceclipse.parse.OrcParseController"
-            language="Orc">
-      </parserWrapper>
+         point="org.eclipse.ui.editors">
+      <editor
+            class="edu.utexas.cs.orc.orceclipse.edit.OrcEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="true"
+            extensions="orc, inc"
+            icon="icons/orc_file_obj.gif"
+            id="edu.utexas.cs.orc.orceclipse.edit.orcEditor"
+            name="Orc Editor">
+         <contentTypeBinding
+               contentTypeId="edu.utexas.cs.orc.source">
+         </contentTypeBinding>
+         <contentTypeBinding
+               contentTypeId="edu.utexas.cs.orc.include">
+         </contentTypeBinding>
+      </editor>
    </extension>
    <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.core.resources.IProject"
-            adaptable="false"
-            nameFilter="*"
-            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu">
-         <action
-               class="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
-               enablesFor="+"
-               icon="orc16.gif"
-               id="edu.utexas.cs.orc.orceclipse.project.enableNatureAction"
-               label="Convert to Orc Project"
-               menubarPath="org.eclipse.ui.projectConfigure/additions"
-               tooltip="Enable the Orc builder for this project">
-         </action>
-      </objectContribution>
+         point="org.eclipse.ui.contexts">
+      <context
+            description="In the Orc source text editor"
+            id="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            name="Editing Orc Source Text"
+            parentId="org.eclipse.ui.textEditorScope">
+      </context>
    </extension>
    <extension
          id="build.orcBuilder"
@@ -98,10 +87,6 @@
             hasNature="true">
          <run
                class="edu.utexas.cs.orc.orceclipse.build.OrcBuilder">
-            <parameter
-                  name="foo"
-                  value="bar">
-            </parameter>
          </run>
       </builder>
    </extension>
@@ -117,6 +102,74 @@
                class="edu.utexas.cs.orc.orceclipse.build.OrcNature">
          </run>
       </runtime>
+      <content-type
+            id="edu.utexas.cs.orc.source">
+      </content-type>
+      <content-type
+            id="edu.utexas.cs.orc.include">
+      </content-type>
+      <content-type
+            id="edu.utexas.cs.orc.oil">
+      </content-type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            icon="icons/orc_ovr.gif"
+            id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
+            natureId="edu.utexas.cs.orc.orceclipse.project.orcNature">
+      </image>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="edu.utexas.cs.orc.orceclipse.category"
+            name="Orc">
+      </category>
+      <command
+            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            defaultHandler="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
+            description="Enable the Orc builder for this project"
+            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
+            name="Convert to Orc Project">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <menu
+               icon="orc16.gif"
+               label="Convert to Orc Project"
+               tooltip="Enable the Orc builder for this project">
+         </menu>
+         <command
+               commandId="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
+               icon="orc16.gif"
+               label="Convert to Orc Project"
+               tooltip="Enable the Orc builder for this project">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="edu.utexas.cs.orc.orceclipse.project.orcNature">
+                           </test>
+                        </not>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
    </extension>
    <extension
          id="problemmarker"
@@ -158,13 +211,6 @@
             </and>
          </enabledWhen>
       </page>
-   </extension>
-   <extension
-         point="org.eclipse.imp.runtime.tokenColorer">
-      <tokenColorer
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcTokenColorer"
-            language="Orc">
-      </tokenColorer>
    </extension>
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
@@ -228,20 +274,6 @@
             configTypeID="edu.utexas.cs.orc.orceclipse.launch.orcApplication"
             id="edu.utexas.cs.orc.orceclipse.launch.orcApplicationImage">
       </launchConfigurationTypeImage>
-   </extension>
-   <extension
-         point="org.eclipse.imp.runtime.modelTreeBuilder">
-      <treeBuilder
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcTreeModelBuilder"
-            language="Orc">
-      </treeBuilder>
-   </extension>
-   <extension
-         point="org.eclipse.imp.runtime.labelProvider">
-      <labelProvider
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcLabelProvider"
-            language="Orc">
-      </labelProvider>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
@@ -344,16 +376,10 @@
                id="org.eclipse.ui.resourcePerspective">
          </perspectiveShortcut>
          <perspectiveShortcut
-               id="org.eclipse.team.svn.ui.repository.RepositoryPerspective">
-         </perspectiveShortcut>
-         <perspectiveShortcut
                id="org.eclipse.team.cvs.ui.cvsPerspective">
          </perspectiveShortcut>
          <newWizardShortcut
                id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
-         </newWizardShortcut>
-         <newWizardShortcut
-               id="org.eclipse.team.svn.ui.wizard.ImportFromSVNWizard">
          </newWizardShortcut>
          <newWizardShortcut
                id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
@@ -456,13 +482,6 @@
             Orc project nature
          </description>
       </image>
-   </extension>
-   <extension
-         point="org.eclipse.imp.runtime.annotationHover">
-      <annotationHover
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcAnnotationHover"
-            language="Orc">
-      </annotationHover>
    </extension>
    <extension
          point="org.eclipse.help.toc">
@@ -574,13 +593,6 @@
       <contexts
             file="help/contexts.xml">
       </contexts>
-   </extension>
-   <extension
-         point="org.eclipse.imp.runtime.editorService">
-      <editorService
-            class="edu.utexas.cs.orc.orceclipse.edit.OrcTextHoverInstaller"
-            language="Orc">
-      </editorService>
    </extension>
 
 </plugin>

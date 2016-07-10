@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on 04 Aug 2009.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,9 +30,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -45,7 +45,7 @@ import edu.utexas.cs.orc.orceclipse.OrcResources;
 @SuppressWarnings("restriction")
 public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfigurationTab {
 
-    private static Image ORC_PLUGIN_ICON_IMAGE = Activator.getInstance().getImageRegistry().get(OrcResources.ORC_PLUGIN_ICON);
+    private static Image ORC_PLUGIN_ICON_IMAGE = OrcPlugin.getInstance().getImageRegistry().get(OrcResources.ORC_PLUGIN_ICON);
 
     private Spinner stackDepthSpinner;
     private Spinner tokenLimitSpinner;
@@ -98,7 +98,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
         try {
             OrcLaunchDelegate.setDefaults(configuration);
         } catch (final CoreException e) {
-            Activator.logAndShow(e);
+            OrcPlugin.logAndShow(e);
         }
     }
 
@@ -221,7 +221,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
             noTcoButton.setSelection(configuration.getAttribute(OrcConfigSettings.NO_TCO_ATTR_NAME, OrcConfigSettings.NO_TCO_DEFAULT));
             echoOilButton.setSelection(configuration.getAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME, OrcConfigSettings.ECHO_OIL_DEFAULT));
         } catch (final CoreException e) {
-            Activator.logAndShow(e);
+            OrcPlugin.logAndShow(e);
         }
     }
 

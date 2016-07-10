@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 12, 2010.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,7 +23,7 @@ import org.eclipse.ui.console.IHyperlink;
 import org.eclipse.ui.console.TextConsole;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 
 /**
  * A link in a TextConsole that, when clicked, opens the external Web browser to
@@ -52,9 +52,9 @@ public class OrcWikiHyperLink implements IHyperlink {
         try {
             org.eclipse.ui.PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL(orcWikiUri + pageName));
         } catch (final PartInitException e) {
-            Activator.logAndShow(e);
+            OrcPlugin.logAndShow(e);
         } catch (final MalformedURLException e) {
-            StatusManager.getManager().handle(new Status(IStatus.ERROR, Activator.getInstance().getID(), e.getLocalizedMessage(), e), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.ERROR, OrcPlugin.getID(), e.getLocalizedMessage(), e), StatusManager.SHOW);
         }
     }
 

@@ -15,7 +15,9 @@ package edu.utexas.cs.orc.orceclipse.build;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,9 +26,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IResourceStatus;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -37,17 +37,19 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcFileInputContext;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
-import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
-import edu.utexas.cs.orc.orceclipse.ImpToOrcProgressAdapter;
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcMessageAdapter;
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcProgressAdapter;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -64,24 +66,24 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * Extension ID of the Orc builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
      */
-    public static final String BUILDER_ID = Activator.getInstance().getID() + ".build.orcBuilder"; //$NON-NLS-1$
+    public static final String BUILDER_ID = OrcPlugin.getID() + ".build.orcBuilder"; //$NON-NLS-1$
 
     /**
      * A marker ID that identifies problems detected by the builder
      */
-    public static final String PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".problemmarker"; //$NON-NLS-1$
+    public static final String PROBLEM_MARKER_ID = OrcPlugin.getID() + ".problemmarker"; //$NON-NLS-1$
 
     /**
      * A marker ID that identifies parse problems detected by the builder
      */
-    public static final String PARSE_PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".parse.problemmarker"; //$NON-NLS-1$
+    public static final String PARSE_PROBLEM_MARKER_ID = OrcPlugin.getID() + ".parse.problemmarker"; //$NON-NLS-1$
 
     /**
      * A marker attribute name for the compile message code attribute
      */
-    public static final String COMPILE_EXCEPTION_NAME = Activator.getInstance().getID() + ".compileexceptionname"; //$NON-NLS-1$
+    public static final String COMPILE_EXCEPTION_NAME = OrcPlugin.getID() + ".compileexceptionname"; //$NON-NLS-1$
 
-    private static ImageDescriptor ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR = Activator.getInstance().getImageRegistry().getDescriptor(OrcResources.ORC_PLUGIN_ICON);
+    private static ImageDescriptor ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR = OrcPlugin.getInstance().getImageRegistry().getDescriptor(OrcResources.ORC_PLUGIN_ICON);
 
     /**
      * The MessageConsoleStream used for Orc builder and compiler output.
@@ -93,7 +95,8 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     private static boolean DEBUG = false;
 
     /**
-     * Constructs an OrcBuilder.  Builder instances are managed by Eclipse, which requires a public, no-argument constructor.
+     * Constructs an OrcBuilder. Builder instances are managed by Eclipse, which
+     * requires a public, no-argument constructor.
      */
     public OrcBuilder() {
         super();
@@ -177,7 +180,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * Perform a full build. A full build discards all previously built state
      * and builds all resources again. Resource deltas are not applicable for
      * this kind of build.
-     * 
+     *
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
@@ -189,16 +192,11 @@ public class OrcBuilder extends IncrementalProjectBuilder {
         checkCancel(monitor);
         monitor.subTask(Messages.OrcBuilder_Preparing);
         final Set<IFile> collectedResources = startCollectingResources(monitor);
-        getProject().accept(new IResourceVisitor() {
-            @Override
-            public boolean visit(final IResource resource) throws CoreException {
-                return collectResource(resource, collectedResources, monitor);
-            }
-        });
-        finishCollectingResources(collectedResources, monitor);
+        getProject().accept(resource -> collectResource(resource, collectedResources, monitor));
+        final List<IFile> filesToBuild = computeFilesToBuild(collectedResources, monitor);
         monitor.worked(BUILD_TOTAL_WORK / 20);
         monitor.subTask(""); //$NON-NLS-1$
-        buildFromResources(collectedResources, monitor);
+        buildFiles(filesToBuild, monitor);
     }
 
     /**
@@ -220,31 +218,28 @@ public class OrcBuilder extends IncrementalProjectBuilder {
         monitor.subTask(Messages.OrcBuilder_Preparing);
         // FIXME: Need to build dependencies DAG and propagate changes
         final Set<IFile> collectedResources = startCollectingResources(monitor);
-        delta.accept(new IResourceDeltaVisitor() {
-            @Override
-            public boolean visit(final IResourceDelta delta) throws CoreException {
-                final IResource resource = delta.getResource();
-                boolean visitChidren = true;
-                switch (delta.getKind()) {
-                case IResourceDelta.ADDED:
-                    // handle added resource
-                    visitChidren = collectResource(resource, collectedResources, monitor);
-                    break;
-                case IResourceDelta.REMOVED:
-                    // handle removed resource
-                    break;
-                case IResourceDelta.CHANGED:
-                    // handle changed resource
-                    visitChidren = collectResource(resource, collectedResources, monitor);
-                    break;
-                }
-                return visitChidren;
+        delta.accept(delta1 -> {
+            final IResource resource = delta1.getResource();
+            boolean visitChidren = true;
+            switch (delta1.getKind()) {
+            case IResourceDelta.ADDED:
+                // handle added resource
+                visitChidren = collectResource(resource, collectedResources, monitor);
+                break;
+            case IResourceDelta.REMOVED:
+                // handle removed resource
+                break;
+            case IResourceDelta.CHANGED:
+                // handle changed resource
+                visitChidren = collectResource(resource, collectedResources, monitor);
+                break;
             }
+            return visitChidren;
         });
-        finishCollectingResources(collectedResources, monitor);
-        monitor.worked(5000);
+        final List<IFile> filesToBuild = computeFilesToBuild(collectedResources, monitor);
+        monitor.worked(BUILD_TOTAL_WORK / 20);
         monitor.subTask(""); //$NON-NLS-1$
-        buildFromResources(collectedResources, monitor);
+        buildFiles(filesToBuild, monitor);
     }
 
     /**
@@ -368,17 +363,24 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     }
 
     /**
-     * Take any needed actions after all the collectResource calls are complete.
+     * Transform the set of changed files into a list of files to compile.
      *
-     * @param collectedResources the Set of to-be-rebuilt IFiles
+     * @param collectedResources the Set of putative changed IFiles
      * @param monitor the progress monitor to use for reporting progress to the
      *            user. It is the caller's responsibility to call
      *            <code>beginTask(String, int)</code> and <code>done()</code> on
      *            the given monitor. Must not be <code>null</code>.
+     * @returns a Set of to-be-rebuilt IFiles
      * @see #collectResource(IResource, Set, IProgressMonitor)
      */
-    protected void finishCollectingResources(final Set<IFile> collectedResources, final IProgressMonitor monitor) {
-        // Nothing needed at the moment
+    protected List<IFile> computeFilesToBuild(final Set<IFile> collectedResources, final IProgressMonitor monitor) {
+        final List<IFile> filesToBuild = new ArrayList<>();
+        for (final IFile file : collectedResources) {
+            if (isSourceFile(file)) {
+                filesToBuild.add(file);
+            }
+        }
+        return filesToBuild;
     }
 
     /**
@@ -393,10 +395,10 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * @exception CoreException if this build fails
      * @exception OperationCanceledException when operation is cancelled
      */
-    protected void buildFromResources(final Set<IFile> collectedResources, final IProgressMonitor monitor) throws CoreException {
-        final int workPerResource = (BUILD_TOTAL_WORK - BUILD_TOTAL_WORK / 20) / collectedResources.size();
+    protected void buildFiles(final List<IFile> filesToBuild, final IProgressMonitor monitor) throws CoreException {
+        final int workPerResource = (BUILD_TOTAL_WORK - BUILD_TOTAL_WORK / 20) / Math.max(filesToBuild.size(), 1);
         final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, workPerResource);
-        for (final IFile file : collectedResources) {
+        for (final IFile file : filesToBuild) {
             file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
             compile(file, subMonitor);
         }
@@ -428,7 +430,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
             return false;
         }
 
-        final boolean result = Activator.isOrcSourceFile(path) && !isNonRootSourceFile(file);
+        final boolean result = OrcPlugin.isOrcSourceFile(path) && !isNonRootSourceFile(file);
         if (DEBUG) {
             getConsoleStream().println("isSourceFile(" + file + ")=" + result); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -446,7 +448,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      *         unit.
      */
     protected boolean isNonRootSourceFile(final IFile file) {
-        return Activator.isOrcIncludeFile(file.getFullPath());
+        return OrcPlugin.isOrcIncludeFile(file.getFullPath());
     }
 
     /**
@@ -484,15 +486,15 @@ public class OrcBuilder extends IncrementalProjectBuilder {
             final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
             config.filename_$eq(file.getLocation().toOSString());
             final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
-            final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
-            final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(BUILDER_ID, false);
+            final EclipseToOrcProgressAdapter prgsLstnr = new EclipseToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
+            final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(BUILDER_ID, false);
 
             try {
                 new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
                 // Disregard returned OIL, we just want the errors
             } catch (final IOException e) {
                 getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
-                Activator.logAndShow(e);
+                OrcPlugin.logAndShow(e);
             }
 
             // TODO: If/when we generate compile output, refresh the appropriate
@@ -502,7 +504,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
             // catch Exception, because any exception could break the
             // builder infrastructure.
             getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
-            Activator.log(e);
+            OrcPlugin.log(e);
         } finally {
             monitor.done();
         }
@@ -532,7 +534,9 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      */
     protected MessageConsoleStream getConsoleStream() {
         if (orcBuildConsoleStream == null) {
-            orcBuildConsoleStream = new MessageConsole(Messages.OrcBuilder_OrcCompilerConsoleName, ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR).newMessageStream();
+            final MessageConsole orcBuildConsole = new MessageConsole(Messages.OrcBuilder_OrcCompilerConsoleName, ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR);
+            ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { orcBuildConsole });
+            orcBuildConsoleStream = orcBuildConsole.newMessageStream();
         }
         return orcBuildConsoleStream;
     }

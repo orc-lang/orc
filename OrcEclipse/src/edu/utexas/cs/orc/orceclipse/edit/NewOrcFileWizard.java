@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 26, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,7 +28,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ISetSelectionTarget;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 
 /**
  * UI "wizard" to creates a new Orc file. It creates a file in the currently
@@ -95,7 +95,7 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
         try {
             file.setCharset("UTF-8", new NullProgressMonitor()); //$NON-NLS-1$
         } catch (final CoreException e) {
-            Activator.logAndShow(e);
+            OrcPlugin.logAndShow(e);
         }
 
         selectAndReveal(file);
@@ -110,7 +110,7 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
                 }
             }
         } catch (final PartInitException e) {
-            Activator.logAndShow(e);
+            OrcPlugin.logAndShow(e);
         }
 
         return true;

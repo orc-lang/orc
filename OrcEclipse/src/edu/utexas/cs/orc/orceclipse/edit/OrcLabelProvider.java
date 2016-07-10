@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 5, 2009.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,20 +13,17 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.imp.editor.ModelTreeNode;
-import org.eclipse.imp.services.ILabelProvider;
-import org.eclipse.imp.utils.MarkerUtils;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.IDecoration;
-import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 import scala.collection.JavaConversions;
 
@@ -41,7 +38,7 @@ import orc.ast.ext.SiteDeclaration;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -49,13 +46,11 @@ import edu.utexas.cs.orc.orceclipse.OrcResources;
  * <p>
  * A label provider maps an element of a tree model to an optional image and
  * optional text string used to display the element in the user interface.
- *
- * @see org.eclipse.imp.editor.ModelTreeNode
  */
-public class OrcLabelProvider implements ILabelProvider {
-    private final Set<ILabelProviderListener> fListeners = new HashSet<ILabelProviderListener>();
+public class OrcLabelProvider extends BaseLabelProvider implements ILabelProvider {
+    private static ILabelProvider decoratingWorkbenchLabelProvider = WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
 
-    private static ImageRegistry orcImageRegistry = Activator.getInstance().getImageRegistry();
+    private static ImageRegistry orcImageRegistry = OrcPlugin.getInstance().getImageRegistry();
 
     private static Image ORC_FILE_OBJ_IMAGE = orcImageRegistry.get(OrcResources.ORC_FILE_OBJ);
 
@@ -85,47 +80,66 @@ public class OrcLabelProvider implements ILabelProvider {
 
     @Override
     public Image getImage(final Object element) {
-        if (element instanceof IFile) {
-            final IFile file = (IFile) element;
-
-            Image elemImage = null;
-            final int sev = MarkerUtils.getMaxProblemMarkerSeverity(file, IResource.DEPTH_ONE);
-            if (!file.getName().toLowerCase().endsWith(".inc")) { //$NON-NLS-1$
-                // Assume Orc file
-                switch (sev) {
-                case IMarker.SEVERITY_ERROR:
-                    elemImage = ORC_FILE_W_ERROR;
-                    break;
-                case IMarker.SEVERITY_WARNING:
-                    elemImage = ORC_FILE_W_WARNING;
-                    break;
-                default:
-                    elemImage = ORC_FILE_OBJ_IMAGE;
-                    break;
-                }
-            } else {
-                // Include file
-                switch (sev) {
-                case IMarker.SEVERITY_ERROR:
-                    elemImage = ORC_INCLUDE_W_ERROR;
-                    break;
-                case IMarker.SEVERITY_WARNING:
-                    elemImage = ORC_INCLUDE_W_WARNING;
-                    break;
-                default:
-                    elemImage = ORC_INCLUDE_OBJ_IMAGE;
-                    break;
-                }
-            }
-
-            return elemImage;
+        Image result;
+        if (element instanceof OrcContentProvider.OutlineTreeFileNode) {
+            result = getImageFor(((OrcContentProvider.OutlineTreeFileNode) element).getFile());
+        } else if (element instanceof IFile) {
+            result = getImageFor((IFile) element);
+        } else if (element instanceof OrcContentProvider.OutlineTreeAstNode) {
+            result = getImageFor(((OrcContentProvider.OutlineTreeAstNode) element).getAstNode());
+        } else if (element instanceof AST) {
+            result = getImageFor((AST) element);
+        } else {
+            result = decoratingWorkbenchLabelProvider.getImage(element);
         }
-        final AST n = element instanceof ModelTreeNode ? (AST) ((ModelTreeNode) element).getASTNode() : (AST) element;
-        return getImageFor(n);
+        return result;
     }
 
     /**
-     * @param n AST node to retrieve an image
+     * @param file the file to retrieve an image
+     * @return Image representing the type of the given AST node
+     */
+    public static Image getImageFor(final IFile file) {
+        Image elemImage = null;
+        int sev = -1;
+        try {
+            sev = file.findMaxProblemSeverity(IMarker.PROBLEM, true, IResource.DEPTH_ONE);
+        } catch (final CoreException e) {
+            OrcPlugin.log(e);
+        }
+        if (!OrcPlugin.isOrcIncludeFile(file.getFullPath())) {
+            // Assume Orc file
+            switch (sev) {
+            case IMarker.SEVERITY_ERROR:
+                elemImage = ORC_FILE_W_ERROR;
+                break;
+            case IMarker.SEVERITY_WARNING:
+                elemImage = ORC_FILE_W_WARNING;
+                break;
+            default:
+                elemImage = ORC_FILE_OBJ_IMAGE;
+                break;
+            }
+        } else {
+            // Include file
+            switch (sev) {
+            case IMarker.SEVERITY_ERROR:
+                elemImage = ORC_INCLUDE_W_ERROR;
+                break;
+            case IMarker.SEVERITY_WARNING:
+                elemImage = ORC_INCLUDE_W_WARNING;
+                break;
+            default:
+                elemImage = ORC_INCLUDE_OBJ_IMAGE;
+                break;
+            }
+        }
+
+        return elemImage;
+    }
+
+    /**
+     * @param n the AST node to retrieve an image
      * @return Image representing the type of the given AST node
      */
     public static Image getImageFor(final AST n) {
@@ -155,9 +169,18 @@ public class OrcLabelProvider implements ILabelProvider {
 
     @Override
     public String getText(final Object element) {
-        final AST n = element instanceof ModelTreeNode ? (AST) ((ModelTreeNode) element).getASTNode() : (AST) element;
+        String result;
 
-        return getLabelFor(n);
+        if (element instanceof OrcContentProvider.OutlineTreeAstNode) {
+            result = getLabelFor(((OrcContentProvider.OutlineTreeAstNode) element).getAstNode());
+        } else if (element instanceof AST) {
+            result = getLabelFor((AST) element);
+        } else if (element instanceof OrcContentProvider.OutlineTreeFileNode) {
+            result = decoratingWorkbenchLabelProvider.getText(((OrcContentProvider.OutlineTreeFileNode) element).getFile());
+        } else {
+            result = decoratingWorkbenchLabelProvider.getText(element);
+        }
+        return result;
     }
 
     /**
@@ -198,23 +221,8 @@ public class OrcLabelProvider implements ILabelProvider {
     }
 
     @Override
-    public void addListener(final ILabelProviderListener listener) {
-        fListeners.add(listener);
-    }
-
-    @Override
     public void dispose() {
         /* Nothing to do */
-    }
-
-    @Override
-    public boolean isLabelProperty(final Object element, final String property) {
-        return false;
-    }
-
-    @Override
-    public void removeListener(final ILabelProviderListener listener) {
-        fListeners.remove(listener);
     }
 
     private static String sigToString(final Def d) {

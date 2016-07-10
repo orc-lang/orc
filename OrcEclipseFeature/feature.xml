@@ -59,7 +59,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
    <url>
       <update label="Orc programming language" url="https://orc.csres.utexas.edu/eclipse_updates/"/>
-      <discovery label="IMP update site" url="http://download.eclipse.org/technology/imp/updates/"/>
    </url>
 
    <requires>
@@ -81,7 +80,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.console"/>
       <import plugin="org.eclipse.ui.editors"/>
-      <import feature="org.eclipse.imp.runtime" version="0.1.108.v201008201835" match="equivalent"/>
    </requires>
 
    <plugin

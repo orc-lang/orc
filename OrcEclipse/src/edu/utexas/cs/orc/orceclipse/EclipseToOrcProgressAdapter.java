@@ -1,10 +1,10 @@
 //
-// ImpToOrcProgressAdapter.java -- Java class ImpToOrcProgressAdapter
+// EclipseToOrcProgressAdapter.java -- Java class EclipseToOrcProgressAdapter
 // Project OrcEclipse
 //
 // Created by jthywiss on Aug 15, 2009.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -26,15 +26,15 @@ import orc.progress.ProgressMonitor;
  *
  * @author jthywiss
  */
-public class ImpToOrcProgressAdapter implements ProgressMonitor {
+public class EclipseToOrcProgressAdapter implements ProgressMonitor {
     private final SubMonitor prgrsMntr;
 
     /**
-     * Constructs an object of class ImpToOrcProgressAdapter.
+     * Constructs an object of class EclipseToOrcProgressAdapter.
      *
      * @param monitor the IProgressMonitor to wrap
      */
-    public ImpToOrcProgressAdapter(final IProgressMonitor monitor) {
+    public EclipseToOrcProgressAdapter(final IProgressMonitor monitor) {
         prgrsMntr = SubMonitor.convert(monitor);
     }
 
@@ -51,7 +51,10 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 
     @Override
     public void setIndeterminate() {
-        // Can't do this in a SubMonitor (IProgressMonitor.UNKNOWN will cause problems)
+        /*
+         * Can't do this in a SubMonitor (IProgressMonitor.UNKNOWN will cause
+         * problems)
+         */
     }
 
     @Override
@@ -61,7 +64,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 
     @Override
     public ProgressMonitor newChild(final int delegatedWorkQty) {
-        return new ImpToOrcProgressAdapter(prgrsMntr.newChild(delegatedWorkQty, 0));
+        return new EclipseToOrcProgressAdapter(prgrsMntr.newChild(delegatedWorkQty, 0));
     }
 
     @Override
@@ -71,7 +74,7 @@ public class ImpToOrcProgressAdapter implements ProgressMonitor {
 
     @Override
     public void setBlocked(final String reason) {
-        prgrsMntr.setBlocked(new Status(IStatus.INFO, Activator.getInstance().getID(), reason));
+        prgrsMntr.setBlocked(new Status(IStatus.INFO, OrcPlugin.getID(), reason));
     }
 
     @Override

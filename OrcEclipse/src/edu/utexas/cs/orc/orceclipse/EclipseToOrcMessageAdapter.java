@@ -1,10 +1,10 @@
 //
-// ImpToOrcMessageAdapter.java -- Java class ImpToOrcMessageAdapter.java
+// EclipseToOrcMessageAdapter.java -- Java class EclipseToOrcMessageAdapter.java
 // Project OrcEclipse
 //
 // Created by jthywiss on Aug 15, 2009.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,7 +32,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.imp.parser.IMessageHandler;
 
 import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.OffsetPosition;
@@ -48,13 +47,13 @@ import orc.error.compiletime.ParsingException;
 import edu.utexas.cs.orc.orceclipse.build.OrcBuilder;
 
 /**
- * Wraps IMP's IMessageHandler interface in Orc's CompileMessageRecorder
- * interface.
+ * Manages Eclipse resource markers for an Orc compilation.
  *
  * @author jthywiss
  */
-public class ImpToOrcMessageAdapter implements CompileLogger {
+public class EclipseToOrcMessageAdapter implements CompileLogger {
 
+    /** Dummy value for unknown line numbers */
     public static final Integer UNKNOWN_LINE = Integer.valueOf(-1);
     private final String sourceId;
     private final boolean parseOnly;
@@ -63,12 +62,12 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
     private final Map<String, ProblemMarkerCreator> contextMap = new HashMap<String, ProblemMarkerCreator>();
 
     /**
-     * Constructs an object of class ImpToOrcMessageAdapter.
+     * Constructs an object of class EclipseToOrcMessageAdapter.
      *
-     * @param sourceId
-     * @param parseOnly
+     * @param sourceId source ID atttribute to use on problem markers
+     * @param parseOnly if true, use the "parse problem" marker type
      */
-    public ImpToOrcMessageAdapter(final String sourceId, final boolean parseOnly) {
+    public EclipseToOrcMessageAdapter(final String sourceId, final boolean parseOnly) {
         this.sourceId = sourceId;
         this.parseOnly = parseOnly;
     }
@@ -102,6 +101,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
 
     @Override
     public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode, final Throwable exception) {
+        Assert.isTrue(mainMarkerCreator != null, "mainMarkerCreator != null"); //$NON-NLS-1$
 
         synchronized (this) {
             maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
@@ -128,13 +128,12 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
             locationNN = NoPosition$.MODULE$;
         }
 
-        // IMP's AnnotationCreator breaks for our UNKNOWN offset values
-        int safeStartOffset = 0;
+        int safeStartOffset = -1;
         int safeEndOffset = -1;
         if (locationNN instanceof OffsetPosition && ((OffsetPosition) locationNN).offset() >= 0) {
             safeStartOffset = safeEndOffset = ((OffsetPosition) locationNN).offset();
         }
-        final int safeLineNumber = locationNN.line() >= 1 ? locationNN.line() : -1;
+        final int safeLineNumber = locationNN.line() >= 1 ? locationNN.line() : UNKNOWN_LINE.intValue();
 
         markerCreator.addMarker(exception instanceof ParsingException ? OrcBuilder.PARSE_PROBLEM_MARKER_ID : OrcBuilder.PROBLEM_MARKER_ID, markerText, eclipseSeverity, code, dontHaveActualResource && position != null ? position.toString() : null, safeStartOffset, safeEndOffset, safeLineNumber, exception);
     }
@@ -163,7 +162,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
             return null;
         }
         final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(inputUri);
-        if (files.length < 1 || files[0] == null || !files[0].exists()) {
+        if (files.length < 1 || files[0] == null) {
             return null;
         } else {
             return new ProblemMarkerCreator(files[0], parseOnly ? OrcBuilder.PARSE_PROBLEM_MARKER_ID : OrcBuilder.PROBLEM_MARKER_ID, sourceId, true);
@@ -248,7 +247,8 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
      * @see org.eclipse.core.resources.IMarker
      * @see org.eclipse.core.resources.IResource
      */
-    public static class ProblemMarkerCreator implements IMessageHandler {
+    public static class ProblemMarkerCreator {
+        /** Resource marker attribute key for error code numbers. */
         public static final String ERROR_CODE_KEY = "errorCode"; //$NON-NLS-1$
         protected final Collection<String> dontCompareAttributes = Arrays.asList(IMarker.SOURCE_ID);
 
@@ -256,15 +256,18 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
         protected final String baseMarkerType;
         protected final String sourceId;
         protected final boolean includeSubtypes;
-        protected Map<Integer, List<TypeAndAttributes>> entries; // Map of line number to list of marker attributes for line
+        /** Map of line number to list of marker attributes for line */
+        protected Map<Integer, List<TypeAndAttributes>> entries;
 
         /**
          * Constructs an object of class ProblemMarkerCreator.
          *
-         * @param resource
-         * @param baseMarkerType
-         * @param sourceId
-         * @param includeSubtypes
+         * @param resource the IResource to create the markers on
+         * @param baseMarkerType the base type of markers to replace, and the
+         *            default type to create
+         * @param sourceId string indicating the source of the marker
+         * @param includeSubtypes include subtypes when matching and replacing
+         *            old markers
          */
         public ProblemMarkerCreator(final IResource resource, final String baseMarkerType, final String sourceId, final boolean includeSubtypes) {
             this.resource = resource;
@@ -275,15 +278,23 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
         }
 
         /**
-         * @param markerType
-         * @param message
-         * @param severity
-         * @param code
-         * @param location
-         * @param charStart
-         * @param charEnd
-         * @param lineNumber
-         * @param exception
+         * Enqueue a marker to be added upon the {@link #endMessages()} call.
+         *
+         * @param markerType the type of the marker to create, or null to use
+         *            this ProblemMarkerCreator's base marker type
+         * @param message localized string describing the nature of the marker
+         *            (e.g., a name for a bookmark or task)
+         * @param severity number from the set of error, warning and info
+         *            severities defined by the platform
+         * @param code error code number
+         * @param location human-readable (localized) string which can be used
+         *            to distinguish between markers on a resource
+         * @param charStart integer value indicating where a text marker starts
+         * @param charEnd integer value indicating where a text marker ends
+         * @param lineNumber integer value indicating the (1-relative) line
+         *            number for a text marker
+         * @param exception the thrown exception leading to the creation of this
+         *            marker
          */
         public synchronized void addMarker(final String markerType, final String message, final int severity, final int code, final String location, final int charStart, final int charEnd, final int lineNumber, final Throwable exception) {
             final TypeAndAttributes attributes = new TypeAndAttributes(markerType != null ? markerType : baseMarkerType);
@@ -296,8 +307,12 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
                 attributes.put(IMarker.LOCATION, location);
             }
             if (charStart <= charEnd) {
-                attributes.put(IMarker.CHAR_START, Integer.valueOf(charStart));
-                attributes.put(IMarker.CHAR_END, Integer.valueOf(charEnd));
+                if (charStart >= 0) {
+                    attributes.put(IMarker.CHAR_START, Integer.valueOf(charStart));
+                }
+                if (charEnd >= 0) {
+                    attributes.put(IMarker.CHAR_END, Integer.valueOf(charEnd));
+                }
             }
             final Integer lineKey = lineNumber > 0 ? Integer.valueOf(lineNumber) : UNKNOWN_LINE;
             if (lineNumber > 0) {
@@ -306,7 +321,7 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
             if (sourceId != null) {
                 attributes.put(IMarker.SOURCE_ID, sourceId);
             }
-            //attributes.put(OrcBuilder.COMPILE_EXCEPTION_NAME, exception != null ? exception.getClass().getCanonicalName() : null);
+            // attributes.put(OrcBuilder.COMPILE_EXCEPTION_NAME, exception != null ? exception.getClass().getCanonicalName() : null);
 
             List<TypeAndAttributes> lineEntries = entries.get(lineKey);
             if (lineEntries == null) {
@@ -316,64 +331,48 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
             lineEntries.add(attributes);
         }
 
+        /**
+         * Add the enqueued markers, replacing all markers of the base type on
+         * the resource
+         */
         public synchronized void endMessages() {
-            if (resource.exists()) {
-                final IWorkspaceRunnable action = new IWorkspaceRunnable() {
-
-                    @Override
-                    public void run(final IProgressMonitor monitor) throws CoreException {
-                        if (entries != null) {
-                            final IMarker[] oldMarkers = resource.findMarkers(baseMarkerType, includeSubtypes, IResource.DEPTH_ZERO);
-                            for (IMarker oldMarker : oldMarkers) {
-                                final Map<String, Object> oldAttributes = oldMarker.getAttributes();
-                                final Object oldLineKey = oldAttributes.get(IMarker.LINE_NUMBER);
-                                final List<TypeAndAttributes> lineEntries = entries.get(oldLineKey != null ? oldLineKey : UNKNOWN_LINE);
-                                if (lineEntries != null) {
-                                    for (final Map<String, Object> newAttributes : lineEntries) {
-                                        if (isSameMarker(oldAttributes, newAttributes)) {
-                                            lineEntries.remove(newAttributes);
-                                            oldMarker = null;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (oldMarker != null) {
-                                    oldMarker.delete();
+            final IWorkspaceRunnable action = monitor -> {
+                if (entries != null) {
+                    final IMarker[] oldMarkers = resource.findMarkers(baseMarkerType, includeSubtypes, IResource.DEPTH_ZERO);
+                    for (IMarker oldMarker : oldMarkers) {
+                        final Map<String, Object> oldAttributes = oldMarker.getAttributes();
+                        final Object oldLineKey = oldAttributes.get(IMarker.LINE_NUMBER);
+                        final List<TypeAndAttributes> lineEntries1 = entries.get(oldLineKey != null ? oldLineKey : UNKNOWN_LINE);
+                        if (lineEntries1 != null) {
+                            for (final Map<String, Object> newAttributes : lineEntries1) {
+                                if (isSameMarker(oldAttributes, newAttributes)) {
+                                    lineEntries1.remove(newAttributes);
+                                    oldMarker = null;
+                                    break;
                                 }
                             }
-                            for (final List<TypeAndAttributes> lineEntries : entries.values()) {
-                                for (final TypeAndAttributes entry : lineEntries) {
-                                    final IMarker marker = resource.createMarker(entry.getType());
-                                    marker.setAttributes(entry);
-                                }
-                            }
-                        } else {
-                            resource.deleteMarkers(baseMarkerType, includeSubtypes, IResource.DEPTH_ZERO);
+                        }
+                        if (oldMarker != null) {
+                            oldMarker.delete();
                         }
                     }
-                };
-                try {
-                    final IProgressMonitor progressMonitor = new NullProgressMonitor();
-                    resource.getWorkspace().run(action, resource, IWorkspace.AVOID_UPDATE, progressMonitor);
-                } catch (final CoreException e) {
-                    Activator.log(e);
+                    for (final List<TypeAndAttributes> lineEntries2 : entries.values()) {
+                        for (final TypeAndAttributes entry : lineEntries2) {
+                            final IMarker marker = resource.createMarker(entry.getType());
+                            marker.setAttributes(entry);
+                        }
+                    }
+                } else {
+                    resource.deleteMarkers(baseMarkerType, includeSubtypes, IResource.DEPTH_ZERO);
                 }
+            };
+            try {
+                final IProgressMonitor progressMonitor = new NullProgressMonitor();
+                resource.getWorkspace().run(action, resource, IWorkspace.AVOID_UPDATE, progressMonitor);
+            } catch (final CoreException e) {
+                OrcPlugin.log(e);
             }
-        }
 
-        @Override
-        public void clearMessages() {
-            throw new UnsupportedOperationException("ProblemMarkerCreator.clearMessages is not implemented."); //$NON-NLS-1$
-        }
-
-        @Override
-        public void startMessageGroup(final String groupName) {
-            throw new UnsupportedOperationException("ProblemMarkerCreator.startMessageGroup is not implemented."); //$NON-NLS-1$
-        }
-
-        @Override
-        public void endMessageGroup() {
-            throw new UnsupportedOperationException("ProblemMarkerCreator.endMessageGroup is not implemented."); //$NON-NLS-1$
         }
 
         protected boolean isSameMarker(final Map<String, Object> oldAttributes, final Map<String, Object> newAttributes) {
@@ -405,12 +404,6 @@ public class ImpToOrcMessageAdapter implements CompileLogger {
                 }
             }
             return true;
-        }
-
-        @Deprecated
-        @Override
-        public void handleSimpleMessage(final String msg, final int startOffset, final int endOffset, final int startCol, final int endCol, final int startLine, final int endLine) {
-            throw new UnsupportedOperationException("ProblemMarkerCreator.handleSimpleMessage should no longer be called."); //$NON-NLS-1$
         }
 
     }

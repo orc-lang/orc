@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 5, 2009.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,6 +20,8 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
@@ -35,8 +37,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 
 /**
  * Launch shortcut for Orc programs.
@@ -60,14 +62,14 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
     public void launch(final ISelection selection, final String mode) {
         // Make sure the selection is the active resource, so the launch
         // delegate knows who to launch.
-        // Activator.getInstance().getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
+        // PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(part);
 
         try {
             final IFile file = (IFile) ((IAdaptable) ((IStructuredSelection) selection).getFirstElement()).getAdapter(IFile.class);
             launch(file, mode);
         } catch (final ClassCastException e) {
             // Ignore -- got something not launchable
-            Activator.logErrorMessage("OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection); //$NON-NLS-1$
+            OrcPlugin.log(new Status(IStatus.ERROR, OrcPlugin.getID(), 0, "OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection, null)); //$NON-NLS-1$
             ErrorDialog.openError(Display.getCurrent().getActiveShell(), Messages.OrcLaunchShortcut_UnableToLaunchTitle, Messages.OrcLaunchShortcut_UnableToLaunchMessage, null);
         } catch (final NullPointerException e) {
             // Ignore -- got nothing
@@ -120,7 +122,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
                 candidateConfigs.add(config);
             }
         } catch (final CoreException e) {
-            Activator.log(e);
+            OrcPlugin.log(e);
         }
         return candidateConfigs;
     }
@@ -158,7 +160,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
             OrcLaunchDelegate.setDefaults(wc);
             config = wc.doSave();
         } catch (final CoreException e) {
-            Activator.log(e);
+            OrcPlugin.log(e);
         }
         return config;
     }

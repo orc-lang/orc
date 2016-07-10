@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on 04 Aug 2009.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -49,9 +49,9 @@ import orc.Main;
 import com.ibm.icu.text.DateFormat;
 import com.ibm.icu.text.MessageFormat;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
 
 /**
  * Launches an Orc program.
@@ -83,11 +83,15 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
     /**
      * @param configuration LaunchConfigurationWorkingCopy to update
-     * @throws CoreException
+     * @throws CoreException if an exception occurs while writing this
+     *             configuration to its underlying file
      */
     public static void setDefaults(final ILaunchConfigurationWorkingCopy configuration) throws CoreException {
-        // Currently, a minimal Orc launch config. is an nearly empty one.
-        // We turn off background launching by default because launching can be slow and non-obvious.
+        /*
+         * Currently, a minimal Orc launch config. is an nearly empty one. We
+         * turn off background launching by default because launching can be
+         * slow and non-obvious.
+         */
         configuration.setAttribute(IDebugUIConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
         configuration.doSave();
     }
@@ -106,7 +110,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
         if (currentLaunchOrcProg != null) {
             referencedProjectsInBuildOrder = computeReferencedBuildOrder(new IProject[] { currentLaunchOrcProg.getProject() });
         } else {
-            StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
             return false;
         }
         // do generic launch checks
@@ -126,7 +130,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
     @Override
     public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
         if (currentLaunchOrcProg == null) {
-            StatusManager.getManager().handle(new Status(IStatus.INFO, Activator.getInstance().getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
             return;
         }
 
@@ -221,7 +225,8 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
     }
 
     private String[] getAbsoluteClasspathForClass(final Class<?> classOfInterest) {
-        //FIXME: Is this possible without using the internal Eclipse OSGi ModuleClassLoader, ClasspathManager, and ClasspathEntry classes?
+        // FIXME: Is this possible without using the internal Eclipse OSGi
+        // ModuleClassLoader, ClasspathManager, and ClasspathEntry classes?
         final ClasspathManager manager = ((ModuleClassLoader) classOfInterest.getClassLoader()).getClasspathManager();
         String[] classpath = null;
         final ClasspathEntry[] classpathentries = manager.getHostClasspathEntries();

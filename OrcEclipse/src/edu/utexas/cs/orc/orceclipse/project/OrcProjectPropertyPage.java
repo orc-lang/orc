@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 6, 2009.
 //
-// Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,7 +22,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
-import edu.utexas.cs.orc.orceclipse.Activator;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 
@@ -72,6 +71,6 @@ public class OrcProjectPropertyPage extends FieldEditorPreferencePage implements
 
     @Override
     protected IPreferenceStore doGetPreferenceStore() {
-        return new ScopedPreferenceStore(new ProjectScope(project), Activator.getInstance().getLanguageID());
+        return new ScopedPreferenceStore(new ProjectScope(project), OrcConfigSettings.ORC_PREFS_QUALIFIER);
     }
 }
