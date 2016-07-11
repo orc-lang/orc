@@ -225,7 +225,9 @@ public class OrcSourceViewerConfiguration extends TextSourceViewerConfiguration 
 
     /**
      * Returns the default prefixes to be used by the line-prefix operation in
-     * the given source viewer for text of the given content type.
+     * the given source viewer for text of the given content type. The prefix
+     * operation uses the first element in the returned array, and the strip
+     * prefix operation used the longest match it finds.
      *
      * @param sourceViewer the source viewer to be configured by this
      *            configuration
@@ -235,7 +237,7 @@ public class OrcSourceViewerConfiguration extends TextSourceViewerConfiguration 
      */
     @Override
     public String[] getDefaultPrefixes(final ISourceViewer sourceViewer, final String contentType) {
-        return new String[] { "--", "" }; //$NON-NLS-1$ //$NON-NLS-2$
+        return new String[] { "--" }; //$NON-NLS-1$
     }
 
     /**

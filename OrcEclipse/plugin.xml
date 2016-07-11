@@ -132,24 +132,29 @@
             categoryId="edu.utexas.cs.orc.orceclipse.category"
             defaultHandler="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
             description="Enable the Orc builder for this project"
-            id="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
+            id="edu.utexas.cs.orc.orceclipse.project.enableOrcNature"
             name="Convert to Orc Project">
+      </command>
+      <command
+            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            description="Make the selected lines comments"
+            id="edu.utexas.cs.orc.orceclipse.edit.comment"
+            name="Comment">
+      </command>
+      <command
+            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            description="Make the selected lines non-comment text"
+            id="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            name="Uncomment">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
-         <menu
-               icon="orc16.gif"
-               label="Convert to Orc Project"
-               tooltip="Enable the Orc builder for this project">
-         </menu>
          <command
-               commandId="edu.utexas.cs.orc.orceclipse.project.projectContextMenu"
-               icon="orc16.gif"
-               label="Convert to Orc Project"
-               tooltip="Enable the Orc builder for this project">
+               commandId="edu.utexas.cs.orc.orceclipse.project.enableOrcNature"
+               icon="orc16.gif">
             <visibleWhen
                   checkEnabled="false">
                <with
@@ -172,6 +177,56 @@
             </visibleWhen>
          </command>
       </menuContribution>
+      <menuContribution
+            locationURI="menu:edit?after=additions">
+         <command
+               commandId="edu.utexas.cs.orc.orceclipse.edit.comment">
+         </command>
+         <command
+               commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="edu.utexas.cs.orc.orceclipse.edit.comment"
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/">
+      </key>
+      <key
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            platform="carbon"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+/">
+      </key>
+      <key
+            commandId="edu.utexas.cs.orc.orceclipse.edit.comment"
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            platform="carbon"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M4+/">
+      </key>
+      <key
+            commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\">
+      </key>
+      <key
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            platform="carbon"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+\">
+      </key>
+      <key
+            commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
+            platform="carbon"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M4+\">
+      </key>
    </extension>
    <extension
          id="problemmarker"

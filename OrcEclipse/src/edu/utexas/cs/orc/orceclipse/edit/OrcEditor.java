@@ -13,16 +13,21 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
+import java.util.ResourceBundle;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
+import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import orc.ast.AST;
@@ -79,8 +84,8 @@ public class OrcEditor extends TextEditor {
     protected void initializeEditor() {
         super.initializeEditor();
         setSourceViewerConfiguration(new OrcSourceViewerConfiguration(this));
-        setEditorContextMenuId("#OrcEditorContext"); //$NON-NLS-1$
-        setRulerContextMenuId("#OrcRulerContext"); //$NON-NLS-1$
+        setEditorContextMenuId("edu.utexas.cs.orc.orceclipse.edit.orcEditor.EditorContext"); //$NON-NLS-1$
+        setRulerContextMenuId("edu.utexas.cs.orc.orceclipse.edit.orcEditor.RulerContext"); //$NON-NLS-1$
         setHelpContextId("edu.utexas.cs.orc.orceclipse.text_editor_context"); //$NON-NLS-1$
 
         /* Enable SMART_INSERT with our autoEditStrategies */
@@ -120,6 +125,23 @@ public class OrcEditor extends TextEditor {
     @Override
     protected void createActions() {
         super.createActions();
+
+        final ResourceBundle resourceBundle = ResourceBundle.getBundle("edu.utexas.cs.orc.orceclipse.messages"); //$NON-NLS-1$
+
+        {
+            final TextOperationAction action = new TextOperationAction(resourceBundle, "Editor.Comment.", this, ITextOperationTarget.PREFIX); //$NON-NLS-1$
+            action.setActionDefinitionId("edu.utexas.cs.orc.orceclipse.edit.comment"); //$NON-NLS-1$
+            setAction("Comment", action); //$NON-NLS-1$
+            markAsStateDependentAction("Comment", true); //$NON-NLS-1$
+            PlatformUI.getWorkbench().getHelpSystem().setHelp(action, "edu.utexas.cs.orc.orceclipse.edit.comment_action"); //$NON-NLS-1$
+        }
+        {
+            final TextOperationAction action = new TextOperationAction(resourceBundle, "Editor.Uncomment.", this, ITextOperationTarget.STRIP_PREFIX); //$NON-NLS-1$
+            action.setActionDefinitionId("edu.utexas.cs.orc.orceclipse.edit.uncomment"); //$NON-NLS-1$
+            setAction("Uncomment", action); //$NON-NLS-1$
+            markAsStateDependentAction("Uncomment", true); //$NON-NLS-1$
+            PlatformUI.getWorkbench().getHelpSystem().setHelp(action, "edu.utexas.cs.orc.orceclipse.edit.uncomment_action"); //$NON-NLS-1$
+        }
     }
 
     /**

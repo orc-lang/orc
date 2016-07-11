@@ -98,6 +98,11 @@ public class OrcEditorActionContributor extends TextEditorActionContributor {
     private void orcSetActiveEditor(final IEditorPart targetEditor) {
         if (targetEditor instanceof ITextEditor) {
             final ITextEditor targetTextEditor = (ITextEditor) targetEditor;
+
+            final IActionBars bars = getActionBars();
+            bars.setGlobalActionHandler("edu.utexas.cs.orc.orceclipse.edit.Comment", getAction(targetTextEditor, "Comment")); //$NON-NLS-1$ //$NON-NLS-2$
+            bars.setGlobalActionHandler("edu.utexas.cs.orc.orceclipse.edit.Uncomment", getAction(targetTextEditor, "Uncomment")); //$NON-NLS-1$ //$NON-NLS-2$
+
             toggleInsertModeAction.setAction(getAction(targetTextEditor, ITextEditorActionConstants.TOGGLE_INSERT_MODE));
         }
     }
