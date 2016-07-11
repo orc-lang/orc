@@ -107,7 +107,7 @@ public class OrcLabelProvider extends BaseLabelProvider implements ILabelProvide
         } catch (final CoreException e) {
             OrcPlugin.log(e);
         }
-        if (!OrcPlugin.isOrcIncludeFile(file.getFullPath())) {
+        if (!OrcPlugin.isOrcIncludeFile(file)) {
             // Assume Orc file
             switch (sev) {
             case IMarker.SEVERITY_ERROR:

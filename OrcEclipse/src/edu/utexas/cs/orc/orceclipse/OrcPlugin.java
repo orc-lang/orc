@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -136,24 +135,28 @@ public class OrcPlugin extends AbstractUIPlugin {
     /**
      * Check if a file is an Orc source file (not including Orc includes).
      *
-     * @param file the IPath to check
+     * @param file the IFile to check
      * @return true iff file is an Orc source file
-     * @see #isOrcIncludeFile(IPath)
+     * @see #isOrcIncludeFile(IFile)
      */
-    public static boolean isOrcSourceFile(final IPath file) {
-        // TODO: Use extensions declared in plugin.xml?
+    public static boolean isOrcSourceFile(final IFile file) {
+        // TODO: Use file content types (see below)
         return "orc".equals(file.getFileExtension()); //$NON-NLS-1$
+        // orcSourceFileContentType = get content type for id "edu.utexas.cs.orc.source"
+        // return file.getContentDescription().getContentType().isKindOf(orcSourceFileContentType);
     }
 
     /**
      * Check if a file is an Orc include file.
      *
-     * @param file the IPath to check
+     * @param file the IFile to check
      * @return true iff file is an Orc include file
-     * @see #isOrcSourceFile(IPath)
+     * @see #isOrcSourceFile(IFile)
      */
-    public static boolean isOrcIncludeFile(final IPath file) {
+    public static boolean isOrcIncludeFile(final IFile file) {
         return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
+        // orcIncludeFileContentType = get content type for id "edu.utexas.cs.orc.include"
+        // return file.getContentDescription().getContentType().isKindOf(orcIncludeFileContentType);
     }
 
 //    public static final PrintWriter errWriter = new PrintWriter(new FileWriter(FileDescriptor.err), true);

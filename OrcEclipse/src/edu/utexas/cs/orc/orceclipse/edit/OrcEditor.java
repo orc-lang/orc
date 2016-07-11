@@ -14,11 +14,15 @@
 package edu.utexas.cs.orc.orceclipse.edit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import orc.ast.AST;
@@ -78,8 +82,27 @@ public class OrcEditor extends TextEditor {
         setEditorContextMenuId("#OrcEditorContext"); //$NON-NLS-1$
         setRulerContextMenuId("#OrcRulerContext"); //$NON-NLS-1$
         setHelpContextId("edu.utexas.cs.orc.orceclipse.text_editor_context"); //$NON-NLS-1$
+
+        /* Enable SMART_INSERT with our autoEditStrategies */
         configureInsertMode(SMART_INSERT, true);
+        configureInsertMode(INSERT, false);
+        configureInsertMode(INSERT, true);
         setInsertMode(SMART_INSERT);
+    }
+
+    /**
+     * Configures the decoration support for this editor's source viewer.
+     *
+     * @param support the decoration support to configure
+     */
+    @Override
+    protected void configureSourceViewerDecorationSupport(final SourceViewerDecorationSupport support) {
+        final DefaultCharacterPairMatcher charPairMatcher = new DefaultCharacterPairMatcher(new char[] { '(', ')', '{', '}', '[', ']' }, IDocumentExtension3.DEFAULT_PARTITIONING);
+        support.setCharacterPairMatcher(charPairMatcher);
+        /* Use preferences from JDT editors */
+        support.setMatchingCharacterPainterPreferenceKeys(PreferenceConstants.EDITOR_MATCHING_BRACKETS, PreferenceConstants.EDITOR_MATCHING_BRACKETS_COLOR, PreferenceConstants.EDITOR_HIGHLIGHT_BRACKET_AT_CARET_LOCATION, PreferenceConstants.EDITOR_ENCLOSING_BRACKETS);
+
+        super.configureSourceViewerDecorationSupport(support);
     }
 
     /**
@@ -96,7 +119,6 @@ public class OrcEditor extends TextEditor {
      */
     @Override
     protected void createActions() {
-        // TODO Auto-generated method stub
         super.createActions();
     }
 
@@ -105,7 +127,6 @@ public class OrcEditor extends TextEditor {
      */
     @Override
     protected void editorContextMenuAboutToShow(final IMenuManager menu) {
-        // TODO Auto-generated method stub
         super.editorContextMenuAboutToShow(menu);
     }
 

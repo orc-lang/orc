@@ -15,6 +15,7 @@ package edu.utexas.cs.orc.orceclipse.parse;
 
 import java.net.URI;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -120,7 +121,8 @@ public class OrcParsingReconciler implements IReconcilingStrategy, IReconcilingS
 
         final String inputName = orcEditor.getEditorInput().getName();
         final IPath inputAbsolutePath = ((IPathEditorInput) orcEditor.getEditorInput()).getPath();
-        final IProject inputProject = ((IFileEditorInput) orcEditor.getEditorInput()).getFile().getProject();
+        final IFile inputFile = ((IFileEditorInput) orcEditor.getEditorInput()).getFile();
+        final IProject inputProject = inputFile.getProject();
 
         OrcConfigSettings config;
         try {
@@ -172,7 +174,7 @@ public class OrcParsingReconciler implements IReconcilingStrategy, IReconcilingS
 
         try {
             ParseResult<?> result;
-            if (!OrcPlugin.isOrcIncludeFile(inputAbsolutePath)) {
+            if (!OrcPlugin.isOrcIncludeFile(inputFile)) {
                 result = OrcProgramParser.apply(ic, co, dummyEnvServices);
             } else {
                 result = OrcIncludeParser.apply(ic, co, dummyEnvServices);

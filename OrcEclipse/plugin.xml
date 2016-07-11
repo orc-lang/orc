@@ -16,18 +16,20 @@
          name="Orc content types"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            file-extensions="orc"
             base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            file-extensions="orc"
+            id="edu.utexas.cs.orc.source"
             name="Orc source code"
-            priority="normal"
-            id="edu.utexas.cs.orc.source">
+            priority="normal">
       </content-type>
       <content-type
-            file-extensions="inc"
             base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            file-extensions="inc"
+            id="edu.utexas.cs.orc.include"
             name="Orc include file"
-            priority="normal"
-            id="edu.utexas.cs.orc.include">
+            priority="normal">
       </content-type>
       <content-type
             file-extensions="oil"
@@ -56,7 +58,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="edu.utexas.cs.orc.orceclipse.edit.OrcEditor"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            contributorClass="edu.utexas.cs.orc.orceclipse.edit.OrcEditorActionContributor"
             default="true"
             extensions="orc, inc"
             icon="icons/orc_file_obj.gif"

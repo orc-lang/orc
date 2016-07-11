@@ -216,7 +216,6 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     protected void incrementalBuild(final IResourceDelta delta, final IProgressMonitor monitor) throws CoreException {
         checkCancel(monitor);
         monitor.subTask(Messages.OrcBuilder_Preparing);
-        // FIXME: Need to build dependencies DAG and propagate changes
         final Set<IFile> collectedResources = startCollectingResources(monitor);
         delta.accept(delta1 -> {
             final IResource resource = delta1.getResource();
@@ -375,6 +374,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      */
     protected List<IFile> computeFilesToBuild(final Set<IFile> collectedResources, final IProgressMonitor monitor) {
         final List<IFile> filesToBuild = new ArrayList<>();
+        // FIXME: Need to build dependencies DAG and propagate changes
         for (final IFile file : collectedResources) {
             if (isSourceFile(file)) {
                 filesToBuild.add(file);
@@ -430,7 +430,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
             return false;
         }
 
-        final boolean result = OrcPlugin.isOrcSourceFile(path) && !isNonRootSourceFile(file);
+        final boolean result = OrcPlugin.isOrcSourceFile(file) && !isNonRootSourceFile(file);
         if (DEBUG) {
             getConsoleStream().println("isSourceFile(" + file + ")=" + result); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -448,7 +448,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      *         unit.
      */
     protected boolean isNonRootSourceFile(final IFile file) {
-        return OrcPlugin.isOrcIncludeFile(file.getFullPath());
+        return OrcPlugin.isOrcIncludeFile(file);
     }
 
     /**
@@ -497,8 +497,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
                 OrcPlugin.logAndShow(e);
             }
 
-            // TODO: If/when we generate compile output, refresh the appropriate
-            // Resources
+            // TODO: If/when we generate compile output, refresh the appropriate resources
 
         } catch (final Exception e) {
             // catch Exception, because any exception could break the
