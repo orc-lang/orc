@@ -298,7 +298,7 @@ public class OrcTokenScanner implements ITokenScanner {
         TokenRecord match = null;
         for (final TokenRecord currDelimRecord : delimiterTable) {
             String inputChars = null;
-            if (offset + currDelimRecord.length() < rangeEnd) {
+            if (offset + currDelimRecord.length() <= rangeEnd) {
                 if (inputChars == null || inputChars.length() != currDelimRecord.length()) {
                     try {
                         inputChars = scannedDocument.get(offset, currDelimRecord.length());
