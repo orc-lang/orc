@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 @SuppressWarnings("javadoc")
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "edu.utexas.cs.orc.orceclipse.messages"; //$NON-NLS-1$
+
     public static String Activator_InternalError;
     public static String EnableOrcNature_AlreadJavaErrorMessage;
     public static String EnableOrcNature_AlreadyJavaErrorTitle;
@@ -76,6 +77,7 @@ public class Messages extends NLS {
     public static String OrcProjectPropertyPage_SitePathDescription;
     public static String OrcProjectPropertyPage_TypeCheckLabel;
     public static String OrcRuntimeClasspathTab_RuntimeClasspathTabName;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
@@ -84,4 +86,5 @@ public class Messages extends NLS {
     private Messages() {
         /* Nothing to do */
     }
+
 }

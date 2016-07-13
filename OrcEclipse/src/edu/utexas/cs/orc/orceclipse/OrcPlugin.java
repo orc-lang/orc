@@ -35,8 +35,8 @@ import org.osgi.framework.BundleContext;
  */
 public class OrcPlugin extends AbstractUIPlugin {
 
-    // These must correspond to the values in plugin.xml
-    private static final String pluginID = "edu.utexas.cs.orc.orceclipse"; //$NON-NLS-1$
+    /* These must correspond to the bundle manifest's Bundle-SymbolicName */
+    private static final String PLUGIN_ID = "edu.utexas.cs.orc.orceclipse"; //$NON-NLS-1$
 
     /**
      * The unique instance of this plugin class
@@ -64,6 +64,9 @@ public class OrcPlugin extends AbstractUIPlugin {
     @Override
     public void start(final BundleContext context) throws Exception {
         super.start(context);
+        if (!getId().equals(context.getBundle().getSymbolicName())) {
+            throw new AssertionError("OrcPlugin.start's bundle symbolic name != OrcPlugin.getId:  context.bundle.symbolicName=" + context.getBundle().getSymbolicName() + ", OrcPlugin.getId=" + getId()); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         OrcConfigSettings.initDefaultPrefs();
     }
 
@@ -72,8 +75,8 @@ public class OrcPlugin extends AbstractUIPlugin {
      *
      * @return the plugin ID string
      */
-    public static String getID() {
-        return pluginID;
+    public static String getId() {
+        return PLUGIN_ID;
     }
 
     /**
@@ -92,7 +95,7 @@ public class OrcPlugin extends AbstractUIPlugin {
      */
     public static void log(final Throwable e) {
         final String msg = e instanceof CoreException ? e.getMessage() : Messages.Activator_InternalError;
-        log(new Status(IStatus.ERROR, getID(), 0, msg, e));
+        log(new Status(IStatus.ERROR, getId(), 0, msg, e));
     }
 
     /**
@@ -106,7 +109,7 @@ public class OrcPlugin extends AbstractUIPlugin {
         if (e instanceof CoreException) {
             msg = e.getLocalizedMessage();
         }
-        StatusManager.getManager().handle(new Status(IStatus.ERROR, getID(), msg, e), StatusManager.SHOW);
+        StatusManager.getManager().handle(new Status(IStatus.ERROR, getId(), msg, e), StatusManager.SHOW);
     }
 
     @Override
@@ -142,7 +145,7 @@ public class OrcPlugin extends AbstractUIPlugin {
     public static boolean isOrcSourceFile(final IFile file) {
         // TODO: Use file content types (see below)
         return "orc".equals(file.getFileExtension()); //$NON-NLS-1$
-        // orcSourceFileContentType = get content type for id "edu.utexas.cs.orc.source"
+        // orcSourceFileContentType = get content type for id OrcPluginIds.ContentType.ORC_SOURCE_CODE
         // return file.getContentDescription().getContentType().isKindOf(orcSourceFileContentType);
     }
 
@@ -155,7 +158,7 @@ public class OrcPlugin extends AbstractUIPlugin {
      */
     public static boolean isOrcIncludeFile(final IFile file) {
         return "inc".equals(file.getFileExtension()); //$NON-NLS-1$
-        // orcIncludeFileContentType = get content type for id "edu.utexas.cs.orc.include"
+        // orcIncludeFileContentType = get content type for id OrcPluginIds.ContentType.ORC_INCLUDE_FILE
         // return file.getContentDescription().getContentType().isKindOf(orcIncludeFileContentType);
     }
 
@@ -174,8 +177,8 @@ public class OrcPlugin extends AbstractUIPlugin {
 //    private static void debugWrite(final String string) {
 //        final StackTraceElement caller = new Throwable("Get stack trace").getStackTrace()[2]; //$NON-NLS-1$
 //        String className = caller.getClassName();
-//        if (className.startsWith(pluginID)) {
-//            className = className.substring(pluginID.length() + 1);
+//        if (className.startsWith(PLUGIN_ID)) {
+//            className = className.substring(PLUGIN_ID.length() + 1);
 //        }
 //        errWriter.println(className + "." + caller.getMethodName() + string); //$NON-NLS-1$
 //    }

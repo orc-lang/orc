@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
+<?eclipse version="3.4"?>
 <!-- plugin.xml - Eclipse plug-in manifest
      Project OrcEclipse
 
@@ -12,7 +12,7 @@
 <plugin>
 
    <extension
-         id="edit.contentTypes"
+         id="edu.utexas.cs.orc.orceclipse.contentTypes"
          name="Orc content types"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
@@ -62,7 +62,7 @@
             default="true"
             extensions="orc, inc"
             icon="icons/orc_file_obj.gif"
-            id="edu.utexas.cs.orc.orceclipse.edit.orcEditor"
+            id="edu.utexas.cs.orc.orceclipse.orcEditor"
             name="Orc Editor">
          <contentTypeBinding
                contentTypeId="edu.utexas.cs.orc.source">
@@ -82,7 +82,7 @@
       </context>
    </extension>
    <extension
-         id="build.orcBuilder"
+         id="edu.utexas.cs.orc.orceclipse.build.orcBuilder"
          name="Orc Compiler"
          point="org.eclipse.core.resources.builders">
       <builder
@@ -93,7 +93,7 @@
       </builder>
    </extension>
    <extension
-         id="project.orcNature"
+         id="edu.utexas.cs.orc.orceclipse.project.orcNature"
          name="Orc Nature"
          point="org.eclipse.core.resources.natures">
       <builder
@@ -120,31 +120,34 @@
             icon="icons/orc_ovr.gif"
             id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage"
             natureId="edu.utexas.cs.orc.orceclipse.project.orcNature">
+         <description>
+            Orc project nature
+         </description>
       </image>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
       <category
-            id="edu.utexas.cs.orc.orceclipse.category"
+            id="edu.utexas.cs.orc.orceclipse.orcCommandCategory"
             name="Orc">
       </category>
       <command
-            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            categoryId="edu.utexas.cs.orc.orceclipse.orcCommandCategory"
             defaultHandler="edu.utexas.cs.orc.orceclipse.project.EnableOrcNature"
             description="Enable the Orc builder for this project"
-            id="edu.utexas.cs.orc.orceclipse.project.enableOrcNature"
+            id="edu.utexas.cs.orc.orceclipse.enableOrcNature"
             name="Convert to Orc Project">
       </command>
       <command
-            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            categoryId="edu.utexas.cs.orc.orceclipse.orcCommandCategory"
             description="Make the selected lines comments"
-            id="edu.utexas.cs.orc.orceclipse.edit.comment"
+            id="edu.utexas.cs.orc.orceclipse.commentCommand"
             name="Comment">
       </command>
       <command
-            categoryId="edu.utexas.cs.orc.orceclipse.category"
+            categoryId="edu.utexas.cs.orc.orceclipse.orcCommandCategory"
             description="Make the selected lines non-comment text"
-            id="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            id="edu.utexas.cs.orc.orceclipse.uncommentCommand"
             name="Uncomment">
       </command>
    </extension>
@@ -153,7 +156,7 @@
       <menuContribution
             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
          <command
-               commandId="edu.utexas.cs.orc.orceclipse.project.enableOrcNature"
+               commandId="edu.utexas.cs.orc.orceclipse.enableOrcNature"
                icon="orc16.gif">
             <visibleWhen
                   checkEnabled="false">
@@ -180,17 +183,17 @@
       <menuContribution
             locationURI="menu:edit?after=additions">
          <command
-               commandId="edu.utexas.cs.orc.orceclipse.edit.comment">
+               commandId="edu.utexas.cs.orc.orceclipse.commentCommand">
          </command>
          <command
-               commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment">
+               commandId="edu.utexas.cs.orc.orceclipse.uncommentCommand">
          </command>
       </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="edu.utexas.cs.orc.orceclipse.edit.comment"
+            commandId="edu.utexas.cs.orc.orceclipse.commentCommand"
             contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+/">
@@ -202,14 +205,14 @@
             sequence="M1+M2+/">
       </key>
       <key
-            commandId="edu.utexas.cs.orc.orceclipse.edit.comment"
+            commandId="edu.utexas.cs.orc.orceclipse.commentCommand"
             contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
             platform="carbon"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M4+/">
       </key>
       <key
-            commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            commandId="edu.utexas.cs.orc.orceclipse.uncommentCommand"
             contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+\">
@@ -221,7 +224,7 @@
             sequence="M1+M2+\">
       </key>
       <key
-            commandId="edu.utexas.cs.orc.orceclipse.edit.uncomment"
+            commandId="edu.utexas.cs.orc.orceclipse.uncommentCommand"
             contextId="edu.utexas.cs.orc.orceclipse.orcEditorScope"
             platform="carbon"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -229,7 +232,7 @@
       </key>
    </extension>
    <extension
-         id="problemmarker"
+         id="edu.utexas.cs.orc.orceclipse.problemmarker"
          name="Orc Problem"
          point="org.eclipse.core.resources.markers">
       <super
@@ -240,7 +243,7 @@
       </persistent>
    </extension>
    <extension
-         id="parse.problemmarker"
+         id="edu.utexas.cs.orc.orceclipse.parse.problemmarker"
          name="Orc Problem"
          point="org.eclipse.core.resources.markers">
       <super
@@ -254,7 +257,7 @@
          point="org.eclipse.ui.propertyPages">
       <page
             class="edu.utexas.cs.orc.orceclipse.project.OrcProjectPropertyPage"
-            id="edu.utexas.cs.orc.orceclipse.project.propertyPage"
+            id="edu.utexas.cs.orc.orceclipse.orcProjectPropertyPage"
             name="Orc Project Settings">
          <enabledWhen>
             <and>
@@ -270,6 +273,45 @@
       </page>
    </extension>
    <extension
+         point="org.eclipse.ui.console.consolePatternMatchListeners">
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.HttpPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.httpPatternMatchListener"
+            qualifier="http://"
+            regex="http://[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&amp;\&apos;\(\)\*\+\,\;\=\%]+">
+         <enablement></enablement>
+      </consolePatternMatchListener>
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.OrcPosPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.orcPosPatternMatchListener"
+            qualifier="\.((orc)|(inc))\:[0-9]+?\:[0-9]+?[\n\:]"
+            regex="((.+?\.((orc)|(inc))\:[0-9]+?\:[0-9]+?\:)|((?&lt;= at ).+?\.orc\:[0-9]+?\:[0-9]+?\n))">
+         <enablement></enablement>
+      </consolePatternMatchListener>
+      <consolePatternMatchListener
+            class="edu.utexas.cs.orc.orceclipse.launch.OrcWikiPatternMatchListener"
+            id="edu.utexas.cs.orc.orceclipse.orcExceptionPatternMatchListener"
+            qualifier="\[\[OrcWiki\:"
+            regex="\[\[OrcWiki\:[A-Za-z0-9_\-\#\%]+\]\]">
+         <enablement>
+            <or>
+               <test
+                     property="org.eclipse.ui.console.consoleTypeTest"
+                     value="javaStackTraceConsole">
+               </test>
+               <test
+                     property="org.eclipse.debug.ui.processTypeTest"
+                     value="java">
+               </test>
+               <test
+                     property="org.eclipse.debug.ui.processTypeTest"
+                     value="org.eclipse.ant.ui.antProcess">
+               </test>
+            </or>
+         </enablement>
+      </consolePatternMatchListener>
+   </extension>
+   <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
             name="Orc Program"
@@ -277,17 +319,17 @@
             modes="run"
             public="true"
             delegateName="Orc Program Launcher"
-            id="edu.utexas.cs.orc.orceclipse.launch.orcApplication"
+            id="edu.utexas.cs.orc.orceclipse.orcProgramLaunch"
             delegateDescription="Create a configuration to launch an Orc application.">
       </launchConfigurationType>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            type="edu.utexas.cs.orc.orceclipse.launch.orcApplication"
+            type="edu.utexas.cs.orc.orceclipse.orcProgramLaunch"
             description="Create a configuration to launch an Orc application."
             class="edu.utexas.cs.orc.orceclipse.launch.OrcLaunchConfigurationTabGroup"
-            id="edu.utexas.cs.orc.orceclipse.launch.launchConfigurationTabGroup">
+            id="edu.utexas.cs.orc.orceclipse.orcLaunchConfigurationTabGroup">
       </launchConfigurationTabGroup>
    </extension>
    <extension
@@ -298,7 +340,7 @@
             description="Launch the current file as an Orc application"
             modes="run"
             class="edu.utexas.cs.orc.orceclipse.launch.OrcLaunchShortcut"
-            id="edu.utexas.cs.orc.orceclipse.launch.shortcut">
+            id="edu.utexas.cs.orc.orceclipse.runOrcLaunchShortcut">
          <contextualLaunch>
             <contextLabel
                   label="Orc Program"
@@ -328,8 +370,8 @@
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
             icon="orc16.gif"
-            configTypeID="edu.utexas.cs.orc.orceclipse.launch.orcApplication"
-            id="edu.utexas.cs.orc.orceclipse.launch.orcApplicationImage">
+            configTypeID="edu.utexas.cs.orc.orceclipse.orcProgramLaunch"
+            id="edu.utexas.cs.orc.orceclipse.orcProgramLaunchImage">
       </launchConfigurationTypeImage>
    </extension>
    <extension
@@ -338,13 +380,13 @@
             name="Orc"
             icon="orc16.gif"
             class="edu.utexas.cs.orc.orceclipse.OrcPerspectiveFactory"
-            id="edu.utexas.cs.orc.orceclipse.perspective.main">
+            id="edu.utexas.cs.orc.orceclipse.mainOrcPerspective">
       </perspective>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
-            targetID="edu.utexas.cs.orc.orceclipse.perspective.main">
+            targetID="edu.utexas.cs.orc.orceclipse.mainOrcPerspective">
          <view
                relative="org.eclipse.ui.editorss"
                id="org.eclipse.ui.navigator.ProjectExplorer"
@@ -436,10 +478,10 @@
                id="org.eclipse.team.cvs.ui.cvsPerspective">
          </perspectiveShortcut>
          <newWizardShortcut
-               id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
+               id="edu.utexas.cs.orc.orceclipse.newOrcProjectWizard">
          </newWizardShortcut>
          <newWizardShortcut
-               id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
+               id="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
          </newWizardShortcut>
          <newWizardShortcut
                id="org.eclipse.ui.wizards.new.folder">
@@ -481,10 +523,10 @@
       <perspectiveExtension
             targetID="*">
          <perspectiveShortcut
-               id="edu.utexas.cs.orc.orceclipse.perspective.main">
+               id="edu.utexas.cs.orc.orceclipse.mainOrcPerspective">
          </perspectiveShortcut>
          <newWizardShortcut
-               id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
+               id="edu.utexas.cs.orc.orceclipse.newOrcProjectWizard">
          </newWizardShortcut>
       </perspectiveExtension>
    </extension>
@@ -492,53 +534,59 @@
          point="org.eclipse.ui.newWizards">
       <category
             name="Orc"
-            id="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory">
+            id="edu.utexas.cs.orc.orceclipse.orcWizardCategory">
       </category>
       <wizard
             name="New Orc Project"
             icon="orc16.gif"
-            category="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory"
+            category="edu.utexas.cs.orc.orceclipse.orcWizardCategory"
             class="edu.utexas.cs.orc.orceclipse.project.OrcNewProjectWizard"
-            preferredPerspectives="edu.utexas.cs.orc.orceclipse.perspective.main"
+            preferredPerspectives="edu.utexas.cs.orc.orceclipse.mainOrcPerspective"
             project="true"
-            finalPerspective="edu.utexas.cs.orc.orceclipse.perspective.main"
-            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
+            finalPerspective="edu.utexas.cs.orc.orceclipse.mainOrcPerspective"
+            id="edu.utexas.cs.orc.orceclipse.newOrcProjectWizard">
          <description>
             Create a new project for an Orc program
          </description>
       </wizard>
       <wizard
-            category="edu.utexas.cs.orc.orceclipse.wizards.OrcCategory"
+            category="edu.utexas.cs.orc.orceclipse.orcWizardCategory"
             class="edu.utexas.cs.orc.orceclipse.edit.NewOrcFileWizard"
             icon="orc16.gif"
-            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard"
+            id="edu.utexas.cs.orc.orceclipse.newOrcFileWizard"
             name="New Orc File"
             project="false">
          <description>
             Create a new Orc source code file
          </description>
       </wizard>
-      <category
-            id="edu.utexas.cs.orc.orceclipse"
-            name="Orc">
-      </category>
       <primaryWizard
-            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
+            id="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
       </primaryWizard>
       <primaryWizard
-            id="edu.utexas.cs.orc.orceclipse.wizards.NewOrcProjectWizard">
+            id="edu.utexas.cs.orc.orceclipse.newOrcProjectWizard">
       </primaryWizard>
    </extension>
    <extension
-         point="org.eclipse.ui.ide.projectNatureImages">
-      <image
-            icon="icons/orc_ovr.gif"
-            natureId="edu.utexas.cs.orc.orceclipse.project.orcNature"
-            id="edu.utexas.cs.orc.orceclipse.orcProjectNatureImage">
-         <description>
-            Orc project nature
-         </description>
-      </image>
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <commonWizard
+            type="new"
+            wizardId="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
+         <enablement>
+            <or>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="edu.utexas.cs.orc.orceclipse.project.orcNature">
+                  </test>
+               </adapt>
+               <adapt
+                     type="org.eclipse.core.resources.IFolder">
+               </adapt>
+            </or>
+         </enablement>
+      </commonWizard>
    </extension>
    <extension
          point="org.eclipse.help.toc">
@@ -595,55 +643,6 @@
             content="help/intro/webresources.xml">
       </configExtension>
 -->
-   </extension>
-   <extension
-         point="org.eclipse.ui.navigator.navigatorContent">
-      <commonWizard
-            type="new"
-            wizardId="edu.utexas.cs.orc.orceclipse.wizards.NewOrcFileWizard">
-         <enablement>
-         	<or>
-				<adapt type="org.eclipse.core.resources.IProject">
-					<test property="org.eclipse.core.resources.projectNature" value="edu.utexas.cs.orc.orceclipse.project.orcNature"/>
-				</adapt>
-    <adapt
-          type="org.eclipse.core.resources.IFolder">
-    </adapt>
-			</or>
-         </enablement>
-      </commonWizard>
-   </extension>
-   <extension
-         point="org.eclipse.ui.console.consolePatternMatchListeners">
-      <consolePatternMatchListener
-            class="edu.utexas.cs.orc.orceclipse.launch.HttpPatternMatchListener"
-            id="edu.utexas.cs.orc.orceclipse.launch.httpPatternMatchListener"
-            qualifier="http://"
-            regex="http://[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&amp;\&apos;\(\)\*\+\,\;\=\%]+">
-         <enablement>
-         </enablement>
-      </consolePatternMatchListener>
-      <consolePatternMatchListener
-            class="edu.utexas.cs.orc.orceclipse.launch.OrcPosPatternMatchListener"
-            id="edu.utexas.cs.orc.orceclipse.launch.orcPosPatternMatchListener"
-            qualifier="\.((orc)|(inc))\:[0-9]+?\:[0-9]+?[\n\:]"
-            regex="((.+?\.((orc)|(inc))\:[0-9]+?\:[0-9]+?\:)|((?&lt;= at ).+?\.orc\:[0-9]+?\:[0-9]+?\n))">
-         <enablement>
-         </enablement>
-      </consolePatternMatchListener>
-      <consolePatternMatchListener
-            class="edu.utexas.cs.orc.orceclipse.launch.OrcWikiPatternMatchListener"
-            id="edu.utexas.cs.orc.orceclipse.launch.orcExceptionPatternMatchListener"
-            qualifier="\[\[OrcWiki\:"
-            regex="\[\[OrcWiki\:[A-Za-z0-9_\-\#\%]+\]\]">
-         <enablement>
-            <or>
-			  <test property="org.eclipse.ui.console.consoleTypeTest" value="javaStackTraceConsole"/>
-               <test property="org.eclipse.debug.ui.processTypeTest" value="java"/>
-               <test property="org.eclipse.debug.ui.processTypeTest" value="org.eclipse.ant.ui.antProcess"/>
-            </or>
-         </enablement>
-      </consolePatternMatchListener>
    </extension>
    <extension
          point="org.eclipse.help.contexts">

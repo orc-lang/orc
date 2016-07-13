@@ -73,7 +73,7 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
      */
     @Override
     public void addPages() {
-        page = new NewOrcFileWizardPage("newFilePage1", selection); //$NON-NLS-1$
+        page = new NewOrcFileWizardPage(selection);
         addPage(page);
     }
 

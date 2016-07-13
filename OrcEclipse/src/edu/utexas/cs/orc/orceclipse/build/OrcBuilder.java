@@ -50,6 +50,7 @@ import edu.utexas.cs.orc.orceclipse.EclipseToOrcProgressAdapter;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -66,22 +67,22 @@ public class OrcBuilder extends IncrementalProjectBuilder {
      * Extension ID of the Orc builder, which matches the ID in the
      * corresponding extension definition in plugin.xml.
      */
-    public static final String BUILDER_ID = OrcPlugin.getID() + ".build.orcBuilder"; //$NON-NLS-1$
+    public static final String BUILDER_ID = OrcPluginIds.Extension.ORC_BUILDER;
 
     /**
      * A marker ID that identifies problems detected by the builder
      */
-    public static final String PROBLEM_MARKER_ID = OrcPlugin.getID() + ".problemmarker"; //$NON-NLS-1$
+    public static final String PROBLEM_MARKER_ID = OrcPluginIds.Extension.PROBLEM_MARKER;
 
     /**
      * A marker ID that identifies parse problems detected by the builder
      */
-    public static final String PARSE_PROBLEM_MARKER_ID = OrcPlugin.getID() + ".parse.problemmarker"; //$NON-NLS-1$
+    public static final String PARSE_PROBLEM_MARKER_ID = OrcPluginIds.Extension.PARSE_PROBLEM_MARKER;
 
     /**
-     * A marker attribute name for the compile message code attribute
+     * A marker attribute name for the compile message type attribute
      */
-    public static final String COMPILE_EXCEPTION_NAME = OrcPlugin.getID() + ".compileexceptionname"; //$NON-NLS-1$
+    public static final String COMPILE_MSG_TYPE_MARKER_ATTR_NAME = OrcPlugin.getId() + ".compileMessageType"; //$NON-NLS-1$
 
     private static ImageDescriptor ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR = OrcPlugin.getInstance().getImageRegistry().getDescriptor(OrcResources.ORC_PLUGIN_ICON);
 

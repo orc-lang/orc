@@ -74,7 +74,7 @@ public class EclipseToOrcProgressAdapter implements ProgressMonitor {
 
     @Override
     public void setBlocked(final String reason) {
-        prgrsMntr.setBlocked(new Status(IStatus.INFO, OrcPlugin.getID(), reason));
+        prgrsMntr.setBlocked(new Status(IStatus.INFO, OrcPlugin.getId(), reason));
     }
 
     @Override

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 26, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -31,14 +31,16 @@ import edu.utexas.cs.orc.orceclipse.Messages;
  */
 public class NewOrcFileWizardPage extends WizardNewFileCreationPage {
 
+    /** This wizard page's name (id) */
+    public static final String PAGE_NAME = "newFilePage1"; //$NON-NLS-1$
+
     /**
      * Constructs an object of class NewOrcFileWizardPage.
      *
-     * @param pageName name of new page
      * @param selection the resources currently selected
      */
-    public NewOrcFileWizardPage(final String pageName, final IStructuredSelection selection) {
-        super(pageName, selection);
+    public NewOrcFileWizardPage(final IStructuredSelection selection) {
+        super(PAGE_NAME, selection);
         setTitle(Messages.NewOrcFileWizardPage_Title);
         setDescription(Messages.NewOrcFileWizardPage_Descrption);
         setFileExtension("orc"); //$NON-NLS-1$

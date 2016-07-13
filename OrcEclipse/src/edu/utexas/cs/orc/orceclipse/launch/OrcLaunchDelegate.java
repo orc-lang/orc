@@ -52,6 +52,7 @@ import com.ibm.icu.text.MessageFormat;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
 
 /**
  * Launches an Orc program.
@@ -72,7 +73,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
      * Launch configuration extension type ID for an Orc Program Launch
      * configuration
      */
-    public static final String LAUNCH_CONFIG_ID = "edu.utexas.cs.orc.orceclipse.launch.orcApplication"; //$NON-NLS-1$
+    public static final String LAUNCH_CONFIG_ID = OrcPluginIds.LaunchConfigurationType.ORC_PROGRAM;
 
     /**
      * @return LaunchConfigurationType for Orc Applications
@@ -110,7 +111,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
         if (currentLaunchOrcProg != null) {
             referencedProjectsInBuildOrder = computeReferencedBuildOrder(new IProject[] { currentLaunchOrcProg.getProject() });
         } else {
-            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getId(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
             return false;
         }
         // do generic launch checks
@@ -130,7 +131,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
     @Override
     public void launch(final ILaunchConfiguration configuration, final String mode, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
         if (currentLaunchOrcProg == null) {
-            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getID(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.INFO, OrcPlugin.getId(), 1, Messages.OrcLaunchDelegate_UnableToLaunchNoResourceSelected, null), StatusManager.SHOW);
             return;
         }
 

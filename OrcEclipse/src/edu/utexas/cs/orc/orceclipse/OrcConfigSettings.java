@@ -52,20 +52,20 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
     public static final String PATH_SEPARATOR = "|"; //$NON-NLS-1$
 
-    public static final String LOG_LEVEL_ATTR_NAME = OrcPlugin.getID() + ".LOG_LEVEL"; //$NON-NLS-1$
-    public static final String PRELUDE_ATTR_NAME = OrcPlugin.getID() + ".USE_PRELUDE"; //$NON-NLS-1$
-    public static final String INCLUDE_PATH_ATTR_NAME = OrcPlugin.getID() + ".INCLUDE_PATH"; //$NON-NLS-1$
-    public static final String ADDITIONAL_INCLUDES_ATTR_NAME = OrcPlugin.getID() + ".ADDITIONAL_INCLUDES"; //$NON-NLS-1$
-    public static final String TYPE_CHECK_ATTR_NAME = OrcPlugin.getID() + ".TYPE_CHECK"; //$NON-NLS-1$
-    public static final String RECURSION_CHECK_ATTR_NAME = OrcPlugin.getID() + ".RECURSION_CHECK"; //$NON-NLS-1$
-    public static final String ECHO_OIL_ATTR_NAME = OrcPlugin.getID() + ".ECHO_OIL"; //$NON-NLS-1$
+    public static final String LOG_LEVEL_ATTR_NAME = OrcPlugin.getId() + ".LOG_LEVEL"; //$NON-NLS-1$
+    public static final String PRELUDE_ATTR_NAME = OrcPlugin.getId() + ".USE_PRELUDE"; //$NON-NLS-1$
+    public static final String INCLUDE_PATH_ATTR_NAME = OrcPlugin.getId() + ".INCLUDE_PATH"; //$NON-NLS-1$
+    public static final String ADDITIONAL_INCLUDES_ATTR_NAME = OrcPlugin.getId() + ".ADDITIONAL_INCLUDES"; //$NON-NLS-1$
+    public static final String TYPE_CHECK_ATTR_NAME = OrcPlugin.getId() + ".TYPE_CHECK"; //$NON-NLS-1$
+    public static final String RECURSION_CHECK_ATTR_NAME = OrcPlugin.getId() + ".RECURSION_CHECK"; //$NON-NLS-1$
+    public static final String ECHO_OIL_ATTR_NAME = OrcPlugin.getId() + ".ECHO_OIL"; //$NON-NLS-1$
     //public static final String OIL_OUT_ATTR_NAME = OrcPlugin.getID() + ".OIL_OUT"; //$NON-NLS-1$
-    public static final String SITE_CLASSPATH_ATTR_NAME = OrcPlugin.getID() + ".SITE_CLASSPATH"; //$NON-NLS-1$
-    public static final String SHOW_JAVA_STACK_TRACE_ATTR_NAME = OrcPlugin.getID() + ".SHOW_JAVA_STACK_TRACE"; //$NON-NLS-1$
-    public static final String NO_TCO_ATTR_NAME = OrcPlugin.getID() + ".NO_TCO"; //$NON-NLS-1$
-    public static final String MAX_STACK_DEPTH_ATTR_NAME = OrcPlugin.getID() + ".MAX_STACK_DEPTH"; //$NON-NLS-1$
-    public static final String MAX_TOKENS_ATTR_NAME = OrcPlugin.getID() + ".MAX_TOKENS"; //$NON-NLS-1$
-    public static final String MAX_SITE_THREADS_ATTR_NAME = OrcPlugin.getID() + ".MAX_SITE_THREADS"; //$NON-NLS-1$
+    public static final String SITE_CLASSPATH_ATTR_NAME = OrcPlugin.getId() + ".SITE_CLASSPATH"; //$NON-NLS-1$
+    public static final String SHOW_JAVA_STACK_TRACE_ATTR_NAME = OrcPlugin.getId() + ".SHOW_JAVA_STACK_TRACE"; //$NON-NLS-1$
+    public static final String NO_TCO_ATTR_NAME = OrcPlugin.getId() + ".NO_TCO"; //$NON-NLS-1$
+    public static final String MAX_STACK_DEPTH_ATTR_NAME = OrcPlugin.getId() + ".MAX_STACK_DEPTH"; //$NON-NLS-1$
+    public static final String MAX_TOKENS_ATTR_NAME = OrcPlugin.getId() + ".MAX_TOKENS"; //$NON-NLS-1$
+    public static final String MAX_SITE_THREADS_ATTR_NAME = OrcPlugin.getId() + ".MAX_SITE_THREADS"; //$NON-NLS-1$
 
     private static final OrcBindings defaultConfig = new OrcBindings();
 

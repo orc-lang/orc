@@ -54,7 +54,7 @@ public class OrcWikiHyperLink implements IHyperlink {
         } catch (final PartInitException e) {
             OrcPlugin.logAndShow(e);
         } catch (final MalformedURLException e) {
-            StatusManager.getManager().handle(new Status(IStatus.ERROR, OrcPlugin.getID(), e.getLocalizedMessage(), e), StatusManager.SHOW);
+            StatusManager.getManager().handle(new Status(IStatus.ERROR, OrcPlugin.getId(), e.getLocalizedMessage(), e), StatusManager.SHOW);
         }
     }
 

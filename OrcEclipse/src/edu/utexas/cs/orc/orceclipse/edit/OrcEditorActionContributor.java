@@ -13,8 +13,6 @@
 
 package edu.utexas.cs.orc.orceclipse.edit;
 
-import java.util.ResourceBundle;
-
 import org.eclipse.jdt.ui.IContextMenuConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.ICoolBarManager;
@@ -32,6 +30,9 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 
+import edu.utexas.cs.orc.orceclipse.ActionStrings;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
+
 /**
  * Manages the installation and removal of global actions for Orc editors.
  *
@@ -48,9 +49,7 @@ public class OrcEditorActionContributor extends TextEditorActionContributor {
     public OrcEditorActionContributor() {
         super();
 
-        final ResourceBundle resourceBundle = ResourceBundle.getBundle("edu.utexas.cs.orc.orceclipse.messages"); //$NON-NLS-1$
-
-        toggleInsertModeAction = new RetargetTextEditorAction(resourceBundle, "Editor.ToggleInsertMode.", IAction.AS_CHECK_BOX); //$NON-NLS-1$
+        toggleInsertModeAction = new RetargetTextEditorAction(ActionStrings.getResourceBundle(), ActionStrings.TOGGLE_INSERT_MODE, IAction.AS_CHECK_BOX);
         toggleInsertModeAction.setActionDefinitionId(ITextEditorActionDefinitionIds.TOGGLE_INSERT_MODE);
     }
 
@@ -100,8 +99,8 @@ public class OrcEditorActionContributor extends TextEditorActionContributor {
             final ITextEditor targetTextEditor = (ITextEditor) targetEditor;
 
             final IActionBars bars = getActionBars();
-            bars.setGlobalActionHandler("edu.utexas.cs.orc.orceclipse.edit.Comment", getAction(targetTextEditor, "Comment")); //$NON-NLS-1$ //$NON-NLS-2$
-            bars.setGlobalActionHandler("edu.utexas.cs.orc.orceclipse.edit.Uncomment", getAction(targetTextEditor, "Uncomment")); //$NON-NLS-1$ //$NON-NLS-2$
+            bars.setGlobalActionHandler(OrcPluginIds.Command.COMMENT, getAction(targetTextEditor, OrcPluginIds.Action.COMMENT));
+            bars.setGlobalActionHandler(OrcPluginIds.Command.UNCOMMENT, getAction(targetTextEditor, OrcPluginIds.Action.UNCOMMENT));
 
             toggleInsertModeAction.setAction(getAction(targetTextEditor, ITextEditorActionConstants.TOGGLE_INSERT_MODE));
         }

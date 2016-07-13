@@ -19,7 +19,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 
-import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
 
 /**
  * Orc project nature. When a project is configured with the Orc nature, it will
@@ -28,7 +28,7 @@ import edu.utexas.cs.orc.orceclipse.OrcPlugin;
  * @see org.eclipse.core.resources.IProjectNature
  */
 public class OrcNature implements IProjectNature {
-    private static final String natureID = OrcPlugin.getID() + ".project.orcNature"; //$NON-NLS-1$
+    private static final String natureID = OrcPluginIds.Extension.ORC_NATURE;
 
     /** The project to which this project nature applies. */
     private IProject project;

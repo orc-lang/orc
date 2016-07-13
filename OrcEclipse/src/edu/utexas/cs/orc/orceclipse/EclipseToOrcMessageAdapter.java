@@ -64,7 +64,7 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
     /**
      * Constructs an object of class EclipseToOrcMessageAdapter.
      *
-     * @param sourceId source ID atttribute to use on problem markers
+     * @param sourceId source ID attribute to use on problem markers
      * @param parseOnly if true, use the "parse problem" marker type
      */
     public EclipseToOrcMessageAdapter(final String sourceId, final boolean parseOnly) {
@@ -321,7 +321,7 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
             if (sourceId != null) {
                 attributes.put(IMarker.SOURCE_ID, sourceId);
             }
-            // attributes.put(OrcBuilder.COMPILE_EXCEPTION_NAME, exception != null ? exception.getClass().getCanonicalName() : null);
+            // attributes.put(OrcBuilder.COMPILE_MSG_TYPE_MARKER_ATTR_NAME, exception != null ? exception.getClass().getCanonicalName() : null);
 
             List<TypeAndAttributes> lineEntries = entries.get(lineKey);
             if (lineEntries == null) {

@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Spinner;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
 import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
 import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
@@ -76,7 +77,7 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 
     @Override
     public String getId() {
-        return "edu.utexas.cs.orc.orceclipse.launch.orcGeneralTab"; //$NON-NLS-1$
+        return OrcPluginIds.LaunchConfigurationTab.ORC_GENERAL;
     }
 
     @Override

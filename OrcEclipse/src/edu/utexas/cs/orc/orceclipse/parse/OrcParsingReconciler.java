@@ -56,6 +56,9 @@ import edu.utexas.cs.orc.orceclipse.edit.OrcEditor;
  */
 public class OrcParsingReconciler implements IReconcilingStrategy, IReconcilingStrategyExtension {
 
+    /** source ID value to use on problem markers */
+    public static final String SOURCE_ID = OrcParsingReconciler.class.getName();
+
     private final OrcEditor orcEditor;
     private IDocument document;
     private IProgressMonitor progressMonitor;
@@ -149,7 +152,7 @@ public class OrcParsingReconciler implements IReconcilingStrategy, IReconcilingS
             return null;
         }
 
-        final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(OrcPlugin.getID() + ".parse.orcParseController", true); //$NON-NLS-1$
+        final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(SOURCE_ID, true);
         final CompilerOptions co = new CompilerOptions(config, compileLogger);
 
         compileLogger.beginProcessing(ic);

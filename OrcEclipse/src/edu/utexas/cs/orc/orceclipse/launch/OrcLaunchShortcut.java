@@ -69,7 +69,7 @@ public class OrcLaunchShortcut implements ILaunchShortcut {
             launch(file, mode);
         } catch (final ClassCastException e) {
             // Ignore -- got something not launchable
-            OrcPlugin.log(new Status(IStatus.ERROR, OrcPlugin.getID(), 0, "OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection, null)); //$NON-NLS-1$
+            OrcPlugin.log(new Status(IStatus.ERROR, OrcPlugin.getId(), 0, "OrcLaunchShortcut.launch(ISelection,String): Got a selection that wasn't an IStructuredSelection with one element that is an IFile. selection=" + selection, null)); //$NON-NLS-1$
             ErrorDialog.openError(Display.getCurrent().getActiveShell(), Messages.OrcLaunchShortcut_UnableToLaunchTitle, Messages.OrcLaunchShortcut_UnableToLaunchMessage, null);
         } catch (final NullPointerException e) {
             // Ignore -- got nothing
