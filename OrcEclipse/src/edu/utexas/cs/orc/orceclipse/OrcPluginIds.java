@@ -134,7 +134,6 @@ public interface OrcPluginIds {
     public interface ContributionItems {
         static String ORC_EDITOR_CONTEXT_MENU = OrcPluginIds.Editor.ORC_EDITOR + ".EditorContext";
         static String ORC_EDITOR_RULER_CONTEXT_MENU = OrcPluginIds.Editor.ORC_EDITOR + ".RulerContext";
-        static String XXXXXX = makeId("xxxxxx");
     }
 
     /**
