@@ -7,7 +7,7 @@
 		<ul>
 			<li><a href="#Introduction">Introduction to Orc</a></li>
 			<li><a href="#Semantics">Semantics &amp; Verification</a></li>
-			<li><a href="#Causality">Causality</a></li>
+			<li><a href="#Extensions">Language Extensions</a></li>
 			<li><a href="#Applications">Applications</a></li>
 			<li><a href="#Presentations">Presentations</a></li>
 			<li><a href="#Student_Reports">Student Reports</a></li>
@@ -100,9 +100,18 @@
 	Lecture Notes for NATO summer school, Marktoberdorf, August 2004</li>
 </ul>
 
-<a name="Causality" id="Causality"></a><h2>Causality <small>(<a href="#top">top</a>)</small></h2>
+<a name="Extensions" id="Extensions"></a><h2>Language Extensions <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" href="https://dl.acm.org/citation.cfm?id=2957370" class="paper">Implicitly Distributing Pervasively Concurrent Programs</a>
+	[extended abstract]
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="https://doi.org/10.1145/2957319.2957370">DOI</a>
+	<a class="bibtex" href="papers/Implicitly-Distributing-Pervasively-Concurrent-Programs.bib">BibTeX</a>
+	<br />
+	John A. Thywissen, Arthur Michener Peters, and William R. Cook<br />
+	In <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://2016.ecoop.org/track/PMLDC-2016">First Workshop on Programming Models and Languages for Distributed Computing</a> (PMLDC), 2016<br />
+	July 17, 2016, Rome, Italy.</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/kitchin_dissertation_20136.pdf">Orchestration and Atomicity</a>
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="https://hdl.handle.net/2152/21166">hdl</a>
 	<a class="bibtex" href="papers/kitchin_dissertation_20136.bib">BibTeX</a>
