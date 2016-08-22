@@ -88,15 +88,25 @@ sealed abstract class Expression
 }
 
 case class Stop() extends Expression
-case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
-  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class Limit(expr: Expression) extends Expression
 case class Future(x: BoundVar, left: Expression, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, expr: Expression) extends Expression
+object Force {
+  def apply(x: BoundVar, v:Argument, publishForce: Boolean, expr: Expression): Force = 
+    Force(List(x), List(v), publishForce, expr)
+}
+
+case class IfDef(x: BoundVar, left: Expression, right: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+
+case class CallDef(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+case class CallSite(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+
+case class Parallel(left: Expression, right: Expression) extends Expression
+case class Branch(left: Expression, x: BoundVar, right: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class Trim(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
-case class Force(v: Argument, forceClosures: Boolean) extends Expression 
 
 case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
@@ -130,6 +140,8 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
   with hasOptionalVariableName
   with Substitution[Def] 
   {
+  //TODO: Does Def need to have the closed variables listed here? Probably not unless we are type checking.
+  
   transferOptionalVariableName(name, this)
   //lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
 

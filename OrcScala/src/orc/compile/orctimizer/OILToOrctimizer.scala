@@ -32,44 +32,43 @@ class OILToOrctimizer {
   def apply(e: Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
-      case a: Argument => orct.Force(apply(a), true)
+      case (a: Argument) > x > e => {
+        // Special case to optimize the pattern where we are directly forcing something.
+        val bctx = ctx + ((x, e))
+        orct.Force(List(apply(x)), List(apply(a)), true, apply(e)(bctx))
+      }
+      case a: Argument => {
+        val x = new orct.BoundVar()
+        orct.Force(List(x), List(apply(a)), true, x)
+      }
       case Call(target, args, typeargs) => {
-        // Compute the target value and a flag to state of it should be forced
         target match {
           case Constant(MakeSite) =>
             throw new FeatureNotSupportedException("Classes or MakeSite", e.pos)
           case _ => {}
         }
-        val (newTarget, forceTarget) = target match {
-          case (c: Constant) =>
-            (apply(c), None)
-          case (x: BoundVar) if isDef(x) =>
-            (apply(x), None)
-          case _ =>
-            val t = new orct.BoundVar(Some(s"f_$target"))
-            (t, Some(t))
-        }
-
-        // Build the actual call
-        val call = orct.Call(newTarget, args map apply, typeargs map { _ map apply })
-
-        // Force target if needed
-        forceTarget map { t =>
-          orct.Sequence(orct.Force(apply(target), false), t, call)
-        } getOrElse {
-          call
-        }
+        
+        val t = new orct.BoundVar(Some(s"f_$target"))
+        orct.Force(t, apply(target), false, 
+            orct.IfDef(t, {
+              orct.CallDef(t, args map apply, typeargs map { _ map apply })
+            }, {
+              val argVars = args map { a => new orct.BoundVar(Some(s"f_$a")) }
+              orct.Force(argVars, args map apply, true, 
+                orct.CallDef(t, argVars, typeargs map { _ map apply }))
+            })
+            )
       }
       case left || right => orct.Parallel(apply(left), apply(right))
       case left > x > right => {
         val bctx = ctx + ((x, e))
-        orct.Sequence(apply(left), apply(x), apply(right)(bctx)) 
+        orct.Branch(apply(left), apply(x), apply(right)(bctx)) 
       }
       case left < x <| right => {
         val bctx = ctx + ((x, e))
         orct.Future(apply(x), apply(right), apply(left)(bctx))
       }
-      case Limit(f) => orct.Limit(apply(f))
+      case Limit(f) => orct.Trim(apply(f))
       case left ow right => 
         orct.Otherwise(apply(left), apply(right))
       case DeclareDefs(defs, body) => {
@@ -83,7 +82,7 @@ class OILToOrctimizer {
       case VtimeZone(timeOrder, body) => orct.VtimeZone(apply(timeOrder), apply(body))
       case FieldAccess(o, f) => {
         val t = new orct.BoundVar(Some(s"f_$o"))
-        orct.Force(apply(o), true) > t > orct.FieldAccess(t, f)
+        orct.Force(List(t), List(apply(o)), true, orct.FieldAccess(t, f))
       }
     }    
   }
