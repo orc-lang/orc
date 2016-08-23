@@ -194,6 +194,9 @@ final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: 
   protected val CHECK_PERIOD = 10 /* milliseconds */
 
   override def run() {
+    Logger.warning(
+        "Using experimental WorkStealingScheduler that does not propertly handle blocking threads. " +
+        "Your program may run out of runtime threads if they all block.")
     // For now do no supervision.
     // TODO: Integrate with ForkJoinPool blocking handling.
     /*
