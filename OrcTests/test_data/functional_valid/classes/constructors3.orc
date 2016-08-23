@@ -5,10 +5,10 @@
  - Created by amp on Mar 1, 2015 1:35:32 PM
  -}
 
-class def C(a :: Integer) :: C {
+class def C(a) {
   def f() = D(a)
 }
-class def D(a :: Integer) :: D {
+class def D(a) {
   def f() = C(a)
 }
 
