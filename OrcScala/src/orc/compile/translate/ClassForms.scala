@@ -299,7 +299,7 @@ case class ClassForms(val translator: Translator) {
     * toRecursiveBind is a set of fields that should be bound to specific variables
     * (usually recursive functions). This can contain constrName and often will. 
     */
-  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Seq[Type], returnType: Type)(classcontext: Map[String, ClassInfo]): Callable = {
+  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Option[Seq[Type]], returnType: Option[Type])(classcontext: Map[String, ClassInfo]): Callable = {
     val formals = toBind.map(f => new BoundVar(Some(f.field))).toList
     val body = if (toBind.isEmpty && toRecursiveBind.isEmpty) {
       New(classcontext(clsName).linearization)
@@ -315,13 +315,12 @@ case class ClassForms(val translator: Translator) {
       })
     }
     val typeformals = Nil
-    val argtypes = Some(argTypes.toList)
-    val returntype = Some(returnType)
+    val argtypes = argTypes.map(_.toList)
     
     if(isSite)
-      Site(constrName, formals, body, typeformals, argtypes, returntype)
+      Site(constrName, formals, body, typeformals, argtypes, returnType)
     else
-      Def(constrName, formals, body, typeformals, argtypes, returntype)
+      Def(constrName, formals, body, typeformals, argtypes, returnType)
   }
 
   /** Desugar class constructors.
@@ -336,24 +335,19 @@ case class ClassForms(val translator: Translator) {
   private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
     // Generate constructor names and ext types
     val constructorInfo = (for (ext.ClassDeclaration(constructor: ext.ClassCallableConstructor, _, _) <- clss) yield {
-      val argTypes = (constructor.formals.zipWithIndex) map { both =>
-        val (p, i) = both
+      val argOptTypes = constructor.formals map { p =>
         p match {
-          case ext.TypedPattern(_, t) => t
-          case _ => throw (ConstructorArgumentTypeMissingException(constructor.name, i) at p)
+          case ext.TypedPattern(_, t) => Some(t)
+          case _ => None
         }
       }
-      val returnType = constructor.returntype match {
-        case Some(t) => t
-        case _ => throw (ConstructorReturnTypeMissingException(constructor.name) at constructor)
-      }
-
-      val constrType = ext.LambdaType(Nil, argTypes, returnType)
-      constructor.name -> (new BoundVar(Some(constructor.name)), constrType)
+      val argTypesOpt = if (argOptTypes.exists(_.isEmpty)) None else Some(argOptTypes.map(_.get))
+      val constrType = for(returnType <- constructor.returntype; argTypes <- argTypesOpt) yield ext.LambdaType(Nil, argTypes, returnType)
+      constructor.name -> (new BoundVar(Some(constructor.name)), argTypesOpt, constrType)
     }).toMap
     
-    val toRecursiveBind = constructorInfo map { case (n, (v, _)) => Field(n) -> v }
-    val newConstructorDecls = constructorInfo.toList.map { case (n, (_, t)) => ext.ValSig(n, t) }
+    val toRecursiveBind = constructorInfo map { case (n, (v, _, _)) => Field(n) -> v }
+    val newConstructorDecls = constructorInfo.toList.map { case (n, (_, _, t)) => ext.ValSig(n, t) }
     
     // Generate the desugared classes and constuctor maker functions
     val results = for (cls @ ext.ClassDeclaration(constructor, superclass, body) <- clss) yield {
@@ -362,9 +356,10 @@ case class ClassForms(val translator: Translator) {
         case constructor: ext.ClassCallableConstructor => {
           val newFields = constructor.formals.map(_ => uniqueField("arg"))
           
-          val ext.LambdaType(_, argTypes, returnType) = constructorInfo(constructor.name)._2
+          val (_, argTypesOpt, _) = constructorInfo(constructor.name)
+          val argOptTypes = argTypesOpt.map(_.map(Some(_))).getOrElse(constructor.formals.map(_ => None))
           
-          val newDecls = (newFields zip constructor.formals zip argTypes) flatMap { both =>
+          val newDecls = (newFields zip constructor.formals zip argOptTypes) flatMap { both =>
             val ((tmpField, p), argType) = both
             List(
                 ext.ValSig(tmpField.field, argType), 
@@ -377,7 +372,7 @@ case class ClassForms(val translator: Translator) {
           def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = 
             makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
                 constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
-                argTypes.map(convertType(_)(tc)), convertType(returnType)(tc))(cc)
+                argTypesOpt.map(_.map(convertType(_)(tc))), constructor.returntype map { convertType(_)(tc) })(cc)
                 
           (newCls, Some(constructor.name -> constrMaker _))
         }

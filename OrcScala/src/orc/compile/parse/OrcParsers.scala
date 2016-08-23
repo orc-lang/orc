@@ -412,7 +412,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
       
-      | ("val" ~> ident ~ ("::" ~> parseType)) -> ValSig
+      | ("val" ~> ident ~ ("::" ~> parseType).?) -> ValSig
 
       | "def" ~> parseDefDeclaration
 
