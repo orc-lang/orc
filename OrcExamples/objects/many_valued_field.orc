@@ -1,10 +1,10 @@
 
 
 class def AllValues(f) :: AllValues {
-  val chan = Channel()
+  val lock = Semaphore(1)
   val buffer = Ref([])
-  val _ = f() >x> chan.put(x)
-  def read() = chan.
+  val _ = f() >x> withLock(lock, { buffer := x : buffer? })
+  def read() = each(buffer?)
 }
 
 val o = new { 
