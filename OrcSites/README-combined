@@ -18,10 +18,9 @@ here, in the "lib" directory.
 Orc can be used as a command line Java application (see USING ORC below).
 
 There are numerous examples of Orc programs included in the "examples"
-directory. 
+directory.
 
-See https://orc.csres.utexas.edu/ for more information about Orc,
-including the language user's guide, discussion groups, a wiki, and more.
+See https://orc.csres.utexas.edu/ for more information about Orc.
 
 See the files LICENSE and licenses.yml for license agreements. See 
 licenses.yml for information on bundled third-party libraries and code.
@@ -31,8 +30,12 @@ USING ORC
 To run Orc programs invoke the class orc.Main with all the included JARs 
 on the class path.
 
-java -cp orc-2.1.0.jar:orc-sites-2.1.0.jar:lib/\* orc.Main examples/orco_paper/sec5-1_event_handling.orc
+On Unix-like systems (tested on Linux and Mac OS X):
+java -cp orc-2.9.0-M1.jar:orc-sites-2.9.0-M1.jar:lib/\* orc.Main examples/orco_paper/sec5-1_event_handling.orc
 
+On Windows:
+java -cp orc-2.9.0-M1.jar;orc-site-2.9.0-M1.jar;lib\* orc.Main examples\orco_paper\sec5-4_composing_objects.orc
 
---
-[$Id$]
+(On Windows, there is a known issue which prevents 
+examples\orco_paper\sec5-1_event_handling.orc from loading. It does work 
+propertly on Unix-like platforms.) 
