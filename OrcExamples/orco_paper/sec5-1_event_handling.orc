@@ -25,7 +25,7 @@ class GUI {
     queryButton.setEnabled(false) >>
     resultsList.clear() >>
     db.query(queryEntry.getText()) >r>
-    resultsList.add(r) >> stop ;
+    resultsList.add(r) >> Println(r) >> stop ;
     queryButton.setEnabled(true)
   })
   -- Initialization event handling
@@ -49,6 +49,7 @@ val gui = new GUI {
   val db = new Database
 } 
 
+Println("The database only includes values 'a', 'b', and 'c'.") >> stop |
 gui.frame.onClosing()
 
 |}

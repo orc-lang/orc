@@ -102,5 +102,6 @@ onRequest() >r> {|
       val db = database
     }).handle(r)) |
   r.onDisconnect()
-|}
+|} >> stop ; 
+database.queryChannel.close()
 
