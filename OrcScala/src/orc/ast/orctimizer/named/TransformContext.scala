@@ -139,8 +139,12 @@ object Bindings {
     def nonRecursive: Binding = this
   }
 
-  case class SeqBound(ctx: TransformContext, ast: Sequence) extends Binding {
+  case class SeqBound(ctx: TransformContext, ast: Branch) extends Binding {
     val variable = ast.x
+  }
+  
+  case class ForceBound(ctx: TransformContext, ast: Force, variable: BoundVar) extends Binding {
+    assert(ast.xs.contains(variable))
   }
   
   case class FutureBound(ctx: TransformContext, ast: Future) extends Binding {

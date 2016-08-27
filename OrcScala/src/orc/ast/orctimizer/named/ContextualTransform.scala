@@ -61,16 +61,25 @@ trait ContextualTransform extends NamedASTFunction {
     order[Expression](onExpression, {
         case Stop() => Stop()
         case a: Argument => recurse(a)
-        case Call(target, args, typeargs) => {
+        case CallDef(target, args, typeargs) => {
           val newtarget = recurse(target)
           val newargs = args map { recurse(_) }
           val newtypeargs = typeargs map { _ map { recurse(_) } }
-          Call(newtarget, newargs, newtypeargs)
+          CallDef(newtarget, newargs, newtypeargs)
+        }
+        case CallSite(target, args, typeargs) => {
+          val newtarget = recurse(target)
+          val newargs = args map { recurse(_) }
+          val newtypeargs = typeargs map { _ map { recurse(_) } }
+          CallSite(newtarget, newargs, newtypeargs)
         }
         case left || right => recurse(left) || recurse(right)
-        case e@(left > x > right) => recurse(left) > x > transform(right)(ctx + SeqBound(ctx, e.asInstanceOf[Sequence]))
-        case Limit(f) => Limit(recurse(f))
-        case Force(f, b) => Force(recurse(f), b)
+        case e@(left > x > right) => recurse(left) > x > transform(right)(ctx + SeqBound(ctx, e.asInstanceOf[Branch]))
+        case Trim(f) => Trim(recurse(f))
+        case expr@Force(xs, vs, b, e) => {
+          val newvs = vs map { recurse(_) }
+          Force(xs, newvs, b, transform(e)(ctx extendBindings (xs.map(x => ForceBound(ctx, expr, x)))))
+        }
         case e@Future(x, left, right) => Future(x, recurse(left), transform(right)(ctx + FutureBound(ctx, e)))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case e@DeclareDefs(defs, body) => {

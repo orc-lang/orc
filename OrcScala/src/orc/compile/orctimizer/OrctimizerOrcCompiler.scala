@@ -34,7 +34,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         def logAnalysis() = {
           val stats = Map(
             "limits" -> Analysis.count(prog, {
-              case Limit(_) => true
+              case Trim(_) => true
               case _ => false
             }),
             "futures" -> Analysis.count(prog, {
@@ -42,7 +42,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case _ => false
             }),
             "forces" -> Analysis.count(prog, {
-              case Force(_, _) => true
+              case Force(_, _, _, _) => true
               case _ => false
             }),
             "stops" -> Analysis.count(prog, {

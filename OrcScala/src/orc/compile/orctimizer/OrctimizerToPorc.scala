@@ -39,7 +39,8 @@ class OrctimizerToPorc {
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
 
-  def expression(expr: Expression)(implicit ctx: ConversionContext): porc.Expr = {
+  def expression(expr: Expression)(implicit ctx: ConversionContext): porc.Expr = ??? 
+  /*{
     import porc.PorcInfixNotation._
     val code = expr match {
       case Stop() => porc.Unit()
@@ -64,14 +65,14 @@ class OrctimizerToPorc {
         expression(left) :::
           expression(right)
       }
-      case Sequence(left, x, right) => {
+      case Branch(left, x, right) => {
         val newP = newVarName("P")
         val v = lookup(x)
         let((newP, porc.Continuation(v, expression(right)))) {
           expression(left)(ctx.copy(p = newP))
         }
       }
-      case Limit(f) => {
+      case Trim(f) => {
         val newT = newVarName("T")
         val newP = newVarName("P")
         val v = newVarName()
@@ -135,7 +136,7 @@ class OrctimizerToPorc {
       case _ => ???
     }
     code
-  }
+  }*/
   
   def argument(a: Argument): porc.Value = {
     a match {

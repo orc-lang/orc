@@ -86,16 +86,25 @@ trait NamedASTTransform extends NamedASTFunction {
       e -> {
         case Stop() => Stop()
         case a: Argument => recurse(a)
-        case Call(target, args, typeargs) => {
+        case CallDef(target, args, typeargs) => {
           val newtarget = recurse(target)
           val newargs = args map { recurse(_) }
           val newtypeargs = typeargs map { _ map { recurse(_) } }
-          Call(newtarget, newargs, newtypeargs)
+          CallDef(newtarget, newargs, newtypeargs)
+        }
+        case CallSite(target, args, typeargs) => {
+          val newtarget = recurse(target)
+          val newargs = args map { recurse(_) }
+          val newtypeargs = typeargs map { _ map { recurse(_) } }
+          CallSite(newtarget, newargs, newtypeargs)
         }
         case left || right => recurse(left) || recurse(right)
         case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
-        case Limit(f) => Limit(recurse(f))
-        case Force(f, b) => Force(recurse(f), b)
+        case Trim(f) => Trim(recurse(f))
+        case Force(xs, vs, b, e) => {
+          val newvs = vs map { recurse(_) }
+          Force(xs, newvs, b, transform(e, xs ::: context, typecontext))
+        }
         case Future(x, f, g) => Future(x, recurse(f), transform(g, x :: context, typecontext))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case DeclareDefs(defs, body) => {

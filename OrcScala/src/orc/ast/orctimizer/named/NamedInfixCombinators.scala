@@ -21,14 +21,14 @@ trait NamedInfixCombinators {
 
   def ||(g: Expression) = Parallel(this, g)
 
-  def >>(g: Expression) = Sequence(this, new BoundVar(), g)
+  def >>(g: Expression) = Branch(this, new BoundVar(), g)
 
   trait WithGreater {
     def >(g: Expression): Expression
   }
   def >(x: BoundVar): WithGreater =
     new WithGreater {
-      def >(g: Expression) = Sequence(NamedInfixCombinators.this, x, g)
+      def >(g: Expression) = Branch(NamedInfixCombinators.this, x, g)
     }
   
   def otw(g: Expression) = Otherwise(this, g)
@@ -51,13 +51,13 @@ object || {
 object > {
   def unapply(e: NamedAST) = {
     e match {
-      case Sequence(f, x, g) => Some(((f, x), g))
+      case Branch(f, x, g) => Some(((f, x), g))
       case _ => None
     }
   }
   def unapply(e: WithContext[NamedAST]) = {
     e match {
-      case (n@Sequence(f, x, g)) in ctx => {
+      case (n@Branch(f, x, g)) in ctx => {
         val newctx = ctx + Bindings.SeqBound(ctx, n)
         Some(((f in ctx, x), g in newctx))
       }
@@ -87,9 +87,9 @@ object DefAt {
     case _ => None
   }
 }
-object LimitAt {
+object TrimAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Limit(f)) in ctx => {
+    case (n@Trim(f)) in ctx => {
       Some(f in ctx)
     }
     case _ => None
@@ -106,15 +106,24 @@ object FutureAt {
 }
 object ForceAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Force(f, b)) in ctx => {
-      Some(f in ctx, b)
+    case (n@Force(xs, vs, b, e)) in ctx => {
+      val newctx = ctx extendBindings (xs.map(x => Bindings.ForceBound(ctx, n, x)))
+      Some(xs, vs map (_ in ctx), b, e in newctx)
     }
     case _ => None
   }
 }
-object CallAt {
+object CallDefAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Call(t, args, targs)) in ctx => {
+    case (n@CallDef(t, args, targs)) in ctx => {
+      Some(t in ctx, args, targs, ctx)
+    }
+    case _ => None
+  }
+}
+object CallSiteAt {
+  def unapply(e: WithContext[Expression]) = e match {
+    case (n@CallSite(t, args, targs)) in ctx => {
       Some(t in ctx, args, targs, ctx)
     }
     case _ => None

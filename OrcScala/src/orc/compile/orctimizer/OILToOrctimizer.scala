@@ -48,6 +48,8 @@ class OILToOrctimizer {
           case _ => {}
         }
         
+        // TODO: Add special case for site constants and maybe known defs (if we have enough information for that)
+        
         val t = new orct.BoundVar(Some(s"f_$target"))
         orct.Force(t, apply(target), false, 
             orct.IfDef(t, {
@@ -55,7 +57,7 @@ class OILToOrctimizer {
             }, {
               val argVars = args map { a => new orct.BoundVar(Some(s"f_$a")) }
               orct.Force(argVars, args map apply, true, 
-                orct.CallDef(t, argVars, typeargs map { _ map apply }))
+                orct.CallSite(t, argVars, typeargs map { _ map apply }))
             })
             )
       }

@@ -32,11 +32,13 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
   override def toString() = prettyprint()
 
   override val subtrees: Iterable[NamedAST] = this match {
-    case Call(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
+    case CallDef(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
+    case CallSite(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case left || right => List(left, right)
-    case Sequence(left, x, right) => List(left, x, right)
-    case Limit(f) => List(f)
-    case Force(f, _) => List(f)
+    case left > x > right => List(left, x, right)
+    case Trim(f) => List(f)
+    case Force(xs, vs, _, e) => xs ::: vs ::: List(e)
+    case IfDef(v, l, r) => List(v, l, r)
     case Future(x, f, g) => List(f, g)
     case left Otherwise right => List(left, right)
     case DeclareDefs(defs, body) => defs ::: List(body)
@@ -94,10 +96,13 @@ case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, 
 object Force {
   def apply(x: BoundVar, v:Argument, publishForce: Boolean, expr: Expression): Force = 
     Force(List(x), List(v), publishForce, expr)
+  def asExpr(v: Argument, publishForce: Boolean = true) = {
+    val x = new BoundVar()
+    Force(List(x), List(v), publishForce, x)
+  }
 }
 
-case class IfDef(x: BoundVar, left: Expression, right: Expression) extends Expression
-  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class IfDef(v: Argument, left: Expression, right: Expression) extends Expression
 
 case class CallDef(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
 case class CallSite(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression

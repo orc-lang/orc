@@ -162,6 +162,9 @@ abstract class Optimizer(co: CompilerOptions) {
   val UnusedFutureElim = Opt("unused-future-elim") {
     case (FutureAt(x, f, g), a) if !(g.freeVars contains x) => g || (f >> Stop()) 
   }
+  
+  // TODO: Evaluate and port if needed.
+  /*
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
@@ -176,13 +179,16 @@ abstract class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
+  */
+  
+  // TODO: Port
+  /*
   val ForceElim =  OptFull("force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case ForceAt((v: BoundVar) in _, _) > x > g 
-          if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
-        Some(g)
-      case ForceAt(v, _) if v.valueForceDelay == Delay.NonBlocking => Some(v)
+      /*case ForceAt(xs, vs, _, g) if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
+        Some(g)*/
+      //case ForceAt(xs, vs, _, g) if v.isFuture || v.isDef => Some(v)
       case ForceAt((x: BoundVar) in ctx, forceClosures) => {
         val cannotBeFuture = ctx(x) match {
           case Bindings.SeqBound(fromCtx, from > _ > _) =>
@@ -216,8 +222,10 @@ abstract class Optimizer(co: CompilerOptions) {
       }
       case _ => None
     }
-  }
-  
+  }*/
+
+  // TODO: Port
+	/*
   val LiftForce = OptFull("lift-force") { (e, a) =>
     import a.ImplicitResults._
     val freevars = e.freeVars
@@ -265,6 +273,7 @@ abstract class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
+  */
 
   val StopEquiv = Opt("stop-equiv") {
     case (f, a) if f != Stop() && 
@@ -362,34 +371,15 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
   
-  val LimitElim = Opt("limit-elim") {
-    case (LimitAt(f), a) if a(f).publications <= 1 && a(f).effects <= Effects.BeforePub => f
+  val TrimElim = Opt("limit-elim") {
+    case (TrimAt(f), a) if a(f).publications <= 1 && a(f).effects <= Effects.BeforePub => f
   }
-  val LimitCompChoice = Opt("limit-compiler-choice") {
-    case (LimitAt(Pars(fs, ctx)), a) if fs.size > 1 && fs.exists(f => a(f in ctx).nonBlockingPublish) => {
+  val TrimCompChoice = Opt("limit-compiler-choice") {
+    case (TrimAt(Pars(fs, ctx)), a) if fs.size > 1 && fs.exists(f => a(f in ctx).nonBlockingPublish) => {
       // This could even be smarter and pick the "best" or "fastest" expression.
       val Some(f1) = fs.find(f => a(f in ctx).nonBlockingPublish)
-      Limit(f1)
+      Trim(f1)
     }    
-  }
-  
-  val SiteForceElim = OptFull("site-force-elim") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case call@CallAt(target@Constant(_ : Site) in _, args, targs, ctx) => {
-        val newargs = for (a <- args) yield {
-          a match {
-            case x: BoundVar => ctx(x) match {
-              case Bindings.SeqBound(_, Force(v, _) > _ > _) => v
-              case _ => x
-            }
-            case _ => a
-          }
-        }
-        Some(Call(target, newargs, targs))
-      }
-      case _ => None
-    }
   }
   
   val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
@@ -399,7 +389,7 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._
     
     e match {
-      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
+      case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
         case Bindings.DefBound(dctx, decls, d) => {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
@@ -411,7 +401,7 @@ abstract class Optimizer(co: CompilerOptions) {
           val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
           val hasDefArg = args.exists { 
             case x: BoundVar => ctx(x) match {
-              case Bindings.SeqBound(yctx, Force(y: BoundVar, _) > _ > _) => isClosureBinding(yctx(y))
+              // TODO: Handle closure arguments that have already been forced.
               case b => isClosureBinding(b)
             }
             case _ => false
@@ -439,7 +429,7 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._
     
     e match {
-      case CallAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
+      case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
         case Bindings.RecursiveDefBound(dctx, decls, d) => {
           val DeclareDefsAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
@@ -570,28 +560,28 @@ abstract class Optimizer(co: CompilerOptions) {
     import a.ImplicitResults._, Bindings._
     e match {
       //case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx 
-      case CallAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _)
+      case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _)
           if (v in ctx).nonBlockingPublish => 
         val i = bi.toInt
         ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) 
+          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) 
             if i < args.size && (args(i) in tctx).nonBlockingPublish => 
-              Some(Force(args(i), true))
+              Some(Force.asExpr(args(i), true))
           case _ => None
         }
       //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
-      case CallAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) > x > e
+      case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) > x > e
           if (v in ctx).nonBlockingPublish && !e.freeVars.contains(x) => 
         val i = bi.toInt
         ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
+          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
           case _ => None
         }
-      case CallAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) 
+      case CallSiteAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) 
           if (v in ctx).nonBlockingPublish => 
         val i = bi.intValue
         ctx(v) match {
-          case SeqBound(tctx, Call(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
+          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
           case _ => None
         }
       // TODO: I may need a special case for removing tuple constructors.
@@ -606,11 +596,11 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       SeqReassoc,
       DefSeqNorm, DefElim, 
-      LiftUnrelated, LiftForce,
+      LiftUnrelated, /*LiftForce,*/
       FutureElimFlatten, UnusedFutureElim, FutureElim, 
-      FutureForceElim, ForceElim,
-      SiteForceElim, TupleElim, AccessorElim,
-      LimitCompChoice, LimitElim, ConstProp, 
+      /*FutureForceElim,*/ /*ForceElim,*/
+      /*SiteForceElim,*/ TupleElim, AccessorElim,
+      TrimCompChoice, TrimElim, ConstProp, 
       StopEquiv, StopElim,
       SeqExp, SeqElim, SeqElimVar,
       InlineDef, TypeElim

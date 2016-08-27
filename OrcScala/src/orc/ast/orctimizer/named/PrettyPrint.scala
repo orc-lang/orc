@@ -46,8 +46,16 @@ class PrettyPrint {
   def reduce(ast: NamedAST): String = {
     val exprStr = ast match {
       case Stop() => "stop"
-      case Call(target, args, typeargs) => {
-        reduce(target) +
+      case CallDef(target, args, typeargs) => {
+        "defcall " + reduce(target) +
+          (typeargs match {
+            case Some(ts) => brack(ts)
+            case None => ""
+          }) +
+          paren(args)
+      }
+      case CallSite(target, args, typeargs) => {
+        "sitecall " + reduce(target) +
           (typeargs match {
             case Some(ts) => brack(ts)
             case None => ""
@@ -55,11 +63,12 @@ class PrettyPrint {
           paren(args)
       }
       case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
-      case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case Limit(f) => "{|" + reduce(f) + "|}"
+      case Branch(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
+      case Trim(f) => "{|" + reduce(f) + "|}"
       case Future(x, f, g) => "future " + reduce(x) + " = " + reduce(f) + " #\n" + reduce(g)
-      case Force(f, b) => "force(" + reduce(f) + ", " + (if(b) "closure" else "future only") + ")"
+      case Force(xs, vs, b, e) => s"force_${if(b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} # ${reduce(e)}"
       case left Otherwise right => "(" + reduce(left) + " ; " + reduce(right) + ")"
+      case IfDef(a, l, r) => s"ifdef ${reduce(a)} then ${reduce(l)} else ${reduce(r)}"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
