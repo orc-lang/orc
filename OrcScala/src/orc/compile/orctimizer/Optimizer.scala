@@ -181,48 +181,91 @@ abstract class Optimizer(co: CompilerOptions) {
   }
   */
   
-  // TODO: Port
-  /*
   val ForceElim =  OptFull("force-elim") { (e, a) =>
     import a.ImplicitResults._
+    val ctx = e.ctx
     e match {
       /*case ForceAt(xs, vs, _, g) if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
         Some(g)*/
       //case ForceAt(xs, vs, _, g) if v.isFuture || v.isDef => Some(v)
-      case ForceAt((x: BoundVar) in ctx, forceClosures) => {
-        val cannotBeFuture = ctx(x) match {
-          case Bindings.SeqBound(fromCtx, from > _ > _) =>
-            from match {
-              case Call(_, _, _) => 
-                // This assumes that no call will ever return a future. This means that no optimization can make defs publish futures.
+      case fe@ForceAt(xs, vs, forceClosures, e) => {
+        // Determine which of vs cannot be futures/closures (with checking of forceClosures)
+        def cannotBeFuture(a: Argument) = a match {
+          case x: BoundVar =>
+            ctx(x) match {
+              case Bindings.SeqBound(_, from > _ > _) =>
+                from match {
+                  case CallSite(_, _, _) | CallDef(_, _, _) => 
+                    // This assumes that no call will ever return a future. This means that no optimization can make defs publish futures.
+                    true
+                  case FieldAccess(_, _) => true
+                  case _ => false
+                }
+              case _: Bindings.DefBound | _: Bindings.RecursiveDefBound if !forceClosures =>
                 true
-              case FieldAccess(_, _) => true
-              case _ => false
+              case Bindings.ForceBound(_, _, _) => true
+              // TODO: Add case for site arguments
+              case _ => false          
             }
-          case _ => false          
+          case _: Constant => true
+          case _ => false
         }
         
-        if (cannotBeFuture) {
-          Some(x)
-        } else {
-          // Search the context for a SeqBound of force(x) which has at least as strong a force type
-          val bindOpt = ctx.bindings find {
-            case Bindings.SeqBound(_, Force(`x`, fc) > _ > _) if !forceClosures || fc => true
-            case _ => false
-          }
-          
-  
-          bindOpt map {
-            case Bindings.SeqBound(_, _ > y > _) => {
-              // Just replace this force with y that was already bound to the force.
-              y
+        // Search for elements in vs that have already been forced in the context (with the same or better forceClosures)
+        def forceInContext(a: Argument): Option[Argument] = a match {
+          case x: BoundVar =>
+            // Search the context for a ForceBound of x which has at least as strong a force type
+            val bindOpt = ctx.bindings find {
+              case Bindings.ForceBound(_, Force(xs, vs, fc, _), `x`) if !forceClosures || fc => true
+              case _ => false
+            }
+            
+            bindOpt map {
+              case Bindings.ForceBound(_, fe@Force(_, _, _, _), _) => {
+                Logger.finer(s"Found preforced: $a from $fe")
+                // Just replace this force with y that was already bound to the force.
+                x
+              }
+            }
+          case _ => None
+        }
+        
+        Logger.fine(s"Checking force: ${(xs zip vs.map(_.e))} ${forceClosures}")
+        
+        // Right replaces in e, Left leaves force
+        val forceChanges = for((x, v) <- fe.e.asInstanceOf[Force].toMap) yield {
+          Logger.fine(s"$x = $v")
+          Logger.fine(s"${cannotBeFuture(v)} ${forceInContext(v)}")
+          if(cannotBeFuture(v)) {
+            (x, Right(v))
+          } else {
+            forceInContext(v) match {
+              case Some(r) => 
+                (x, Right(r))
+              case None =>
+                (x, Left(v))
             }
           }
         }
+        
+        // Replace xs in e and rebuild
+        val (newXs, newVs) = forceChanges.collect({
+          case (x, Left(v)) => (x, v)
+        }).unzip
+        
+        val newE = forceChanges.foldLeft(e.e)((e, p) => p match {
+          case (x, Right(v)) => e.subst(v, x: Argument)
+          case _ => e
+        })
+        
+        if(newXs.size > 0)
+          Some(Force(newXs.toList, newVs.toList, forceClosures, newE))
+        else 
+          Some(newE)
       }
       case _ => None
     }
-  }*/
+  }
 
   // TODO: Port
 	/*
@@ -274,6 +317,29 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
   */
+
+  val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
+    import a.ImplicitResults._
+    val ctx = e.ctx
+    e match {
+      case IfDefAt(a, f, g) =>
+        a.e match {
+          case x: BoundVar =>
+            ctx(x) match {
+              case Bindings.SeqBound(_, from > _ > _) => None
+              case _: Bindings.DefBound | _: Bindings.RecursiveDefBound =>
+                Some(f)
+              case Bindings.ForceBound(_, _, _) => None
+              case _ => None
+            } 
+          case c: Constant =>
+            // Constants are never defs
+            Some(g)
+          case _ => None
+        }
+      case _ => None
+    }
+  }
 
   val StopEquiv = Opt("stop-equiv") {
     case (f, a) if f != Stop() && 
@@ -598,7 +664,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
       DefSeqNorm, DefElim, 
       LiftUnrelated, /*LiftForce,*/
       FutureElimFlatten, UnusedFutureElim, FutureElim, 
-      /*FutureForceElim,*/ /*ForceElim,*/
+      /*FutureForceElim,*/ ForceElim, IfDefElim,
       /*SiteForceElim,*/ TupleElim, AccessorElim,
       TrimCompChoice, TrimElim, ConstProp, 
       StopEquiv, StopElim,

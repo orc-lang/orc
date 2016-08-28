@@ -92,7 +92,26 @@ sealed abstract class Expression
 case class Stop() extends Expression
 case class Future(x: BoundVar, left: Expression, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, expr: Expression) extends Expression
+case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, expr: Expression) extends Expression {
+  def varForArg(v: Argument) = {
+    try {
+      xs(vs.indexOf(v))
+    } catch {
+      case _: IndexOutOfBoundsException =>
+        throw new IllegalArgumentException(s"Unknown argument: $v")
+    }
+  }
+  def argForVar(x: BoundVar) = {
+    try {
+      vs(xs.indexOf(x))
+    } catch {
+      case _: IndexOutOfBoundsException =>
+        throw new IllegalArgumentException(s"Unknown variable: $x")
+    }
+  }
+  
+  def toMap = (xs zip vs).toMap
+}
 object Force {
   def apply(x: BoundVar, v:Argument, publishForce: Boolean, expr: Expression): Force = 
     Force(List(x), List(v), publishForce, expr)

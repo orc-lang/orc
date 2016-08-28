@@ -45,6 +45,10 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case Force(_, _, _, _) => true
               case _ => false
             }),
+            "ifdef" -> Analysis.count(prog, {
+              case IfDef(_, _, _) => true
+              case _ => false
+            }),
             "stops" -> Analysis.count(prog, {
               case Stop() => true
               case _ => false

@@ -20,6 +20,7 @@ orct:lift-force
 orct:tuple-elim
 orct:accessor-elim
 orct:flag-elim
+orct:ifdef-elim
 orct:max-passes=15
 porc
 porc:eta-reduce

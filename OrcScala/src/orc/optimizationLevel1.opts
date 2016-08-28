@@ -10,6 +10,7 @@ orct:par-elim
 orct:def-elim
 orct:constant-propogation
 orct:limit-elim
+orct:ifdef-elim
 orct:max-passes=5
 porc
 porc:eta-reduce

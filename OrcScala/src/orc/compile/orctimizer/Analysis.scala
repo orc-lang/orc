@@ -82,6 +82,17 @@ object ForceType {
   */
 }
 
+sealed trait ValueType {
+}
+
+object ValueType {
+  // TODO: Decide if a mini type checker is a good idea.
+  case object Top extends ValueType
+  case class Future(content: ValueType) extends ValueType
+  case object Closure extends ValueType
+  case object Value extends ValueType
+}
+
 /*
 sealed trait ValueKind {
   def join(o: ValueKind) = {
@@ -144,6 +155,8 @@ trait AnalysisResults {
   /** The amount of time forcing values published by this expression will cost.
     */
   def valueForceDelay: Delay
+  
+  //def publishedValueInfo: ValueInfo
   
   def silent = publications only 0
   def talkative = publications > 0
