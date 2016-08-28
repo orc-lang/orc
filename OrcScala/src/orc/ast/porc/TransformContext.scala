@@ -174,16 +174,16 @@ case class LetBound(ctx: TransformContext, ast: Let) extends Binding {
   def value = ast.v
 }
 
-case class SiteBound(ctx: TransformContext, ast: Site, d: SiteDef) extends Binding {
+case class DefBound(ctx: TransformContext, ast: DefDeclaration, d: Def) extends Binding {
   assert(ast.defs.contains(d))
   def variable: Var = d.name
 }
-case class RecursiveSiteBound(ctx: TransformContext, ast: Site, d: SiteDef) extends Binding {
+case class RecursiveDefBound(ctx: TransformContext, ast: DefDeclaration, d: Def) extends Binding {
   assert(ast.defs.contains(d))
   def variable: Var = d.name
 }
 
-case class SiteArgumentBound(ctx: TransformContext, ast: SiteDef, variable: Var) extends Binding {
+case class DefArgumentBound(ctx: TransformContext, ast: Def, variable: Var) extends Binding {
   assert(ast.allArguments.contains(variable))
 }
 
@@ -203,12 +203,14 @@ case class SpawnFutureBound(ctx: TransformContext, ast: SpawnFuture, variable: V
 final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) extends PrecomputeHashcode {
   def subtrees: Iterable[WithContext[PorcAST]] = this match {
     case LetIn(x, v, b) => Seq(v, b)
-    case SiteIn(l, ctx, b) => l.map(_ in ctx).toSeq :+ b
-    case SiteDefIn(n, args, ctx, b) => Seq(b)
+    case DefDeclarationIn(l, ctx, b) => l.map(_ in ctx).toSeq :+ b
+    case DefIn(n, args, ctx, b) => Seq(b)
 
     case CallIn(t, a, ctx) => Seq(t) :+ (a in ctx)
     case SiteCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
     case SiteCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
+    case DefCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
+    case DefCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
     
     case SpawnFutureIn(c, t, pArg, cArg, expr) => Seq(c, t, expr)
 

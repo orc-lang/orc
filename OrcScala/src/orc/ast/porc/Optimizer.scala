@@ -175,7 +175,7 @@ case class Optimizer(co: CompilerOptions) {
   }
    */
 
-  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineSpawn, InlineLet, LetElim, SiteElim, OnHaltedElim)
+  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineSpawn, InlineLet, LetElim, DefElim, OnHaltedElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -242,8 +242,8 @@ object Optimizer {
   val VarLetElim = Opt("var-let-elim") {
     case (LetIn(x, (y: Var) in _, b), a) => b.substAll(Map((x, y)))
   }
-  val SiteElim = Opt("site-elim") {
-    case (SiteIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
+  val DefElim = Opt("def-elim") {
+    case (DefDeclarationIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
   }
 
   val SpecializeSiteCall = OptFull("specialize-sitecall") { (e, a) =>

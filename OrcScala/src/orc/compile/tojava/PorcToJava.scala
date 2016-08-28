@@ -16,7 +16,7 @@ class PorcToJava {
   // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
   //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
   
-  def apply(prog: SiteDefCPS): String = {
+  def apply(prog: DefCPS): String = {
     assert(prog.arguments.isEmpty)
     implicit val ctx = ConversionContext(Map())
     val code = expression(prog.body).indent(2)
@@ -144,12 +144,31 @@ $code
       }
       case SiteCall(target, p, c, t, args) => {
         j"""
-        |$coerceToCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |$coerceToSiteCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case SiteCallDirect(target, args) => {
         j"""
-        |$coerceToDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |$coerceToSiteDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        """
+      }
+      case DefCall(target, p, c, t, args) => {
+        j"""
+        |$coerceToDefCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
+        """
+      }
+      case DefCallDirect(target, args) => {
+        j"""
+        |$coerceToDefDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        """
+      }
+      case IfDef(arg, left, right) => {
+        j"""
+        |if($isInstanceOfDef(${argument(arg)})) {
+          |$left
+        |} else {
+          |$right
+        |}
         """
       }
       case Let(x, v, b) => {
@@ -168,15 +187,15 @@ $code
         |})
         """
       }
-      case Site(defs, body) => {
+      case DefDeclaration(defs, body) => {
         val decls = (for (d <- defs) yield {
           val wrapper = newVarName(d.name.optionalVariableName.getOrElse("_f"))
           vars(d.name) = wrapper + "[0]"
           // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
           d match {
-            case _: SiteDefCPS =>
+            case _: DefCPS =>
               j"""final Callable[] $wrapper = new Callable[1];"""
-            case _: SiteDefDirect =>
+            case _: DefDirect =>
               j"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
           }
         }).mkString("\n")
@@ -297,7 +316,7 @@ $code
     }
   }
   
-  def orcdef(d: SiteDef, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
+  def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
     val args = newVarName("args")
     val rt = newVarName("rt")
     val freevarsStr = j"new Object[] { ${closedVars.map(argument).mkString(", ")} }"
@@ -305,7 +324,7 @@ $code
     // We assume that previous generated code has defined a mutable variable named by vars(name)
     // This will set it to close the recursion.
     d match {
-      case SiteDefCPS(name, p, c, t, formals, b) => {
+      case DefCPS(name, p, c, t, formals, b) => {
         j"""
         |${vars(name)} = new ForcableCallable($freevarsStr, ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
           |$renameargs
@@ -313,7 +332,7 @@ $code
         |});
         """.deindented
       }
-      case SiteDefDirect(name, formals, b) => {
+      case DefDirect(name, formals, b) => {
         j"""
         |${vars(name)} = new ForcableDirectCallable($freevarsStr, ($rt, $args) -> {
           |$renameargs
@@ -332,8 +351,11 @@ $code
 object PorcToJava {
   val execution = "exec"
   val coerceToContinuation = "Coercions$.MODULE$.coerceToContinuation"
-  val coerceToCallable = "Coercions$.MODULE$.coerceToCallable"
-  val coerceToDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable"
+  val isInstanceOfDef = "Coercions$.MODULE$.isInstanceOfDef"
+  val coerceToDefCallable = "Coercions$.MODULE$.coerceToCallable"
+  val coerceToDefDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable"
+  val coerceToSiteCallable = "Coercions$.MODULE$.coerceToCallable/*Site*/"
+  val coerceToSiteDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable/*Site*/"
   val coerceToCounter = "Coercions$.MODULE$.coerceToCounter"
   val coerceToTerminator = "Coercions$.MODULE$.coerceToTerminator"
 

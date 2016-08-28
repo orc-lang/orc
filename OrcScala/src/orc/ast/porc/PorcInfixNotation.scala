@@ -71,40 +71,47 @@ object SequenceIn {
   }
 }
 
-object SiteIn {
+object DefDeclarationIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@Site(ds, b)) in ctx =>
-      val bodyctx = ctx extendBindings ds.map(SiteBound(ctx, s, _))
-      val sitectx = ctx extendBindings ds.map(RecursiveSiteBound(ctx, s, _))
+    case (s@DefDeclaration(ds, b)) in ctx =>
+      val bodyctx = ctx extendBindings ds.map(DefBound(ctx, s, _))
+      val sitectx = ctx extendBindings ds.map(RecursiveDefBound(ctx, s, _))
       Some(ds, sitectx, b in bodyctx)
     case _ => None
   }
 }
 
-object SiteDefIn {
+object DefIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case SiteDefDirectIn(n, args, ctx, b) => Some(n, args, ctx, b)
-    case SiteDefCPSIn(n, _, _, _, args, ctx, b) => Some(n, args, ctx, b)
+    case DefDirectIn(n, args, ctx, b) => Some(n, args, ctx, b)
+    case DefCPSIn(n, _, _, _, args, ctx, b) => Some(n, args, ctx, b)
     case _ => None
   }
 }
 
-object SiteDefCPSIn {
+object DefCPSIn {
   type MatchResult = Option[(Var, Var, Var, Var, List[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
-    case (s : SiteDefCPS) in ctx =>
-      val bodyctx = ctx extendBindings (s.arguments :+ s.pArg  :+ s.cArg :+ s.tArg).map(SiteArgumentBound(ctx, s, _))
+    case (s : DefCPS) in ctx =>
+      val bodyctx = ctx extendBindings (s.arguments :+ s.pArg  :+ s.cArg :+ s.tArg).map(DefArgumentBound(ctx, s, _))
       Some(s.name, s.pArg, s.cArg, s.tArg, s.arguments, bodyctx, s.body in bodyctx)
     case _ => None
   }
 }
 
-object SiteDefDirectIn {
+object DefDirectIn {
   type MatchResult = Option[(Var, List[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
-    case (s : SiteDefDirect) in ctx =>
-      val bodyctx = ctx extendBindings s.arguments.map(SiteArgumentBound(ctx, s, _))
+    case (s : DefDirect) in ctx =>
+      val bodyctx = ctx extendBindings s.arguments.map(DefArgumentBound(ctx, s, _))
       Some(s.name, s.arguments, bodyctx, s.body in bodyctx)
+    case _ => None
+  }
+}
+
+object IfDefIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case (c@IfDef(a, f, g)) in ctx => Some(a in ctx, f in ctx, g in ctx)
     case _ => None
   }
 }
@@ -125,6 +132,19 @@ object SiteCallIn {
 object SiteCallDirectIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case SiteCallDirect(t, args) in ctx => Some(t in ctx, args, ctx)
+    case _ => None
+  }
+}
+
+object DefCallIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case DefCall(target, p, c, t, args) in ctx => Some(target in ctx, p, c, t, args, ctx)
+    case _ => None
+  }
+}
+object DefCallDirectIn {
+  def unapply(e: WithContext[PorcAST]) = e match {
+    case DefCallDirect(t, args) in ctx => Some(t in ctx, args, ctx)
     case _ => None
   }
 }

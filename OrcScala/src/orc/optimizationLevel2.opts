@@ -26,7 +26,7 @@ porc
 porc:eta-reduce
 porc:var-let-elim 
 porc:let-elim 
-porc:site-elim 
+porc:def-elim 
 porc:onhalted-elim
 porc:inline-let
 porc:let-inline-expansion-threshold=10

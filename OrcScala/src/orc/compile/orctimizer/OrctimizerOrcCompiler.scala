@@ -125,7 +125,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
 }
 
 class PorcOrcCompiler() extends OrctimizerOrcCompiler {
-  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.SiteDefCPS] {
+  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.DefCPS] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -134,7 +134,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
 
-  val porcToJava = new CompilerPhase[CompilerOptions, porc.SiteDefCPS, String] {
+  val porcToJava = new CompilerPhase[CompilerOptions, porc.DefCPS, String] {
     val phaseName = "toJava"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -143,13 +143,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
   
-  val optimizePorc = new CompilerPhase[CompilerOptions, porc.SiteDefCPS, porc.SiteDefCPS] {
+  val optimizePorc = new CompilerPhase[CompilerOptions, porc.DefCPS, porc.DefCPS] {
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
    
-      def opt(prog : SiteDefCPS, pass : Int) : SiteDefCPS = {
+      def opt(prog : DefCPS, pass : Int) : DefCPS = {
         val analyzer = new Analyzer
         val stats = Map(
             "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
@@ -157,7 +157,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
             "closures" -> Analysis.count(prog, _.isInstanceOf[Continuation]),
             "indirect calls" -> Analysis.count(prog, _.isInstanceOf[SiteCall]),
             "direct calls" -> Analysis.count(prog, _.isInstanceOf[SiteCallDirect]),
-            "sites" -> Analysis.count(prog, _.isInstanceOf[Site]),
+            "sites" -> Analysis.count(prog, _.isInstanceOf[Def]),
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> analyzer(prog in TransformContext()).cost
           )
@@ -167,7 +167,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         //println(prog)
         //println("-------==========")
         
-        val prog1 = Optimizer(co)(prog, analyzer).asInstanceOf[SiteDefCPS]
+        val prog1 = Optimizer(co)(prog, analyzer).asInstanceOf[DefCPS]
         orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
         if(prog1 == prog || pass > maxPasses)
           prog1

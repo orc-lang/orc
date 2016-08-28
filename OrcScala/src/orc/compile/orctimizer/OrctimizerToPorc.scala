@@ -18,12 +18,12 @@ case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var, recursives: 
 /** @author amp
   */
 class OrctimizerToPorc {
-  def apply(prog: Expression): porc.SiteDefCPS = {
+  def apply(prog: Expression): porc.DefCPS = {
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
     val body = expression(prog)(ConversionContext(p = newP, c = newC, t = newT, recursives = Set()))
-    porc.SiteDefCPS(newVarName("Prog"), newP, newC, newT, Nil, body)
+    porc.DefCPS(newVarName("Prog"), newP, newC, newT, Nil, body)
   }
   
   val vars: mutable.Map[BoundVar, porc.Var] = new mutable.HashMap()
@@ -146,14 +146,14 @@ class OrctimizerToPorc {
     }
   }
   
-  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.SiteDef = {         
+  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.Def = {         
     val Def(f, formals, body, typeformals, argtypes, returntype) = d
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
     val args = formals.map(lookup)
     val name = lookup(f)
-    porc.SiteDefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
+    porc.DefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
   }
   
   private def newFlag(): SiteCallDirect = {

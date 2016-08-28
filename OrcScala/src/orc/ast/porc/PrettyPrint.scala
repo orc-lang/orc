@@ -62,16 +62,19 @@ class PrettyPrint {
       case v : Var => v.optionalVariableName.getOrElse(v.toString)
       
       case Let(x, v, b) => rd"let $x = ${reduce(v, i+3)} in\n$ind$b"
-      case Site(l, b) => rd"site ${l.map(reduce(_, i+3)).mkString(";\n"+indent(i+2))}\n${indent(i+2)} in\n$ind${reduce(b, i)}"
-      case SiteDefCPS(name, p, c, t, args, body) => rd"$name ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
-      case SiteDefDirect(name, args, body) => rd"direct $name (${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
+      case DefDeclaration(l, b) => rd"def ${l.map(reduce(_, i+3)).mkString(";\n"+indent(i+2))}\n${indent(i+2)} in\n$ind${reduce(b, i)}"
+      case DefCPS(name, p, c, t, args, body) => rd"$name ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
+      case DefDirect(name, args, body) => rd"direct $name (${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
       
       case Continuation(arg, b) => rd"\u03BB($arg).\n$ind$b"
 
       case Call(t, a) => rd"$t ($a)"
       case SiteCall(target, p, c, t, args) => rd"sitecall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
       case SiteCallDirect(target, args) => rd"sitecall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
-      
+      case DefCall(target, p, c, t, args) => rd"defcall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
+      case DefCallDirect(target, args) => rd"defcall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
+      case IfDef(arg, f, g) => rd"ifdef $arg then $f else $g"
+     
       case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
       
       case TryOnKilled(b, h) => rd"try\n${indent(i+2)}${reduce(b, i+2)}\n${ind}onKilled\n${indent(i+2)}${reduce(h, i+2)}"

@@ -133,6 +133,8 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case ContinuationIn(_, _, _) => true
       case SiteCallIn(_, _, _, _, _, _) => true
       case SiteCallDirectIn(target, _, _) => target.siteMetadata.map(_.publications > 0).getOrElse(false)
+      case DefCallIn(_, _, _, _, _, _) => true
+      case DefCallDirectIn(target, _, _) => false
       
       /*
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
@@ -163,11 +165,8 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case SiteCallDirectIn(target, args, _) if target.siteMetadata.map(_.timeToHalt == Delay.NonBlocking).getOrElse(false) => {
         true
       }
-      case SiteCallIn((target: Var) in ctx, p, c, t, args, _) => ctx(target) match {
-        case SiteBound(_, _, _) => true
-        case _ => false
-      }
       case SiteCallIn(OrcValue(_) in _, p, c, t, args, _) => true
+      case DefCallIn(target, p, c, t, args, _) => true
 
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
         case LetBound(dctx, l) => 
@@ -206,7 +205,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case _ : Spawn => spawnCost
       case _ : Force | _ : Resolve => forceCost
       case _ : Kill => killCost
-      case _ : Continuation | _ : Site | _ : NewCounter => closureCost
+      case _ : Continuation | _ : Def | _ : NewCounter => closureCost
       case _ : NewTerminator => closureCost
       case _ : Call => callCost
       case _ : SiteCallDirect => externalCallCost

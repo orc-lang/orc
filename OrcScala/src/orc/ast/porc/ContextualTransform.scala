@@ -21,20 +21,20 @@ trait ContextualTransform {
   
   def apply(c: Expr): Expr = transformExpr(c in TransformContext())
   def apply(c: Value): Value = transformValue(c in TransformContext())
-  def apply(c: SiteDef): SiteDef = transformSiteDef(c in TransformContext())
+  def apply(c: Def): Def = transformDef(c in TransformContext())
   def apply(c: WithContext[Expr]): Expr = transformExpr(c)
   def apply(c: WithContext[Value]): Value = transformValue(c)
-  def apply(c: WithContext[SiteDef]): SiteDef = transformSiteDef(c)
+  def apply(c: WithContext[Def]): Def = transformDef(c)
   
   def apply(c: PorcAST): PorcAST = c match {
     case c: Value => this(c)
     case c: Expr => this(c)
-    case c: SiteDef => this(c)
+    case c: Def => this(c)
   }
   def apply(c: WithContext[PorcAST]): PorcAST = c match {
     case c@((_: Value) in _) => this(c)
     case c@((_: Expr) in _) => this(c)
-    case c@((_: SiteDef) in _) => this(c)
+    case c@((_: Def) in _) => this(c)
   }
 
   def onExpr: PartialFunction[WithContext[Expr], Expr] = EmptyFunction
@@ -67,16 +67,19 @@ trait ContextualTransform {
         val bctx = x.ctx + LetBound(x.ctx, e1)
         Let(e1.x, e1.v, transformExpr(b.e in bctx))
       }
-      case s@SiteIn(l, ctx, b) => {
-        val ls1 = l map { v => transformSiteDef(v in ctx) }
-        val e1 = Site(ls1, b)
-        val ctx1 = s.ctx extendBindings ls1.map(SiteBound(ctx, e1, _))
-        Site(ls1, transformExpr(b.e in ctx1))
+      case s@DefDeclarationIn(l, ctx, b) => {
+        val ls1 = l map { v => transformDef(v in ctx) }
+        val e1 = DefDeclaration(ls1, b)
+        val ctx1 = s.ctx extendBindings ls1.map(DefBound(ctx, e1, _))
+        DefDeclaration(ls1, transformExpr(b.e in ctx1))
       }
 
       case CallIn(t, a, ctx) => Call(transformValue(t), transformValue(a in ctx))
       case SiteCallIn(target, p, c, t, args, ctx) => SiteCall(transformValue(target), transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), args map { v => transformValue(v in ctx) })
       case SiteCallDirectIn(t, a, ctx) => SiteCallDirect(transformValue(t), a map { v => transformValue(v in ctx) })
+      case DefCallIn(target, p, c, t, args, ctx) => DefCall(transformValue(target), transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), args map { v => transformValue(v in ctx) })
+      case DefCallDirectIn(t, a, ctx) => DefCallDirect(transformValue(t), a map { v => transformValue(v in ctx) })
+      case IfDefIn(a, f, g) => IfDef(transformValue(a), transformExpr(f), transformExpr(g))
 
       case ContinuationIn(arg, ctx, b) => Continuation(arg in ctx, transformExpr(b))
 
@@ -110,18 +113,18 @@ trait ContextualTransform {
     })(expr)
   }
   
-  def transformSiteDef(expr: WithContext[SiteDef]): SiteDef = {
-    order[SiteDef](callHandler, {
-      case SiteDefCPSIn(name, p, c, t, args, ctx, body) => 
-        SiteDefCPS(
+  def transformDef(expr: WithContext[Def]): Def = {
+    order[Def](callHandler, {
+      case DefCPSIn(name, p, c, t, args, ctx, body) => 
+        DefCPS(
             name, 
             p,
             c,
             t,
             args, 
             transformExpr(body))
-      case SiteDefDirectIn(name, args, ctx, body) => 
-        SiteDefDirect(
+      case DefDirectIn(name, args, ctx, body) => 
+        DefDirect(
             name, 
             args,
             transformExpr(body))

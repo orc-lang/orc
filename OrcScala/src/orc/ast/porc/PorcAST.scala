@@ -130,21 +130,25 @@ object Sequence {
 
 case class Continuation(argument: Var, body: Expr) extends Expr
 
-case class Site(defs: List[SiteDef], body: Expr) extends Expr
-sealed abstract class SiteDef extends PorcAST {
+case class DefDeclaration(defs: List[Def], body: Expr) extends Expr
+sealed abstract class Def extends PorcAST {
   def name: Var
   def arguments: List[Var]
   def body: Expr
   
   def allArguments: List[Var] = arguments
 }
-final case class SiteDefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends SiteDef {
+final case class DefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends Def {
   override def allArguments: List[Var] = pArg :: cArg :: tArg :: arguments
 }
-final case class SiteDefDirect(name: Var, arguments: List[Var], body: Expr) extends SiteDef
+final case class DefDirect(name: Var, arguments: List[Var], body: Expr) extends Def
 
 case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr
 case class SiteCallDirect(target: Value, arguments: List[Value]) extends Expr
+case class DefCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr
+case class DefCallDirect(target: Value, arguments: List[Value]) extends Expr
+
+case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
 
 // ==================== PROCESS ===================
 
