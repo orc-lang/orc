@@ -233,8 +233,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   
   // TODO: For correctness I need to assume values to calls are futures. So I need to block on them at future call time.
   
-  // TODO: Add analysis cases for ifdef
-  
   def timeToHalt(e: WithContext[Expression]): Delay = {
     import ImplicitResults._
     e match {
@@ -258,6 +256,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           (a, acc) => a.valueForceDelay max acc
         }
         e.valueForceDelay max argForceTime
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        f.timeToHalt max g.timeToHalt
       case CallDefAt(target, args, _, ctx) => {
         // TODO: Needs cases for def calls.
         Delay.Blocking
@@ -347,6 +348,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           }
         }).getOrElse(Delay.Blocking)
       }
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        f.timeToPublish max g.timeToPublish
       case DeclareDefsAt(defs, _, body) =>
         body.timeToPublish
       case DeclareTypeAt(_, _, b) =>
@@ -420,6 +424,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.publications * g.publications
       case FutureAt(x, f, g) =>
         g.publications
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        f.publications union g.publications
       case DeclareDefsAt(defs, defsctx, body) => {
         body.publications
       }
@@ -514,6 +521,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         ForceType.mergeMaps(
             _ max _, ForceType.Never, 
             fForces, g.forceTypes)
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        ForceType.mergeMaps(
+            _ max _, ForceType.Never, 
+            f.forceTypes, g.forceTypes)
       case DeclareDefsAt(defs, defsctx, body) =>
         body.forceTypes
       case DeclareTypeAt(_, _, b) =>
@@ -560,6 +572,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         case e =>
           e
       })
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        f.effects max g.effects
       case DeclareDefsAt(defs, defsctx, body) =>
         body.effects
       case DeclareTypeAt(_, _, b) =>
@@ -619,6 +634,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         e.valueForceDelay
       case FutureAt(x, f, g) =>
         g.valueForceDelay
+      case IfDefAt(a, f, g) =>
+        // TODO: Define an analysis to give Def/Unknown/Site
+        f.valueForceDelay max g.valueForceDelay
       case DeclareDefsAt(defs, defsctx, body) =>
         body.valueForceDelay
       case DeclareTypeAt(_, _, b) =>

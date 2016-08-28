@@ -82,6 +82,7 @@ trait ContextualTransform extends NamedASTFunction {
         }
         case e@Future(x, left, right) => Future(x, recurse(left), transform(right)(ctx + FutureBound(ctx, e)))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
+        case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
         case e@DeclareDefs(defs, body) => {
           val newctxrec = ctx extendBindings (defs map { RecursiveDefBound(ctx, e, _) })
           val newdefs = defs map { transform(_)(newctxrec) }

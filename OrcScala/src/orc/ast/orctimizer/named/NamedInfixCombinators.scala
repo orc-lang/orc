@@ -137,6 +137,14 @@ object OtherwiseAt {
     case _ => None
   }
 }
+object IfDefAt {
+  def unapply(e: WithContext[Expression]) = e match {
+    case (n@IfDef(a, f, g)) in ctx => {
+      Some(a in ctx, f in ctx, g in ctx)
+    }
+    case _ => None
+  }
+}
 object DeclareTypeAt {
   def unapply(e: WithContext[Expression]) = e match {
     case (n@DeclareType(tv, t, b)) in ctx => {

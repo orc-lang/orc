@@ -107,6 +107,7 @@ trait NamedASTTransform extends NamedASTFunction {
         }
         case Future(x, f, g) => Future(x, recurse(f), transform(g, x :: context, typecontext))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
+        case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
         case DeclareDefs(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
