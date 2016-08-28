@@ -49,7 +49,7 @@ class OrctimizerAnalysisTest {
     }
   }
   
-  lazy val unanalyzableCall = Call(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None)
+  lazy val unanalyzableCall = CallSite(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None)
   
   @Test
   def analyzeStop(): Unit = {
@@ -74,7 +74,7 @@ class OrctimizerAnalysisTest {
 
   @Test
   def analyzeSiteCall(): Unit = {
-    val f = Call(Constant(NewFlag), List(), None)
+    val f = CallSite(Constant(NewFlag), List(), None)
     val a = getInContext(f, f)
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.NonBlocking, a.timeToPublish)
@@ -147,7 +147,7 @@ class OrctimizerAnalysisTest {
   
   @Test
   def analyzeLimit(): Unit = {
-    val e = Limit(unanalyzableCall || unanalyzableCall)
+    val e = Trim(unanalyzableCall || unanalyzableCall)
     val a = getInContext(e, e)
     assertEquals(Range(0, 1), a.publications)
     assertEquals(Effects.BeforePub, a.effects)
@@ -222,7 +222,7 @@ class OrctimizerAnalysisTest {
     val x = new BoundVar(Some("x"))
     val id = new BoundVar(Some("id"))
     val body = id
-    val f = Call(id, List(Constant(BigInt(1))), None)
+    val f = CallDef(id, List(Constant(BigInt(1))), None)
     val e = DeclareDefs(List(Def(id, List(x), body, List(), None, None)), f)
     val a = getInContext(e, f)
     a.publications
@@ -299,9 +299,9 @@ class OrctimizerAnalysisTest {
   def analyzeComplex1(): Unit = {
     val v1541 = new BoundVar()
     val v1542 = new BoundVar()
-    val e = (Call(Constant(TupleConstructor), List(Constant(Field("apply")), Constant("")), None) > v1541 > 
-      (Call(Constant(TupleConstructor), List(Constant(Field("unapply")), Constant("")), None) > v1542 > 
-      (Call(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
+    val e = (CallSite(Constant(TupleConstructor), List(Constant(Field("apply")), Constant("")), None) > v1541 > 
+      (CallSite(Constant(TupleConstructor), List(Constant(Field("unapply")), Constant("")), None) > v1542 > 
+      (CallSite(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
     val a = getInContext(e, e)
     assertEquals(Range(0, 0), a.publications)
     assertEquals(Effects.None, a.effects)
@@ -318,9 +318,9 @@ class OrctimizerAnalysisTest {
     val defs = List(Def(id, List(x), body, List(), None, None), Def(id2, List(x), body, List(), None, None))
     val v1541 = new BoundVar()
     val v1542 = new BoundVar()
-    val f = (Call(Constant(TupleConstructor), List(Constant(Field("apply")), id), None) > v1541 > 
-      (Call(Constant(TupleConstructor), List(Constant(Field("unapply")), id2), None) > v1542 > 
-      (Call(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
+    val f = (CallSite(Constant(TupleConstructor), List(Constant(Field("apply")), id), None) > v1541 > 
+      (CallSite(Constant(TupleConstructor), List(Constant(Field("unapply")), id2), None) > v1542 > 
+      (CallSite(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
     val e = DeclareDefs(defs, f)
     val a = getInContext(e, f)
     assertEquals(Range(0, 0), a.publications)
