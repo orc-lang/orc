@@ -104,39 +104,34 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     fut
   }
 
-  /** Force a value if it is a future or resolve it if it's a closure.
-    * 
-    * If v is ForcableCallableBase it must have a correct and complete closedValues.
-    */
-  def force(p: Continuation, c: Counter, v: AnyRef) = {
-    v match {
-      case f: ForcableCallableBase =>
-        // Matches: Call to halt in Resolve subclass below
-        c.prepareSpawn()
-        new Resolve(f.closedValues) {
-          def done(): Unit = {
-            try {
-              p.call(v)
-            } catch {
-              case _: KilledException => {}
-            } finally {
-              // Matches: Call to prepareSpawn above this class.
-              c.halt()
-            }
-          }
-        }
-      case _ => forceForCall(p, c, v)
+  private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
+    def done(): Unit = {
+      // Prevent KilledException from propagating into the code using the Blockable.
+      try {
+        p.call(values)
+      } catch {
+        case _: KilledException => {}
+      }
+    }
+    def halt(): Unit = {
+      c.halt()
     }
   }
-
-  /** Force a value if it is a future.
+  
+  /** Force a list of values: forcing futures and resolving closures.
+    * 
+    * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
-  def forceForCall(p: Continuation, c: Counter, v: AnyRef) = {
-    v match {
-      case f: Future =>
-        f.forceIn(new PCBlockable(p, c))
-      case _ => p.call(v)
-    }
+  def force(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
+    c.prepareSpawn()
+    new PCJoin(p, c, vs, true)
+  }
+
+  /** Force a list of values: forcing futures and ignoring closures.
+    */
+  def forceForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
+    c.prepareSpawn()
+    new PCJoin(p, c, vs, false)
   }
 
   /** Get a field of an object if possible.

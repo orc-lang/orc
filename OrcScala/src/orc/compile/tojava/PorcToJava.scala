@@ -139,7 +139,7 @@ $code
     val code = expr match {
       case Call(target, arg) => {
         j"""
-        |$coerceToContinuation(${argument(target)}).call(${argument(arg)});
+        |($coerceToContinuation${argument(target)}).call(${argument(arg)});
         """
       }
       case SiteCall(target, p, c, t, args) => {
@@ -154,12 +154,12 @@ $code
       }
       case DefCall(target, p, c, t, args) => {
         j"""
-        |$coerceToDefCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |($coerceToDefCallable${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case DefCallDirect(target, args) => {
         j"""
-        |$coerceToDefDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |($coerceToDefDirectCallable${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
       case IfDef(arg, left, right) => {
@@ -213,7 +213,7 @@ $code
 
       case Spawn(c, t, b) => {
         j"""
-        |$execution.spawn($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), () -> { 
+        |$execution.spawn($coerceToCounter${argument(c)}, $coerceToTerminator${argument(t)}, () -> { 
           |$b
         |});
         """
@@ -223,7 +223,7 @@ $code
         j"""new TerminatorNested($coerceToTerminator(${argument(t)}))"""
       }
       case Kill(t) => {
-        j"""$coerceToTerminator(${argument(t)}).kill();"""
+        j"""($coerceToTerminator${argument(t)}).kill();"""
       }
       
       case NewCounter(c, h) => {
@@ -233,7 +233,7 @@ $code
         |})"""
       }
       case Halt(c) => {
-        j"""$coerceToCounter(${argument(c)}).halt();"""
+        j"""($coerceToCounter${argument(c)}).halt();"""
       }
 
       // ==================== FUTURE ===================
@@ -352,14 +352,14 @@ $code
 
 object PorcToJava {
   val execution = "exec"
-  val coerceToContinuation = "Coercions$.MODULE$.coerceToContinuation"
+  val coerceToContinuation = "(Continuation)"
   val isInstanceOfDef = "Coercions$.MODULE$.isInstanceOfDef"
-  val coerceToDefCallable = "Coercions$.MODULE$.coerceToCallable"
-  val coerceToDefDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable"
-  val coerceToSiteCallable = "Coercions$.MODULE$.coerceToCallable/*Site*/"
-  val coerceToSiteDirectCallable = "Coercions$.MODULE$.coerceToDirectCallable/*Site*/"
-  val coerceToCounter = "Coercions$.MODULE$.coerceToCounter"
-  val coerceToTerminator = "Coercions$.MODULE$.coerceToTerminator"
+  val coerceToDefCallable = "(Callable)"
+  val coerceToDefDirectCallable = "(DirectCallable)"
+  val coerceToSiteCallable = "Coercions$.MODULE$.coerceSiteToCallable"
+  val coerceToSiteDirectCallable = "Coercions$.MODULE$.coerceSiteToDirectCallable"
+  val coerceToCounter = "(Counter)"
+  val coerceToTerminator = "(Terminator)"
 
   def escapeIdent(s: String) = {
     val q = s.map({ c =>

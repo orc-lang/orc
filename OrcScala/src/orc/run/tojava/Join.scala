@@ -13,7 +13,7 @@ import orc.run.Logger
   *
   * @author amp
   */
-abstract class Join(inValues: Array[AnyRef]) {
+abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   join =>
   /* This does not do real halts or spawns. Instead it assumes it can spawn
    * if needed and will always call halt or done (but not both) when it is
@@ -68,7 +68,17 @@ abstract class Join(inValues: Array[AnyRef]) {
     // in the context of the count held by join.
     def prepareSpawn(): Unit = {}
   }
-  
+
+  /** A subclass of Resolve which calls into this.
+    */
+  private final class ResolveElement(c: ForcableCallableBase) extends Resolve(c.closedValues) {
+    /** Resolved so check if we are done overall
+      */
+    def done(): Unit = if (!halted.get()) { 
+      join.checkComplete(nUnbound.decrementAndGet())
+    }
+  }
+
   //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
 
   // Start all the required forces.
@@ -82,6 +92,12 @@ abstract class Join(inValues: Array[AnyRef]) {
       if (filled)
         // This halt is safe because halt after publish is normal and forceIn will already have published if needed.
         e.halt()
+    }
+    case c: ForcableCallableBase if forceClosures => {
+      values(i) = c
+      // This starts the resolution process, ResolveElement grabs this to make callbacks
+      new ResolveElement(c)
+      // TODO: Verify that c.closedValues contains recursively required values
     }
     case _ => {
       // v is not a future so just bind it.

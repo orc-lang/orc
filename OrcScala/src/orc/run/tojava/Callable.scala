@@ -86,31 +86,8 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
 
     // Prepare to spawn because the invoked site might do that.
     c.prepareSpawn()
-    // Matched to: halt in PCTHandle or below in Join subclass.
-
-    if (args.length == 0) {
-      execution.invoke(new PCTHandle(execution, p, c, t, null), site, Nil)
-    } else {
-      // TODO: Optimized version for single argument
-      new Join(args) {
-        // A debug flag to make sure halt/done are called no more than once.
-        lazy val called = new AtomicBoolean(false)
-
-        /** If the join halts then the context should be halted as well.
-          */
-        def halt(): Unit = {
-          assert(called.compareAndSet(false, true), "halt()/done() may only be called once.")
-          c.halt() // Matched to: prepareSpawn above
-        }
-        /** If the join completes (so all values are bound) we perform the
-          * invocation.
-          */
-        def done(): Unit = {
-          assert(called.compareAndSet(false, true), "halt()/done() may only be called once.")
-          execution.invoke(new PCTHandle(execution, p, c, t, null), site, values.toList)
-        }
-      }
-    }
+    // Matched to: halt in PCTHandle.
+    execution.invoke(new PCTHandle(execution, p, c, t, null), site, args.toList)
   }
   
   override def toString: String = s"${getClass.getName}($underlying)"
@@ -148,19 +125,6 @@ final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with
         throw e
     }
   }
-}
-
-// FIXME: I think this is a bit of a hack. I think more low lever operation could be better than generating these intermediate operations at runtime.
-class FutureCallable(val underlying: Future) extends Callable {
-  final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
-    underlying.forceIn(new PCBlockable(new Continuation {
-      def call(v: AnyRef) = {
-        Coercions.coerceToCallable(v).call(execution, p, c, t, args)
-      }
-    }, c))
-  }
-  
-  override def toString: String = s"${getClass.getName}($underlying)"
 }
 
 
