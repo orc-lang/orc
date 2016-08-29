@@ -324,6 +324,9 @@ abstract class Optimizer(co: CompilerOptions) {
     e match {
       case IfDefAt(a, f, g) =>
         a.e match {
+          case _ if a.siteMetadata.isDefined =>
+            // Sites are never defs and non-sites never get site metadata
+            Some(g)
           case x: BoundVar =>
             ctx(x) match {
               case Bindings.SeqBound(_, from > _ > _) => None
