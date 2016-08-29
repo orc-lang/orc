@@ -105,12 +105,18 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
+    // Matches: call to halt in done and halt
+    c.prepareSpawn()
+    
     def done(): Unit = {
       // Prevent KilledException from propagating into the code using the Blockable.
       try {
         p.call(values)
       } catch {
         case _: KilledException => {}
+      } finally {
+        // Matches: Call to prepareSpawn in constructor
+        c.halt()
       }
     }
     def halt(): Unit = {
@@ -123,14 +129,12 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
   def force(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
-    c.prepareSpawn()
     new PCJoin(p, c, vs, true)
   }
 
   /** Force a list of values: forcing futures and ignoring closures.
     */
   def forceForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
-    c.prepareSpawn()
     new PCJoin(p, c, vs, false)
   }
 
