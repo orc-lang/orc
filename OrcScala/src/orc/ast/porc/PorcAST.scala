@@ -167,13 +167,12 @@ case class TryFinally(body: Expr, handler: Expr) extends Expr
 // ==================== FUTURE ===================
 
 case class SpawnFuture(c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
-case class Force(p: Value, c: Value, future: Value, forceClosures: Boolean) extends Expr
 
 case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
 
-case class Resolve(c: Value, t: Value, future: Value, expr: Expr) extends Expr
+case class Force(p: Value, c: Value, t: Value, forceClosures: Boolean, futures: List[Value]) extends Expr
 
-case class ForceMany(c: Value, t: Value, futures: List[Value], args: List[Var], expr: Expr) extends Expr
+case class TupleElem(v: Value, i: Int) extends Expr
 
 // ==================== TYPE ===================
 /*

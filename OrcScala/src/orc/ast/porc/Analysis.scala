@@ -203,7 +203,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     val cs = e.subtrees
     (e.e match {
       case _ : Spawn => spawnCost
-      case _ : Force | _ : Resolve => forceCost
+      case _ : Force => forceCost
       case _ : Kill => killCost
       case _ : Continuation | _ : Def | _ : NewCounter => closureCost
       case _ : NewTerminator => closureCost

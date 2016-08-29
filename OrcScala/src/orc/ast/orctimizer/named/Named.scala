@@ -123,8 +123,16 @@ object Force {
 
 case class IfDef(v: Argument, left: Expression, right: Expression) extends Expression
 
-case class CallDef(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-case class CallSite(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+sealed trait Call extends Expression {
+  val target: Argument
+  val args: List[Argument]
+  val typeargs: Option[List[Type]]
+}
+object Call {
+  def unapply(c: Call) = Some((c.target, c.args, c.typeargs))
+}
+case class CallDef(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Call
+case class CallSite(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Call
 
 case class Parallel(left: Expression, right: Expression) extends Expression
 case class Branch(left: Expression, x: BoundVar, right: Expression) extends Expression

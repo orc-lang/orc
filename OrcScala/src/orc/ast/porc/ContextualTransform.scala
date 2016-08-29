@@ -104,8 +104,8 @@ trait ContextualTransform {
       case NewTerminatorIn(t) => NewTerminator(transformValue(t))
       case KillIn(t) => Kill(transformValue(t))
         
-      case ForceIn(p, c, f, b) => Force(transformValue(p), transformValue(c), transformValue(f), b)
-      //case ResolveIn(f, b) => Resolve(transformValue(f), transformValue(b))
+      case ForceIn(p, c, t, b, vs, ctx) => Force(transformValue(p), transformValue(c), transformValue(t), b, vs.map(v => transformValue(v in ctx)))
+      case TupleElem(v, i) in ctx => TupleElem(transformValue(v in ctx), i)
 
       case GetField(p, c, t, o, f) in ctx => GetField(transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), transformValue(o in ctx), f)
       

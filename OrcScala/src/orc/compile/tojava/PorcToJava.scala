@@ -245,14 +245,19 @@ $code
         |});
         """
       }
-      case Force(p, c, f, true) => {
+      case Force(p, c, t, true, vs) => {
         j"""
-        |$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
+        |$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });
         """
       }
-      case Force(p, c, f, false) => {
+      case Force(p, c, t, false, vs) => {
         j"""
-        |$execution.forceForCall($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), ${argument(f)});
+        |$execution.forceForCall($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });
+        """
+      }
+      case TupleElem(v, i) => {
+        j"""
+        |((Object[])${argument(v)})[$i]
         """
       }
       case GetField(p, c, t, o, f) => {
@@ -260,9 +265,6 @@ $code
         |$execution.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});
         """
       }
-
-      case Resolve(c, t, f, e) => ???
-      case ForceMany(c, t, fs, args, e) => ???
 
       case TryFinally(b, h) => {
         j"""

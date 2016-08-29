@@ -39,12 +39,15 @@ class OrctimizerToPorc {
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
 
-  def expression(expr: Expression)(implicit ctx: ConversionContext): porc.Expr = ??? 
-  /*{
+  def expression(expr: Expression)(implicit ctx: ConversionContext): porc.Expr = {
     import porc.PorcInfixNotation._
     val code = expr match {
       case Stop() => porc.Unit()
-      case Call(target, args, typeargs) => {
+      case c@Call(target, args, typeargs) => {
+        val porcCall = c match {
+          case _ : CallSite => porc.SiteCall
+          case _ : CallDef => porc.DefCall
+        }
         target match {
           case target: BoundVar if ctx.recursives contains target => {
             // For recusive functions spawn before calling and spawn before passing on the publication.
@@ -52,12 +55,12 @@ class OrctimizerToPorc {
             val newP = newVarName("P")
             val v = newVarName("temp")
             let((newP, porc.Continuation(v, porc.Spawn(ctx.c, ctx.t, ctx.p(v))))) {
-              val call = porc.SiteCall(argument(target), newP, ctx.c, ctx.t, args.map(argument(_)))
+              val call = porcCall(argument(target), newP, ctx.c, ctx.t, args.map(argument(_)))
               porc.Spawn(ctx.c, ctx.t, call)
             }
           }
           case _ => 
-            porc.SiteCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
+            porcCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
         }
       }
       case left || right => {
@@ -89,8 +92,14 @@ class OrctimizerToPorc {
           expression(g)
         }
       }
-      case Force(f, forceClosures) => {
-        porc.Force(ctx.p, ctx.c, argument(f), forceClosures)
+      case Force(xs, vs, forceClosures, e) => {
+        val porcXs = xs.map(lookup)
+        val newP = newVarName("P")
+        val v = newVarName("temp")
+        val body = let(porcXs.zipWithIndex map { case (x, i) => (x, porc.TupleElem(v, i)) }: _*) { expression(e) }
+        let((newP, porc.Continuation(v, body))) {
+          porc.Force(newP, ctx.c, ctx.t, forceClosures, vs.map(argument))
+        }
       }
       case left Otherwise right => {
         val newC = newVarName("C")
@@ -116,8 +125,11 @@ class OrctimizerToPorc {
           }
         }
       }
+      case IfDef(a, f, g) => {
+        porc.IfDef(argument(a), expression(f), expression(g))
+      }
       case DeclareDefs(defs, body) => {
-        porc.Site(defs.map(orcdef(defs.map(_.name), _)), expression(body))
+        porc.DefDeclaration(defs.map(orcdef(defs.map(_.name), _)), expression(body))
       }
 
       // We do not handle types
@@ -133,10 +145,10 @@ class OrctimizerToPorc {
       case a: Argument => {
         ctx.p(argument(a))
       }
-      case _ => ???
+      case e => throw new NotImplementedError("orctimizerToPorc is not implemented for: " + e)
     }
     code
-  }*/
+  }
   
   def argument(a: Argument): porc.Value = {
     a match {
