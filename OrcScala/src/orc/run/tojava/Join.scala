@@ -20,6 +20,8 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
    * completed.
    */
 
+  require(inValues.size > 0, "Join must have at least one argument. Check before call.")
+
   // The number of unbound values in values.
   var nUnbound = new AtomicInteger(inValues.size)
   // The array of values that have already been bound.
@@ -39,7 +41,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
       * If join has not halted we bind and check if we are done.
       */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
-      //Logger.finest(s"JoinElement $i published: $v")
+      Logger.finest(s"$join: Join joined to $v ($i)")
       // Check if we are halted then bind. This is an optimization since 
       // nUnbound can never reach 0 if we halted.
       if (!join.halted.get()) {
@@ -56,7 +58,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
       * been bound.
       */
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
-      //Logger.finest(s"JoinElement $i halted")
+      Logger.finest(s"$join: Join halted ($i)")
       // Halt if we have not already halted.
       if (join.halted.compareAndSet(false, true)) {
         //Logger.finest(s"Finished join with halt")
@@ -74,8 +76,11 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   private final class ResolveElement(c: ForcableCallableBase) extends Resolve(c.closedValues) {
     /** Resolved so check if we are done overall
       */
-    def done(): Unit = if (!join.halted.get()) { 
-      join.checkComplete(join.nUnbound.decrementAndGet())
+    def done(): Unit = {
+      Logger.finest(s"$join: Join resolved $c")
+      if (!join.halted.get()) {
+        join.checkComplete(join.nUnbound.decrementAndGet())
+      }
     }
   }
 
@@ -85,15 +90,16 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   var nNonFutures = 0
   for ((v, i) <- inValues.zipWithIndex) v match {
     case f: Future => {
+      Logger.finest(s"$join: Join joining on $f")
       // Force f so it will bind the correct index.
-      // TODO: This is a hack. Not sure how to fix it though. The adding of the element and the check for completeness of the future must be atomic.
       val e = new JoinElement(i)
       val filled = f.forceIn(e)
       if (filled)
         // This halt is safe because halt after publish is normal and forceIn will already have published if needed.
         e.halt()
     }
-    case c: ForcableCallableBase if forceClosures => {
+    case c: ForcableCallableBase if forceClosures && c.closedValues.size > 0 => {
+      Logger.finest(s"$join: Join resolving $c")
       values(i) = c
       // This starts the resolution process, ResolveElement grabs this to make callbacks
       new ResolveElement(c)
@@ -118,7 +124,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   final def checkComplete(n: Int): Unit = {
     assert(n >= 0, n)
     if (n == 0) {
-      //Logger.finest(s"Finished join with: ${values.mkString(", ")}")
+      Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
       done()
     }
   }
@@ -147,10 +153,13 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   * @author amp
   */
 abstract class Resolve(inValues: Array[AnyRef]) {
+  resolve =>
   /* This does not do real halts or spawns. Instead it assumes it can spawn
    * if needed and will always call halt or done (but not both) when it is
    * completed.
    */
+    
+  require(inValues.size > 0, "Resolve must have at least one argument. Check before call.")
 
   // The number of unbound values in values.
   var nUnbound = new AtomicInteger(inValues.size)
@@ -165,6 +174,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     def publish(v: AnyRef): Unit = halt()
 
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
+      Logger.finest(s"$resolve: Resolve joined")
       checkComplete(nUnbound.decrementAndGet())
     }
 
@@ -177,7 +187,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
   var nNonFutures = 0
   for (v <- inValues) v match {
     case f: Future => {
-      // TODO: This is a hack. Not sure how to fix it though. The adding of the element and the check for completeness of the future must be atomic.
+      Logger.finest(s"$resolve: Resolve joining on $f")
       val e = new JoinElement()
       val filled = f.forceIn(e)
       if (filled)
@@ -188,6 +198,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
       nNonFutures += 1
     }
   }
+  
   // Now decrement the unbound count by the number of non-futures we found.
   // And maybe finish immediately.
   if(nNonFutures > 0)
@@ -195,12 +206,15 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     // cause multiple calls to done.
     checkComplete(nUnbound.addAndGet(-nNonFutures))
 
+  Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
+  
   /** Check if we are done by looking at n which must be the current number of
     * unbound values.
     */
   final def checkComplete(n: Int): Unit = {
     assert(n >= 0, n)
     if (n == 0) {
+      Logger.finest(s"$resolve: Resolve finished")
       done()
     }
   }

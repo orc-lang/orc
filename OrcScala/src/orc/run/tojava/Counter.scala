@@ -52,6 +52,7 @@ object Counter {
  * @author amp
  */
 abstract class Counter {
+  @elidable(elidable.ASSERTION) 
   val log = new LinkedBlockingDeque[Exception]()
 
   @elidable(elidable.ASSERTION) 
@@ -78,6 +79,9 @@ abstract class Counter {
   def halt(): Unit = {
     val n = count.decrementAndGet()
     logChange(s"- Down to $n")
+    if (n < 0) {
+      Counter.report()
+    }
     assert(n >= 0, s"Halt is not allowed on already stopped CounterContexts $this")
     if (n == 0) {
       Counter.removeCounter(this)
@@ -90,6 +94,9 @@ abstract class Counter {
   def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
     logChange(s"+ Up from $n")
+    if (n <= 0) {
+      Counter.report()
+    }
     assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
   }
 

@@ -105,10 +105,10 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
-    // Matches: call to halt in done and halt
-    c.prepareSpawn()
+    Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")
     
     def done(): Unit = {
+      Logger.finer(s"Done for PCJoin $this (${values.mkString(", ")})")
       // Prevent KilledException from propagating into the code using the Blockable.
       try {
         p.call(values)
@@ -120,6 +120,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       }
     }
     def halt(): Unit = {
+      Logger.finer(s"Halt for PCJoin $this (${values.mkString(", ")})")
       c.halt()
     }
   }
@@ -129,12 +130,18 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
   def force(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
+    // Matches: call to halt in done and halt in PCJoin
+    // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
+    c.prepareSpawn()
     new PCJoin(p, c, vs, true)
   }
 
   /** Force a list of values: forcing futures and ignoring closures.
     */
   def forceForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
+    // Matches: call to halt in done and halt in PCJoin
+    // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
+    c.prepareSpawn()
     new PCJoin(p, c, vs, false)
   }
 
