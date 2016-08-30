@@ -543,6 +543,7 @@ abstract class Optimizer(co: CompilerOptions) {
       override def onExpression(implicit ctx: TransformContext) = {
         case left > x > right => left > replaceVar(x) > right
         case Future(x, left, right) => Future(replaceVar(x), left, right)
+        case Force(xs, vs, b, e) => Force(xs.map(replaceVar), vs, b, e)
       }
       
       override def onDef(implicit ctx: TransformContext) = {

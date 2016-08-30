@@ -256,8 +256,10 @@ $code
         """
       }
       case TupleElem(v, i) => {
+        // TODO: This seems to generate invalid expressions occationally. I cannot figure out how they are invalid.
+        // As of now this is not a problem since it only fails if there is a TupleElem outside a let. Which is removed by the optimizer.
         j"""
-        |((Object[])${argument(v)})[$i]
+        |((Object[])${argument(v)})[$i];
         """
       }
       case GetField(p, c, t, o, f) => {
