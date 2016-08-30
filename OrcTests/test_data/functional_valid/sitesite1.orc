@@ -12,7 +12,7 @@ Let(Rwait(250) >> true | Countdown(4)) -- | Rwait(750) >> false
 
 
 {-
-OUTPUT:
+--OUTPUT:
 4
 true
 3

@@ -8,6 +8,6 @@ val Silence = MakeSite(silence)
 Let( (Silence() ; true) | Rwait(2000) >> false )
 
 {-
-OUTPUT:
+--OUTPUT:
 true
 -}

@@ -15,7 +15,7 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >>
 ) >> stop
 
 {-
-OUTPUT:
+--OUTPUT:
 2
 3
 -}

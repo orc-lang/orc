@@ -9,6 +9,6 @@ Semaphore(-1) >> false ; true
 
 {-
 OUTPUT:
-Error: orc.error.runtime.JavaException: java.lang.IllegalArgumentException: Semaphore requires a non-negative argument
+Error: java.lang.IllegalArgumentException: Semaphore requires a non-negative argument
 true
 -}

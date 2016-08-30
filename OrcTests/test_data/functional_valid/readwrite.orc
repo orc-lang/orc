@@ -15,7 +15,7 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >>
 )
 
 {-
-OUTPUT:
+--OUTPUT:
 "1"
 "(3.0, [])"
 "\"hi\""

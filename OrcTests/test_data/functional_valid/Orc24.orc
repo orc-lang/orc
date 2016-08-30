@@ -14,7 +14,7 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >>
 )
 
 {-
-OUTPUT:
+--OUTPUT:
 test
 0
 500:2

@@ -16,6 +16,6 @@ val a = A()
 a.myX()
 
 {-
-OUTPUT:
+--OUTPUT:
 4
 -}

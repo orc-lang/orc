@@ -10,7 +10,7 @@ val x = Rwait(1000) >> 5
 Rwait(250) >> 10 | Noise(x)
 
 {-
-OUTPUT:
+--OUTPUT:
 10
 5
 -}

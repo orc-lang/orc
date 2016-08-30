@@ -11,6 +11,6 @@ Vclock(IntegerTimeOrder) >> Vawait(0) >>
 ( (x >> VtimeI()) <x< (Vawait(3) | Vawait(2)) )
 
 {-
-OUTPUT:
+--OUTPUT:
 2
 -}

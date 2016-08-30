@@ -20,7 +20,7 @@ def test() =
 test()
 
 {- 
-OUTPUT:
+--OUTPUT:
 1
 2
 -}

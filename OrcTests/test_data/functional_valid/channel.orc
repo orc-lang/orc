@@ -20,7 +20,7 @@ c.put(1113) >> c.put(2223) >> Println(c.len()) >>
 c.get() >> Println(c.len()) >>stop
 
 {-
-OUTPUT:
+--OUTPUT:
 2
 1
 time up in channel!
