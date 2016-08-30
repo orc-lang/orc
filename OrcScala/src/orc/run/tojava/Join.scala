@@ -42,13 +42,13 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
       //Logger.finest(s"JoinElement $i published: $v")
       // Check if we are halted then bind. This is an optimization since 
       // nUnbound can never reach 0 if we halted.
-      if (!halted.get()) {
+      if (!join.halted.get()) {
         // Bind the value (this is not synchronized because checkComplete 
         // will cause the read of it, enforcing the needed ordering).
         values(i) = v
         // TODO: Does this write need to be volatile?
         // Not decrement the number of unbound values and see if we are done.
-        join.checkComplete(nUnbound.decrementAndGet())
+        join.checkComplete(join.nUnbound.decrementAndGet())
       }
     }
 
@@ -58,7 +58,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
       //Logger.finest(s"JoinElement $i halted")
       // Halt if we have not already halted.
-      if (halted.compareAndSet(false, true)) {
+      if (join.halted.compareAndSet(false, true)) {
         //Logger.finest(s"Finished join with halt")
         join.halt()
       }
@@ -74,8 +74,8 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   private final class ResolveElement(c: ForcableCallableBase) extends Resolve(c.closedValues) {
     /** Resolved so check if we are done overall
       */
-    def done(): Unit = if (!halted.get()) { 
-      join.checkComplete(nUnbound.decrementAndGet())
+    def done(): Unit = if (!join.halted.get()) { 
+      join.checkComplete(join.nUnbound.decrementAndGet())
     }
   }
 
@@ -116,7 +116,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     * unbound values.
     */
   final def checkComplete(n: Int): Unit = {
-    assert(n >= 0)
+    assert(n >= 0, n)
     if (n == 0) {
       //Logger.finest(s"Finished join with: ${values.mkString(", ")}")
       done()
@@ -199,7 +199,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     * unbound values.
     */
   final def checkComplete(n: Int): Unit = {
-    assert(n >= 0)
+    assert(n >= 0, n)
     if (n == 0) {
       done()
     }

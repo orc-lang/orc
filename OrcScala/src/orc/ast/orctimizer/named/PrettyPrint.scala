@@ -66,9 +66,9 @@ class PrettyPrint {
       case Branch(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
       case Trim(f) => "{|" + reduce(f) + "|}"
       case Future(x, f, g) => "future " + reduce(x) + " = " + reduce(f) + " #\n" + reduce(g)
-      case Force(xs, vs, b, e) => s"force_${if(b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} # ${reduce(e)}"
+      case Force(xs, vs, b, e) => s"force_${if(b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} #\n${reduce(e)}"
       case left Otherwise right => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case IfDef(a, l, r) => s"ifdef ${reduce(a)} then ${reduce(l)} else ${reduce(r)}"
+      case IfDef(a, l, r) => s"ifdef ${reduce(a)} then\n  ${reduce(l)}\nelse\n  ${reduce(r)}"
       case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))

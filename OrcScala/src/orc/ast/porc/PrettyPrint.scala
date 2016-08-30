@@ -73,7 +73,7 @@ class PrettyPrint {
       case SiteCallDirect(target, args) => rd"sitecall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
       case DefCall(target, p, c, t, args) => rd"defcall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
       case DefCallDirect(target, args) => rd"defcall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
-      case IfDef(arg, f, g) => rd"ifdef $arg then $f else $g"
+      case IfDef(arg, f, g) => rd"ifdef $arg then\n${indent(i+2)}${reduce(f, i+2)}\n${ind}else\n${indent(i+2)}${reduce(g, i+2)}"
      
       case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
       

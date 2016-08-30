@@ -6,9 +6,9 @@ orct:type-elim
 orct:def-seq-norm
 orct:def-elim
 orct:seq-reassoc
-orct:stop-equiv
 orct:seq-elim
 orct:seq-elim-var
+orct:stop-equiv
 orct:stop-elim
 orct:constant-propogation
 orct:limit-elim
@@ -26,7 +26,7 @@ orct:accessor-elim
 orct:par-flatten
 orct:flag-elim
 orct:ifdef-elim
-orct:max-passes=15
+orct:max-passes=30
 porc
 porc:eta-reduce
 porc:var-let-elim 

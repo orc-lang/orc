@@ -78,6 +78,10 @@ object OrcWorkStealingExecutor {
       try {
         task.run()
         true
+      } catch {
+        case e: Throwable =>
+          Logger.log(Level.WARNING, "Task threw exception", e)
+          throw e
       } finally {
         task.onComplete()
         val t = currentOrcWorkerThread()

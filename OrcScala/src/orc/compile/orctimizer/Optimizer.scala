@@ -222,7 +222,7 @@ abstract class Optimizer(co: CompilerOptions) {
             
             bindOpt map {
               case Bindings.ForceBound(_, fe@Force(_, _, _, _), _) => {
-                Logger.finer(s"Found preforced: $a from $fe")
+                //Logger.finer(s"Found preforced: $a from $fe")
                 // Just replace this force with y that was already bound to the force.
                 x
               }
@@ -230,12 +230,12 @@ abstract class Optimizer(co: CompilerOptions) {
           case _ => None
         }
         
-        Logger.fine(s"Checking force: ${(xs zip vs.map(_.e))} ${forceClosures}")
+        //Logger.fine(s"Checking force: ${(xs zip vs.map(_.e))} ${forceClosures}")
         
         // Right replaces in e, Left leaves force
         val forceChanges = for((x, v) <- fe.e.asInstanceOf[Force].toMap) yield {
-          Logger.fine(s"$x = $v")
-          Logger.fine(s"${cannotBeFuture(v)} ${forceInContext(v)}")
+          //Logger.fine(s"$x = $v")
+          //Logger.fine(s"${cannotBeFuture(v)} ${forceInContext(v)}")
           if(cannotBeFuture(v)) {
             (x, Right(v))
           } else {

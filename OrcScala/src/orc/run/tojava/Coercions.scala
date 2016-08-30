@@ -15,7 +15,7 @@ object Coercions {
     */
   def coerceSiteToCallable(v: AnyRef): Callable = {
     v match {
-      case c: Callable => throw new IllegalArgumentException(s"This should only be used for sites.")
+      case c: Callable => c
       // TODO: We may want to optimize cases like records and site calls.
       //case s: Site => new SiteCallable(s)
       case v => new RuntimeCallable(v)
@@ -24,7 +24,7 @@ object Coercions {
   
   def coerceSiteToDirectCallable(v: AnyRef): DirectCallable = {
     v match {
-      case c: DirectCallable => throw new IllegalArgumentException(s"This should only be used for sites.")
+      case c: DirectCallable => c
       case f: Future => throw new IllegalArgumentException(s"Cannot direct call a future: $f")
       case v: DirectSite => new RuntimeDirectCallable(v)
       case s: Site => throw new IllegalArgumentException(s"Non-direct site found when direct site expected.")
