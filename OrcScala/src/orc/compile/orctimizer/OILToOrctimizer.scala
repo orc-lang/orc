@@ -55,9 +55,14 @@ class OILToOrctimizer {
             orct.IfDef(t, {
               orct.CallDef(t, args map apply, typeargs map { _ map apply })
             }, {
-              val argVars = args map { a => new orct.BoundVar(Some(s"f_$a")) }
-              orct.Force(argVars, args map apply, true, 
-                orct.CallSite(t, argVars, typeargs map { _ map apply }))
+              val uniqueArgs = args.toSet.toList
+              val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
+              val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
+              if (uniqueArgs.size > 0) {
+                orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
+              } else {
+                call
+              }
             })
             )
       }

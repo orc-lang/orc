@@ -145,6 +145,8 @@ object Bindings {
   
   case class ForceBound(ctx: TransformContext, ast: Force, variable: BoundVar) extends Binding {
     assert(ast.xs.contains(variable))
+    
+    def publishForce = ast.publishForce
   }
   
   case class FutureBound(ctx: TransformContext, ast: Future) extends Binding {

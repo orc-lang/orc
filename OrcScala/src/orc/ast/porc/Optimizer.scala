@@ -42,7 +42,8 @@ case class Optimizer(co: CompilerOptions) {
               case None => e
               case Some(e2) =>
                 if (e.e != e2) {
-                  Logger.fine(s"${opt.name}: ${e.e.toString.replace("\n", " ").take(60)} ==> ${e2.toString.replace("\n", " ").take(60)}")
+                  import orc.util.StringExtension._
+                  Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                   e2 in e.ctx
                 } else
                   e

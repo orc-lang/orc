@@ -78,7 +78,8 @@ abstract class Optimizer(co: CompilerOptions) {
             case None => e
             case Some(e2) =>
               if (e.e != e2) {
-                Logger.fine(s"${opt.name}: ${e.e.toString}\n====>\n${e2.toString}")
+                import orc.util.StringExtension._
+                Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                 e2 in e.ctx
               } else
                 e
@@ -194,17 +195,10 @@ abstract class Optimizer(co: CompilerOptions) {
           case x: BoundVar =>
             ctx(x) match {
               case Bindings.SeqBound(_, from > _ > _) =>
-                from match {
-                  case CallSite(_, _, _) | CallDef(_, _, _) => 
-                    // This assumes that no call will ever return a future. This means that no optimization can make defs publish futures.
-                    true
-                  case FieldAccess(_, _) => true
-                  case _ => false
-                }
+                true
               case _: Bindings.DefBound | _: Bindings.RecursiveDefBound if !forceClosures =>
                 true
               case Bindings.ForceBound(_, _, _) => true
-              // TODO: Add case for site arguments
               case _ => false          
             }
           case _: Constant => true
@@ -267,8 +261,6 @@ abstract class Optimizer(co: CompilerOptions) {
     }
   }
 
-  // TODO: Port
-	/*
   val LiftForce = OptFull("lift-force") { (e, a) =>
     import a.ImplicitResults._
     val freevars = e.freeVars
@@ -282,12 +274,13 @@ abstract class Optimizer(co: CompilerOptions) {
         val (bestVar, matchingEs) = vars.map({ v =>
           val alreadyLifted = ctx.bindings exists {
             // TODO: The full force requirement may be too strong
-            case Bindings.SeqBound(_, Force(`v`, true) > _ > _) => true 
+            case b@Bindings.ForceBound(_, _, _) if b.publishForce => true 
             case _ => false
           }
           if (alreadyLifted || (v in ctx).valueForceDelay == Delay.NonBlocking) (v, 0)
           else (v, es.count { e => (e in ctx).forces(v) <= forceLimit })
         }).maxBy(_._2)
+        
         if (matchingEs <= 1) {
           None
         } else {
@@ -300,11 +293,17 @@ abstract class Optimizer(co: CompilerOptions) {
             val y = new BoundVar()
             val trans = new ContextualTransform.NonDescending {
               override def onExpressionCtx = {
-                case ForceAt(`bestVar` in _, true) => 
-                  y
+                case ForceAt(xs, vs, true, e) if vs.exists(_.e == bestVar) => 
+                  val revMap = (vs.map(_.e) zip xs).toMap
+                  val (newVs, newXs) = (revMap - bestVar).unzip
+                  val newE = e.subst(y, revMap(bestVar))
+                  if (newXs.size > 0)
+                    Force(newXs.toList, newVs.toList, true, newE)
+                  else 
+                    newE
               }
             }
-            Force(bestVar, true) > y > trans(Pars(forcers))
+            Force(y, bestVar, true, trans(Pars(forcers)))
           }
           (forcers.size, nonforcers.isEmpty) match {
             case (n, _) if n <= 1 => None
@@ -316,7 +315,6 @@ abstract class Optimizer(co: CompilerOptions) {
       case _ => None
     }
   }
-  */
 
   val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
     import a.ImplicitResults._
@@ -482,7 +480,7 @@ abstract class Optimizer(co: CompilerOptions) {
           } else if (!recursive && cost <= inlineCostThreshold && ctxsCompat) {
             Some(buildInlineDef(d, args, targs, declsctx, a))
           } else {
-            Logger.finer(s"Failed to inline: ${e.e} hasDefArg=$hasDefArg ctxsCompat=$ctxsCompat cost=$cost recursive=$recursive (higherOrderInlineCostThreshold=$higherOrderInlineCostThreshold inlineCostThreshold=$inlineCostThreshold)")
+            Logger.finest(s"Failed to inline: ${e.e} hasDefArg=$hasDefArg ctxsCompat=$ctxsCompat cost=$cost recursive=$recursive (higherOrderInlineCostThreshold=$higherOrderInlineCostThreshold inlineCostThreshold=$inlineCostThreshold)")
             None
           }
         }
@@ -504,7 +502,7 @@ abstract class Optimizer(co: CompilerOptions) {
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           def cost = Analysis.cost(body)
           if (cost > unrollCostThreshold) {
-            Logger.finer(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold)")
+            Logger.finest(s"Failed to unroll: ${e.e} cost=$cost (unrollCostThreshold=$unrollCostThreshold)")
             None
           } else {
             Some(buildInlineDef(d, args, targs, declsctx, a))
@@ -524,7 +522,7 @@ abstract class Optimizer(co: CompilerOptions) {
       case None => (d.typeformals:List[Typevar]) map { (t) => (t, Bot()) }
     }
     
-    Logger.finer(s"Inlining:\n$d\nwith args $args $targs")
+    //Logger.finer(s"Inlining:\n$d\nwith args $args $targs")
 
     val boundVarCache = collection.mutable.HashMap[BoundVar, BoundVar]()
     def replaceVar(x: BoundVar) = {          
@@ -558,7 +556,7 @@ abstract class Optimizer(co: CompilerOptions) {
     }
 
     val result = trans(bodyWithValArgs.substAllTypes(typeSubst.toMap))
-    Logger.finer(s"Inlined:\n$result")
+    //Logger.finer(s"Inlined:\n$result")
     result
   }
 
@@ -572,7 +570,7 @@ abstract class Optimizer(co: CompilerOptions) {
     val dctxTrimed = dctx.bindings.filter(isRelevant).map(_.nonRecursive)
     val res = compareBindingSets(ctxTrimed, dctxTrimed)
     if(!res) {
-      Logger.finer(s"Incompatible ctxs: decls: ${decls.defs.map(_.name).mkString("[", ",", "]")} d=$d\n$ctxTrimed\n$dctxTrimed")
+      Logger.finest(s"Incompatible ctxs: decls: ${decls.defs.map(_.name).mkString("[", ",", "]")} d=$d\n$ctxTrimed\n$dctxTrimed")
     }
     res
   }
@@ -666,7 +664,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       SeqReassoc,
       DefSeqNorm, DefElim, 
-      LiftUnrelated, /*LiftForce,*/
+      LiftUnrelated, LiftForce,
       FutureElimFlatten, UnusedFutureElim, FutureElim, 
       /*FutureForceElim,*/ ForceElim, IfDefElim,
       /*SiteForceElim,*/ TupleElim, AccessorElim,
@@ -784,7 +782,7 @@ object Optimizer {
       }
     }
   }
-
+  
   object Futures {
     private def futsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
       p match {
