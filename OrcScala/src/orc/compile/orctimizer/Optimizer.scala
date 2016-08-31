@@ -782,6 +782,12 @@ object Optimizer {
       }
     }
   }
+
+  /* This uses the identity:
+   * future x = future y = e # f # g 
+   * ===
+   * future y = e # future x = f # g
+   */
   
   object Futures {
     private def futsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
