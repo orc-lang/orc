@@ -37,11 +37,11 @@ def balance(in, out, ps) =
   
   def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
   
-  def read((p,c):pcs) =
-    ( in.get() ; c.close() >> stop ) >x>
-    ( c.put(p(x)) >> stop | read(append(pcs, [(p,c)])) )
+  def read((p,c):pcs, isPrevDone) =
+    ( in.get() ; isPrevDone >> c.close() >> stop ) >x>
+    ( val isPrevDone' = (c.put(p(x)), isPrevDone) >> signal # read(append(pcs, [(p,c)]), isPrevDone') )
   
-  write(cs) | read(zip(ps,cs))
+  write(cs) | read(zip(ps,cs), signal)
 
 val in = Channel[InType]()
 val out = Channel[OutType]()
@@ -53,7 +53,7 @@ def compute(n) = lambda(x) = {-Println("Site " + n + " computing") >>-} (x, x*x)
     ; out.close() >> stop )
 | ( uptoSeq(50, in.put) >> stop
     ; in.close() >> stop )
-| collect(lambda() = repeat(out.get)) >x> (if length(x) /= 10 then Println("FAIL") >> stop else stop)
+| collect(lambda() = repeat(out.get)) >x> (if length(x) /= 50 then Println("FAIL " + length(x)) >> stop else stop)
 ) ; signal
 )
 
