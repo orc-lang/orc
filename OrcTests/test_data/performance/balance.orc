@@ -25,36 +25,36 @@ def uptoSeq(n :: Integer, f :: lambda(Integer) :: Signal) :: Signal =
   iter(0)
 
 def run(i) =
-	--Println("Run " + i) >>
-	(
-	def balance(Channel[InType], Channel[OutType], List[SiteType]) :: Bot
-	def balance(in, out, ps) =
-	  def makeChannel(_ :: Top) = Channel[OutType]()
-	  val cs = map(makeChannel, ps)
-	  
-	  def write(List[Channel[OutType]]) :: Bot
-	  def read(List[(SiteType,Channel[OutType])]) :: Bot
-	  
-	  def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
-	  
-	  def read((p,c):pcs) =
-	    ( in.get() ; c.close() >> stop ) >x>
-	    ( c.put(p(x)) >> stop | read(append(pcs, [(p,c)])) )
-	  
-	  write(cs) | read(zip(ps,cs))
-	
-	val in = Channel[InType]()
-	val out = Channel[OutType]()
-	def compute(Integer) :: SiteType
-	def compute(n) = { _ >x> {-Println("Site " + n + " computing") >>-} (x, x*x) } #
-	
-	
-	  ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
-	    ; out.close() >> stop )
-	| ( uptoSeq(10, in.put) >> stop
-	    ; in.close() >> stop )
-	| collect({ repeat(out.get) }) >x> (if length(x) /= 10 then Println("FAIL") >> stop else stop)
-	) ; signal
+    --Println("Run " + i) >>
+    (
+    def balance(Channel[InType], Channel[OutType], List[SiteType]) :: Bot
+    def balance(in, out, ps) =
+      def makeChannel(_ :: Top) = Channel[OutType]()
+      val cs = map(makeChannel, ps)
+      
+      def write(List[Channel[OutType]]) :: Bot
+      def read(List[(SiteType,Channel[OutType])]) :: Bot
+      
+      def write(c:cs) = out.put(c.get()) >> write(append(cs, [c]))
+      
+      def read((p,c):pcs, isPrevDone) =
+        ( in.get() ; isPrevDone >> c.close() >> stop ) >x>
+        ( val isPrevDone' = (c.put(p(x)), isPrevDone) >> signal # read(append(pcs, [(p,c)]), isPrevDone') )
+      
+      write(cs) | read(zip(ps,cs), signal)
+    
+    val in = Channel[InType]()
+    val out = Channel[OutType]()
+    def compute(Integer) :: SiteType
+    def compute(n) = { _ >x> {-Println("Site " + n + " computing") >>-} (x, x*x) } #
+    
+    
+      ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
+        ; out.close() >> stop )
+    | ( uptoSeq(10, in.put) >> stop
+        ; in.close() >> stop )
+    | collect({ repeat(out.get) }) >x> (if length(x) /= 10 then Println("FAIL " + length(x)) >> stop else stop)
+    ) ; signal
 uptoSeq(200, run)
 
 {-
