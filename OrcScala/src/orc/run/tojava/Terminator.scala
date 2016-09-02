@@ -1,6 +1,7 @@
 package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 trait Terminatable {
   def kill(): Unit
@@ -11,16 +12,21 @@ trait Terminatable {
   * @author amp
   */
 class Terminator extends Terminatable {
-  private[this] var isLiveFlag = true
   // TODO: children can theoretically grow without bound. We need to actually remove the children when they are gone.
-  private[this] var children: List[Terminatable] = Nil
+  private[this] val children: AtomicReference[List[Terminatable]] = new AtomicReference(Nil)
 
-  def addChild(child: Terminatable) = synchronized {
-    if (!isLive()) {
+  def addChild(child: Terminatable): Unit = {
+    val orig = children.get()
+    if (orig == null) {
       child.kill()
-      checkLive()
+      throw KilledException.SINGLETON
     }
-    children ::= child
+
+    val n = child :: orig
+    if (!children.compareAndSet(orig, n)) {
+      // Retry on failure to set
+      addChild(child)
+    }
   }
 
   /** Check that this context is live and throw KilledException if it is not.
@@ -34,9 +40,8 @@ class Terminator extends Terminatable {
   /** Return true if this context is still live (has not been killed or halted
     * naturally).
     */
-  def isLive() = {
-    // TODO: Double checking the flag might be worth it.
-    synchronized { isLiveFlag }
+  def isLive(): Boolean = {
+    children.get() != null
   }
 
   /** Kill the expressions under this terminator.
@@ -44,27 +49,23 @@ class Terminator extends Terminatable {
     * This will throw KilledException if the terminator has already been killed otherwise it will just return to allow handling.
     */
   def kill(): Unit = {
-    val res = synchronized {
-      if (isLiveFlag) {
-        val t = children
-        isLiveFlag = false
-        children = null // Cause errors if anything is added later.
-        Some(t)
-      } else {
-        None
-      }
-    }
-    res match {
-      case Some(cs) =>
-        for (c <- cs) {
-          try {
-            c.kill()
-          } catch {
-            case _: KilledException => {}
-          }
+    val cs = children.get()
+    if (cs != null && children.compareAndSet(cs, null)) {
+      // If we were the first to kill and it succeeded
+      for (c <- cs) {
+        try {
+          c.kill()
+        } catch {
+          case _: KilledException => {}
         }
-      case None =>
-        throw KilledException.SINGLETON
+      }
+    } else if (cs == null) {
+      // If it was already killed
+      throw KilledException.SINGLETON
+    } else {
+      // If the kill attempt failed.
+      // Retry
+      kill()
     }
   }
 }
