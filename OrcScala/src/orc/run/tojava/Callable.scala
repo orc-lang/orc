@@ -76,7 +76,7 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
   * several shims to convert from one API to another.
   */
 class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
-  private lazy val site = Callable.findSite(underlying)
+  lazy val site = Callable.findSite(underlying)
   final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
     site match {
@@ -98,10 +98,10 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
   * This uses the token interpreters site invocation code and hence uses
   * several shims to convert from one API to another.
   */
-final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with DirectCallable with Wrapper {
-  private lazy val site = Callable.findSite(u)
+final class RuntimeDirectCallable(override val underlying: DirectSite) extends RuntimeCallable(underlying) with DirectCallable with Wrapper {
+  override lazy val site = Callable.findSite(underlying)
   def directcall(execution: Execution, args: Array[AnyRef]) = {
-    Logger.fine(s"Direct calling: $u(${args.mkString(", ")})")
+    Logger.fine(s"Direct calling: $underlying(${args.mkString(", ")})")
     try {
       val v = try {
         site.calldirect(args.toList)
@@ -117,11 +117,11 @@ final class RuntimeDirectCallable(u: DirectSite) extends RuntimeCallable(u) with
           execution.notifyOrc(CaughtEvent(e))
           throw HaltException.SINGLETON
       }
-      Logger.fine(s"Direct call returned successfully: $u(${args.mkString(", ")}) = $v")
+      Logger.fine(s"Direct call returned successfully: $underlying(${args.mkString(", ")}) = $v")
       v
     } catch {
       case e: Exception =>
-        Logger.fine(s"Direct call halted: $u(${args.mkString(", ")}) -> $e")
+        Logger.fine(s"Direct call halted: $underlying(${args.mkString(", ")}) -> $e")
         throw e
     }
   }
@@ -147,7 +147,7 @@ object Callable {
   
   /** Resolve an Orc Site name to a Callable.
     */
-  def resolveOrcSite(n: String): Callable = {
+  def resolveOrcSite(n: String): RuntimeCallable = {
     try {
       val s = orc.values.sites.OrcSiteForm.resolve(n)
       s match {
@@ -160,9 +160,24 @@ object Callable {
     }
   }
 
+  /** Resolve an Orc Site name to a Callable.
+    */
+  def resolveOrcDirectSite(n: String): RuntimeDirectCallable = {
+    try {
+      val s = orc.values.sites.OrcSiteForm.resolve(n)
+      s match {
+        case s: DirectSite => new RuntimeDirectCallable(s)
+        case _ => throw new AssertionError("resolveOrcDirectSite should never be called with a non-direct site.")
+      }
+    } catch {
+      case e: SiteResolutionException =>
+        throw new Error(e)
+    }
+  }
+
   /** Resolve an Java Site name to a Callable.
     */
-  def resolveJavaSite(n: String): Callable = {
+  def resolveJavaSite(n: String): RuntimeCallable = {
     try {
       val s = orc.values.sites.JavaSiteForm.resolve(n)
       s match {
@@ -173,5 +188,18 @@ object Callable {
       case e: SiteResolutionException =>
         throw new Error(e)
     }
+  }
+
+  def rethrowDirectCallException(execution: Execution, e: Exception): Nothing = e match {
+    case e: InterruptedException =>
+      throw e
+    case e: ExceptionHaltException if e.getCause() != null =>
+      execution.notifyOrc(CaughtEvent(e.getCause()))
+      throw HaltException.SINGLETON
+    case e: HaltException =>
+      throw e
+    case _ =>
+      execution.notifyOrc(CaughtEvent(e))
+      throw HaltException.SINGLETON
   }
 }

@@ -66,7 +66,7 @@ $code
   }
   def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
-
+  
   val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
   def strip$(s: String): String = {
@@ -79,9 +79,12 @@ $code
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
         | _: java.lang.Float | _: java.lang.Double | _: BigInt | _: BigDecimal => """Number"""
       case _: String => "String"
+      case _: scala.collection.immutable.Nil.type => "scala.collection.immutable.Nil$"
+      case _: scala.collection.immutable.::.type => "scala.collection.immutable.$colon$colon$"
       case _: java.lang.Boolean => "Boolean"
       case _: orc.values.Field => "Field"
-      case _: orc.values.sites.Site => "Callable"
+      case _: orc.values.sites.DirectSite => "RuntimeDirectCallable"
+      case _: orc.values.sites.Site => "RuntimeCallable"
       case _ => "Object"
     }
     val init = v match {
@@ -95,9 +98,12 @@ $code
       case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
       case b: java.lang.Boolean => b.toString()
       case s: String => stringAsJava(s)
+      case scala.collection.immutable.Nil => "scala.collection.immutable.Nil$.MODULE$"
+      case scala.collection.immutable.:: => "scala.collection.immutable.$colon$colon$.MODULE$"
       case orc.values.Signal => "orc.values.Signal$.MODULE$"
       case orc.values.Field(s) => s"""new Field(${stringAsJava(s)})"""
       case x: orc.values.sites.JavaClassProxy => s"""Callable$$.MODULE$$.resolveJavaSite(${stringAsJava(x.name)})"""
+      case x: orc.values.sites.DirectSite => s"""Callable$$.MODULE$$.resolveOrcDirectSite(${stringAsJava(strip$(x.getClass().getName))})"""
       case x: orc.values.sites.Site => s"""Callable$$.MODULE$$.resolveOrcSite(${stringAsJava(strip$(x.getClass().getName))})"""
       case null => "null"
       case _ => throw new AssertionError("Could not convert value " + v.toString + " to a Java initializer.")
@@ -135,7 +141,7 @@ $code
     }
   }
 
-  def expression(expr: Expr)(implicit ctx: ConversionContext): String = {
+  def expression(expr: Expr, isJavaExpression: Boolean = false)(implicit ctx: ConversionContext): String = {
     val code = expr match {
       case Call(target, arg) => {
         j"""
@@ -147,10 +153,18 @@ $code
         |$coerceToSiteCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
         """
       }
-      case SiteCallDirect(target, args) => {
+      case Let(x, SiteCallDirect(target, args), b) => {
+        assert(!isJavaExpression)
         j"""
-        |$coerceToSiteDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
+        |Object ${argument(x)};
+        |${sitecalldirect(Some(x), target, args)}
+        |${expression(b).deindentedAgressively}
         """
+        
+      }
+      case SiteCallDirect(target, args) => {
+        assert(!isJavaExpression)
+        sitecalldirect(None, target, args)
       }
       case DefCall(target, p, c, t, args) => {
         j"""
@@ -172,12 +186,14 @@ $code
         """
       }
       case Let(x, v, b) => {
+        assert(!isJavaExpression)
         j"""
-        |Object ${argument(x)} = $v;
+        |Object ${argument(x)} = ${expression(v, true)};
         |${expression(b).deindentedAgressively}
         """
       }
       case Sequence(es) => {
+        assert(!isJavaExpression)
         es.map(expression(_)).mkString("\n").deindentedAgressively
       }
       case Continuation(arg, b) => {
@@ -188,6 +204,7 @@ $code
         """
       }
       case DefDeclaration(defs, body) => {
+        assert(!isJavaExpression)
         val decls = (for (d <- defs) yield {
           val wrapper = newVarName(d.name.optionalVariableName.getOrElse("_f"))
           vars(d.name) = wrapper + "[0]"
@@ -256,11 +273,12 @@ $code
         """
       }
       case TupleElem(v, i) => {
-        // TODO: This seems to generate invalid expressions occationally. I cannot figure out how they are invalid.
-        // As of now this is not a problem since it only fails if there is a TupleElem outside a let. Which is removed by the optimizer.
-        j"""
-        |((Object[])${argument(v)})[$i];
-        """
+        if (isJavaExpression)
+          j"""
+          |((Object[])${argument(v)})[$i]
+          """
+        else
+          ""      
       }
       case GetField(p, c, t, o, f) => {
         j"""
@@ -269,6 +287,7 @@ $code
       }
 
       case TryFinally(b, h) => {
+        assert(!isJavaExpression)
         j"""
         |try {
           |$b
@@ -278,6 +297,7 @@ $code
         """
       }
       case TryOnKilled(b, h) => {
+        assert(!isJavaExpression)
         j"""
         |try {
           |$b
@@ -287,6 +307,7 @@ $code
         """
       }
       case TryOnHalted(b, h) => {
+        assert(!isJavaExpression)
         val e = newVarName("e")
         j"""
         |try {
@@ -300,7 +321,7 @@ $code
 
       case Unit() => ""
         
-      case _ => "???"
+      case _ => ???
     }
     
     ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
@@ -312,6 +333,66 @@ $code
   
   def getIdent(x: Var): String = lookup(x)
 
+  
+  def sitecalldirect(bindTo: Option[Var], target: Value, args: List[Value])(implicit ctx: ConversionContext): String = {
+    lazy val Signal = argument(OrcValue(orc.values.Signal))
+    lazy val throwHalt = "HaltException$.MODULE$.throwIt()"
+    lazy val throwHaltStat = "throw HaltException$.MODULE$.SINGLETON()"
+    
+    def maybeBind(v: String) = bindTo.map(x => j"${argument(x)} = $v;").getOrElse("")
+    
+    (target, args) match {
+      case (OrcValue(orc.lib.state.NewFlag), List()) => 
+        maybeBind(j"""
+        |new orc.lib.state.Flag();
+        """)
+      case (OrcValue(orc.lib.state.SetFlag), List(f)) if bindTo.isEmpty => 
+        j"""
+        |((orc.lib.state.Flag)${argument(f)}).set();
+        """
+      case (OrcValue(orc.lib.state.PublishIfNotSet), List(f)) => 
+        j"""
+        |if(((orc.lib.state.Flag)${argument(f)}).get()) $throwHaltStat;
+        |${maybeBind(Signal)}
+        """
+      case (OrcValue(orc.lib.builtin.Ift), List(b)) => 
+        j"""
+        |if(!(Boolean)${argument(b)}) $throwHaltStat;
+        |${maybeBind(Signal)}
+        """
+      case (OrcValue(orc.lib.builtin.Iff), List(b)) => 
+        j"""
+        |if((Boolean)${argument(b)}) $throwHaltStat;
+        |${maybeBind(Signal)}
+        """
+      case (OrcValue(v: orc.values.sites.DirectSite), _) => 
+        val temp = newVarName("temp")
+        val e = newVarName("exc")
+        val nil = argument(OrcValue(Nil))
+        val cons = argument(OrcValue(::))
+        def buildScalaList(args: Seq[String]) = {
+          args.foldRight(s"(scala.collection.immutable.List)$nil")((hd, tl) => s"$cons.apply((Object)$hd, $tl)")          
+        }
+        j"""
+        |Object $temp = null;
+        |try {
+        |  $temp = ${argument(target)}.site().calldirect(${buildScalaList(args.map(argument(_)))});
+        |} catch(Exception $e) { 
+        |  Callable$$.MODULE$$.rethrowDirectCallException($execution, $e);
+        |}
+        |${maybeBind(temp)}
+        """
+      /*case (OrcValue(v: orc.values.sites.DirectSite), _) => 
+        maybeBind(j"""
+        |${argument(target)}.directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })
+        """)*/
+      case _ =>
+        maybeBind(j"""
+        |$coerceToSiteDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })
+        """)
+    }
+  }
+  
   def argument(a: Value): String = {
     a match {
       case c@OrcValue(v) => lookup(c).name

@@ -19,6 +19,8 @@ object HaltException {
    * however it makes the stacks wrong. You can change this to a def 
    * to get the stacks right.
    */
+  
+  final def throwIt() = throw SINGLETON
 }
 
 /** Notify the enclosing code that this Orc code has been killed.
