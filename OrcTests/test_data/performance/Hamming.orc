@@ -67,7 +67,7 @@ Trans(lambda(x :: Integer) = x*2, x2.get, x2'.put) >> stop |
 Trans(lambda(x :: Integer) = x*3, x3.get, x3'.put) >> stop | 
 Trans(lambda(x :: Integer) = x*5, x5.get, x5'.put) >> stop |
  
-getN(1500, out') >x> Println(x) >>
+getN(4500, out') >x> Println(x) >>
 -- The getAll is required because there may be values in the channel and that will cause close to block.
 each(chans) >c> (c.getAll() >> stop | c.close())
 

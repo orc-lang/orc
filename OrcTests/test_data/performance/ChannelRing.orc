@@ -7,21 +7,24 @@ def rotateList(x : xs) = append(xs, [x])
 
 val chans = makeChannels[Integer](n)
 
-def class Connector(x, y, n) =
-  val counter = Counter(n)
+def Connector(x, y, n) =
+  val counter = Counter(n) #
+  def wait() = counter.onZero() #
   
-  def wait() = counter.onZero()
-  
-  Println("Connecting " + x + " to " + y) >> "From inside"
-  |
-  repeat(x.get) >v> y.put(v+1) >> counter.dec()
-  |
-  counter.onZero() >> y.close() >> Println("Connector Done")
+  -- Println("Connecting " + x + " to " + y) >> "From inside" |
+  (
+    repeat(x.get) >v> y.put(v+1) >> counter.dec() |
+    counter.onZero() >> y.close() >> Println("Connector Done")
+  ) >> stop
 
 timeIt(lambda() =
-  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 2500) -->c> c.wait()
+  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 300) -->c> c.wait()
   |
   head(chans).put(1)
-  |
-  head(chans).put(-100000)
+  --|
+  --head(chans).put(-100000)
 )
+
+{-
+BENCHMARK
+-}
