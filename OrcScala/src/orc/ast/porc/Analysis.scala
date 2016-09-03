@@ -78,6 +78,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     e match {
       case (_: OrcValue | _: Unit) in _ => true
       case (_: SiteCallDirect) in _ => true
+      case (_: DefCallDirect) in _ => true
       case (v: Var) in ctx => ctx(v) match {
         // Somehow hack in enough context dependance to catch obvious cases of arguments that have nonfuture args.
         case ContinuationArgumentBound(ctx, cont, _) => 
@@ -165,8 +166,14 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case SiteCallDirectIn(target, args, _) if target.siteMetadata.map(_.timeToHalt == Delay.NonBlocking).getOrElse(false) => {
         true
       }
-      case SiteCallIn(OrcValue(_) in _, p, c, t, args, _) => true
-      case DefCallIn(target, p, c, t, args, _) => true
+      case SiteCallIn(_, p, c, t, args, _) => true
+      
+      case DefCallIn((target: Var) in ctx, p, c, t, args, _) => 
+        ctx(target) match {
+          case RecursiveDefBound(_, _, _) => false
+          case _ => true
+        }
+      case DefCallIn(target, p, c, t, args, _) => false
 
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
         case LetBound(dctx, l) => 

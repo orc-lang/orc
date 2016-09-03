@@ -152,6 +152,7 @@ case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
 
 // ==================== PROCESS ===================
 
+// TODO: The semantics of this have been changed to "spawn or run as the runtime prefers"
 case class Spawn(cArg: Value, tArg: Value, body: Expr) extends Expr
 
 case class NewTerminator(parent: Value) extends Expr
@@ -166,6 +167,7 @@ case class TryFinally(body: Expr, handler: Expr) extends Expr
 
 // ==================== FUTURE ===================
 
+// TODO: The semantics of this have been changed to "spawn or run as the runtime prefers"
 case class SpawnFuture(c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
 
 case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr

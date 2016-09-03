@@ -253,8 +253,7 @@ object Optimizer {
     import PorcInfixNotation._
     e match {
       case SiteCallIn(target, p, c, t, args, ctx) 
-          if target.isNotFuture && args.forall(v => (v in ctx).isNotFuture) &&
-             target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
+          if target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
         val v = new Var()
         Some(
           TryOnHalted({
