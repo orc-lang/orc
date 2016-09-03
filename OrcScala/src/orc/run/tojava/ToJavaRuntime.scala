@@ -70,7 +70,7 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
     */
   override def publish(v: AnyRef) = {
     if (halted.compareAndSet(false, true)) {
-      execution.runtime.schedule(new CounterSchedulableFunc(c, () => {
+      execution.scheduleOrRun(new CounterSchedulableFunc(c, () => {
         // Catch and ignore killed exceptions since the site call itself should not be killed.
         try {
           p.call(v)

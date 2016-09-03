@@ -19,6 +19,7 @@ import orc.run.tojava.Wrapper
 import orc.CaughtEvent
 import orc.values.sites.JavaCall
 import orc.values.OrcValue
+import orc.Schedulable
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -67,10 +68,11 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     */
   def spawn(c: Counter, t: Terminator, f: Runnable): Unit = {
     // Spawn is an expensive operation, so check for kill before we do it.
-    t.checkLive();
+    t.checkLive()
     // Schedule the work. prepareSpawn and halt are called by
     // ContextSchedulableFunc.
-    runtime.schedule(new CounterSchedulableRunnable(c, f))
+    scheduleOrRun(new CounterSchedulableRunnable(c, f))
+    // PERF: Allowing run here is a critical optimization. Even with a small depth limit (32) this can give a factor of 6.
   }
 
   /** Spawn an execution and return future for it's first publication.
@@ -80,7 +82,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   def spawnFuture(c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
     t.checkLive();
     val fut = new Future()
-    runtime.schedule(new CounterSchedulableFunc(c, () => {
+    scheduleOrRun(new CounterSchedulableFunc(c, () => {
       val p = new Continuation {
         // This special context just binds the future on publication.
         override def call(v: AnyRef): Unit = {
@@ -172,6 +174,38 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     assert(if (vs.size == 1) !vs.head.isInstanceOf[Field] else true) 
     runtime.invoke(h, v, vs)
   }
+
+  def schedule(s: Schedulable) = {
+    runtime.schedule(s)
+  }
+
+  def scheduleOrRun(s: Schedulable) = {
+    if(Context.callDepthEst.get() >= Context.callDepthLimit) {
+      // If we are too deep them trampoline through the scheduler.
+      runtime.schedule(s)
+    } else {
+      Context.callDepthEst.set(Context.callDepthEst.get() + 1)
+      try {
+        s.run()
+      } catch {
+        case e: StackOverflowError =>
+          val nStackFrames = e.getStackTrace().size
+          Logger.severe(s"Stack overflowed at depth (in arbitrary units) ${Context.callDepthEst.get()} with $nStackFrames real stack frames")
+          throw new Error(e)
+      } finally {
+        Context.callDepthEst.set(Context.callDepthEst.get() - 1)
+      }
+    }
+  }
+}
+
+object Context {
+  val callDepthEst = new ThreadLocal[Int]() {
+    override protected def initialValue(): Int = 0
+  }
+  
+  // TODO: This needs to be configurable and ideally self tuning so things will at least always work.
+  val callDepthLimit = 64
 }
 
 
