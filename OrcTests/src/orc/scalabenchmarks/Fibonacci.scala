@@ -1,6 +1,8 @@
 package orc.scalabenchmarks
 
-object Fibonacci {
+import orc.test.BenchmarkApplication
+
+object Fibonacci extends BenchmarkApplication {
   def fibNaive(n: BigInt): BigInt = if (n <= 1) n else fibNaive(n - 1) + fibNaive(n - 2)
 
   def fibPair(n: BigInt): BigInt = {

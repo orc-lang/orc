@@ -43,7 +43,7 @@ object AllBenchmarkTests {
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
-        BenchmarkConfig(0 until cpuCount, backend, optLevel, timeout = timeout, nRuns = nRuns,
+        BenchmarkConfig(OrcBenchmarkSet, 0 until cpuCount, backend, optLevel, timeout = timeout, nRuns = nRuns,
           nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups, 
           outputCompileTime = outputCompileTime, output = output,
           outputHeader = false)

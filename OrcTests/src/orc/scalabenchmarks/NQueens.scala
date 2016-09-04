@@ -1,16 +1,18 @@
 package orc.scalabenchmarks
 
+import orc.test.BenchmarkApplication
+
 // From: https://gist.github.com/ornicar/1115259
 
 // Solves the n-queens problem for an arbitrary board size
 // Run for a board size of ten: scala nqueen.scala 10
-object NQueens {
+object NQueens extends BenchmarkApplication {
   type Queen = (BigInt, BigInt)
   type Solutions = List[List[Queen]]
 
   def main(args: Array[String]) {
     val size: Int = args match {
-      case Array() => sys.error("Provide a board size")
+      case Array() => println("Defaulting to size 9"); 9
       case Array(n) => n.toInt
     }
     def placeQueens(n: BigInt): Solutions = n match {
