@@ -21,7 +21,7 @@ import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 
 public class TrueRandom extends EvalSite {
-    private static String baseURL = "http://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
+	private static String baseURL = "https://www.random.org/integers/?num=1&col=1&base=10&format=plain&rnd=new";
 
     @Override
     public Object evaluate(final Args args) throws TokenException {
