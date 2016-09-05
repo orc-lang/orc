@@ -36,12 +36,12 @@ def primes(n) =
   def sieve(Number, Set[Number]) :: List[Number]
   def sieve(1, _) = []
   def sieve(n, set) =
-    def remove(p :: Number) = joinMap(set.remove, rangeBy(p*p, n, p))
+    def remove(p :: Number) = map(set.remove, rangeBy(p*p, n, p))
     sieve(Floor(sqrt(n)), set) >ps>
-    joinMap(remove, ps) >>
+    map(remove, ps) >>
     2:filter(set.contains, candidates(n))
   val set = Collections.synchronizedSet[Number](HashSet[Number]())
-  joinMap(set.add, candidates(n)) >>
+  map(set.add, candidates(n)) >>
   sieve(n, set)
 
 timeIt(lambda() =
