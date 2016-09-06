@@ -1,5 +1,5 @@
 //
-// Optimizer.scala -- Scala class/trait/object Optimizer
+// Optimizer.scala -- Scala class Optimizer
 // Project OrcScala
 //
 // $Id$
@@ -17,10 +17,12 @@ package orc.ast.porc
 import orc.values.sites.{ Site => OrcSite }
 //TODO: import orc.values.sites.DirectSite
 import orc.compile.CompilerOptions
+import orc.compile.OptimizerStatistics
+import orc.compile.NamedOptimization
 
-trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) {
+trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
-  def name: String
+  val name: String
 }
 
 case class Opt(name: String)(f: PartialFunction[(WithContext[Expr], AnalysisProvider[PorcAST]), Expr]) extends Optimization {
@@ -32,7 +34,7 @@ case class OptFull(name: String)(f: (WithContext[Expr], AnalysisProvider[PorcAST
 
 /** @author amp
   */
-case class Optimizer(co: CompilerOptions) {
+case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def apply(e: PorcAST, analysis: AnalysisProvider[PorcAST]): PorcAST = {
     val trans = new ContextualTransform.Pre {
       override def onExpr = {
@@ -44,6 +46,7 @@ case class Optimizer(co: CompilerOptions) {
                 if (e.e != e2) {
                   import orc.util.StringExtension._
                   Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  countOptimization(opt)
                   e2 in e.ctx
                 } else
                   e
@@ -266,6 +269,7 @@ object Optimizer {
   }
 
   val OnHaltedElim = OptFull("onhalted-elim") { (e, a) =>
+    // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
     e match {
       case TryOnHaltedIn(LetStackIn(bindings, TryOnHaltedIn(b, h1)), h2) if h1.e == h2.e =>
         Some(TryOnHalted(LetStack(bindings, b), h2))

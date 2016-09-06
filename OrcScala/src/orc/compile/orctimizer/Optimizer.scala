@@ -34,11 +34,13 @@ import orc.ast.hasAutomaticVariableName
 import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable
 import orc.ast.orctimizer.named.Bindings.SeqBound
+import orc.compile.OptimizerStatistics
+import orc.compile.NamedOptimization
 
 
-trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) {
+trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
-  def name : String
+  val name : String
   
   override def toString = name
 }
@@ -65,7 +67,7 @@ case class OptFull(name : String)(f : (WithContext[Expression], ExpressionAnalys
   *
   * @author amp
   */
-abstract class Optimizer(co: CompilerOptions) {
+abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def opts: Seq[Optimization]
   
   def transformFrom(f: PartialFunction[WithContext[Expression], Expression]): ContextualTransform
@@ -80,6 +82,7 @@ abstract class Optimizer(co: CompilerOptions) {
               if (e.e != e2) {
                 import orc.util.StringExtension._
                 Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                countOptimization(opt)                
                 e2 in e.ctx
               } else
                 e
@@ -467,10 +470,7 @@ abstract class Optimizer(co: CompilerOptions) {
           val recursive = decls.defs exists { d1 => bodyfree.contains(d1.name) }
           val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
           val hasDefArg = args.exists { 
-            case x: BoundVar => ctx(x) match {
-              // TODO: Handle closure arguments that have already been forced.
-              case b => isClosureBinding(b)
-            }
+            case x: BoundVar => isClosureBinding(ctx(x))
             case _ => false
           }
           //if (cost > costThreshold) 
@@ -602,10 +602,15 @@ abstract class Optimizer(co: CompilerOptions) {
     case (DeclareTypeAt(tv, t, b), a) if !containsType(b, tv) => b
   }
   
-  def isClosureBinding(b: Bindings.Binding) = {
+  def isClosureBinding(b: Bindings.Binding): Boolean = {
     import Bindings._
     b match {
       case DefBound(_,_,_) | RecursiveDefBound(_,_,_) => true
+      case ForceBound(ctx, f, x) => 
+        f.argForVar(x) match {
+          case y: BoundVar => isClosureBinding(ctx(y)) 
+        }
+      case SeqBound(ctx, (y: BoundVar) > x > _) => isClosureBinding(ctx(y))
       case _ => false
     } 
   }
@@ -667,7 +672,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
       LiftUnrelated, LiftForce,
       FutureElimFlatten, UnusedFutureElim, FutureElim, 
       /*FutureForceElim,*/ ForceElim, IfDefElim,
-      /*SiteForceElim,*/ TupleElim, AccessorElim,
+      TupleElim, AccessorElim,
       TrimCompChoice, TrimElim, ConstProp, 
       StopEquiv, StopElim,
       SeqExp, SeqElim, SeqElimVar,

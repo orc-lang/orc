@@ -37,14 +37,23 @@ import orc.TokenInterpreterBackend
 /** @author amp
   */
 object AllBenchmarkTests {
-  case class AllBenchmarkConfig(cpuCounts: Seq[Int], backends: Seq[BackendType], optLevels: Seq[Int],
+  case class AllBenchmarkConfig(
+    cpuCounts: Seq[Int],
+    backends: Seq[BackendType],
+    optLevels: Seq[Int],
     output: File,
-    timeout: Long = 120L, nRuns: Int = 5, nDroppedRuns: Int = 2, nDroppedWarmups: Int = 1, outputCompileTime: Boolean = false,
+    tests: Int = Int.MaxValue,
+    timeout: Long = 120L,
+    nRuns: Int = 5,
+    nDroppedRuns: Int = 2,
+    nDroppedWarmups: Int = 1,
+    outputCompileTime: Boolean = false,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
-        BenchmarkConfig(OrcBenchmarkSet, 0 until cpuCount, backend, optLevel, timeout = timeout, nRuns = nRuns,
-          nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups, 
+        BenchmarkConfig(OrcBenchmarkSet, 0 until cpuCount, backend, optLevel,
+          timeout = timeout, nRuns = nRuns, tests = tests,
+          nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups,
           outputCompileTime = outputCompileTime, output = output,
           outputHeader = false)
       }
@@ -74,6 +83,8 @@ object AllBenchmarkTests {
         processArgs(rest, conf.copy(backends = arg.split(",").map(BackendType.fromString)))
       case "-O" +: arg +: rest =>
         processArgs(rest, conf.copy(optLevels = parseRangeList(arg)))
+      case "-#" +: arg +: rest =>
+        processArgs(rest, conf.copy(tests = arg.toInt))
       case "-t" +: arg +: rest =>
         processArgs(rest, conf.copy(timeout = arg.toLong))
       case "-r" +: arg +: rest =>
@@ -99,23 +110,32 @@ object AllBenchmarkTests {
       Seq(2, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
 
     println(s"Running configs: (${config.configs.size})\n${config.configs.map(_.asArguments.mkString(" ")).mkString("\n")}")
-      
+
     for (conf <- config.configs) {
       import scala.sys.process._
-      val bootpath = if (System.getProperty("sun.boot.class.path") ne null)
-        System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")
-      else
+      
+      val bootpath = if (System.getProperty("sun.boot.class.path") ne null) {
+        System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")        
+      } else {
         ""
-      val cmd = Seq("java", "-cp", System.getProperty("java.class.path") + bootpath) ++
-        Seq("-Xss3M") ++ config.jvmArguments ++ 
+      }
+      
+      val jvm = if (System.getProperty("os.name").startsWith("Win")) {
+        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
+      } else {
+        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+      }
+      
+      val cmd = Seq(jvm, "-cp", System.getProperty("java.class.path") + bootpath) ++
+        config.jvmArguments ++
         Seq(BenchmarkTest.getClass().getCanonicalName().stripSuffix("$")) ++ conf.asArguments
       println(s"Running: ${cmd.mkString(" ")}")
-      def retry(n: Int): Unit = if(n > 0){
-          val result = cmd.!
-          if(result != 0) {
-            println(s"Retrying failed run: ${cmd.mkString(" ")}")
-            retry(n-1)
-          }
+      def retry(n: Int): Unit = if (n > 0) {
+        val result = cmd.!
+        if (result != 0) {
+          println(s"Retrying failed run: ${cmd.mkString(" ")}")
+          retry(n - 1)
+        }
       }
       retry(3)
     }

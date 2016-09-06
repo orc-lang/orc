@@ -68,13 +68,17 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> Analysis.cost(prog))
           val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-          s"Orctimizer Pass $pass/$maxPasses: $s"
+          s"Orctimizer before pass $pass/$maxPasses: $s"
         }
 
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
         
         val analyzer = new ExpressionAnalyzer
-        val prog1 = StandardOptimizer(co)(prog, analyzer)
+        val optimizer = StandardOptimizer(co)
+        val prog1 = optimizer(prog, analyzer)
+
+        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
 
         if((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -97,29 +101,33 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
     import orctimizer.named._
     val phaseName = "unroll"
     override def apply(co: CompilerOptions) = { ast =>
-      //println(co.options.optimizationFlags)
-      val maxPasses = co.options.optimizationFlags("orct:unroll-repeats").asInt(2)
+    //println(co.options.optimizationFlags)
+    val maxPasses = co.options.optimizationFlags("orct:unroll-repeats").asInt(2)
+    
+    def opt(prog : Expression, pass : Int): Expression = {
+      val analyzer = new ExpressionAnalyzer
+      val optimizer = UnrollOptimizer(co)
+      val prog1 = optimizer(prog, analyzer)
       
-      def opt(prog : Expression, pass : Int) : Expression = {
-        val analyzer = new ExpressionAnalyzer
-        val prog1 = UnrollOptimizer(co)(prog, analyzer)
+      def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+      co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer unroll pass $pass/$maxPasses: $optimizationCountsStr")
 
-        if((prog1 == prog && pass > 1) || pass > maxPasses)
-          prog1
-        else {
-          opt(prog1, pass+1)
-        }
+      if((prog1 == prog && pass > 1) || pass > maxPasses)
+        prog1
+      else {
+        opt(prog1, pass+1)
       }
+    }
+    
+    val e = if(co.options.optimizationFlags("orct").asBool() &&
+        co.options.optimizationFlags("orct:unroll-def").asBool())
+      opt(ast, 1)
+    else
+      ast
       
-      val e = if(co.options.optimizationFlags("orct").asBool() &&
-          co.options.optimizationFlags("orct:unroll-def").asBool())
-        opt(ast, 1)
-      else
-        ast
-        
-      TransformContext.clear()
+    TransformContext.clear()
 
-      e
+    e
     }
   }
 }
@@ -157,18 +165,24 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
             "closures" -> Analysis.count(prog, _.isInstanceOf[Continuation]),
             "indirect calls" -> Analysis.count(prog, _.isInstanceOf[SiteCall]),
             "direct calls" -> Analysis.count(prog, _.isInstanceOf[SiteCallDirect]),
-            "sites" -> Analysis.count(prog, _.isInstanceOf[Def]),
+            "sites" -> Analysis.count(prog, _.isInstanceOf[DefDeclaration]),
             "nodes" -> Analysis.count(prog, (_ => true)),
             "cost" -> analyzer(prog in TransformContext()).cost
           )
-        val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc Optimization Pass $pass: $s")
+        def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $s")
         //println("-------==========")
         //println(prog)
         //println("-------==========")
         
-        val prog1 = Optimizer(co)(prog, analyzer).asInstanceOf[DefCPS]
-        orc.ast.porc.Logger.fine(s"analyzer.size = ${analyzer.cache.size}")
+        val optimizer = Optimizer(co)
+        val prog1 = optimizer(prog, analyzer).asInstanceOf[DefCPS]
+        
+        orc.ast.porc.Logger.finest(s"analyzer.size = ${analyzer.cache.size}")
+        
+        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
+
         if(prog1 == prog || pass > maxPasses)
           prog1
         else {
