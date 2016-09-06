@@ -245,7 +245,7 @@ $code
       
       case NewCounter(c, h) => {
         j"""
-        |new CounterNested($coerceToCounter(${argument(c)}), () -> {
+        |new CounterNested($execution, $coerceToCounter(${argument(c)}), () -> {
           |$h
         |})"""
       }

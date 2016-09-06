@@ -28,7 +28,7 @@ import orc.Schedulable
 final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: OrcEvent => Unit) extends EventHandler {
   root =>
   private var isDone = false
-  
+
   runtime.addExecution(root)
   runtime.installHandlers(this)
 
@@ -108,7 +108,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
 
   private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
     Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")
-    
+
     def done(): Unit = {
       Logger.finer(s"Done for PCJoin $this (${values.mkString(", ")})")
       // Prevent KilledException from propagating into the code using the Blockable.
@@ -126,9 +126,9 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       c.halt()
     }
   }
-  
+
   /** Force a list of values: forcing futures and resolving closures.
-    * 
+    *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
   def force(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
@@ -171,7 +171,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = {
-    assert(if (vs.size == 1) !vs.head.isInstanceOf[Field] else true) 
+    assert(if (vs.size == 1) !vs.head.isInstanceOf[Field] else true)
     runtime.invoke(h, v, vs)
   }
 
@@ -180,7 +180,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   def scheduleOrRun(s: Schedulable) = {
-    if(Context.callDepthEst.get() >= Context.callDepthLimit) {
+    if (Context.callDepthEst.get() >= Context.callDepthLimit) {
       // If we are too deep them trampoline through the scheduler.
       runtime.schedule(s)
     } else {
@@ -197,15 +197,46 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       }
     }
   }
+
+  /** Setup the stage and begin staging any tasks that can be staged.
+   */
+  def setStage() = {
+    assert(Context.stagedTasks.get() == null)
+    Context.stagedTasks.set(Nil)
+  }
+
+  /** Stage a task if possible for scheduling or running. If it cannot be staged, just schedule or run it directly.
+   */
+  def stageOrRun(s: Schedulable) = {
+    val ts = Context.stagedTasks.get()
+    if (ts != null) {
+      s.onSchedule()
+      Context.stagedTasks.set(s :: ts)
+    } else
+      scheduleOrRun(s)
+  }
+
+  /** Empty the staged tasks by scheduling or running them.
+   */
+  def flushStage() = {
+    assert(Context.stagedTasks.get() != null)
+    val ts = Context.stagedTasks.get()
+    Context.stagedTasks.set(null)
+    ts.foreach { s =>
+      scheduleOrRun(s)
+      s.onComplete()
+    }
+  }
 }
 
 object Context {
+  val stagedTasks: ThreadLocal[List[Schedulable]] = new ThreadLocal[List[Schedulable]]()
+
   val callDepthEst = new ThreadLocal[Int]() {
     override protected def initialValue(): Int = 0
   }
-  
+
   // TODO: This needs to be configurable and ideally self tuning so things will at least always work.
   val callDepthLimit = 64
 }
-
 

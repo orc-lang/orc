@@ -12,6 +12,9 @@ import orc.values.OrcRecord
 import orc.values.sites.HasFields
 import orc.values.Field
 import orc.run.Logger
+import orc.OrcEvent
+import scala.util.parsing.input.Position
+import orc.Handle
 
 trait Continuation {
   def call(v: AnyRef)
@@ -70,12 +73,63 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
     impl.directcall(execution, args)
 }
 
+/** A wrapper around ToJava runtime state which interacts correctly with the Orc site API.
+ *  
+ */
+final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Terminator, val callSitePosition: Position) extends Handle with Terminatable {
+  val halted = new AtomicBoolean(false)
+  
+  t.addChild(this)
+  
+  /** Handle a site call publication.
+    *
+    * The semantics of a publication for a handle include halting so add that.
+    */
+  override def publish(v: AnyRef) = {
+    if (halted.compareAndSet(false, true)) {
+      execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+      c.halt()
+      // Matched to: Every invocation is required to be proceeded by a 
+      //             prepareSpawn since it might spawn.
+    }
+  }
+
+  def kill(): Unit = halt
+  
+  def halt: Unit = {
+    if (halted.compareAndSet(false, true)) {
+      c.halt()
+      // Matched to: Every invocation is required to be proceeded by a 
+      //             prepareSpawn since it might spawn.
+    }
+  }
+
+  def notifyOrc(event: OrcEvent): Unit = {
+    execution.notifyOrc(event)
+  }
+
+  // TODO: Support VTime
+  def setQuiescent(): Unit = {}
+
+  def !!(e: OrcException): Unit = {
+    notifyOrc(CaughtEvent(e))
+    halt
+  }
+
+  // TODO: Support rights.
+  def hasRight(rightName: String): Boolean = false
+
+  def isLive: Boolean = {
+    t.isLive()
+  }
+}
+
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
   *
   * This uses the token interpreters site invocation code and hence uses
   * several shims to convert from one API to another.
   */
-class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
+sealed class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
   lazy val site = Callable.findSite(underlying)
   final def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]) = {
     // If this call could have effects, check for kills.
@@ -87,7 +141,12 @@ class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapper {
     // Prepare to spawn because the invoked site might do that.
     c.prepareSpawn()
     // Matched to: halt in PCTHandle.
-    execution.invoke(new PCTHandle(execution, p, c, t, null), site, args.toList)
+    execution.setStage()
+    try {
+      execution.invoke(new PCTHandle(execution, p, c, t, null), site, args.toList)
+    } finally {
+      execution.flushStage()    
+    }
   }
   
   override def toString: String = s"${getClass.getName}($underlying)"
@@ -104,7 +163,12 @@ final class RuntimeDirectCallable(override val underlying: DirectSite) extends R
     Logger.fine(s"Direct calling: $underlying(${args.mkString(", ")})")
     try {
       val v = try {
-        site.calldirect(args.toList)
+        execution.setStage()
+        try {
+          site.calldirect(args.toList)
+        } finally {
+          execution.flushStage()    
+        }
       } catch {
         case e: InterruptedException => 
           throw e

@@ -123,15 +123,11 @@ abstract class CounterNestedBase(parent: Counter) extends Counter {
 /**
  * @author amp
  */
-final class CounterNested(parent: Counter, haltContinuation: Runnable) extends CounterNestedBase(parent) {  
+final class CounterNested(execution: Execution, parent: Counter, haltContinuation: Runnable) extends CounterNestedBase(parent) {  
   /** Called when this whole context has halted.
     */
   override def onContextHalted(): Unit = {
-    try {
-      haltContinuation.run()    
-    } catch {
-      case _: KilledException => ()
-    }
+    execution.stageOrRun(new CounterSchedulableRunnable(parent, haltContinuation))
     super.onContextHalted()
   }
 }
