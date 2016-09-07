@@ -495,6 +495,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val UnrollDef = OptFull("unroll-def") { (e, a) =>
     import a.ImplicitResults._
     
+    throw new AssertionError("Unrolling doesn't work.")
+    
     e match {
       case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
         case Bindings.RecursiveDefBound(dctx, decls, d) => {
