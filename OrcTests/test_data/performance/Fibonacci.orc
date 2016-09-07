@@ -29,6 +29,10 @@ fibPairTailrec(1000) >x> Println(x) >> stop
 
 ;
 
+fibPair(5000) >x> Println(x) >> stop
+
+;
+
 fibPair(1000) >x> Println(x) >> stop
 
 ;

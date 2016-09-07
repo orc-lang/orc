@@ -51,9 +51,9 @@ def compute(n) = lambda(x) = {-Println("Site " + n + " computing") >>-} (x, x*x)
 
   ( balance(in, out, [compute(1), compute(2), compute(3), compute(4)])
     ; out.close() >> stop )
-| ( uptoSeq(50, in.put) >> stop
+| ( uptoSeq(75, in.put) >> stop
     ; in.close() >> stop )
-| collect(lambda() = repeat(out.get)) >x> (if length(x) /= 50 then Println("FAIL " + length(x)) >> stop else stop)
+| collect(lambda() = repeat(out.get)) >x> (if length(x) /= 75 then Println("FAIL " + length(x)) >> stop else stop)
 ) ; signal
 )
 

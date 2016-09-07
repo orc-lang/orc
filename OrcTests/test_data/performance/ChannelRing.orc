@@ -18,11 +18,11 @@ def Connector(x, y, n) =
   ) >> stop
 
 timeIt(lambda() =
-  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 300) -->c> c.wait()
+  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 2000) -->c> c.wait()
   |
   head(chans).put(1)
-  --|
-  --head(chans).put(-100000)
+  |
+  head(chans).put(-100000)
 )
 
 {-
