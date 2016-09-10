@@ -160,6 +160,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     }
   }  
   
+  // TODO: detect more fast cases for defcall and call. This is important for eliminating spawns at def calls when they are not needed.
   def fastTerminating(e : WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     e match {
@@ -168,27 +169,46 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       }
       case SiteCallIn(_, p, c, t, args, _) => true
       
-      case DefCallIn((target: Var) in ctx, p, c, t, args, _) => 
+      case DefCallIn((target: Var) in ctx, p, c, t, args, _) => {
         ctx(target) match {
-          case RecursiveDefBound(_, _, _) => false
-          case _ => true
+          case DefBound(_, _, _) => true
+          case _ => false
         }
-      case DefCallIn(target, p, c, t, args, _) => false
-
-      case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
-        case LetBound(dctx, l) => 
-          val LetIn(_, ContinuationIn(_, _, b), _) = l in dctx
-          b.fastTerminating
-        case _ => false
       }
       
+      case DefCallIn(target, p, c, t, args, _) => false
+
+      case CallIn((t: Var) in ctx, _, _) => {
+        def resolveLet(e: WithContext[PorcAST]): WithContext[PorcAST] = e match {
+          case (t: Var) in ctx => ctx(t) match {
+            case LetBound(dctx, l) =>
+              resolveLet(l.v in dctx)
+            case _ => e
+          }
+          case _ => e
+        }
+        ctx(t) match {
+          case LetBound(dctx, l) =>
+            resolveLet(l.v in dctx) match {
+              case ContinuationIn(_, _, b) =>
+                b.fastTerminating
+              case _ => false
+            }
+          case SpawnFutureBound(_, _, _) =>
+            true
+          case DefArgumentBound(_, _, _) =>
+            false
+          case _ => false
+        }
+      }
+        
       case TryOnHaltedIn(b, h) => b.fastTerminating && h.fastTerminating
       case TryOnKilledIn(b, h) => b.fastTerminating && h.fastTerminating
       case LetIn(_, v, b) => v.fastTerminating && b.fastTerminating
       case SequenceIn(l, ctx) => l forall (e => (e in ctx).fastTerminating)
       case NewCounterIn(_, b) => b.fastTerminating
       case NewTerminatorIn(b) => b.fastTerminating
-      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force) in _ => {
+      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force | _: Unit) in _ => {
         true
       }
       case _ => false

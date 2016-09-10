@@ -16,11 +16,11 @@ include "timeIt.inc"
 
 def threadRing(Integer, Integer, Channel[Integer], Channel[Integer]) :: Integer
 def threadRing(id, m, in, next) =
-    in.get() >x>
+    repeat(in.get) >x>
     (if (m = x) then
        id
      else
-       next.put(x+1) >> threadRing(id, m, in, next))
+       next.put(x+1) >> stop)
 
 val N = 503
 

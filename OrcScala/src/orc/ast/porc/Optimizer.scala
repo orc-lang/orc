@@ -179,7 +179,10 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
    */
 
-  val allOpts = List(EtaReduce, VarLetElim, SpecializeSiteCall, InlineSpawn, InlineLet, LetElim, DefElim, OnHaltedElim)
+  val allOpts = List(
+      VarLetElim, SpecializeSiteCall, InlineSpawn, 
+      InlineLet, LetElim, DefElim, OnHaltedElim,
+      EtaReduce)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -236,6 +239,9 @@ object Optimizer {
 
   val EtaReduce = Opt("eta-reduce") {
     case (ContinuationIn(formal, _, CallIn(t, arg, _)), a) if arg == formal => t
+  }
+  val EtaSpawnReduce = Opt("eta-spawn-reduce") {
+    case (ContinuationIn(formal, _, SpawnIn(_, _, CallIn((t: Var) in ctx, arg, _))), a) if arg == formal && ctx(t).isInstanceOf[DefArgumentBound] => t
   }
 
   val LetElim = Opt("let-elim") {

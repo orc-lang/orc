@@ -25,7 +25,7 @@ class OrctimizerToPorc {
     val body = expression(prog)(ConversionContext(p = newP, c = newC, t = newT, recursives = Set()))
     porc.DefCPS(newVarName("Prog"), newP, newC, newT, Nil, body)
   }
-  
+
   val vars: mutable.Map[BoundVar, porc.Var] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
@@ -43,14 +43,18 @@ class OrctimizerToPorc {
     import porc.PorcInfixNotation._
     val code = expr match {
       case Stop() => porc.Unit()
-      case c@Call(target, args, typeargs) => {
+      case c @ Call(target, args, typeargs) => {
         val porcCall = c match {
-          case _ : CallSite => porc.SiteCall
-          case _ : CallDef => porc.DefCall
+          case _: CallSite => porc.SiteCall
+          case _: CallDef => porc.DefCall
         }
-        target match {
-          case target: BoundVar if ctx.recursives contains target => {
-            // For recusive functions spawn before calling and spawn before passing on the publication.
+        // TODO: Spawning on publication is a big issue since it results in O(n^2) spawns during stack 
+        //       unrolling. Can we avoid the need for the spawn in P.
+
+        // TODO: spawning for every call is overkill. Some will be optimized away. But it's still an issue.
+        c match {
+          case _: CallDef => {
+            // For possibly recusive functions spawn before calling and spawn before passing on the publication.
             // This provides trampolining.
             val newP = newVarName("P")
             val v = newVarName("temp")
@@ -59,8 +63,9 @@ class OrctimizerToPorc {
               porc.Spawn(ctx.c, ctx.t, call)
             }
           }
-          case _ => 
+          case _: CallSite => {
             porcCall(argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)))
+          }
         }
       }
       case left || right => {
@@ -80,9 +85,9 @@ class OrctimizerToPorc {
         val newP = newVarName("P")
         val v = newVarName()
         let((newT, porc.NewTerminator(ctx.t)),
-            (newP, porc.Continuation(v, porc.Kill(newT) ::: ctx.p(v)))) {
-          porc.TryOnKilled(expression(f)(ctx.copy(t = newT, p = newP)), porc.Unit())
-        }
+          (newP, porc.Continuation(v, porc.Kill(newT) ::: ctx.p(v)))) {
+            porc.TryOnKilled(expression(f)(ctx.copy(t = newT, p = newP)), porc.Unit())
+          }
       }
       case Future(x, f, g) => {
         val fut = lookup(x)
@@ -114,8 +119,8 @@ class OrctimizerToPorc {
         }
         val cr = {
           TryOnHalted({
-            publishIfNotSet(flag) ::: 
-            expression(right)
+            publishIfNotSet(flag) :::
+              expression(right)
           }, porc.Unit())
         }
 
@@ -135,10 +140,10 @@ class OrctimizerToPorc {
       // We do not handle types
       case HasType(body, expectedType) => expression(body)
       case DeclareType(u, t, body) => expression(body)
-      
-      case VtimeZone(timeOrder, body) => 
+
+      case VtimeZone(timeOrder, body) =>
         throw new FeatureNotSupportedException("Virtual time", expr.pos)
-        
+
       case FieldAccess(o, f) => {
         porc.GetField(ctx.p, ctx.c, ctx.t, argument(o), f)
       }
@@ -149,16 +154,16 @@ class OrctimizerToPorc {
     }
     code
   }
-  
+
   def argument(a: Argument): porc.Value = {
     a match {
-      case c@Constant(v) => porc.OrcValue(v)
+      case c @ Constant(v) => porc.OrcValue(v)
       case (x: BoundVar) => lookup(x)
       case _ => ???
     }
   }
-  
-  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.Def = {         
+
+  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.Def = {
     val Def(f, formals, body, typeformals, argtypes, returntype) = d
     val newP = newVarName("P")
     val newC = newVarName("C")
@@ -167,7 +172,7 @@ class OrctimizerToPorc {
     val name = lookup(f)
     porc.DefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
   }
-  
+
   private def newFlag(): SiteCallDirect = {
     SiteCallDirect(porc.OrcValue(NewFlag), List())
   }

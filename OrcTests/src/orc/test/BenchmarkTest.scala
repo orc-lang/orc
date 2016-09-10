@@ -155,6 +155,15 @@ object BenchmarkTest {
 
     val dataout = new OutputStreamWriter(new FileOutputStream(config.output, true))
 
+    val testFilter = if (System.getenv("RUN_ONLY") != null) System.getenv("RUN_ONLY").split(",").toSet else Set[String]()
+    def isSelectedTest(name: String): Boolean = {
+      if (testFilter.size > 0) {
+        testFilter contains name
+      } else {
+        true
+      }
+    }
+
     lazy val orcTests = {
       val path = new File("test_data/performance")
       val files = new LinkedList[File]()
@@ -162,11 +171,11 @@ object BenchmarkTest {
       val alltests = for (file <- files.toSeq.reverse if isFileBenchmarked(file)) yield {
         val testname = if (file.toString().startsWith(path.getPath() + File.separator))
           file.toString().substring(path.getPath().length() + 1)
-        else file.toString();
+        else file.toString()
 
         (testname, file)
       }
-      alltests.take(config.tests)
+      alltests.filter(p => isSelectedTest(p._1)).sortBy(_._1).take(config.tests)
     }
 
     lazy val scalaTests = {
@@ -179,7 +188,7 @@ object BenchmarkTest {
         val moduleField = cls.getField("MODULE$")
         (e.getKey().asInstanceOf[String], () => moduleField.get(null).asInstanceOf[BenchmarkApplication])
       })
-      alltests.toList.take(config.tests)
+      alltests.toList.filter(p => isSelectedTest(p._1)).sortBy(_._1).take(config.tests)
     }
 
     {
@@ -204,7 +213,7 @@ object BenchmarkTest {
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")
-        for ((testname, file) <- orcTests) yield {
+        for ((testname, file) <- orcTests) {
           val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
           write("," + result.toString(config.outputCompileTime))
         }
@@ -221,7 +230,7 @@ object BenchmarkTest {
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")
-        for ((testname, module) <- scalaTests) yield {
+        for ((testname, module) <- scalaTests) {
           val result = runTest(testname, module())
           write("," + result.toString(config.outputCompileTime))
         }
