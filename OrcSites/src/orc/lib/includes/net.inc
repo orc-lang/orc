@@ -36,3 +36,5 @@ def GoogleGeocoder(address :: String) =
     (returnedAddress, lattitude, longitude)
   else
     Error("Google Maps Geocoding API failure: "+response.status)
+
+import site ServletServer = "orc.lib.net.ServletServer"

@@ -33,6 +33,7 @@
 	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jetty-all-9.3.11.v20160721-uber.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="build/classes"/>
