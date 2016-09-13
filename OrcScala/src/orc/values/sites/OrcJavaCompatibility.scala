@@ -73,7 +73,12 @@ object OrcJavaCompatibility {
 
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
-  abstract class Invocable { def getParameterTypes(): Array[java.lang.Class[_]]; def isStatic: Boolean; def invoke(obj: Object, args: Array[Object]): Object }
+  abstract class Invocable {
+    def getParameterTypes(): Array[java.lang.Class[_]]
+    def isStatic: Boolean
+    def isVarArgs: Boolean
+    def invoke(obj: Object, args: Array[Object]): Object
+  }
 
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
@@ -88,12 +93,14 @@ object OrcJavaCompatibility {
   case class InvocableMethod(method: JavaMethod) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
     def isStatic = Modifier.isStatic(method.getModifiers())
+    def isVarArgs = method.isVarArgs()
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
   }
 
   case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
     def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
     def isStatic = true
+    def isVarArgs = ctor.isVarArgs()
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
@@ -117,6 +124,7 @@ object OrcJavaCompatibility {
         (m.getParameterTypes().size == argTypes.size ||
           m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
     })
+    Logger.finest(memberName + " argTypes=" + argTypes.mkString("{", ", ", "}"))
     Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
       throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
@@ -143,7 +151,21 @@ object OrcJavaCompatibility {
     }
 
     //Phase 3: Identify Applicable Variable Arity Methods
-    //FIXME:TODO: Implement var arg calls
+    val phase3Results = potentiallyApplicableMethods.filter({ m =>
+      if (m.isVarArgs()) {
+        val normalParams :+ varargParam = m.getParameterTypes().toSeq
+        assert(varargParam.isArray())
+        // Check that all normal params match
+        val normalParamsMatch = normalParams.corresponds(argTypes.take(normalParams.size))( (fp, arg) => isApplicable(fp, arg, true) )
+        // Check that each arg that will go in the vararg list matches the vararg array type
+        val varargParamsMatch = argTypes.drop(normalParams.size).forall( (arg) => isApplicable(varargParam.getComponentType(), arg, true) )
+        normalParamsMatch && varargParamsMatch
+      } else false
+    })
+    Logger.finest(memberName + " phase3Results=" + phase3Results.mkString("{", ", ", "}"))
+    if (phase3Results.nonEmpty) {
+      return Invocable(mostSpecificMethod(phase3Results))
+    }
 
     // No match
     throw new orc.error.runtime.MethodTypeMismatchException(memberName, targetClass);
@@ -296,7 +318,7 @@ object OrcJavaCompatibility {
 
   /** Most specific method per JLS §15.12.2.5 */
   private def mostSpecificMethod[M <: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int }](methods: Traversable[M]): M = {
-    //FIXME:TODO: Implement var arg calls
+    //FIXME:TODO: Verify that this is correct wrt var arg calls. It probably is because array subtyping is allowed.
     val maximallySpecificMethods =
       methods.foldLeft(List[M]())({ (prevMostSpecific: List[M], nextMethod: M) =>
         if (prevMostSpecific.isEmpty) {
