@@ -50,6 +50,9 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   */
 class Analyzer extends AnalysisProvider[PorcAST] {
   val cache = mutable.Map[WithContext[PorcAST], AnalysisResults]()
+  
+  // TODO: Somehow this is running the system out of memory on some programs. For example, /OrcExamples/OrcSites/simanim/baboon.orc
+  
   def apply(e: WithContext[PorcAST]) = {
     cache.get(e) match {
       case Some(r) => {

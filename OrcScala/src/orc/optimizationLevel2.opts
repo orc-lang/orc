@@ -18,6 +18,7 @@ orct:ifdef-elim
 orct:max-passes=100
 porc
 porc:eta-reduce
+porc:eta-spawn-reduce
 porc:var-let-elim 
 porc:specialize-sitecall
 porc:inline-spawn

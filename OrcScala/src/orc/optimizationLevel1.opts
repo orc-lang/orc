@@ -3,6 +3,7 @@ remove-unused-types
 fraction-defs
 porc
 porc:eta-reduce
+porc:eta-spawn-reduce
 porc:var-let-elim 
 porc:specialize-sitecall
 porc:inline-spawn

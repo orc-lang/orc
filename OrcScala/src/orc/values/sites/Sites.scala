@@ -65,6 +65,8 @@ trait SpecificArity extends Site {
   val arity: Int
 }
 
+// TODO: TotalSite and PartialSite will not work correctly if they are DirectSites and any site is actually blocking.
+
 /* Enforce totality */
 trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: List[AnyRef], h: Handle) {
