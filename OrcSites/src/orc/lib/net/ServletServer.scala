@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
 import orc.values.OrcTuple
 import javax.servlet.AsyncContext
+import org.eclipse.jetty.servlet.ServletMapping
 
 trait CastArgumentSupport {
   def castArgument[T <: AnyRef: ClassTag](i: Int, a: AnyRef, typeName: String = null): T = {
@@ -51,7 +52,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
   private def process(): Unit = synchronized {
     val handle = {
       var h = getQueue.peek()
-      while (!h.isLive) {
+      while (h != null && !h.isLive) {
         // Reject and remove any killed get calls.
         getQueue.remove(h)
         h = getQueue.peek()
@@ -100,6 +101,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
   }
 
   val fields = Map(
+    Field("registration") -> servlet.getRegistration(),
     Field("server") -> server.server,
     Field("context") -> server.context,
     Field("get") -> GetSite,
@@ -143,21 +145,25 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
       addServlet(servlet, path)
     }
   }
-  
-  def newServlet(path: String): ServletWrapper = synchronized {
+
+  def newServlet(paths: Seq[String]): ServletWrapper = synchronized {
     val h = new ServletHolder()
     val servlet = new ServletWrapper(h, this)
     h.setServlet(servlet)
     h.setName(s"$servlet##${genId()}")
     h.setAsyncSupported(true)
-    context.addServlet(h, path)
+    context.getServletHandler().addServlet(h)
+    val mapping = new ServletMapping
+    mapping.setPathSpecs(paths.toArray)
+    mapping.setServletName(h.getName())
+    context.getServletHandler().addServletMapping(mapping)
     servlet
   }
 
   object NewServletSite extends TotalSite1 with CastArgumentSupport {
     def eval(a: AnyRef): AnyRef = {
-      val path = castArgument[String](0, a)
-      newServlet(path)
+      val paths = castArgument[List[String]](0, a)
+      newServlet(paths)
     }
   }
 
@@ -231,7 +237,7 @@ object ServletServer extends TotalSite with CastArgumentSupport {
         val p = castArgument[Number](0, a)
         p.intValue()
       }
-      case _ => throw new ArityMismatchException(1, args.size)      
+      case _ => throw new ArityMismatchException(1, args.size)
     }
     val server = new Server(port)
     val context = new ServletContextHandler()
