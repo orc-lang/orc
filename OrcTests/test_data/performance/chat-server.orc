@@ -30,14 +30,13 @@ def addMessage(room, msg) =
   else
     signal) >> signal
 
--- TODO: Maybe double checked locking?
-def getRoom(name) = withLock(roomsLock, lambda() =
+def getRoom(name) = 
   (if rooms.get(name) = null then
     val r = newRoom() #
-    (rooms.put(name, r),
+    (rooms.putIfAbsent(name, r),
      addMessage(r, "Welcome to " + name)) >> signal
   else
-    signal)) >>
+    signal) >>
   rooms.get(name)
   
 

@@ -146,8 +146,8 @@ class ChatServerGatling extends Simulation {
 	normalPausesWithStdDevDuration(2)
 			
 	setUp(scn.inject(
-	    atOnceUsers(5),
-	    rampUsersPerSec(0.5) to 15 during(40 seconds) randomized,
-	    constantUsersPerSec(15) during(15 seconds) randomized
+	    atOnceUsers(10),
+	    rampUsersPerSec(0.5) to 20 during(15 seconds),
+	    constantUsersPerSec(15) during(30 seconds)
 	  )).protocols(httpProtocol)
 }
