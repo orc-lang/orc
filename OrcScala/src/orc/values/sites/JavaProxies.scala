@@ -81,11 +81,11 @@ abstract class JavaProxy extends Site {
 
   lazy val javaClassName: String = javaClass.getCanonicalName()
 
+  // Precompute the set of members of this class.
+  lazy val memberSet = Set() ++ javaClass.getMethods().map(_.getName()) ++ javaClass.getFields().map(_.getName())
+  
   /** Does this class have a method or field of the given name? */
-  def hasMember(memberName: String): Boolean =
-    //TODO: Memoize!  This is expensive!
-    javaClass.getMethods().exists({ _.getName().equals(memberName) }) ||
-      javaClass.getFields().exists({ _.getName().equals(memberName) })
+  def hasMember(memberName: String): Boolean = memberSet contains memberName
 
   /** Invoke a method on the given Java object of the given name with the given arguments */
   def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
@@ -216,6 +216,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
     }
   }
 
+  // FIXME: There is a bug where calls to null fields of java objects cause and NPE in the runtime. Not sure how to fix it. 
   def getField(f: OrcField): AnyRef = {
     val submemberName = f.field
 
@@ -241,7 +242,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
       getField(f)
       true
     } catch {
-      case _ : NoSuchFieldException => false
+      case _: NoSuchFieldException => false
     }
   }
 }

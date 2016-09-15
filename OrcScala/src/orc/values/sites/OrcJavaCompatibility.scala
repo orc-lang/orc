@@ -22,6 +22,7 @@ import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
 import scala.collection.generic.Shrinkable
+import java.util.concurrent.ConcurrentHashMap
 
 /**
   * @author jthywiss, dkitchin
@@ -104,8 +105,23 @@ object OrcJavaCompatibility {
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
-  /** Given a method name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
+  val methodSelectionCache = new ConcurrentHashMap[(Class[_], String, List[Class[_]]), Invocable]()
+
   def chooseMethodForInvocation(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
+    val key = (targetClass, memberName, argTypes)
+    methodSelectionCache.get(key) match {
+      case null => {
+        val inv = chooseMethodForInvocationSlow(targetClass, memberName, argTypes)
+        methodSelectionCache.putIfAbsent(key, inv)
+        inv
+      }
+      case inv => inv
+    }
+  }
+  
+  /** Given a method name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
+  def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
+    Logger.finest(s"$memberName target=$targetClass argTypes=(${argTypes.mkString(", ")})")
     //Phase 0: Identify Potentially Applicable Methods
     //A member method is potentially applicable to a method invocation if and only if all of the following are true:
     //* The name of the member is identical to the name of the method in the method invocation.
@@ -124,7 +140,6 @@ object OrcJavaCompatibility {
         (m.getParameterTypes().size == argTypes.size ||
           m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
     })
-    Logger.finest(memberName + " argTypes=" + argTypes.mkString("{", ", ", "}"))
     Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
     if (potentiallyApplicableMethods.isEmpty) {
       throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
