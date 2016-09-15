@@ -130,20 +130,16 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     nextId
   }
 
-  def addServlet(servlet: Servlet, path: String): ServletHolder = synchronized {
+  def addServlet(servlet: Servlet, paths: Seq[String]): ServletHolder = synchronized {
     val h = new ServletHolder(servlet)
     h.setName(s"$servlet##${genId()}")
     h.setAsyncSupported(true)
-    context.addServlet(h, path)
+    context.getServletHandler().addServlet(h)
+    val mapping = new ServletMapping
+    mapping.setPathSpecs(paths.toArray)
+    mapping.setServletName(h.getName())
+    context.getServletHandler().addServletMapping(mapping)
     h
-  }
-
-  object AddServletSite extends TotalSite2 with CastArgumentSupport {
-    def eval(a: AnyRef, b: AnyRef): AnyRef = {
-      val servlet = castArgument[Servlet](0, a)
-      val path = castArgument[String](1, b)
-      addServlet(servlet, path)
-    }
   }
 
   def newServlet(paths: Seq[String]): ServletWrapper = synchronized {
@@ -179,14 +175,6 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     servlet.stop()
   }
 
-  object RemoveServletHolderSite extends TotalSite1 with CastArgumentSupport {
-    def eval(a: AnyRef): AnyRef = {
-      val h = castArgument[ServletHolder](0, a)
-      removeServletHolder(h)
-      Signal
-    }
-  }
-
   object JoinSite extends Site0 {
     def call(h: orc.Handle): Unit = ServletServerWrapper.this synchronized {
       server.addLifeCycleListener(new LifeCycle.Listener {
@@ -210,8 +198,6 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     Field("server") -> server,
     Field("context") -> context,
     Field("newServlet") -> NewServletSite,
-    //Field("addServlet") -> AddServletSite,
-    //Field("removeServletHolder") -> RemoveServletHolderSite,
     Field("join") -> JoinSite,
     Field("stop") -> StopSite)
 
@@ -239,6 +225,10 @@ object ServletServer extends TotalSite with CastArgumentSupport {
       }
       case _ => throw new ArityMismatchException(1, args.size)
     }
+    ServletServer(port)
+  }
+
+  def apply(port: Int) = {
     val server = new Server(port)
     val context = new ServletContextHandler()
     context.setContextPath("/")
@@ -253,23 +243,22 @@ object ServletServer extends TotalSite with CastArgumentSupport {
     override protected def doGet(req: HttpServletRequest, resp: HttpServletResponse) {
       val ctxt = req.startAsync();
       ctxt.start(new Runnable() {
-        def run(): Unit =
-          {
-            System.err.println("In AsyncContext / Start / Runnable / run");
-            ctxt.getResponse().getOutputStream().println("In AsyncContext / Start / Runnable / run")
-            ctxt.complete()
-          }
-      });
+        def run(): Unit = {
+          System.err.println("In AsyncContext / Start / Runnable / run");
+          ctxt.getResponse().getOutputStream().println("In AsyncContext / Start / Runnable / run")
+          ctxt.complete()
+        }
+      })
     }
   }
 
   def main(args: Array[String]): Unit = {
-    val w = evaluate(List(Integer.valueOf(8080))).asInstanceOf[ServletServerWrapper]
+    val w = ServletServer(8080)
 
     Thread.sleep(5000)
 
     println("Add servlet")
-    val h = w.addServlet(new EmbeddedAsyncServlet(), "/async")
+    val h = w.addServlet(new EmbeddedAsyncServlet(), Seq("/async"))
     println("Servlet added")
 
     Thread.sleep(5000)
