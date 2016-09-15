@@ -126,25 +126,85 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       c.halt()
     }
   }
-
+  
+  def forceSingle(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean): Unit = {
+    assert(vs.length == 1)
+    val v = vs(0)
+    v match {
+      case f: Future => {
+        f.forceIn(new Blockable() {
+          def publish(v: AnyRef): Unit = {
+            // Prevent KilledException from propagating into the code using the Blockable.
+            try {
+              p.call(Array(v))
+            } catch {
+              case _: KilledException => {}
+            }
+          }
+          def halt(): Unit = c.halt()
+          def prepareSpawn(): Unit = c.prepareSpawn()
+        })
+      }
+      case clos: ForcableCallableBase if forceClosures && clos.closedValues.size > 0 => {
+        // Matches: halt in done() below
+        c.prepareSpawn()
+        new Resolve(clos.closedValues) {
+          def done(): Unit = {
+            // Prevent KilledException from propagating into the code using the Blockable.
+            try {
+              p.call(vs)
+            } catch {
+              case _: KilledException => {}
+            } finally {
+              // Matches: Call to prepareSpawn above
+              c.halt()
+            }
+          }
+        }
+      }
+      case _ => {
+        try {
+          p.call(vs)
+        } catch {
+          case _: KilledException => {}
+        }
+      }
+    }
+  }
   /** Force a list of values: forcing futures and resolving closures.
     *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
   def force(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
-    // Matches: call to halt in done and halt in PCJoin
-    // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
-    c.prepareSpawn()
-    new PCJoin(p, c, vs, true)
+    assert(vs.length > 0)
+    vs.length match {
+      case 1 => {
+        forceSingle(p, c, t, vs, true)
+      }
+      case _ => {
+        // Matches: call to halt in done and halt in PCJoin
+        // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
+        c.prepareSpawn()
+        new PCJoin(p, c, vs, true)
+      }
+    }
   }
 
   /** Force a list of values: forcing futures and ignoring closures.
     */
   def forceForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
-    // Matches: call to halt in done and halt in PCJoin
-    // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
-    c.prepareSpawn()
-    new PCJoin(p, c, vs, false)
+    assert(vs.length > 0)
+    vs.length match {
+      case 1 => {
+        forceSingle(p, c, t, vs, false)
+      }
+      case _ => {
+        // Matches: call to halt in done and halt in PCJoin
+        // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
+        c.prepareSpawn()
+        new PCJoin(p, c, vs, false)
+      }
+    }
   }
 
   /** Get a field of an object if possible.
