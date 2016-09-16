@@ -16,6 +16,7 @@ package orc.lib.math;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.types.Type;
 import orc.types.RecordExtensorType;
@@ -78,26 +79,20 @@ public class Add extends EvalSite implements TypedSite {
 
 	@Override
 	public Object evaluate(final Args args) throws TokenException {
-		try {
-			return Args.applyNumericOperator(args.numberArg(0), args.numberArg(1), op);
-		} catch (final TokenException _1) {
-			try {
-				final orc.values.OrcRecord a = (orc.values.OrcRecord) args.getArg(0);
-				final orc.values.OrcRecord b = (orc.values.OrcRecord) args.getArg(1);
-				return a.extendWith(b);
-			} catch (final ClassCastException _2) {
-				// If the arguments aren't both numbers or records, maybe
-				// one or the other is a string
-				try {
-					// the first argument is a string
-					final String a = args.stringArg(0);
-					return a + orc.values.Format.formatValueR(args.getArg(1), false);
-				} catch (final TokenException _3) {
-					// the second argument is a string
-					final String b = args.stringArg(1);
-					return orc.values.Format.formatValueR(args.getArg(0), false) + b;
-				}
-			}
+        Object a = args.getArg(0);
+        Object b = args.getArg(1);
+        
+        if (a instanceof Number && b instanceof Number) {
+  			return Args.applyNumericOperator(args.numberArg(0), args.numberArg(1), op);
+        } else if (a instanceof String) {
+            return (String)a + orc.values.Format.formatValueR(args.getArg(1), false);
+        } else if (b instanceof String) {
+            return orc.values.Format.formatValueR(args.getArg(0), false) + (String)b;
+        } else if (a instanceof orc.values.OrcRecord || b instanceof orc.values.OrcRecord) {
+            return ((orc.values.OrcRecord)a).extendWith((orc.values.OrcRecord)b);
+		} else {
+		  // TODO: This is not accurate, since we don't know WHICH parameter has the wrong time. However the old version wasn't very specific either.
+		  throw new ArgumentTypeMismatchException(0, "Number, String, or record", a != null ? a.getClass().toString() : "null");
 		}
 	}
 
