@@ -72,7 +72,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     import a.ImplicitResults._
     expr match {
       case LetIn(x in _, lam @ ContinuationIn(formal, _, impl), scope) =>
-        def size = impl.cost
+        def size = Analysis.cost(impl)
         lazy val (noncompatReferences, compatReferences, compatCallsCost) = {
           var refs = 0
           var refsCompat = 0
@@ -92,7 +92,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               case e @ (Call(`x`, _) in usectx) =>
                 if (usectx.compatibleFor(impl)(expr.ctx)) {
                   refsCompat += 1
-                  callsCost += e.cost
+                  callsCost += Analysis.cost(e)
                 } else {
                   //Logger.finest(s"Incompatible call site for $x: ${e.e}")
                 }
@@ -135,7 +135,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     import a.ImplicitResults._
     e match {
       case SpawnIn(c, t, e) => {
-          val c = e.cost
+          val c = Analysis.cost(e)
           if (c <= spawnCostInlineThreshold && e.fastTerminating)
             Some(e)
           else

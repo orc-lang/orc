@@ -23,7 +23,6 @@ import orc.values.sites.Delay
 case class AnalysisResults(
   isNotFuture: Boolean,
   doesNotThrowHalt: Boolean,
-  cost: Int,
   fastTerminating: Boolean,
   siteMetadata: Option[SiteMetadata]) {
 }
@@ -40,7 +39,7 @@ sealed trait AnalysisProvider[E <: PorcAST] {
 
   def withDefault: AnalysisProvider[E] = {
     new AnalysisProvider[E] {
-      def apply(e: WithContext[E]): AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, Int.MaxValue, false, None))
+      def apply(e: WithContext[E]): AnalysisResults = get(e).getOrElse(AnalysisResults(false, false, false, None))
       def get(e: WithContext[E]): Option[AnalysisResults] = outer.get(e)
     }
   }
@@ -68,7 +67,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   def get(e: WithContext[PorcAST]) = Some(apply(e))
 
   def analyze(e: WithContext[PorcAST]): AnalysisResults = {
-    AnalysisResults(nonFuture(e), nonHalt(e), cost(e), fastTerminating(e), siteMetadata(e))
+    AnalysisResults(nonFuture(e), nonHalt(e), fastTerminating(e), siteMetadata(e))
   }
 
   def translateArguments(vs: List[Value], formals: List[Var], s: Set[Var]): Set[Var] = {
@@ -217,7 +216,9 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case _ => false
     }
   }
-  
+}
+
+object Analysis {
   val closureCost = 5
   val spawnCost = 4
   val forceCost = 3
@@ -227,11 +228,9 @@ class Analyzer extends AnalysisProvider[PorcAST] {
   val externalCallCost = 5
   val atomicOperation = 2
   
-  def cost(e : WithContext[PorcAST]): Int = {
-    import ImplicitResults._
-    
-    val cs = e.subtrees
-    (e.e match {
+  def cost(e : PorcAST): Int = {
+    val cs = e.subtrees.asInstanceOf[Iterable[PorcAST]]
+    (e match {
       case _ : Spawn => spawnCost
       case _ : Force => forceCost
       case _ : Kill => killCost
@@ -242,12 +241,9 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case _ : SiteCall => externalCallCost + spawnCost
       case _ : Kill | _ : Halt => atomicOperation
       case _ => 0
-    }) + (cs.map( _.cost ).sum)
+    }) + (cs.map( cost ).sum)
   }
   
-}
-
-object Analysis {
   def count(t: PorcAST, p: (Expr => Boolean)): Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
     (t match {

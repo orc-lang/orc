@@ -167,7 +167,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
             "direct calls" -> Analysis.count(prog, _.isInstanceOf[SiteCallDirect]),
             "sites" -> Analysis.count(prog, _.isInstanceOf[DefDeclaration]),
             "nodes" -> Analysis.count(prog, (_ => true)),
-            "cost" -> analyzer(prog in TransformContext()).cost
+            "cost" -> Analysis.cost(prog)
           )
         def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $s")
