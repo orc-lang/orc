@@ -31,12 +31,12 @@ def threadRingRunner(p) =
   val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
   Println(lastid)
 
-timeIt(lambda() = threadRingRunner(10000)) >>
-timeIt(lambda() = threadRingRunner(100000)) >> stop
+threadRingRunner(10000) >>
+threadRingRunner(100000) >> stop
 {-
 OUTPUT:
-474
-204
+444
+407
 -}
 {-
 BENCHMARK

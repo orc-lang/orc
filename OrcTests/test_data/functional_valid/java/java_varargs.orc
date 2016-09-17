@@ -9,6 +9,7 @@ import class JavaFormatter = "java.util.Formatter"
 import class JavaString = "java.lang.String"
 import class Locale = "java.util.Locale"
 
+(if JavaString.format("a") = "a" then "0 pass" else "0 FAIL") |
 (if JavaString.format("a%s", 42) = "a42" then "1 pass" else "1 FAIL") |
 (if JavaString.format("a%s%s", "test", 42) = "atest42" then "2 pass" else "2 FAIL") |
 (if JavaString.format(Locale.US?, "a%s", 42) = "a42" then "3 pass" else "3 FAIL") |
@@ -28,6 +29,7 @@ stop
 
 {-
 OUTPUT:PERMUTABLE
+"0 pass"
 "1 pass"
 "2 pass"
 "3 pass"
