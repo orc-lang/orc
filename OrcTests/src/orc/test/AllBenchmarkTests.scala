@@ -48,6 +48,7 @@ object AllBenchmarkTests {
     nDroppedRuns: Int = 2,
     nDroppedWarmups: Int = 1,
     outputCompileTime: Boolean = false,
+    outputStdDev: Boolean = true,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
@@ -55,7 +56,7 @@ object AllBenchmarkTests {
           timeout = timeout, nRuns = nRuns, tests = tests,
           nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups,
           outputCompileTime = outputCompileTime, output = output,
-          outputHeader = false)
+          outputHeader = false, outputStdDev = outputStdDev)
       }
 
       cs.head.copy(outputHeader = true) +: cs.tail
@@ -95,6 +96,8 @@ object AllBenchmarkTests {
         processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
+      case "-s" +: rest =>
+        processArgs(rest, conf.copy(outputStdDev = false))
       case "+J" +: rest if rest.contains("-J") =>
         val i = rest.indexOf("-J")
         processArgs(rest.drop(i), conf.copy(jvmArguments = rest.take(i - 1)))

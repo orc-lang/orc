@@ -51,6 +51,7 @@ case class BenchmarkConfig(
   nDroppedRuns: Int = 4,
   outputCompileTime: Boolean = false,
   outputHeader: Boolean = true,
+  outputStdDev: Boolean = true,
   nDroppedWarmups: Int = 1,
   timeoutLimit: Int = 2) {
   def name = s"$backend -O$optLevel on ${cpus.size} cpus"
@@ -66,6 +67,7 @@ case class BenchmarkConfig(
     "-d", nDroppedRuns.toString,
     "-w", nDroppedWarmups.toString) ++
     (if (outputCompileTime) Seq("-C") else Seq()) ++
+    (if (outputStdDev) Seq() else Seq("-s")) ++
     (if (outputHeader) Seq() else Seq("-H"))
 }
 
@@ -78,11 +80,13 @@ object BenchmarkTest {
     override def toString: String = {
       productIterator.mkString(",")
     }
-    def toString(compTime: Boolean): String = {
+    def toString(compTime: Boolean, stdDev: Boolean): String = {
       if (compTime)
         toString
-      else
+      else if (stdDev)
         s"$runTime,$runStddev"
+      else
+        s"$runTime"
     }
   }
 
@@ -137,6 +141,8 @@ object BenchmarkTest {
         processArgs(rest, conf.copy(nDroppedWarmups = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
+      case "-s" +: rest =>
+        processArgs(rest, conf.copy(outputStdDev = false))
       case "-H" +: rest =>
         processArgs(rest, conf.copy(outputHeader = false))
       case "-o" +: arg +: rest =>
@@ -209,13 +215,13 @@ object BenchmarkTest {
           write("Config," + orcTests.map(c => {
             val cname = c._1
             (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg,$cname Run Stdev"
+              s"$cname Run Avg" + (if(config.outputStdDev) s",$cname Run Stdev" else "")
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")
         for ((testname, file) <- orcTests) {
           val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
-          write("," + result.toString(config.outputCompileTime))
+          write("," + result.toString(config.outputCompileTime, config.outputStdDev))
         }
         {
           val bindings = makeBindings(config.optLevel, config.backend)
@@ -226,13 +232,13 @@ object BenchmarkTest {
           write("Config," + scalaTests.map(c => {
             val cname = c._1
             (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg,$cname Run Stdev"
+              s"$cname Run Avg" + (if(config.outputStdDev) s",$cname Run Stdev" else "")
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")
         for ((testname, module) <- scalaTests) {
           val result = runTest(testname, module())
-          write("," + result.toString(config.outputCompileTime))
+          write("," + result.toString(config.outputCompileTime, config.outputStdDev))
         }
     }
 
