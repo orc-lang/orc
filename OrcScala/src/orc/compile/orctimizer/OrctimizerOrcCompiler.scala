@@ -228,7 +228,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       toPorc >>>
       outputIR(7) >>>
       optimizePorc >>>
-      outputIR(7) >>>
+      outputIR(8) >>>
       porcToJava >>>
-      outputIR(8)
+      outputIR(9)
 }

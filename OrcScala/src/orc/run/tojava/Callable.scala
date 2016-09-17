@@ -87,6 +87,7 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
     */
   override def publish(v: AnyRef) = {
     if (halted.compareAndSet(false, true)) {
+      // TODO: It should be possible to pass the count we have on to the schedulable. It would save two atomic updates per pub.
       execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a 

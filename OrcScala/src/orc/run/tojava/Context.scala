@@ -105,20 +105,25 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     fut
   }
 
+  private final def schedulePublishAndHalt(p: Continuation, c: Counter, v: AnyRef) = {
+    scheduleOrRun(new CounterSchedulableFunc(c, () =>
+      try {
+        p.call(v)
+      } finally {
+        // Matches: Call to prepareSpawn in constructor
+        c.halt()
+      }))
+  }
+  private final def schedulePublish(p: Continuation, c: Counter, v: AnyRef) = {
+    scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+  }
+
   private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
     Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")
 
     def done(): Unit = {
       Logger.finer(s"Done for PCJoin $this (${values.mkString(", ")})")
-      // Prevent KilledException from propagating into the code using the Blockable.
-      try {
-        p.call(values)
-      } catch {
-        case _: KilledException => {}
-      } finally {
-        // Matches: Call to prepareSpawn in constructor
-        c.halt()
-      }
+      schedulePublishAndHalt(p, c, values)
     }
     def halt(): Unit = {
       Logger.finer(s"Halt for PCJoin $this (${values.mkString(", ")})")
@@ -133,12 +138,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       case f: Future => {
         f.forceIn(new Blockable() {
           def publish(v: AnyRef): Unit = {
-            // Prevent KilledException from propagating into the code using the Blockable.
-            try {
-              p.call(Array(v))
-            } catch {
-              case _: KilledException => {}
-            }
+            schedulePublish(p, c, Array(v))
           }
           def halt(): Unit = c.halt()
           def prepareSpawn(): Unit = c.prepareSpawn()
@@ -149,24 +149,12 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
         c.prepareSpawn()
         new Resolve(clos.closedValues) {
           def done(): Unit = {
-            // Prevent KilledException from propagating into the code using the Blockable.
-            try {
-              p.call(vs)
-            } catch {
-              case _: KilledException => {}
-            } finally {
-              // Matches: Call to prepareSpawn above
-              c.halt()
-            }
+            schedulePublishAndHalt(p, c, vs)
           }
         }
       }
       case _ => {
-        try {
-          p.call(vs)
-        } catch {
-          case _: KilledException => {}
-        }
+        schedulePublish(p, c, vs)
       }
     }
   }
@@ -213,6 +201,8 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     * returning does not imply this has halted.
     */
   def getField(p: Continuation, c: Counter, t: Terminator, v: AnyRef, f: Field) = {
+    // TODO: Since getField always returns a value immediately it should probably not use a continuation and instead just return the value.
+    //       That would make for fewer megamorphic call sites.
     Wrapper.unwrap(v) match {
       case r: HasFields if r.hasField(f) => {
         p.call(r.getField(f))
@@ -239,11 +229,12 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   def scheduleOrRun(s: Schedulable) = {
-    if (Context.callDepthEst.get() >= Context.callDepthLimit) {
+    val depth = Context.callDepthEst.get()
+    if (depth >= Context.callDepthLimit) {
       // If we are too deep them trampoline through the scheduler.
       runtime.schedule(s)
     } else {
-      Context.callDepthEst.set(Context.callDepthEst.get() + 1)
+      Context.callDepthEst.set(depth + 1)
       try {
         s.run()
       } catch {
@@ -252,7 +243,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
           Logger.severe(s"Stack overflowed at depth (in arbitrary units) ${Context.callDepthEst.get()} with $nStackFrames real stack frames")
           throw new Error(e)
       } finally {
-        Context.callDepthEst.set(Context.callDepthEst.get() - 1)
+        Context.callDepthEst.set(depth)
       }
     }
   }

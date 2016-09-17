@@ -9,6 +9,7 @@ import orc.run.Logger
   */
 abstract class CounterSchedulable(c: Counter) extends Schedulable {
   // We known we are non-blocking because all Orc Java code is non-blocking.
+  // TODO: Is this true? What about external site calls?
   override val nonblocking = true
 
   /** When we are scheduled prepare for spawning.

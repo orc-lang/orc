@@ -210,7 +210,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case SequenceIn(l, ctx) => l forall (e => (e in ctx).fastTerminating)
       case NewCounterIn(_, b) => b.fastTerminating
       case NewTerminatorIn(b) => b.fastTerminating
-      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force | _: Unit) in _ => {
+      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force | _: Unit | _: Kill) in _ => {
         true
       }
       case _ => false
