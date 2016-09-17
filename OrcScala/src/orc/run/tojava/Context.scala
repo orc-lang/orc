@@ -15,7 +15,6 @@ import orc.OrcEvent
 import orc.PublishedEvent
 import orc.values.sites.HasFields
 import orc.error.runtime.NoSuchMemberException
-import orc.run.tojava.Wrapper
 import orc.CaughtEvent
 import orc.values.sites.JavaCall
 import orc.values.OrcValue
@@ -230,7 +229,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     }
   }
 
-  final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = {
+  final def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) = {
     assert(if (vs.size == 1) !vs.head.isInstanceOf[Field] else true)
     runtime.invoke(h, v, vs)
   }

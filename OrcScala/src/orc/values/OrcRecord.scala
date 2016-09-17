@@ -47,7 +47,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with HasF
       case _ => throw new ArityMismatchException(1, args.size)
     }
   */
-  override def evaluate(args: List[AnyRef]) = throw new UncallableValueException(this)
+  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
 
   override def toOrcSyntax() = {
     val formattedEntries =

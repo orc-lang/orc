@@ -368,15 +368,10 @@ $code
       case (OrcValue(v: orc.values.sites.DirectSite), _) => 
         val temp = newVarName("temp")
         val e = newVarName("exc")
-        val nil = argument(OrcValue(Nil))
-        val cons = argument(OrcValue(::))
-        def buildScalaList(args: Seq[String]) = {
-          args.foldRight(s"(scala.collection.immutable.List)$nil")((hd, tl) => s"$cons.apply((Object)$hd, $tl)")          
-        }
         j"""
         |Object $temp = null;
         |try {
-        |  $temp = ${argument(target)}.site().calldirect(${buildScalaList(args.map(argument(_)))});
+        |  $temp = ${argument(target)}.site().calldirect(new Object[] {${args.map(argument(_)).mkString(", ")}});
         |} catch(Exception $e) { 
         |  Callable$$.MODULE$$.rethrowDirectCallException($execution, $e);
         |}

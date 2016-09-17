@@ -34,7 +34,7 @@ class SiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) e
         }
         isLive
       }) {
-        caller.runtime.invoke(this, calledSite, actuals)
+        caller.runtime.invoke(this, calledSite, actuals.toArray)
       }
     } catch {
       case e: OrcException => this !! e

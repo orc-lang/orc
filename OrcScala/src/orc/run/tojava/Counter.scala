@@ -52,10 +52,11 @@ object Counter {
  * @author amp
  */
 abstract class Counter {
+  /*
   @elidable(elidable.ASSERTION) 
   val log = new LinkedBlockingDeque[Exception]()
 
-  @elidable(elidable.ASSERTION) 
+  @elidable(elidable.ASSERTION)
   private def logChange(s: => String) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       log.add(new Exception(s))    
@@ -64,6 +65,12 @@ abstract class Counter {
   logChange(s"Init to 1")
   
   Counter.addCounter(this)
+  */
+  
+  val log: LinkedBlockingDeque[Exception] = null
+  @inline
+  private def logChange(s: => String) = {
+  }
 
   /** The number of executions that are either running or pending.
     *

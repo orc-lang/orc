@@ -19,15 +19,16 @@ import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.SimpleFunctionType
 import orc.types.BooleanType
+import orc.util.ArrayExtensions._
 
 /** Logical negation site
   */
 object Not extends TotalSite with TypedSite {
   override def name = "Not"
-  def evaluate(args: List[AnyRef]) =
+  def evaluate(args: Array[AnyRef]) =
     args match {
-      case List(b: java.lang.Boolean) => new java.lang.Boolean(!b.booleanValue)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
+      case Array1(b: java.lang.Boolean) => new java.lang.Boolean(!b.booleanValue)
+      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
 

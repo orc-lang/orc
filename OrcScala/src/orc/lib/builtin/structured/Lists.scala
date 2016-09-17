@@ -57,7 +57,7 @@ object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {
-      case (v: AnyRef) :: vs => Some(OrcTuple(List(v, vs)))
+      case (v: AnyRef) :: vs => Some(OrcTuple(Array(v, vs)))
       case _ => None
     }
 
@@ -66,5 +66,5 @@ object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
     new FunctionType(List(X), List(ListType(X)), TupleType(List(X, ListType(X))))
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(List(null, null)))
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(Array(null, null)))
 }

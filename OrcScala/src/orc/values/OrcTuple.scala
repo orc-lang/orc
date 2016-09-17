@@ -20,23 +20,23 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.TupleIndexOutOfBoundsException
 import orc.values.sites.SiteMetadata
+import orc.util.ArrayExtensions._
 
 /**
   *
   * @author dkitchin
   */
-case class OrcTuple(values: List[AnyRef]) extends PartialSite with UntypedSite {
+case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite {
+  assert(values.length > 1)
 
-  assert(values.size > 1)
-
-  def evaluate(args: List[AnyRef]) =
+  def evaluate(args: Array[AnyRef]) =
     args match {
-      case List(bi: BigInt) => {
+      case Array1(bi: BigInt) => {
         val i: Int = bi.intValue
         if (0 <= i && i < values.size) { Some(values(i)) }
         else { throw new TupleIndexOutOfBoundsException(i) }
       }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
+      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"

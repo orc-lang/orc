@@ -44,7 +44,7 @@ class ToJavaRuntime(private val runtime: Orc) {
 
   final def installHandlers(h: EventHandler) = runtime.installHandlers(h)
   final def schedule(s: Schedulable) = runtime.schedule(s)
-  final def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) = runtime.invoke(h, v, vs)
+  final def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) = runtime.invoke(h, v, vs)
   
   if (Logger.julLogger.isLoggable(Level.FINE)) {
     val t = new Thread() {

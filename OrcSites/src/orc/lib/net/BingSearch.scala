@@ -46,8 +46,8 @@ class BingSearchFactoryPropertyFile extends PartialSite with SpecificArity with 
       p.getProperty("orc.lib.net.bing.key"))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(file: String, source: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(file: String, source: String) = args
     val (user, key) = loadProperties(file)
     Some(new BingSearch(user, key, source))
   }
@@ -62,8 +62,8 @@ class BingSearchFactoryUsernameKey extends PartialSite with SpecificArity with T
       BingSearch.orcType)
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(user: String, key: String, source: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(user: String, key: String, source: String) = args
     Some(new BingSearch(user, key, source))
   }
 }
@@ -83,8 +83,8 @@ class BingSearch(user: String, key: String, source: String) extends PartialSite 
 
   def orcType() = BingSearch.orcType
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(query: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(query: String) = args
     val url = new URL("https://api.datamarket.azure.com/Bing/Search/v1/%s?$format=json&Query=%%27%s%%27".format(
       URLEncoder.encode(source, "UTF-8"), URLEncoder.encode(query, "UTF-8")))
 

@@ -117,7 +117,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
     h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
@@ -208,15 +208,15 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
     h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
 
 object ServletServer extends TotalSite with CastArgumentSupport {
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     val port = args match {
-      case List(a) => {
+      case Array(a) => {
         val p = castArgument[Number](0, a)
         p.intValue()
       }

@@ -16,7 +16,7 @@ package orc.values.sites.compatibility;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
+import java.util.Collection;
 
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.ArityMismatchException;
@@ -34,10 +34,29 @@ public class Args implements Serializable {
 
   Object[] values;
 
-	public Args(@SuppressWarnings("hiding") final List<Object> values) {
-		this.values = new Object[values.size()];
-		this.values = values.toArray(this.values);
-	}
+  /**
+   * Constructs an object of class Args using given array.
+   * 
+   * Note that this class takes ownership of the array and assumes it is not changed further.
+   *
+   * @param values
+   */
+  public Args(@SuppressWarnings("hiding") final Object[] values) {
+    this.values = values;
+  }
+
+  /**
+   * 
+   * Constructs an object of class Args using given arguments.
+   * 
+   * The arguments are internally copied into an array so the collection can be reused.
+   *
+   * @param values
+   */
+  public Args(@SuppressWarnings("hiding") final Collection<Object> values) {
+    this.values = new Object[values.size()];
+    this.values = values.toArray(this.values);
+  }
 
 	/**
 	 * @return number of arguments

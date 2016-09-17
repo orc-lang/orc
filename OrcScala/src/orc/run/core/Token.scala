@@ -450,7 +450,7 @@ class Token protected (
         def ordering(x: AnyRef, y: AnyRef) = {
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.
-          val i = orderingSite.evaluate(List(x, y)).asInstanceOf[Int]
+          val i = orderingSite.evaluate(Array(x, y)).asInstanceOf[Int]
           assert(i == -1 || i == 0 || i == 1, "Vclock time comparator " + orderingSite.name + " did not return -1/0/1")
           i
         }

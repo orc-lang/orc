@@ -35,19 +35,20 @@ import java.lang.reflect.Modifier
 import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
 import orc.error.runtime.NoSuchMemberException
+import orc.util.ArrayExtensions._
 
 /** Transforms an Orc site call to an appropriate Java invocation
   *
   * @author jthywiss
   */
-object JavaCall extends Function3[Object, List[AnyRef], Handle, Boolean] {
+object JavaCall extends Function3[Object, Array[AnyRef], Handle, Boolean] {
 
   /* Return true if the call was successfully dispatched.
    * Return false if the call could not be dispatched.
    */
-  def apply(target: Object, args: List[AnyRef], h: Handle): Boolean = {
+  def apply(target: Object, args: Array[AnyRef], h: Handle): Boolean = {
     args match {
-      case List(i: BigInt) if (target.getClass.isArray) => {
+      case Array1(i: BigInt) if (target.getClass.isArray) => {
         h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
         true
       }
@@ -88,7 +89,7 @@ abstract class JavaProxy extends Site {
   def hasMember(memberName: String): Boolean = memberSet contains memberName
 
   /** Invoke a method on the given Java object of the given name with the given arguments */
-  def invoke(theObject: Object, methodName: String, args: List[AnyRef]): AnyRef = {
+  def invoke(theObject: Object, methodName: String, args: Array[AnyRef]): AnyRef = {
     val unOrcWrappedArgs = args.map(orc2java(_)) // Un-wrapped from Orc's Literal, JavaObjectProxy, etc., but not Orc number conversions
     try {
       val method = try {
@@ -133,11 +134,11 @@ abstract class JavaProxy extends Site {
     s"$str : ${v.getClass.getSimpleName}"
   }
 
-  private def classNameAndSignature(methodName: String, argTypes: List[Class[_]]): String = {
+  private def classNameAndSignature(methodName: String, argTypes: Seq[Class[_]]): String = {
     javaClass.getCanonicalName() + "." + methodName + "(" + argTypes.map(_.getCanonicalName()).mkString(", ") + ")"
   }
 
-  private def classNameAndSignatureA(methodName: String, args: List[Object]): String = {
+  private def classNameAndSignatureA(methodName: String, args: Seq[Object]): String = {
     classNameAndSignature(methodName, args.map(_.getClass()))
   }
 
@@ -153,7 +154,7 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
 
   override lazy val name = javaClass.getName()
 
-  override def call(args: List[AnyRef], h: Handle) {
+  override def call(args: Array[AnyRef], h: Handle) {
     args match {
       case _ => h.publish(invoke(null, "<init>", args))
     }
@@ -184,7 +185,7 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
 
   override lazy val name = javaClass.getName()
 
-  override def call(args: List[AnyRef], h: Handle) {
+  override def call(args: Array[AnyRef], h: Handle) {
     JavaCall(theObject, args, h)
   }
 
@@ -210,7 +211,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
 
   override def javaClass = theObject.getClass()
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
       case _ => h.publish(invoke(theObject, memberName, args))
     }
@@ -269,9 +270,9 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
 
   override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + javaField.getName() + ", " + theObject + ")"
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List() => h.publish(java2orc(javaField.get(theObject)))
+      case Array0() => h.publish(java2orc(javaField.get(theObject)))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -288,9 +289,9 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
 
   override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + javaField.getName() + ", " + theObject + ")"
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List(a) => {
+      case Array1(a) => {
         javaField.set(theObject, orc2java(a))
         h.publish(Signal)
       }
@@ -310,9 +311,9 @@ case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends Jav
 
   override def javaClass = theArray.getClass()
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
+      case Array1(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.length) //Is there a better exception to throw?
     }
   }
@@ -343,9 +344,9 @@ case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends 
 
   override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List() => h.publish(java2orc(theArray(index).asInstanceOf[AnyRef]))
+      case Array0() => h.publish(java2orc(theArray(index).asInstanceOf[AnyRef]))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -362,9 +363,9 @@ case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends
 
   override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List(a) => {
+      case Array1(a) => {
         theArray(index) = orc2java(a)
         h.publish(Signal)
       }
@@ -384,9 +385,9 @@ case class JavaArrayLengthPseudofield(val theArray: Array[Any]) extends JavaProx
 
   override lazy val name = this.getClass().getCanonicalName() + "(" + theArray + ")"
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List() => h.publish(java2orc(theArray.length.asInstanceOf[AnyRef]))
+      case Array0() => h.publish(java2orc(theArray.length.asInstanceOf[AnyRef]))
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }

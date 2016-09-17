@@ -40,13 +40,13 @@ import orc.run.core.SiteCallHandle
   */
 object ProgSwap extends Site with UntypedSite {
 
-  override def call(args: List[AnyRef], callHandle: Handle) {
+  override def call(args: Array[AnyRef], callHandle: Handle) {
     def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[SiteCallHandle].caller
     val execGroup: Execution = handleCracker(callHandle).getGroup().root
     var updateSuceeded = false
     args match {
-      case List(filename: String) => updateSuceeded = update(execGroup, new File(filename))
-      case List(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
+      case Array(filename: String) => updateSuceeded = update(execGroup, new File(filename))
+      case Array(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
     //    } catch {

@@ -46,7 +46,7 @@ object Format {
   def formatValueR(v: AnyRef): String = formatValue(v)
   def formatValueR(v: AnyRef, escapeStrings: Boolean): String = formatValue(v, escapeStrings)
 
-  def formatSequence(vs: List[_]) =
+  def formatSequence(vs: Seq[_]) =
     vs match {
       case Nil => ""
       case _ => (vs map { formatValue }) reduceRight { _ + ", " + _ }

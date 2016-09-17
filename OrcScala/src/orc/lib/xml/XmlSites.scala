@@ -86,7 +86,7 @@ object XMLElementExtractor extends PartialSite1 with TypedSite {
         val tag = xml.label
         val attr = OrcRecord(xml.attributes.asAttrMap)
         val children = xml.child.toList
-        Some(OrcTuple(List(tag, attr, children)))
+        Some(OrcTuple(Array(tag, attr, children)))
       }
       case _ => None
     }

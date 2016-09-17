@@ -29,16 +29,17 @@ import orc.values.{ OrcRecord, OrcValue, OrcTuple, Field }
 import orc.values.sites._
 import orc.types._
 import orc.util.OptionMapExtension._
+import orc.util.ArrayExtensions._
 
 object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Record"
-  override def evaluate(args: List[AnyRef]) = {
+  override def evaluate(args: Array[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
     args.zipWithIndex map
       {
         case (v: AnyRef, i: Int) =>
           v match {
-            case OrcTuple(List(Field(key), value: AnyRef)) =>
+            case OrcTuple(Array(Field(key), value: AnyRef)) =>
               valueMap += ((key, value))
             case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", if (v != null) v.getClass().getCanonicalName() else "null")
           }
@@ -61,9 +62,9 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
 object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
   override def name = "RecordMatcher"
 
-  override def evaluate(args: List[AnyRef]): Option[AnyRef] =
+  override def evaluate(args: Array[AnyRef]): Option[AnyRef] =
     args match {
-      case List(OrcRecord(entries), shape @ _*) => {
+      case ArrayN(OrcRecord(entries), shape @ _*) => {
         val matchedValues: Option[List[AnyRef]] =
           shape.toList.zipWithIndex optionMap {
             case (Field(f), _) => entries get f
@@ -71,7 +72,7 @@ object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
           }
         matchedValues map { OrcValue.letLike }
       }
-      case List(_, _*) => None
+      case ArrayN(_, _*) => None
       case _ => throw new AssertionError("Record match internal failure (RecordMatcher.evaluate match error on args list)")
     }
 

@@ -28,17 +28,18 @@ import orc.ast.ext.RecordExpr
 import orc.values.OrcTuple
 import orc.values.OrcRecord
 import orc.types._
+import orc.util.ArrayExtensions._
 
 object Read extends TotalSite with TypedSite {
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     val parsedValue = args match {
-      case List(s: String) => {
+      case Array1(s: String) => {
         OrcLiteralParser(s) match {
           case r: OrcLiteralParser.SuccessT[_] => r.get.asInstanceOf[Expression]
           case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg + " when reading \"" + s + "\"", n.next.pos)
         }
       }
-      case List(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
+      case Array1(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
     convertToOrcValue(parsedValue)
@@ -46,7 +47,7 @@ object Read extends TotalSite with TypedSite {
   def convertToOrcValue(v: Expression): AnyRef = v match {
     case Constant(v) => v
     case ListExpr(vs) => vs map convertToOrcValue
-    case TupleExpr(vs) => OrcTuple(vs map convertToOrcValue)
+    case TupleExpr(vs) => OrcTuple(vs.map(convertToOrcValue).toArray)
     case RecordExpr(vs) => OrcRecord((vs.toMap) mapValues convertToOrcValue)
     case mystery => throw new ParsingException("Don't know how to convert a " + (if (mystery != null) mystery.getClass().toString() else "null") + " to an Orc value", null)
   }

@@ -105,10 +105,10 @@ object OrcJavaCompatibility {
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
-  val methodSelectionCache = new ConcurrentHashMap[(Class[_], String, List[Class[_]]), Invocable]()
+  val methodSelectionCache = new ConcurrentHashMap[(Class[_], String, ArrayBuffer[Class[_]]), Invocable]()
 
-  def chooseMethodForInvocation(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
-    val key = (targetClass, memberName, argTypes)
+  def chooseMethodForInvocation(targetClass: Class[_], memberName: String, argTypes: Array[Class[_]]): Invocable = {
+    val key = (targetClass, memberName, argTypes.to[ArrayBuffer])
     methodSelectionCache.get(key) match {
       case null => {
         val inv = chooseMethodForInvocationSlow(targetClass, memberName, argTypes)
@@ -120,7 +120,7 @@ object OrcJavaCompatibility {
   }
   
   /** Given a method name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
-  def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
+  def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: Array[Class[_]]): Invocable = {
     Logger.finest(s"$memberName target=$targetClass argTypes=(${argTypes.mkString(", ")})")
     //Phase 0: Identify Potentially Applicable Methods
     //A member method is potentially applicable to a method invocation if and only if all of the following are true:

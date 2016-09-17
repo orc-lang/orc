@@ -25,9 +25,9 @@ import orc.types._
 
 object TupleConstructor extends TotalSite with TypedSite with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
-  def evaluate(args: List[AnyRef]) = OrcTuple(args)
+  def evaluate(args: Array[AnyRef]) = OrcTuple(args)
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args))
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
   
   def orcType() = new SimpleCallableType with StrictType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
@@ -43,9 +43,9 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
   override def name = "TupleArityChecker"
   def eval(x: AnyRef, y: AnyRef) =
     (x, y) match {
-      case (OrcTuple(elems), arity: BigInt) =>
-        if (elems.size == arity) {
-          Some(OrcTuple(elems))
+      case (t@OrcTuple(elems), arity: BigInt) =>
+        if (elems.length == arity.toInt) {
+          Some(t)
         } else {
           None
         }
@@ -54,7 +54,7 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
     }
 
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
-    case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toList))
+    case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case _ => None
   }
   

@@ -64,7 +64,7 @@ trait OrcRuntimeRequires extends InvocationBehavior
   */
 trait InvocationBehavior {
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
+  def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) { h.halt }
 }
 
 trait Schedulable extends Runnable {

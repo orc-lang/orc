@@ -25,9 +25,9 @@ import orc.util.TypeListEnrichment._
 object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite{
 
   override def name = "Datatype"
-  def evaluate(args: List[AnyRef]) = {
-    val datasites: List[AnyRef] =
-      for (OrcTuple(List(siteName: String, arity: BigInt)) <- args) yield {
+  def evaluate(args: Array[AnyRef]) = {
+    val datasites: Array[AnyRef] =
+      for (OrcTuple(Array(siteName: String, arity: BigInt)) <- args) yield {
         val tag = new Tag(siteName)
         new OrcRecord(
           "apply" -> new DatatypeConstructor(arity.intValue, tag) { override def name = siteName + ".apply" },
@@ -71,7 +71,7 @@ object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite{
 }
 
 class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite with FunctionalSite {
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     if (args.size != arity) {
       throw new ArityMismatchException(arity, args.size)
     } else {

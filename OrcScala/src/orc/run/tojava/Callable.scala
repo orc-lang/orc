@@ -143,7 +143,7 @@ sealed class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapp
     // Matched to: halt in PCTHandle.
     execution.setStage()
     try {
-      execution.invoke(new PCTHandle(execution, p, c, t, null), site, args.toList)
+      execution.invoke(new PCTHandle(execution, p, c, t, null), site, args)
     } finally {
       execution.flushStage()    
     }
@@ -165,7 +165,7 @@ final class RuntimeDirectCallable(override val underlying: DirectSite) extends R
       val v = try {
         execution.setStage()
         try {
-          site.calldirect(args.toList)
+          site.calldirect(args)
         } finally {
           execution.flushStage()    
         }

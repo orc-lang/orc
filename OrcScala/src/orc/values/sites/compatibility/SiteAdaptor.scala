@@ -35,7 +35,7 @@ import orc.values.Field
 abstract class SiteAdaptor extends Site {
   import SiteAdaptor._
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     callSite(convertArgs(args), h)
   }
 
@@ -72,7 +72,7 @@ object SiteAdaptor {
 
   def signal() = Signal
 
-  def makePair(left: AnyRef, right: AnyRef) = OrcTuple(List(left, right))
+  def makePair(left: AnyRef, right: AnyRef) = OrcTuple(Array(left, right))
 
   def makeCons[T](head: T, tail: List[T]) = head :: tail
 
@@ -82,14 +82,20 @@ object SiteAdaptor {
 
   def nilList[T](): List[T] = Nil
 
-  def convertArgs(args: List[AnyRef]) = {
+  /** Convert the array to the format needed for external calls.
+   *  
+   *  This will mutate the original array.
+   */
+  def convertArgs(args: Array[AnyRef]) = {
     val jl = new java.util.ArrayList[Object](args.size)
-    for (arg <- args) arg match {
-      case i: scala.math.BigInt => jl.add(i.bigInteger)
-      case d: scala.math.BigDecimal => jl.add(d.bigDecimal)
-      case _ => jl.add(arg)
+    for (ind <- 0 until args.length) {
+      args(ind) match {
+        case i: scala.math.BigInt => args(ind) = i.bigInteger
+        case d: scala.math.BigDecimal => args(ind) = d.bigDecimal
+        case _ => {}
+      }
     }
-    new Args(jl)
+    new Args(args)
   }
 }
 
@@ -120,7 +126,7 @@ abstract class EvalSite extends SiteAdaptor with DirectSite {
   @throws(classOf[TokenException])
   def evaluate(args: Args): Object
 
-  def calldirect(args: List[AnyRef]): AnyRef = {
+  def calldirect(args: Array[AnyRef]): AnyRef = {
     object2value(evaluate(convertArgs(args)))
   }
 }
