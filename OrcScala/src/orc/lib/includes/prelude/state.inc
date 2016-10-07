@@ -608,7 +608,8 @@ def class ObservationSubject[E]() =
   def put(e :: E) :: Signal =
     withLock(observersSem, lambda() = 
       ( val currObservers = observers.getAll()
-        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))
+        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))  ;
+    signal
   def close() :: Signal =
     withLock(observersSem, lambda() = 
       ( val currObservers = observers.getAll()
