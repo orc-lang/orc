@@ -2,7 +2,7 @@
 // OilSecurityValidator.java -- Java class OilSecurityValidator
 // Project Orchard
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -86,6 +86,31 @@ public class OilSecurityValidator {
         allowedClasses.add("java.util.TreeSet");
         allowedClasses.add("java.util.Vector");
 
+        // java.util.concurrent
+        allowedClasses.add("java.util.concurrent.BlockingDeque");
+        allowedClasses.add("java.util.concurrent.BlockingQueue");
+        allowedClasses.add("java.util.concurrent.ConcurrentMap");
+        allowedClasses.add("java.util.concurrent.ConcurrentNavigableMap");
+        allowedClasses.add("java.util.concurrent.ArrayBlockingQueue");
+        allowedClasses.add("java.util.concurrent.ConcurrentHashMap");
+        allowedClasses.add("java.util.concurrent.ConcurrentHashMap.KeySetView");
+        allowedClasses.add("java.util.concurrent.ConcurrentLinkedDeque");
+        allowedClasses.add("java.util.concurrent.ConcurrentLinkedQueue");
+        allowedClasses.add("java.util.concurrent.ConcurrentSkipListMap");
+        allowedClasses.add("java.util.concurrent.ConcurrentSkipListSet");
+        allowedClasses.add("java.util.concurrent.CopyOnWriteArrayList");
+        allowedClasses.add("java.util.concurrent.CopyOnWriteArraySet");
+        allowedClasses.add("java.util.concurrent.CountDownLatch");
+        allowedClasses.add("java.util.concurrent.CyclicBarrier");
+        allowedClasses.add("java.util.concurrent.DelayQueue");
+        allowedClasses.add("java.util.concurrent.Exchanger");
+        allowedClasses.add("java.util.concurrent.LinkedBlockingDeque");
+        allowedClasses.add("java.util.concurrent.LinkedBlockingQueue");
+        allowedClasses.add("java.util.concurrent.LinkedTransferQueue");
+        allowedClasses.add("java.util.concurrent.PriorityBlockingQueue");
+        allowedClasses.add("java.util.concurrent.Semaphore");
+        allowedClasses.add("java.util.concurrent.SynchronousQueue");
+        
         // orc.lib
         allowedClasses.add("orc.lib.state.Set");
         allowedClasses.add("orc.lib.state.Map");
