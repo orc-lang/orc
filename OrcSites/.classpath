@@ -33,6 +33,8 @@
 	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/twitter4j-core-4.0.4.jar" sourcepath="/home/amp/source/twitter4j/twitter4j-core/src/main/java"/>
+	<classpathentry exported="true" kind="lib" path="lib/twitter4j-stream-4.0.4.jar" sourcepath="/home/amp/source/twitter4j/twitter4j-stream/src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="build/classes"/>
