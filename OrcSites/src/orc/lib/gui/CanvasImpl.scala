@@ -1,8 +1,6 @@
 //
-// CanvasImpl.scala -- Java class CanvasImpl
+// CanvasImpl.scala -- Scala class CanvasImpl
 // Project OrcSites
-//
-// $Id$
 //
 // Created by amp on Feb 15, 2015.
 //

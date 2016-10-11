@@ -18,6 +18,8 @@ import class BoxLayout = "javax.swing.BoxLayout"
 import class CanvasImpl = "orc.lib.gui.CanvasImpl" 
 import class ListModelImpl = "orc.lib.gui.ListModelImpl" 
 
+import class TableDisplay = "orc.lib.gui.TableDisplay"
+
 import class Runnable = "java.lang.Runnable"
 
 import site CallableToRunnable = "orc.lib.util.CallableToRunnable"
