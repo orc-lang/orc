@@ -21,7 +21,7 @@
 	<classpathentry kind="lib" path="lib/smack.jar"/>
 	<classpathentry kind="lib" path="lib/smackx.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.6.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jettison-1.0.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jettison-1.0.1.jar" sourcepath="/home/amp/source/jettison/src/main/java"/>
 	<classpathentry exported="true" kind="lib" path="lib/oauth-20100527.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/oauth-consumer-20100527.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/oauth-httpclient3-20090617.jar"/>

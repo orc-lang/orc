@@ -19,12 +19,13 @@ import orc.types._
 import orc.values.sites.compatibility.Types
 import java.net.URL
 import java.net.URLEncoder
-import sun.misc.BASE64Encoder
 import java.net.HttpURLConnection
 import scala.io.Source
 import org.codehaus.jettison.json.JSONObject
 import java.util.Properties
 import java.io.FileNotFoundException
+import java.io.OutputStreamWriter
+import org.codehaus.jettison.json.JSONArray
 
 class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
@@ -73,33 +74,70 @@ object MicrosoftTranslator {
   val orcType = FunctionType(Nil, List(string, string), string)
 }
 
-/**
-  *
-  * @author amp
+/** @author amp
   */
 class MicrosoftTranslator(user: String, key: String) extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
 
-  def orcType() = BingSearch.orcType
+  def orcType() = MicrosoftTranslator.orcType
+
+  val authUrl = new URL("https://datamarket.accesscontrol.windows.net/v2/OAuth2-13")
+
+  var tokenExpiration = Long.MaxValue
+  var token = ""
+
+  def getAccessToken() = {
+    if (token == "" || System.currentTimeMillis() >= tokenExpiration ) {
+      val conn = authUrl.openConnection().asInstanceOf[HttpURLConnection]
+      conn.setConnectTimeout(10000) // 10 seconds is reasonable
+      conn.setReadTimeout(5000) // 5 seconds is reasonable
+      conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
+      conn.setRequestMethod("POST")
+      conn.setDoOutput(true)
+
+      conn.connect()
+      val outputWr = new OutputStreamWriter(conn.getOutputStream())
+      outputWr.write(s"grant_type=client_credentials&client_id=${URLEncoder.encode(user, "UTF-8")}&client_secret=${URLEncoder.encode(key, "UTF-8")}&scope=http://api.microsofttranslator.com")
+      outputWr.close()
+
+      val src = Source.fromInputStream(conn.getInputStream())
+      val s = src.mkString("", "", "")
+
+      val o = new JSONObject(s)
+      if (o.has("error") && o.getBoolean("error")) {
+        throw new RuntimeException(s"Error Authenticating with $authUrl: ${o.optString("error_description")}");
+      }
+      
+      tokenExpiration = (o.getLong("expires_in") - 10) * 1000 + System.currentTimeMillis()
+      token = o.getString("access_token")
+    }
+
+    token
+  }
 
   def evaluate(args: List[AnyRef]): Option[AnyRef] = {
     val List(text: String, target: String) = args
-    val url = new URL("https://api.datamarket.azure.com/Bing/MicrosoftTranslator/v1/Translate?Text=%%27%s%%27&To=%27%s%27".format(
-      URLEncoder.encode(text, "UTF-8"), URLEncoder.encode(target, "UTF-8")))
-
-    val encoder = new BASE64Encoder()
-    val credentialBase64 = (encoder.encode((user + ":" + key).getBytes())).replaceAll("\\s", "")
+    val params = s"text=${URLEncoder.encode(text, "UTF-8")}&to=${URLEncoder.encode(target, "UTF-8")}"
+    val url = new URL(s"http://api.microsofttranslator.com/V2/AJAX.svc/Translate?$params")
 
     val conn = url.openConnection().asInstanceOf[HttpURLConnection]
     conn.setConnectTimeout(10000) // 10 seconds is reasonable
     conn.setReadTimeout(5000) // 5 seconds is reasonable
     conn.setRequestProperty("accept", "*/*")
-    conn.addRequestProperty("Authorization", "Basic " + credentialBase64)
+    conn.addRequestProperty("Authorization", "Bearer " + getAccessToken())
     conn.connect()
+    
+    val resp = conn.getResponseCode()
 
     val src = Source.fromInputStream(conn.getInputStream())
     val s = src.mkString("", "", "")
-
-    Some(s)
+    
+    if (resp == 200) {
+      // Hack to parse bare JSON string. The stripPrefix is to remove the Unicode BOM.
+      val o = new JSONArray(s"[${s.stripPrefix("\uFEFF")}]")
+      Some(o.getString(0))
+    } else {
+      throw new RuntimeException(s"Error translating with $url: $resp $s");
+    }
   }
 }

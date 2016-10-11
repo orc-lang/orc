@@ -8,7 +8,6 @@ In order to run this demo, you must have:
 -}
 
 include "net.inc"
-include "ui.inc"
 
 val Bing = BingWebSearchFactoryPropertyFile("bing.properties")
 Prompt("Search for:") >term>
