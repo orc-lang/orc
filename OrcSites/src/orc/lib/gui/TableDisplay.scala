@@ -23,16 +23,25 @@ import ScalaSwingUtils._
 import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
 import java.awt.Dimension
+import javax.swing.JScrollPane
 
 class TableDisplay(title: String) extends JFrame {
   private val model = new DefaultTableModel()
   private lazy val table = onEDTNow { new JTable(model) }
+  private lazy val scrollPane = onEDTNow {
+    val scrollPane = new JScrollPane(table)
+    table.setFillsViewportHeight(true)
+    scrollPane
+  }
 
   onEDT {
     setTitle(title)
-    setContentPane(table)
+    setContentPane(scrollPane)
     setPreferredSize(new Dimension(300, 200))
     setVisible(true)
+    setSize(new Dimension(600, 720))
+    // TODO: This should definitely not be done this way.
+    //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   }
 
   private val columns = mutable.Map[String, Int]()

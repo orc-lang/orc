@@ -23,6 +23,8 @@ import class TwitterAccessToken = "twitter4j.auth.AccessToken"
 import site MicrosoftTranslatorFactoryPropertyFile = "orc.lib.net.MicrosoftTranslatorFactoryPropertyFile"
 import site MicrosoftTranslatorFactoryUsernameKey = "orc.lib.net.MicrosoftTranslatorFactoryUsernameKey"
 
+import site YandexTranslateFactory = "orc.lib.net.YandexTranslateFactory"
+
 import site BingSearchFactoryPropertyFile = "orc.lib.net.BingSearchFactoryPropertyFile"
 import site BingSearchFactoryUsernameKey = "orc.lib.net.BingSearchFactoryUsernameKey"
 

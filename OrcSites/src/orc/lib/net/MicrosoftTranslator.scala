@@ -77,7 +77,7 @@ object MicrosoftTranslator {
 /** @author amp
   */
 class MicrosoftTranslator(user: String, key: String) extends PartialSite with SpecificArity with TypedSite {
-  val arity = 1
+  val arity = 2
 
   def orcType() = MicrosoftTranslator.orcType
 
