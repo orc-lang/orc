@@ -103,6 +103,14 @@
 <a name="Extensions" id="Extensions"></a><h2>Language Extensions <small>(<a href="#top">top</a>)</small></h2>
 
 <ul>
+	<li><a onclick="window.open(this.href,'_blank');return false;" href="papers/OrcO.pdf" class="paper">OrcO: A Concurrency-First Approach to Objects</a>
+	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="https://doi.org/10.1145/2983990.2984022">DOI</a>
+	<a class="bibtex" href="papers/OrcO.bib">BibTeX</a>
+	<br />
+	Arthur Michener Peters, David Kitchin, John A. Thywissen, and William R. Cook<br />
+	In <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://2016.splashcon.org/track/splash-2016-oopsla">Proceedings of the 2016 ACM SIGPLAN International Conference on Object-Oriented Programming, Systems, Languages, and Applications</a> (OOPSLA), 2016<br />
+	November 2-4, 2016, Amsterdam.</li>
+
 	<li><a onclick="window.open(this.href,'_blank');return false;" href="https://dl.acm.org/citation.cfm?id=2957370" class="paper">Implicitly Distributing Pervasively Concurrent Programs</a>
 	[extended abstract]
 	<a onclick="window.open(this.href,'_blank');return false;" class="doi" href="https://doi.org/10.1145/2957319.2957370">DOI</a>
