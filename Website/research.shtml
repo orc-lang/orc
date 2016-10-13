@@ -108,7 +108,7 @@
 	<a class="bibtex" href="papers/OrcO.bib">BibTeX</a>
 	<br />
 	Arthur Michener Peters, David Kitchin, John A. Thywissen, and William R. Cook<br />
-	In <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://2016.splashcon.org/track/splash-2016-oopsla">Proceedings of the 2016 ACM SIGPLAN International Conference on Object-Oriented Programming, Systems, Languages, and Applications</a> (OOPSLA), 2016<br />
+	In <a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://2016.splashcon.org/track/splash-2016-oopsla">OOPSLA'16: Proceedings of the 2016 ACM SIGPLAN International Conference on Object-Oriented Programming, Systems, Languages, and Applications</a>, 2016<br />
 	November 2-4, 2016, Amsterdam.</li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" href="https://dl.acm.org/citation.cfm?id=2957370" class="paper">Implicitly Distributing Pervasively Concurrent Programs</a>
