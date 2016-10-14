@@ -37,7 +37,7 @@ Import-Package: com.ibm.icu.text,
  org.eclipse.ui.texteditor,
  org.eclipse.ui.wizards.newresource
 Bundle-ClassPath: .,
- lib/orc-2.1.1.jar,
+ lib/orc-2.9.0-M1.jar,
  lib/scala-library.jar,
  lib/scala-reflect.jar,
  lib/scala-xml_2.11-1.0.4.jar,

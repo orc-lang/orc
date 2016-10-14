@@ -331,22 +331,53 @@ public class OrcTokenScanner implements ITokenScanner {
         return false;
     }
 
+    @SuppressWarnings("nls")
     private static TokenRecord delimiterTable[] = {
         // KEYWORD,
-        new TokenRecord("_", OrcTokenType.KEYWORD), //$NON-NLS-1$
+        new TokenRecord("_", OrcTokenType.KEYWORD),
         // OPERATOR,
-        new TokenRecord("=", OrcTokenType.OPERATOR), new TokenRecord("/=", OrcTokenType.OPERATOR), new TokenRecord("<:", OrcTokenType.OPERATOR), new TokenRecord("<=", OrcTokenType.OPERATOR), new TokenRecord(":>", OrcTokenType.OPERATOR), new TokenRecord(">=", OrcTokenType.OPERATOR), new TokenRecord(":=", OrcTokenType.OPERATOR), new TokenRecord("?", OrcTokenType.OPERATOR), new TokenRecord("&&", OrcTokenType.OPERATOR), new TokenRecord("||", OrcTokenType.OPERATOR), new TokenRecord("~", OrcTokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
-        new TokenRecord(":", OrcTokenType.OPERATOR), new TokenRecord("+", OrcTokenType.OPERATOR), new TokenRecord("-", OrcTokenType.OPERATOR), new TokenRecord("*", OrcTokenType.OPERATOR), new TokenRecord("/", OrcTokenType.OPERATOR), new TokenRecord("%", OrcTokenType.OPERATOR), new TokenRecord("**", OrcTokenType.OPERATOR), new TokenRecord("0-", OrcTokenType.OPERATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$
+        new TokenRecord("=", OrcTokenType.OPERATOR), 
+        new TokenRecord("/=", OrcTokenType.OPERATOR), 
+        new TokenRecord("<:", OrcTokenType.OPERATOR), 
+        new TokenRecord("<=", OrcTokenType.OPERATOR), 
+        new TokenRecord(":>", OrcTokenType.OPERATOR), 
+        new TokenRecord(">=", OrcTokenType.OPERATOR), 
+        new TokenRecord(":=", OrcTokenType.OPERATOR), 
+        new TokenRecord("?", OrcTokenType.OPERATOR), 
+        new TokenRecord("&&", OrcTokenType.OPERATOR), 
+        new TokenRecord("||", OrcTokenType.OPERATOR), 
+        new TokenRecord("~", OrcTokenType.OPERATOR), 
+        new TokenRecord(":", OrcTokenType.OPERATOR), 
+        new TokenRecord("+", OrcTokenType.OPERATOR), 
+        new TokenRecord("-", OrcTokenType.OPERATOR), 
+        new TokenRecord("*", OrcTokenType.OPERATOR), 
+        new TokenRecord("/", OrcTokenType.OPERATOR), 
+        new TokenRecord("%", OrcTokenType.OPERATOR), 
+        new TokenRecord("**", OrcTokenType.OPERATOR), 
+        new TokenRecord("0-", OrcTokenType.OPERATOR),
         // COMBINATOR,
-        new TokenRecord(">", OrcTokenType.COMBINATOR), new TokenRecord("|", OrcTokenType.COMBINATOR), new TokenRecord("<", OrcTokenType.COMBINATOR), new TokenRecord(";", OrcTokenType.COMBINATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        new TokenRecord(">", OrcTokenType.COMBINATOR), 
+        new TokenRecord("|", OrcTokenType.COMBINATOR), 
+        new TokenRecord("<", OrcTokenType.COMBINATOR), 
+        new TokenRecord(";", OrcTokenType.COMBINATOR), 
         // BRACKET,
-        new TokenRecord("(", OrcTokenType.BRACKET), new TokenRecord(")", OrcTokenType.BRACKET), new TokenRecord("[", OrcTokenType.BRACKET), new TokenRecord("]", OrcTokenType.BRACKET), new TokenRecord("{.", OrcTokenType.BRACKET), new TokenRecord(".}", OrcTokenType.BRACKET), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+        new TokenRecord("(", OrcTokenType.BRACKET), new TokenRecord(")", OrcTokenType.BRACKET), 
+        new TokenRecord("[", OrcTokenType.BRACKET), new TokenRecord("]", OrcTokenType.BRACKET), 
+        new TokenRecord("{.", OrcTokenType.BRACKET), new TokenRecord(".}", OrcTokenType.BRACKET), 
+        new TokenRecord("{|", OrcTokenType.BRACKET), new TokenRecord("|}", OrcTokenType.BRACKET), 
+        new TokenRecord("{", OrcTokenType.BRACKET), new TokenRecord("}", OrcTokenType.BRACKET), 
         // SEPARATOR,
-        new TokenRecord(",", OrcTokenType.SEPARATOR), new TokenRecord("#", OrcTokenType.SEPARATOR), new TokenRecord("::", OrcTokenType.SEPARATOR), new TokenRecord(":!:", OrcTokenType.SEPARATOR), new TokenRecord(".", OrcTokenType.SEPARATOR), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+        new TokenRecord(",", OrcTokenType.SEPARATOR), 
+        new TokenRecord("#", OrcTokenType.SEPARATOR), 
+        new TokenRecord("::", OrcTokenType.SEPARATOR), 
+        new TokenRecord(":!:", OrcTokenType.SEPARATOR), 
+        new TokenRecord(".", OrcTokenType.SEPARATOR),
     };
 
-    private static String keywords[] = { "as", "def", "else", "if", "import", "include", "lambda", "signal", "stop", "then", "type", "val", }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$
-
+    @SuppressWarnings("nls")
+    private static String keywords[] = { "as", "def", "else", "if", "import", "include", "signal", 
+        "stop", "then", "type", "val", "class", "new", "super", "extends", "with", "this", "site"};
+    
     private static final String NEWLINE_CHARS = "\n\r\f\u0085\u2028\u2029"; //$NON-NLS-1$
     private static final String WHITESPACE_CHARS = " \t" + NEWLINE_CHARS + "\u000B\u200E\u200F"; //$NON-NLS-1$ //$NON-NLS-2$
     private static final String DECIMAL_DIGIT_CHARS = "0123456789"; //$NON-NLS-1$

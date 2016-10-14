@@ -29,10 +29,11 @@ import scala.util.parsing.input.NoPosition$;
 import scala.util.parsing.input.OffsetPosition;
 
 import orc.ast.AST;
+import orc.ast.ext.CallableDeclaration;
+import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
-import orc.ast.ext.DefDeclaration;
 import orc.ast.ext.Include;
-import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.SiteImport;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
@@ -392,7 +393,15 @@ public class OrcContentProvider implements ITreeContentProvider {
              * Don't forget to update OrcLabelProvider.getImageFor and
              * getLabelFor to handle new node types in the outline view.
              */
-            return newSubtree instanceof ClassImport || newSubtree instanceof DefDeclaration || newSubtree instanceof Include && ((Include) newSubtree).origin() != null && ((Include) newSubtree).origin().length() > 0 || newSubtree instanceof SiteDeclaration || newSubtree instanceof TypeDeclaration || newSubtree instanceof Val;
+            // TODO: This is probably missing things
+            return newSubtree instanceof ClassImport || 
+                    newSubtree instanceof SiteImport || 
+                    newSubtree instanceof CallableDeclaration || 
+                    newSubtree instanceof ClassDeclaration || 
+                    (newSubtree instanceof Include && ((Include) newSubtree).origin() != null && 
+                     ((Include) newSubtree).origin().length() > 0) || 
+                    newSubtree instanceof TypeDeclaration || 
+                    newSubtree instanceof Val;
         }
 
         /**
@@ -400,7 +409,7 @@ public class OrcContentProvider implements ITreeContentProvider {
          * @return
          */
         protected static boolean createsNewOutlineLevel(final AST newSubtree) {
-            return newSubtree instanceof DefDeclaration;
+            return newSubtree instanceof CallableDeclaration || newSubtree instanceof ClassDeclaration;
         }
     }
 

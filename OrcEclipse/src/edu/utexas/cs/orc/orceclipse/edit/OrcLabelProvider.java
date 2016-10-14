@@ -38,7 +38,6 @@ import orc.ast.ext.Def;
 import orc.ast.ext.DefSig;
 import orc.ast.ext.Include;
 import orc.ast.ext.Site;
-import orc.ast.ext.SiteDeclaration;
 import orc.ast.ext.SiteImport;
 import orc.ast.ext.SiteSig;
 import orc.ast.ext.TypeDeclaration;
@@ -232,7 +231,7 @@ public class OrcLabelProvider extends BaseLabelProvider implements ILabelProvide
             return ((Val) n).p().toOrcSyntax();
         }
         if (n instanceof ValSig) {
-            return ((ValSig) n).name() + " :: " + ((ValSig) n).t().toOrcSyntax(); //$NON-NLS-1$
+            return ((ValSig) n).name();
         }
         if (n instanceof TypeDeclaration) {
             return ((TypeDeclaration) n).name();
