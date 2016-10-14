@@ -10,7 +10,7 @@
 <feature
       id="edu.utexas.cs.orc.orceclipse"
       label="Orc Eclipse plug-in"
-      version="2.1.1.qualifier"
+      version="2.9.0.qualifier"
       provider-name="The University of Texas at Austin"
       plugin="edu.utexas.cs.orc.orceclipse">
 

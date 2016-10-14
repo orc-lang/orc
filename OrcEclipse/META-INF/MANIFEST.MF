@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Orc Eclipse plug-in
 Bundle-SymbolicName: edu.utexas.cs.orc.orceclipse;singleton:=true
-Bundle-Version: 2.1.1.qualifier
+Bundle-Version: 2.9.0.qualifier
 Bundle-Activator: edu.utexas.cs.orc.orceclipse.OrcPlugin
 Bundle-Vendor: The University of Texas at Austin
 Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
