@@ -24,6 +24,9 @@ import javax.swing.JTable
 import javax.swing.table.DefaultTableModel
 import java.awt.Dimension
 import javax.swing.JScrollPane
+import javax.swing.JPanel
+import javax.swing.BoxLayout
+import javax.swing.JLabel
 
 class TableDisplay(title: String) extends JFrame {
   private val model = new DefaultTableModel()
@@ -33,10 +36,16 @@ class TableDisplay(title: String) extends JFrame {
     table.setFillsViewportHeight(true)
     scrollPane
   }
+  private lazy val stackPanel = onEDTNow {
+    val stackPanel = new JPanel()
+    stackPanel.setLayout(new BoxLayout(stackPanel, BoxLayout.PAGE_AXIS))
+    stackPanel
+  }
 
   onEDT {
     setTitle(title)
-    setContentPane(scrollPane)
+    setContentPane(stackPanel)
+    stackPanel.add(scrollPane)
     setPreferredSize(new Dimension(300, 200))
     setVisible(true)
     setSize(new Dimension(600, 720))
@@ -90,6 +99,11 @@ class TableDisplay(title: String) extends JFrame {
     onEDT {
       model.setColumnIdentifiers(columnNames.toArray[AnyRef])
     }
+  }
+  
+  def addText(text: String, atBottom: Boolean): Unit = onEDTNow {
+    val index = if (atBottom) -1 else 0
+    stackPanel.add(new JLabel(text), index)
   }
 }
 
