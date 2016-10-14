@@ -2,8 +2,6 @@
 // OrcPerspectiveFactory.java -- Java class OrcPerspectiveFactory
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Aug 5, 2009.
 //
 // Copyright (c) 2009 The University of Texas at Austin. All rights reserved.
@@ -21,55 +19,52 @@ import org.eclipse.ui.IPerspectiveFactory;
 /**
  * The Orc Perspective factory.
  * <p>
- * A perspective factory generates the initial page layout and visible
- * action set for a page.
+ * A perspective factory generates the initial page layout and visible action
+ * set for a page.
  * <p>
  * When a new page is created in the workbench a perspective is used to define
  * the initial page layout.
  * <p>
- * This perspective is wholly defined by the <code>plugin.xml</code> file,
- * but a class is required.
+ * This perspective is wholly defined by the <code>plugin.xml</code> file, but a
+ * class is required.
  *
  * @author jthywiss
  */
 public class OrcPerspectiveFactory implements IPerspectiveFactory {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IPerspectiveFactory#createInitialLayout(org.eclipse.ui.IPageLayout)
-	 */
-	@Override
-	public void createInitialLayout(final IPageLayout layout) {
-		addViews(layout);
-		addActionSets(layout);
-		addNewWizardShortcuts(layout);
-		addPerspectiveShortcuts(layout);
-		addViewShortcuts(layout);
-	}
+    @Override
+    public void createInitialLayout(final IPageLayout layout) {
+        addViews(layout);
+        addActionSets(layout);
+        addNewWizardShortcuts(layout);
+        addPerspectiveShortcuts(layout);
+        addViewShortcuts(layout);
+    }
 
-	private void addViews(final IPageLayout layout) {
-		// defined in the org.eclipse.ui.perspectiveExtensions extension in
-		// plugin.xml creates the overall folder layout.
-		// Note that each new Folder uses a percentage of the remaining
-		// EditorArea.
-	}
+    private void addViews(final IPageLayout layout) {
+        // defined in the org.eclipse.ui.perspectiveExtensions extension in
+        // plugin.xml creates the overall folder layout.
+        // Note that each new Folder uses a percentage of the remaining
+        // EditorArea.
+    }
 
-	private void addActionSets(final IPageLayout layout) {
-		// defined in the org.eclipse.ui.perspectiveExtensions extension in
-		// plugin.xml
-	}
+    private void addActionSets(final IPageLayout layout) {
+        // defined in the org.eclipse.ui.perspectiveExtensions extension in
+        // plugin.xml
+    }
 
-	private void addPerspectiveShortcuts(final IPageLayout layout) {
-		// defined in the org.eclipse.ui.perspectiveExtensions extension in
-		// plugin.xml
-	}
+    private void addPerspectiveShortcuts(final IPageLayout layout) {
+        // defined in the org.eclipse.ui.perspectiveExtensions extension in
+        // plugin.xml
+    }
 
-	private void addNewWizardShortcuts(final IPageLayout layout) {
-		// defined in the org.eclipse.ui.perspectiveExtensions extension in
-		// plugin.xml
-	}
+    private void addNewWizardShortcuts(final IPageLayout layout) {
+        // defined in the org.eclipse.ui.perspectiveExtensions extension in
+        // plugin.xml
+    }
 
-	private void addViewShortcuts(final IPageLayout layout) {
-		// defined in the org.eclipse.ui.perspectiveExtensions extension in
-		// plugin.xml
-	}
+    private void addViewShortcuts(final IPageLayout layout) {
+        // defined in the org.eclipse.ui.perspectiveExtensions extension in
+        // plugin.xml
+    }
 }

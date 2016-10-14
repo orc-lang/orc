@@ -2,11 +2,9 @@
 // OrcBuilder.java -- Java class OrcBuilder
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,32 +15,42 @@ package edu.utexas.cs.orc.orceclipse.build;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceStatus;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 
 import orc.compile.StandardOrcCompiler;
 import orc.compile.parse.OrcFileInputContext;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.imp.builder.BuilderBase;
-import org.eclipse.imp.language.Language;
-import org.eclipse.imp.language.LanguageRegistry;
-import org.eclipse.imp.runtime.PluginBase;
-
-import edu.utexas.cs.orc.orceclipse.Activator;
-import edu.utexas.cs.orc.orceclipse.ImpToOrcMessageAdapter;
-import edu.utexas.cs.orc.orceclipse.ImpToOrcProgressAdapter;
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcMessageAdapter;
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcProgressAdapter;
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
  * Incremental builder for Orc source code.
@@ -53,283 +61,482 @@ import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
  *
  * @see org.eclipse.core.resources.IncrementalProjectBuilder
  */
-public class OrcBuilder extends BuilderBase {
-	/**
-	 * Extension ID of the Orc builder, which matches the ID in the
-	 * corresponding extension definition in plugin.xml.
-	 */
-	public static final String BUILDER_ID = Activator.getInstance().getID() + ".build.orcBuilder"; //$NON-NLS-1$
+public class OrcBuilder extends IncrementalProjectBuilder {
+    /**
+     * Extension ID of the Orc builder, which matches the ID in the
+     * corresponding extension definition in plugin.xml.
+     */
+    public static final String BUILDER_ID = OrcPlugin.getID() + ".build.orcBuilder"; //$NON-NLS-1$
 
-	/**
-	 * A marker ID that identifies problems detected by the builder
-	 */
-	public static final String PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".problemmarker"; //$NON-NLS-1$
+    /**
+     * A marker ID that identifies problems detected by the builder
+     */
+    public static final String PROBLEM_MARKER_ID = OrcPlugin.getID() + ".problemmarker"; //$NON-NLS-1$
 
-	/**
-	 * A marker ID that identifies parse problems detected by the builder
-	 */
-	public static final String PARSE_PROBLEM_MARKER_ID = Activator.getInstance().getID() + ".parse.problemmarker"; //$NON-NLS-1$
+    /**
+     * A marker ID that identifies parse problems detected by the builder
+     */
+    public static final String PARSE_PROBLEM_MARKER_ID = OrcPlugin.getID() + ".parse.problemmarker"; //$NON-NLS-1$
 
-	/**
-	 * A marker attribute name for the compile message code attribute
-	 */
-	public static final String COMPILE_EXCEPTION_NAME = Activator.getInstance().getID() + ".compileexceptionname"; //$NON-NLS-1$
+    /**
+     * A marker attribute name for the compile message code attribute
+     */
+    public static final String COMPILE_EXCEPTION_NAME = OrcPlugin.getID() + ".compileexceptionname"; //$NON-NLS-1$
 
-	/**
-	 * Name of the language for this builder.
-	 */
-	public static final String LANGUAGE_NAME = "Orc"; //$NON-NLS-1$
+    private static ImageDescriptor ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR = OrcPlugin.getInstance().getImageRegistry().getDescriptor(OrcResources.ORC_PLUGIN_ICON);
 
-	/**
-	 * Language for this builder.
-	 */
-	public static final Language LANGUAGE = LanguageRegistry.findLanguage(LANGUAGE_NAME);
+    /**
+     * The MessageConsoleStream used for Orc builder and compiler output.
+     */
+    private MessageConsoleStream orcBuildConsoleStream;
 
-	/**
-	 * Required no-arg constructor for OrcBuilder.
-	 *
-	 */
-	public OrcBuilder() {
-		super();
-	}
+    protected static int BUILD_TOTAL_WORK = 100000;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getPlugin()
-	 */
-	@Override
-	protected PluginBase getPlugin() {
-		return Activator.getInstance();
-	}
+    private static boolean DEBUG = false;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getBuilderID()
-	 */
-	@Override
-	public String getBuilderID() {
-		return BUILDER_ID;
-	}
+    /**
+     * Constructs an OrcBuilder. Builder instances are managed by Eclipse, which
+     * requires a public, no-argument constructor.
+     */
+    public OrcBuilder() {
+        super();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getErrorMarkerID()
-	 */
-	@Override
-	protected String getErrorMarkerID() {
-		//NOTE: BuilderBase requires these three methods to be implemented,
-		//      but in reality they must return the same value.
-		return PROBLEM_MARKER_ID;
-	}
+    /**
+     * Runs this builder in the specified manner.
+     * <p>
+     * If the build kind is <code>INCREMENTAL_BUILD</code> or
+     * <code>AUTO_BUILD</code>, the <code>getDelta</code> method can be used
+     * during the invocation of this method to obtain information about what
+     * changes have occurred since the last invocation of this method. Any
+     * resource delta acquired is valid only for the duration of the invocation
+     * of this method. A <code>FULL_BUILD</code> has no associated build delta.
+     * </p>
+     * <p>
+     * After completing a build, this builder may return a list of projects for
+     * which it requires a resource delta the next time it is run.
+     * </p>
+     * <p>
+     * This method is long-running; progress and cancellation are provided by
+     * the given progress monitor. Cancellation requests are propagated to the
+     * caller by throwing <code>OperationCanceledException</code>.
+     * </p>
+     * <p>
+     * All builders should try to be robust in the face of trouble. In
+     * situations where failing the build by throwing <code>CoreException</code>
+     * is the only option, a builder has a choice of how best to communicate the
+     * problem back to the caller. One option is to use the
+     * {@link IResourceStatus#BUILD_FAILED} status code along with a suitable
+     * message; another is to use a {@link MultiStatus} containing finer-grained
+     * problem diagnoses.
+     * </p>
+     *
+     * @param kind the kind of build being requested. Valid values are
+     *            FULL_BUILD, INCREMENTAL_BUILD, and AUTO_BUILD.
+     * @param args a table of builder-specific arguments. Ignored by this
+     *            builder.
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. This method will call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor, so it must be newly created. Accepts
+     *            <code>null</code>, indicating that no progress should be
+     *            reported and that the operation cannot be cancelled.
+     * @return the list of projects for which this builder would like deltas the
+     *         next time it is run or <code>null</code> if none
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     * @see IProject#build(int, String, Map, IProgressMonitor)
+     */
+    @Override
+    protected IProject[] build(final int kind, final Map<String, String> args, final IProgressMonitor monitor_) throws CoreException {
+        /*
+         * monitor state from the build manager: freshly allocated, with
+         * subTask("Invoking builder on projName") called
+         */
+        final IProgressMonitor monitor = monitor_ == null ? new NullProgressMonitor() : monitor_;
+        try {
+            checkCancel(monitor);
+            // TODO: isInterrupted? (For autobuilds only.)
+            monitor.beginTask(Messages.OrcBuilder_BuildingProject + getProject().getName(), BUILD_TOTAL_WORK);
+            if (kind == FULL_BUILD) {
+                fullBuild(monitor);
+            } else /* INCREMENTAL_BUILD or AUTO_BUILD */{
+                final IResourceDelta delta = getDelta(getProject());
+                if (delta == null) {
+                    fullBuild(monitor);
+                } else {
+                    incrementalBuild(delta, monitor);
+                }
+            }
+            final IProject[] requiredProjects = getRequiredProjects(monitor);
+            return requiredProjects;
+        } finally {
+            monitor.subTask(Messages.OrcBuilder_Done);
+            monitor.done();
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getWarningMarkerID()
-	 */
-	@Override
-	protected String getWarningMarkerID() {
-		//NOTE: BuilderBase requires these three methods to be implemented,
-		//      but in reality they must return the same value.
-		return PROBLEM_MARKER_ID;
-	}
+    /**
+     * Perform a full build. A full build discards all previously built state
+     * and builds all resources again. Resource deltas are not applicable for
+     * this kind of build.
+     *
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    protected void fullBuild(final IProgressMonitor monitor) throws CoreException {
+        checkCancel(monitor);
+        monitor.subTask(Messages.OrcBuilder_Preparing);
+        final Set<IFile> collectedResources = startCollectingResources(monitor);
+        getProject().accept(resource -> collectResource(resource, collectedResources, monitor));
+        final List<IFile> filesToBuild = computeFilesToBuild(collectedResources, monitor);
+        monitor.worked(BUILD_TOTAL_WORK / 20);
+        monitor.subTask(""); //$NON-NLS-1$
+        buildFiles(filesToBuild, monitor);
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getInfoMarkerID()
-	 */
-	@Override
-	protected String getInfoMarkerID() {
-		//NOTE: BuilderBase requires these three methods to be implemented,
-		//      but in reality they must return the same value.
-		return PROBLEM_MARKER_ID;
-	}
+    /**
+     * Perform an incremental build. Incremental builds use an
+     * {@link IResourceDelta} that describes what resources have changed since
+     * the last build. The builder calculates what resources are affected by the
+     * delta, and rebuilds the affected resources.
+     *
+     * @param delta
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    protected void incrementalBuild(final IResourceDelta delta, final IProgressMonitor monitor) throws CoreException {
+        checkCancel(monitor);
+        monitor.subTask(Messages.OrcBuilder_Preparing);
+        final Set<IFile> collectedResources = startCollectingResources(monitor);
+        delta.accept(delta1 -> {
+            final IResource resource = delta1.getResource();
+            boolean visitChidren = true;
+            switch (delta1.getKind()) {
+            case IResourceDelta.ADDED:
+                // handle added resource
+                visitChidren = collectResource(resource, collectedResources, monitor);
+                break;
+            case IResourceDelta.REMOVED:
+                // handle removed resource
+                break;
+            case IResourceDelta.CHANGED:
+                // handle changed resource
+                visitChidren = collectResource(resource, collectedResources, monitor);
+                break;
+            }
+            return visitChidren;
+        });
+        final List<IFile> filesToBuild = computeFilesToBuild(collectedResources, monitor);
+        monitor.worked(BUILD_TOTAL_WORK / 20);
+        monitor.subTask(""); //$NON-NLS-1$
+        buildFiles(filesToBuild, monitor);
+    }
 
-	/**
-	 * Decide whether a file needs to be build using this builder. Note that
-	 * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
-	 * never return true for the same file.
-	 *
-	 * @return true iff an arbitrary file is a Orc source file.
-	 * @see org.eclipse.imp.builder.BuilderBase#isSourceFile(org.eclipse.core.resources.IFile)
-	 */
-	@Override
-	protected boolean isSourceFile(final IFile file) {
-		final boolean emitDiags = getDiagPreference();
+    /**
+     * Get a list of projects for which this builder requires a resource delta
+     * the next time it is run. This builder's project is implicitly included
+     * and need not be specified. The build mechanism will attempt to maintain
+     * and compute deltas relative to the identified projects when asked the
+     * next time this builder is run. Builders must re-specify the list of
+     * interesting projects every time they are run as this is not carried
+     * forward beyond the next build. Projects mentioned in return value but
+     * which do not exist will be ignored and no delta will be made available
+     * for them.
+     *
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @return the list of projects for which this builder would like deltas the
+     *         next time it is run or <code>null</code> if none
+     */
+    protected IProject[] getRequiredProjects(final IProgressMonitor monitor) {
+        return null;
+    }
 
-		final IPath path = file.getRawLocation();
-		if (path == null) {
-			if (emitDiags) {
-				getConsoleStream().println("isSourceFile on a null path"); //$NON-NLS-1$
-			}
-			return false;
-		}
+    /**
+     * Clean is an opportunity for a builder to discard any additional state
+     * that has been computed as a result of previous builds. This method
+     * deletes all derived resources created by previous builds, and removes all
+     * markers of type {@link IMarker#PROBLEM} that were created by previous
+     * invocations of the builder. The platform will take care of discarding the
+     * builder's last built state (there is no need to call
+     * <code>forgetLastBuiltState</code>). </p>
+     * <p>
+     * This method is called as a result of invocations of
+     * <code>IWorkspace.build</code> or <code>IProject.build</code> where the
+     * build kind is <code>CLEAN_BUILD</code>.
+     * <p>
+     * This method is long-running; progress and cancellation are provided by
+     * the given progress monitor. Cancellation requests are propagated to the
+     * caller by throwing <code>OperationCanceledException</code>.
+     * </p>
+     *
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. This method will call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor, so it must be newly created. Accepts
+     *            <code>null</code>, indicating that no progress should be
+     *            reported and that the operation cannot be cancelled.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    @Override
+    protected void clean(final IProgressMonitor monitor) throws CoreException {
+        super.clean(monitor);
+        try {
+            checkCancel(monitor);
+            if (monitor != null) {
+                monitor.beginTask(NLS.bind(Messages.OrcBuilder_CleaningProject, getProject().getName()), BUILD_TOTAL_WORK);
+            }
+            final IProject currentProject = getProject();
+            if (currentProject == null || !currentProject.isAccessible() || !currentProject.exists()) {
+                return;
+            }
 
-		final String pathString = path.toString();
-		if (pathString.indexOf("/bin/") != -1) { //$NON-NLS-1$
-			if (emitDiags) {
-				getConsoleStream().println("isSourceFile(" + file + ")=false, since it contains '/bin/'"); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			return false;
-		}
+            currentProject.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
 
-		if (emitDiags) {
-			getConsoleStream().println("isSourceFile(" + file + ")=" + (LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file))); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-		return LANGUAGE.hasExtension(path.getFileExtension()) && !isNonRootSourceFile(file);
-	}
+        } finally {
+            if (monitor != null) {
+                monitor.worked(BUILD_TOTAL_WORK);
+                monitor.subTask(Messages.OrcBuilder_Done);
+                monitor.done();
+            }
+        }
+    }
 
-	/**
-	 * Decide whether or not to scan a file for dependencies. Note:
-	 * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
-	 * never return true for the same file.
-	 *
-	 * @return true iff the given file is a source file that this builder should
-	 *         scan for dependencies, but not compile as a top-level compilation
-	 *         unit.
-	 * @see org.eclipse.imp.builder.BuilderBase#isNonRootSourceFile(org.eclipse.core.resources.IFile)
-	 */
-	@Override
-	protected boolean isNonRootSourceFile(final IFile file) {
-		return Activator.isOrcIncludeFile(file.getFullPath());
-	}
+    /**
+     * Allocate a container for collectResource calls.
+     *
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @return fresh resource container to be used for collectResource calls
+     * @see #collectResource(IResource, Set, IProgressMonitor)
+     */
+    protected Set<IFile> startCollectingResources(final IProgressMonitor monitor) {
+        return new HashSet<IFile>();
+    }
 
-	/**
-	 * Collects compilation-unit dependencies for the given file, and records
-	 * them via calls to <code>fDependency.addDependency()</code>.
-	 *
-	 * @see org.eclipse.imp.builder.BuilderBase#collectDependencies(org.eclipse.core.resources.IFile)
-	 */
-	@Override
-	protected void collectDependencies(final IFile file) {
-		file.getFullPath().toString();
+    /**
+     * Examine a resource that may need to be rebuilt, and add it (if needed) to
+     * the given collection of to-be-rebuilt resources.
+     *
+     * @param resource A changed IResource
+     * @param collectedResources the Set of to-be-rebuilt IFiles up to now,
+     *            which may be modified if resource needs to be rebuilt
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @return <code>true</code> if the resource's members should be visited;
+     *         <code>false</code> if they should be skipped.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    protected boolean collectResource(final IResource resource, final Set<IFile> collectedResources, final IProgressMonitor monitor) throws CoreException {
+        checkCancel(monitor);
+        if (resource instanceof IFile) {
+            final IFile file = (IFile) resource;
 
-		final boolean emitDiags = getDiagPreference();
-		if (emitDiags) {
-			getConsoleStream().println("Collecting dependencies from Orc file: " + file.getName()); //$NON-NLS-1$
-		}
+            if (file.exists()) {
+                if (isSourceFile(file) || isNonRootSourceFile(file)) {
+                    collectedResources.add(file);
+                }
+            }
+            return false;
+        } else if (isOutputFolder(resource)) {
+            return false;
+        }
+        return true;
+    }
 
-		// TODO: implement dependency collector
-		// E.g. for each dependency:
-		// fDependencyInfo.addDependency(fromPath, uponPath);
-	}
+    /**
+     * Transform the set of changed files into a list of files to compile.
+     *
+     * @param collectedResources the Set of putative changed IFiles
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @returns a Set of to-be-rebuilt IFiles
+     * @see #collectResource(IResource, Set, IProgressMonitor)
+     */
+    protected List<IFile> computeFilesToBuild(final Set<IFile> collectedResources, final IProgressMonitor monitor) {
+        final List<IFile> filesToBuild = new ArrayList<>();
+        // FIXME: Need to build dependencies DAG and propagate changes
+        for (final IFile file : collectedResources) {
+            if (isSourceFile(file)) {
+                filesToBuild.add(file);
+            }
+        }
+        return filesToBuild;
+    }
 
-	/**
-	 * @return true iff this resource identifies the output folder
-	 * @see org.eclipse.imp.builder.BuilderBase#isOutputFolder(org.eclipse.core.resources.IResource)
-	 */
-	@Override
-	protected boolean isOutputFolder(final IResource resource) {
-		return false; // No output folders in Orc projects (for now)
-	}
+    /**
+     * From a collection of to-be-rebuilt resources, call compiler to build
+     * project.
+     *
+     * @param collectedResources a Set of to-be-rebuilt IFiles
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. It is the caller's responsibility to call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor. Must not be <code>null</code>.
+     * @exception CoreException if this build fails
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    protected void buildFiles(final List<IFile> filesToBuild, final IProgressMonitor monitor) throws CoreException {
+        final int workPerResource = (BUILD_TOTAL_WORK - BUILD_TOTAL_WORK / 20) / Math.max(filesToBuild.size(), 1);
+        final SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, workPerResource);
+        for (final IFile file : filesToBuild) {
+            file.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+            compile(file, subMonitor);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@SuppressWarnings("rawtypes")
-	@Override
-	protected IProject[] build(final int kind, final Map args, final IProgressMonitor monitor_) {
-		// This override is only needed as an IMP bug fix
-		// When IMP's BuilderBase.build correctly manages the IProgressMonitor, remove this override.
-		final IProgressMonitor monitor = monitor_ == null ? new NullProgressMonitor() : monitor_;
-		checkCancel(monitor);
-		monitor.beginTask(Messages.OrcBuilder_Preparing + getProject().getName(), 100000);
-		final IProject[] requiredProjects = super.build(kind, args, monitor);
-		monitor.subTask(Messages.OrcBuilder_Done);
-		monitor.done();
-		return requiredProjects;
-	}
+    /**
+     * Decide whether a file needs to be build using this builder. Note that
+     * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
+     * never return true for the same file.
+     *
+     * @param file the IFile to check
+     * @return true iff an arbitrary file is a Orc source file
+     */
+    protected boolean isSourceFile(final IFile file) {
 
-	/**
-	 * Compile one Orc file.
-	 *
-	 * @see org.eclipse.imp.builder.BuilderBase#compile(org.eclipse.core.resources.IFile, org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@Override
-	protected void compile(final IFile file, final IProgressMonitor monitor_) {
-		checkCancel(monitor_);
+        final IPath path = file.getRawLocation();
+        if (path == null) {
+            if (DEBUG) {
+                getConsoleStream().println("isSourceFile on a null path"); //$NON-NLS-1$
+            }
+            return false;
+        }
 
-		// This block is only needed as an IMP bug fix
-		// When IMP's BuilderBase.compileNecessarySources correctly passes us a fresh SubProgressMonitor, remove this block.
-		final IProgressMonitor monitor;
-		try {
-			// Violate access controls of parent's fSourcesToCompile field
-			final Field fSourcesToCompileField = BuilderBase.class.getDeclaredField("fSourcesToCompile"); //$NON-NLS-1$
-			fSourcesToCompileField.setAccessible(true);
-			@SuppressWarnings("unchecked")
-			final int numFiles = ((Collection<IFile>) fSourcesToCompileField.get(this)).size();
+        final String pathString = path.toString();
+        if (pathString.indexOf("/bin/") != -1) { //$NON-NLS-1$
+            if (DEBUG) {
+                getConsoleStream().println("isSourceFile(" + file + ")=false, since it contains '/bin/'"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+            return false;
+        }
 
-			monitor = new SubProgressMonitor(monitor_, 100000 / numFiles);
-		} catch (final IllegalAccessException e) {
-			throw new AssertionError(e);
-		} catch (final NoSuchFieldException e) {
-			throw new AssertionError(e);
-		}
-		// End bug fix block
+        final boolean result = OrcPlugin.isOrcSourceFile(file) && !isNonRootSourceFile(file);
+        if (DEBUG) {
+            getConsoleStream().println("isSourceFile(" + file + ")=" + result); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return result;
+    }
 
-		final String fileName = file.getFullPath().makeRelative().toString();
+    /**
+     * Decide whether or not to scan a file for dependencies. Note:
+     * <code>isNonRootSourceFile()</code> and <code>isSourceFile()</code> should
+     * never return true for the same file.
+     *
+     * @param file the IFile to check
+     * @return true iff the given file is a source file that this builder should
+     *         scan for dependencies, but not compile as a top-level compilation
+     *         unit.
+     */
+    protected boolean isNonRootSourceFile(final IFile file) {
+        return OrcPlugin.isOrcIncludeFile(file);
+    }
 
-		final boolean emitDiags = getDiagPreference();
-		if (emitDiags) {
-			getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + fileName);
-		}
-		monitor.beginTask(Messages.OrcBuilder_Compiling + fileName, 1000);
-		monitor.subTask(Messages.OrcBuilder_Compiling + fileName);
-		try {
-			final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
-			config.filename_$eq(file.getLocation().toOSString());
-			final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
-			final ImpToOrcProgressAdapter prgsLstnr = new ImpToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
-			final ImpToOrcMessageAdapter compileLogger = new ImpToOrcMessageAdapter(BUILDER_ID, false);
+    /**
+     * Check if a resource is a build output folder.
+     *
+     * @param resource the IResource to check
+     * @return true iff this resource identifies an output folder
+     */
+    protected boolean isOutputFolder(final IResource resource) {
+        return false; // No output folders in Orc projects (for now)
+    }
 
-			try {
-				new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
-				// Disregard returned OIL, we just want the errors
-			} catch (final IOException e) {
-				getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
-				Activator.logAndShow(e);
-			}
+    /**
+     * Compile one Orc file.
+     *
+     * @param file the IFile to compile
+     * @param monitor the progress monitor to use for reporting progress to the
+     *            user. This method will call
+     *            <code>beginTask(String, int)</code> and <code>done()</code> on
+     *            the given monitor, so it must be newly created. Must not be
+     *            <code>null</code>.
+     * @exception OperationCanceledException when operation is cancelled
+     */
+    protected void compile(final IFile file, final IProgressMonitor monitor) {
+        checkCancel(monitor);
 
-			doRefresh(file.getParent()); // N.B.: Assumes all generated files go into parent folder
-		} catch (final Exception e) {
-			// catch Exception, because any exception could break the
-			// builder infrastructure.
-			getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
-			Activator.log(e);
-		} finally {
-			monitor.done();
-		}
-		if (emitDiags) {
-			getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + fileName);
-		}
-	}
+        final String fileName = file.getFullPath().makeRelative().toString();
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.imp.builder.BuilderBase#getConsoleName()
-	 */
-	@Override
-	protected String getConsoleName() {
-		return Messages.OrcBuilder_OrcCompilerConsoleName;
-	}
+        if (DEBUG) {
+            getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + fileName);
+        }
+        monitor.beginTask(NLS.bind(Messages.OrcBuilder_Compiling, fileName), 1000);
+        monitor.subTask(NLS.bind(Messages.OrcBuilder_Compiling, fileName));
+        try {
+            final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
+            config.filename_$eq(file.getLocation().toOSString());
+            final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
+            final EclipseToOrcProgressAdapter prgsLstnr = new EclipseToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
+            final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(BUILDER_ID, false);
 
-	/**
-	 * Check whether the build has been canceled.
-	 *
-	 * @param monitor
-	 * @throws OperationCanceledException
-	 */
-	public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
-		if (monitor != null && monitor.isCanceled()) {
-			throw new OperationCanceledException();
-		}
-	}
+            try {
+                new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
+                // Disregard returned OIL, we just want the errors
+            } catch (final IOException e) {
+                getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
+                OrcPlugin.logAndShow(e);
+            }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.resources.IncrementalProjectBuilder#clean(org.eclipse.core.runtime.IProgressMonitor)
-	 */
-	@Override
-	protected void clean(IProgressMonitor monitor) throws CoreException {
-		super.clean(monitor);
-		IProject currentProject = getProject();
-		if (currentProject == null || !currentProject.isAccessible() || !currentProject.exists()) return;
+            // TODO: If/when we generate compile output, refresh the appropriate resources
 
-		currentProject.deleteMarkers(OrcBuilder.PROBLEM_MARKER_ID, true, IResource.DEPTH_INFINITE);
+        } catch (final Exception e) {
+            // catch Exception, because any exception could break the
+            // builder infrastructure.
+            getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
+            OrcPlugin.log(e);
+        } finally {
+            monitor.done();
+        }
+        if (DEBUG) {
+            getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + fileName);
+        }
+    }
 
-		if (monitor != null)
-			monitor.done();
-	}
+    /**
+     * Check whether the build has been canceled.
+     *
+     * @param monitor the progress monitor to check. Accepts <code>null</code>,
+     *            indicating that the operation cannot be cancelled.
+     * @throws OperationCanceledException when monitor is requesting
+     *             cancellation
+     */
+    public void checkCancel(final IProgressMonitor monitor) throws OperationCanceledException {
+        if (monitor != null && monitor.isCanceled()) {
+            throw new OperationCanceledException();
+        }
+    }
+
+    /**
+     * Get the output stream for Orc builder message output.
+     *
+     * @return the MessageConsoleStream
+     */
+    protected MessageConsoleStream getConsoleStream() {
+        if (orcBuildConsoleStream == null) {
+            final MessageConsole orcBuildConsole = new MessageConsole(Messages.OrcBuilder_OrcCompilerConsoleName, ORC_PLUGIN_ICON_IMAGE_DESCRIPTOR);
+            ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { orcBuildConsole });
+            orcBuildConsoleStream = orcBuildConsole.newMessageStream();
+        }
+        return orcBuildConsoleStream;
+    }
 }

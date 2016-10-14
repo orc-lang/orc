@@ -2,8 +2,6 @@
 // OrcRuntimeClasspathTab.java -- Java class OrcRuntimeClasspathTab
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Feb 28, 2010.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
@@ -21,34 +19,25 @@ import edu.utexas.cs.orc.orceclipse.Messages;
 
 /**
  * A launch configuration tab that lets users set a classpath to load an
- * alternative Orc runtime engine.  This subclasses the JDT classpath tab.
+ * alternative Orc runtime engine. This subclasses the JDT classpath tab.
  *
  * @author jthywiss
  */
 public class OrcRuntimeClasspathTab extends JavaClasspathTab {
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab#getName()
-	 */
-	@Override
-	public String getName() {
-		return Messages.OrcRuntimeClasspathTab_RuntimeClasspathTabName;
-	}
+    @Override
+    public String getName() {
+        return Messages.OrcRuntimeClasspathTab_RuntimeClasspathTabName;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab#getId()
-	 */
-	@Override
-	public String getId() {
-		return "edu.utexas.cs.orc.orceclipse.launch.OrcRuntimeClasspathTab"; //$NON-NLS-1$
-	}
+    @Override
+    public String getId() {
+        return "edu.utexas.cs.orc.orceclipse.launch.OrcRuntimeClasspathTab"; //$NON-NLS-1$
+    }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab#isShowBootpath()
-	 */
-	@Override
-	public boolean isShowBootpath() {
-		return false;
-	}
+    @Override
+    public boolean isShowBootpath() {
+        return false;
+    }
 
 }

@@ -2,11 +2,9 @@
 // EnableOrcNature.java -- Java class EnableOrcNature
 // Project OrcEclipse
 //
-// $Id$
-//
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,15 +13,20 @@
 
 package edu.utexas.cs.orc.orceclipse.project;
 
+import java.util.Iterator;
+
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.utexas.cs.orc.orceclipse.Messages;
 import edu.utexas.cs.orc.orceclipse.build.OrcNature;
@@ -31,66 +34,56 @@ import edu.utexas.cs.orc.orceclipse.build.OrcNature;
 /**
  * Adds an Orc "nature" to the selected project's attributes.
  * <p>
- * (This class is a UI action delegate. The action is defined in
- * the <code>plugin.xml</code> file.)
+ * (This class is a UI command handler. The command is defined in the
+ * <code>plugin.xml</code> file.)
  */
-public class EnableOrcNature implements IWorkbenchWindowActionDelegate {
-	private IProject fProject;
+public class EnableOrcNature extends AbstractHandler {
 
-	/**
-	 * Constructs an object of class EnableOrcNature.
-	 *
-	 */
-	public EnableOrcNature() {
-		/* Nothing to do */
-	}
+    /**
+     * Executes the add Orc nature action.
+     *
+     * @param event An event containing event parameters, the event trigger, and
+     *            the application context. Must not be <code>null</code>.
+     * @return the result of the execution. Reserved for future use, must be
+     *         <code>null</code>.
+     * @throws ExecutionException if an exception occurred during execution.
+     */
+    @Override
+    public Object execute(final ExecutionEvent event) throws ExecutionException {
+        final ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if (selection instanceof IStructuredSelection) {
+            final IStructuredSelection ss = (IStructuredSelection) selection;
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#dispose()
-	 */
-	@Override
-	public void dispose() {
-		/* Nothing to do */
-	}
+            for (final Iterator<?> selnIter = ss.iterator(); selnIter.hasNext();) {
+                final Object currSelnElem = selnIter.next();
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#init(org.eclipse.ui.IWorkbenchWindow)
-	 */
-	@Override
-	public void init(final IWorkbenchWindow window) {
-		/* Nothing to do */
-	}
+                IProject project = null;
+                if (currSelnElem instanceof IProject) {
+                    project = (IProject) currSelnElem;
+                } else if (currSelnElem instanceof IJavaProject) {
+                    project = ((IJavaProject) currSelnElem).getProject();
+                } else if (currSelnElem instanceof IAdaptable) {
+                    project = (IProject) ((IAdaptable) currSelnElem).getAdapter(IProject.class);
+                }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
-	 */
-	@Override
-	public void run(final IAction action) {
-		try {
-			if (fProject.getNature("org.eclipse.jdt.core.javanature") != null) { //$NON-NLS-1$
-				MessageDialog.openError(null, Messages.EnableOrcNature_AlreadyJavaErrorTitle, Messages.EnableOrcNature_AlreadJavaErrorMessage);
-				return;
-			}
-		} catch (CoreException e) {
-			// This is OK, it means we don't have javanature
-		}
-		new OrcNature().addToProject(fProject);
-	}
+                if (project != null) {
+                    try {
+                        if (project.getNature(JavaCore.NATURE_ID) != null) {
+                            MessageDialog.openError(null, Messages.EnableOrcNature_AlreadyJavaErrorTitle, Messages.EnableOrcNature_AlreadJavaErrorMessage);
+                            return null;
+                        }
+                    } catch (final CoreException e) {
+                        /* This is OK, it means we don't have Java nature */
+                    }
+                    try {
+                        OrcNature.addToProject(project);
+                    } catch (final CoreException e) {
+                        throw new ExecutionException("Failure when setting project nature for project: " + project, e); //$NON-NLS-1$
+                    }
+                }
+            }
+        }
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
-	 */
-	@Override
-	public void selectionChanged(final IAction action, final ISelection selection) {
-		if (selection instanceof IStructuredSelection) {
-			final IStructuredSelection ss = (IStructuredSelection) selection;
-			final Object first = ss.getFirstElement();
-
-			if (first instanceof IProject) {
-				fProject = (IProject) first;
-			} else if (first instanceof IJavaProject) {
-				fProject = ((IJavaProject) first).getProject();
-			}
-		}
-	}
+        return null;
+    }
 }
