@@ -27,6 +27,7 @@ import javax.swing.JScrollPane
 import javax.swing.JPanel
 import javax.swing.BoxLayout
 import javax.swing.JLabel
+import java.awt.Rectangle
 
 class TableDisplay(title: String) extends JFrame {
   private val model = new DefaultTableModel()
@@ -46,9 +47,8 @@ class TableDisplay(title: String) extends JFrame {
     setTitle(title)
     setContentPane(stackPanel)
     stackPanel.add(scrollPane)
-    setPreferredSize(new Dimension(300, 200))
     setVisible(true)
-    setSize(new Dimension(600, 720))
+    setSize(new Dimension(800, 720))
     // TODO: This should definitely not be done this way.
     //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
   }
@@ -79,11 +79,16 @@ class TableDisplay(title: String) extends JFrame {
     private lazy val row = onEDTNow {
       val n = model.getRowCount()
       model.addRow(null: Array[AnyRef])
+      val rect = new Rectangle(table.getCellRect(n, 0, true))
+      rect.height *= 3
+      table.scrollRectToVisible(rect)
       n
     }
     def setColumn(name: String, v: AnyRef) = onEDT {
       model.setValueAt(v, row, getColumn(name))
+      updateRowHeights()
     }
+    
   }
 
   def addItem() = new Item()
@@ -100,10 +105,21 @@ class TableDisplay(title: String) extends JFrame {
       model.setColumnIdentifiers(columnNames.toArray[AnyRef])
     }
   }
-  
+
   def addText(text: String, atBottom: Boolean): Unit = onEDTNow {
     val index = if (atBottom) -1 else 0
     stackPanel.add(new JLabel(text), index)
+  }
+
+  private def updateRowHeights() = {
+    for (row <- 0 until table.getRowCount()) {
+      val heights = for (col <- 0 until table.getColumnCount()) yield {
+        val comp = table.prepareRenderer(table.getCellRenderer(row, col), row, col)
+        comp.getPreferredSize().height
+      }
+
+      table.setRowHeight(row, (table.getRowHeight() +: heights).max);
+    }
   }
 }
 

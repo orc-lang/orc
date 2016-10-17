@@ -19,6 +19,7 @@ import class CanvasImpl = "orc.lib.gui.CanvasImpl"
 import class ListModelImpl = "orc.lib.gui.ListModelImpl" 
 
 import class TableDisplay = "orc.lib.gui.TableDisplay"
+import site SetSwingFontSize = "orc.lib.gui.SetSwingFontSize"
 
 import class Runnable = "java.lang.Runnable"
 
