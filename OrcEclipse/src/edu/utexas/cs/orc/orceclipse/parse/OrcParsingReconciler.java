@@ -37,7 +37,9 @@ import orc.compile.CompilerOptions;
 import orc.compile.parse.OrcIncludeParser;
 import orc.compile.parse.OrcInputContext;
 import orc.compile.parse.OrcProgramParser;
+import orc.compile.parse.OrcSourceRange;
 import orc.compile.parse.OrcStringInputContext;
+import orc.compile.parse.ToTextRange;
 import orc.error.compiletime.CompileLogger.Severity;
 import orc.error.compiletime.ParsingException;
 
@@ -186,7 +188,9 @@ public class OrcParsingReconciler implements IReconcilingStrategy, IReconcilingS
                 return (AST) result.get();
             } else {
                 final NoSuccess n = (NoSuccess) result;
-                compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), n.next().pos(), null, new ParsingException(n.msg(), n.next().pos()));
+                final OrcSourceRange tr = ToTextRange.apply(n.next().pos());
+                final scala.Option<OrcSourceRange> tro = new scala.Some<OrcSourceRange>(tr);
+                compileLogger.recordMessage(Severity.FATAL, 0, n.msg(), tro, null, new ParsingException(n.msg(), tr));
                 return null;
             }
         } catch (final Exception e) {

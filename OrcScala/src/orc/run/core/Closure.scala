@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,9 +12,8 @@
 //
 package orc.run.core
 
+import orc.{ OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.Def
-import orc.Schedulable
-import orc.OrcRuntime
 import orc.util.BlockableMapExtension
 
 /** A closure that both resolves itself and represents the closure itself. This should
@@ -41,7 +40,7 @@ class Closure(
 
   override val runtime = closureGroup.runtime
 
-  override def toString = super.toString + (code.body.pos, closureGroup, index)
+  override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
 }
 
 class ClosureGroup(

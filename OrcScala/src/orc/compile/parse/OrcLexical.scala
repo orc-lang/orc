@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jun 1, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -21,6 +21,7 @@ import scala.language.postfixOps
 import scala.util.parsing.combinator.RegexParsers
 import scala.util.parsing.combinator.lexical.StdLexical
 import scala.util.parsing.input.CharSequenceReader.EofCh
+import scala.util.parsing.input.Reader
 
 /** Lexical scanner (tokenizer) for Orc.  This extends and overrides
   * <code>scala.util.parsing.combinator.lexical.StdLexical</code>
@@ -155,4 +156,29 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     | EofCh ^^^ EOF
     )
 
+  class Scanner(in: OrcReader) extends Reader[Token] {
+
+    private val (tok, rest1, rest2) = whitespace(in) match {
+      case Success(_, in1) =>
+        token(in1) match {
+          case Success(tok, in2) => (tok, in1, in2)
+          case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
+        }
+      case ns: NoSuccess => (errorToken(ns.msg), ns.next, skip(ns.next))
+    }
+
+    private def skip(in: Reader[Char]) = if (in.atEnd) in else in.rest
+
+    override def source: java.lang.CharSequence = in.source
+
+    override def offset: Int = in.offset
+
+    def first = tok
+    
+    def rest = new Scanner(rest2.asInstanceOf[OrcReader])
+    
+    lazy val pos = new ScalaOrcSourceRange(new OrcSourceRange(((ToTextPosition(rest1.pos), ToTextPosition(rest2.pos)))))
+    
+    def atEnd = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
+  }
 }

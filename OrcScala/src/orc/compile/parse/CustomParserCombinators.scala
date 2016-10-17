@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Sep 10, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,10 +13,10 @@
 package orc.compile.parse
 
 import scala.language.{ implicitConversions, postfixOps }
-import scala.util.parsing.combinator.syntactical._
-import orc.ast.ext.Expression
-import orc.ast.ext.InfixOperator
+import scala.util.parsing.combinator.syntactical.StandardTokenParsers
+
 import orc.ast.AST
+import orc.ast.ext.{ Expression, InfixOperator }
 
 /** An assortment of extended parser combinators designed specifically
   * for the Orc parser.
@@ -33,9 +33,11 @@ trait CustomParserCombinators {
 
   class LocatingParser[+A <: AST](p: => Parser[A]) extends Parser[A] {
     override def apply(i: Input) = {
-      val position = i.pos
+      val startPos = ToTextRange(i.pos)
       val result: ParseResult[A] = p.apply(i)
-      result map { _.setPos(position) }
+      val endPos = ToTextRange(i.pos)
+      val parsedRange = new OrcSourceRange((startPos.start, endPos.end))
+      result map { _.fillSourceTextRange(Some(parsedRange)) }
       result
     }
   }
@@ -180,22 +182,20 @@ trait CustomParserCombinators {
     p ~ rep(markingQ ~ p) ^^ { case x ~ xs => if (xs.isEmpty) x else rightChainFold(xs)(x) }
   }
 
-  ////////
-  //
-  ////////
-
   def markingParser[T](q: => Parser[(T, T) => T]) = {
     new Parser[(T, T) => T] {
       override def apply(i: Input) = {
-        val position = i.pos
+        val startPos = ToTextRange(i.pos)
         val result: ParseResult[(T, T) => T] = q.apply(i)
+        val endPos = ToTextRange(i.pos)
+        val parsedRange = new OrcSourceRange((startPos.start, endPos.end))
         result map
           { (f: (T, T) => T) =>
             { (a: T, b: T) =>
               {
                 val result = f(a, b)
                 result match {
-                  case ast: AST => ast.setPos(position)
+                  case ast: AST => ast.fillSourceTextRange(Some(parsedRange))
                 }
                 result
               }

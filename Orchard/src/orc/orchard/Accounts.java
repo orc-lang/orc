@@ -169,8 +169,7 @@ class DbAccounts extends Accounts {
             }
             return getAccountFromDB(devKey);
         } catch (final SQLException e) {
-            // FIXME: hack to support database connection errors,
-            // just return the guest account
+            // FIXME: hack to support database connection errors, just return the guest account
             logger.log(Level.SEVERE, "Orchard accounts: Failed to retrieve account for devKey \"" + devKey + "\"", e);
             return guest;
         }

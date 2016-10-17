@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,11 +13,11 @@
 
 package orc.compile.translate
 
-import orc.util.OptionMapExtension._
 import orc.ast.ext._
 import orc.ast.oil4c.named
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
+import orc.util.OptionMapExtension._
 
 case class AggregateDef(clauses: List[Clause],
   typeformals: Option[List[String]],
@@ -51,7 +51,7 @@ case class AggregateDef(clauses: List[Clause],
         val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, maybeReturnType, reportProblem(RedundantReturnType() at defn))
         val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
-        result takeEarlierPos this
+        result aggregatePosWith this
       }
       case DefClass(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, body) => {
         this + Def(name, maybeTypeFormals, formals, maybeReturnType, maybeGuard, new DefClassBody(body))
@@ -61,7 +61,7 @@ case class AggregateDef(clauses: List[Clause],
         val newArgTypes = unifyList(argtypes, Some(argtypes2), reportProblem(RedundantArgumentType() at defn))
         val newReturnType = unify(returntype, Some(maybeReturnType), reportProblem(RedundantReturnType() at defn))
         val result = AggregateDef(clauses, newTypeFormals, newArgTypes, newReturnType)
-        result takeEarlierPos this
+        result aggregatePosWith this
       }
     }
 
@@ -72,7 +72,7 @@ case class AggregateDef(clauses: List[Clause],
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at lambda))
     val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
     val result = AggregateDef(clauses ::: List(newclause), newTypeFormals, newArgTypes, newReturnType)
-    result takeEarlierPos this
+    result aggregatePosWith this
   }
 
   def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type]): named.Def = {

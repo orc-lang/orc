@@ -17,19 +17,17 @@ import java.util.List;
 import java.util.Set;
 
 import scala.collection.JavaConversions;
-import scala.util.parsing.input.NoPosition$;
-import scala.util.parsing.input.Position;
 
 import orc.ast.AST;
 import orc.ast.oil.nameless.Constant;
 import orc.ast.oil.nameless.NamelessAST;
-import orc.compile.parse.PositionWithFilename;
+import orc.compile.parse.OrcSourceRange;
 import orc.error.compiletime.CompileLogger.Severity;
 import orc.orchard.errors.OrcProgramProblem;
 
 /**
  * Check an OIL expression for security violations.
- * 
+ *
  * @author quark
  */
 public class OilSecurityValidator {
@@ -110,7 +108,7 @@ public class OilSecurityValidator {
         allowedClasses.add("java.util.concurrent.PriorityBlockingQueue");
         allowedClasses.add("java.util.concurrent.Semaphore");
         allowedClasses.add("java.util.concurrent.SynchronousQueue");
-        
+
         // orc.lib
         allowedClasses.add("orc.lib.state.Set");
         allowedClasses.add("orc.lib.state.Map");
@@ -198,7 +196,7 @@ public class OilSecurityValidator {
                     final String location = ((orc.values.sites.JavaProxy) value).javaClassName();
                     if (!allowedClasses.contains(location)) {
                         hasProblems = true;
-                        problems.add(new SecurityProblem("Security: Access denied to Java class '" + location + "'.", node.pos()));
+                        problems.add(new SecurityProblem("Security: Access denied to Java class '" + location + "'.", node.sourceTextRange().isDefined() ? node.sourceTextRange().get() : null));
                     }
                 }
             }
@@ -212,14 +210,14 @@ public class OilSecurityValidator {
             super();
         }
 
-        public SecurityProblem(final String message, final Position position) {
+        public SecurityProblem(final String message, final OrcSourceRange position) {
             super();
             this.severity = Severity.ERROR.ordinal();
             this.message = message;
-            this.filename = position instanceof PositionWithFilename ? ((PositionWithFilename) position).filename() : "";
-            this.line = position.line();
-            this.column = position.column();
-            if (position != null && !(position instanceof NoPosition$)) {
+            this.filename = position != null ? position.start().resource().descr() : "";
+            this.line = position != null ? position.start().line() : -1;
+            this.column = position != null ? position.start().column() : -1;
+            if (position != null) {
                 this.longMessage = position.toString() + ": " + message;
             } else {
                 this.longMessage = message;

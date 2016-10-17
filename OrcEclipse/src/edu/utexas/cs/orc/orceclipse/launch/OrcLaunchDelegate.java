@@ -226,8 +226,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
     }
 
     private String[] getAbsoluteClasspathForClass(final Class<?> classOfInterest) {
-        // FIXME: Is this possible without using the internal Eclipse OSGi
-        // ModuleClassLoader, ClasspathManager, and ClasspathEntry classes?
+        // FIXME: Is this possible without using the internal Eclipse OSGi ModuleClassLoader, ClasspathManager, and ClasspathEntry classes?
         final ClasspathManager manager = ((ModuleClassLoader) classOfInterest.getClassLoader()).getClasspathManager();
         String[] classpath = null;
         final ClasspathEntry[] classpathentries = manager.getHostClasspathEntries();

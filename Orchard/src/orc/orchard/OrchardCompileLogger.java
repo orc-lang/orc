@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 26, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,10 +15,9 @@ package orc.orchard;
 
 import java.util.List;
 
-import scala.util.parsing.input.Position;
-
 import orc.ast.AST;
 import orc.compile.parse.OrcInputContext;
+import orc.compile.parse.OrcSourceRange;
 import orc.error.compiletime.CompileLogger;
 
 /**
@@ -37,7 +36,7 @@ public class OrchardCompileLogger implements CompileLogger {
         public final Severity severity;
         public final int code;
         public final String message;
-        public final Position position;
+        public final OrcSourceRange position;
         public final AST astNode;
         public final Throwable exception;
 
@@ -51,20 +50,20 @@ public class OrchardCompileLogger implements CompileLogger {
          * @param astNode
          * @param exception
          */
-        public CompileMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode, final Throwable exception) {
+        public CompileMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> position, final AST astNode, final Throwable exception) {
             this.severity = severity;
             this.code = code;
             this.message = message;
-            this.position = position;
+            this.position = position != null && position.isDefined() ? position.get() : null;
             this.astNode = astNode;
             this.exception = exception;
         }
 
         public String longMessage() {
             if (position != null) {
-                return position.toString() + ": " + message + "\n" + position.longString();
+                return position.toString() + ": " + message + "\n" + position.lineContentWithCaret();
             } else {
-                return "<undefined argPosition>: " + message;
+                return "<undefined position>: " + message;
             }
         }
 
@@ -101,7 +100,7 @@ public class OrchardCompileLogger implements CompileLogger {
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode, final Throwable exception) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode, final Throwable exception) {
 
         maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
@@ -109,12 +108,12 @@ public class OrchardCompileLogger implements CompileLogger {
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final Throwable exception) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final Throwable exception) {
         recordMessage(severity, code, message, location, null, exception);
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode) {
         recordMessage(severity, code, message, location, astNode, null);
     }
 

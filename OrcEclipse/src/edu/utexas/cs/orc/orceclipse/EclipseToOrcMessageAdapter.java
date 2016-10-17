@@ -33,13 +33,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import scala.util.parsing.input.NoPosition$;
-import scala.util.parsing.input.OffsetPosition;
-import scala.util.parsing.input.Position;
-
 import orc.ast.AST;
 import orc.compile.parse.OrcInputContext;
-import orc.compile.parse.PositionWithFilename;
+import orc.compile.parse.OrcSourceRange;
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.CompileLogger;
 import orc.error.compiletime.ParsingException;
@@ -100,7 +96,7 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode, final Throwable exception) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode, final Throwable exception) {
         Assert.isTrue(mainMarkerCreator != null, "mainMarkerCreator != null"); //$NON-NLS-1$
 
         synchronized (this) {
@@ -111,13 +107,14 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
 
         final int eclipseSeverity = eclipseSeverityFromOrcSeverity(severity);
 
-        Position locationNN = position;
-        if (locationNN == null) {
-            locationNN = NoPosition$.MODULE$;
+        OrcSourceRange locationOrNull = null;
+        if (location != null && location.isDefined()) {
+            locationOrNull = location.get();
         }
         ProblemMarkerCreator markerCreator = null;
-        if (locationNN instanceof PositionWithFilename) {
-            final String descr = ((PositionWithFilename) locationNN).filename();
+
+        if (locationOrNull != null) {
+            final String descr = locationOrNull.start().resource().descr();
             if (descr != null && descr.length() > 0) {
                 markerCreator = contextMap.get(descr);
             }
@@ -125,27 +122,30 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
         final boolean dontHaveActualResource = markerCreator == null;
         if (markerCreator == null) {
             markerCreator = mainMarkerCreator;
-            locationNN = NoPosition$.MODULE$;
+            locationOrNull = null;
         }
 
         int safeStartOffset = -1;
         int safeEndOffset = -1;
-        if (locationNN instanceof OffsetPosition && ((OffsetPosition) locationNN).offset() >= 0) {
-            safeStartOffset = safeEndOffset = ((OffsetPosition) locationNN).offset();
+        if (locationOrNull != null && locationOrNull.start().offset() >= 0) {
+            safeStartOffset = locationOrNull.start().offset();
         }
-        final int safeLineNumber = locationNN.line() >= 1 ? locationNN.line() : UNKNOWN_LINE.intValue();
+        if (locationOrNull != null && locationOrNull.end().offset() >= 0) {
+            safeEndOffset = locationOrNull.end().offset();
+        }
+        final int safeLineNumber = locationOrNull != null && locationOrNull.start().line() >= 1 ? locationOrNull.start().line() : UNKNOWN_LINE.intValue();
 
-        markerCreator.addMarker(exception instanceof ParsingException ? OrcBuilder.PARSE_PROBLEM_MARKER_ID : OrcBuilder.PROBLEM_MARKER_ID, markerText, eclipseSeverity, code, dontHaveActualResource && position != null ? position.toString() : null, safeStartOffset, safeEndOffset, safeLineNumber, exception);
+        markerCreator.addMarker(exception instanceof ParsingException ? OrcBuilder.PARSE_PROBLEM_MARKER_ID : OrcBuilder.PROBLEM_MARKER_ID, markerText, eclipseSeverity, code, dontHaveActualResource && locationOrNull != null ? locationOrNull.toString() : null, safeStartOffset, safeEndOffset, safeLineNumber, exception);
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position position, final Throwable exception) {
-        recordMessage(severity, code, message, position, null, exception);
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final Throwable exception) {
+        recordMessage(severity, code, message, location, null, exception);
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position position, final AST astNode) {
-        recordMessage(severity, code, message, position, astNode, null);
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode) {
+        recordMessage(severity, code, message, location, astNode, null);
     }
 
     @Override
@@ -321,7 +321,9 @@ public class EclipseToOrcMessageAdapter implements CompileLogger {
             if (sourceId != null) {
                 attributes.put(IMarker.SOURCE_ID, sourceId);
             }
-            // attributes.put(OrcBuilder.COMPILE_MSG_TYPE_MARKER_ATTR_NAME, exception != null ? exception.getClass().getCanonicalName() : null);
+            // attributes.put(OrcBuilder.COMPILE_MSG_TYPE_MARKER_ATTR_NAME,
+            // exception != null ? exception.getClass().getCanonicalName() :
+            // null);
 
             List<TypeAndAttributes> lineEntries = entries.get(lineKey);
             if (lineEntries == null) {

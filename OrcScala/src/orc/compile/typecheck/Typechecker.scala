@@ -125,7 +125,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       (expr ->> newExpr, exprType)
     } catch {
       case e: TypeException => {
-        throw (e.setPosition(expr.pos))
+        throw (e.setPosition(expr.sourceTextRange.orNull))
       }
     }
   }
@@ -196,7 +196,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       }
     } catch {
       case e: TypeException => {
-        throw (e.setPosition(expr.pos))
+        throw (e.setPosition(expr.sourceTextRange.orNull))
       }
     }
   }
@@ -214,7 +214,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
         if (d.body.freevars contains d.name) {
           // We do not infer return types for recursive functions.
           val e = new UnspecifiedReturnTypeException()
-          e.setPosition(d.pos)
+          e.setPosition(d.sourceTextRange.orNull)
           throw e
         } else {
           val liftedTypeFormals = typeFormals map { u => new TypeVariable(u) }
@@ -243,12 +243,12 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
               }
               case Def(_, _, _, _, None, _) => {
                 val e = new UnspecifiedArgTypesException()
-                e.setPosition(d.pos)
+                e.setPosition(d.sourceTextRange.orNull)
                 throw e
               }
               case Def(_, _, _, _, _, None) => {
                 val e = new UnspecifiedReturnTypeException()
-                e.setPosition(d.pos)
+                e.setPosition(d.sourceTextRange.orNull)
                 throw e
               }
             }

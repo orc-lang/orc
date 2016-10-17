@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,10 +15,8 @@ package orc
 
 import java.io.{ File, IOException }
 
-import scala.util.parsing.input.Position
-
 import orc.ast.oil.nameless.Expression
-import orc.compile.parse.OrcInputContext
+import orc.compile.parse.{ OrcInputContext, OrcSourceRange }
 import orc.error.OrcException
 import orc.error.compiletime.CompileLogger
 import orc.error.runtime.ExecutionException
@@ -77,7 +75,7 @@ trait Schedulable extends Runnable {
     */
   def onSchedule() {}
 
-  /** Invoked after this schedulable unit has been run by the scheduler and 
+  /** Invoked after this schedulable unit has been run by the scheduler and
     * has completed (successfully or not). It is run in the same thread that
     * executed the unit.
     */
@@ -114,7 +112,7 @@ trait Handle {
   def halt: Unit
   def !!(e: OrcException): Unit
 
-  def callSitePosition: Position
+  def callSitePosition: Option[OrcSourceRange]
   def hasRight(rightName: String): Boolean
 
   def isLive: Boolean

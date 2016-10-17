@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -105,12 +105,16 @@ class Execution(
     inhabitants map { m =>
       sb.append(m)
       sb.append(" at ")
-      sb.append(m.sourcePosition)
-      sb.append(":\n")
-      sb.append(m.sourcePosition.longString)
-      val callPoints = m.getStack.toList collect { case f: FunctionFrame => f.callpoint.pos }
+      sb.append(m.sourcePosition.getOrElse("<unknown location>"))
+      if (m.sourcePosition.isDefined) {
+        sb.append(":\n")
+        sb.append(m.sourcePosition.get.lineContentWithCaret)
+      } else {
+        sb.append("\n")
+      }
+      val callPoints = m.getStack.toList collect { case f: FunctionFrame => f.callpoint.sourceTextRange }
       sb.append('\n')
-      callPoints map { p => sb.append("\tcalled at " + p + "\n") }
+      callPoints map { p => sb.append("\tcalled at " + p.getOrElse("<unknown location>") + "\n") }
       sb.append('\n')
     }
     sb.append("Group tree:\n")

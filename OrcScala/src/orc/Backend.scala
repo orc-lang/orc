@@ -63,7 +63,7 @@ trait Compiler[+CompiledCode] {
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
     val file = new File(descr)
-    override val reader = orc.compile.parse.OrcReader(new BufferedReader(javaReader), descr)
+    override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
     override def toURI = file.toURI
     override def toURL = toURI.toURL
   }

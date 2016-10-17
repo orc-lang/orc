@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 19, 2009.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,10 +15,9 @@ package orc.error.compiletime;
 
 import java.io.PrintWriter;
 
-import scala.util.parsing.input.Position;
-
 import orc.ast.AST;
 import orc.compile.parse.OrcInputContext;
+import orc.compile.parse.OrcSourceRange;
 
 /**
  * A CompileMessageRecorder that writes messages to a PrintWriter (such as one
@@ -67,25 +66,25 @@ public class PrintWriterCompileLogger implements CompileLogger {
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode, final Throwable exception) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode, final Throwable exception) {
 
         maxSeverity = severity.ordinal() > maxSeverity.ordinal() ? severity : maxSeverity;
 
-        if (location != null) {
-            outWriter.println(location.toString() + ": " + message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : ""));
-            outWriter.println(location.longString());
+        if (location != null && location.isDefined()) {
+            outWriter.println(location.get().toString() + ": " + message + (exception instanceof CompilationException ? " [[OrcWiki:" + exception.getClass().getSimpleName() + "]]" : ""));
+            outWriter.println(location.get().lineContentWithCaret());
         } else {
             outWriter.println("<undefined position>: " + message);
         }
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final Throwable exception) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final Throwable exception) {
         recordMessage(severity, code, message, location, null, exception);
     }
 
     @Override
-    public void recordMessage(final Severity severity, final int code, final String message, final Position location, final AST astNode) {
+    public void recordMessage(final Severity severity, final int code, final String message, final scala.Option<OrcSourceRange> location, final AST astNode) {
         recordMessage(severity, code, message, location, astNode, null);
     }
 

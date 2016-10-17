@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jun 9, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,20 +12,13 @@
 //
 package orc.lib.str
 
-import orc.values.sites.TotalSite
-import orc.values.sites.TypedSite
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.compile.parse.OrcLiteralParser
+import orc.ast.ext.{ Constant, Expression, ListExpr, RecordExpr, TupleExpr }
+import orc.compile.parse.{ OrcLiteralParser, ToTextRange }
 import orc.error.compiletime.ParsingException
-import orc.ast.ext.Expression
-import orc.ast.ext.Constant
-import orc.ast.ext.ListExpr
-import orc.ast.ext.TupleExpr
-import orc.ast.ext.RecordExpr
-import orc.values.OrcTuple
-import orc.values.OrcRecord
-import orc.types._
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
+import orc.types.{ SimpleFunctionType, StringType, Top, Type }
+import orc.values.{ OrcRecord, OrcTuple }
+import orc.values.sites.{ TotalSite, TypedSite }
 
 object Read extends TotalSite with TypedSite {
   def evaluate(args: List[AnyRef]): AnyRef = {
@@ -33,7 +26,7 @@ object Read extends TotalSite with TypedSite {
       case List(s: String) => {
         OrcLiteralParser(s) match {
           case r: OrcLiteralParser.SuccessT[_] => r.get.asInstanceOf[Expression]
-          case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg + " when reading \"" + s + "\"", n.next.pos)
+          case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg + " when reading \"" + s + "\"", ToTextRange(n.next.pos))
         }
       }
       case List(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")

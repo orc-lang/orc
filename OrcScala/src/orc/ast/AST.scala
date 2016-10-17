@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 27, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,16 +13,26 @@
 
 package orc.ast
 
-import orc.error.OrcException
 import scala.collection.mutable.{ ArrayBuffer, Buffer }
-import scala.util.parsing.input.{ NoPosition, Position, Positional }
 
-trait AST extends Positional {
+import orc.compile.parse.OrcSourceRange
+
+trait AST {
+  /** The source position (range) of this AST node, initially set to undefined. */
+  var sourceTextRange: Option[OrcSourceRange] = None
+
+  /** If current source range is undefined, update it with given position `newRange`
+    * @return  the object itself
+    */
+  def fillSourceTextRange(newRange: Option[OrcSourceRange]): this.type = {
+    if (!sourceTextRange.isDefined) sourceTextRange = newRange
+    this
+  }
 
   /** Metadata transfer.
     */
   def ->>[B <: AST](that: B): B = {
-    that.pushDownPosition(this.pos)
+    that.pushDownPosition(this.sourceTextRange)
     transferOptionalVariableName(this, that)
     that
   }
@@ -38,12 +48,17 @@ trait AST extends Positional {
     *
     * If either position is undefined, choose the defined one.
     */
-  def takeEarlierPos[B <: AST](that: B): this.type = {
-    (this.pos, that.pos) match {
-      case (NoPosition, NoPosition) => {}
-      case (NoPosition, p) => this.pushDownPosition(p)
-      case (p, NoPosition) => this.pushDownPosition(p)
-      case (thisp, thatp) => if (thatp < thisp) { this.pushDownPosition(thatp) }
+  def aggregatePosWith[B <: AST](that: B): this.type = {
+    (this.sourceTextRange.isDefined, that.sourceTextRange.isDefined) match {
+      case (false, false) => {}
+      case (false, true) => pushDownPosition(that.sourceTextRange)
+      case (true, false) => pushDownPosition(this.sourceTextRange)
+      case (true, true) => {
+        assert(this.sourceTextRange.get.start.resource == that.sourceTextRange.get.start.resource && this.sourceTextRange.get.end.resource == that.sourceTextRange.get.end.resource, "aggregatePosWith with differing resources")
+        val minStart = if (this.sourceTextRange.get.start <= that.sourceTextRange.get.start) this.sourceTextRange.get.start else that.sourceTextRange.get.start
+        val maxEnd = if (this.sourceTextRange.get.end >= that.sourceTextRange.get.end) this.sourceTextRange.get.start else that.sourceTextRange.get.start
+        pushDownPosition(Some(new OrcSourceRange((minStart, maxEnd))))
+      }
     }
     this
   }
@@ -51,13 +66,10 @@ trait AST extends Positional {
   /** Set source location at this node and propagate
     * the change to any children without source locations.
     */
-  def pushDownPosition(p: Position): this.type = {
-    this.pos match {
-      case NoPosition => {
-        this.setPos(p)
-        this.subtrees map { _.pushDownPosition(p) }
-      }
-      case _ => {}
+  def pushDownPosition(p: Option[OrcSourceRange]): this.type = {
+    if (!this.sourceTextRange.isDefined) {
+      this.fillSourceTextRange(p)
+      this.subtrees map { _.pushDownPosition(p) }
     }
     this
   }
@@ -119,7 +131,7 @@ trait AST extends Positional {
   def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
 
   def dump(prefix: String = ""): this.type = {
-    Console.println(prefix + getClass().getCanonicalName() + " at " + pos + ": " + toString())
+    Console.println(prefix + getClass().getCanonicalName() + " at " + sourceTextRange + ": " + toString())
     subtrees foreach { _.dump(prefix + "  ") }
     this
   }

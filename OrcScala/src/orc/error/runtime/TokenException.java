@@ -2,7 +2,7 @@
 // TokenException.java -- Java class TokenException
 // Project OrcScala
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,7 @@
 
 package orc.error.runtime;
 
-import scala.util.parsing.input.Position;
+import orc.compile.parse.OrcSourceRange;
 
 /**
  * A localized failure at runtime. Errors of this type cause the executing token
@@ -26,7 +26,7 @@ import scala.util.parsing.input.Position;
 public abstract class TokenException extends ExecutionException {
     private static final long serialVersionUID = -9019214813154694088L;
 
-    public Position[] backtrace = new Position[0];
+    public OrcSourceRange[] backtrace = new OrcSourceRange[0];
 
     public TokenException(final String message) {
         super(message);
@@ -37,8 +37,8 @@ public abstract class TokenException extends ExecutionException {
     }
 
     /**
-     * @return 
-     *         "position: ClassName: detailMessage (newline) position.longString [if available] (newline) Orc stack trace..."
+     * @return
+     *         "position: ClassName: detailMessage (newline) position.lineContentWithCaret [if available] (newline) Orc stack trace..."
      */
     @Override
     public String getMessageAndDiagnostics() {
@@ -51,17 +51,17 @@ public abstract class TokenException extends ExecutionException {
      */
     public String getOrcStacktraceAsString() {
         final StringBuilder sb = new StringBuilder();
-        for (final Position t : backtrace) {
+        for (final OrcSourceRange t : backtrace) {
             sb.append("\tcalled at " + t + "\n");
         }
         return sb.toString();
     }
 
-    public void setBacktrace(@SuppressWarnings("hiding") final Position[] backtrace) {
+    public void setBacktrace(@SuppressWarnings("hiding") final OrcSourceRange[] backtrace) {
         this.backtrace = backtrace;
     }
 
-    public Position[] getBacktrace() {
+    public OrcSourceRange[] getBacktrace() {
         return backtrace;
     }
 }

@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 27, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@
 
 package orc.compile.translate
 
-import scala.collection.immutable.{HashMap, List, Map, Nil}
+import scala.collection.immutable.{ HashMap, List, Map, Nil }
 import scala.collection.mutable
 import scala.language.reflectiveCalls
 
@@ -22,13 +22,13 @@ import orc.ast.oil4c._
 import orc.ast.oil4c.named._
 import orc.ast.oil4c.named.Conversions._
 import orc.compile.translate.ClassForms.makeClassBody
-import orc.compile.translate.PrimitiveForms.{callEq, callIft, callIsCons, callIsNil, callRecordMatcher, callTupleArityChecker, makeConditional, makeDatatype, makeLet, makeList, makeNth, makeRecord, makeTuple, makeUnapply}
+import orc.compile.translate.PrimitiveForms._
 import orc.error.OrcException
 import orc.error.OrcExceptionExtension.extendOrcException
-import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException}
+import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException }
 import orc.lib.builtin
-import orc.values.{Field, Signal}
-import orc.values.sites.{JavaSiteForm, OrcSiteForm}
+import orc.values.{ Field, Signal }
+import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 
@@ -64,7 +64,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Call(target, gs) => {
         var expr = convert(target)
         for (g <- gs) {
-          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g) ; case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)")})
+          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g); case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)") })
         }
         expr
       }
@@ -133,7 +133,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
         try {
           val site = Constant(OrcSiteForm.resolve(sitename))
-          site.pushDownPosition(si.pos)
+          site.pushDownPosition(si.sourceTextRange)
           convert(body)(context + { (name, site) }, typecontext)
         } catch {
           case oe: OrcException => throw oe at e
@@ -142,9 +142,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Declare(ci @ ext.ClassImport(name, classname), body) => {
         try {
           val u = new BoundTypevar(Some(name))
-          u.pushDownPosition(ci.pos)
+          u.pushDownPosition(ci.sourceTextRange)
           val site = Constant(JavaSiteForm.resolve(classname))
-          site.pushDownPosition(ci.pos)
+          site.pushDownPosition(ci.sourceTextRange)
           val newbody = convert(body)(context + { (name, site) }, typecontext + { (name, u) })
           DeclareType(u, ClassType(classname), newbody)
         } catch {
@@ -199,8 +199,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
          *
          * This matches the type generated in Datatypes.scala.
          */
-        val p = if(names.size == 1) ext.VariablePattern(names.head)
-                               else ext.TuplePattern(names map { ext.VariablePattern(_) })
+        val p = if (names.size == 1) ext.VariablePattern(names.head)
+            else ext.TuplePattern(names map { ext.VariablePattern(_) })
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
 
@@ -238,9 +238,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert a list of extended AST def declarations to:
     *
-    *      a list of named OIL definitions
+    *     a list of named OIL definitions
     * and
-    *      a mapping from their string names to their new bound names
+    *     a mapping from their string names to their new bound names
     */
   def convertDefs(defs: List[ext.DefDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (List[Def], Map[String, BoundVar]) = {
 
@@ -256,8 +256,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val newdefs = for ((n, d) <- defsMap) yield {
       d ->> d.convert(namesMap(n), recursiveContext, typecontext)
     }
-
-
 
     (newdefs.toList, namesMap)
   }
@@ -287,9 +285,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert a list of type formal names to:
     *
-    *   A list of bound type formal variables
+    *  A list of bound type formal variables
     * and
-    *   A context mapping those names to those vars
+    *  A context mapping those names to those vars
     */
   def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
     var newTypeFormals: List[BoundTypevar] = Nil
@@ -306,16 +304,15 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     (newTypeFormals, formalsMap)
   }
 
-
   type Conversion = Expression => Expression
   val id: Conversion = { e => e }
 
   /** Convert an extended AST pattern to:
     *
-    *      A filtering conversion for the source expression
+    *     A filtering conversion for the source expression
     * and
-    *      A binding conversion for the target expression,
-    *      parameterized on the variable carrying the result
+    *     A binding conversion for the target expression,
+    *     parameterized on the variable carrying the result
     */
   def convertPattern(pat: ext.Pattern, bridge: BoundVar)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): (Conversion, Map[String, Argument], Conversion) = {
 

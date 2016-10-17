@@ -4,7 +4,7 @@
 //
 // Created by amshali on Jul 12, 2010.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,17 +13,18 @@
 
 package orc.ast.oil.xml
 
+import java.net.URI
+
 import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
 import scala.math.{ BigDecimal, BigInt }
-import scala.util.parsing.input.NoPosition
 import scala.xml.{ Elem, MinimizeMode, Node }
 import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.ast.hasOptionalVariableName
 import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, ClassType, Constant, DeclareDefs, DeclareType, Def, Expression, FunctionType, HasType, Hole, ImportedType, LateBind, Limit, NamelessAST, Otherwise, Parallel, RecordType, Sequence, Stop, Top, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
-import orc.compile.parse.PositionWithFilename
+import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException
 
@@ -38,12 +39,35 @@ object OrcXML {
       val ast = f(xml)
 
       // Extract position information, if available
-      (xml \ "@pos").text.split(":").toList match {
-        case List(file, line, col) => {
+      (xml \ "@pos").text.split("-").toList.map({ _.split(":").toList }) match {
+        case List(List(file, line, col)) => {
           val l = Integer.parseInt(line)
           val c = Integer.parseInt(col)
-          val pos = new PositionFilenameLineCol(file, l, c)
-          ast.setPos(pos)
+          val pos = new PlaceholderSourceRange(file, l, c, file, l, c)
+          ast.fillSourceTextRange(Some(pos))
+        }
+        case List(List(file, line, colStart), List(colEnd)) => {
+          val l = Integer.parseInt(line)
+          val cs = Integer.parseInt(colStart)
+          val ce = Integer.parseInt(colEnd)
+          val pos = new PlaceholderSourceRange(file, l, cs, file, l, ce)
+          ast.fillSourceTextRange(Some(pos))
+        }
+        case List(List(file, lineStart, colStart), List(lineEnd, colEnd)) => {
+          val ls = Integer.parseInt(lineStart)
+          val le = Integer.parseInt(lineEnd)
+          val cs = Integer.parseInt(colStart)
+          val ce = Integer.parseInt(colEnd)
+          val pos = new PlaceholderSourceRange(file, ls, cs, file, le, ce)
+          ast.fillSourceTextRange(Some(pos))
+        }
+        case List(List(fileStart, lineStart, colStart), List(fileEnd, lineEnd, colEnd)) => {
+          val ls = Integer.parseInt(lineStart)
+          val le = Integer.parseInt(lineEnd)
+          val cs = Integer.parseInt(colStart)
+          val ce = Integer.parseInt(colEnd)
+          val pos = new PlaceholderSourceRange(fileStart, ls, cs, fileEnd, le, ce)
+          ast.fillSourceTextRange(Some(pos))
         }
         case _ => {}
       }
@@ -69,10 +93,10 @@ object OrcXML {
 
       // Get position information, if available
       val posAttribute =
-        ast.pos match {
-          case NoPosition => scala.xml.Null
-          case p => new UnprefixedAttribute("pos", p.toString, scala.xml.Null)
-        }
+        if (ast.sourceTextRange.isEmpty)
+          scala.xml.Null
+        else
+          new UnprefixedAttribute("pos", ast.sourceTextRange.get.toString, scala.xml.Null)
 
       // Get optional name information, if applicable and available
       val nameAttribute =
@@ -328,9 +352,40 @@ object OrcXML {
     }
   }
 
-  class PositionFilenameLineCol(override val filename: String, override val line: Int, override val column: Int) extends PositionWithFilename with Serializable {
-    override protected def lineContents = ""
-    override def toString = filename + ":" + line + ":" + column
+  /** An OrcInputContext that can only report its name. */
+  class PlaceholderResource(override val descr: String) extends OrcInputContext {
+    override def hashCode = descr.hashCode
+    override def equals(that: Any) = that match {
+      case thatPR: PlaceholderResource => this.descr == thatPR.descr
+      case _ => false
+    }
+
+    private def stubbed() = throw new UnsupportedOperationException("PlaceholderResource cannot perform this operation")
+
+    override val reader = null
+    override def toURI = stubbed()
+    override def toURL = stubbed()
+    override protected def resolve(baseURI: URI, pathElements: String*) = stubbed()
+    override def newInputFromPath(pathElements: String*) = stubbed()
+    override def lineColForCharNumber(charNum: CharacterNumber) = (0, 0) //stubbed()
+    override def lineText(startLineNum: LineNumber, endLineNum: LineNumber) = stubbed()
+    override def lineText(lineNum: LineNumber) = stubbed()
+  }
+
+  /** An OrcSourcePosition that only knows its filename, line, and column. */
+  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 128 + (column - 1)) {
+    override protected def getLineCol() = (line, column)
+    override def lineContent: String = ""
+    override def lineContentWithCaret = ""
+  }
+
+  /** An OrcSourceRange made of two PlaceholderPositions. */
+  class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
+      extends OrcSourceRange(
+        (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))
+      ) {
+    override def lineContent: String = ""
+    override def lineContentWithCaret = ""
   }
 
   @throws(classOf[OilParsingException])

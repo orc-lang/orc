@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 5, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,8 +17,7 @@ import orc.lib.builtin
 import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object ClassForms {
 
@@ -46,7 +45,7 @@ object ClassForms {
         (d, call)
       }
     val classRecord = new ext.RecordExpr(members.toList)
-    ext.Parallel(ext.Sequential(body, None, ext.Stop()), classRecord).pushDownPosition(body.pos)
+    ext.Parallel(ext.Sequential(body, None, ext.Stop()), classRecord).pushDownPosition(body.sourceTextRange)
   }
 
 }

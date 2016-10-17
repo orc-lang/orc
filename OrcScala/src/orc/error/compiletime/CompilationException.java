@@ -2,7 +2,7 @@
 // CompilationException.java -- Java class CompilationException
 // Project OrcScala
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -10,8 +10,6 @@
 //
 
 package orc.error.compiletime;
-
-import scala.util.parsing.input.NoPosition$;
 
 import orc.error.OrcException;
 import orc.error.compiletime.CompileLogger.Severity;
@@ -58,12 +56,12 @@ public abstract class CompilationException extends OrcException {
     }
 
     /**
-     * @return "position: detailMessage (newline) position.longString"
+     * @return "position: detailMessage (newline) position.lineContentWithCaret"
      */
     @Override
     public String getMessageAndPositon() {
-        if (getPosition() != null && !(getPosition() instanceof NoPosition$)) {
-            return getPosition().toString() + ": " + getLocalizedMessage() + (getPosition().longString().equals("\n^") ? "" : "\n" + getPosition().longString());
+        if (getPosition() != null) {
+            return getPosition().toString() + ": " + getLocalizedMessage() + (getPosition().lineContentWithCaret().equals("\n^") ? "" : "\n" + getPosition().lineContentWithCaret());
         } else {
             return getLocalizedMessage();
         }

@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -57,7 +57,7 @@ class Token protected (
 
   def runtime: OrcRuntime = group.runtime
 
-  def sourcePosition = node.pos
+  def sourcePosition = node.sourceTextRange
 
   def options = group.options
 
@@ -83,7 +83,7 @@ class Token protected (
   /*
    * On creation: Add a token to its group if it is not halted or killed.
    * 
-   * All initialization that must occure before run() executes must happen 
+   * All initialization that must occur before run() executes must happen 
    * before this point, because once the token is added to a group it may 
    * run at any time.
    * 
@@ -371,23 +371,23 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)){ _ & _ }
+        val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
           val candidateDestinations = {
-              if (intersectLocs.nonEmpty) {
-                intersectLocs
+            if (intersectLocs.nonEmpty) {
+              intersectLocs
+            } else {
+              val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)) { _ & _ }
+              if (intersectPermittedLocs.nonEmpty) {
+                intersectPermittedLocs
               } else {
-                val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)){ _ & _ }
-                if (intersectPermittedLocs.nonEmpty) {
-                  intersectPermittedLocs
-                } else {
-                  throw new NoLocationAvailable(s+:actuals)
-                }
+                throw new NoLocationAvailable(s +: actuals)
               }
+            }
           }
           val destination = pickLocation(candidateDestinations)
-              dOrcExecution.sendToken(this, destination)
-              return
+          dOrcExecution.sendToken(this, destination)
+          return
         }
       }
       case _ => /* */
@@ -643,10 +643,10 @@ class Token protected (
   }
 
   def !!(e: OrcException) {
-    e.setPosition(node.pos)
+    e.setPosition(node.sourceTextRange.orNull)
     e match {
       case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
-        val callPoints = stack.toList collect { case f: FunctionFrame => f.callpoint.pos }
+        val callPoints = stack.toList collect { case f: FunctionFrame => f.callpoint.sourceTextRange.orNull }
         te.setBacktrace(callPoints.toArray)
       }
       case _ => {} // Not a TokenException; no need to collect backtrace

@@ -2,7 +2,7 @@
 // TypeException.java -- Java class TypeException
 // Project OrcScala
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,8 +11,7 @@
 
 package orc.error.compiletime.typing;
 
-import scala.util.parsing.input.Position;
-
+import orc.compile.parse.OrcSourceRange;
 import orc.error.compiletime.CompilationException;
 
 public abstract class TypeException extends CompilationException {
@@ -30,7 +29,7 @@ public abstract class TypeException extends CompilationException {
         super(message, cause);
     }
 
-    public TypeException(final String message, final Position location) {
+    public TypeException(final String message, final OrcSourceRange location) {
         super(message);
         setPosition(location);
     }

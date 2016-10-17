@@ -2,7 +2,7 @@
 // CompileLogger.java -- Java interface CompileLogger
 // Project OrcScala
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,10 +11,9 @@
 
 package orc.error.compiletime;
 
-import scala.util.parsing.input.Position;
-
 import orc.ast.AST;
 import orc.compile.parse.OrcInputContext;
+import orc.compile.parse.OrcSourceRange;
 
 /**
  * Interface to environment's message mechanism for compiler diagnostics. This
@@ -100,14 +99,14 @@ public interface CompileLogger {
      *            is supported by the environment}
      * @param message String localized message specifically describing problem
      *            for the complier user
-     * @param location {@link Position} where problem occurred. Indicate unknown
-     *            location with a partially filled Position.
+     * @param location {@link OrcSourceRange} where problem occurred. Indicate
+     *            unknown location with null or scala.None.
      * @param astNode {@link AST} subtree containing problem, or null if not
      *            applicable or not available.
      * @param exception {@link Throwable} indicating problem, or null if not
      *            applicable or not available.
      */
-    public void recordMessage(Severity severity, int code, String message, Position location, AST astNode, Throwable exception);
+    public void recordMessage(Severity severity, int code, String message, scala.Option<OrcSourceRange> location, AST astNode, Throwable exception);
 
     /**
      * Convenience method, equivalent to
@@ -118,12 +117,12 @@ public interface CompileLogger {
      *            is supported by the environment}
      * @param message String localized message specifically describing problem
      *            for the complier user
-     * @param location {@link Position} where problem occurred. Indicate unknown
-     *            location with a partially filled Position.
+     * @param location {@link OrcSourceRange} where problem occurred. Indicate
+     *            unknown location with null or scala.None.
      * @param exception {@link Throwable} indicating problem, or null if not
      *            applicable or not available.
      */
-    public void recordMessage(Severity severity, int code, String message, Position location, Throwable exception);
+    public void recordMessage(Severity severity, int code, String message, scala.Option<OrcSourceRange> location, Throwable exception);
 
     /**
      * Convenience method, equivalent to
@@ -134,12 +133,12 @@ public interface CompileLogger {
      *            is supported by the environment}
      * @param message String localized message specifically describing problem
      *            for the complier user
-     * @param location {@link Position} where problem occurred. Indicate unknown
-     *            location with a partially filled Position.
+     * @param location {@link OrcSourceRange} where problem occurred. Indicate
+     *            unknown location with null or scala.None.
      * @param astNode {@link AST} subtree containing problem, or null if not
      *            applicable or not available.
      */
-    public void recordMessage(Severity severity, int code, String message, Position location, AST astNode);
+    public void recordMessage(Severity severity, int code, String message, scala.Option<OrcSourceRange> location, AST astNode);
 
     /**
      * Convenience method, equivalent to

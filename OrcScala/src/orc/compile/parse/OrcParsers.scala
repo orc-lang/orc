@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2014 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,19 +13,18 @@
 
 package orc.compile.parse
 
-import scala.language.{ implicitConversions, postfixOps }
-import scala.util.parsing.input.Reader
-import scala.util.parsing.combinator.syntactical._
-import scala.util.parsing.input.Position
 import java.io.IOException
-import orc.ast.AST
+
+import scala.{ BigDecimal, BigInt }
+import scala.language.{ implicitConversions, postfixOps }
+import scala.util.parsing.combinator.syntactical.StandardTokenParsers
+
 import orc.OrcCompilerRequires
-import orc.ast.ext.ConsPattern
 import orc.ast.ext._
-import orc.util.SynchronousThreadExec
 import orc.compile.CompilerOptions
-import orc.error.compiletime.IncludeFileException
 import orc.error.OrcException
+import orc.error.compiletime.IncludeFileException
+import orc.util.SynchronousThreadExec
 
 /** Mix-in for result types from Orc parsers
   *
@@ -57,7 +56,7 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
     //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
     SynchronousThreadExec("Orc Parser Thread", {
       val parsers = new OrcParsers(null, null, null)
-      val tokens = new parsers.lexical.Scanner(s)
+      val tokens = new parsers.lexical.Scanner(new OrcStringInputContext(s).reader)
       parsers.phrase(parsers.parserForReadSite)(tokens)
     })
   }
@@ -404,11 +403,15 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     */
   def !@[U](x: Parser[U]): Parser[U] =
     Parser { in =>
-      val pos = in.pos;
+      val startPos = ToTextRange(in.pos)
       try {
         x(in)
       } catch {
-        case e: OrcException => throw e.setPosition(pos)
+        case e: OrcException => {
+          val endPos = ToTextRange(in.pos)
+          val parsedRange = new OrcSourceRange((startPos.start, endPos.end))
+          throw e.setPosition(parsedRange)
+        }
       }
     }
 

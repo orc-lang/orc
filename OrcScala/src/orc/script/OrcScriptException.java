@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 3, 2010.
 //
-// Copyright (c) 2010 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,9 +18,7 @@ import java.io.PrintWriter;
 
 import javax.script.ScriptException;
 
-import scala.util.parsing.input.Position;
-
-import orc.compile.parse.PositionWithFilename;
+import orc.compile.parse.OrcSourceRange;
 import orc.error.OrcException;
 
 /**
@@ -44,15 +42,10 @@ public class OrcScriptException extends ScriptException {
     }
 
     @Override
-    public int getColumnNumber() {
-        return orcE.getPosition().column();
-    }
-
-    @Override
     public String getFileName() {
-        final Position pos = orcE.getPosition();
-        if (pos instanceof PositionWithFilename) {
-            return ((PositionWithFilename) pos).filename();
+        final OrcSourceRange pos = orcE.getPosition();
+        if (pos != null) {
+            return pos.start().resource().descr();
         } else {
             return "";
         }
@@ -60,7 +53,22 @@ public class OrcScriptException extends ScriptException {
 
     @Override
     public int getLineNumber() {
-        return orcE.getPosition().line();
+      final OrcSourceRange pos = orcE.getPosition();
+      if (pos != null) {
+          return pos.start().line();
+      } else {
+          return -1;
+      }
+    }
+
+    @Override
+    public int getColumnNumber() {
+      final OrcSourceRange pos = orcE.getPosition();
+      if (pos != null) {
+          return pos.start().column();
+      } else {
+          return -1;
+      }
     }
 
     @Override

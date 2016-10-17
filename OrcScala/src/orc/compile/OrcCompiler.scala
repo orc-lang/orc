@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,34 +13,34 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, IOException, PrintWriter, Writer, FileOutputStream }
+import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, IOException }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
-import orc.{ OrcCompilationOptions, OrcCompiler }
-import orc.compile.optimize._
-import orc.compile.parse.{ OrcNetInputContext, OrcResourceInputContext, OrcInputContext, OrcProgramParser, OrcIncludeParser }
-import orc.compile.translate.Translator
-import orc.compile.typecheck.Typechecker
-import orc.error.compiletime._
-import orc.error.compiletime.CompileLogger.Severity
-import orc.error.OrcExceptionExtension._
-import orc.progress.{ NullProgressMonitor, ProgressMonitor }
-import orc.values.sites.SiteClassLoading
-import scala.collection.JavaConversions._
+
+import scala.collection.JavaConversions.{ asScalaBuffer, seqAsJavaList }
 import scala.compat.Platform.currentTime
-import orc.ast.oil.xml.OrcXML
-import orc.compile.translate.TranslateVclock
-import orc.OrcCompilerRequires
+
+import orc.{ OrcCompilationOptions, OrcCompiler, OrcCompilerRequires }
 import orc.ast.ext
-import orc.ast.oil4c.{ named => named4c }
 import orc.ast.oil.{ named => named5c }
-import orc.compile.translate.SplitPrune
+import orc.ast.oil.xml.OrcXML
+import orc.ast.oil4c.{ named => named4c }
+import orc.compile.optimize.{ FractionDefs, RemoveUnusedDefs, RemoveUnusedTypes }
+import orc.compile.parse.{ OrcIncludeParser, OrcInputContext, OrcNetInputContext, OrcProgramParser, OrcResourceInputContext, OrcSourceRange, ToTextRange }
+import orc.compile.translate.{ SplitPrune, TranslateVclock, Translator }
+import orc.compile.typecheck.Typechecker
+import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{ CompilationException, CompileLogger }
+import orc.error.compiletime.{ ContinuableSeverity, ParsingException, UnboundTypeVariableException, UnboundVariableException, UnguardedRecursionException }
+import orc.error.compiletime.CompileLogger.Severity
+import orc.progress.ProgressMonitor
+import orc.values.sites.SiteClassLoading
 
 /** Represents a configuration state for a compiler.
   */
 class CompilerOptions(val options: OrcCompilationOptions, val compileLogger: CompileLogger) {
 
   def reportProblem(exn: CompilationException with ContinuableSeverity) {
-    compileLogger.recordMessage(exn.severity, 0, exn.getMessage(), exn.getPosition(), exn)
+    compileLogger.recordMessage(exn.severity, 0, exn.getMessage(), Option(exn.getPosition()), exn)
   }
 
 }
@@ -99,7 +99,7 @@ trait CoreOrcCompilerPhases {
     val phaseName = "parse"
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
-      val topLevelSourcePos = source.reader.pos
+      val topLevelSourceStartPos = source.reader.pos.orcSourcePosition
       var includeFileNames = co.options.additionalIncludes
       if (co.options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
@@ -110,7 +110,7 @@ trait CoreOrcCompilerPhases {
         try {
           OrcIncludeParser(ic, co, CoreOrcCompilerPhases.this) match {
             case r: OrcIncludeParser.SuccessT[_] => r.get.asInstanceOf[OrcIncludeParser.ResultType]
-            case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+            case n: OrcIncludeParser.NoSuccess => throw new ParsingException(n.msg, ToTextRange(n.next.pos))
           }
         } finally {
           co.compileLogger.endDependency(ic);
@@ -118,9 +118,10 @@ trait CoreOrcCompilerPhases {
       }
       val progAst = OrcProgramParser(source, co, CoreOrcCompilerPhases.this) match {
         case r: OrcProgramParser.SuccessT[_] => r.get.asInstanceOf[OrcProgramParser.ResultType]
-        case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, n.next.pos)
+        case n: OrcProgramParser.NoSuccess => throw new ParsingException(n.msg, ToTextRange(n.next.pos))
       }
-      (includeAsts :\ progAst) { orc.ast.ext.Declare } setPos topLevelSourcePos
+      val topLevelSourceRange = new OrcSourceRange((topLevelSourceStartPos, source.reader.pos.orcSourcePosition))
+      (includeAsts :\ progAst) { orc.ast.ext.Declare } fillSourceTextRange Some(topLevelSourceRange)
     }
   }
 
@@ -173,7 +174,7 @@ trait CoreOrcCompilerPhases {
         val typechecker = new Typechecker(co.reportProblem)
         val (newAst, programType) = typechecker.typecheck(ast)
         val typeReport = "Program type checks as " + programType.toString
-        co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.pos, newAst)
+        co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, typeReport, newAst.sourceTextRange, newAst)
         newAst
       } else {
         ast
@@ -211,7 +212,7 @@ trait CoreOrcCompilerPhases {
   def outputIR[A](irNumber: Int) = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = s"Output IR #$irNumber"
     override def apply(co: CompilerOptions) = { ast =>
-      val irMask = 1 << (irNumber-1)
+      val irMask = 1 << (irNumber - 1)
       val echoIR = co.options.echoIR
       if ((echoIR & irMask) == irMask) {
         println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
@@ -279,7 +280,7 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
       if (compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal()) null else result
     } catch {
       case e: CompilationException =>
-        compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, e.getPosition(), null, e)
+        compileLogger.recordMessage(Severity.FATAL, 0, e.getMessage, Option(e.getPosition()), null, e)
         null
     } finally {
       compileLogger.endProcessing(source)
@@ -331,15 +332,15 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
     val file = new File(descr)
-    override val reader = orc.compile.parse.OrcReader(new BufferedReader(javaReader), descr)
+    override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
     override def toURI = file.toURI
     override def toURL = toURI.toURL
   }
 
-  @throws(classOf[IOException])
-  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
-    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
-  }
+  //  @throws(classOf[IOException])
+  //  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
+  //    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
+  //  }
 
   private object OrcNullInputContext extends OrcInputContext {
     override val descr = ""

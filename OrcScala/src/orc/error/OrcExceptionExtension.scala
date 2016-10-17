@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 16, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -30,7 +30,7 @@ object OrcExceptionExtension {
 case class ExtendedOrcException[E <: OrcException](e: E) {
 
   def at(ast: orc.ast.AST): E = {
-    e.setPosition(ast.pos);
+    e.setPosition(ast.sourceTextRange.orNull);
     e
   }
 

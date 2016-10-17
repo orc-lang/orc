@@ -25,8 +25,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 import scala.collection.JavaConversions;
-import scala.util.parsing.input.NoPosition$;
-import scala.util.parsing.input.OffsetPosition;
 
 import orc.ast.AST;
 import orc.ast.ext.ClassImport;
@@ -344,30 +342,30 @@ public class OrcContentProvider implements ITreeContentProvider {
          */
         @Override
         public int getOffset() {
-            if (astNode.pos() == null || astNode.pos() instanceof NoPosition$) {
+            if (astNode.sourceTextRange().isEmpty()) {
                 return -1;
             }
-            return ((OffsetPosition) astNode.pos()).offset();
+            return astNode.sourceTextRange().get().start().offset();
         }
 
         /**
          * Returns the length of the source code text corresponding to this tree
-         * node. Currently, this always 0 or unknown (-1).
+         * node.
          *
          * @return the length of the corresponding text or -1 if there is no
          *         valid text information
          */
         @Override
         public int getLength() {
-            if (astNode.pos() == null || astNode.pos() instanceof NoPosition$) {
+            if (astNode.sourceTextRange().isEmpty()) {
                 return -1;
             }
-            return 0;
+            return astNode.sourceTextRange().get().end().offset() - astNode.sourceTextRange().get().start().offset();
         }
 
         protected static void addSubtree(final OutlineTreeNode parent, final AST newSubtree) {
-            if (newSubtree == null || newSubtree.pos() instanceof NoPosition$) {
-                return; // NoPosition$ is confusing to the outline control
+            if (newSubtree == null || newSubtree.sourceTextRange().isEmpty()) {
+                return; // No position is confusing to the outline control
             }
             OutlineTreeNode currParent = parent;
             if (shouldShowInOutline(newSubtree)) {
