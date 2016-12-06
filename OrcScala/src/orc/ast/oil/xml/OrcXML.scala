@@ -372,8 +372,11 @@ object OrcXML {
     override def lineText(lineNum: LineNumber) = stubbed()
   }
 
-  /** An OrcSourcePosition that only knows its filename, line, and column. */
-  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 128 + (column - 1)) {
+  /** An OrcSourcePosition that only knows its filename, line, and column.
+    * PlaceholderPositions are assigned a synthetic (fake) offset for comparison purposes.
+    * PlaceholderPositions do not have any line content.
+    */
+  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 4096 + (column - 1)) {
     override protected def getLineCol() = (line, column)
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
