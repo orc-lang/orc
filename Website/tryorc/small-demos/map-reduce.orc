@@ -40,8 +40,9 @@ def write(datum) = datum
 -- doesn't respond in 1 second, call it again
 def retry(f) =
   lambda (a,b) = (
-    val (ok, value) = (true, f(a,b)) | (false, Rwait(1000))
-    if ok then value else retry(f)(a,b)
+    val opt = Some(f(a,b)) | (Rwait(1000) >> None)
+    opt >Some(value)> value |
+    opt >None> retry(f)(a,b)
   )
 
 -- The map phase reads data, maps it,
