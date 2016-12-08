@@ -38,9 +38,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   protected def followerLocations = runtimeLocationMap.values.filterNot({ _ == here }).asInstanceOf[Iterable[FollowerLocation]]
   protected def followerEntries = runtimeLocationMap.filterNot({ _._2 == here })
 
-  def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
+  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
 
-  def allLocations = runtimeLocationMap.values.toSet
+  override def allLocations = runtimeLocationMap.values.toSet
 
   protected def connectToFollowers() {
     val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))

@@ -35,7 +35,7 @@ import orc.run.core.Execution
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
     val followerExecutionNum: Int,
-    override val node: Expression,
+    node: Expression,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)

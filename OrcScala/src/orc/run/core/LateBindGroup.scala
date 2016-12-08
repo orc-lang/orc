@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,7 +25,7 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
   override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
 
   // Publishing is idempotent
-  def publish(t: Token, v: Option[AnyRef]) = synchronized {
+  override def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
       case RightSideUnknown(waitlist) => {
         state = RightSidePublished(v)
@@ -37,7 +37,7 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
     t.halt()
   }
 
-  def onHalt() = synchronized {
+  override def onHalt() = synchronized {
     state match {
       case RightSideUnknown(waitlist) => {
         state = RightSideSilent
@@ -73,7 +73,7 @@ class LateBindGroup(parent: Group) extends Subgroup(parent) with Blocker {
     }
   }
 
-  def check(t: Blockable) {
+  override def check(t: Blockable) {
     synchronized { state } match {
       case RightSidePublished(v) => t.awakeValue(v.get)
       case RightSideSilent => t.awakeStop()

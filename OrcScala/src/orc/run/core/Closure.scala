@@ -34,11 +34,9 @@ class Closure(
 
   def lexicalContext = closureGroup.lexicalContext
 
-  def check(t: Blockable) = closureGroup.check(t, index)
+  override def check(t: Blockable) = closureGroup.check(t, index)
 
   def read(t: Blockable) = closureGroup.read(t, index)
-
-  override val runtime = closureGroup.runtime
 
   override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
 }
@@ -82,7 +80,7 @@ class ClosureGroup(
     top
   }
   private def push(k: (Option[AnyRef] => Unit)) = stack = k :: stack
-  protected def pushContinuation(k: (Option[AnyRef] => Unit)) = push(k)
+  protected override def pushContinuation(k: (Option[AnyRef] => Unit)) = push(k)
 
   // State is used for the blocker side
   private var state: ClosureState = Started
@@ -122,7 +120,7 @@ class ClosureGroup(
 
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
     */
-  def run() = synchronized {
+  override def run() = synchronized {
     state match {
       case Started => {
         // Start the resolution process
@@ -180,8 +178,8 @@ class ClosureGroup(
     pop()(v) // Pop and call the old top of the stack on the value. The pop happens first. That's important.
   }
 
-  def awakeValue(v: AnyRef) = handleValue(Some(v))
-  def awakeStop() = handleValue(None)
+  override def awakeValue(v: AnyRef) = handleValue(Some(v))
+  override def awakeStop() = handleValue(None)
 
   def blockOn(b: Blocker) {
     assert(state != Resolved)

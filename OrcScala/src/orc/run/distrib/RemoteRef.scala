@@ -63,7 +63,6 @@ trait RemoteRefIdManager { self: DOrcExecution =>
   */
 class RemoteObjectRef(val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
   override type RemoteRefId = Long
-  override val runtime: OrcRuntime = ???
   override def check(t: Blockable): Unit = ???
 }
 

@@ -35,9 +35,9 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   protected var boundListenAddress: InetSocketAddress = null
   protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, PeerLocation]())
 
-  def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
+  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
 
-  def allLocations = runtimeLocationMap.values.toSet
+  override def allLocations = runtimeLocationMap.values.toSet
 
   def listen() {
     Logger.info(s"Listening on $listenAddress")
@@ -309,7 +309,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   val here = Here
 
   object Here extends PeerLocation {
-    def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
   }
 
 }
