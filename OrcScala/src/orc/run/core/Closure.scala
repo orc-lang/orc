@@ -22,7 +22,7 @@ import orc.util.BlockableMapExtension
   * @author dkitchin, amp
   */
 class Closure(
-  index: Int,
+  private[run] val index: Int,
   val closureGroup: ClosureGroup)
   extends Blocker {
 
@@ -142,6 +142,11 @@ class ClosureGroup(
       }
       case Resolved => throw new AssertionError("Closure scheduled in bad state: " + state)
     }
+  }
+
+  def isResolved = state match {
+    case Resolved => true
+    case _ => false
   }
 
   //// Blocker Implementation
