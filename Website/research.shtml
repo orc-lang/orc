@@ -91,7 +91,7 @@
 	David Kitchin, William R. Cook, and Jayadev Misra<br />
 	<a onclick="window.open(this.href,'_blank');return false;" class="venue" href="http://depend.cs.uni-sb.de/concur2006">Proc. of the International Conference on Concurrency Theory (CONCUR), 2006</a>.<br />
 	August 27-30, Bonn, Germany.<br />
-	Extended version: <a onclick="window.open(this.href,'_blank');return false;" href="https://www.cs.utexas.edu/ftp/pub/techreports/index/html/Abstracts.2006.html#TR-06-32">UTCS Technical Rerport TR-06-32</a></li>
+	Extended version: <a onclick="window.open(this.href,'_blank');return false;" href="ftp://ftp.cs.utexas.edu/pub/techreports/tr06-32.pdf">UTCS Technical Rerport TR-06-32</a></li>
 
 	<li><a onclick="window.open(this.href,'_blank');return false;" class="paper" href="papers/Semantics.Orc.pdf">A Tree Semantics of an Orchestration Language</a>
 	<a class="bibtex" href="papers/Semantics.Orc.bib">BibTeX</a>
