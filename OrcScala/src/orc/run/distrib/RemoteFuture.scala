@@ -27,7 +27,7 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   execution.remove(this) // Don't hold the execution open simply because this ref exists
 
   def onResult(v: Option[AnyRef]) = synchronized {
-    Logger.entering(getClass.getName, "onResult")
+    //Logger.entering(getClass.getName, "onResult")
     state match {
       case RightSideUnknown(waitlist) => {
         state = RightSidePublished(v)
@@ -43,14 +43,14 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   *
   * @author jthywiss
   */
-class RemoteFutureReader(g: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
+class RemoteFutureReader(val group: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
   def addReader(l: PeerLocation) = synchronized {
     readerLocations += l
     if (readerLocations.size == 1) {
-      g.read(this)
+      group.read(this)
     }
   }
 
@@ -61,14 +61,14 @@ class RemoteFutureReader(g: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId
   }
 
   override def awakeValue(v: AnyRef) = synchronized {
-    Logger.entering(getClass.getName, "awakeValue")
-    val dorcExecution = g.execution.asInstanceOf[DOrcExecution]
+    //Logger.entering(getClass.getName, "awakeValue")
+    val dorcExecution = group.execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
   override def awakeStop() = synchronized {
-    Logger.entering(getClass.getName, "awakeStop")
-    val dorcExecution = g.execution.asInstanceOf[DOrcExecution]
+    //Logger.entering(getClass.getName, "awakeStop")
+    val dorcExecution = group.execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
@@ -81,8 +81,8 @@ class RemoteFutureReader(g: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId
   override def unsetQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.unsetQuiescent() called; LateBindGroups don't call this on their blockables")
 
   override def run() {
-    Logger.entering(getClass.getName, "run")
-    g.check(this)
+    //Logger.entering(getClass.getName, "run")
+    group.check(this)
   }
 
 }
@@ -102,7 +102,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
   protected val waitingReadersUpdateLock = new Object()
 
   def ensureFutureIsRemotelyAccessibleAndGetId(g: LateBindGroup) = {
-    Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
+    //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     g match {
       case rg: RemoteFutureRef => rg.remoteRefId
       case _ => servingGroupsFuturesUpdateLock synchronized {
@@ -120,13 +120,17 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId) = {
-    waitingReadersUpdateLock synchronized {
-      if (!waitingReaders.contains(futureId)) {
-        val newFuture = new RemoteFutureRef(this, futureId)
-        waitingReaders.putIfAbsent(futureId, newFuture)
+    if (homeLocationForRemoteFutureId(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
+      servingFutures.get(futureId).group
+    } else {
+      waitingReadersUpdateLock synchronized {
+        if (!waitingReaders.contains(futureId)) {
+          val newFuture = new RemoteFutureRef(this, futureId)
+          waitingReaders.putIfAbsent(futureId, newFuture)
+        }
       }
+      waitingReaders.get(futureId)
     }
-    waitingReaders.get(futureId)
   }
 
   def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId) {
@@ -139,7 +143,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
-    Logger.entering(getClass.getName, "sendFutureResult")
+    //Logger.entering(getClass.getName, "sendFutureResult")
     readers foreach { _.send(DeliverFutureResultCmd(executionId, futureId, value)) }
   }
 
