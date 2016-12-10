@@ -390,7 +390,7 @@ class Token protected (
           return
         }
       }
-      case _ => /* */
+      case _ => /* Not a distributed execution */
     }
     //End of code needing refactoring
     s match {

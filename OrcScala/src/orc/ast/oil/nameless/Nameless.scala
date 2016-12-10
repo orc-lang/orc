@@ -154,9 +154,25 @@ sealed abstract class Argument extends Expression
 sealed case class Constant(value: AnyRef) extends Argument
 sealed case class Variable(index: Int) extends Argument with hasOptionalVariableName {
   require(index >= 0)
+  override def toString() = {
+    val s = scala.runtime.ScalaRunTime._toString(this)
+    if (optionalVariableName.isDefined) {
+      s.stripSuffix(")") + ",name=" + optionalVariableName.get + ")"
+    } else {
+      s
+    }
+  }
 }
 sealed case class UnboundVariable(name: String) extends Argument with hasOptionalVariableName {
   optionalVariableName = Some(name)
+  override def toString() = {
+    val s = scala.runtime.ScalaRunTime._toString(this)
+    if (optionalVariableName.isDefined) {
+      s.stripSuffix(")") + ",name=" + optionalVariableName.get + ")"
+    } else {
+      s
+    }
+  }
 }
 
 sealed abstract class Type extends NamelessAST with NamelessToNamed {

@@ -82,18 +82,18 @@ class Execution(
       currMember match {
         case t: Token => {
           /* Already dumped Token state, just print name/hashcode */
-          sb.append(t.getClass().getName())
+          sb.append(t.getClass.getName)
           sb.append('@')
           sb.append(Integer.toHexString(t.##))
           sb.append('\n')
         }
         case g: Group => {
-          sb.append(g.toString())
+          sb.append(g.toString)
           sb.append('\n')
           g.members map { printGroupMember(_, level + 1, sb) }
         }
         case _ => {
-          sb.append(currMember.toString())
+          sb.append(currMember.toString)
           sb.append('\n')
         }
       }

@@ -32,19 +32,19 @@ class RemoteGroupProxy(override val execution: Execution, val remoteProxyId: DOr
   override def checkAlive(): Boolean = ???
 
   override def publish(t: Token, v: Option[AnyRef]) = synchronized {
-    Logger.entering(getClass.getName, "publish", Seq(t, v))
+    //Logger.entering(getClass.getName, "publish", Seq(t, v))
     pubFunc(t, v)
     t.halt()
   }
 
   override def kill() = {
-    Logger.entering(getClass.getName, "kill")
+    //Logger.entering(getClass.getName, "kill")
     /* All RemoteGroupProxy kills come from the remote side */
     super.kill()
   }
 
   override def onHalt() {
-    Logger.entering(getClass.getName, "onHalt")
+    //Logger.entering(getClass.getName, "onHalt")
     if (!isKilled) onHaltFunc()
   }
 
@@ -74,7 +74,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** Remote group members all halted, so halt this. */
   def halt() = synchronized {
-    Logger.entering(getClass.getName, "halt")
+    //Logger.entering(getClass.getName, "halt")
     if (alive) {
       alive = false
       parent.remove(this)
@@ -83,7 +83,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** The group is killing its members; pass it on. */
   override def kill() = synchronized {
-    Logger.entering(getClass.getName, "kill")
+    //Logger.entering(getClass.getName, "kill")
     if (alive) {
       alive = false
       sendKillFunc()
@@ -101,7 +101,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
   override def checkAlive(): Boolean = synchronized { alive } && parent.checkAlive()
 
   def run() {
-    Logger.entering(getClass.getName, "run")
+    //Logger.entering(getClass.getName, "run")
     try {
       if (parent.isKilled()) { kill() }
     } catch {
