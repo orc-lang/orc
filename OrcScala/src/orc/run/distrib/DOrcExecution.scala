@@ -17,7 +17,7 @@ import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
 import orc.run.core.Execution
 
-/** Top level Group, associated with a program runnning in a dOrc runtime
+/** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
   * etc.
   *
@@ -25,7 +25,7 @@ import orc.run.core.Execution
   * behavior (Tokens, Groups, Frames, etc.).  External interaction (with the
   * environment) is the bailiwick of Orc Runtimes.
   *
-  * Am Execution (Distributer Orc progrm run) is identified by a execution ID
+  * An Execution (Distributer Orc program run) is identified by a execution ID
   * UUID. Each runtime participating in an execution is assigned an
   * unique-to-that-execution follower number.  (The leader runtime for an
   * execution uses "follower" number zero.)
