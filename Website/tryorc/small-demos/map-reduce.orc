@@ -42,7 +42,7 @@ def retry(f) =
   lambda (a,b) = (
     val opt = Some(f(a,b)) | (Rwait(1000) >> None)
     opt >Some(value)> value |
-    opt >None> retry(f)(a,b)
+    opt >None()> retry(f)(a,b)
   )
 
 -- The map phase reads data, maps it,
