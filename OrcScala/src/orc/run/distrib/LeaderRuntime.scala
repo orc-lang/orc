@@ -60,7 +60,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     connectToFollowers()
 
-    val programOil = OrcXML.astToXml(programAst).toString()
+    val programOil = OrcXML.astToXml(programAst).toString
     val thisExecutionId = DOrcExecution.freshExecutionId()
 
     Logger.fine(s"starting scheduler")
@@ -75,7 +75,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     roots.put(new WeakReference(root), ())
 
     /* Initial program token */
-    root.sendToken(new Token(programAst, root), runtimeLocationMap(1))
+    //root.sendToken(new Token(programAst, root), runtimeLocationMap(1))
+    val t = new Token(programAst, root)
+    schedule(t)
 
     Logger.exiting(getClass.getName, "run")
   }
