@@ -113,7 +113,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
               programs(xid).notifyOrc(event)
             }
             case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(followerLocation, movedToken)
-            case PublishGroupCmd(xid, gmpid, t, v) => programs(xid).publishInGroup(followerLocation, gmpid, t, v)
+            case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(followerLocation, gmpid, t)
             case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
             case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
@@ -180,7 +180,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   val here = Here
 
   object Here extends FollowerLocation(null) {
-    def send(message: OrcCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def send(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
   }
 
 }

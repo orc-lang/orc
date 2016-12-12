@@ -154,7 +154,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case RemovePeerCmd(peerRuntimeId) => removePeer(peerRuntimeId)
           case LoadProgramCmd(xid, oil, options) => loadProgram(leaderLocation, xid, oil, options)
           case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(leaderLocation, movedToken)
-          case PublishGroupCmd(xid, gmpid, t, v) => programs(xid).publishInGroup(leaderLocation, gmpid, t, v)
+          case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(leaderLocation, gmpid, t)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
@@ -186,7 +186,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         Logger.finest(s"Read ${msg}")
         msg match {
           case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(peerLocation, movedToken)
-          case PublishGroupCmd(xid, gmpid, t, v) => programs(xid).publishInGroup(peerLocation, gmpid, t, v)
+          case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(peerLocation, gmpid, t)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)

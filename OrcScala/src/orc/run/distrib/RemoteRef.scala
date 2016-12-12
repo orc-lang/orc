@@ -28,6 +28,7 @@ trait RemoteRef extends Blocker {
   val remoteRefId: RemoteRefId
   //  def get(): AnyRef
   //  def deallocRemote(): Unit
+  override def toString = super.toString + s"(remoteRefId=$remoteRefId)"
 }
 
 /** A mix-in to manage remote reference IDs
@@ -44,7 +45,9 @@ trait RemoteRefIdManager { self: DOrcExecution =>
   protected def homeLocationForRemoteRef(id: Long): PeerLocation = {
     val followerNum = id / 10000000000L
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
-    locationForFollowerNum(followerNum.toInt)
+    val home = locationForFollowerNum(followerNum.toInt)
+    assert(home != null, s"homeLocationFor $id should not be null")
+    home
   }
 
   def freshGroupProxyId(): GroupProxyId = freshRemoteRefId()
@@ -78,7 +81,7 @@ trait RemoteObjectManager { self: DOrcExecution =>
   protected val remotedObjectUpdateLock = new Object()
 
   def remoteIdForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
-    Logger.entering(getClass.getName, "idForObject")
+    //Logger.entering(getClass.getName, "idForObject")
     obj match {
       case ro: RemoteObjectRef => ro.remoteRefId
       case _ => remotedObjectUpdateLock synchronized {

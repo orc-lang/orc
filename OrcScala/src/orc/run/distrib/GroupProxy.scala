@@ -134,7 +134,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     group.add(rmtProxy)
     group.remove(token)
 
-    destination.send(HostTokenCmd(executionId, new TokenReplacement(token, node, rmtProxy.thisProxyId)))
+    destination.send(HostTokenCmd(executionId, new TokenReplacement(token, node, rmtProxy.thisProxyId, destination)))
   }
 
   def hostToken(origin: PeerLocation, movedToken: TokenReplacement) {
@@ -156,14 +156,15 @@ trait GroupProxyManager { self: DOrcExecution =>
     runtime.schedule(newToken)
   }
 
-  def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, v: Option[AnyRef]) {
-    destination.send(PublishGroupCmd(executionId, proxyId, new TokenReplacement(token, node, proxyId), v))
+  def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
+    Logger.finest(s"sendPublish: publish by token $token")
+    destination.send(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, node, proxyId, destination, pv)))
   }
 
-  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishingToken: TokenReplacement, v: Option[AnyRef]) {
-    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken, v))
+  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishingToken: PublishingTokenReplacement) {
+    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
-    val newToken = publishingToken.asPublishingToken(origin, node, newTokenGroup, v)
+    val newToken = publishingToken.asPublishingToken(origin, node, newTokenGroup)
     Logger.fine(s"scheduling $newToken")
     runtime.schedule(newToken)
   }
