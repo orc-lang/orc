@@ -98,7 +98,7 @@ class Token protected (
     try {
       val recursing = toStringRecusionGuard.get
       toStringRecusionGuard.set(java.lang.Boolean.TRUE)
-      super.toString + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, group=$group, clock=$clock)" else "")
+      super.toString + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, node.sourceTextRange=${node.sourceTextRange}, group=$group, clock=$clock)" else "")
     } finally {
       toStringRecusionGuard.remove()
     }
@@ -373,6 +373,7 @@ class Token protected (
       case dOrcExecution: DOrcExecution => {
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
+          orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
           val candidateDestinations = {
             if (intersectLocs.nonEmpty) {
               intersectLocs
@@ -385,6 +386,7 @@ class Token protected (
               }
             }
           }
+          orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
           val destination = pickLocation(candidateDestinations)
           dOrcExecution.sendToken(this, destination)
           return
