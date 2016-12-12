@@ -21,7 +21,7 @@ import orc.run.core.{ Binding, BindingFrame, BoundClosure, BoundFuture, BoundSto
   *
   * @author jthywiss
   */
-class TokenReplacementBase(token: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId, destination: PeerLocation) extends Serializable {
+abstract class TokenReplacementBase(token: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId, destination: PeerLocation) extends Serializable {
 
   override def toString = super.toString + s"(tokenProxyId=$tokenProxyId, astNodeIndex=${astNodeIndex.mkString(".")}, stackTop=${stack.headOption.getOrElse("")}, env=[${env.mkString("|")}])"
 
@@ -204,15 +204,15 @@ object AstNodeIndexing {
   *
   * @author jthywiss
   */
-protected abstract class PublishingValueReplacement() {
+protected abstract sealed class PublishingValueReplacement() {
   def unmarshalValue(execution: DOrcExecution): Option[AnyRef]
 }
 
-protected case class PublishingMarshaledValueReplacement(v: AnyRef) extends PublishingValueReplacement() {
+protected final case class PublishingMarshaledValueReplacement(v: AnyRef) extends PublishingValueReplacement() {
   override def unmarshalValue(execution: DOrcExecution) = Some(v)
 }
 
-protected case class PublishingRemoteValueReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends PublishingValueReplacement() {
+protected final case class PublishingRemoteValueReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends PublishingValueReplacement() {
   override def unmarshalValue(execution: DOrcExecution) = {
     execution.localObjectForRemoteId(remoteRemoteRefId) match {
       case Some(v) => Some(v)
@@ -224,7 +224,7 @@ protected case class PublishingRemoteValueReplacement(remoteRemoteRefId: RemoteO
   }
 }
 
-protected case object PublishingStopReplacement extends PublishingValueReplacement() {
+protected final case object PublishingStopReplacement extends PublishingValueReplacement() {
   override def unmarshalValue(execution: DOrcExecution) = None
 }
 
@@ -232,11 +232,11 @@ protected case object PublishingStopReplacement extends PublishingValueReplaceme
   *
   * @author jthywiss
   */
-protected abstract class BindingReplacement() {
+protected abstract sealed class BindingReplacement() {
   def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression): Binding
 }
 
-protected case class SerializableBindingReplacement(b: Binding with Serializable) extends BindingReplacement() {
+protected final case class SerializableBindingReplacement(b: Binding with Serializable) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     b match {
       case BoundValue(mn: DOrcMarshallingNotifications) => mn.unmarshalled()
@@ -246,7 +246,7 @@ protected case class SerializableBindingReplacement(b: Binding with Serializable
   }
 }
 
-protected case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends BindingReplacement() {
+protected final case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     execution.localObjectForRemoteId(remoteRemoteRefId) match {
       case Some(v) => BoundValue(v)
@@ -257,20 +257,20 @@ protected case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#R
   }
 }
 
-protected case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends BindingReplacement() {
+protected final case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     BoundFuture(execution.futureForId(bindingId))
   }
 }
 
-protected case class BoundClosureReplacement(index: Int, closureGroupReplacement: ClosureGroupReplacement) extends BindingReplacement() {
+protected final case class BoundClosureReplacement(index: Int, closureGroupReplacement: ClosureGroupReplacement) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     val cg = closureGroupReplacement.unmarshalClosureGroup(execution, origin, astRoot)
     BoundClosure(new Closure(index, cg))
   }
 }
 
-protected case class ClosureGroupReplacement(defNodesIndicies: List[Seq[Int]], env: Array[BindingReplacement]) {
+protected final case class ClosureGroupReplacement(defNodesIndicies: List[Seq[Int]], env: Array[BindingReplacement]) {
   @transient var cg: ClosureGroup = null
   def unmarshalClosureGroup(execution: DOrcExecution, origin: PeerLocation, ast: Expression) = synchronized {
     if (cg == null) {
@@ -283,7 +283,7 @@ protected case class ClosureGroupReplacement(defNodesIndicies: List[Seq[Int]], e
   }
 }
 
-protected object ClosureGroupReplacement {
+protected final object ClosureGroupReplacement {
   val closureGroupReplacements = new java.util.concurrent.ConcurrentHashMap[ClosureGroup, ClosureGroupReplacement]()
 }
 
@@ -291,24 +291,24 @@ protected object ClosureGroupReplacement {
   *
   * @author jthywiss
   */
-protected abstract class FrameReplacement() {
+protected abstract sealed class FrameReplacement() {
   def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression): Frame
 }
-protected case object EmptyFrameReplacement extends FrameReplacement() {
+protected final case object EmptyFrameReplacement extends FrameReplacement() {
   override def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression) = throw new AssertionError("EmptyFrameReplacement.asFrame called")
 }
-protected case class BindingFrameReplacement(n: Int) extends FrameReplacement() {
+protected final case class BindingFrameReplacement(n: Int) extends FrameReplacement() {
   override def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression) = BindingFrame(n, previous)
 }
-protected case class SequenceFrameReplacement(nodeAddr: Seq[Int]) extends FrameReplacement() {
+protected final case class SequenceFrameReplacement(nodeAddr: Seq[Int]) extends FrameReplacement() {
   override def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression) = SequenceFrame(AstNodeIndexing.lookupNodeInTree(astRoot, nodeAddr).asInstanceOf[Expression], previous)
 }
-protected case class FunctionFrameReplacement(callpointAddr: Seq[Int], env: Array[BindingReplacement]) extends FrameReplacement() {
+protected final case class FunctionFrameReplacement(callpointAddr: Seq[Int], env: Array[BindingReplacement]) extends FrameReplacement() {
   override def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression) = FunctionFrame(AstNodeIndexing.lookupNodeInTree(astRoot, callpointAddr).asInstanceOf[Expression], env.toList map { _.unmarshalBinding(execution, origin, astRoot) }, previous)
 }
-//  protected case class FutureFrameReplacement(k: (Option[AnyRef] => Unit)) extends FrameReplacement() {
+//  protected final case class FutureFrameReplacement(k: (Option[AnyRef] => Unit)) extends FrameReplacement() {
 //    def unmarshalFrame(execution: DOrcExecution, previous: Frame, astRoot: Expression) = FutureFrame(k, previous)
 //  }
-protected case object GroupFrameReplacement extends FrameReplacement() {
+protected final case object GroupFrameReplacement extends FrameReplacement() {
   override def unmarshalFrame(execution: DOrcExecution, origin: PeerLocation, previous: Frame, astRoot: Expression) = GroupFrame(previous)
 }
