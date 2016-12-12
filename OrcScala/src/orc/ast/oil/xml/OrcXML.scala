@@ -38,6 +38,8 @@ object OrcXML {
     def -->[B <: orc.ast.AST](f: Node => B) = {
       val ast = f(xml)
 
+      //FIXME: Move to orc.util.TetxRange
+      //FIXME: Make robust to filenames with - and :
       // Extract position information, if available
       (xml \ "@pos").text.split("-").toList.map({ _.split(":").toList }) match {
         case List(List(file, line, col)) => {
@@ -69,7 +71,7 @@ object OrcXML {
           val pos = new PlaceholderSourceRange(fileStart, ls, cs, fileEnd, le, ce)
           ast.fillSourceTextRange(Some(pos))
         }
-        case _ => {}
+        case _ => { /* Can't parse pos attribute, disregarding */ }
       }
 
       // Extract optional name information, if applicable and available
