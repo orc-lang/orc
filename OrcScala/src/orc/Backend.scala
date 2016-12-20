@@ -47,7 +47,7 @@ case object TokenInterpreterBackend extends BackendType {
   def it = this
 }
 
-/** This represents an abstract Orc compiler. It generates an opeque code object that can be
+/** This represents an abstract Orc compiler. It generates an opaque code object that can be
   * executed on a matching Runtime.
   *
   * @see Backend
@@ -85,14 +85,14 @@ trait Compiler[+CompiledCode] {
   * @author amp
   */
 trait Runtime[-CompiledCode] {
-  /** Execute <code>code</code> asynchrously. This call will return immediately.
-    * <code>k</code> will be called from many threads.
+  /** Execute <code>code</code> asynchronously. This call will return immediately.
+    * <code>eventHandler</code> will be called from many threads.
     */
   @throws(classOf[ExecutionException])
   def run(code: CompiledCode, eventHandler: OrcEvent => Unit): Unit
 
-  /** Execute <code>code</code> synchrously not returning until execution is complete.
-    * <code>k</code> will be called from many threads, but will not be called after
+  /** Execute <code>code</code> synchronously not returning until execution is complete.
+    * <code>eventHandler</code> will be called from many threads, but will not be called after
     * this call returns.
     */
   @throws(classOf[ExecutionException])
@@ -138,7 +138,7 @@ trait Backend[CompiledCode] {
   def serializer: Option[CodeSerializer[CompiledCode]]
 
   /** Create a new runtime instance using the given options. The runtime can be used to
-    * execute more than one program, but it's options cannot be changed.
+    * execute more than one program, but its options cannot be changed.
     */
   def createRuntime(options: OrcExecutionOptions): Runtime[CompiledCode]
 }

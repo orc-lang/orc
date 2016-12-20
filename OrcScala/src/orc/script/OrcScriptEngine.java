@@ -268,7 +268,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
 
     /**
      * @return The <code>Backend</code> which this <code>OrcScriptEngine</code>
-     *         uses to compile and rune the Orc script.
+     *         uses to compile and run the Orc script.
      */
     @SuppressWarnings("unchecked")
     Backend<CompiledCode> getBackend() {
