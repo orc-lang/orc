@@ -164,25 +164,46 @@ trait CmdLineParser {
   case class BooleanOpt(val getter: Function0[Boolean], val setter: (Boolean => Unit), override val shortName: Char, override val longName: String, override val argName: String = "BOOL", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(value.toBoolean) }
+    def setValue(value: String) {
+      try {
+        setter(value.toBoolean)
+      } catch {
+        case _: IllegalArgumentException => throw new UnrecognizedCmdLineOptArgException("expecting true or false", longName, value, CmdLineParser.this)
+      }
+    }
   }
 
   case class DoubleOpt(val getter: Function0[Double], val setter: (Double => Unit), override val shortName: Char, override val longName: String, override val argName: String = "DOUBLE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(value.toDouble) }
+    def setValue(value: String) {
+      try {
+        setter(value.toDouble)
+      } catch {
+        case _: NumberFormatException => throw new UnrecognizedCmdLineOptArgException("expecting a floating-point number", longName, value, CmdLineParser.this)
+      }
+    }
   }
 
   case class IntOpt(val getter: Function0[Int], val setter: (Int => Unit), override val shortName: Char, override val longName: String, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(value.toInt) }
+    def setValue(value: String) {
+      try {
+        setter(value.toInt)
+      } catch {
+        case _: NumberFormatException => throw new UnrecognizedCmdLineOptArgException("expecting a decimal integer", longName, value, CmdLineParser.this)
+      }
+    }
   }
 
   case class CharOpt(val getter: Function0[Char], val setter: (Char => Unit), override val shortName: Char, override val longName: String, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(value(0)) }
+    def setValue(value: String) {
+      if (value.length != 1) throw new UnrecognizedCmdLineOptArgException("expecting a single character", longName, value, CmdLineParser.this)
+      setter(value(0))
+    }
   }
 
   case class StringOpt(val getter: Function0[String], val setter: (String => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
@@ -313,7 +334,7 @@ trait CmdLineParser {
 }
 
 ////////
-// Error for mal-formed operand and option declarations
+// Error for malformed operand and option declarations
 ////////
 
 class MissingCmdLineOprdError(operandIndex: Int) extends Error("Command line operand number " + operandIndex + " not defined, but operand " + (operandIndex + 1) + " is")
@@ -332,6 +353,7 @@ class UnrecognizedCmdLineOptException(val optName: String, p: CmdLineParser) ext
 class MissingCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("missing option -- " + optName, p)
 class ExtraneousCmdLineOptArgException(val optName: String, optArg: String, p: CmdLineParser) extends CmdLineUsageException("option " + optName + " doesn't allow an argument", p)
 class MissingCmdLineOptArgException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("option requires an argument -- " + optName, p)
+class UnrecognizedCmdLineOptArgException(problemDesc: String, val optName: String, optArg: String, p: CmdLineParser) extends CmdLineUsageException("unrecognized argument to " + optName + " option -- " + optArg + ": " + problemDesc, p)
 
 ////////
 // Exception for command args that requests immediate termination of program with usage/help/version info.
