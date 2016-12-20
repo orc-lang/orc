@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 20, 2010.
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -25,6 +25,7 @@ import orc.util.CmdLineUsageException
 import orc.util.PrintVersionAndMessageException
 import orc.run.OrcDesktopEventAction
 import orc.ast.oil.xml.OrcXML
+import orc.util.UnrecognizedCmdLineOptArgException
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -152,7 +153,7 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   UnitOpt(() => echoOil, () => echoOil = true, ' ', "echo-oil", usage = "Write the compiled program in OIL format to stdout.")
 
-  IntOpt(() => echoIR, echoIR = _, ' ', "echo-ir", usage = "Write selected program intermetiate representations to the stdout. The argument is a bitmask. So, 0 means echo nothing, or -1 means echo all.")
+  IntOpt(() => echoIR, echoIR = _, ' ', "echo-ir", usage = "Write selected program intermediate representations to the stdout. The argument is a bitmask. So, 0 means echo nothing, or -1 means echo all.")
 
   FileOpt(() => oilOutputFile.getOrElse(null), f => oilOutputFile = Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
 
@@ -173,6 +174,6 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOpt(() => backend.toString, s =>
     backend = BackendType.fromStringOption(s) match {
       case Some(b) => b
-      case None => throw new IllegalArgumentException(s"The backend '$s' does not exist or is not supported.")
-    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed value: Token. Default is 'Token'")
+      case None => throw new UnrecognizedCmdLineOptArgException("Backend does not exist or is not supported.", "backend", s, this)
+    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
 }

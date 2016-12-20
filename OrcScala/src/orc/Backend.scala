@@ -4,7 +4,7 @@
 //
 // Created by Arthur Peters on Aug 28, 2013.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -24,13 +24,20 @@ import orc.error.compiletime.PrintWriterCompileLogger
 import java.io.PrintWriter
 import orc.error.runtime.ExecutionException
 import orc.progress.NullProgressMonitor
+import orc.ast.oil.nameless.Expression
 
 /** An enumeration over the supported backends.
   */
-sealed trait BackendType
+sealed trait BackendType {
+  def newBackend(): Backend[Expression]
+}
+
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
-    "token" -> TokenInterpreterBackend)
+    TokenInterpreterBackend.toString -> TokenInterpreterBackend,
+    DistributedBackendType.toString -> DistributedBackendType)
+
+  def knownBackendNames = stringToBackendType.keys
 
   def fromString(s: String) = {
     fromStringOption(s).getOrElse(TokenInterpreterBackend)
@@ -40,11 +47,16 @@ object BackendType {
   }
 }
 
-/** The standard token interpreter backend.
-  */
+/** The standard token interpreter's BackendType. */
 case object TokenInterpreterBackend extends BackendType {
-  override val toString = "Token"
-  def it = this
+  override val toString = "token"
+  override def newBackend(): Backend[Expression] = new StandardBackend()
+}
+
+/** The Distributed Orc BackendType. */
+case object DistributedBackendType extends BackendType {
+  override val toString = "distrib"
+  override def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be
