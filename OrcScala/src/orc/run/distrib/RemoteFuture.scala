@@ -14,13 +14,15 @@
 package orc.run.distrib
 
 import orc.error.OrcException
-import orc.run.core.{ Blockable, Blocker, LateBindGroup, RightSidePublished, RightSideUnknown }
+import orc.run.core.{ Blockable, Blocker, GraftGroup, ValuePublished, ValueUnknown }
+import orc.run.core.ReadableBlocker
+import orc.run.core.Execution
 
 /** A reference to an LateBindGroup value at another Location.
   *
   * @author jthywiss
   */
-class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends LateBindGroup(execution) with RemoteRef {
+class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends GraftGroup(execution) with RemoteRef {
   override type RemoteRefId = Long
 
   execution.sendReadFuture(remoteRefId)
@@ -29,8 +31,9 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   def onResult(v: Option[AnyRef]) = synchronized {
     //Logger.entering(getClass.getName, "onResult")
     state match {
-      case RightSideUnknown(waitlist) => {
-        state = RightSidePublished(v)
+      case ValueUnknown => {
+        // TODO: Dedup this with .publish
+        state = ValuePublished
         for (w <- waitlist) { runtime.schedule(w) }
       }
       case _ => {}
@@ -43,13 +46,14 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   *
   * @author jthywiss
   */
-class RemoteFutureReader(val group: LateBindGroup, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
+class RemoteFutureReader(val group: ReadableBlocker, val execution: Execution, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
   def addReader(l: PeerLocation) = synchronized {
     readerLocations += l
     if (readerLocations.size == 1) {
+      // TODO: Group is not readable at arbitrary points any more. 
       group.read(this)
     }
   }
@@ -62,13 +66,13 @@ class RemoteFutureReader(val group: LateBindGroup, futureId: RemoteFutureRef#Rem
 
   override def awakeValue(v: AnyRef) = synchronized {
     //Logger.entering(getClass.getName, "awakeValue")
-    val dorcExecution = group.execution.asInstanceOf[DOrcExecution]
+    val dorcExecution = execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
   override def awakeStop() = synchronized {
     //Logger.entering(getClass.getName, "awakeStop")
-    val dorcExecution = group.execution.asInstanceOf[DOrcExecution]
+    val dorcExecution = execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
@@ -82,6 +86,7 @@ class RemoteFutureReader(val group: LateBindGroup, futureId: RemoteFutureRef#Rem
 
   override def run() {
     //Logger.entering(getClass.getName, "run")
+    // TODO: groups don't support check any more. need to get the readable.
     group.check(this)
   }
 
@@ -94,14 +99,14 @@ class RemoteFutureReader(val group: LateBindGroup, futureId: RemoteFutureRef#Rem
 trait RemoteFutureManager { self: DOrcExecution =>
 
   // These two maps are inverses of each other (sorta)
-  protected val servingGroups = new java.util.concurrent.ConcurrentHashMap[LateBindGroup, RemoteFutureRef#RemoteRefId]
+  protected val servingGroups = new java.util.concurrent.ConcurrentHashMap[GraftGroup, RemoteFutureRef#RemoteRefId]
   protected val servingFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
   protected val servingGroupsFuturesUpdateLock = new Object()
 
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
   protected val waitingReadersUpdateLock = new Object()
 
-  def ensureFutureIsRemotelyAccessibleAndGetId(g: LateBindGroup) = {
+  def ensureFutureIsRemotelyAccessibleAndGetId(g: GraftGroup) = {
     //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     g match {
       case rg: RemoteFutureRef => rg.remoteRefId

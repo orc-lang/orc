@@ -13,6 +13,7 @@
 package orc.run.core
 
 import orc.OrcRuntime
+import scala.reflect.ClassTag
 
 /** A join point for waiting on multiple strict parameters.
   *
@@ -23,35 +24,68 @@ import orc.OrcRuntime
   *
   * @author dkitchin
   */
-class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends Blocker {
+abstract class JoinBase extends Blocker {
+  val params: List[Binding]
+  val waiter: Blockable
+  val runtime: OrcRuntime
 
   // TODO: Optimize the case where no parameter requires blocking.
 
   // Additional implementation will be needed to detect when a blocking step could be skipped,
   // for example, when a pruning group or closure is already bound.
 
-  val items = new Array[AnyRef](params.size)
+  val items = new Array[Binding](params.size)
   var state: JoinState = JoinInProgress(params.size)
 
-  override def toString = super.toString + s"(state=$state, waiter=$waiter)"
+  override def toString = super.toString + s"(state=$state, waiter=$waiter, ${params.mkString("[", ",", "]")}, ${items.mkString("[", ",", "]")})"
 
-  def set(index: Int, arg: AnyRef) = synchronized {
+  def set(index: Int, arg: Binding) = synchronized {
+    assert(items(index) == null)
     state match {
-      case JoinInProgress(n) if (n > 1) => {
+      case JoinInProgress(n) if (n > 0) => {
         items(index) = arg
         state = JoinInProgress(n - 1)
-      }
-      case JoinInProgress(1) => {
-        items(index) = arg
-        state = JoinComplete
-        runtime.stage(waiter)
       }
       case JoinHalted => {}
       case _ => throw new AssertionError("Erroneous state transformation in Join")
     }
+    // If we just finished filling everything in then go to Complete state
+    state match {
+      case JoinInProgress(0) => {
+        state = JoinComplete
+        runtime.stage(waiter)
+      }
+      case _ => {}
+    }
   }
 
-  def halt() = synchronized {
+  def halt(index: Int): Unit
+
+  def join() = {
+    waiter.blockOn(this)
+    if (params.nonEmpty) {
+      for ((param, i) <- params.view.zipWithIndex) {
+        param match {
+          case BoundValue(v) => set(i, param)
+          case BoundStop => halt(i)
+          case BoundReadable(g) => {
+            val item = new JoinItem(this, i)
+            g read item
+          }
+        }
+      }
+    } else {
+      assert(params.isEmpty)
+      state = JoinComplete
+      runtime.stage(waiter)
+    }
+  }
+
+  def check(t: Blockable): Unit
+}
+
+class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends JoinBase {
+  def halt(index: Int) = synchronized {
     state match {
       case JoinInProgress(_) => {
         state = JoinHalted
@@ -62,40 +96,37 @@ class Join(params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime
     }
   }
 
-  def join() = {
-    waiter.blockOn(this)
-    for ((param, i) <- params.view.zipWithIndex) {
-      param match {
-        case BoundValue(v) => set(i, v)
-        case BoundStop => halt()
-        case BoundFuture(g) => {
-          val item = new JoinItem(this, i)
-          g read item
-        }
-        case BoundClosure(c) => {
-          val item = new JoinItem(this, i)
-          c read item
-        }
-      }
+  def check(t: Blockable) = {
+    synchronized { state } match {
+      case JoinInProgress(_) => throw new AssertionError(s"Spurious check on Join: $this")
+      case JoinHalted => t.awakeStop()
+      case JoinComplete =>
+        val values = items.toList.map(_.asInstanceOf[BoundValue].v)
+        t.awakeTerminalValue(values) // The checking entity must expect a list
     }
   }
+}
+
+class NonhaltingJoin(val params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends JoinBase {
+  def halt(index: Int) = set(index, BoundStop)
 
   def check(t: Blockable) = {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
-      case JoinHalted => t.awakeStop()
-      case JoinComplete => t.awakeValue(items.toList) // The checking entity must expect a list
+      case JoinHalted => throw new AssertionError("NonhaltingJoin halted")
+      case JoinComplete => t.awakeTerminalValue(items.toList) // The checking entity must expect a List[Binding]
     }
   }
-
 }
 
-class JoinItem(source: Join, index: Int) extends Blockable {
+class JoinItem(source: JoinBase, index: Int) extends Blockable {
+  override val nonblocking = true
 
   var obstacle: Option[Blocker] = None
 
-  def awakeValue(v: AnyRef) = source.set(index, v)
-  def awakeStop() = source.halt()
+  def awakeNonterminalValue(v: AnyRef) = source.set(index, BoundValue(v))
+  def awakeStop() = source.halt(index)
+  override def halt() {} // Ignore halts
 
   def blockOn(b: Blocker) { obstacle = Some(b) }
 

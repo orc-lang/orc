@@ -97,6 +97,11 @@ class UncallableValueException(val uncallable: Any) extends RuntimeTypeException
 @SerialVersionUID(7027861135377746868L)
 class NoSuchMemberException(val v: AnyRef, val unknownMember: String) extends RuntimeTypeException("Value " + v + " does not have a '" + unknownMember + "' member")
 
+/** Attempted dot access to members on an object without members
+  */
+// TODO: Add SerialVersionUID
+class DoesNotHaveMembersException(val v: AnyRef) extends RuntimeTypeException("Value " + v + " does not have members")
+
 ////////
 // Site exceptions
 ////////

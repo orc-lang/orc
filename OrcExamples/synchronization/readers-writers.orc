@@ -10,7 +10,7 @@ type RW =
   .}
 
 
-def class RW() :: RW =
+class RW {
   val read_count = Ref[Integer](0)
   val write_count = Ref[Integer](0)
 
@@ -51,7 +51,7 @@ def class RW() :: RW =
     write_count := write_count? - 1 >>
     (if (write_count? = 0) then read_mtx.release() else signal) >>
     write_count_mtx.release()
-  signal
+}
 
 
 val v = Ref[Integer](0)
@@ -66,10 +66,10 @@ def reader(lock :: RW) =
 def writer(lock :: RW) =
   Rwait((Random(4)+1)*100) >>
   lock.write_start() >>
-  v := v? + 1 >>
+  v := (v? + 1 >x> Rwait(Random(4)) >> x) >>
   lock.write_finish()
 
-val rw = RW()
+val rw = new RW
 
 #
 ( upto(1000) >> reader(rw) >> stop

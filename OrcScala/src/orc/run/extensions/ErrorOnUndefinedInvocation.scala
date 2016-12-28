@@ -18,7 +18,6 @@ import orc.values.Format
 import orc.error.runtime.UncallableValueException
 
 /**
-  *
   * @author dkitchin
   */
 trait ErrorOnUndefinedInvocation extends InvocationBehavior {

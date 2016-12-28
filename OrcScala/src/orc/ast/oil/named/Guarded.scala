@@ -12,6 +12,8 @@
 //
 package orc.ast.oil.named
 
+import orc.compile.Logger
+
 /** @author dkitchin
   */
 trait Guarding {
@@ -21,6 +23,11 @@ trait Guarding {
 
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
+   * 
+   * Calls unguardedRecursion if an instance of unguarded recursiion is found.
+   * 
+   * Returns: True if the expression is "guarding", meaning that it will not always publish
+   * and whether or not it publishes represents some choice or it will publish with some delay.
    */
   def checkGuarded(context: List[BoundVar], unguardedRecursion: Expression => Unit): Boolean = {
     def check(e: Expression) = e.checkGuarded(context, unguardedRecursion)
@@ -50,18 +57,31 @@ trait Guarding {
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case LateBind(left, x, right) => {
-        val l = check(left)
-        val r = check(right)
+      case Graft(x, value, body) => {
+        // TODO: This will produce false positives because x may act as a guard in body.
+        val l = check(value)
+        val r = check(body)
         l && r
       }
-      case Limit(expr) => check(expr)
+      case Trim(expr) => check(expr)
       case Otherwise(left, right) => {
         val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
         l || r
       }
-      case DeclareDefs(defs, body) => {
+      case Trim(body) => check(body)
+      case New(_) => false
+      // TODO: This is actually wrong, FieldAccess is not guarding, however without this we get a lot 
+      // of false positives because Graft handling does not detect the if the body uses the guarded future.
+      case FieldAccess(o, f) => true
+      case DeclareClasses(clss, body) => {
+        for (c <- clss; e <- c.bindings.values) {
+          // TODO: I am not using the current context because the code is not actually executing here. Correct?
+          e.checkGuarded(Nil, unguardedRecursion)
+        }
+        check(body)
+      }
+      case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }
         check(body)

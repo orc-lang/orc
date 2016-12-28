@@ -18,7 +18,7 @@ i.e., parent(j) =/ i
 
 val N = 6
 val conn = Array[List[Integer]](N)
-val parent = fillArray(Array[Integer](N), lambda(_ :: Integer) = -1)
+val parent = fillArray(Array[Integer](N), ignore(constant(-1)))
 
 def dfs(Integer) :: Signal
 def dfs(i) =

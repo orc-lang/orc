@@ -19,7 +19,6 @@ import orc.error.compiletime.typing.SecondOrderTypeExpectedException
 import orc.compile.typecheck.Typeloader
 
 /**
-  *
   * @author dkitchin
   */
 trait TypeConstructor extends TypeOperator {

@@ -14,13 +14,21 @@
 package orc.run.core
 
 import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
-import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareDefs, DeclareType, Def, Expression, HasType, Hole, LateBind, Limit, Otherwise, Parallel, Sequence, Stop, UnboundVariable, Variable, VtimeZone }
+import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareCallables, DeclareType, Def, Site, Expression, HasType, Hole, Graft, Trim, Otherwise, Parallel, Sequence, Stop, UnboundVariable, Variable, VtimeZone }
 import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
+import orc.run.Logger
+import orc.ast.oil.nameless.New
+import orc.ast.oil.nameless.FieldAccess
+import orc.values.{OrcObject, OrcObjectInterface}
+import orc.ast.oil.nameless.Class
+import orc.ast.oil.nameless.Classvar
+import orc.ast.oil.nameless.DeclareClasses
+import orc.error.runtime.DoesNotHaveMembersException
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -77,6 +85,7 @@ class Token protected (
     group: Group = group,
     clock: Option[VirtualClock] = clock,
     state: TokenState = state): Token = {
+    //Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
     new Token(node, stack, env, group, clock, state)
   }
 
@@ -98,7 +107,7 @@ class Token protected (
     try {
       val recursing = toStringRecusionGuard.get
       toStringRecusionGuard.set(java.lang.Boolean.TRUE)
-      super.toString + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, node.sourceTextRange=${node.sourceTextRange}, group=$group, clock=$clock)" else "")
+      super.toString.stripPrefix("orc.run.core.") + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, node.sourceTextRange=${node.sourceTextRange}, group=$group, clock=$clock)" else "")
     } finally {
       toStringRecusionGuard.remove()
     }
@@ -116,7 +125,13 @@ class Token protected (
      * Make sure that the token has not been killed.
      * If it has been killed, return false immediately.
      */
-    if (state != Killed) { state = newState; true } else false
+    if (state != Killed) {
+      // Logger.finer(s"Changing state: $this to $newState")
+      state = newState
+      true
+    } else {
+      false
+    }
   }
 
   /** An expensive walk-to-root check for alive state */
@@ -155,7 +170,7 @@ class Token protected (
       victimState match {
         case Suspending(s) => findHandle(s)
         case Suspended(s) => findHandle(s)
-        case Blocked(handle: SiteCallHandle) => Some(handle)
+        case Blocked(handle: ExternalSiteCallHandle) => Some(handle)
         case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
@@ -180,7 +195,7 @@ class Token protected (
     state match {
       case Live => setState(Blocked(blocker))
       case Killed => {}
-      case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state)
+      case _ => throw new AssertionError("Only live tokens may be blocked: state=" + state + "   " + this)
     }
   }
 
@@ -193,7 +208,7 @@ class Token protected (
     */
   def unblock() {
     state match {
-      case Blocked(_) => {
+      case Blocked(_: OtherwiseGroup) => {
         if (setState(Live)) { runtime.stage(this) }
       }
       case Suspending(Blocked(_: OtherwiseGroup)) => {
@@ -203,7 +218,7 @@ class Token protected (
         setState(Suspended(Live))
       }
       case Killed => {}
-      case _ => { throw new AssertionError("unblock on a Token that is not Blocked/Killed: state=" + state) }
+      case _ => { throw new AssertionError("unblock on a Token that is not Blocked(OtherwiseGroup)/Killed: state=" + state) }
     }
   }
 
@@ -306,12 +321,37 @@ class Token protected (
   protected def lookup(a: Argument): Binding = {
     a match {
       case Constant(v) => BoundValue(v)
-      case Variable(n) => env(n)
-      case UnboundVariable(x) => BoundStop //TODO: Also report the presence of an unbound variable.
+      case vr @ Variable(n) => {
+        val v = env(n)
+        assert(v match {
+          case BoundValue(_: OrcClass) | BoundReadable(_: OrcClass) => false
+          case _ => true
+        }, s"Found class when looking up normal variable: $vr (${vr.sourceTextRange}) => $v:\n${envToString()}")
+        v
+      }
+      case UnboundVariable(x) =>
+        Logger.severe(s"Stopping token due to unbound variable $a at ${a.sourceTextRange}")
+        BoundStop
+    }
+  }
+  protected def lookupClass(a: Classvar): OrcClass = {
+    a match {
+      case vr @ Classvar(i) =>
+        Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
+        env(i) match {
+          case BoundValue(c: OrcClass) =>
+            Logger.finer(s"Found resolved class ${vr.optionalVariableName} ${c}")
+            c
+          case BoundReadable(c: OrcClass) =>
+            Logger.finer(s"Found unresolved class ${vr.optionalVariableName} ${c}")
+            c
+          case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.sourceTextRange}) => $v:\n${envToString()}")
+        }
     }
   }
 
   protected def functionCall(d: Def, context: List[Binding], params: List[Binding]) {
+    Logger.fine(s"Calling $d with $params")
     if (params.size != d.arity) {
       this !! new ArityMismatchException(d.arity, params.size) /* Arity mismatch. */
     } else {
@@ -345,6 +385,30 @@ class Token protected (
     }
   }
 
+  protected def orcSiteCall(s: OrcSite, params: List[AnyRef]) {
+    if (params.size != s.code.arity) {
+      this !! new ArityMismatchException(s.code.arity, params.size) /* Arity mismatch. */
+    } else {
+      val sh = new OrcSiteCallHandle(this)
+      blockOn(sh)
+
+      // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
+
+      // Just build the stack instead of pushing after we create it.
+      // The parameters go on in reverse order. First parameter on the "bottom" of the arguments.
+      val env = (params map BoundValue).reverse ::: s.context
+
+      // Build a token that is in a group nested inside the declaration context.
+      val t = new Token(s.code.body,
+        env = env,
+        group = new OrcSiteCallGroup(s.group, sh),
+        stack = GroupFrame(EmptyFrame),
+        clock = s.clock)
+
+      runtime.stage(t)
+    }
+  }
+
   protected def clockCall(vc: VirtualClockOperation, actuals: List[AnyRef]) {
     (vc, actuals) match {
       case (`Vawait`, List(t)) => {
@@ -364,6 +428,8 @@ class Token protected (
   }
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
+    Logger.fine(s"Calling $s with $actuals")
+    assert(!s.isInstanceOf[Binding])
     //FIXME:Refactor: Place in correct classes, not all here
     /* Maybe there's an extension mechanism we need to add to Orc here.
      * 'Twould be nice to also move the Vclock hook below to this mechanism. */
@@ -399,8 +465,11 @@ class Token protected (
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
       }
+      case s: OrcSite => {
+        orcSiteCall(s, actuals)
+      }
       case _ => {
-        val sh = new SiteCallHandle(this, s, actuals)
+        val sh = new ExternalSiteCallHandle(this, s, actuals)
         blockOn(sh)
         runtime.stage(sh)
       }
@@ -415,54 +484,40 @@ class Token protected (
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      case _ => {
+      case o: OrcObjectInterface if (o contains Field("apply")) => {
+        resolve(o(Field("apply"))) { makeCall(_, params) }
+      }
+      case s => {
         params match {
           /* Zero parameters. No need to block. */
           case Nil => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
-              case s => siteCall(s, Nil)
-            }
+            siteCall(s, Nil)
           }
 
           /* One parameter. May need to block. No need to join. */
           case List(param) => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => {
-                resolveOptional(param) {
-                  /* apply isn't allowed to supersede other member accesses */
-                  case Some(Field(f)) => siteCall(r, List(Field(f)))
-                  /*
-                   * The resolved arg is ignored and the apply member is retried on the parameters.
-                   * The arg is ignored even if it is halted, since the apply member might be a function.
-                   */
-                  case _ => makeCall(entries("apply"), params)
-                }
+            resolve(param) { arg: AnyRef =>
+              if (arg.isInstanceOf[Field]) {
+                Logger.warning(s"Field call to site is no longer supported: $s($arg)")
               }
-              case s => resolve(param) { arg: AnyRef => siteCall(s, List(arg)) }
+              siteCall(s, List(arg))
             }
           }
 
           /* Multiple parameters. May need to join. */
           case _ => {
-            target match {
-              case r @ OrcRecord(entries) if entries contains "apply" => makeCall(entries("apply"), params)
-              case s => {
+            /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
+            pushContinuation({
+              case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
+              case Some(_) => throw new AssertionError("Join resulted in a non-list")
+              case None => halt()
+            })
 
-                /* Prepare to receive a list of arguments from the join once all parameters are resolved. */
-                pushContinuation({
-                  case Some(args: List[_]) => siteCall(s, args.asInstanceOf[List[AnyRef]])
-                  case Some(_) => throw new AssertionError("Join resulted in a non-list")
-                  case None => halt()
-                })
+            /* Create a join over the parameters. */
+            val j = new Join(params, this, runtime)
 
-                /* Create a join over the parameters. */
-                val j = new Join(params, this, runtime)
-
-                /* Perform the join. */
-                j.join()
-              }
-            }
+            /* Perform the join. */
+            j.join()
           }
         }
       }
@@ -495,6 +550,57 @@ class Token protected (
       }
     }
   }
+  
+  def newObject(os: List[Classvar]) {
+    val self = new OrcObject()
+
+    val classes = os.map(lookupClass)
+        
+    val selfFields = scala.collection.mutable.Map[Field, Binding]()
+    
+    // Build the initial super instance. This represents the empty Object instance.
+    var superObj = new OrcObject(Map())
+    // superObj is replaced at the end of the loop each time through to contain the members that have been collected so far.
+    
+    for (cls <- classes.reverse) {
+      Logger.fine(s"Instantiating class: ${cls.definition}")
+      val objenv = BoundValue(superObj) :: BoundValue(self) :: cls.context
+            
+      val fields = for ((name, expr) <- cls.definition.bindings) yield {
+        expr match {
+          // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
+          case Constant(v) => {
+            (name, BoundValue(v))
+          }
+          case Variable(n) => {
+            (name, objenv(n))
+          }
+          case _ => {
+            // We use a GraftGroup since it is exactly what we need.
+            // The difference between this and graft is where the future goes.
+            val pg = new GraftGroup(group)
+
+            // A binding frame is not needed since publishing will trigger the token to halt.
+            val t = new Token(expr,
+              env = objenv,
+              group = pg,
+              stack = GroupFrame(EmptyFrame),
+              clock = clock)
+            runtime.stage(t)
+
+            (name, pg.binding)
+          }
+        }
+      }
+      Logger.fine(s"Setup binding for fields: $fields")
+      selfFields ++= fields
+      superObj = new OrcObject(selfFields.toMap)
+    }
+
+    self.setFields(selfFields.toMap)
+
+    publish(Some(self))
+  }
 
   //def stackOK(testStack: Array[java.lang.StackTraceElement], offset: Int): Boolean =
   //  testStack.length == 4 + offset && testStack(1 + offset).getMethodName() == "runTask" ||
@@ -502,7 +608,7 @@ class Token protected (
 
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
-    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
+    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state) 
     try {
       if (group.isKilled()) { kill() }
       state match {
@@ -522,6 +628,7 @@ class Token protected (
   }
 
   protected def eval(node: orc.ast.oil.nameless.Expression) {
+    //Logger.finest(s"Evaluating: $node")
     node match {
       case Stop() => halt()
 
@@ -536,7 +643,7 @@ class Token protected (
            * Allow a def to be called with an open context.
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
            */
-          case BoundClosure(c: Closure) => functionCall(c.code, c.context, params)
+          case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
 
           case b => resolve(b) { makeCall(_, params) }
         }
@@ -554,19 +661,19 @@ class Token protected (
         move(left)
         runtime.stage(this)
       }
-
-      case LateBind(left, right) => {
-        val (l, r) = fork()
-        val pg = new LateBindGroup(group)
-        l.bind(BoundFuture(pg))
-        r.join(pg)
-        l.move(left)
-        r.move(right)
-        runtime.stage(l, r)
+      
+      case Graft(value, body) => {
+        val (v, b) = fork()
+        val pg = new GraftGroup(group)
+        b.bind(pg.binding)
+        v.join(pg)
+        v.move(value)
+        b.move(body)
+        runtime.stage(v, b)
       }
 
-      case Limit(expr) => {
-        val g = new LimitGroup(group)
+      case Trim(expr) => {
+        val g = new TrimGroup(group)
         join(g)
         move(expr)
         runtime.stage(this)
@@ -581,20 +688,72 @@ class Token protected (
         runtime.stage(l)
       }
 
+      case New(os) => {
+        newObject(os)
+      }
+
+      case FieldAccess(o, f) => {
+        resolve(lookup(o)) {
+          _ match {
+            case o: OrcObjectInterface =>
+              //Logger.finer(s"resolving $o$f")
+              resolve(o(f)) { x =>
+                //Logger.finer(s"resolved $o$f = $x")
+                publish(Some(x))
+              }
+            case s: AnyRef =>
+              siteCall(s, List(f))
+            case null =>
+              throw new DoesNotHaveMembersException(null)
+          }
+        }
+      }
+
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
       }
 
-      case decldefs @ DeclareDefs(openvars, defs, body) => {
+      case DeclareClasses(openvars, clss, body) => {
         /* Closure compaction: Bind only the free variables
          * of the defs in this lexical context.
          */
-        val lexicalContext = openvars map { i: Int => lookup(Variable(i)) }
-        val closureGroup = new ClosureGroup(defs, lexicalContext, runtime)
-        runtime.stage(closureGroup)
+        val lexicalContext = openvars map { i: Int => env(i) }
 
-        for (c <- closureGroup.closures) {
-          bind(BoundClosure(c))
+        val classGroup = new ClassGroup(clss, lexicalContext, runtime)
+        runtime.stage(classGroup)
+
+        for (c <- classGroup.members) {
+          bind(BoundReadable(c))
+        }
+        move(body)
+        runtime.stage(this)
+      }
+
+      case decldefs @ DeclareCallables(openvars, decls, body) => {
+        /* Closure compaction: Bind only the free variables
+         * of the defs in this lexical context.
+         */
+        val lexicalContext = openvars map { i: Int => env(i) }
+
+        decls.head match {
+          case _: Def => {
+            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime)
+            runtime.stage(closureGroup)
+
+            for (c <- closureGroup.members) {
+              bind(BoundReadable(c))
+            }
+          }
+          case _: Site => {
+            val sites = for (s <- decls) yield new OrcSite(s.asInstanceOf[Site], group, clock)
+
+            val context = (sites map BoundValue) ::: lexicalContext
+
+            for (s <- sites) {
+              s.context = context
+              bind(BoundValue(s))
+            }
+          }
         }
         move(body)
         runtime.stage(this)
@@ -613,13 +772,30 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
+    v foreach { vv =>
+      assert(!vv.isInstanceOf[Binding])
+    }
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
-      case Live | Blocked(_) => {
+      case Live => {
+        // If we are live then publish normally.
         setState(Publishing(v))
         runtime.stage(this)
       }
+      case Blocked(_) => {
+        if (v.isDefined) {
+          // If we are blocking then publish in a copy of this token.
+          // This is needed to allow blockers to publish more than once.
+          val nt = copy(state = Publishing(v))
+          runtime.stage(nt)
+        } else {
+          // However "publishing" stop is handled without duplication.
+          setState(Publishing(v))
+          runtime.stage(this)
+        }
+      }
       case Suspending(_) => {
+        throw new AssertionError("Suspension is not supported anymore.")
         setState(Suspending(Publishing(v)))
         runtime.stage(this)
       }
@@ -643,6 +819,16 @@ class Token protected (
       case Halted | Killed => {}
     }
   }
+  
+  def discorporate() {
+    state match {
+      case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
+        group.discorporate(this)
+      }
+      case Suspended(_) => throw new AssertionError("discorporate on a suspended Token")
+      case Halted | Killed => {}
+    }
+  }
 
   def !!(e: OrcException) {
     e.setPosition(node.sourceTextRange.orNull)
@@ -657,12 +843,31 @@ class Token protected (
     halt()
   }
 
-  def awakeValue(v: AnyRef) = publish(Some(v))
+  override def awakeTerminalValue(v: AnyRef) = {
+    setState(Live)
+    publish(Some(v))
+  }
+  def awakeNonterminalValue(v: AnyRef) = {
+    publish(Some(v))
+  }
   def awakeStop() = publish(None)
 
   override def awakeException(e: OrcException) = this !! e
 
   override def awake() { unblock() }
+  
+  
+  // DEBUG CODE:
+  def envToString() = {
+    env.zipWithIndex.map({
+      case (b, i) => s"$i: " + (b match {
+        case BoundValue(v) => v.toString
+        case BoundReadable(c: Closure) => c.code.toString
+        case BoundReadable(c) => c.toString
+        case BoundStop => "stop"
+      })
+    }).mkString("\n")
+  }
 }
 
 /**  */

@@ -7,7 +7,7 @@
 
 def onetwosum(lambda (Integer) :: Integer) :: Integer
 def onetwosum(f) = f(1) + f(2)
-onetwosum( lambda(x) = x * 3 )
+onetwosum( { _ * 3 } )
 
 {-
 OUTPUT:

@@ -20,10 +20,7 @@ sealed abstract class Binding extends Serializable
 case class BoundValue(v: AnyRef) extends Binding
 
 /**  */
-case class BoundFuture(g: LateBindGroup) extends Binding
-
-/**  */
-case class BoundClosure(c: Closure) extends Binding
+case class BoundReadable(c: ReadableBlocker) extends Binding
 
 /**  */
 case object BoundStop extends Binding

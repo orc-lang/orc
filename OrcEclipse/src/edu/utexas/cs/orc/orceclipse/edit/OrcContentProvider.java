@@ -27,10 +27,11 @@ import org.eclipse.jface.viewers.Viewer;
 import scala.collection.JavaConversions;
 
 import orc.ast.AST;
+import orc.ast.ext.CallableDeclaration;
+import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
-import orc.ast.ext.DefDeclaration;
 import orc.ast.ext.Include;
-import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.SiteImport;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
 
@@ -398,7 +399,7 @@ public class OrcContentProvider implements ITreeContentProvider {
          * @return
          */
         protected static boolean createsNewOutlineLevel(final AST newSubtree) {
-            return newSubtree instanceof DefDeclaration;
+            return newSubtree instanceof CallableDeclaration || newSubtree instanceof ClassDeclaration;
         }
     }
 

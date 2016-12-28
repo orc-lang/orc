@@ -16,13 +16,13 @@ package orc.run.core
   *
   * @author dkitchin
   */
-class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with Blocker {
+class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
 
   var state: OtherwiseGroupState = LeftSideUnknown(t)
 
   t.blockOn(this)
 
-  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()})"
+  override def toString = super.toString + s"(state=${state.getClass().getSimpleName()}, alive=$isKilled)"
 
   override def publish(t: Token, v: Option[AnyRef]) {
     synchronized {
@@ -40,17 +40,32 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
       state match {
         case LeftSideUnknown(r) => { state = LeftSideSilent; runtime.stage(r) }
         case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError("halt of silent f in f;g") }
+        case LeftSideSilent => { throw new AssertionError(s"halt of silent f in f;g: $this") }
       }
     }
     parent.remove(this)
   }
 
+  def onDiscorporate() {
+    synchronized {
+      state match {
+        case LeftSideUnknown(r) => { 
+          // forcably discorporate the token we were holding on to.
+          // The token has never run, but is also not truely halted, so discorporate don't kill.
+          r.discorporate()
+        }
+        case LeftSidePublished => { /* Halting after publication does nothing */ }
+        case LeftSideSilent => { throw new AssertionError("discorporate of silent f in f;g") }
+      }
+    }
+    parent.discorporate(this)
+  }
+
   override def check(t: Blockable) {
     synchronized {
       state match {
-        case LeftSidePublished => { t.halt() } // t.halt()
-        case LeftSideSilent => { t.awake() } // t.unblock()
+        case LeftSidePublished => { t.halt() }
+        case LeftSideSilent => { t.awake() }
         case LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }
@@ -60,6 +75,6 @@ class OtherwiseGroup(parent: Group, t: Blockable) extends Subgroup(parent) with 
 
 /** Possible states of an OtherwiseGroup */
 sealed abstract class OtherwiseGroupState
-case class LeftSideUnknown(r: Blockable) extends OtherwiseGroupState
+case class LeftSideUnknown(r: Token) extends OtherwiseGroupState
 case object LeftSidePublished extends OtherwiseGroupState
 case object LeftSideSilent extends OtherwiseGroupState

@@ -103,13 +103,20 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 /** The interface through which the environment response to site calls.
   */
 trait Handle {
+  
+  val runtime: OrcRuntime
 
   def notifyOrc(event: OrcEvent): Unit
   def setQuiescent(): Unit
 
-  def publish(v: AnyRef): Unit
+  def publishNonterminal(v: AnyRef): Unit
+  def publish(v: AnyRef) {
+    publishNonterminal(v)
+    halt
+  }
   def publish() { publish(Signal) }
   def halt: Unit
+  def discorporate(): Unit
   def !!(e: OrcException): Unit
 
   def callSitePosition: Option[OrcSourceRange]

@@ -42,10 +42,7 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 	randRange(lMin,lMax)
 	>lull> Rwait(lull)
 	>> randRange(sMin,sMax)
-	>spurt>	(nSpurt(spurt,tMin,tMax,oMin,oMax)
-		<tMin< randRange(mnMn,mnMx)
-		<tMax< randRange(mxMn,mxMx)
-		)
+	>spurt>	nSpurt(spurt,randRange(mnMn,mnMx),randRange(mxMn,mxMx),oMin,oMax)
 	>x>	( 	Ift(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
 		|	Ift(~(x=false)) >> x
@@ -185,23 +182,25 @@ def realTime() =
 
 
 disp.open() >>
-( Rwait(10000)>> (framerate() | realTime())
+( 
+val (lb,ls,rb,rs) = makeRope(10,signal,false)
+val mainLine  = Channel()
+val leftDeck  = Channel()
+val rightDeck = Channel()
+val leftFlag  = Channel() >tmp> tmp.put(false) >> tmp
+val rightFlag = Channel() >tmp> tmp.put(false) >> tmp
+val leftAck   = Channel()
+val rightAck  = Channel()
+val leftQ     = Channel()
+val rightQ    = Channel()
+val aPack = Let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
+val oPack = Let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
+
+Rwait(10000) >> (framerate() | realTime())
 |( (spurtSource(500,2200,1,5,1,64,10,50,100,400) >lm> disp.leftPush(lm) >> leftQ.put(lm) >> stop)
  | (spurtSource(500,2200,1,5,1,64,10,50,100,400) >rm> disp.rightPush(rm) >> rightQ.put(rm) >> stop) -- The right side is more popular
  | bGuide(leftQ,  leftDeck, leftFlag, leftAck,mainLine)
  | bGuide(rightQ,rightDeck,rightFlag,rightAck,mainLine)
  | bManager(mainLine,aPack,oPack)
  )
-< aPack < Let( leftFlag, leftDeck, leftAck,followRight,lb,ls, leftDone,disp.leftPop)
-< oPack < Let(rightFlag,rightDeck,rightAck, followLeft,rb,rs,rightDone,disp.rightPop)
-<(lb,ls,rb,rs)< makeRope(10,signal,false)
-< mainLine < Channel()
-< leftDeck < Channel()
-< rightDeck< Channel()
-< leftFlag < Channel() >tmp> tmp.put(false) >> tmp
-< rightFlag< Channel() >tmp> tmp.put(false) >> tmp
-< leftAck  < Channel()
-< rightAck < Channel()
-< leftQ    < Channel()
-< rightQ   < Channel()
 )

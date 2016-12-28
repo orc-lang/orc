@@ -17,6 +17,7 @@ import scala.collection.immutable.Traversable
 import scala.collection.TraversableLike
 import scala.collection.mutable.Builder
 import scala.collection.mutable.ListBuffer
+import scala.annotation.tailrec
 
 /** A stack frame.
   *
@@ -25,7 +26,7 @@ import scala.collection.mutable.ListBuffer
   * 
   * @author dkitchin
   */
-trait Frame extends Traversable[Frame] {
+sealed trait Frame extends Traversable[Frame] {
   def apply(t: Token, v: Option[AnyRef]): Unit
 }
 
@@ -45,15 +46,15 @@ case object EmptyFrame extends Frame {
   *
   * @author dkitchin
   */
-trait CompositeFrame extends Frame {
+sealed trait CompositeFrame extends Frame {
   val previous: Frame
-  def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
+  final def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
   override def toString = stringPrefix + "(...)"
 }
 
 /** @author dkitchin
   */
-case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
+final case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
   def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
     t.unbind(n)
@@ -64,7 +65,7 @@ case class BindingFrame(n: Int, val previous: Frame) extends CompositeFrame {
 
 /** @author dkitchin
   */
-case class SequenceFrame(private[run] var _node: Expression, val previous: Frame) extends CompositeFrame {
+final case class SequenceFrame(private[run] var _node: Expression, val previous: Frame) extends CompositeFrame {
   def node = _node
   def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
@@ -77,7 +78,7 @@ case class SequenceFrame(private[run] var _node: Expression, val previous: Frame
 
 /** @author dkitchin
   */
-case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding], val previous: Frame) extends CompositeFrame {
+final case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Binding], val previous: Frame) extends CompositeFrame {
   def callpoint = _callpoint
   def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
@@ -90,7 +91,7 @@ case class FunctionFrame(private[run] var _callpoint: Expression, env: List[Bind
 
 /** @author dkitchin
   */
-case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: Frame) extends CompositeFrame {
+final case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: Frame) extends CompositeFrame {
   def k = _k
   def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
@@ -101,7 +102,7 @@ case class FutureFrame(private[run]_k: (Option[AnyRef] => Unit), val previous: F
 
 /** @author dkitchin
   */
-case class GroupFrame(val previous: Frame) extends CompositeFrame {
+final case class GroupFrame(val previous: Frame) extends CompositeFrame {
   def apply(t: Token, v: Option[AnyRef]) {
     t.pop()
     t.getGroup().publish(t, v)

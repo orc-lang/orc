@@ -41,16 +41,18 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
   }
 
   protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = (b match {
-    case BoundFuture(g) => {
-      g.state match {
-        case RightSidePublished(None) => BoundStop
-        case RightSidePublished(Some(v)) => BoundValue(v)
-        case RightSideSilent => BoundStop
-        case RightSideUnknown(_) => {
-          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
-          BoundFutureReplacement(id)
-        }
-      }
+    case BoundReadable(r) => {
+      val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(r)
+      BoundFutureReplacement(id)
+//      g.state match {
+//        case RightSidePublished(None) => BoundStop
+//        case RightSidePublished(Some(v)) => BoundValue(v)
+//        case RightSideSilent => BoundStop
+//        case RightSideUnknown(_) => {
+//          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
+//          BoundFutureReplacement(id)
+//        }
+//      }
     }
     case _ => b
   }) match {

@@ -48,8 +48,7 @@ after each call to reset.
 laststart is the time at which the last call to start was made.
 -}
 
-def class Stopwatch() =
-
+class def Stopwatch() :: Stopwatch {
   val (laststart, lastpause) = (Ref[Integer](0), Ref[Integer](0))
   val running = Ref[Boolean](false)
   val sem = Semaphore(1)
@@ -76,5 +75,4 @@ def class Stopwatch() =
     sem.release()
 
   def isrunning() = running? -- single atomic step
-
-  stop
+}

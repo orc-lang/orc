@@ -38,7 +38,7 @@ removed.
 remove. Since coin flip is fair, it will not favor of one kind forever.
 -}
 
-def class RelaxedChannel() =
+class RelaxedChannel {
   val (nwr, nww) = (Ref[Integer](0),Ref[Integer](0)) -- # waiting readers, writers
   val mutex = Semaphore(1) -- to gain access to (nwr, nww)
   val count = Semaphore(0) -- nwr? + nww?
@@ -60,11 +60,10 @@ def class RelaxedChannel() =
   def chooseone(_,0) = removereader()
   def chooseone(_,_) =
     if (Random(2) = 0) then removereader() else removewriter()
+}
 
-  stop
-
-def class ReadersWriters() =
-  val buff  = RelaxedChannel()
+class ReadersWriters {
+  val buff  = new RelaxedChannel
   val cb    = Counter()
   val (r,w) = (Semaphore(0),Semaphore(0))
 
@@ -81,20 +80,43 @@ def class ReadersWriters() =
       else  (cb.onZero() >> cb.inc() >> w.release() >> cb.onZero() >> main())
     )
 
-  main()
+  val _ = main()
+}
 
-val rw = ReadersWriters()
+val v = Ref[Integer](0)
 
-  rw.start(true) >> Println("1 read") >> Rwait(75) >> rw.end()
-| Rwait(50) >> rw.start(true)  >> Println("2 read") >> rw.end()
-| Rwait(60) >>  rw.start(false) >> Println("3 write") >> rw.end()
 
+def reader(lock :: ReadersWriters) =
+  Rwait((Random(4)+1)*100) >>
+  lock.start(true) >>
+--  Println(v?) >>
+  lock.end()
+
+def writer(lock :: ReadersWriters) =
+  Rwait((Random(4)+1)*100) >>
+  lock.start(false) >>
+  v := (v? + 1 >x> Rwait(Random(4)) >> x) >>
+  lock.end()
+
+{|
+val rw = new ReadersWriters
+
+#
+( upto(1000) >> reader(rw) >> stop
+| upto(1000) >> writer(rw) >> stop)
+; Println("Final value: "+(v?))
+|} >> stop
+
+{-
+OUTPUT:
+Final value: 1000
+-}
 
 ----------------------------------------------------
 {-
 Readers-Writers written with semaphore pool
 
-def class ReadersWriters() =
+class ReadersWriters {
 val req      = Channel()
 val sempool  = SemaphorePool()
 
@@ -104,12 +126,11 @@ def start(b) = -- read coded as "true", write as "false"
 
 def end() = cb.dec()
 
-def main() =
+val _ =
    req.get() >(b,s)>
    (if  b then  cb.inc() >> s.release()  >> main()
     else cb.onZero() >> cb.inc() >> s.release() >> cb.onZero() >> main()
    )
-
-main()
-
+}
 -}
+

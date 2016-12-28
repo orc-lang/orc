@@ -5,13 +5,12 @@
  - Created by Brian on Jun 3, 2010 1:46:23 PM
  -}
 
-def class A() =
+class A {
 	val x = 4
-	def myX() =
-		x
-	signal
+	def myX() = this.x
+}
 
-val a = A()
+val a = new A
 
 a.myX()
 

@@ -18,7 +18,6 @@ import orc.Handle
 import orc.values.sites.JavaCall
 
 /**
-  *
   * @author dkitchin
   */
 trait SupportForJavaObjectInvocation extends InvocationBehavior {

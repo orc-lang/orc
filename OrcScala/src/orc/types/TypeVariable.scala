@@ -15,7 +15,6 @@ package orc.types
 import orc.ast.hasOptionalVariableName
 
 /**
-  *
   * @author dkitchin
   */
 class TypeVariable(val optionalVariableName: Option[String] = None) extends Type {

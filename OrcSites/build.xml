@@ -19,6 +19,7 @@
 	<property file="${orc.location.OrcScala}/build.properties"/>
 	<property file="${orc.location.OrcScala}/googlecode.properties"/>
 	<property name="target.name" value="${ant.project.name}-${orc.version}"/>
+	<property name="combined.name" value="orc-combined-${orc.version}"/>
     <property name="junit.output.dir" value="build/tests/reports"/>
 
 	<!--  DISABLED in preference to the Scala IDE for Eclipse builder
@@ -132,15 +133,66 @@
 	</target>
 
 	<!-- =================================
+          target: combinedzip
+         ================================= -->
+	<target name="combinedzip" depends="jar" description="Build ZIP archive including both OrcSites and OrcScala for distribution">
+    	<delete file="build/${combined.name}.zip"/>
+		<concat destfile="build/licenses-combined.yml">
+			<filelist dir="." files="licenses.yml"/>
+			<filelist dir="${orc.location.OrcScala}" files="licenses.yml"/>
+		</concat>
+		<zip zipfile="build/${combined.name}.zip" duplicate="fail">
+			<zipfileset prefix="${combined.name}" dir="build">
+				<include name="${target.name}.jar"/>
+				<include name="licenses-combined.yml"/>
+			</zipfileset>
+			<zipfileset prefix="${combined.name}/lib" refid="orcsites.runtime.jars"/>
+			<zipfileset prefix="${combined.name}" dir=".">
+				<include name="examples/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
+			</zipfileset>
+			<zipfileset prefix="${combined.name}/examples" dir="${orc.location.OrcExamples}">
+				<include name="**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name=".*"/>
+				<exclude name="**/.*/*"/>
+			</zipfileset>
+			<zipfileset prefix="${combined.name}" dir="${orc.location.OrcScala}/build">
+				<include name="orc-${orc.version}.jar"/>
+				<!-- Intensionally not including SETUP.BAT since it is not configured for combined -->
+			</zipfileset>
+			<zipfileset prefix="${combined.name}/lib" dir="${orc.location.OrcScala}/lib">
+				<include name="*.jar"/>
+			</zipfileset>
+			<zipfileset prefix="${combined.name}" dir="${orc.location.OrcScala}">
+				<include name="doc/**"/>
+				<include name="licenses/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
+			</zipfileset>
+			<zipfileset prefix="${combined.name}" dir=".">
+				<include name="README-combined"/>
+				<include name="licenses/**"/>
+				<exclude name="**/CVS/*"/>
+				<exclude name="**/.svn/*"/>
+				<exclude name="**/.gitignore"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+	<!-- =================================
           target: package
          ================================= -->
-	<target name="package" depends="zip" description="Package for distribution">
+	<target name="package" depends="zip,combinedzip" description="Package for distribution">
 	</target>
 
 	<!-- =================================
           target: all
          ================================= -->
-    <target name="all" depends="zip,javadoc" description="Build all targets"/>
+    <target name="all" depends="package,javadoc" description="Build all targets"/>
 
 	<!-- =================================
           target: upload

@@ -28,7 +28,7 @@ import orc.values.sites._
 import orc.types._
 import orc.util.OptionMapExtension._
 
-object RecordConstructor extends TotalSite with TypedSite {
+object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Record"
   override def evaluate(args: List[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
@@ -56,7 +56,7 @@ object RecordConstructor extends TotalSite with TypedSite {
   }
 }
 
-object RecordMatcher extends PartialSite with TypedSite {
+object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
   override def name = "RecordMatcher"
 
   override def evaluate(args: List[AnyRef]): Option[AnyRef] =

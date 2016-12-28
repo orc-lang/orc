@@ -225,11 +225,17 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseBaseExpression = (
     parseValue -> Constant
     | ident -> Variable
+    | "_" -> Placeholder
     | "stop" -> Stop
+    | "this" -> Variable("this")
+    | "super" ~> "." ~> ident -> { f => Call(Variable("super"), List(FieldAccess(f))) } 
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
+    | "new" ~> parseNewClassExpression -> New
     | ("(" ~> parseExpression ~ parseBaseExpressionTail) -?->
     { (e: Expression, es: List[Expression]) => TupleExpr(e :: es) }
+    | ("{|" ~> parseExpression <~ "|}") -> Trim
+    | ("{" ~> parseExpression <~ "}") -> Section
     | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (
@@ -238,7 +244,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args)
 
   val parseCallExpression: Parser[Expression] = (
-    parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
+      parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
 
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
@@ -256,7 +262,6 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseInfixOpExpression = parseLogicalExpr nonAssociativeInfix List(":=")
 
   val parseSequentialCombinator = ">" ~> (parsePattern?) <~ ">"
-  val parsePruningCombinator = "<" ~> (parsePattern?) <~ "<"
 
   val parseSequentialExpression =
     parseInfixOpExpression rightInterleave parseSequentialCombinator apply Sequential
@@ -264,11 +269,8 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   val parseParallelExpression =
     rep1sep(parseSequentialExpression, "|") -> { _ reduceLeft Parallel }
 
-  val parsePruningExpression =
-    parseParallelExpression leftInterleave parsePruningCombinator apply Pruning
-
   val parseOtherwiseExpression =
-    rep1sep(parsePruningExpression, ";") -> { _ reduceLeft Otherwise }
+    rep1sep(parseParallelExpression, ";") -> { _ reduceLeft Otherwise }
 
   val parseAscription = (
     ("::" ~ parseType)
@@ -293,12 +295,6 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     ~ ("then" ~> parseExpression)
     ~ ("else" ~> parseExpression)
     -> Conditional
-    | "lambda" ~> (ListOf(parseTypeVariable)?)
-    ~ (TupleOf(parsePattern))
-    ~ (parseReturnType?)
-    ~ (parseGuard?)
-    ~ ("=" ~> parseExpression)
-    -> Lambda
     | failExpecting("expression"))
 
   ////////
@@ -365,26 +361,65 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
   // Declarations
   ////////
 
+  val parseDefSigCoreNamed = (
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?))
+    
   val parseDefCore = (
-    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?) ~ (parseGuard?) ~ ("=" ~> parseExpression))
+    parseDefSigCoreNamed ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
-  val parseDefDeclaration: Parser[DefDeclaration] = (
+  val parseDefSigCore = (
+    ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType)
+
+  val parseDefDeclaration: Parser[CallableDeclaration] = (
     parseDefCore -> Def
 
-    | (Identifier("class") ~> parseDefCore) -> DefClass
+    | parseDefSigCore -> DefSig)
 
-    | ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parseType)) ~ parseReturnType -> DefSig)
+  val parseSiteDeclaration: Parser[CallableDeclaration] = (
+    parseDefCore -> Site
+
+    | parseDefSigCore -> SiteSig)
+
+  val parseClassBody: Parser[ClassLiteral] = (
+    ("{" ~> (ident <~ "#").? ~ parseDeclaration.* <~ "}") -> ClassLiteral)
+
+  val parseClassPrimitiveExpression: Parser[ClassExpression] = (
+    parseClassBody
+    | ident -> ClassVariable
+    | "(" ~> parseClassExpression <~ ")")
+  val parseClassExpression: Parser[ClassExpression] = (
+    parseClassPrimitiveExpression ~ ("with" ~> parseClassExpression) -> ClassMixin
+    | parseClassPrimitiveExpression)
+
+  val parseNewClassExpression = (
+          (ident -> ClassVariable
+              | "(" ~> parseClassExpression <~ ")") ~ parseClassBody -> ClassSubclassLiteral
+          | parseClassExpression)
+  
+  val parseClassConstructor: Parser[ClassConstructor] = (
+      ident ~ (ListOf(parseTypeVariable)?) -> ClassConstructor.None
+      | "def" ~> parseDefSigCoreNamed -> ClassConstructor.Def 
+      | "site" ~> parseDefSigCoreNamed -> ClassConstructor.Site)
+      
+  val parseClassDeclaration = (
+    (parseClassConstructor ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
 
   val parseDeclaration: Parser[Declaration] = (
     (
 
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
+      
+      | ("val" ~> ident ~ ("::" ~> parseType).?) -> ValSig
 
       | "def" ~> parseDefDeclaration
 
-      | "import" ~> Identifier("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
+      | "site" ~> parseSiteDeclaration
 
-      | "import" ~> Identifier("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
+      | "class" ~> parseClassDeclaration
+
+      | "import" ~> Keyword("site") ~> ident ~ ("=" ~> parseSiteLocation) -> SiteImport
+
+      | "import" ~> Keyword("class") ~> ident ~ ("=" ~> parseSiteLocation) -> ClassImport
 
       | !@(("include" ~> stringLit).into(performInclude))
 

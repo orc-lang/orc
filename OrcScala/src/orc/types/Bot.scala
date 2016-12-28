@@ -13,7 +13,6 @@
 package orc.types
 
 /**
-  *
   * @author dkitchin
   */
 case object Bot extends CallableType {

@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 13, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,7 +28,16 @@ trait hasFreeVars {
     val varset = new scala.collection.mutable.HashSet[BoundVar]()
     val collect = new NamedASTTransform {
       override def onArgument(context: List[BoundVar]) = {
-        case x: BoundVar => (if (context contains x) {} else { varset += x }); x
+        case x: BoundVar => {
+          if (context contains x) {} else { varset += x }
+          x
+        }
+      }
+      override def onClassvar(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
+        case c @ Classvar(x: BoundVar) => {
+          if (context contains x) {} else { varset += x }
+          c
+        }
       }
     }
     collect(this)
@@ -57,7 +66,7 @@ trait hasFreeTypeVars {
 trait hasUnboundVars {
   self: NamedAST =>
 
-  /* Note: As is evident from the type, UnboundVars are not included in this set */
+  /* Note: As is evident from the type, UnboundTypeVars are not included in this set */
   lazy val unboundvars: Set[UnboundVar] = {
     val varset = new scala.collection.mutable.HashSet[UnboundVar]()
     val collect = new NamedASTTransform {

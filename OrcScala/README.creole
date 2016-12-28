@@ -1,0 +1,11 @@
+=== The OrcO development branch of the Orc reposity
+
+This branch contains a prototype implementation of OrcO as described in 
+[[http://2016.splashcon.org/event/splash-2016-oopsla-orco-a-concurrency-first-approach-to-objects|OrcO: A Concurrency-First Approach to Objects]]
+([[https://orc.csres.utexas.edu/papers/OrcO_OOPSLA16.pdf|PDF]], [[http://dx.doi.org/10.1145/2983990.2984022|DOI]]).
+A preview release is available at: [[https://github.com/orc-lang/orc/releases/tag/orco-preview|OrcO Preview Package]].
+
+Runnable versions of the OrcO examples from the paper are available in the release and in 
+[[https://github.com/orc-lang/orc/tree/ODO/OrcExamples/orco_paper|OrcExamples/orco_paper]].
+The OrcO implementation which can run those and other OrcO examples is in this directory.
+

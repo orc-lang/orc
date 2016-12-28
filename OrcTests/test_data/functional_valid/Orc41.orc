@@ -6,7 +6,10 @@
 def VtimeI() = (Vtime() :!: Integer)
 
 Vclock(IntegerTimeOrder) >> Vawait(0) >>
-( (x >> VtimeI()) <x< (Vawait(3) | Vawait(2)) )
+(
+  val x = {| Vawait(3) | Vawait(2) |} 
+  x >> VtimeI()
+)
 
 {-
 OUTPUT:

@@ -19,6 +19,8 @@ import orc.{ CaughtEvent, HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, Or
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
+import java.util.Timer
+import java.util.TimerTask
 
 /** An execution is a special toplevel group,
   * associated with the entire program.
@@ -49,6 +51,10 @@ class Execution(
   }
 
   def onHalt() {
+    // It's all the same at this level, so just deligate.
+    onDiscorporate()
+  }
+  def onDiscorporate() {
     if (!isKilled) notifyOrc(HaltedOrKilledEvent)
   }
 
@@ -91,6 +97,11 @@ class Execution(
           sb.append(g.toString)
           sb.append('\n')
           g.members map { printGroupMember(_, level + 1, sb) }
+        }
+        case null => {
+          // TODO: Figure out how we ever end up getting null here.
+          sb.append("null")
+          sb.append('\n')
         }
         case _ => {
           sb.append(currMember.toString)

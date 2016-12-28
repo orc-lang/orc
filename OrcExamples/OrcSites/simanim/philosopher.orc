@@ -36,14 +36,14 @@ def grabAnimate(p,s,i) =
     grabAnimate(p,s,i-1)
 
 def getForks(n,fl,fr) =
-  Let(
-    getFork(n,1,fl) >> Let(
+  {|
+    getFork(n,1,fl) >> {|
       getFork(n,0,fr)
       ; releaseFork(n, 1, fl) >> stop
-    )
+    |}
     ; Rwait(Random(100)*10+1) >>
       getForks(n, fl, fr)
-  )
+  |}
 
 def releaseFork(n,side,f) =
   releaseAnimate(n,side,10) >>
@@ -72,14 +72,14 @@ def thinkAnimate(p,i) =
   thinkAnimate(p,x+1)
 
 def think(n) =
-  Let(
+  {|
     thinkAnimate(n,1)
     | Rwait(index([500,1000,2000,10000],Random(4)))
-  ) >>
+  |} >>
   canvas.setThink(n,0)
 
 def letGo(n,fl,fr) =
-  Let(releaseFork(n, 1, fl), releaseFork(n, 0, fr))
+  (releaseFork(n, 1, fl), releaseFork(n, 0, fr))
 
 def philosopher(n,fl,fr) =
   think(n) >>

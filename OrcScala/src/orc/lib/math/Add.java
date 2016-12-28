@@ -104,4 +104,13 @@ public class Add extends EvalSite implements TypedSite {
     public Type orcType() {
         return Types.overload(Types.function(Types.integer(), Types.integer(), Types.integer()), Types.function(Types.number(), Types.number(), Types.number()), new RecordExtensorType(), Types.function(Types.string(), Types.top(), Types.string()), Types.function(Types.top(), Types.string(), Types.string()));
     }
+
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }

@@ -23,7 +23,7 @@ import orc.OrcRuntime
   * be maintained.
   *
   * Blockers may unblock Blockables at any time in any thread. So as soon as you
-  * block (for instance by calling PruningGroup.read or instantiating a SiteCallHandle)
+  * block (for instance by calling Future.read or instantiating a SiteCallHandle)
   * on a Blocker you should assume you may be unblocked and running on another thread.
   *
   * @see Blockable
@@ -33,10 +33,19 @@ import orc.OrcRuntime
 trait Blocker {
   /** When a Blockable blocked on this resource is scheduled,
     * it performs this check to observe any changes in
-    * the state of this resource.
+    * the state of this resource. Blockables that call this, should
+    * assume they may have been rescheduled when this returns, however
+    * during the execution of check the Blockable may assume it has
+    * not yet been rescheduled.
     *
     * This should call Blockable#awake(AnyRef) to notify the
     * Blockable.
     */
   def check(t: Blockable): Unit
+}
+  
+trait ReadableBlocker extends Blocker {
+  /** Block t on this if it is not yet bound otherwise immediately awake t.
+    */
+  def read(t: Blockable): Unit
 }
