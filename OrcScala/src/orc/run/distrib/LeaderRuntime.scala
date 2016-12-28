@@ -72,7 +72,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programOil, options)) }
 
     installHandlers(root)
-    roots.put(new WeakReference(root), ())
+    roots.add(root)
 
     /* Initial program token */
     //root.sendToken(new Token(programAst, root), runtimeLocationMap(1))

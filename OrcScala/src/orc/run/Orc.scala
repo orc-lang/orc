@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,42 +13,25 @@
 
 package orc.run
 
+import orc.{ ExecutionRoot, OrcEvent, OrcExecutionOptions, OrcRuntime }
 import orc.ast.oil.nameless.Expression
-import orc.{ OrcRuntime, OrcExecutionOptions, OrcEvent }
-import orc.run.core.{ Token, Execution }
+import orc.run.core.{ Execution, Token }
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
   thisruntime =>
 
-    // TODO: Add back support for multiple roots.
-  var root: Option[Execution] = None
+  val roots = java.util.concurrent.ConcurrentHashMap.newKeySet[ExecutionRoot]()
 
-  def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  override def removeRoot(root: ExecutionRoot) = roots.remove(root)
+
+  def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions){
     startScheduler(options: OrcExecutionOptions)
 
-    /* Extend Execution to clean up the roots map when it halts or is killed.
-     * This cannot be an event handler because only one handler is allowed to
-     * handle any event.
-     * 
-     * In the past roots contained weak references. However this combined with
-     * the OrcSiteCallTargets resulted in entire group trees being collected all
-     * at once without actually halting, which makes the interpreter hang 
-     * without exiting. 
-     */
-    root = Some(new Execution(node, options, eventHandler, this) {
-      override def onHalt() = {
-        thisruntime.root = None
-        super.onHalt()
-      }
+    val execution = new Execution(node, options, eventHandler, this)
+    roots.add(execution)
+    installHandlers(execution)
 
-      override def kill() = {
-        thisruntime.root = None
-        super.kill()
-      }
-    })
-    installHandlers(root.get)
-
-    val t = new Token(node, root.get)
+    val t = new Token(node, execution)
     schedule(t)
   }
 
