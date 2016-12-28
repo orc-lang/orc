@@ -337,6 +337,6 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     if(script instanceof OrcScriptEngine.OrcCompiledScript)
       return new OrcCompiledScript(((OrcCompiledScript)script).code);
     else
-      throw new IllegalArgumentException("Provided compiled script is not of the correct time.");
+      throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
   }
 }
