@@ -14,47 +14,31 @@
 package orc.run.distrib
 
 import orc.error.OrcException
-import orc.run.core.{ Blockable, Blocker, GraftGroup, ValuePublished, ValueUnknown }
-import orc.run.core.ReadableBlocker
-import orc.run.core.Execution
+import orc.run.core.{ Blockable, Blocker, Execution, Future, LocalFuture }
 
 /** A reference to an LateBindGroup value at another Location.
   *
   * @author jthywiss
   */
-class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends GraftGroup(execution) with RemoteRef {
+class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends LocalFuture(execution.runtime) with RemoteRef {
+  // TODO: Move to companion object unless there is a reason not to.
   override type RemoteRefId = Long
 
   execution.sendReadFuture(remoteRefId)
-  execution.remove(this) // Don't hold the execution open simply because this ref exists
-
-  def onResult(v: Option[AnyRef]) = synchronized {
-    //Logger.entering(getClass.getName, "onResult")
-    state match {
-      case ValueUnknown => {
-        // TODO: Dedup this with .publish
-        state = ValuePublished
-        for (w <- waitlist) { runtime.schedule(w) }
-      }
-      case _ => {}
-    }
-  }
-
 }
 
-/** A remote reader that is blocked awaiting a local LateBindGroup value.
+/** A remote reader that is blocked awaiting a local Future value.
   *
   * @author jthywiss
   */
-class RemoteFutureReader(val group: ReadableBlocker, val execution: Execution, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
+class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
   def addReader(l: PeerLocation) = synchronized {
     readerLocations += l
     if (readerLocations.size == 1) {
-      // TODO: Group is not readable at arbitrary points any more. 
-      group.read(this)
+      fut.read(this)
     }
   }
 
@@ -86,8 +70,7 @@ class RemoteFutureReader(val group: ReadableBlocker, val execution: Execution, f
 
   override def run() {
     //Logger.entering(getClass.getName, "run")
-    // TODO: groups don't support check any more. need to get the readable.
-    group.check(this)
+    fut.check(this)
   }
 
 }
@@ -97,27 +80,27 @@ class RemoteFutureReader(val group: ReadableBlocker, val execution: Execution, f
   * @author jthywiss
   */
 trait RemoteFutureManager { self: DOrcExecution =>
-
+  
   // These two maps are inverses of each other (sorta)
-  protected val servingGroups = new java.util.concurrent.ConcurrentHashMap[GraftGroup, RemoteFutureRef#RemoteRefId]
-  protected val servingFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
+  protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]
+  protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
   protected val servingGroupsFuturesUpdateLock = new Object()
 
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
   protected val waitingReadersUpdateLock = new Object()
 
-  def ensureFutureIsRemotelyAccessibleAndGetId(g: GraftGroup) = {
+  def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future) = {
     //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
-    g match {
-      case rg: RemoteFutureRef => rg.remoteRefId
+    fut match {
+      case rfut: RemoteFutureRef => rfut.remoteRefId
       case _ => servingGroupsFuturesUpdateLock synchronized {
-        if (servingGroups.contains(g)) {
-          servingGroups.get(g)
+        if (servingLocalFutures.contains(fut)) {
+          servingLocalFutures.get(fut)
         } else {
           val newFutureId = freshRemoteFutureId()
-          val newReader = new RemoteFutureReader(g, newFutureId)
-          servingGroups.put(g, newFutureId)
-          servingFutures.put(newFutureId, newReader)
+          val newReader = new RemoteFutureReader(fut, this, newFutureId)
+          servingLocalFutures.put(fut, newFutureId)
+          servingRemoteFutures.put(newFutureId, newReader)
           newFutureId
         }
       }
@@ -126,7 +109,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId) = {
     if (homeLocationForRemoteFutureId(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
-      servingFutures.get(futureId).group
+      servingRemoteFutures.get(futureId).fut
     } else {
       waitingReadersUpdateLock synchronized {
         if (!waitingReaders.contains(futureId)) {
@@ -144,7 +127,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId) {
-    servingFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
+    servingRemoteFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
@@ -155,7 +138,10 @@ trait RemoteFutureManager { self: DOrcExecution =>
   def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
-      reader.onResult(value)
+      value match {
+        case Some(v) => reader.bind(v)
+        case None => reader.stop()
+      }
     } else {
       Logger.finer(s"deliverFutureResult reader not found, id=$futureId")
     }

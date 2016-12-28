@@ -26,7 +26,7 @@ import orc.Schedulable
   */
 class GraftGroup(parent: Group) extends { 
   var state: GraftGroupState = ValueUnknown 
-  private var _future = new Future(parent.runtime)
+  private var _future: Future = new LocalFuture(parent.runtime)
 } with Subgroup(parent) {
   override def toString = super.toString + s"(state=${state}, ${_future})"
 

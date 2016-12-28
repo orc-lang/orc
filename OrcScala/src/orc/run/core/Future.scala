@@ -15,8 +15,17 @@
 package orc.run.core
 
 import orc.OrcRuntime
-import orc.values.Format
-import orc.values.OrcValue
+import orc.values.{ Format, OrcValue }
+
+/** Interface for futures.
+  * 
+  * This exists to provide a common interface for LocalFuture and 
+  * RemoteFuture if they need to have unrelated implementations.
+  */
+trait Future extends ReadableBlocker with OrcValue {
+  def bind(v: AnyRef): Unit
+  def stop(): Unit
+}
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -26,8 +35,8 @@ import orc.values.OrcValue
   * in the critial paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future(val runtime: OrcRuntime) extends ReadableBlocker with OrcValue {
-  import Future._
+class LocalFuture(val runtime: OrcRuntime) extends Future {
+  import LocalFuture._
 
   var _state = Unbound
   var _value: AnyRef = null
@@ -94,7 +103,7 @@ final class Future(val runtime: OrcRuntime) extends ReadableBlocker with OrcValu
   }
 }
 
-object Future {
+private object LocalFuture {
   val Unbound = 0
   val Bound = 1
   val Halt = 2
