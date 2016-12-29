@@ -82,6 +82,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
         case Trim(f) => Trim(recurse(f))
         case New(s) => New(this(s))
         case Section(f) => Section(recurse(f))
+        case Lambda(tfs, fs, rt, body) => Lambda(tfs, fs, rt map this.apply, recurse(body))
         case Conditional(f, g, e) => Conditional(recurse(f), recurse(g), recurse(e))
         case Declare(d, body) => Declare(this(d), recurse(body))
         case TypeAscription(e, t) => TypeAscription(recurse(e), this(t))

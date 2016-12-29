@@ -66,11 +66,14 @@ case class AggregateDef(clauses: List[Clause],
     }
 
   def +(lambda: (List[Pattern], Expression)): AggregateDef = {
+    // TODO: Reintroduce support for types.
     val (formals, body) = lambda
     assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
     val newclause = body ->> Clause(newformals, None, body)
+    // val newTypeFormals = unifyList(typeformals, lambda.typeformals, reportProblem(RedundantTypeParameters() at lambda))
     val newArgTypes = unifyList(argtypes, maybeArgTypes, reportProblem(RedundantArgumentType() at body))
+    // val newReturnType = unify(returntype, lambda.returntype, reportProblem(RedundantReturnType() at lambda))
     val result = AggregateDef(clauses ::: List(newclause), Some(Def(null, null, null, null, null, null)), None, newArgTypes, None)
     result aggregatePosWith this
   }

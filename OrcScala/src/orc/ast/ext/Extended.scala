@@ -41,7 +41,7 @@ case class Lambda(
   typeformals: Option[List[String]] = None,
   formals: List[Pattern],
   returntype: Option[Type] = None,
-  guard: Option[Expression] = None,
+  //guard: Option[Expression] = None, TODO: guards on lambdas are not supported any more
   body: Expression) extends Expression
 
 case class Section(body: Expression) extends Expression

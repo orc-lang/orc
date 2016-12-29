@@ -56,9 +56,9 @@ class def SumOfProducts() :: SumOfProducts extends ActorBase {
   val sum = Ref(0)
 
   val _ = repeat({ -- Body
-    receive({ val m = _ #
+    receive(lambda(m) =
     	      m >("pair", x, y)> sum := sum? + x * y |
-    	      m >("print")> Println("Result: " + sum?) })
+    	      m >("print")> Println("Result: " + sum?))
   })
 }
 

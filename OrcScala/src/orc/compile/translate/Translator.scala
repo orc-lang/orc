@@ -113,6 +113,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.Section(body) => {
+        // TODO: Add support for types?
         val lambdaName = new BoundVar()
         val removePlaceholders = new ExtendedASTTransform {
           var args = Seq[ext.Pattern]()
@@ -139,6 +140,13 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newdef = AggregateDef(formals, newBody)(this).convert(lambdaName, implicitly, implicitly, implicitly)
         DeclareCallables(List(newdef), lambdaName)
       }
+      case lambda: ext.Lambda => {
+        val lambdaName = new BoundVar()
+        // TODO: Reintroduce support for types.
+        val newdef = AggregateDef(lambda.formals, lambda.body)(this).convert(lambdaName, implicitly, implicitly, implicitly)
+        DeclareCallables(List(newdef), lambdaName)
+      }
+ 
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))
       }

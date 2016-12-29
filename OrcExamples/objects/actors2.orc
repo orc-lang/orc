@@ -17,7 +17,7 @@ class def MailBox() :: MailBox {
   
   {--
     - f should publish if it handled the messages and halt silently otherwise.
-    - receive is not concurrent safe since actors are assumed to be interally sequential.
+    - receive is not concurrent safe since actors are assumed to be internally sequential.
     -}
   def receive(f) = 
     def h((id, m)) = f(m) >r> removeMessage(id) >> r ; h(getNextMessage(id))
@@ -51,9 +51,9 @@ class def Actor() :: Actor extends ActorBase {
   val c = Ref[Integer](0)
 
   val _ = repeat({
-    receive({ val m = _ #
+    receive(lambda(m) =
     	      m >("incr")> (a := a? + 1, b := b? + 1, c := c? + 1) |
-    	      m >("read", other)> other.sendMessage((a?, b?, c?)) })
+    	      m >("read", other)> other.sendMessage((a?, b?, c?)))
   })
 }
 
