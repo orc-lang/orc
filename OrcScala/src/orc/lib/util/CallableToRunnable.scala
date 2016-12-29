@@ -33,7 +33,7 @@ import java.util.concurrent.Callable
   */
 object CallableToRunnable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.runtime match {
+    val runtime = h.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
@@ -56,7 +56,7 @@ object CallableToRunnable extends Site1 with TypedSite {
   */
 object CallableToCallable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.runtime match {
+    val runtime = h.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }

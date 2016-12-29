@@ -34,12 +34,12 @@ class ListModelImpl extends DefaultListModel[AnyRef] {
   }
 }
 
-class ToStringAdapter(val deligate: OrcObjectInterface, val runtime: SupportForCallsIntoOrc) extends ListenerAdapter {
+class ToStringAdapter(val deligate: OrcObjectInterface, val execution: SupportForCallsIntoOrc) extends ListenerAdapter {
   val ToStringField = Field("toString")
   override def toString = {
     if (deligate contains ToStringField)
       try {
-        runtime.callOrcMethod(deligate, ToStringField, List()).get.asInstanceOf[String]
+        execution.callOrcMethod(deligate, ToStringField, List()).get.asInstanceOf[String]
       } catch {
         case _ : ClassCastException | _ : NoSuchElementException => deligate.toOrcSyntax()
       }
@@ -50,12 +50,12 @@ class ToStringAdapter(val deligate: OrcObjectInterface, val runtime: SupportForC
 
 object ToStringAdapter extends Site1 {
   def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.runtime match {
+    val execution = h.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     val del = arg match {
-      case d: OrcObjectInterface => h.publish(new ToStringAdapter(d, runtime))
+      case d: OrcObjectInterface => h.publish(new ToStringAdapter(d, execution))
       case o => h.publish(o)
     }
   }

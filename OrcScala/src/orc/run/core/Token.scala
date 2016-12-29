@@ -64,6 +64,7 @@ class Token protected (
   var functionFramesPushed: Int = 0
 
   def runtime: OrcRuntime = group.runtime
+  def execution = group.execution
 
   def sourcePosition = node.sourceTextRange
 

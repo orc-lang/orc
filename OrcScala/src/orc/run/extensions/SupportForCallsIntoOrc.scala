@@ -14,26 +14,9 @@
 //
 package orc.run.extensions
 
-import orc.OrcRuntime
-import orc.OrcEvent
-import orc.HaltedOrKilledEvent
-import orc.OrcExecutionOptions
-import orc.ast.oil.nameless.Expression
-import orc.error.runtime.ExecutionException
-import orc.util.LatchingSignal
-import orc.run.Orc
-import orc.ast.oil.nameless.Call
-import orc.ast.oil.nameless.Constant
-import orc.run.core.Token
-import orc.run.core.Subgroup
-import orc.run.core.Group
-import orc.run.core.Binding
-import orc.run.core.BoundValue
-import orc.run.core.BoundStop
-import orc.run.core.BoundValue
+import orc.ast.oil.nameless.{ Call, Constant, FieldAccess, Variable }
+import orc.run.core.{ Execution, Group, Subgroup, Token }
 import orc.values.Field
-import orc.ast.oil.nameless.Variable
-import orc.ast.oil.nameless.FieldAccess
 
 /** A group that stores the first publication and then ignores the rest.
   *
@@ -99,8 +82,8 @@ object OrcCallWrapperGroup {
 /** Provide support for calling into Orc from Java code that has access to the OrcRuntime instance.
   * @author amp
   */
-trait SupportForCallsIntoOrc extends OrcRuntime {
-  this: Orc =>
+trait SupportForCallsIntoOrc {
+  this: Group =>
 
   /** Call the callable with the given arguments and then return the first thing it publishes.
     *
@@ -135,22 +118,19 @@ trait SupportForCallsIntoOrc extends OrcRuntime {
   }
 
   private def callNode(node: orc.ast.oil.nameless.Expression): Option[AnyRef] = {
-    val rootGroup = root.getOrElse {
-      throw new IllegalStateException("Cannot call into Orc because the root group does not exist (it has probably halted or been killed).")
-    }
-    val wrapper = new OrcCallWrapperGroup(rootGroup)
-    val t = new Token(node, wrapper)
-    schedule(t)
+    val wrapper = startNode(node)
     val result = wrapper.await()
     result
   }
+
+  private def startNode(node: orc.ast.oil.nameless.Expression) = {
+    val wrapper = new OrcCallWrapperGroup(this)
+    val t = new Token(node, wrapper)
+    runtime.schedule(t)
+    wrapper
+  }
   
   private def scheduleNode(node: orc.ast.oil.nameless.Expression): Unit = {
-    val rootGroup = root.getOrElse {
-      throw new IllegalStateException("Cannot call into Orc because the root group does not exist (it has probably halted or been killed).")
-    }
-    val wrapper = new OrcCallWrapperGroup(rootGroup)
-    val t = new Token(node, wrapper)
-    schedule(t)
+    startNode(node)
   }
 }

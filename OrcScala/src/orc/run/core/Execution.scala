@@ -19,6 +19,7 @@ import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, OrcExecu
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
+import orc.run.extensions.SupportForCallsIntoOrc
 
 /** An execution is a special toplevel group,
   * associated with the entire program.
@@ -30,7 +31,7 @@ class Execution(
   override val options: OrcExecutionOptions,
   private var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
-  extends Group with ExecutionRoot {
+  extends Group with ExecutionRoot with SupportForCallsIntoOrc {
 
   override val execution = this
 

@@ -37,6 +37,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   protected var quiescent = false
 
   val runtime = caller.runtime
+  val execution = caller.execution
 
   // a mechanism to delay schedule of caller until later without holding the lock.
   var scheduleHeld = false

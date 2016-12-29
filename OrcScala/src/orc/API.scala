@@ -114,6 +114,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 trait Handle {
   
   val runtime: OrcRuntime
+  val execution: ExecutionRoot
 
   def notifyOrc(event: OrcEvent): Unit
   def setQuiescent(): Unit
