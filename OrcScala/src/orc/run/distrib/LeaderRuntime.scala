@@ -43,6 +43,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   override def allLocations = runtimeLocationMap.values.toSet
 
   protected def connectToFollowers() {
+    // TODO: This hard codes the follower addresses. This should be configurable.
     val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))
 
     runtimeLocationMap.put(0, here)
