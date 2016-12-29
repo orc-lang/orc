@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.ast.AST
 import orc.ast.oil.nameless.{ Def, Expression }
-import orc.run.core.{ Binding, BindingFrame, BoundClosure, BoundFuture, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, FutureFrame, Group, GroupFrame, Live, Publishing, RightSidePublished, RightSideSilent, RightSideUnknown, SequenceFrame, Token, TokenState, VirtualClock }
+import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *
@@ -40,9 +40,9 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     }
   }
 
-  protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = (b match {
-    case BoundReadable(r) => {
-      val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(r)
+  protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = b match {
+    case BoundReadable(fut: Future) => {
+      val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(fut)
       BoundFutureReplacement(id)
 //      g.state match {
 //        case RightSidePublished(None) => BoundStop
@@ -54,15 +54,12 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
 //        }
 //      }
     }
-    case _ => b
-  }) match {
-    case br: BindingReplacement => br
-    case BoundValue(ro: RemoteObjectRef) => {
-      BoundRemoteReplacement(ro.remoteRefId)
-    }
-    case BoundClosure(c: Closure) => {
+    case BoundReadable(c: Closure) => {
       val cgr = marshalClosureGroup(c.closureGroup, execution, ast, destination)
       BoundClosureReplacement(c.index, cgr)
+    }
+    case BoundValue(ro: RemoteObjectRef) => {
+      BoundRemoteReplacement(ro.remoteRefId)
     }
     //FIXME: Make copy versus reference decision here
     case BoundValue(v) if (!valueCanBeMarshaled(execution, destination)(v)) => {
@@ -99,8 +96,8 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     ClosureGroupReplacement.closureGroupReplacements synchronized {
       ClosureGroupReplacement.closureGroupReplacements.get(cg) match {
         case null => {
-          Logger.fine("Creating new CGR for "+cg+": "+(cg.defs map {_.optionalVariableName.getOrElse("")}).mkString(","))
-          val defNodesIndicies = cg.defs map { AstNodeIndexing.nodeIndexInTree(_, ast).get }
+          Logger.fine("Creating new CGR for "+cg+": "+(cg.definitions map {_.optionalVariableName.getOrElse("")}).mkString(","))
+          val defNodesIndicies = cg.definitions map { AstNodeIndexing.nodeIndexInTree(_, ast).get }
           val lexicalContext = (cg.lexicalContext map marshalBinding(execution, ast, destination)).toArray
               val cgr = new ClosureGroupReplacement(defNodesIndicies, lexicalContext)
           ClosureGroupReplacement.closureGroupReplacements.put(cg, cgr)
@@ -261,14 +258,14 @@ protected final case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjec
 
 protected final case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
-    BoundFuture(execution.futureForId(bindingId))
+    BoundReadable(execution.futureForId(bindingId))
   }
 }
 
 protected final case class BoundClosureReplacement(index: Int, closureGroupReplacement: ClosureGroupReplacement) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     val cg = closureGroupReplacement.unmarshalClosureGroup(execution, origin, astRoot)
-    BoundClosure(new Closure(index, cg))
+    BoundReadable(new Closure(index, cg))
   }
 }
 
