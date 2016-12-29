@@ -133,6 +133,7 @@ trait Group extends GroupMember {
 
   def discorporate(m: GroupMember) {
     synchronized {
+      assert(members contains m, s"Group $this does not contain $m")
       members -= m
       hasDiscorporatedMembers = true
       if (members.isEmpty) { onDiscorporate() }

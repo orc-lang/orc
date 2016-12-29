@@ -144,7 +144,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   //// Blocker Implementation
 
-  override def check(t: Blockable, i: Int) = {
+  def check(t: Blockable, i: Int) = {
     synchronized { state } match {
       case Resolved =>
         t.awakeTerminalValue(members(i))

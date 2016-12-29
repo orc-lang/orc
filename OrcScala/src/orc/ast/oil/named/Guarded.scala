@@ -63,7 +63,6 @@ trait Guarding {
         val r = check(body)
         l && r
       }
-      case Trim(expr) => check(expr)
       case Otherwise(left, right) => {
         val l = check(left)
         val r = right.checkGuarded(if (l) { Nil } else context, unguardedRecursion)
