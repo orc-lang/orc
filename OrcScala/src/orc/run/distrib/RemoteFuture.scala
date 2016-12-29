@@ -48,25 +48,29 @@ class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: Re
     readers
   }
 
-  override def awakeValue(v: AnyRef) = synchronized {
-    //Logger.entering(getClass.getName, "awakeValue")
+  override def awakeNonterminalValue(v: AnyRef) = synchronized {
+    throw new AssertionError("awakeNonterminalValue called on RemoteFutureReader (This is an interpreter bug).")
+  }
+  
+  override def awakeTerminalValue(v: AnyRef) = synchronized {
+    //Logger.entering(getClass.getName, "awakeNonterminalValue")
     val dorcExecution = execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
-
+  
   override def awakeStop() = synchronized {
     //Logger.entering(getClass.getName, "awakeStop")
     val dorcExecution = execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
-  override def awakeException(e: OrcException) = throw new AssertionError(s"RemoteFutureReader.awakeException($e) called; LateBindGroups don't call this on their blockables")
+  override def awakeException(e: OrcException) = throw new AssertionError(s"RemoteFutureReader.awakeException($e) called; Futures don't call this on their blockables")
 
   override def blockOn(b: Blocker) = {}
 
-  override def setQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.setQuiescent() called; LateBindGroups don't call this on their blockables")
+  override def setQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.setQuiescent() called; Futures don't call this on their blockables")
 
-  override def unsetQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.unsetQuiescent() called; LateBindGroups don't call this on their blockables")
+  override def unsetQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.unsetQuiescent() called; Futures don't call this on their blockables")
 
   override def run() {
     //Logger.entering(getClass.getName, "run")

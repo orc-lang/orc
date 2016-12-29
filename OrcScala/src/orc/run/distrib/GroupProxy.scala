@@ -26,7 +26,11 @@ import orc.Schedulable
   *
   * @author jthywiss
   */
-class RemoteGroupProxy(override val execution: Execution, val remoteProxyId: DOrcExecution#GroupProxyId, pubFunc: (Token, Option[AnyRef]) => Unit, onHaltFunc: () => Unit) extends Group {
+class RemoteGroupProxy(override val execution: Execution, 
+    val remoteProxyId: DOrcExecution#GroupProxyId, 
+    pubFunc: (Token, Option[AnyRef]) => Unit, 
+    onHaltFunc: () => Unit, 
+    onDiscorporateFunc: () => Unit) extends Group {
 
   /** An expensive walk-to-root check for alive state */
   override def checkAlive(): Boolean = ???
@@ -46,6 +50,11 @@ class RemoteGroupProxy(override val execution: Execution, val remoteProxyId: DOr
   override def onHalt() {
     //Logger.entering(getClass.getName, "onHalt")
     if (!isKilled) onHaltFunc()
+  }
+
+  override def onDiscorporate() {
+    //Logger.entering(getClass.getName, "onHalt")
+    if (!isKilled) onDiscorporateFunc()
   }
 
   override def run() = throw new AssertionError("RemoteGroupProxy scheduled")
@@ -78,6 +87,15 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
     if (alive) {
       alive = false
       parent.remove(this)
+    }
+  }
+
+  /** Remote group members all halted, but there was discorporates, so discorporate this. */
+  def discorporate() = synchronized {
+    //Logger.entering(getClass.getName, "halt")
+    if (alive) {
+      alive = false
+      parent.discorporate(this)
     }
   }
 
@@ -141,7 +159,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
     val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
-        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, sendPublish(origin, movedToken.tokenProxyId), sendHalt(origin, movedToken.tokenProxyId))
+        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, sendPublish(origin, movedToken.tokenProxyId), sendHalt(origin, movedToken.tokenProxyId), sendDiscorporate(origin, movedToken.tokenProxyId))
         proxiedGroups.put(movedToken.tokenProxyId, rgp)
         rgp
       }
@@ -173,7 +191,21 @@ trait GroupProxyManager { self: DOrcExecution =>
     destination.send(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
+  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+    destination.send(DiscorporateGroupMemberProxyCmd(executionId, groupMemberProxyId))
+  }
+
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
+    val g = proxiedGroupMembers.get(groupMemberProxyId)
+    if (g != null) {
+      runtime.schedule(new Schedulable { def run() = { g.halt() } })
+      proxiedGroupMembers.remove(groupMemberProxyId)
+    } else {
+      Logger.fine(s"halt group member proxy on unknown group member proxy $groupMemberProxyId")
+    }
+  }
+
+  def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.halt() } })
