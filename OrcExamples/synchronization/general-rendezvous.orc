@@ -44,19 +44,24 @@ among the callback cells.
 
 -}
 
-def class Rendezvous[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
-  val b = Table(n, lambda(_::Top) = Channel[(A, Cell[A])]())
+-- TODO: Add [A] to List
+class def Rendezvous[A](n :: Integer, f :: lambda(List) :: List) {
+  -- TODO: Add [(A, Cell[A])] to Channel
+  val b = Table(n, ignore({ Channel() }))
 
-  def go(i :: Integer, v :: A) =
-    val c = Cell[A]()
+  -- TODO: Add A type to v and Cell 
+  def go(i :: Integer, v) =
+    val c = Cell()
     b(i).put((v,c)) >> c.read()
 
-  def collect((List[A], List[Cell[A]]), Integer) :: (List[A], List[Cell[A]])
+  -- TODO: Add [A] to List and Cell types 
+  def collect((List, List[Cell]), Integer) :: (List, List[Cell])
   def collect(vcl,0) = vcl
   def collect((vl,cl),i) =  -- collect i more items
     b(n-i).get() >(v,c)> collect((v:vl,c:cl),i-1)
 
-  def distribute(List[A], List[Cell[A]]) :: Signal
+  -- TODO: Add [A] to List and Cell types 
+  def distribute(List, List[Cell]) :: Signal
   def distribute([],[]) = signal
 {-
 distribute(vl,cl)
@@ -70,8 +75,8 @@ distribute(vl,cl)
   def manager() :: Bot =
    collect(([],[]),n) >(vl,cl)> distribute(f(vl),cl) >> manager()
 
-  manager()
-
+  val _ = manager()
+}
 
 {-
 The following implementation does not use callback mechanism. But, it
@@ -92,29 +97,35 @@ into b(i) until p has completed its cycle, i.e., removed the result
 from c(i).
 -}
 
-def class Rendezvous2[A](n :: Integer, f :: lambda(List[A]) :: List[A]) =
-  val b = Table(n, lambda(_::Top) = Channel[A]())
-  val c = Table(n, lambda(_::Top) = Channel[A]())
-  val sem = Table(n, lambda(_::Top) = Semaphore(1))
+-- TODO: Add [A] to List
+class def Rendezvous2[A](n :: Integer, f :: lambda(List) :: List) {
+  -- TODO: Add [A] to channels 
+  val b = Table(n, ignore({ Channel() }))
+  val c = Table(n, ignore({ Channel() }))
+  val sem = Table(n, ignore({ Semaphore(1) }))
 
-  def go(i :: Integer, v :: A) =
+  -- TODO: Add :: A to v 
+  def go(i :: Integer, v) =
     sem(i).acquire() >>
     b(i).put(v) >> c(i).get() >w>
     sem(i).release() >>
     w
 
-  def collect(List[A], Integer) :: List[A]
+  -- TODO: Add [A] to List types 
+  def collect(List, Integer) :: List
   def collect(vl,0) = vl
   def collect(vl,i) = b(n-i).get() >v> collect(v:vl,i-1)
 
-  def distribute(List[A], Integer) :: Signal
+  -- TODO: Add [A] to List types 
+  def distribute(List, Integer) :: Signal
   def distribute(_,0) = signal
   def distribute(v:vl,i) = c(n-i).put(v) >> distribute(vl,i-1)
 
   def manager() :: Bot =
     collect([],n) >vl> distribute(f(vl),n) >> manager()
 
-  manager()
+  val _ = manager()
+}
 
 {- Test -}
 

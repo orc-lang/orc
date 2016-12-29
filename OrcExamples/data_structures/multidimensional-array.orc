@@ -25,15 +25,8 @@ type Matrix[A] =
 .}
 
 
-def Matrix[A](List[Bounds]) :: Matrix[A]
-
-def class Matrix([]) =
-  val Mat = Array[A](1)
-  def item(List[Integer]) :: Ref[A]
-  def item([]) = Mat(0)
-  stop
-
-def class Matrix(xs) =
+-- TODO: add types def Matrix[A](List[Bounds]) :: Matrix[A]
+class def Matrix(xs) {
 
   {- size of a matrix given a list of bounds, one per dimension -}
   def size(List[Bounds]) :: Integer
@@ -51,20 +44,22 @@ def class Matrix(xs) =
   def index(acc,[],[]) = acc
   def index(acc,(l,h):ys,i:is) = index(acc*(h-l+1)+(i-l),ys,is)
 
-  val Mat = Array[A](size(xs))
-  def item(List[Integer]) :: Ref[A]
+  -- TODO: Add type param for Array[A].
+  val Mat = Array(size(xs))
+  -- TODO: Add type param for Ref.
+  def item(List[Integer]) :: Ref --[A]
   def item(is) = Mat(index(0,xs,is))
-
-  stop
+}
 
 val B = Matrix[Integer]([]).item
 val A = Matrix[Integer]([(-2,0),(-1,3),(-1,3)]).item
 
-A([-1,2,1]) := 3 >> A([-1,2,1])?
+A([-1,2,1]) := 3 >> A([-1,2,1])? |
 
---B([]) := 5 >> B([])?-- >> B([2])?
+B([]) := 5 >> B([])?-- >> B([2])?
 
 {-
-OUTPUT:
+OUTPUT:PERMUTABLE:
 3
+5
 -}

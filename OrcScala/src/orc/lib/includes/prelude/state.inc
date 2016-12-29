@@ -577,8 +577,9 @@ TODO: Write OrcDoc for ref manual entry
 
 @implementation
 --}
-class def ObservationSubject[E]() :: ObservationSubject[E] {
-  val observers = Channel[Channel[E]]()
+class def ObservationSubject[E]() {
+  -- TODO: Add type parameter to channel [E]
+  val observers = Channel[Channel]()
   val observersSem = Semaphore(1)
 
   -- Copies of defs from "util" part of prelude --
@@ -595,17 +596,21 @@ class def ObservationSubject[E]() :: ObservationSubject[E] {
     )
 
   def observe() =
-    val outstanding = Channel[E]()
+    -- TODO: Add type parameter to channel. E
+    val outstanding = Channel()
     withLock(observersSem, { observers.put(outstanding) })  >>
+    -- TODO: Make this into an object
     {.
       get = { outstanding.get() },
       stream = {
-        def doStream() :: E = outstanding.get() >e> (e | doStream())
+        -- TODO: Add publication type E
+        def doStream() = outstanding.get() >e> (e | doStream())
         doStream() },
       close = { outstanding.closeD() }, -- Will get dropped from 'observers' on next put
       isClosed ={ outstanding.isClosed() }
     .}
-  def put(e :: E) :: Signal =
+  -- TODO: Add type to e :: E
+  def put(e) :: Signal =
     withLock(observersSem, {
       ( val currObservers = observers.getAll()
         each(currObservers) >o> o.put(e) >> observers.put(o) >> stop )
