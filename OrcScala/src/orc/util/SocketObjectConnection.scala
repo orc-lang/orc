@@ -35,17 +35,17 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     */
   def receive(): R = ois synchronized {
     val o = ois.readObject().asInstanceOf[R]
-    orc.run.distrib.Logger.fine(s"SocketObjectConnection.receive: Received $o on ${socket}")
+    orc.run.distrib.Logger.finest(s"SocketObjectConnection.receive: Received $o on ${socket}")
     o
   }
 
   /** Put an object in the stream. If the stream is closed, throw.
     */
   def send(obj: S) = oos synchronized {
-    orc.run.distrib.Logger.fine(s"SocketObjectConnection.send: Sending $obj on ${socket}")
+    orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sending $obj on ${socket}")
     oos.writeObject(obj)
     oos.flush()
-    orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
+    //orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
     /* Need to do a TCP push, but can't from Java */
   }
 

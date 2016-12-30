@@ -140,7 +140,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
   def sendToken(token: Token, destination: PeerLocation) {
-    Logger.entering(getClass.getName, "sendToken")
+    Logger.fine(s"sendToken $token")
     val group = token.getGroup
     val proxyId = group match {
       case rgp: RemoteGroupProxy => rgp.remoteProxyId
@@ -175,7 +175,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
-    Logger.finest(s"sendPublish: publish by token $token")
+    Logger.fine(s"sendPublish: publish by token $token")
     destination.send(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, node, proxyId, destination, pv)))
   }
 
@@ -183,7 +183,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
     val newToken = publishingToken.asPublishingToken(origin, node, newTokenGroup)
-    Logger.fine(s"scheduling $newToken")
+    Logger.fine(s"publishInGroup $newToken")
     runtime.schedule(newToken)
   }
 
