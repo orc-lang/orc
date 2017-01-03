@@ -2,8 +2,6 @@
 // BenchmarkTest.scala -- Scala class/trait/object BenchmarkTest
 // Project OrcTests
 //
-// $Id$
-//
 // Created by amp on Oct 27, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

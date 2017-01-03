@@ -1,7 +1,5 @@
 {- active_class.orc -- An active class object in Orc
  -
- - $Id$
- -
  - Created by amp on Jan 4, 2015 7:33:07 PM
  -}
 

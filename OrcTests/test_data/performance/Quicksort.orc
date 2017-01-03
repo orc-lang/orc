@@ -1,7 +1,5 @@
 {- Quicksort.orc -- Orc program Quicksort
  - 
- - $Id$
- - 
  - Created by amp on Jul 20, 2013 12:29:59 PM
  -}
 

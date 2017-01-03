@@ -1,7 +1,5 @@
 {- kill_remove.orc -- Orc program kill_remove
  -
- - $Id$
- -
  - Created by amp on Feb 17, 2015 1:53:14 PM
  -}
  

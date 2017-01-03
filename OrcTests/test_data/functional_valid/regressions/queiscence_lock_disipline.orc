@@ -1,7 +1,5 @@
 {- queiscence_lock_disipline.orc -- Attempt to trigger a dead-lock between various resolving classes and defs.
  -
- - $Id$
- -
  - Created by amp on Feb 12, 2015 2:15:07 PM
  -}
 

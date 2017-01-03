@@ -2,8 +2,6 @@
 // OrcObject.scala -- Scala class OrcObject
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Jul 10, 2010. Updated to object from record by amp in Dec 2014.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

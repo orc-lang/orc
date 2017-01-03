@@ -1,7 +1,5 @@
 {- linearization_conflict.orc -- Orc program linearization_conflict
  -
- - $Id$
- -
  - Created by amp on Feb 7, 2015 3:35:19 PM
  -}
 

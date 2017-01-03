@@ -1,7 +1,5 @@
 {- site3.orc -- Test site multipe publication
  -
- - $Id$
- -
  - Created by amp on Nov 30, 2014 10:57:40 PM
  -}
 

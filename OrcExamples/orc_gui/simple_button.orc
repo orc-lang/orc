@@ -1,7 +1,5 @@
 {- simple_button.orc -- Orc program simple_button
  -
- - $Id$
- -
  - Created by amp on Feb 11, 2015 7:37:38 PM
  -}
 

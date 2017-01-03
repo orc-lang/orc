@@ -1,7 +1,5 @@
 {- constructors.orc -- Orc program constructors
  -
- - $Id$
- -
  - Created by amp on Mar 1, 2015 1:35:32 PM
  -}
 

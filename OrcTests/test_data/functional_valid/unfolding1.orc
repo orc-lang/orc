@@ -1,7 +1,5 @@
 {- unfolding1.orc -- Test graft behaviour of unfolding
  -
- - $Id$
- -
  - Created by amp on Nov 28, 2014
  -}
 

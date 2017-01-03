@@ -1,7 +1,5 @@
 {- site4.orc -- Test call halting if site declaration is terminated
  -
- - $Id$
- -
  - Created by amp on Nov 30, 2014 10:57:40 PM
  -}
 

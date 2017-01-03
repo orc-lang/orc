@@ -2,8 +2,6 @@
  -
  - Several computations that can be superposed on others.
  - 
- - $Id$
- -
  - Created by amp in Jan, 2015
  -}
 

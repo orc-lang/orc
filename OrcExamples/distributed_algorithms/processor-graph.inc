@@ -2,8 +2,6 @@
  - 
  - A set of base classes that represent process graphs and allow for superposition.
  - 
- - $Id$
- -
  - Created by amp in Jan, 2015
  -}
 

@@ -1,7 +1,5 @@
 {- trim2.orc -- Test trim of publications in trim
  -
- - $Id$
- -
  - Created by amp on Nov 28, 2014
  -}
 

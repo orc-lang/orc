@@ -1,7 +1,5 @@
 {- from_java_call.orc -- Orc program from_java_call
  -
- - $Id$
- -
  - Created by amp on Feb 12, 2015 11:15:31 PM
  -}
  

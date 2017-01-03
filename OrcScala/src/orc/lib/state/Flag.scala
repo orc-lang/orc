@@ -2,8 +2,6 @@
 // IterableToStream.scala -- Scala object IterableToStream
 // Project OrcScala
 //
-// $Id$
-//
 // Created by dkitchin on Apr 11, 2011.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

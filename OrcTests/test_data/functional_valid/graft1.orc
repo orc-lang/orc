@@ -1,7 +1,5 @@
 {- graft1.orc -- Test graft behaviour of val
  -
- - $Id$
- -
  - Created by amp on Nov 28, 2014
  -}
 

@@ -1,8 +1,6 @@
 {------ Superposed computation
  - An example of superposing a Lamport clock and a distributed snapshot algorithm on top of another distributed algorithm.
  -
- - $Id$
- -
  - Created by amp in Jan, 2015
  -}
 

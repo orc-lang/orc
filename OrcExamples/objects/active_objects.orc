@@ -1,7 +1,5 @@
 {- active_objects.orc -- Building an active object using Orc Objects
  -
- - $Id$
- -
  - Created by amp on Feb 20, 2015 3:22:13 PM
  -}
  

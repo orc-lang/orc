@@ -32,7 +32,3 @@ should not run Orc with the "-jar" option. Instead, run programs
 with the orc.Main class, for example:
 
 java -cp <path-to-Orc>/orc-2.9.0-M1.jar:<path-to-Orc>/lib/\*:orc-sites-2.9.0-M1.jar:lib/\* orc.Main examples/eliza.orc
-
-
---
-[$Id$]

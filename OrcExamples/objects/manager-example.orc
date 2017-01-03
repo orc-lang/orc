@@ -1,7 +1,5 @@
 {- supervisor-example.orc -- Supervisor example
  -
- - $Id$
- -
  - Created by amp on Mar 24, 2015 8:23:14 PM
  -}
 

@@ -1,7 +1,5 @@
 {- cake_pattern.orc -- Orc program cake_pattern
  -
- - $Id$
- -
  - Created by amp on Jan 30, 2015 6:54:54 PM
  -}
 

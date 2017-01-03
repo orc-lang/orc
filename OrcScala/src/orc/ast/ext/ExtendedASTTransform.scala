@@ -2,8 +2,6 @@
 // Transformation.scala -- Scala traits ExtendedASTFunction and ExtendedASTTransform and object EmptyFunction
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jan, 2015.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

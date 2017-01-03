@@ -1,7 +1,5 @@
 {- trim2.orc -- Test termination in trim
  -
- - $Id$
- -
  - Created by amp on Nov 28, 2014
  -}
 

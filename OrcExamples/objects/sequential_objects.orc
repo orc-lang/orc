@@ -1,7 +1,5 @@
 {- sequential_objects.orc -- Using Orc Objects as normal sequential objects
  -
- - $Id$
- -
  - Created by amp on Feb 20, 2015 3:55:13 PM
  -}
 

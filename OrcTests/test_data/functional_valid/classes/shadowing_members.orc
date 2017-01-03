@@ -1,7 +1,5 @@
 {- shadowing_members.orc -- Orc program shadowing_members
  -
- - $Id$
- -
  - Created by amp on Feb 21, 2015 5:02:11 PM
  -}
 

@@ -1,7 +1,5 @@
 {- Mandelbrot.orc -- Orc program Mandelbrot
  - 
- - $Id$
- - 
  - Created by amp on Aug 15, 2012 10:25:54 AM
  -}
 

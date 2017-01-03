@@ -2,8 +2,6 @@
 // MicrosoftTranslator.scala -- Scala class MicrosoftTranslator
 // Project OrcSites
 //
-// $Id$
-//
 // Created by amp on Oct 9, 2016.
 //
 // Copyright (c) 2019 The University of Texas at Austin. All rights reserved.

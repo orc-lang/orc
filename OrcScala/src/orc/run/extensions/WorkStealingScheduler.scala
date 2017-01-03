@@ -2,8 +2,6 @@
 // ThreadPoolScheduler.scala -- Scala traits OrcWithThreadPoolScheduler, OrcRunner, and OrcThreadPoolExecutor
 // Project OrcScala
 //
-// $Id$
-//
 // Created by jthywiss on Mar 29, 2011.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

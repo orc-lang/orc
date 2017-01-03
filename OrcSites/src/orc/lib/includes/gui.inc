@@ -1,7 +1,5 @@
 {- gui.inc -- A GUI library for Orc programs
  -
- - $Id$
- -
  - Created by amp on Feb 11, 2015 7:43:34 PM
  -}
 

@@ -1,7 +1,5 @@
 {- supervisor.inc -- The supervisor pattern
  -
- - $Id$
- -
  - This library is inspired by Erlang/OTP but uses object orientation to make it easier for 
  - objects under the same superviser to communicate. This approach is type-safe, but requires
  - that the user implement a group object that generates all the required managers. So without

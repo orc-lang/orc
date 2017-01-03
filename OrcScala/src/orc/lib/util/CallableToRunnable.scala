@@ -2,8 +2,6 @@
 // CallableToRunnable.scala -- Scala object CallableToRunnable and CallableToCallable
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amd on Feb 11, 2015.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

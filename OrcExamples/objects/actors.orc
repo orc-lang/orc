@@ -1,7 +1,5 @@
 {- actors.orc -- Building an actor using Orc Objects
  -
- - $Id$
- -
  - Created by amp on Feb 20, 2015 1:06:57 PM
  -}
  

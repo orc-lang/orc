@@ -1,7 +1,5 @@
 {- kill_detection.orc -- Orc program kill_detection
  -
- - $Id$
- -
  - Created by amp on Dec 6, 2014 1:43:10 PM
  -}
 
