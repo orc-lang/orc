@@ -44,6 +44,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     case BoundReadable(fut: Future) => {
       val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(fut)
       BoundFutureReplacement(id)
+      // TODO: Reinstate this optimization.
 //      g.state match {
 //        case RightSidePublished(None) => BoundStop
 //        case RightSidePublished(Some(v)) => BoundValue(v)
