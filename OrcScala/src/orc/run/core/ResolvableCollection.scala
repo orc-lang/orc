@@ -13,8 +13,6 @@
 
 package orc.run.core
 
-// TODO: Check for changes to ClosureGroup in master
-
 import orc.Schedulable
 import orc.OrcRuntime
 import orc.util.BlockableMapExtension

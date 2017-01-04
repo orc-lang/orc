@@ -95,7 +95,7 @@ case class ClassForms(val translator: Translator) {
         val misorderedClasses = beforeCinB.filter(tailSet contains _)
         if (!misorderedClasses.isEmpty) {
           val conflictingClasses = (c :: misorderedClasses).toSet
-          // TODO: Check if both c and at least one class in misorderedClasses declare the same member
+          // TODO: Improvment: Check if both c and at least one class in misorderedClasses declare the same member
           translator.reportProblem(ConflictingOrderWarning(
             a.linearization.filter(conflictingClasses.contains).map(_.name.toString),
             b.linearization.filter(conflictingClasses.contains).map(_.name.toString)) at e)

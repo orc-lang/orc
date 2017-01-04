@@ -326,16 +326,16 @@ object Conversions {
     * ...
     * <xn<| en
     *
-    * where E is not a latebind,
+    * where E is not a graft,
     * return E and (x1,e1), ... , (xn,en)
     *
     * If E is not of this form,
     * return E and Nil.
     */
-  def partitionLatebind(expr: Expression): (List[(Argument, Expression)], Expression) = {
+  def partitionGraft(expr: Expression): (List[(Argument, Expression)], Expression) = {
     expr match {
       case Graft(x, value, body) => {
-        val (bindings, core) = partitionLatebind(body)
+        val (bindings, core) = partitionGraft(body)
         ((x, value) :: bindings, core)
       }
       case _ => (Nil, expr)
@@ -369,7 +369,7 @@ object Conversions {
 object FoldedCall {
 
   def unapply(expr: Expression): Option[(Expression, List[Expression], Option[List[Type]])] = {
-    Conversions.partitionLatebind(expr) match {
+    Conversions.partitionGraft(expr) match {
       case (Nil, Call(target, args, typeArgs)) => Some((target, args, typeArgs))
       case (bindings, Call(target, args, typeArgs)) => {
         val exprMap = bindings.toMap

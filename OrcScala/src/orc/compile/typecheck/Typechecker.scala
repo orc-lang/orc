@@ -139,8 +139,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
   def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
     try {
       expr -> {
-        /* FoldedCall must be checked before prune, since it
-         * may contain some number of enclosing prunings.
+        /* FoldedCall must be checked before graft, since it
+         * may contain some number of enclosing grafts.
          */
         case FoldedCall(target, args, typeArgs) => {
           val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T), expr)

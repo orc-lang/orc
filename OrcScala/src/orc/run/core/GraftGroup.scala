@@ -14,8 +14,6 @@ package orc.run.core
 
 import orc.Schedulable
 
-// TODO: Check this against changes to LateBindGroup.scala in master
-
 /** A GraftGroup is the group associated with expression g in val x = g # f.
   *
   * We use early initialization here because the group can be killed as soon as the 

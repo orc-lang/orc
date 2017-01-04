@@ -315,7 +315,7 @@ object OrcJavaCompatibility {
 
   /** Most specific method per JLS §15.12.2.5 */
   private def mostSpecificMethod[M <: { def getDeclaringClass(): java.lang.Class[_]; def getParameterTypes(): Array[java.lang.Class[_]]; def getModifiers(): Int }](methods: Traversable[M]): M = {
-    //FIXME:TODO: Verify that this is correct wrt var arg calls. It probably is because array subtyping is allowed.
+    //FIXME: Verify that this is correct wrt var arg calls. It probably is because array subtyping is allowed.
     val maximallySpecificMethods =
       methods.foldLeft(List[M]())({ (prevMostSpecific: List[M], nextMethod: M) =>
         if (prevMostSpecific.isEmpty) {

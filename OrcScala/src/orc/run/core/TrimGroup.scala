@@ -1,5 +1,5 @@
 //
-// TrimGroup.scala -- Group representing limits in Orc 5C
+// TrimGroup.scala -- Group representing trims in Orc 5C
 // Project OrcScala
 //
 // Created by amp on Sep 24, 2013.
