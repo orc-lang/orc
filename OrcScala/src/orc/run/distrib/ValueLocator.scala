@@ -50,6 +50,6 @@ case object Remote extends MigrationDecision
   * @author jthywiss
   */
 trait DOrcMarshallingNotifications {
-  def marshalled() { }
-  def unmarshalled() { }
+  def marshalled() {}
+  def unmarshalled() {}
 }

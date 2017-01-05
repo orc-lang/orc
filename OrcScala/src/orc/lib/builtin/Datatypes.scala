@@ -19,7 +19,7 @@ import orc.util.TypeListEnrichment._
 import orc.values._
 import orc.values.sites.{ FunctionalSite, PartialSite1, TotalSite, TypedSite }
 
-object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite{
+object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
 
   override def name = "Datatype"
   def evaluate(args: List[AnyRef]) = {

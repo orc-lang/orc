@@ -222,7 +222,7 @@ object OrcXML {
           { os.map(toXML) }
         </new>
       case Classvar(i) => <classvar index={ i.toString }/>
-      case Class(bindings) => 
+      case Class(bindings) =>
         <class>
           {
             for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
@@ -424,9 +424,8 @@ object OrcXML {
 
   /** An OrcSourceRange made of two PlaceholderPositions. */
   class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
-      extends OrcSourceRange(
-        (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))
-      ) {
+    extends OrcSourceRange(
+      (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))) {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
   }

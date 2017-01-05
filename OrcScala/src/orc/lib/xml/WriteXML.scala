@@ -20,7 +20,6 @@ import scala.xml.Node
 import orc.error.runtime.ArgumentTypeMismatchException
 
 /**
-  *
   * @author dkitchin
   */
 class WriteXML extends TotalSite1 with TypedSite {

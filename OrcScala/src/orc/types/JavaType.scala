@@ -18,8 +18,7 @@ import orc.error.compiletime.typing.NoSuchMemberException
 import orc.values.sites.OrcJavaCompatibility
 import java.lang.reflect.Modifier
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait JavaType {
   self: Type =>
@@ -63,8 +62,8 @@ trait JavaType {
          */
         val mss = ms.sortWith({ (l, r) =>
           l.getParameterTypes().length < r.getParameterTypes().length ||
-          OrcJavaCompatibility.isEqOrMoreSpecific(l, r) ||
-          (!Modifier.isAbstract(l.getModifiers()) && Modifier.isAbstract(r.getModifiers())) ||
+            OrcJavaCompatibility.isEqOrMoreSpecific(l, r) ||
+            (!Modifier.isAbstract(l.getModifiers()) && Modifier.isAbstract(r.getModifiers())) ||
             OrcJavaCompatibility.isJavaSubtypeOf(l.getReturnType(), r.getReturnType())
         })
         OverloadedType(mss map { liftJavaMethod(_, javaContext) })

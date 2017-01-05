@@ -43,7 +43,7 @@ trait Blocker {
     */
   def check(t: Blockable): Unit
 }
-  
+
 trait ReadableBlocker extends Blocker {
   /** Block t on this if it is not yet bound otherwise immediately awake t.
     */

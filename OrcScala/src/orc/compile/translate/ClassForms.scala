@@ -47,7 +47,6 @@ case class ClassForms(val translator: Translator) {
     tmpField
   }
 
-
   def concatUniquePreferRight[T](a: List[T], b: List[T]): List[T] = a match {
     case v +: vs => if (b contains v) concatUniquePreferRight(vs, b) else v +: concatUniquePreferRight(vs, b)
     case Seq() => b
@@ -114,15 +113,20 @@ case class ClassForms(val translator: Translator) {
       var concreteNames = Set[String]()
 
       override def onPattern() = {
-        case p @ ext.VariablePattern(n) => concreteNames += n; p
+        case p @ ext.VariablePattern(n) =>
+          concreteNames += n; p
         case p @ ext.AsPattern(pat, n) => concreteNames += n; this(pat); p
       }
 
       override def onDeclaration() = {
-        case d: ext.Val => this(d.p); d
-        case d @ ext.ValSig(n, _) => otherNames += n; d
-        case d: ext.CallableSig => otherNames += d.name; d
-        case d: ext.NamedDeclaration => concreteNames += d.name; d
+        case d: ext.Val =>
+          this(d.p); d
+        case d @ ext.ValSig(n, _) =>
+          otherNames += n; d
+        case d: ext.CallableSig =>
+          otherNames += d.name; d
+        case d: ext.NamedDeclaration =>
+          concreteNames += d.name; d
         case d => d
       }
     }
@@ -240,8 +244,7 @@ case class ClassForms(val translator: Translator) {
     *
     * This also returns a new class context to be used for subexpressions.
     */
-  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): 
-          (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
+  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
     // Check for duplicate names
     for (c :: cs <- clss.tails) {
       cs.find(_.name == c.name) match {
@@ -278,25 +281,25 @@ case class ClassForms(val translator: Translator) {
     val recursiveTypeContext = typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
     val newClss = for (info <- additionalClasses) yield {
       val cls = makeClassFromInfo(info)(implicitly, recursiveTypeContext, recursiveClassContext)
-      val additionalBindings = constructorMakers.map { case (n, b) =>
-        val newdef = b(recursiveTypeContext, recursiveClassContext)
-        Field(n) -> DeclareCallables(List(newdef), newdef.name)
+      val additionalBindings = constructorMakers.map {
+        case (n, b) =>
+          val newdef = b(recursiveTypeContext, recursiveClassContext)
+          Field(n) -> DeclareCallables(List(newdef), newdef.name)
       }
-      cls.copy(bindings = cls.bindings ++ additionalBindings) 
+      cls.copy(bindings = cls.bindings ++ additionalBindings)
     }
-    
+
     val constructors = constructorMakers.values.map(_(recursiveTypeContext, recursiveClassContext))
     val newContext = context ++ constructors.map(d => d.name.optionalVariableName.get -> d.name)
 
     (newClss, constructors.toList, newContext, recursiveTypeContext, recursiveClassContext)
   }
 
-  /**
-    * Build a class constructor.
-    * 
+  /** Build a class constructor.
+    *
     * toBind is a sequence of fields that should be bound from constructor arguments.
     * toRecursiveBind is a set of fields that should be bound to specific variables
-    * (usually recursive functions). This can contain constrName and often will. 
+    * (usually recursive functions). This can contain constrName and often will.
     */
   private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Option[Seq[Type]], returnType: Option[Type])(classcontext: Map[String, ClassInfo]): Callable = {
     val formals = toBind.map(f => new BoundVar(Some(f.field))).toList
@@ -315,8 +318,8 @@ case class ClassForms(val translator: Translator) {
     }
     val typeformals = Nil
     val argtypes = argTypes.map(_.toList)
-    
-    if(isSite)
+
+    if (isSite)
       Site(constrName, formals, body, typeformals, argtypes, returnType)
     else
       Def(constrName, formals, body, typeformals, argtypes, returnType)
@@ -327,7 +330,7 @@ case class ClassForms(val translator: Translator) {
     * that handle the constructor arguments. This also returns a sequence of functions that build the
     * constructors themselves within a specific type context. This cannot return the constructors themselves
     * since they need to be built in a context with the class types that will only exist later in the process.
-    * 
+    *
     * The appoach is to first collect type and name information about all the constructors and then update
     * classes and build constructor maker closures using that information.
     */
@@ -341,38 +344,38 @@ case class ClassForms(val translator: Translator) {
         }
       }
       val argTypesOpt = if (argOptTypes.exists(_.isEmpty)) None else Some(argOptTypes.map(_.get))
-      val constrType = for(returnType <- constructor.returntype; argTypes <- argTypesOpt) yield ext.LambdaType(Nil, argTypes, returnType)
+      val constrType = for (returnType <- constructor.returntype; argTypes <- argTypesOpt) yield ext.LambdaType(Nil, argTypes, returnType)
       constructor.name -> (new BoundVar(Some(constructor.name)), argTypesOpt, constrType)
     }).toMap
-    
+
     val toRecursiveBind = constructorInfo map { case (n, (v, _, _)) => Field(n) -> v }
     val newConstructorDecls = constructorInfo.toList.map { case (n, (_, _, t)) => ext.ValSig(n, t) }
-    
+
     // Generate the desugared classes and constuctor maker functions
     val results = for (cls @ ext.ClassDeclaration(constructor, superclass, body) <- clss) yield {
       val (newCls, constrMakerMapping) = constructor match {
         case _: ext.ClassConstructor.None => (cls, None)
         case constructor: ext.ClassCallableConstructor => {
           val newFields = constructor.formals.map(_ => uniqueField("arg"))
-          
+
           val (_, argTypesOpt, _) = constructorInfo(constructor.name)
           val argOptTypes = argTypesOpt.map(_.map(Some(_))).getOrElse(constructor.formals.map(_ => None))
-          
+
           val newDecls = (newFields zip constructor.formals zip argOptTypes) flatMap { both =>
             val ((tmpField, p), argType) = both
             List(
-                ext.ValSig(tmpField.field, argType), 
-                ext.Val(p, ext.Call(ext.Variable("this"), List(ext.FieldAccess(tmpField.field)))))
+              ext.ValSig(tmpField.field, argType),
+              ext.Val(p, ext.Call(ext.Variable("this"), List(ext.FieldAccess(tmpField.field)))))
           }
-                    
-          val newCls = ext.ClassDeclaration(ext.ClassConstructor.None(constructor.name, constructor.typeformals), superclass, 
-                body.copy(decls = body.decls ++ newDecls))
-                
-          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = 
+
+          val newCls = ext.ClassDeclaration(ext.ClassConstructor.None(constructor.name, constructor.typeformals), superclass,
+            body.copy(decls = body.decls ++ newDecls))
+
+          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) =
             makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
-                constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
-                argTypesOpt.map(_.map(convertType(_)(tc))), constructor.returntype map { convertType(_)(tc) })(cc)
-                
+              constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
+              argTypesOpt.map(_.map(convertType(_)(tc))), constructor.returntype map { convertType(_)(tc) })(cc)
+
           (newCls, Some(constructor.name -> constrMaker _))
         }
       }
@@ -388,7 +391,7 @@ case class ClassForms(val translator: Translator) {
     case a: Argument => Set(a)
     case _ => Set()
   }
-  
+
   private def unboundVarArguments(e: Expression): Set[UnboundVar] = arguments(e).collect {
     case v: UnboundVar => v
   }

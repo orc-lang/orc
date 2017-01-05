@@ -31,7 +31,7 @@ import orc.error.runtime.TokenLimitReachedError
   * @author dkitchin
   */
 trait Group extends GroupMember {
-  override def toString = super.toString + (if (alive) "" else "!!!") 
+  override def toString = super.toString + (if (alive) "" else "!!!")
 
   override val nonblocking = true
 
@@ -110,7 +110,7 @@ trait Group extends GroupMember {
     case t: Token if (options.maxTokens > 0) => execution.tokenCount.decrementAndGet()
     case _ => {}
   }
-  
+
   def remove(m: GroupMember) {
     synchronized {
       if (!alive) {

@@ -35,7 +35,7 @@ class TrimGroup(parent: Group) extends Subgroup(parent) {
     if (!isFinished)
       parent.remove(this)
   }
-  
+
   def onDiscorporate() = synchronized {
     if (!isFinished)
       parent.discorporate(this)

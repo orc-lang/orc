@@ -80,7 +80,7 @@ trait PartialSite extends Site {
   }
 
   def evaluate(args: List[AnyRef]): Option[AnyRef]
-  
+
   override def publications: Range = super.publications intersect Range(0, 1)
 }
 

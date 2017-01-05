@@ -20,7 +20,7 @@ import orc.ast.oil.nameless.Expression
   *
   * Be careful when using a Frame as a collection; it does not have a builder.
   * Also, the bottom frame in a stack (EmptyFrame) is invisible to iterators.
-  * 
+  *
   * @author dkitchin
   */
 sealed trait Frame extends Traversable[Frame] {
@@ -35,7 +35,7 @@ case object EmptyFrame extends Frame {
   def apply(t: Token, v: Option[AnyRef]) = {
     throw new AssertionError("Cannot publish through an empty frame")
   }
-  def foreach[U](f: Frame => U) = { }
+  def foreach[U](f: Frame => U) = {}
 }
 
 /** A stack frame that has a predecessor.

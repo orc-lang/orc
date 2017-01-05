@@ -12,8 +12,7 @@
 //
 package orc.run.core
 
-/**
-  * @author amp
+/** @author amp
   */
 trait Resolver extends Blockable {
 

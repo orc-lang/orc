@@ -24,8 +24,7 @@ import orc.types.FunctionType
 import orc.types.SimpleFunctionType
 import orc.error.runtime.ArgumentTypeMismatchException
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object IterableToStream extends TotalSite1 with TypedSite {
 

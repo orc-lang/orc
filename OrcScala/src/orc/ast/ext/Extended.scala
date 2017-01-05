@@ -205,7 +205,7 @@ sealed abstract class ClassConstructor extends AST {
 sealed abstract class ClassCallableConstructor extends ClassConstructor {
   val formals: List[Pattern]
   val returntype: Option[Type]
-  
+
   def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]): ClassCallableConstructor
 }
 object ClassConstructor {
@@ -218,7 +218,7 @@ object ClassConstructor {
   case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]) extends ClassCallableConstructor {
     def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype): Site = {
       Site(name, typeformals, formals, returntype)
-    }    
+    }
   }
 }
 

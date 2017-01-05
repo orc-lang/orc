@@ -203,7 +203,7 @@ sealed case class UnboundTypeVariable(name: String) extends Type with hasOptiona
   optionalVariableName = Some(name)
 }
 
-case class Classvar(index: Int) 
+case class Classvar(index: Int)
   extends NamelessAST
   with hasFreeVars
   with hasOptionalVariableName {

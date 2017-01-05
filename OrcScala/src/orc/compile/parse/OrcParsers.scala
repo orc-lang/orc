@@ -228,7 +228,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | "_" -> Placeholder
     | "stop" -> Stop
     | "this" -> Variable("this")
-    | "super" ~> "." ~> ident -> { f => Call(Variable("super"), List(FieldAccess(f))) } 
+    | "super" ~> "." ~> ident -> { f => Call(Variable("super"), List(FieldAccess(f))) }
     | ListOf(parseExpression) -> ListExpr
     | RecordOf("=", parseExpression) -> RecordExpr
     | "new" ~> parseNewClassExpression -> New
@@ -250,7 +250,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | (("[" ~> CommaSeparated(parseType) <~ "]")?) ~ ("(" ~> CommaSeparated(parseExpression) <~ ")") -> Args)
 
   val parseCallExpression: Parser[Expression] = (
-      parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
+    parseBaseExpression ~ ((parseArgumentGroup+)?) -?-> Call)
 
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
@@ -369,7 +369,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
   val parseDefSigCoreNamed = (
     ident ~ (ListOf(parseTypeVariable)?) ~ (TupleOf(parsePattern)) ~ (parseReturnType?))
-    
+
   val parseDefCore = (
     parseDefSigCoreNamed ~ (parseGuard?) ~ ("=" ~> parseExpression))
 
@@ -398,15 +398,15 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | parseClassPrimitiveExpression)
 
   val parseNewClassExpression = (
-          (ident -> ClassVariable
-              | "(" ~> parseClassExpression <~ ")") ~ parseClassBody -> ClassSubclassLiteral
-          | parseClassExpression)
-  
+    (ident -> ClassVariable
+      | "(" ~> parseClassExpression <~ ")") ~ parseClassBody -> ClassSubclassLiteral
+      | parseClassExpression)
+
   val parseClassConstructor: Parser[ClassConstructor] = (
-      ident ~ (ListOf(parseTypeVariable)?) -> ClassConstructor.None
-      | "def" ~> parseDefSigCoreNamed -> ClassConstructor.Def 
-      | "site" ~> parseDefSigCoreNamed -> ClassConstructor.Site)
-      
+    ident ~ (ListOf(parseTypeVariable)?) -> ClassConstructor.None
+    | "def" ~> parseDefSigCoreNamed -> ClassConstructor.Def
+    | "site" ~> parseDefSigCoreNamed -> ClassConstructor.Site)
+
   val parseClassDeclaration = (
     (parseClassConstructor ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
 
@@ -414,7 +414,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     (
 
       ("val" ~> parsePattern) ~ ("=" ~> parseExpression) -> Val
-      
+
       | ("val" ~> ident ~ ("::" ~> parseType).?) -> ValSig
 
       | "def" ~> parseDefDeclaration

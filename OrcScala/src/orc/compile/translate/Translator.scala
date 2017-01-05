@@ -38,14 +38,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     // TODO: Proper error handling for references to unknown classes.
     convert(extendedAST)(rootContext, rootTypeContext, rootClassContext)
   }
-  
+
   val classForms = new ClassForms(this)
 
   /** Convert an extended AST expression to a named OIL expression.
     */
   def convert(e: ext.Expression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Expression = {
     implicit val implicit_self = this
-        
+
     e -> {
       case ext.Stop() => Stop()
       case ext.Constant(c) => Constant(c)
@@ -144,7 +144,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val newdef = AggregateDef(lambda.formals, lambda.body)(this).convert(lambdaName, implicitly, implicitly, implicitly)
         DeclareCallables(List(newdef), lambdaName)
       }
- 
+
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))
       }
@@ -240,7 +240,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareType(d, variantType, Graft(x, source(makeSites), target(newbody)))
       }
 
-      case ext.Declare(decl : ext.ValSig, _) => throw (MalformedExpression("Value signatures are only allowed in classes") at decl)
+      case ext.Declare(decl: ext.ValSig, _) => throw (MalformedExpression("Value signatures are only allowed in classes") at decl)
       case ext.Declare(decl, _) => throw (MalformedExpression("Invalid declaration form") at decl)
 
       case ext.TypeAscription(body, t) => HasType(convert(body), convertType(t))

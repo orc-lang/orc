@@ -58,21 +58,21 @@ object OrcWorkStealingExecutor {
       new OrcWorkerThread(p, getNewThreadName())
     }
   }
-  
+
   @inline
   def currentOrcWorkerThread() = {
     Thread.currentThread() match {
-      case t : OrcWorkerThread =>
+      case t: OrcWorkerThread =>
         t
       case t =>
         throw new AssertionError(s"currentOrcWorkerThread called from a non scheduler worker thread: $t (${t.getClass})")
     }
   }
-  
+
   final class OrcForkJoinTask(task: Schedulable) extends ForkJoinTask[Void] {
-    final def getRawResult() : Void = null
-    final def setRawResult(v : Void) = ()
-    final def exec() : Boolean = {
+    final def getRawResult(): Void = null
+    final def setRawResult(v: Void) = ()
+    final def exec(): Boolean = {
       try {
         if (task.nonblocking)
           task.run()
@@ -87,7 +87,7 @@ object OrcWorkStealingExecutor {
             def isReleasable() = done
           })
       } catch {
-        case e: Throwable => 
+        case e: Throwable =>
           Logger.log(Level.SEVERE, "Exception in schedulable run", e)
       } finally {
         task.onComplete()
@@ -116,13 +116,12 @@ final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: 
   // Default exception handler
   null,
   // Use async mode (FIFO queue instead of LIFO stack of tasks)
-  true
-  ) with OrcRunner with Runnable {
+  true) with OrcRunner with Runnable {
   import OrcWorkStealingExecutor._
 
   val threadGroup = getFactory().asInstanceOf[OrcWorkStealingExecutor.OrcWorkerThreadFactory].threadGroup
   val maximumPoolSize = if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256
-  
+
   private var supervisorThread: Thread = null
   @scala.volatile private var onShutdownStart: () => Unit = { () => }
   @scala.volatile private var onShutdownFinish: () => Unit = { () => }
@@ -146,7 +145,7 @@ final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: 
     }
     currentOrcWorkerThread().stagedTasks += task
   }
-  
+
   @throws(classOf[IllegalStateException])
   @throws(classOf[SecurityException])
   def executeTask(task: Schedulable) {
@@ -156,7 +155,7 @@ final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: 
     //FIXME: Don't allow blocking tasks to consume all worker threads
     val fjtask = new OrcForkJoinTask(task)
     // Check if we are already in the thread pool
-    if(Thread.currentThread().isInstanceOf[OrcWorkerThread])
+    if (Thread.currentThread().isInstanceOf[OrcWorkerThread])
       fjtask.fork()
     else
       execute(fjtask)
@@ -193,7 +192,7 @@ final class OrcWorkStealingExecutor(engineInstanceName: String, maxSiteThreads: 
 
   override def run() {
     Logger.warning(
-        "Using experimental WorkStealingScheduler that does not propertly handle blocking threads. " +
+      "Using experimental WorkStealingScheduler that does not propertly handle blocking threads. " +
         "Your program may run out of runtime threads if they all block.")
     // For now do no supervision.
     // TODO: Integrate with ForkJoinPool blocking handling.

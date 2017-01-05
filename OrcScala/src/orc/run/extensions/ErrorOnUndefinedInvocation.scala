@@ -17,8 +17,7 @@ import orc.Handle
 import orc.values.Format
 import orc.error.runtime.UncallableValueException
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   /* This replaces the default behavior because it does not call super */

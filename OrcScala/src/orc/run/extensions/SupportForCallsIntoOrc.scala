@@ -127,7 +127,7 @@ trait SupportForCallsIntoOrc {
     runtime.schedule(t)
     wrapper
   }
-  
+
   private def scheduleNode(node: orc.ast.oil.nameless.Expression): Unit = {
     startNode(node)
   }

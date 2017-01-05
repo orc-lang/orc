@@ -14,15 +14,14 @@ package orc.types
 
 import orc.ast.hasOptionalVariableName
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 class TypeVariable(val optionalVariableName: Option[String] = None) extends Type {
 
   def this(u: hasOptionalVariableName) = {
     this(u.optionalVariableName)
   }
-  
+
   def this(x: TypeVariable) = {
     this(x.optionalVariableName)
   }

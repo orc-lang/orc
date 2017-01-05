@@ -153,9 +153,9 @@ object OrcJavaCompatibility {
         val normalParams :+ varargParam = m.getParameterTypes().toSeq
         assert(varargParam.isArray())
         // Check that all normal params match
-        val normalParamsMatch = normalParams.corresponds(argTypes.take(normalParams.size))( (fp, arg) => isApplicable(fp, arg, true) )
+        val normalParamsMatch = normalParams.corresponds(argTypes.take(normalParams.size))((fp, arg) => isApplicable(fp, arg, true))
         // Check that each arg that will go in the vararg list matches the vararg array type
-        val varargParamsMatch = argTypes.drop(normalParams.size).forall( (arg) => isApplicable(varargParam.getComponentType(), arg, true) )
+        val varargParamsMatch = argTypes.drop(normalParams.size).forall((arg) => isApplicable(varargParam.getComponentType(), arg, true))
         normalParamsMatch && varargParamsMatch
       } else false
     })

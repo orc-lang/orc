@@ -16,8 +16,8 @@ import orc.OrcRuntime
 import orc.values.{ Format, OrcValue }
 
 /** Interface for futures.
-  * 
-  * This exists to provide a common interface for LocalFuture and 
+  *
+  * This exists to provide a common interface for LocalFuture and
   * RemoteFuture if they need to have unrelated implementations.
   */
 trait Future extends ReadableBlocker with OrcValue {

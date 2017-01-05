@@ -72,7 +72,7 @@ trait NamedToNameless {
       opennames map { x =>
         val i = context indexOf x
         assert(i >= 0, s"Failed to find variable $x")
-        i 
+        i
       }
     (declcontext, bodycontext, openvars)
   }

@@ -161,7 +161,7 @@ trait ExtendedASTTransform extends ExtendedASTFunction {
       }
     }
   }
-  
+
   def transform(a: ClassConstructor): ClassConstructor = {
     val pf = onClassConstructor()
     if (pf isDefinedAt a) { a -> pf } else {

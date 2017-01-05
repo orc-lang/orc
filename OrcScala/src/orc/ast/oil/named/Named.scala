@@ -108,7 +108,7 @@ case class Classvar(name: Var) extends NamedAST
   with Substitution[Classvar]
   with hasOptionalVariableName {
   transferOptionalVariableName(name, this)
-  
+
   lazy val withoutNames: nameless.Classvar = namedToNameless(this, Nil, Nil)
 }
 
@@ -295,8 +295,8 @@ object Conversions {
   /** Given (e1, ... , en) and f, return:
     *
     * f(x1, ... , xn) <x1< e1
-    *              ...
-    *               <xn< en
+    *             ...
+    *              <xn< en
     *
     * As an optimization, if any e is already an argument, no << binder is generated for it.
     */

@@ -51,13 +51,13 @@ class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: Re
   override def awakeNonterminalValue(v: AnyRef) = synchronized {
     throw new AssertionError("awakeNonterminalValue called on RemoteFutureReader (This is an interpreter bug).")
   }
-  
+
   override def awakeTerminalValue(v: AnyRef) = synchronized {
     //Logger.entering(getClass.getName, "awakeNonterminalValue")
     val dorcExecution = execution.asInstanceOf[DOrcExecution]
     dorcExecution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
-  
+
   override def awakeStop() = synchronized {
     //Logger.entering(getClass.getName, "awakeStop")
     val dorcExecution = execution.asInstanceOf[DOrcExecution]
@@ -84,7 +84,7 @@ class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: Re
   * @author jthywiss
   */
 trait RemoteFutureManager { self: DOrcExecution =>
-  
+
   // These two maps are inverses of each other (sorta)
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]
   protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]

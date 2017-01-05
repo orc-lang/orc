@@ -99,7 +99,7 @@ abstract class JavaProxy extends Site {
       }
       val finalArgs = if (method.isVarArgs) {
         // Group var args into nested array argument.
-        val nNormalArgs = method.getParameterTypes().size - 1 
+        val nNormalArgs = method.getParameterTypes().size - 1
         val (normalArgs, varArgs) = (args.take(nNormalArgs), args.drop(nNormalArgs))
         val convertedNormalArgs = (normalArgs, method.getParameterTypes()).zipped.map(orc2java(_, _))
 
@@ -108,7 +108,7 @@ abstract class JavaProxy extends Site {
         // The vararg array needs to have the correct dynamic type so we create it using reflection. 
         val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
         convertedVarArgs.copyToArray(varArgArray)
-        
+
         convertedNormalArgs :+ varArgArray
       } else {
         val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _))

@@ -112,7 +112,7 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 /** The interface through which the environment response to site calls.
   */
 trait Handle {
-  
+
   val runtime: OrcRuntime
   val execution: ExecutionRoot
 

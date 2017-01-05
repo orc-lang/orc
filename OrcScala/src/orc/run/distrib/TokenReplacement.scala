@@ -45,15 +45,15 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
       val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(fut)
       BoundFutureReplacement(id)
       // TODO: Reinstate this optimization.
-//      g.state match {
-//        case RightSidePublished(None) => BoundStop
-//        case RightSidePublished(Some(v)) => BoundValue(v)
-//        case RightSideSilent => BoundStop
-//        case RightSideUnknown(_) => {
-//          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
-//          BoundFutureReplacement(id)
-//        }
-//      }
+      //      g.state match {
+      //        case RightSidePublished(None) => BoundStop
+      //        case RightSidePublished(Some(v)) => BoundValue(v)
+      //        case RightSideSilent => BoundStop
+      //        case RightSideUnknown(_) => {
+      //          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
+      //          BoundFutureReplacement(id)
+      //        }
+      //      }
     }
     case BoundReadable(c: Closure) => {
       val cgr = marshalClosureGroup(c.closureGroup, execution, ast, destination)
@@ -73,7 +73,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
       val br = SerializableBindingReplacement(b)
       b match {
         case BoundValue(mn: DOrcMarshallingNotifications) => mn.marshalled()
-        case _ => {/* Nothing to do */}
+        case _ => { /* Nothing to do */ }
       }
       br
     }
@@ -92,15 +92,15 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
   protected def marshalClosureGroup(cg: ClosureGroup, execution: DOrcExecution, ast: Expression, destination: PeerLocation) = {
 
     //FIXME: Broken: Requires closures' enclose operation to be complete.
-    assert (cg.isResolved, "Closure group must be resolved")
+    assert(cg.isResolved, "Closure group must be resolved")
 
     ClosureGroupReplacement.closureGroupReplacements synchronized {
       ClosureGroupReplacement.closureGroupReplacements.get(cg) match {
         case null => {
-          Logger.fine("Creating new CGR for "+cg+": "+(cg.definitions map {_.optionalVariableName.getOrElse("")}).mkString(","))
+          Logger.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
           val defNodesIndicies = cg.definitions map { AstNodeIndexing.nodeIndexInTree(_, ast).get }
           val lexicalContext = (cg.lexicalContext map marshalBinding(execution, ast, destination)).toArray
-              val cgr = new ClosureGroupReplacement(defNodesIndicies, lexicalContext)
+          val cgr = new ClosureGroupReplacement(defNodesIndicies, lexicalContext)
           ClosureGroupReplacement.closureGroupReplacements.put(cg, cgr)
           cgr
         }
@@ -240,7 +240,7 @@ protected final case class SerializableBindingReplacement(b: Binding with Serial
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     b match {
       case BoundValue(mn: DOrcMarshallingNotifications) => mn.unmarshalled()
-      case _ => {/* Nothing to do */}
+      case _ => { /* Nothing to do */ }
     }
     b
   }

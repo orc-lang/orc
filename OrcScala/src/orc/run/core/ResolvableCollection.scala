@@ -134,8 +134,8 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   }
 
   def isResolved = state match {
-   case Resolved => true
-   case _ => false
+    case Resolved => true
+    case _ => false
   }
 
   //// Blocker Implementation

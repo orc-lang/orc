@@ -174,11 +174,11 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     override def offset: Int = in.offset
 
     def first = tok
-    
+
     def rest = new Scanner(rest2.asInstanceOf[OrcReader])
-    
+
     lazy val pos = new ScalaOrcSourceRange(new OrcSourceRange(((ToTextPosition(rest1.pos), ToTextPosition(rest2.pos)))))
-    
+
     def atEnd = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
   }
 }

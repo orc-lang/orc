@@ -20,5 +20,5 @@ import orc.run.Orc
   * @author jthywiss
   */
 trait SupportForDOrc extends Orc {
-  
+
 }

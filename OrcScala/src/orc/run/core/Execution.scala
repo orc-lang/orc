@@ -37,7 +37,7 @@ class Execution(
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
-//  def node = _node;
+  //  def node = _node;
 
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     notifyOrc(PublishedEvent(v.get))

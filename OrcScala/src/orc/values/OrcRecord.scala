@@ -22,8 +22,7 @@ import orc.run.core.BoundValue
 import orc.run.core.Binding
 import orc.values.sites.NonBlockingSite
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with OrcObjectInterface {
 
@@ -36,10 +35,10 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   def apply(f: Field): BoundValue = {
     entries.get(f.field) match {
       case Some(v) => BoundValue(v)
-          case None => throw new NoSuchMemberException(this, name)
-        }
+      case None => throw new NoSuchMemberException(this, name)
+    }
   }
-  def contains(f: Field): Boolean = entries contains f.field 
+  def contains(f: Field): Boolean = entries contains f.field
 
   override def evaluate(args: List[AnyRef]) =
     args match {

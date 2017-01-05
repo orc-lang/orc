@@ -545,22 +545,22 @@ class Token protected (
       }
     }
   }
-  
+
   def newObject(os: List[Classvar]) {
     val self = new OrcObject()
 
     val classes = os.map(lookupClass)
-        
+
     val selfFields = scala.collection.mutable.Map[Field, Binding]()
-    
+
     // Build the initial super instance. This represents the empty Object instance.
     var superObj = new OrcObject(Map())
     // superObj is replaced at the end of the loop each time through to contain the members that have been collected so far.
-    
+
     for (cls <- classes.reverse) {
       Logger.fine(s"Instantiating class: ${cls.definition}")
       val objenv = BoundValue(superObj) :: BoundValue(self) :: cls.context
-            
+
       val fields = for ((name, expr) <- cls.definition.bindings) yield {
         expr match {
           // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
@@ -656,7 +656,7 @@ class Token protected (
         move(left)
         runtime.stage(this)
       }
-      
+
       case Graft(value, body) => {
         val (v, b) = fork()
         val pg = new GraftGroup(group)
@@ -814,7 +814,7 @@ class Token protected (
       case Halted | Killed => {}
     }
   }
-  
+
   def discorporate() {
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
@@ -850,8 +850,7 @@ class Token protected (
   override def awakeException(e: OrcException) = this !! e
 
   override def awake() { unblock() }
-  
-  
+
   // DEBUG CODE:
   def envToString() = {
     env.zipWithIndex.map({

@@ -12,8 +12,7 @@
 //
 package orc.types
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 case object Top extends Type {
   override def toString = "Top"

@@ -15,8 +15,7 @@ package orc.run.core
 import orc.OrcRuntime
 import orc.ast.oil.nameless.Class
 
-/**
-  * @author amp
+/** @author amp
   */
 class OrcClass(
   index: Int,

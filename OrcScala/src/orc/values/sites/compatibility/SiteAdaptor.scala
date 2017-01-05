@@ -15,7 +15,7 @@ package orc.values.sites.compatibility
 
 import orc.values.sites.Site
 import orc.values.sites.UntypedSite
-import orc.values.sites.{Range, Delay, Effects}
+import orc.values.sites.{ Range, Delay, Effects }
 import orc.Handle
 import orc.values.Signal
 import orc.values.OrcTuple
@@ -49,14 +49,14 @@ abstract class SiteAdaptor extends Site {
   def minPublications() = 0
   def maxPublications() = -1
   def effectFree() = false
-    
+
   override def publications: Range = {
     val maxP = maxPublications()
-    Range(minPublications(), if(maxP >= 0) Some(maxP) else None)
+    Range(minPublications(), if (maxP >= 0) Some(maxP) else None)
   }
-  override def timeToPublish: Delay = if(nonBlocking()) Delay.NonBlocking else Delay.Blocking
-  override def timeToHalt: Delay = if(nonBlocking()) Delay.NonBlocking else Delay.Blocking
-  override def effects: Effects = if(effectFree()) Effects.None else Effects.Anytime
+  override def timeToPublish: Delay = if (nonBlocking()) Delay.NonBlocking else Delay.Blocking
+  override def timeToHalt: Delay = if (nonBlocking()) Delay.NonBlocking else Delay.Blocking
+  override def effects: Effects = if (effectFree()) Effects.None else Effects.Anytime
 }
 
 object SiteAdaptor {

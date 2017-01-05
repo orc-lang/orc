@@ -26,7 +26,7 @@ class Closure(
   val closureGroup: ClosureGroup)
   extends ResolvableCollectionMember[Def](index, closureGroup) {
   def code: Def = definition
-  
+
   override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
 }
 

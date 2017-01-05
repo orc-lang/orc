@@ -24,7 +24,7 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
 
   override def removeRoot(root: ExecutionRoot) = roots.remove(root)
 
-  def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions){
+  def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
 
     val execution = new Execution(node, options, eventHandler, this)

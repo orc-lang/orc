@@ -40,7 +40,7 @@ object Delay {
 sealed trait Effects {
   def max(o: Effects): Effects
   def min(o: Effects): Effects
-  
+
   def <=(o: Effects): Boolean = {
     (this max o) == o
   }
@@ -68,7 +68,7 @@ object Effects {
 
 trait SiteMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
-  
+
   def publications: Range = Range(0, None)
   def timeToPublish: Delay = Delay.Blocking
   def timeToHalt: Delay = Delay.Blocking

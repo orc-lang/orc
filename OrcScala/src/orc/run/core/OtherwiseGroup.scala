@@ -49,7 +49,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def onDiscorporate() {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { 
+        case LeftSideUnknown(r) => {
           // forcably discorporate the token we were holding on to.
           // The token has never run, but is also not truely halted, so discorporate don't kill.
           r.discorporate()

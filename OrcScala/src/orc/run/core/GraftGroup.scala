@@ -16,33 +16,33 @@ import orc.Schedulable
 
 /** A GraftGroup is the group associated with expression g in val x = g # f.
   *
-  * We use early initialization here because the group can be killed as soon as the 
+  * We use early initialization here because the group can be killed as soon as the
   * constructor for Subgroup runs. So normal initialization could be too late and result
   * in crashes in the kill call.
-  * 
+  *
   * @author dkitchin, amp
   */
-class GraftGroup(parent: Group) extends { 
-  var state: GraftGroupState = ValueUnknown 
+class GraftGroup(parent: Group) extends {
+  var state: GraftGroupState = ValueUnknown
   private var _future: Future = new LocalFuture(parent.runtime)
 } with Subgroup(parent) {
   override def toString = super.toString + s"(state=${state}, ${_future})"
 
   /** Get a binding connecting to this graft group.
-    *  
+    *
     * This should only be called before any member of this group can run. This
     * is because if this group has bound the future by publication then this
     * method will not work. So binding should only be called shortly after
     * construction before anything has been scheduled (staging is OK as long
     * as the stage has not been flushed by returning to the scheduler).
-    * 
-    * This will usually return a BoundReadable, however if the group is silent 
+    *
+    * This will usually return a BoundReadable, however if the group is silent
     * (due to halting or being killed) this will return a BoundStop.
     */
   def binding = synchronized {
-    if(_future ne null)
+    if (_future ne null)
       BoundReadable(_future)
-    else if( state == ValueSilent )
+    else if (state == ValueSilent)
       BoundStop
     else
       throw new AssertionError(s"Requesting binding for bound graft group. This should not be possible. This must be a threading issue. $this")
@@ -77,7 +77,7 @@ class GraftGroup(parent: Group) extends {
       case _ => {}
     }
   }
-  
+
   def onDiscorporate() = synchronized {
     state match {
       case ValueUnknown => {
