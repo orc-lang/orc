@@ -15,8 +15,8 @@ package orc.compile.translate
 
 import orc.ast.ext._
 import orc.ast.oil.named
-import orc.error.compiletime._
 import orc.error.OrcExceptionExtension._
+import orc.error.compiletime._
 import orc.util.OptionMapExtension._
 
 case class AggregateDef(clauses: List[Clause],

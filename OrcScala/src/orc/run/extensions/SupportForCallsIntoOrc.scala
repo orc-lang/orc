@@ -13,8 +13,8 @@
 package orc.run.extensions
 
 import orc.ast.oil.nameless.{ Call, Constant, FieldAccess, Variable }
-import orc.run.core.{ Execution, Group, Subgroup, Token }
-import orc.values.Field
+import orc.run.core.{ Group, Subgroup, Token }
+import orc.values._
 
 /** A group that stores the first publication and then ignores the rest.
   *

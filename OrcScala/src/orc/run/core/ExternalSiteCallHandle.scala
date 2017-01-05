@@ -12,10 +12,9 @@
 //
 package orc.run.core
 
-import orc.{ Schedulable, CaughtEvent }
+import orc.{ CaughtEvent, Schedulable }
 import orc.error.OrcException
-import orc.values.sites.Site
-import orc.values.sites.Delay
+import orc.values.sites._
 
 /** A call handle specific to site calls.
   * Scheduling this call handle will invoke the site.

@@ -23,7 +23,7 @@ import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.ast.hasOptionalVariableName
-import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, ClassType, Constant, DeclareCallables, DeclareType, Callable, Expression, FunctionType, HasType, Hole, ImportedType, Graft, Trim, Otherwise, Parallel, RecordType, Sequence, Stop, Top, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone, FieldAccess, New, DeclareClasses, Classvar, NamelessAST, Class, Site, Def }
+import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, Class, ClassType, Classvar, Constant, DeclareCallables, DeclareClasses, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
 import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException

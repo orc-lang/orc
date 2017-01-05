@@ -15,8 +15,8 @@ package orc.ast.oil.named
 
 import scala.language.reflectiveCalls
 
-import orc.ast.{ AST, hasOptionalVariableName }
 import orc.ast.oil.nameless
+import orc.ast.{ AST, hasOptionalVariableName }
 import orc.values
 
 sealed abstract class NamedAST extends AST with NamedToNameless {

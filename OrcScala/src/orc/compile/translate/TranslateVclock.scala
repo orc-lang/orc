@@ -12,9 +12,9 @@
 //
 package orc.compile.translate
 
-import orc.ast.oil.named.{ VtimeZone, Stop, Sequence, NamedASTTransform, Constant, Call, BoundVar, BoundTypevar }
-import orc.error.compiletime.{ InvalidVclockUse, IncorrectVclockCall, ContinuableSeverity, CompilationException }
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, Call, Constant, NamedASTTransform, Sequence, VtimeZone }
 import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{ CompilationException, ContinuableSeverity, IncorrectVclockCall, InvalidVclockUse }
 import orc.lib.time.Vclock
 
 /** Translate calls to the Vclock quasi-site into VtimeZone expressions.

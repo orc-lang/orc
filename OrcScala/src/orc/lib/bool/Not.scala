@@ -11,13 +11,9 @@
 
 package orc.lib.bool
 
-import orc.values.sites.TotalSite
-import orc.values.sites.TypedSite
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types.SimpleFunctionType
-import orc.types.BooleanType
-import orc.values.sites.FunctionalSite
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
+import orc.types.{ BooleanType, SimpleFunctionType }
+import orc.values.sites.{ FunctionalSite, TotalSite, TypedSite }
 
 /** Logical negation site
   */

@@ -13,9 +13,9 @@
 
 package orc.lib.builtin.structured
 
-import orc.values.{ OrcRecord, Signal }
-import orc.values.sites._
 import orc.types._
+import orc.values._
+import orc.values.sites._
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 

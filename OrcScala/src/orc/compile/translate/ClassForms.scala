@@ -12,15 +12,15 @@
 //
 package orc.compile.translate
 
-import scala.language.reflectiveCalls
-import orc.ast.ext
-import orc.lib.builtin
-import orc.error.compiletime._
-import orc.error.OrcExceptionExtension._
-import orc.ast.oil.named._
-import orc.ast.ext.ExtendedASTTransform
-import orc.values.Field
 import scala.collection.mutable
+import scala.language.reflectiveCalls
+
+import orc.ast.ext
+import orc.ast.ext.ExtendedASTTransform
+import orc.ast.oil.named._
+import orc.error.OrcExceptionExtension._
+import orc.error.compiletime._
+import orc.values.Field
 
 trait ClassBasicInfo {
   val linearization: Class.Linearization

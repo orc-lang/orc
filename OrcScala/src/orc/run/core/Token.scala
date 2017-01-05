@@ -14,21 +14,15 @@
 package orc.run.core
 
 import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
-import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareCallables, DeclareType, Def, Site, Expression, HasType, Hole, Graft, Trim, Otherwise, Parallel, Sequence, Stop, UnboundVariable, Variable, VtimeZone }
+import orc.ast.oil.nameless._
+import orc.ast.oil.nameless.Site
 import orc.error.OrcException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
-import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
-import orc.values.{ Field, OrcRecord, Signal }
-import orc.values.sites.TotalSite
 import orc.run.Logger
-import orc.ast.oil.nameless.New
-import orc.ast.oil.nameless.FieldAccess
-import orc.values.{OrcObject, OrcObjectInterface}
-import orc.ast.oil.nameless.Class
-import orc.ast.oil.nameless.Classvar
-import orc.ast.oil.nameless.DeclareClasses
-import orc.error.runtime.DoesNotHaveMembersException
+import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
+import orc.values._
+import orc.values.sites._
 
 /** Token represents a "process" executing in the Orc program.
   *

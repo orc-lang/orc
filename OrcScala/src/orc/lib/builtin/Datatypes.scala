@@ -12,13 +12,12 @@
 //
 package orc.lib.builtin
 
-import orc.values._
-import orc.values.sites._
-import orc.error.runtime.ArgumentTypeMismatchException
+import orc.error.compiletime.typing.MalformedDatatypeCallException
 import orc.error.runtime.ArityMismatchException
-import orc.error.compiletime.typing._
 import orc.types._
 import orc.util.TypeListEnrichment._
+import orc.values._
+import orc.values.sites.{ FunctionalSite, PartialSite1, TotalSite, TypedSite }
 
 object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite{
 

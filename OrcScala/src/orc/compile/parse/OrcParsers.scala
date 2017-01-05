@@ -108,7 +108,7 @@ object OrcIncludeParser extends ((OrcInputContext, CompilerOptions, OrcCompilerR
 class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices: OrcCompilerRequires)
   extends StandardTokenParsers
   with CustomParserCombinators {
-  import lexical.{ Keyword, Identifier, FloatingPointLit }
+  import lexical.{ FloatingPointLit, Keyword }
 
   override val lexical = new OrcLexical()
 

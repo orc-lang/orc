@@ -13,9 +13,7 @@
 
 package orc.run.core
 
-import orc.Schedulable
-import orc.OrcRuntime
-import orc.util.BlockableMapExtension
+import orc.{ OrcRuntime, Schedulable }
 
 /** An member of a collection of Ts that need a single resolved recursive context.
   *

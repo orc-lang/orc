@@ -13,14 +13,14 @@
 
 package orc.compile.translate
 
+import scala.collection.immutable.{ List, Map, Nil }
+import scala.language.reflectiveCalls
+
 import orc.ast.ext._
-import orc.error.OrcExceptionExtension._
 import orc.ast.oil.named
 import orc.compile.translate.PrimitiveForms._
-import scala.collection.immutable._
+import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
-
-import scala.language.reflectiveCalls
 
 case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: Expression) extends orc.ast.AST {
 

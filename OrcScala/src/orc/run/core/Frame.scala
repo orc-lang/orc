@@ -12,12 +12,9 @@
 //
 package orc.run.core
 
-import orc.ast.oil.nameless.Expression
 import scala.collection.immutable.Traversable
-import scala.collection.TraversableLike
-import scala.collection.mutable.Builder
-import scala.collection.mutable.ListBuffer
-import scala.annotation.tailrec
+
+import orc.ast.oil.nameless.Expression
 
 /** A stack frame.
   *

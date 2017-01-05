@@ -18,22 +18,20 @@ import scala.collection.mutable
 import scala.language.reflectiveCalls
 
 import orc.ast.ext
-import orc.compile.translate.PrimitiveForms._
-import orc.ast.oil._
+import orc.ast.ext.ExtendedASTTransform
 import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
+import orc.compile.translate.PrimitiveForms._
 import orc.error.OrcException
-import orc.error.OrcExceptionExtension.extendOrcException
-import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException }
-import orc.lib.builtin
+import orc.error.OrcExceptionExtension._
+import orc.error.compiletime._
 import orc.values.{ Field, Signal }
 import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
-import orc.ast.ext.ExtendedASTTransform
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
   /** Translate an extended AST to a named OIL AST.
     */
-  def translate(extendedAST: ext.Expression): named.Expression = {
+  def translate(extendedAST: ext.Expression): Expression = {
     val rootContext: Map[String, Argument] = HashMap.empty withDefault { UnboundVar(_) }
     val rootTypeContext: Map[String, Type] = HashMap.empty withDefault { UnboundTypevar(_) }
     val rootClassContext: Map[String, ClassInfo] = HashMap.empty
@@ -292,7 +290,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert an extended AST type to a named OIL type.
     */
-  def convertType(t: ext.Type)(implicit typecontext: Map[String, Type]): named.Type = {
+  def convertType(t: ext.Type)(implicit typecontext: Map[String, Type]): Type = {
     t -> {
       case ext.TypeVariable(name) => typecontext(name)
       case ext.TupleType(ts) => TupleType(ts map convertType)

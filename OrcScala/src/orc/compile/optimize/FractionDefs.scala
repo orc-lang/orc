@@ -12,12 +12,8 @@
 //
 package orc.compile.optimize
 
-import orc.util.Graph
-import orc.util.Node
-import orc.util.Direction
-import scala.collection.mutable.LinkedList
-
-import orc.ast.oil.named._
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, Callable, DeclareCallables, NamedASTTransform }
+import orc.util.{ Direction, Graph, Node }
 
 /** @author srosario
   */

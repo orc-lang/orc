@@ -12,12 +12,11 @@
 //
 package orc.lib.builtin
 
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.types._
-import orc.values._
-import orc.values.sites._
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
 import orc.util.TypeListEnrichment._
+import orc.values._
+import orc.values.sites.{ FunctionalSite, PartialSite, TotalSite, TypedSite }
 
 object Ift extends PartialSite with TypedSite with FunctionalSite {
   override def name = "Ift"

@@ -15,7 +15,7 @@ package orc.ast.oil.nameless
 
 import orc.ast.oil.named
 import orc.ast.{ AST, hasOptionalVariableName }
-import orc.values.Field
+import orc.values._
 
 sealed trait hasFreeVars {
   val freevars: Set[Int]

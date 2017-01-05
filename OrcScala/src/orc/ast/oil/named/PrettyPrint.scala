@@ -14,7 +14,7 @@ package orc.ast.oil.named
 
 import scala.collection.mutable.{ HashMap, Map }
 
-import orc.values.{ Format, Field }
+import orc.values._
 
 /** Nicer printing for named OIL syntax trees.
   *

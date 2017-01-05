@@ -13,7 +13,6 @@
 package orc.run.core
 
 import orc.OrcRuntime
-import scala.reflect.ClassTag
 
 /** A join point for waiting on multiple strict parameters.
   *
