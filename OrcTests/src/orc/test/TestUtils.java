@@ -111,7 +111,7 @@ public final class TestUtils {
         return suite;
     }
 
-	public static void findOrcFiles(final File base, final List<File> files) {
+    public static void findOrcFiles(final File base, final List<File> files) {
         if (base.isFile() && base.getPath().endsWith(".orc")) {
             files.add(base);
             return;
