@@ -12,9 +12,7 @@
 //
 package orc.types
 
-/**
-  *
-  * @author dkitchin
+/** @author dkitchin
   */
 trait TypeOperator {
 

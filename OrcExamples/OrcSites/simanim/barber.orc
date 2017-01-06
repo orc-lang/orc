@@ -56,10 +56,7 @@ def spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx) =
 	randRange(lMin,lMax)
 	>lull> Rwait(lull)
 	>> randRange(sMin,sMax)
-	>spurt>	(nSpurt(spurt,tMin,tMax,oMin,oMax)
-		<tMin< randRange(mnMn,mnMx)
-		<tMax< randRange(mxMn,mxMx)
-		)
+	>spurt>	nSpurt(spurt,randRange(mnMn,mnMx),randRange(mxMn,mxMx),oMin,oMax)
 	>x>	( 	Ift(x=false)
 			>> spurtSource(lMin,lMax,sMin,sMax,oMin,oMax,mnMn,mnMx,mxMn,mxMx)
 		|	Ift(~(x=false)) >> x

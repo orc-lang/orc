@@ -25,7 +25,6 @@ class AstEditScript extends ArrayBuffer[AstEditOperation] {
 }
 
 /**
-  *
   * @author jthywiss
   */
 object AstEditScript {

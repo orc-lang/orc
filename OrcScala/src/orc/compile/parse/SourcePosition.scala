@@ -14,8 +14,8 @@
 package orc.compile.parse
 
 import scala.util.parsing.input.Position
-import orc.util.TextRange
-import orc.util.TextPosition
+
+import orc.util.{ TextPosition, TextRange }
 
 /** A TextPosition for Orc source files.  Also provides content of the line
   * of the source code for the position, to be used in error messages.

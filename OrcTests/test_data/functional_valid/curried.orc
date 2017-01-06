@@ -1,7 +1,7 @@
 def adder1(Integer) :: lambda(Integer) :: Integer
-def adder1(x) = lambda(y) = x + y
+def adder1(x) = { x +  (_ :: Integer) }
 
-val adder2 = lambda(x :: Integer) = lambda(y :: Integer) = x + y
+val adder2 = def f(x :: Integer) = { x + (_ :: Integer) } # f
 
   adder1(5) >a> a(2)
 | adder2(5) >a> a(2)

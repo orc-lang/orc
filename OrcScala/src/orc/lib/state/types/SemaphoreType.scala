@@ -14,8 +14,7 @@ package orc.lib.state.types
 
 import orc.types._
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 object SemaphoreType extends RecordType(
   "acquire" -> SimpleFunctionType(SignalType),

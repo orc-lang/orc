@@ -21,8 +21,8 @@ def f() = upto(10) >x> Rwait(x * 100) >> x
 {- Main program -}
 val c = Channel[Integer]()
 val s = Semaphore(0)
-allow(5, c, s) <<
-  s.acquire() | f() >x> c.put(x) >> stop
+allow(5, c, s) |
+({| s.acquire() | f() >x> c.put(x) >> stop |} >> stop)
 
 {-
 OUTPUT:

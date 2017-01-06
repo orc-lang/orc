@@ -7,18 +7,33 @@ import site GoogleSearchFactory = "orc.lib.net.GoogleSearchFactory"
 import site XMPPConnection = "orc.lib.net.XMPPConnection"
 import site TrueRandom = "orc.lib.net.TrueRandom"
 import site KeyedHTTP = "orc.lib.net.KeyedHTTP"
+
+import site WrapTwitterStream = "orc.lib.net.WrapTwitterStream"
+import site TwitterFactoryPropertyFile = "orc.lib.net.TwitterFactoryPropertyFile"
+import site TwitterFactoryKeySecret = "orc.lib.net.TwitterFactoryKeySecret"
+import site TwitterStreamFactoryPropertyFile = "orc.lib.net.TwitterStreamFactoryPropertyFile"
+import site TwitterStreamFactoryKeySecret = "orc.lib.net.TwitterStreamFactoryKeySecret"
+import class TwitterQuery = "twitter4j.Query"
+import class TwitterFilterQuery = "twitter4j.FilterQuery"
+import class TwitterAccessToken = "twitter4j.auth.AccessToken"
+
+import site MicrosoftTranslatorFactoryPropertyFile = "orc.lib.net.MicrosoftTranslatorFactoryPropertyFile"
+import site MicrosoftTranslatorFactoryUsernameKey = "orc.lib.net.MicrosoftTranslatorFactoryUsernameKey"
+
+import site YandexTranslateFactory = "orc.lib.net.YandexTranslateFactory"
+
 import site BingSearchFactoryPropertyFile = "orc.lib.net.BingSearchFactoryPropertyFile"
 import site BingSearchFactoryUsernameKey = "orc.lib.net.BingSearchFactoryUsernameKey"
 
 def BingWebSearchFactoryConverter(s :: lambda(String) :: List[Bot]) :: lambda(String) :: List[(String, String)] =
-  lambda(q :: String) = map(lambda (e :: Bot) = (e.Url :!: String, e.Title :!: String), s(q).d.results :!: List[Bot])
+  { map({ val e = _ # (e.Url :!: String, e.Title :!: String) }, s(_).d.results :!: List[Bot]) }
 def BingWebSearchFactoryPropertyFile(file :: String) =
   BingWebSearchFactoryConverter(BingSearchFactoryPropertyFile(file, "Web"))
 def BingWebSearchFactoryUsernameKey(user :: String, key :: String) =
   BingWebSearchFactoryConverter(BingSearchFactoryUsernameKey(user, key, "Web"))
 
 def BingSpellFactoryConverter(s :: lambda(String) :: List[Bot]) :: lambda(String) :: List[String] =
-  lambda(q :: String) = map(lambda (e :: Bot) = e.Value :!: String, s(q).d.results :!: List[Bot])
+  { map( { _.Value :!: String }, s(_).d.results :!: List[Bot]) }
 def BingSpellFactoryPropertyFile(file :: String) =
   BingSpellFactoryConverter(BingSearchFactoryPropertyFile(file, "SpellingSuggestions"))
 def BingSpellFactoryUsernameKey(user :: String, key :: String) =

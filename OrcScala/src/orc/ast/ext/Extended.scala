@@ -35,50 +35,117 @@ sealed case class PrefixOperator(op: String, arg: Expression) extends Expression
 sealed case class InfixOperator(left: Expression, op: String, right: Expression) extends Expression
 sealed case class Sequential(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
 sealed case class Parallel(left: Expression, right: Expression) extends Expression
-sealed case class Pruning(left: Expression, p: Option[Pattern] = None, right: Expression) extends Expression
+sealed case class Trim(expr: Expression) extends Expression
 sealed case class Otherwise(left: Expression, right: Expression) extends Expression
 sealed case class Lambda(
   typeformals: Option[List[String]] = None,
   formals: List[Pattern],
   returntype: Option[Type] = None,
-  guard: Option[Expression] = None,
+  //guard: Option[Expression] = None, TODO: guards on lambdas are not supported any more
   body: Expression) extends Expression
+
+// TODO: Rename "Section" to something better.
+sealed case class Section(body: Expression) extends Expression
+sealed case class Placeholder() extends Expression
 
 sealed case class Conditional(ifE: Expression, thenE: Expression, elseE: Expression) extends Expression
 sealed case class Declare(declaration: Declaration, body: Expression) extends Expression
 sealed case class TypeAscription(e: Expression, t: Type) extends Expression
 sealed case class TypeAssertion(e: Expression, t: Type) extends Expression
 
-// An internal representation for the body of a 'def class'
-sealed case class DefClassBody(body: Expression) extends Expression
-
 sealed abstract class Declaration extends AST
 
 sealed case class Val(p: Pattern, e: Expression) extends Declaration
+
+/** Unlike vals val signatures can only assign a single type to a name. They only appear in classes.
+  */
+sealed case class ValSig(name: String, t: Option[Type]) extends Declaration
+
 sealed case class Include(origin: String, decls: List[Declaration]) extends Declaration
 
 sealed abstract class NamedDeclaration extends Declaration {
   val name: String
 }
 
-sealed abstract class DefDeclaration extends NamedDeclaration
-sealed case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-sealed case class DefClass(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends DefDeclaration
-sealed case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends DefDeclaration
+sealed abstract class CallableDeclaration extends NamedDeclaration {
+  def sameKindAs(decl: CallableDeclaration): Boolean
+}
 
-// Convenience extractor for sequences of definitions enclosing some scope
-object DefGroup {
-  def unapply(e: Expression): Option[(List[DefDeclaration], Expression)] = {
-    partition(e) match {
+sealed trait DefDeclaration extends CallableDeclaration {
+  def sameKindAs(decl: CallableDeclaration): Boolean = decl.isInstanceOf[DefDeclaration]
+}
+sealed trait SiteDeclaration extends CallableDeclaration {
+  def sameKindAs(decl: CallableDeclaration): Boolean = decl.isInstanceOf[SiteDeclaration]
+}
+
+sealed abstract class Callable extends CallableDeclaration {
+  val name: String
+  val typeformals: Option[List[String]]
+  val formals: List[Pattern]
+  val returntype: Option[Type]
+  val guard: Option[Expression]
+  val body: Expression
+
+  def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression): Callable
+}
+object Callable {
+  def unapply(value: Callable) = {
+    Some((value.name, value.typeformals, value.formals, value.returntype, value.guard, value.body))
+  }
+}
+
+sealed abstract class CallableSig extends CallableDeclaration {
+  val name: String
+  val typeformals: Option[List[String]]
+  val argtypes: List[Type]
+  val returntype: Type
+
+  def copy(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type): CallableSig
+}
+object CallableSig {
+  def unapply(value: CallableSig) = {
+    Some((value.name, value.typeformals, value.argtypes, value.returntype))
+  }
+}
+
+sealed case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable with DefDeclaration {
+  def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): Def = {
+    Def(name, typeformals, formals, returntype, guard, body)
+  }
+}
+sealed case class DefSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig with DefDeclaration {
+  def copy(name: String = name, typeformals: Option[List[String]] = typeformals, argtypes: List[Type] = argtypes, returntype: Type = returntype): DefSig = {
+    DefSig(name, typeformals, argtypes, returntype)
+  }
+}
+
+sealed case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression) extends Callable with SiteDeclaration {
+  def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype, guard: Option[Expression] = guard, body: Expression = body): Site = {
+    Site(name, typeformals, formals, returntype, guard, body)
+  }
+}
+sealed case class SiteSig(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type) extends CallableSig with SiteDeclaration {
+  def copy(name: String = name, typeformals: Option[List[String]] = typeformals, argtypes: List[Type] = argtypes, returntype: Type = returntype): SiteSig = {
+    SiteSig(name, typeformals, argtypes, returntype)
+  }
+}
+
+// TODO: Factor out the shared code between CallableGroup and CallableSingle
+/** Convenience extractor for sequences of definitions enclosing some scope
+  * The extractor will extract sites OR defs, but never both.
+  */
+object CallableGroup {
+  def unapply(e: Expression): Option[(List[CallableDeclaration], Expression)] = {
+    partition(e, None) match {
       case (Nil, _) => None
       case (ds, f) => Some((ds, f))
     }
   }
 
-  private def partition(e: Expression): (List[DefDeclaration], Expression) = {
+  private def partition(e: Expression, kindSample: Option[CallableDeclaration]): (List[CallableDeclaration], Expression) = {
     e match {
-      case Declare(d: DefDeclaration, f) => {
-        val (ds, g) = partition(f)
+      case Declare(d: CallableDeclaration, f) if kindSample.isEmpty || (kindSample.get sameKindAs d) => {
+        val (ds, g) = partition(f, Some(d))
         (d :: ds, g)
       }
       case _ => (Nil, e)
@@ -87,9 +154,96 @@ object DefGroup {
 
 }
 
-sealed abstract class SiteDeclaration extends NamedDeclaration
-sealed case class SiteImport(name: String, sitename: String) extends SiteDeclaration
-sealed case class ClassImport(name: String, classname: String) extends SiteDeclaration
+object CallableSingle {
+  def unapply(ds: Seq[Declaration]): Option[(List[CallableDeclaration], Seq[Declaration])] = {
+    partition(ds, None) match {
+      case (Nil, _) => None
+      case (ds, f) => Some((ds, f))
+    }
+  }
+
+  private def partition(e: Seq[Declaration], kindSample: Option[CallableDeclaration]): (List[CallableDeclaration], Seq[Declaration]) = {
+    e match {
+      case (d: CallableDeclaration) :: rest if kindSample.isEmpty || ((kindSample.get sameKindAs d) && kindSample.get.name == d.name) => {
+        val (ds, g) = partition(rest, Some(d))
+        (d :: ds, g)
+      }
+      case _ => (Nil, e)
+    }
+  }
+}
+
+sealed case class SiteImport(name: String, sitename: String) extends NamedDeclaration
+sealed case class ClassImport(name: String, classname: String) extends NamedDeclaration
+
+sealed case class ClassDeclaration(constructor: ClassConstructor, superclass: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration {
+  val name = constructor.name
+}
+
+sealed abstract class ClassExpression extends AST {
+  def toInterfaceString: String
+}
+case class ClassVariable(name: String) extends ClassExpression {
+  def toInterfaceString = name
+}
+case class ClassLiteral(thisname: Option[String], decls: Seq[Declaration]) extends ClassExpression {
+  def toInterfaceString = decls.collect({
+    case v: Val => v.p.toOrcSyntax
+    case d: NamedDeclaration => d.name
+  }).mkString("{ ", ", ", " }")
+}
+case class ClassSubclassLiteral(superclass: ClassExpression, body: ClassLiteral) extends ClassExpression {
+  def toInterfaceString = s"(${superclass.toInterfaceString}) ${body.toInterfaceString}"
+}
+case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
+  def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
+}
+
+sealed abstract class ClassConstructor extends AST {
+  val name: String
+  val typeformals: Option[List[String]]
+}
+sealed abstract class ClassCallableConstructor extends ClassConstructor {
+  val formals: List[Pattern]
+  val returntype: Option[Type]
+
+  def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]): ClassCallableConstructor
+}
+object ClassConstructor {
+  case class None(name: String, typeformals: Option[List[String]]) extends ClassConstructor
+  case class Def(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]) extends ClassCallableConstructor {
+    def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype): Def = {
+      Def(name, typeformals, formals, returntype)
+    }
+  }
+  case class Site(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type]) extends ClassCallableConstructor {
+    def copy(name: String = name, typeformals: Option[List[String]] = typeformals, formals: List[Pattern] = formals, returntype: Option[Type] = returntype): Site = {
+      Site(name, typeformals, formals, returntype)
+    }
+  }
+}
+
+sealed case class New(cls: ClassExpression) extends Expression
+
+object ClassGroup {
+  def unapply(e: Expression): Option[(List[ClassDeclaration], Expression)] = {
+    partition(e) match {
+      case (Nil, _) => None
+      case (ds, f) => Some((ds, f))
+    }
+  }
+
+  private def partition(e: Expression): (List[ClassDeclaration], Expression) = {
+    e match {
+      case Declare(d: ClassDeclaration, f) => {
+        val (ds, g) = partition(f)
+        (d :: ds, g)
+      }
+      case _ => (Nil, e)
+    }
+  }
+
+}
 
 sealed abstract class TypeDeclaration extends NamedDeclaration
 sealed case class TypeAlias(name: String, typeformals: List[String] = Nil, aliasedtype: Type) extends TypeDeclaration

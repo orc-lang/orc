@@ -28,8 +28,8 @@ object Logger extends orc.util.Logger("orc.run.scheduler")
   */
 trait OrcWithThreadPoolScheduler extends Orc {
 
-  private var executor: OrcRunner = null
-  private val executorLock = new Object()
+  protected var executor: OrcRunner = null
+  protected val executorLock = new Object()
 
   override def stage(ts: List[Schedulable]) {
     ts.foreach(stage(_))

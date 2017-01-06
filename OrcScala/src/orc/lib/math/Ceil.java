@@ -52,4 +52,13 @@ public class Ceil extends EvalSite implements TypedSite {
     public Type orcType() {
         return Types.function(Types.number(), Types.integer());
     }
+
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }

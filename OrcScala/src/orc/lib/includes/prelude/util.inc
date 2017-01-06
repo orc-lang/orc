@@ -194,7 +194,7 @@ once it has been populated.
 For example, to set all elements of an array to zero:
 <programlisting language="orc-demo"><![CDATA[
 -- Publishes: 0 0 0
-val a = fillArray(Array(3), lambda (_) = 0)
+val a = fillArray(Array(3), constant(0))
 a(0)? | a(1)? | a(2)?]]></programlisting>
 
 @implementation
@@ -242,11 +242,11 @@ def takePubs[A](Integer, lambda () :: A) :: A
 def takePubs(n, f) =
   val out = Channel[A]()
   val c = Counter(n)
-  Let(
+  {|
     f() >x>
     Ift(c.dec() >> out.put(x) >> false
        ; out.closeD() >> true)
-  ) >> stop | repeat(out.get)
+  |} >> stop | repeat(out.get)
 
 {--
 @def withLock[A](Semaphore, lambda () :: A) :: A
@@ -260,7 +260,7 @@ thunk and releases the semaphore.
 def withLock[A](Semaphore, lambda () :: A) :: A
 def withLock(s, f) =
   s.acquire() >> (
-    Let(f()) >x>
+    {| f() |} >x>
     s.release() >>
     x
     ; s.release() >> stop
@@ -276,7 +276,7 @@ on the lock. Similar to Java's synchronized keyword.
 --}
 
 def synchronized[A](Semaphore, lambda () :: A) :: lambda() :: A
-def synchronized(s,f) = lambda() = withLock(s, f)
+def synchronized(s,f) = { withLock(s, f) }
 
 {--
 @site InvokeExecutable(command :: List[String])
@@ -422,7 +422,7 @@ executable.  If the process has completed, then this method has no effect.
 
 --}
 
-
+{-
 def class InvokeExecutable(command :: List[String]) =
   import class ProcessBuilder = "java.lang.ProcessBuilder"
   import class Reader = "java.io.Reader"
@@ -448,10 +448,10 @@ def class InvokeExecutable(command :: List[String]) =
   def closeIn() = execInChan.closeD()
   def readOut() = execOutChan.get()
   def readOutD() = execOutChan.getD()
-  def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def readOutAll() = execOutEOF.read() >> execOutChan.getAll() >ss> foldl1({ (_ :: String) + (_ :: String) }, ss)
   def readErr() = execErrChan.get()
   def readErrD() = execErrChan.getD()
-  def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1(lambda(l :: String, r :: String) = l + r, ss)
+  def readErrAll() = execErrEOF.read() >> execErrChan.getAll() >ss> foldl1({ (_ :: String) + (_ :: String) }, ss)
   def exitValue() = p.exitValue()
   def terminate() = p.destroy()
   val buff1 = Array[JavaCharacter](8192, "char")
@@ -470,6 +470,7 @@ def class InvokeExecutable(command :: List[String]) =
   | (copyToChan(execOutReader, buff1, execOutChan) ; execOutChan.closeD() >> execOutEOF.write(signal) >> execOutReader.close())
   | (copyToChan(execErrReader, buff2, execErrChan) ; execErrChan.closeD() >> execErrEOF.write(signal) >> execErrReader.close())
   )
+  -}
 
 {--
 @site OrcVersion() :: String

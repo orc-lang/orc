@@ -12,7 +12,7 @@ val b =
 -- A mutable array initialized to constant value 0
 val c =
   Array[Integer](3) >a>
-  fillArray(a, lambda (_ :: Integer) = 0) >>
+  fillArray(a, ignore(constant(0))) >>
   a
 
 -- Publish the values of each array in

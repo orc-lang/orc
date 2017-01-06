@@ -14,6 +14,7 @@ package orc.test;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -110,7 +111,7 @@ public final class TestUtils {
         return suite;
     }
 
-    public static void findOrcFiles(final File base, final LinkedList<File> files) {
+    public static void findOrcFiles(final File base, final List<File> files) {
         if (base.isFile() && base.getPath().endsWith(".orc")) {
             files.add(base);
             return;

@@ -82,6 +82,12 @@ case class DuplicateTypeFormalException(val repeatedName: String)
   extends SyntacticException("Duplicate type formal: " + repeatedName + " occurs more than once.")
   with SeverityError
 
+/** A recursive group of classes contains the same class more than once.
+  */
+case class DuplicateClassException(val repeatedName: String)
+  extends SyntacticException("Duplicate class: " + repeatedName + " occurs more than once in recursive group.")
+  with SeverityError
+
 /** A clause of a function has a different number of parameters than
   * earlier clauses.
   *
@@ -112,15 +118,6 @@ case class RedundantReturnType() extends RedundantTypeInformationException("Redu
 @SerialVersionUID(1850200423303914708L)
 case class UnusedFunctionSignature() extends RedundantTypeInformationException("Unused function signature")
 
-@SerialVersionUID(-6106643733414243406L)
-case class ClassDefInNonclassContext()
-  extends SyntacticException("Cannot declare this clause as 'class'; preceding clauses were not declared as 'class'")
-  with SeverityError
-@SerialVersionUID(-293992779672576271L)
-case class NonclassDefInClassContext()
-  extends SyntacticException("This clause must be declared as 'class'; preceding clauses were declared as 'class'")
-  with SeverityError
-
 /** Call to the Vclock quasi-site (in a sequential combinator) that is malformed
   */
 @SerialVersionUID(-2736987424427777920L)
@@ -144,6 +141,9 @@ case class UnboundVariableException(val varName: String)
 @SerialVersionUID(5097600012660280100L)
 case class UnboundTypeVariableException(val typevarName: String)
   extends SyntacticException("Type variable " + typevarName + " is unbound")
+  with SeverityError
+case class UnboundClassVariableException(val clsName: String)
+  extends SyntacticException("The class " + clsName + " is undefined")
   with SeverityError
 
 /** The compilation process has produced a malformed expression;
@@ -174,3 +174,32 @@ case class IncludeFileException(val includeFileName: String, cause: Throwable)
 case class SiteResolutionException(val siteName: String, cause: Throwable)
   extends CompilationException("Problem loading site " + siteName + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
+
+/** This Orc program is not valid in class usage.
+  */
+abstract class ClassException(message: String) extends CompilationException(message)
+
+/** A new expression is instantiating a class with abstract members.
+  */
+case class InstantiatingAbstractClassException(superclasses: Iterable[String], missingMembers: Iterable[String])
+  extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}. The superclasses are: ${superclasses.mkString(", ")}")
+  with SeverityError
+
+/** A constructor is missing types on one of it's arguments.
+  */
+case class ConstructorArgumentTypeMissingException(className: String, argument: Int)
+  extends ClassException(s"Constructor for class $className is missing an explicit type on argument $argument.")
+  with SeverityError
+
+/** A constructor is missing a return type.
+  */
+case class ConstructorReturnTypeMissingException(className: String)
+  extends ClassException(s"Constructor for class $className is missing an explicit return type.")
+  with SeverityError
+
+/** A with operation is changing the order of methods.
+  */
+case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iterable[String])
+  extends ClassException(s"Classes are in different orders in linearizations of mix-ins. ${leftOrder.mkString(", ")} is different from ${rightOrder.mkString(", ")}")
+  with SeverityWarning
+

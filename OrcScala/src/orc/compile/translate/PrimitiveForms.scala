@@ -15,13 +15,12 @@ package orc.compile.translate
 
 import scala.language.reflectiveCalls
 
-import orc.ast.oil4c.named._
-import orc.ast.oil4c.named.Conversions._
+import orc.ast.ext
+import orc.ast.oil.named._
+import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.lib.builtin.structured._
-import orc.ast.oil4c._
-import orc.ast.ext
-import orc.values.{ Signal, Field }
+import orc.values.{ Field, Signal }
 import orc.values.sites.Site
 
 object PrimitiveForms {
@@ -52,7 +51,7 @@ object PrimitiveForms {
 
   def makeUnapply(constructor: Argument, a: Argument) = {
     val extractor = new BoundVar()
-    val getExtractor = Call(constructor, List(Constant(Field("unapply"))), None)
+    val getExtractor = FieldAccess(constructor, Field("unapply"))
     val invokeExtractor = Call(extractor, List(a), None)
     getExtractor > extractor > invokeExtractor
   }
@@ -100,13 +99,13 @@ object PrimitiveForms {
   def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ((callIft(b) >> trueBranch) || (callIff(b) >> falseBranch)) < b < test
+    Graft(b, test, (callIft(b) >> trueBranch) || (callIff(b) >> falseBranch))
   }
 
   def makeConditionalFalseOnHalt(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
     val b = new BoundVar()
     val nb = new BoundVar()
-    ((callIft(b) >> trueBranch) < b < test) ow falseBranch
+    Graft(b, test, (callIft(b) >> trueBranch)) ow falseBranch
   }
 
   /*

@@ -12,25 +12,20 @@
 //
 package orc.compile.optimize
 
-import orc.util.Graph
-import orc.util.Node
-import orc.util.Direction
-import scala.collection.mutable.LinkedList
+import orc.ast.oil.named.{ BoundTypevar, BoundVar, Callable, DeclareCallables, NamedASTTransform }
+import orc.util.{ Direction, Graph, Node }
 
-import orc.ast.oil4c.named._
-
-/**
-  * @author srosario
+/** @author srosario
   */
 object FractionDefs extends NamedASTTransform {
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
-    case DeclareDefs(defs, body) => {
+    case DeclareCallables(defs, body) => {
       val newdefs = defs map { transform(_, context, typecontext) }
       val newdefnames = newdefs map { _.name }
       val newdeflists = fraction(newdefs)
       val newbody = transform(body, newdefnames ::: context, typecontext)
-      newdeflists.foldRight(newbody) { DeclareDefs }
+      newdeflists.foldRight(newbody) { DeclareCallables.apply }
     }
   }
 
@@ -39,7 +34,7 @@ object FractionDefs extends NamedASTTransform {
     * sub-list has references to definitions in the mutually recursive
     * sub-lists that follow it.
     */
-  def fraction(decls: List[Def]): Seq[List[Def]] = {
+  def fraction(decls: List[Callable]): Seq[List[Callable]] = {
     if (decls.size == 1)
       return Seq(decls)
 
@@ -55,7 +50,7 @@ object FractionDefs extends NamedASTTransform {
       val def1 = n1.elem
       val def2 = n2.elem
       if (def1.freevars contains def2.name) {
-        // Add Def (its node) points to other Defs that it refers to
+        // Add Callable (its node) points to other Callables that it refers to
         g.addEdge(n1, n2)
       }
     }
@@ -68,8 +63,8 @@ object FractionDefs extends NamedASTTransform {
     /* Do a second DFS, on the complement of the original graph
        * (i.e, do a backward DFS). The result is a topologically
        * sorted collection of mutually recursive definitions */
-    val forest: Seq[List[Node[Def]]] = g.depthSearch(Direction.Backward)
-    // Extract the Defs from the Nodes.
+    val forest: Seq[List[Node[Callable]]] = g.depthSearch(Direction.Backward)
+    // Extract the Callables from the Nodes.
     forest map { _ map { _.elem } }
   }
 

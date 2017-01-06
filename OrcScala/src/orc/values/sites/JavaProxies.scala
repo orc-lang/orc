@@ -28,6 +28,7 @@ import java.lang.reflect.{ Member => JavaMember }
 import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.{ Field => JavaField }
+import java.lang.reflect.{ Array => JavaArray }
 import java.lang.reflect.Modifier
 
 import orc.values.sites.OrcJavaCompatibility._
@@ -93,17 +94,41 @@ abstract class JavaProxy extends Site {
       } catch { // Fill in "blank" exceptions with more details
         case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
       }
-      val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _)).toArray
       if (theObject == null && !method.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
       }
-      Logger.finer("Invoking Java method " + classNameAndSignature(methodName, method.getParameterTypes.toList))
-      java2orc(method.invoke(theObject, convertedArgs))
+      val finalArgs = if (method.isVarArgs) {
+        // Group var args into nested array argument.
+        val nNormalArgs = method.getParameterTypes().size - 1
+        val (normalArgs, varArgs) = (args.take(nNormalArgs), args.drop(nNormalArgs))
+        val convertedNormalArgs = (normalArgs, method.getParameterTypes()).zipped.map(orc2java(_, _))
+
+        val varargType = method.getParameterTypes().last.getComponentType()
+        val convertedVarArgs = varArgs.map(orc2java(_, varargType))
+        // The vararg array needs to have the correct dynamic type so we create it using reflection. 
+        val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
+        convertedVarArgs.copyToArray(varArgArray)
+
+        convertedNormalArgs :+ varArgArray
+      } else {
+        val convertedArgs = (args, method.getParameterTypes()).zipped.map(orc2java(_, _))
+        convertedArgs
+      }
+      Logger.finer(s"Invoking Java method ${classNameAndSignature(methodName, method.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+      java2orc(method.invoke(theObject, finalArgs.toArray))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     }
+  }
+
+  private def valueAndType(v: AnyRef): String = {
+    val str = v match {
+      case a: Array[_] => a.map(x => valueAndType(x.asInstanceOf[AnyRef])).mkString("Array(", ", ", ")")
+      case v => v.toString
+    }
+    s"$str : ${v.getClass.getSimpleName}"
   }
 
   private def classNameAndSignature(methodName: String, argTypes: List[Class[_]]): String = {

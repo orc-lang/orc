@@ -17,14 +17,14 @@ import orc.values.sites.PartialSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
-
 import scala.collection.immutable.Map
+import orc.run.core.BoundValue
+import orc.run.core.Binding
+import orc.values.sites.NonBlockingSite
 
-/**
-  *
-  * @author dkitchin
+/** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with OrcObjectInterface {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
@@ -32,13 +32,17 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite {
 
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
 
+  def apply(f: Field): BoundValue = {
+    entries.get(f.field) match {
+      case Some(v) => BoundValue(v)
+      case None => throw new NoSuchMemberException(this, name)
+    }
+  }
+  def contains(f: Field): Boolean = entries contains f.field
+
   override def evaluate(args: List[AnyRef]) =
     args match {
-      case List(Field(name)) =>
-        entries.get(name) match {
-          case Some(v) => Some(v)
-          case None => throw new NoSuchMemberException(this, name)
-        }
+      case List(f @ Field(_)) => Some(this(f).v)
       case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }

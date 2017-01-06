@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 10, 2010.
 //
-// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,27 +13,25 @@
 
 package orc.run
 
+import orc.{ ExecutionRoot, OrcEvent, OrcExecutionOptions, OrcRuntime }
 import orc.ast.oil.nameless.Expression
-import orc.{ OrcRuntime, OrcExecutionOptions, OrcEvent }
-import orc.run.core.{ Token, Execution }
-import scala.collection.mutable.SynchronizedSet
-import scala.collection.mutable.HashSet
-import scala.ref.WeakReference
+import orc.run.core.{ Execution, Token }
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
+  thisruntime =>
 
-  /** Execution groups (group tree roots) are tracked for monitoring/debugging */
-  var roots = new java.util.concurrent.ConcurrentHashMap[WeakReference[Execution], Unit]
+  val roots = java.util.concurrent.ConcurrentHashMap.newKeySet[ExecutionRoot]()
+
+  override def removeRoot(root: ExecutionRoot) = roots.remove(root)
 
   def run(node: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     startScheduler(options: OrcExecutionOptions)
 
-    val root = new Execution(node, options, eventHandler, this)
-    installHandlers(root)
+    val execution = new Execution(node, options, eventHandler, this)
+    roots.add(execution)
+    installHandlers(execution)
 
-    roots.put(new WeakReference(root), ())
-
-    val t = new Token(node, root)
+    val t = new Token(node, execution)
     schedule(t)
   }
 

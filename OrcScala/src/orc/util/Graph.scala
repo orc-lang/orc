@@ -12,10 +12,7 @@
 //
 package orc.util
 
-
-/**
-  *
-  * @author srosario
+/** @author srosario
   */
 class Graph[T](var nodes: List[Node[T]]) {
 

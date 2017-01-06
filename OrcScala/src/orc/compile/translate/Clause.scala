@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,14 +13,14 @@
 
 package orc.compile.translate
 
-import orc.ast.ext._
-import orc.error.OrcExceptionExtension._
-import orc.ast.oil4c.named
-import orc.compile.translate.PrimitiveForms._
-import scala.collection.immutable._
-import orc.error.compiletime._
-
+import scala.collection.immutable.{ List, Map, Nil }
 import scala.language.reflectiveCalls
+
+import orc.ast.ext._
+import orc.ast.oil.named
+import orc.compile.translate.PrimitiveForms._
+import orc.error.OrcExceptionExtension._
+import orc.error.compiletime._
 
 case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: Expression) extends orc.ast.AST {
 
@@ -34,6 +34,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
   def convert(args: List[named.BoundVar],
     fallthrough: named.Expression)(implicit context: Map[String, named.Argument],
       typecontext: Map[String, named.Type],
+      classcontext: Map[String, ClassInfo],
       translator: Translator): named.Expression = {
 
     import translator._
@@ -59,7 +60,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
      * using the current targetConversion.
      */
     def convertInContext(e: Expression): named.Expression = {
-      targetConversion(translator.convert(e)(context ++ targetContext, typecontext))
+      targetConversion(translator.convert(e)(context ++ targetContext, typecontext, classcontext))
     }
 
     val (strictPairs, nonstrictPairs) = {
@@ -132,7 +133,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
               val g = new named.BoundVar()
               val b = new named.BoundVar()
               val newGuard = convertInContext(guard).subst(g, x)
-              newSource > g > ((callIft(b) < b < newGuard) >> g)
+              newSource > g > (named.Graft(b, named.Trim(newGuard), callIft(b)) >> g)
             }
             case None => newSource
           }
@@ -173,6 +174,7 @@ object Clause {
     */
   def convertClauses(clauses: List[Clause])(implicit context: Map[String, named.Argument],
     typecontext: Map[String, named.Type],
+    classcontext: Map[String, ClassInfo],
     translator: Translator): (List[named.BoundVar], named.Expression) = {
     val arity = commonArity(clauses)
     val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList

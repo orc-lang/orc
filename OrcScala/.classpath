@@ -2,8 +2,8 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/scala-parser-combinators_2.11-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/scala-xml_2.11-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/scala-parser-combinators_2.11-1.0.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/scala-xml_2.11-1.0.4.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

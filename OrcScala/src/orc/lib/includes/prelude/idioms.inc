@@ -22,7 +22,7 @@ Curry a function of two arguments.
 @implementation
 --}
 def curry[A,B,C](lambda (A,B) :: C) :: lambda(A) :: lambda(B) :: C
-def curry(f) = lambda(x) = lambda(y) = f(x,y)
+def curry(f) = def inner(x :: A) = { f(x,_ :: B) } # inner
 
 {--
 @def curry3[A,B,C,D](lambda (A,B,C) :: D) :: lambda(A) :: lambda(B) :: lambda(C) :: D
@@ -31,7 +31,12 @@ Curry a function of three arguments.
 @implementation
 --}
 def curry3[A,B,C,D](lambda (A,B,C) :: D) :: lambda(A) :: lambda(B) :: lambda(C) :: D
-def curry3(f) = lambda(x) = lambda(y) = lambda(z) = f(x,y,z)
+def curry3(f) = 
+  def innerX(x :: A) = 
+    def innerY(y :: B) = 
+      { f(x, y, _ :: C) }
+    innerY
+  innerX
 
 {--
 @def uncurry[A,B,C](lambda (A) :: lambda(B) :: C) :: lambda(A, B) :: C
@@ -40,7 +45,7 @@ Uncurry a function of two arguments.
 @implementation
 --}
 def uncurry[A,B,C](lambda (A) :: lambda(B) :: C) :: lambda(A, B) :: C
-def uncurry(f) = lambda(x,y) = f(x)(y)
+def uncurry(f) = { f(_)(_) }
 
 {--
 @def uncurry3[A,B,C,D](lambda (A)(B)(C) :: D) :: lambda(A,B,C) :: D
@@ -49,7 +54,7 @@ Uncurry a function of three arguments.
 @implementation
 --}
 def uncurry3[A,B,C,D](lambda (A) :: lambda(B) :: lambda(C) :: D) :: lambda(A,B,C) :: D
-def uncurry3(f) = lambda(x,y,z) = f(x)(y)(z)
+def uncurry3(f) = { f(_)(_)(_) }
 
 {--
 @def flip[A,B,C](lambda (A, B) :: C) :: lambda(B, A) :: C
@@ -58,7 +63,7 @@ Flip the order of parameters of a two-argument function.
 @implementation
 --}
 def flip[A,B,C](lambda (A, B) :: C) :: lambda(B, A) :: C
-def flip(f) = lambda(x,y) = f(y,x)
+def flip(f) = def inner(x,y) = f(y,x) # inner
 
 {--
 @def constant[A](A) :: lambda() :: A
@@ -67,7 +72,7 @@ Create a function which returns a constant value.
 @implementation
 --}
 def constant[A](A) :: lambda() :: A
-def constant(x) = lambda() = x
+def constant(x) = { x }
 
 {--
 @def defer[A,B](lambda (A) :: B, A) :: lambda() :: B
@@ -76,7 +81,7 @@ Given a function and its argument, return a thunk which applies the function.
 @implementation
 --}
 def defer[A,B](lambda (A) :: B, A) :: lambda() :: B
-def defer(f, x) = lambda() = f(x)
+def defer(f, x) = { f(x) }
 
 {--
 @def defer2[A,B,C](lambda (A,B) :: C, A, B) :: lambda() :: C
@@ -85,7 +90,7 @@ Given a function and its arguments, return a thunk which applies the function.
 @implementation
 --}
 def defer2[A,B,C](lambda (A,B) :: C, A, B) :: lambda() :: C
-def defer2(f, x, y) = lambda() = f(x, y)
+def defer2(f, x, y) = { f(x, y) }
 
 {--
 @def ignore[A](lambda () :: A) :: lambda(Top) :: B
@@ -95,7 +100,7 @@ of one argument, which is ignored.
 @implementation
 --}
 def ignore[A](lambda () :: A) :: lambda(Top) :: A
-def ignore(f) = lambda(_) = f()
+def ignore(f) = def inner(_) = f() # inner
 
 {--
 @def ignore2[A,B,C](lambda () :: C) :: lambda(A, B) :: C
@@ -105,7 +110,7 @@ of two arguments, which are ignored.
 @implementation
 --}
 def ignore2[A,B,C](lambda () :: C) :: lambda(A, B) :: C
-def ignore2(f) = lambda(_, _) = f()
+def ignore2(f) = def inner(_, _) = f() # inner
 
 {--
 @def compose[A,B,C](lambda (B) :: C, lambda (A) :: B) :: lambda(A) :: C
@@ -114,7 +119,7 @@ Compose two single-argument functions.
 @implementation
 --}
 def compose[A,B,C](lambda (B) :: C, lambda (A) :: B) :: lambda (A) :: C
-def compose(f,g) = lambda(x) = f(g(x))
+def compose(f,g) = { f(g(_)) }
 
 {--
 @def while[A](lambda (A) :: Boolean, lambda (A) :: A) :: lambda(A) :: A
@@ -292,11 +297,11 @@ computation.
 def por(List[lambda () :: Boolean]) :: Boolean
 def por([]) = false
 def por(p:ps) =
-  Let(
+  {|
     val b1 = p()
     val b2 = por(ps)
     Ift(b1) >> true | Ift(b2) >> true | (b1 || b2)
-  )
+  |}
 
 {--
 @def pand(List[lambda () :: Boolean]) :: Boolean
@@ -309,11 +314,11 @@ computation.
 def pand(List[lambda () :: Boolean]) :: Boolean
 def pand([]) = true
 def pand(p:ps) =
-  Let(
+  {|
     val b1 = p()
     val b2 = pand(ps)
     Iff(b1) >> false | Iff(b2) >> false | (b1 && b2)
-  )
+  |}
 
 {--
 @def collect[A](lambda () :: A) :: List[A]

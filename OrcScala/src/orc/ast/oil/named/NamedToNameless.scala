@@ -27,25 +27,24 @@ trait NamedToNameless {
       case Stop() => nameless.Stop()
       case a: Argument => namedToNameless(a, context)
       case Call(target, args, typeargs) => nameless.Call(toArg(target), args map toArg, typeargs map { _ map toType })
-      case Parallel(left, right) => nameless.Parallel(toExp(left), toExp(right))
-      case Sequence(left, x, right) => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
-      case LateBind(left, x, right) => nameless.LateBind(namedToNameless(left, x :: context, typecontext), toExp(right))
-      case Limit(f) => nameless.Limit(toExp(f))
-      case Otherwise(left, right) => nameless.Otherwise(toExp(left), toExp(right))
-      case DeclareDefs(defs, body) => {
-        val defnames = defs map { _.name }
-        val opennames = (defs flatMap { _.freevars }).distinct filterNot { defnames contains _ }
-        val defcontext = defnames.reverse ::: opennames ::: context
-        val bodycontext = defnames.reverse ::: context
+      case left || right => nameless.Parallel(toExp(left), toExp(right))
+      case left > x > right => nameless.Sequence(toExp(left), namedToNameless(right, x :: context, typecontext))
+      case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
+      case Trim(f) => nameless.Trim(toExp(f))
+      case left ow right => nameless.Otherwise(toExp(left), toExp(right))
+      case New(os) => nameless.New(os.map(namedToNameless(_, context, typecontext)))
+      case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
+      case DeclareClasses(clss, body) => {
+        val (clscontext, bodycontext, openvars) = compactContext(clss, context)
+        val newclss = clss map { namedToNameless(_, clscontext, typecontext) }
+        val newbody = namedToNameless(body, bodycontext, typecontext)
+        nameless.DeclareClasses(openvars, newclss, newbody)
+      }
+      case DeclareCallables(defs, body) => {
+        val (defcontext, bodycontext, openvars) = compactContext(defs, context)
         val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
         val newbody = namedToNameless(body, bodycontext, typecontext)
-        val openvars =
-          opennames map { x =>
-            val i = context indexOf x
-            assert(i >= 0)
-            i
-          }
-        nameless.DeclareDefs(openvars, newdefs, newbody)
+        nameless.DeclareCallables(openvars, newdefs, newbody)
       }
       case DeclareType(x, t, body) => {
         val newTypeContext = x :: typecontext
@@ -64,16 +63,48 @@ trait NamedToNameless {
     }
   }
 
+  private def compactContext(clss: List[NamedDeclaration with hasFreeVars], context: List[BoundVar]): (List[BoundVar], List[BoundVar], List[Int]) = {
+    val names = clss map { _.name }
+    val opennames = (clss flatMap { _.freevars }).distinct filterNot { names contains _ }
+    val declcontext = names.reverse ::: opennames ::: context
+    val bodycontext = names.reverse ::: context
+    val openvars =
+      opennames map { x =>
+        val i = context indexOf x
+        assert(i >= 0, s"Failed to find variable $x")
+        i
+      }
+    (declcontext, bodycontext, openvars)
+  }
+
   def namedToNameless(a: Argument, context: List[BoundVar]): nameless.Argument = {
     a -> {
       case Constant(v) => nameless.Constant(v)
       case (x: BoundVar) => {
         var i = context indexOf x
-        assert(i >= 0)
+        assert(i >= 0, s"Cannot find bound variable $x ($i)")
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
+    }
+  }
+
+  def namedToNameless(a: Classvar, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Classvar = {
+    a -> {
+      case Classvar(v) => {
+        var i = context indexOf v
+        assert(i >= 0, s"Cannot find bound class variable $v ($i)")
+        nameless.Classvar(i)
+      }
+      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
+    }
+  }
+
+  def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
+    a -> {
+      case Class(name, self, supr, bindings, linearization) =>
+        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, supr :: self :: context, typecontext)))
     }
   }
 
@@ -82,7 +113,7 @@ trait NamedToNameless {
     t -> {
       case u: BoundTypevar => {
         var i = typecontext indexOf u
-        assert(i >= 0)
+        assert(i >= 0, t)
         nameless.TypeVar(i)
       }
       case Top() => nameless.Top()
@@ -124,15 +155,20 @@ trait NamedToNameless {
     }
   }
 
-  def namedToNameless(defn: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Def = {
+  def namedToNameless(defn: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Callable = {
     defn -> {
-      case Def(_, formals, body, typeformals, argtypes, returntype) => {
+      case Callable(_, formals, body, typeformals, argtypes, returntype) => {
         val newContext = formals.reverse ::: context
         val newTypeContext = typeformals ::: typecontext
         val newbody = namedToNameless(body, newContext, newTypeContext)
         val newArgTypes = argtypes map { _ map { namedToNameless(_, newTypeContext) } }
         val newReturnType = returntype map { namedToNameless(_, newTypeContext) }
-        nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+        defn match {
+          case _: Def =>
+            nameless.Def(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+          case _: Site =>
+            nameless.Site(typeformals.size, formals.size, newbody, newArgTypes, newReturnType)
+        }
       }
     }
   }

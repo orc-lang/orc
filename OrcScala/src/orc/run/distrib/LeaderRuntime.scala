@@ -43,6 +43,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   override def allLocations = runtimeLocationMap.values.toSet
 
   protected def connectToFollowers() {
+    // TODO: This hard codes the follower addresses. This should be configurable.
     val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))
 
     runtimeLocationMap.put(0, here)
@@ -72,7 +73,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programOil, options)) }
 
     installHandlers(root)
-    roots.put(new WeakReference(root), ())
+    roots.add(root)
 
     /* Initial program token */
     //root.sendToken(new Token(programAst, root), runtimeLocationMap(1))
@@ -116,6 +117,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(followerLocation, gmpid, t)
             case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
             case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
+            case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
             case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }

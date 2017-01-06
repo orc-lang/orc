@@ -33,36 +33,26 @@ if it is null, it emits a signal immediately; otherwise, it calls
 the cancel procedure of the associated instance of Alarm().
 -}
 
-def class Multialarm() =
+import class Map = "java.util.HashMap"
 
-  type Alarm =
-  {.
-       set :: lambda(Integer) :: Signal,
-    cancel :: lambda() :: Signal
-  .}
-  def class Alarm() :: Alarm =
+class def Alarm() :: Alarm {
     val run = Ref[Boolean](true)
 
     def set(t :: Integer) = Rwait(t) >> Ift(run?)
     def cancel() = run := false
-  stop
+}
 
-
-  import class Map = "java.util.HashMap"
-
+class def Multialarm() :: Multialarm {
   val alarmlist = Map[String, Alarm]()
 
   def set(String, Integer) :: Signal
-  def set(id,t) =
-  val a = Alarm()
-    alarmlist.put(id,a) >> a.set(t)
+  def set(id,t) = val a = Alarm() # alarmlist.put(id,a) >> a.set(t)
 
   def cancel(String) :: Signal
   def cancel(id) =
     val b = alarmlist.remove(id)
     if b = null then signal else b.cancel()
-
-stop
+}
 
 val m = Multialarm()
 

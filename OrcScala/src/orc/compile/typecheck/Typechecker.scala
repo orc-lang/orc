@@ -16,8 +16,10 @@ package orc.compile.typecheck
 import scala.language.reflectiveCalls
 import scala.math.{ BigDecimal, BigInt }
 
-import orc.ast.oil4c.{ named => syntactic }
-import orc.ast.oil4c.named.{ Constant, DeclareDefs, DeclareType, Def, Expression, FoldedCall, FoldedLambda, HasType, Hole, Otherwise, Parallel, Prune, Sequence, Stop, UnboundVar, VtimeZone }
+import orc.ast.oil.{ named => syntactic }
+import orc.ast.oil.named.{ Constant, DeclareCallables, DeclareType, Callable, Def, Site, 
+  Expression, FoldedCall, FoldedLambda, HasType, Hole, Otherwise, Parallel, 
+  Graft, Trim, Sequence, Stop, UnboundVar, VtimeZone }
 import orc.compile.typecheck.ConstraintSet.meetAll
 import orc.compile.typecheck.Typeloader.{ lift, liftEither, liftJavaType, reify }
 import orc.error.OrcExceptionExtension.extendOrcException
@@ -89,15 +91,19 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newRight, typeRight) = typeSynthExpr(right)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
             (newLeft > x > newRight, typeRight)
           }
-          case Prune(left, x, right) => {
-            val (newRight, typeRight) = typeSynthExpr(right)
-            val (newLeft, typeLeft) = typeSynthExpr(left)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-            (newLeft < x < newRight, typeLeft)
+          case Graft(x, value, body) => {
+            val (newValue, typeValue) = typeSynthExpr(value)
+            val (newBody, typeBody) = typeSynthExpr(body)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+            (Graft(x, newValue, newBody), typeBody)
           }
-          case DeclareDefs(defs, body) => {
+          case Trim(body) => {
+            val (newBody, typeBody) = typeSynthExpr(body)
+            (Trim(newBody), typeBody)
+          }
+          case DeclareCallables(defs, body) => {
             val (newDefs, defBindings) = typeDefs(defs)
             val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
-            (DeclareDefs(newDefs, newBody), typeBody)
+            (DeclareCallables(newDefs, newBody), typeBody)
           }
           case VtimeZone(order, body) => {
             val (newBody, typeBody) = typeSynthExpr(body)
@@ -133,8 +139,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
   def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
     try {
       expr -> {
-        /* FoldedCall must be checked before prune, since it
-         * may contain some number of enclosing prunings.
+        /* FoldedCall must be checked before graft, since it
+         * may contain some number of enclosing grafts.
          */
         case FoldedCall(target, args, typeArgs) => {
           val (e, _) = typeFoldedCall(target, args, typeArgs, Some(T), expr)
@@ -155,10 +161,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
           newLeft > x > newRight
         }
-        case Prune(left, x, right) => {
-          val (newRight, typeRight) = typeSynthExpr(right)
-          val newLeft = typeCheckExpr(left, T)(context + ((x, typeRight)), typeContext, typeOperatorContext)
-          newLeft < x < newRight
+        case Graft(x, value, body) => {
+          val (newValue, typeValue) = typeSynthExpr(value)
+          val newBody = typeCheckExpr(body, T)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+          Graft(x, newValue, newBody)
+        }
+        case Trim(body) => {
+          val newBody = typeCheckExpr(body, T)
+          Trim(newBody)
         }
         case FoldedLambda(formals, body, typeFormals, None, None) => {
           T match {
@@ -173,10 +183,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             case _ => throw new FunctionTypeExpectedException(T)
           }
         }
-        case DeclareDefs(defs, body) => {
+        case DeclareCallables(defs, body) => {
           val (newDefs, defBindings) = typeDefs(defs)
           val newBody = typeCheckExpr(body, T)(context ++ defBindings, typeContext, typeOperatorContext)
-          DeclareDefs(newDefs, newBody)
+          DeclareCallables(newDefs, newBody)
         }
         case DeclareType(u, t, body) => {
           val declaredType = liftEither(t)
@@ -201,16 +211,16 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     }
   }
 
-  def typeDefs(defgroup: List[Def])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (List[Def], List[(syntactic.BoundVar, Type)]) = {
+  def typeDefs(defgroup: List[Callable])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (List[Callable], List[(syntactic.BoundVar, Type)]) = {
     val defs =
       defgroup map {
         // If argument types are missing, and there are no formals, infer an empty arg type list
-        case d @ Def(_, Nil, _, _, None, _) => d.copy(argtypes = Some(Nil))
+        case d @ Callable(_, Nil, _, _, None, _) => d.copy(argtypes = Some(Nil))
         case d => d
       }
     defs match {
       // The return type is absent and we may be able to infer it.
-      case List(d @ Def(name, formals, body, typeFormals, Some(argTypes), None)) => {
+      case List(d @ Callable(name, formals, body, typeFormals, Some(argTypes), None)) => {
         if (d.body.freevars contains d.name) {
           // We do not infer return types for recursive functions.
           val e = new UnspecifiedReturnTypeException()
@@ -236,17 +246,17 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       case ds => {
         val defBindings: List[(syntactic.BoundVar, Type)] =
           for (d <- ds) yield {
-            d match {
-              case Def(name, _, _, typeFormals, Some(argTypes), Some(returnType)) => {
+            (d: @unchecked) match {
+              case Callable(name, _, _, typeFormals, Some(argTypes), Some(returnType)) => {
                 val syntacticType = syntactic.FunctionType(typeFormals, argTypes, returnType)
                 (name, lift(syntacticType))
               }
-              case Def(_, _, _, _, None, _) => {
+              case Callable(_, _, _, _, None, _) => {
                 val e = new UnspecifiedArgTypesException()
                 e.setPosition(d.sourceTextRange.orNull)
                 throw e
               }
-              case Def(_, _, _, _, _, None) => {
+              case Callable(_, _, _, _, _, None) => {
                 val e = new UnspecifiedReturnTypeException()
                 e.setPosition(d.sourceTextRange.orNull)
                 throw e

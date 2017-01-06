@@ -14,17 +14,20 @@ Similarly, the lock can be accessed by the server, but it still exposes the lock
 We would like to encapsulate the lock.
 -}
 
-def class Servercall[A]() =
-  val lock = Semaphore(1)
-  def main(v :: A) =
-    lock.acquire() >> Server(v) >w> lock.release() >> w
-stop
-
 {- Typical call
 -}
 def Server[A](j :: A) = j
 
-val serve = Servercall[Integer]().main
+class Servercall {
+  -- type A
+  val lock = Semaphore(1)
+  def apply(v) = -- v :: A
+    lock.acquire() >> Server(v) >w> lock.release() >> w
+}
+def Servercall[A']() = new Servercall -- with { type A = A' }
+
+
+val serve = Servercall[Integer]()
 
 serve(5)
 

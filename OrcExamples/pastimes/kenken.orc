@@ -17,7 +17,7 @@ def parts(d,l,h,p,v) =
   parts(d,x+d,h,p-1,v-x) >xs>
   x:xs
 
-def sum(d,l) = lambda (h,p,v) = parts(d,l,h,p,v)
+def sum(d,l) = { parts(d,l,_,_,_) }
 
 def exp(n,i) = if (n%i = 0) then (1 + exp(n/i,i)) else 0
 val powers23 = [(1,0,0), (2,1,0), (3,0,1), (4,2,0), (6,1,1), (8,3,0), (9,0,2)]
@@ -31,13 +31,14 @@ def concat(zs,0,_) = zs
 def concat(zs,n,v) = v:concat(zs,n-1,v)
 
 def prod(i) =
- lambda (h,p,v) = (
+ def func(h,p,v) = (
   (exp(v,2), exp(v,3),exp(v,5),exp(v,7)) >(a,b,c,d)>
   Ift(2**a * 3**b * 5**c * 7**d = v) >> -- otherwise there is no solution
   Ift((c = 0 || h >= 5) && (d = 0 || h >= 7)) >> -- otherwise there is no solution
   parts23(i,1,h,p-c-d,a,b) >xs>
   concat(xs,c,5) >ys> concat(ys,d,7)
  )
+ func
 
 def interface(msg,f,h) =
   Prompt(msg + " : write value followed by number of cells for board size " + h)  >r>

@@ -18,9 +18,7 @@ import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.SecondOrderTypeExpectedException
 import orc.compile.typecheck.Typeloader
 
-/**
-  *
-  * @author dkitchin
+/** @author dkitchin
   */
 trait TypeConstructor extends TypeOperator {
 

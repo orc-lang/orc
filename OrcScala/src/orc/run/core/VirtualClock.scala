@@ -13,9 +13,10 @@
 package orc.run.core
 
 import scala.collection.mutable
-import orc.{ Schedulable, OrcRuntime }
+
+import orc.{ OrcRuntime, Schedulable }
 import orc.error.runtime.VirtualClockError
-import orc.values.sites.{ SpecificArity, Site }
+import orc.values.sites._
 
 /** @author dkitchin
   */

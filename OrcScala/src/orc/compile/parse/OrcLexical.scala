@@ -64,9 +64,9 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   /** The set of reserved identifiers: these will be returned as `Keyword's */
   // All these string literals are assumed to be in Unicode Normalization Form C (NFC)
   override val reserved = new HashSet[String] ++ List(
-    "as", "def", "else", "if", "import", "include",
-    "lambda", "signal", "stop", "then", "type", "val",
-    "true", "false", "null", "_")
+    "as", "class", "def", "else", "extends", "if", "import", "include",
+    "lambda", "signal", "site", "stop", "super", "then", "this", "type", "val",
+    "true", "false", "new", "null", "with", "_")
 
   val operators = List(
     "+", "-", "*", "/", "%", "**",
@@ -77,7 +77,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
 
   /** The set of delimiters (ordering does not matter) */
   override val delimiters /* and operators */ = new HashSet[String] ++ (List(
-    "(", ")", "[", "]", "{.", ".}", ",",
+    "(", ")", "[", "]", "{.", ".}", "{|", "|}", ",", "{", "}",
     "<", ">", "|", ";",
     "#",
     "::", ":!:") ::: operators)
@@ -174,11 +174,11 @@ class OrcLexical() extends StdLexical() with RegexParsers {
     override def offset: Int = in.offset
 
     def first = tok
-    
+
     def rest = new Scanner(rest2.asInstanceOf[OrcReader])
-    
+
     lazy val pos = new ScalaOrcSourceRange(new OrcSourceRange(((ToTextPosition(rest1.pos), ToTextPosition(rest2.pos)))))
-    
+
     def atEnd = in.atEnd || (whitespace(in) match { case Success(_, in1) => in1.atEnd case _ => false })
   }
 }

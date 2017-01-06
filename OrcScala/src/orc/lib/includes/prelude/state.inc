@@ -577,8 +577,9 @@ TODO: Write OrcDoc for ref manual entry
 
 @implementation
 --}
-def class ObservationSubject[E]() =
-  val observers = Channel[Channel[E]]()
+class def ObservationSubject[E]() {
+  -- TODO: Add type parameter to channel [E]
+  val observers = Channel[Channel]()
   val observersSem = Semaphore(1)
 
   -- Copies of defs from "util" part of prelude --
@@ -595,33 +596,39 @@ def class ObservationSubject[E]() =
     )
 
   def observe() =
-    val outstanding = Channel[E]()
-    withLock(observersSem, lambda() = observers.put(outstanding))  >>
+    -- TODO: Add type parameter to channel. E
+    val outstanding = Channel()
+    withLock(observersSem, { observers.put(outstanding) })  >>
+    -- TODO: Make this into an object
     {.
-      get = lambda() :: E = outstanding.get(),
-      stream = lambda() :: E = 
-        def doStream() :: E = outstanding.get() >e> (e | doStream())
-        doStream(),
-      close = lambda() :: Signal = outstanding.closeD(), -- Will get dropped from 'observers' on next put
-      isClosed = lambda() :: Boolean = outstanding.isClosed()
+      get = { outstanding.get() },
+      stream = {
+        -- TODO: Add publication type E
+        def doStream() = outstanding.get() >e> (e | doStream())
+        doStream() },
+      close = { outstanding.closeD() }, -- Will get dropped from 'observers' on next put
+      isClosed ={ outstanding.isClosed() }
     .}
-  def put(e :: E) :: Signal =
-    withLock(observersSem, lambda() = 
+  -- TODO: Add type to e :: E
+  def put(e) :: Signal =
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
-        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop ))  ;
-    signal
+        each(currObservers) >o> o.put(e) >> observers.put(o) >> stop )
+        }) ; signal
   def close() :: Signal =
-    withLock(observersSem, lambda() = 
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
         each(currObservers) >o> o.close() >> stop )  ;
-      observers.closeD())
+      observers.closeD()
+      })
   def closeD() :: Signal =
-    withLock(observersSem, lambda() = 
+    withLock(observersSem, {
       ( val currObservers = observers.getAll()
         each(currObservers) >o> o.closeD() >> stop )  ;
-    observers.closeD())
+    observers.closeD()
+    })
   def isClosed() :: Boolean = observers.isClosed()
-  stop
+}
 
 
 {--
@@ -655,7 +662,7 @@ def Table(n, f) =
   def fill(i, f) =
     if i <: 0 then signal
     else ((a(i) := f(i)), fill(i-1, f)) >> signal
-  fill(n-1, f) >> (lambda (i :: Integer) = a(i)?)
+  fill(n-1, f) >> ({ a(_)? })
 
 
 {--

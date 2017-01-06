@@ -63,7 +63,17 @@ public class OrcResources {
     public static final String ORC_DEF_OBJ = "orc_def_obj";
 
     /**
-     * Name of the 16x16 icon representing an Orc site declaration
+     * Name of the 16x16 icon representing an Orc internal site type declaration
+     */
+    public static final String ORC_ORCSITE_TYPE_OBJ = "orc_orcsite_type_obj";
+
+    /**
+     * Name of the 16x16 icon representing an Orc internal site
+     */
+    public static final String ORC_ORCSITE_OBJ = "orc_orcsite_obj";
+
+    /**
+     * Name of the 16x16 icon representing an Orc external site declaration
      */
     public static final String ORC_SITE_OBJ = "orc_site_obj";
 
@@ -76,6 +86,11 @@ public class OrcResources {
      * Name of the 16x16 icon representing an Orc variable (val) declaration
      */
     public static final String ORC_VARIABLE_OBJ = "orc_variable_obj";
+
+    /**
+     * Name of the 16x16 icon representing an Orc variable (val) type or abstract declaration
+     */
+    public static final String ORC_VARIABLE_TYPE_OBJ = "orc_variable_type_obj";
 
     /**
      * Name of the 16x16 icon representing an Orc type declaration
@@ -116,11 +131,17 @@ public class OrcResources {
 
         addImageDescriptor(bundle, OrcResources.ORC_DEF_OBJ, "gif", reg);
 
+        addImageDescriptor(bundle, OrcResources.ORC_ORCSITE_TYPE_OBJ, "gif", reg);
+
+        addImageDescriptor(bundle, OrcResources.ORC_ORCSITE_OBJ, "gif", reg);
+
         addImageDescriptor(bundle, OrcResources.ORC_SITE_OBJ, "gif", reg);
 
         addImageDescriptor(bundle, OrcResources.ORC_CLASS_OBJ, "gif", reg);
 
         addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_OBJ, "gif", reg);
+
+        addImageDescriptor(bundle, OrcResources.ORC_VARIABLE_TYPE_OBJ, "gif", reg);
 
         addImageDescriptor(bundle, OrcResources.ORC_TYPE_OBJ, "gif", reg);
 

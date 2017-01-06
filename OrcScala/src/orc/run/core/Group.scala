@@ -22,13 +22,23 @@ import orc.error.runtime.TokenLimitReachedError
   * tracking all of the executions occurring within that expression.
   * Different combinators make use of different Group subclasses.
   *
+  * Groups are not allowed to maintian references to values. This is required
+  * because OrcSites have odd GC behavior and if a cycle through a group and
+  * an OrcSite the OrcSiteCallTaget may never be collected. Token members of
+  * the group can hold references to values, however it's important that when
+  * the group halts or is killed there are no remaining references to members.
+  *
   * @author dkitchin
   */
 trait Group extends GroupMember {
+  override def toString = super.toString + (if (alive) "" else "!!!")
 
   override val nonblocking = true
 
-  val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
+  // These are of reduce visibility to make it harder for derived classes to violate the semantics of discorporation.
+  // In general you should not mess with them. However they cannot be private because of debug code in Execution.
+  private[run] val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
+  private var hasDiscorporatedMembers: Boolean = false
 
   /** Find the root of this group tree. */
   val execution: Execution
@@ -42,6 +52,7 @@ trait Group extends GroupMember {
 
   def publish(t: Token, v: Option[AnyRef]): Unit
   def onHalt(): Unit
+  def onDiscorporate(): Unit
   def run(): Unit
 
   def halt(t: Token) = synchronized { remove(t) }
@@ -54,7 +65,8 @@ trait Group extends GroupMember {
         /* Optimization: assume Tokens do not remove themselves from Groups */
         if (options.maxTokens > 0 && m.isInstanceOf[Token]) execution.tokenCount.decrementAndGet()
       }
-      // TODO: members.clear() ?  Only needed for Tokens
+      // This is required to prevent persistent references to values from groups.
+      members.clear()
     }
   }
 
@@ -77,9 +89,11 @@ trait Group extends GroupMember {
     synchronized {
       if (!alive) {
         m.kill()
+        //println(s"Warning: adding $m to $this")
+      } else {
+        assert(!members.contains(m), s"Double Group.add of $m")
+        members += m
       }
-      assert(!members.contains(m), s"Double Group.add of $m")
-      members += m
     }
     m match {
       case t: Token if (options.maxTokens > 0) => {
@@ -90,23 +104,48 @@ trait Group extends GroupMember {
     }
   }
 
+  private def maybeDecTokenCount(m: GroupMember) = m match {
+    /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
+     * Thus, there is no kill-halt multiple remove issue for tokens.  */
+    case t: Token if (options.maxTokens > 0) => execution.tokenCount.decrementAndGet()
+    case _ => {}
+  }
+
   def remove(m: GroupMember) {
     synchronized {
+      if (!alive) {
+        //println(s"Warning: removing $m from $this")
+      } else {
+        assert(members contains m, s"Group $this does not contain $m")
+        // TODO: This may be a performance issue. We are performing a linear remove. How large do groups get?
+        members -= m
+        if (members.isEmpty) {
+          if (hasDiscorporatedMembers)
+            onDiscorporate()
+          else {
+            onHalt()
+          }
+        }
+      }
+    }
+    maybeDecTokenCount(m)
+  }
+
+  def discorporate(m: GroupMember) {
+    synchronized {
+      assert(members contains m, s"Group $this does not contain $m")
       members -= m
-      if (members.isEmpty) { onHalt() }
+      hasDiscorporatedMembers = true
+      if (members.isEmpty) { onDiscorporate() }
     }
-    m match {
-      /* NOTE: We rely on the optimization that Tokens are not removed from their group when killed.
-       * Thus, there is no kill-halt multiple remove issue for tokens.  */
-      case t: Token if (options.maxTokens > 0) => execution.tokenCount.decrementAndGet()
-      case _ => {}
-    }
+    maybeDecTokenCount(m)
   }
 
   def inhabitants: List[Token] =
     members.toList flatMap {
       case t: Token => List(t)
       case g: Group => g.inhabitants
+      case _ => Nil
     }
 
 }

@@ -10,38 +10,44 @@
  - write(v,is) writes value v at the given node.
 -}
 
-type BBTree[A] =
-{.
-  read :: lambda(List[Integer]) :: A,
-  write :: lambda(A, List[Integer]) :: Signal
-.}
+-- TODO: Add [A] for all classes in this file. Use A as needed in the members.
+class BBTree {
+  def read(List[Integer]) :: Top
+  def write(Top, List[Integer]) :: Signal
+}
 
-def BBTree[A](Integer) :: BBTree[A]
-def class BBTree(0) =
-
-  def read(List[Integer]) :: A
+class BBTreeLeaf extends BBTree {
+  def read(List[Integer]) :: BBTree
   def read(is) = stop
 
-  def write(A, List[Integer]) :: Signal
+  def write(Top, List[Integer]) :: Signal
   def write(v,is) = stop
+}
 
-  stop
+class BBTreeBranch extends BBTree {
+  val n :: Integer
+  val BBTree :: lambda(Integer) :: BBTree
 
+  val (root, left, right) = (Ref(), BBTree(n-1), BBTree(n-1))
 
-def class BBTree(n) =
-  val (root, left, right) = (Ref[A](), BBTree[A](n-1), BBTree[A](n-1))
-
-  def write(A, List[Integer]) :: Signal
+  def write(Top, List[Integer]) :: Signal
   def write(v,[])   = root := v
   def write(v,0:is) = left.write(v,is)
   def write(v,1:is) = right.write(v,is)
 
-  def read(List[Integer]) :: A
+  def read(List[Integer]) :: Top
   def read([])   = root?
   def read(0:is) = left.read(is)
   def read(1:is) = right.read(is)
+}
+def BBTree(0) = new BBTreeLeaf
+def BBTree(n' :: Integer) = 
+  val rec = BBTree 
+  new BBTreeBranch with { val n = n' # val BBTree = rec }
 
-  stop
+-- TODO: Convert this to use constructor syntactic sugar when it is available.
+
+
 --
 val store = BBTree[Integer](3)
 

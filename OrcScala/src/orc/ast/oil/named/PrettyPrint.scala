@@ -14,7 +14,7 @@ package orc.ast.oil.named
 
 import scala.collection.mutable.{ HashMap, Map }
 
-import orc.values.Format
+import orc.values._
 
 /** Nicer printing for named OIL syntax trees.
   *
@@ -54,20 +54,36 @@ class PrettyPrint {
       }
       case Parallel(left, right) => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case LateBind(left, x, right) => "(" + reduce(left) + " <" + reduce(x) + "<| " + reduce(right) + ")"
-      case Limit(f) => "limit(" + reduce(f) + ")"
-      case Otherwise(left, right) => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
-      case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      case Graft(x, value, body) => "(val " + reduce(x) + " = " + reduce(value) + " # " + reduce(body) + ")"
+      case Trim(f) => "{| " + reduce(f) + " |}"
+      case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
+      case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
+      case c @ Callable(f, formals, body, typeformals, argtypes, returntype) => {
+        val prefix = c match {
+          case _: Def => "def"
+          case _: Site => "site"
+        }
         val name = f.optionalVariableName.getOrElse(lookup(f))
-        "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
+        prefix + " " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
           (returntype match {
             case Some(t) => " :: " + reduce(t)
             case None => ""
           }) +
           "\n" +
-          "def " + name + paren(formals) + " = " + reduce(body) +
+          prefix + " " + name + paren(formals) + " = " + reduce(body) +
           "\n"
+      }
+      case New(os) => "new " + os.map(reduce).mkString("(", ",", ")") + ""
+      case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
+      case Classvar(name) => reduce(name)
+      case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
+      case Class(name, self, supr, fields, linearization) => {
+        def reduceField(f: (Field, Expression)) = {
+          val (name, expr) = f
+          s"${name} = ${reduce(expr)}"
+        }
+        val superDesc = if (supr.optionalVariableName != Some("super")) s"${reduce(supr)} = super #" else ""
+        s"class $name (${linearization.map(reduce).mkString(",")}) { ${reduce(self)} # $superDesc ${fields.map(reduceField).mkString(" # ")} }"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)

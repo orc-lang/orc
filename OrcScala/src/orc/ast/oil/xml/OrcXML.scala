@@ -23,10 +23,11 @@ import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.ast.hasOptionalVariableName
-import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, ClassType, Constant, DeclareDefs, DeclareType, Def, Expression, FunctionType, HasType, Hole, ImportedType, LateBind, Limit, NamelessAST, Otherwise, Parallel, RecordType, Sequence, Stop, Top, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
+import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, Class, ClassType, Classvar, Constant, DeclareCallables, DeclareClasses, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
 import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException
+import orc.values.Field
 
 object OrcXML {
 
@@ -198,21 +199,42 @@ object OrcXML {
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </sequence>
-      case LateBind(left, right) =>
-        <latebind>
-          <left>{ toXML(left) }</left>
-          <right>{ toXML(right) }</right>
-        </latebind>
-      case Limit(e) =>
-        <limit>
+      case Graft(value, body) =>
+        <graft>
+          <left>{ toXML(value) }</left>
+          <right>{ toXML(body) }</right>
+        </graft>
+      case Trim(e) =>
+        <trim>
           <expr>{ toXML(e) }</expr>
-        </limit>
+        </trim>
       case Otherwise(left, right) =>
         <otherwise>
           <left>{ toXML(left) }</left>
           <right>{ toXML(right) }</right>
         </otherwise>
-      case DeclareDefs(unclosedVars, defs, body: Expression) =>
+      case FieldAccess(o, f) =>
+        <fieldaccess name={ f.field }>
+          <expr>{ toXML(o) }</expr>
+        </fieldaccess>
+      case New(os) =>
+        <new>
+          { os.map(toXML) }
+        </new>
+      case Classvar(i) => <classvar index={ i.toString }/>
+      case Class(bindings) =>
+        <class>
+          {
+            for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
+          }
+        </class>
+      case DeclareClasses(unclosedVars, clss, body: Expression) =>
+        <declareclasses>
+          <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
+          <classes>{ clss map toXML }</classes>
+          <body>{ toXML(body) }</body>
+        </declareclasses>
+      case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
           <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
           <defs>{ defs map toXML }</defs>
@@ -310,6 +332,22 @@ object OrcXML {
             }
           }
         </definition>
+      case Site(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
+        <sitedefinition typearity={ typeFormalArity.toString } arity={ arity.toString }>
+          <body>{ toXML(body) }</body>
+          {
+            argTypes match {
+              case Some(ts) => <argtypes>{ ts map toXML }</argtypes>
+              case None => Nil
+            }
+          }
+          {
+            returnType match {
+              case Some(t) => <returntype>{ toXML(t) }</returntype>
+              case None => Nil
+            }
+          }
+        </sitedefinition>
       case _ => throw new AssertionError("Invalid Node for XML conversion!")
     }
   }
@@ -386,9 +424,8 @@ object OrcXML {
 
   /** An OrcSourceRange made of two PlaceholderPositions. */
   class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
-      extends OrcSourceRange(
-        (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))
-      ) {
+    extends OrcSourceRange(
+      (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))) {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
   }
@@ -401,12 +438,27 @@ object OrcXML {
         Parallel(fromXML(left), fromXML(right))
       case <sequence><left>{ left }</left><right>{ right }</right></sequence> =>
         Sequence(fromXML(left), fromXML(right))
-      case <latebind><left>{ left }</left><right>{ right }</right></latebind> =>
-        LateBind(fromXML(left), fromXML(right))
-      case <limit><expr>{ expr }</expr></limit> =>
-        Limit(fromXML(expr))
+      case <graft><left>{ value }</left><right>{ body }</right></graft> =>
+        Graft(fromXML(value), fromXML(body))
+      case <trim><expr>{ expr }</expr></trim> =>
+        Trim(fromXML(expr))
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
+      case <fieldaccess><expr>{ obj }</expr></fieldaccess> =>
+        FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
+      case <new>{ os @ _* }</new> =>
+        New(os.map(objectStructureFromXML).toList)
+      case <declareclasses><unclosedvars>{ uvars @ _* }</unclosedvars><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
+        val t1 = {
+          uvars.text.split(" ").toList match {
+            case List("") => Nil
+            case xs => xs map { _.toInt }
+          }
+        }
+        val t2 = for (d <- clss) yield classFromXML(d)
+        val t3 = fromXML(body)
+        DeclareClasses(t1, t2.toList, t3)
+      }
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {
         val t1 = {
           uvars.text.split(" ").toList match {
@@ -416,7 +468,7 @@ object OrcXML {
         }
         val t2 = for (d <- defs) yield defFromXML(d)
         val t3 = fromXML(body)
-        DeclareDefs(t1, t2.toList, t3)
+        DeclareCallables(t1, t2.toList, t3)
       }
       case <call><target>{ target }</target><args>{ args @ _* }</args>{ maybeTypeargs @ _* }</call> => {
         val t1 = argumentFromXML(target)
@@ -463,20 +515,48 @@ object OrcXML {
   }
 
   @throws(classOf[OilParsingException])
-  def defFromXML(xml: scala.xml.Node): Def = {
+  def objectStructureFromXML(xml: scala.xml.Node): Classvar = {
+    xml --> {
+      case <classvar/> => Classvar((xml \ "@index").text.toInt)
+      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
+    }
+  }
+
+  @throws(classOf[OilParsingException])
+  def classFromXML(xml: scala.xml.Node): Class = {
+    xml --> {
+      case <class>{ bindings @ _* }</class> => {
+        val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
+          (Field((x \ "@name").text), fromXML(xmle))
+        }
+        Class(bs.toMap)
+      }
+      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
+    }
+  }
+
+  @throws(classOf[OilParsingException])
+  def defFromXML(xml: scala.xml.Node): Callable = {
+    def buildCallable(d: scala.xml.Node, body: scala.xml.Node, rest: Seq[scala.xml.Node], constructor: (Int, Int, Expression, Option[List[Type]], Option[Type]) => Callable) = {
+      val typeFormalArity = (d \ "@typearity").text.toInt
+      val arity = (d \ "@arity").text.toInt
+      val argTypes = rest \ "argtypes" match {
+        case <argtypes>{ argTypes @ _* }</argtypes> => Some(argTypes.toList map typeFromXML)
+        case _ => None
+      }
+      val returnType = rest \ "returntype" match {
+        case <returntype>{ returnType }</returntype> => Some(typeFromXML(returnType))
+        case _ => None
+      }
+      constructor(typeFormalArity, arity, fromXML(body), argTypes, returnType)
+    }
+
     xml --> {
       case d @ <definition><body>{ body }</body>{ rest @ _* }</definition> => {
-        val typeFormalArity = (d \ "@typearity").text.toInt
-        val arity = (d \ "@arity").text.toInt
-        val argTypes = rest \ "argtypes" match {
-          case <argtypes>{ argTypes @ _* }</argtypes> => Some(argTypes.toList map typeFromXML)
-          case _ => None
-        }
-        val returnType = rest \ "returntype" match {
-          case <returntype>{ returnType }</returntype> => Some(typeFromXML(returnType))
-          case _ => None
-        }
-        Def(typeFormalArity, arity, fromXML(body), argTypes, returnType)
+        buildCallable(d, body, rest, Def)
+      }
+      case d @ <sitedefinition><body>{ body }</body>{ rest @ _* }</sitedefinition> => {
+        buildCallable(d, body, rest, Site)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc definition")
     }

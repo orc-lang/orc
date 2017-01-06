@@ -83,7 +83,7 @@ def sorted(x:y:xs) = (x <= y) && sorted(y:xs)
 
 {- Test with a random array 10 times. -}
 signals(10) >>
-fillArray(Array[Integer](20), lambda (_ :: Integer) = Random(20)-10) >a>
+fillArray(Array[Integer](20), ignore({ Random(20)-10 })) >a>
 quicksort(a) >>
 arrayToList(a) >l> -- convert array a to list l
 sorted(l)

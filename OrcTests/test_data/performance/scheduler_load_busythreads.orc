@@ -8,4 +8,8 @@ def spin(x) if (x :> 0) = signal >> signal >> signal >> signal >> signal >> sign
 
 def f(x) if (x :> 0) = f(x-1) | spin(500) | spin(500)
 
-f(500)
+f(30)
+
+{-
+BENCHMARK
+-}

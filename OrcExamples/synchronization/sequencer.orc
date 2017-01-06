@@ -25,7 +25,9 @@ Readers-Writers solution.
 include "../synchronization/BoundedChannel.inc"
 include "../clock_time/Stopwatch.inc"
 
-def class Sequencer(n :: Integer) =
+class Sequencer {
+ val n :: Integer
+
  val bb = BChannel[Semaphore](n)  -- waiting customers' semaphores
  val sem = BChannel[Semaphore](n) -- semaphore pool
 
@@ -35,9 +37,12 @@ def class Sequencer(n :: Integer) =
       sem.get() >s> bb.put(s) >> s.acquire() >> sem.put(s)
 
   {- allocate n semaphores in the pool at start. -}
-  upto(n) >>
-  (val s = Semaphore(0)
-   sem.put(s))
+  val _ = upto(n) >>
+    (val s = Semaphore(0)
+     sem.put(s))
+}
+def Sequencer(n' :: Integer) = new Sequencer with { val n = n' }
+-- TODO: Convert this to use constructor syntactic sugar when it is available.
 
 val cc = Sequencer(2)
 val sw1 = Stopwatch()

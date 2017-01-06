@@ -25,10 +25,6 @@ import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
 
-trait SiteMetadata {
-  def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
-}
-
 trait Site extends OrcValue with SiteMetadata {
   def call(args: List[AnyRef], h: Handle): Unit
 
@@ -69,6 +65,8 @@ trait TotalSite extends Site {
   }
 
   def evaluate(args: List[AnyRef]): AnyRef
+
+  override def publications: Range = super.publications intersect Range(0, 1)
 }
 
 /* Enforce nonblocking, but do not enforce totality */
@@ -82,6 +80,8 @@ trait PartialSite extends Site {
   }
 
   def evaluate(args: List[AnyRef]): Option[AnyRef]
+
+  override def publications: Range = super.publications intersect Range(0, 1)
 }
 
 trait UnimplementedSite extends Site {
@@ -252,3 +252,18 @@ class StructurePairSite(
     "apply" -> applySite.orcType(),
     "unapply" -> unapplySite.orcType())
 }
+
+trait NonBlockingSite extends Site {
+  override def timeToPublish: Delay = Delay.NonBlocking
+  override def timeToHalt: Delay = Delay.NonBlocking
+}
+
+trait EffectFreeSite extends Site {
+  override def effects: Effects = Effects.None
+}
+
+trait TalkativeSite extends Site {
+  override def publications: Range = super.publications intersect Range(1, None)
+}
+
+trait FunctionalSite extends Site with NonBlockingSite with EffectFreeSite

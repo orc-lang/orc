@@ -26,18 +26,20 @@ type Pool[A] =
     deallocate :: lambda(A) :: Signal
   .}
 
-def class Pool[A](f :: (lambda() :: A)) :: Pool[A] =
+def Pool[A](f :: (lambda() :: A)) :: Pool[A] =
+  class Pool {
   val ch = Channel[A]()
   def allocate() = ch.getD() ; f()
   def deallocate(x :: A) = ch.put(x)
-  stop
+  }
+  new Pool
 
-val sempool = Pool[Semaphore](lambda () = Semaphore(1))
+val sempool = Pool[Semaphore]({ Semaphore(1) })
 
 sempool.allocate() >s> (
                           s.acquire() >> "got it"
-                        | Rwait(30) >> s.release() >> "threw it"
-                        | Rwait(50) >> sempool.deallocate(s) >> "gone"
+                        | Rwait(50) >> s.release() >> "threw it"
+                        | Rwait(100) >> sempool.deallocate(s) >> "gone"
                        )
 
 {-

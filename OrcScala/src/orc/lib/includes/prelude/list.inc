@@ -256,7 +256,7 @@ The length of the shortest list determines the length of the result.
 @implementation
 --}
 def zip[A,B](List[A], List[B]) :: List[(A,B)]
-def zip(xs, ys) = zipWith(lambda(x :: A, y :: B) = (x, y), xs, ys)
+def zip(xs, ys) = zipWith({ (_ :: A, _ :: B) }, xs, ys)
 
 {--
 @def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
@@ -266,7 +266,7 @@ Split a <link linkend="ref.data.list">list</link> of <link linkend="ref.data.tup
 --}
 def unzip[A,B](List[(A,B)]) :: (List[A], List[B])
 def unzip([]) = ([],[])
-def unzip((x,y):z) = (x:xs,y:ys) <(xs,ys)< unzip(z)
+def unzip((x,y):z) = val (xs,ys) = unzip(z) #(x:xs,y:ys)
 
 
 {--
@@ -525,11 +525,11 @@ is returned as soon as it is known and any unnecessary execution of the predicat
 def any[A](lambda (A) :: Boolean, List[A]) :: Boolean
 def any(p, []) = false
 def any(p, x:xs) =
-  Let(
+  {|
     val b1 = p(x)
     val b2 = any(p, xs)
     Ift(b1) >> true | Ift(b2) >> true | (b1 || b2)
-  )
+  |}
 
 {--
 @def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
@@ -543,11 +543,11 @@ is returned as soon as it is known and any unnecessary execution of the predicat
 def all[A](lambda (A) :: Boolean, List[A]) :: Boolean
 def all(p, []) = true
 def all(p, x:xs) =
-  Let(
+  {|
     val b1 = p(x)
     val b2 = all(p, xs)
     Iff(b1) >> false | Iff(b2) >> false | (b1 && b2)
-  )
+  |}
 
 {--
 @def sum(List[Number]) :: Number

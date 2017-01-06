@@ -4,11 +4,10 @@
 {-
 In order to run this demo, you must have:
 1. a Azure database account with Bing dataset access
-2. in the classpath, /bing.properties (see google.sample.properties)
+2. in the classpath, /bing.properties (see bing.sample.properties)
 -}
 
 include "net.inc"
-include "ui.inc"
 
 val Bing = BingWebSearchFactoryPropertyFile("bing.properties")
 Prompt("Search for:") >term>

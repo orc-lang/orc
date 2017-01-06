@@ -2,7 +2,7 @@
 <!-- oil.xsd - Orc Intermediate Language XML representation schema
      Project OrcScala
 
-     Copyright (c) 2013 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -93,6 +93,37 @@
     </xs:choice>
   </xs:complexType>
 
+  <!--  Object Structure  -->
+  <xs:complexType name="objectstructure">
+    <xs:sequence>
+      <xs:element name="classvar" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:attribute name="index" type="index" />
+          <xs:attributeGroup ref="ast" />
+          <xs:attributeGroup ref="varnamed"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="ast"/>
+  </xs:complexType>
+
+  <!--  Class  -->
+  <xs:complexType name="class">
+    <xs:sequence>
+      <xs:element name="binding" minOccurs="0" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="expr" type="exp" />
+          </xs:sequence>
+          <xs:attribute name="name" type="xs:string" />
+          <xs:attributeGroup ref="ast" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attributeGroup ref="ast"/> 
+    <xs:attributeGroup ref="varnamed"/>
+  </xs:complexType>
+
   <!--  Type  -->
   <xs:complexType name="type">
     <xs:choice>
@@ -179,14 +210,28 @@
         <!--  f >> g  -->
         <xs:element name="sequence" type="binding_combinator" />
 
-        <!--  f <<| g  -->
-        <xs:element name="latebind" type="binding_combinator" />
+        <!--  val f # g  -->
+        <xs:element name="graft" type="binding_combinator" />
 
-        <!--  limit(f)  -->
-        <xs:element name="limit" type="unary_combinator" />
+        <!--  {| f |}  -->
+        <xs:element name="trim" type="unary_combinator" />
 
         <!--  f ; g  -->
         <xs:element name="otherwise" type="combinator" />
+
+        <!--  new os  -->
+        <xs:element name="new" type="objectstructure" />
+
+        <!--  o.n  -->
+        <xs:element name="fieldaccess">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="expr" type="arg" />
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" />
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
 
         <!--  Site or function call  -->
         <xs:element name="call">
@@ -207,6 +252,32 @@
         </xs:element>
 
         <!--
+              class ...
+              class ...
+              f
+        -->
+        <xs:element name="declareclasses">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="unclosedvars">
+                <xs:simpleType>
+                  <xs:list itemType="index"/>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="classes">
+                <xs:complexType>
+                  <xs:sequence>
+	                <xs:element name="class" type="class" minOccurs="1" maxOccurs="unbounded" />
+	              </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="body" type="exp" />
+            </xs:sequence>
+            <xs:attributeGroup ref="ast" />
+          </xs:complexType>
+        </xs:element>
+        
+        <!--
               def ...
               def ...
               f
@@ -221,9 +292,14 @@
               </xs:element>
               <xs:element name="defs">
                 <xs:complexType>
-                  <xs:sequence>
-                    <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
-                  </xs:sequence>
+                  <xs:choice>
+                    <xs:sequence>
+                      <xs:element name="definition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                    <xs:sequence>
+                      <xs:element name="sitedefinition" type="definition" minOccurs="1" maxOccurs="unbounded" />
+                    </xs:sequence>
+                  </xs:choice>
                 </xs:complexType>
               </xs:element>
               <xs:element name="body" type="exp" />

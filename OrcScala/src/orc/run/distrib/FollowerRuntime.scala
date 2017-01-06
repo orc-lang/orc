@@ -286,7 +286,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     installHandlers(root)
 
     programs.put(executionId, root)
-    roots.put(new WeakReference(root), ())
+    roots.add(root)
   }
 
   def unloadProgram(executionId: DOrcExecution#ExecutionId) {

@@ -82,6 +82,14 @@ trait Schedulable extends Runnable {
   def onComplete() {}
 }
 
+/** The type of root executions in Orc runtimes.
+  *
+  * Currently empty and only provided here to avoid a reference to the
+  * implementation in the API.
+  */
+trait ExecutionRoot {
+}
+
 /** An Orc runtime
   */
 trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
@@ -98,18 +106,27 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
 
   def stopScheduler(): Unit
 
+  def removeRoot(exec: ExecutionRoot): Unit
 }
 
 /** The interface through which the environment response to site calls.
   */
 trait Handle {
 
+  val runtime: OrcRuntime
+  val execution: ExecutionRoot
+
   def notifyOrc(event: OrcEvent): Unit
   def setQuiescent(): Unit
 
-  def publish(v: AnyRef): Unit
+  def publishNonterminal(v: AnyRef): Unit
+  def publish(v: AnyRef) {
+    publishNonterminal(v)
+    halt
+  }
   def publish() { publish(Signal) }
   def halt: Unit
+  def discorporate(): Unit
   def !!(e: OrcException): Unit
 
   def callSitePosition: Option[OrcSourceRange]

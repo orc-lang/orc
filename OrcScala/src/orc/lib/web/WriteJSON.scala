@@ -18,7 +18,6 @@ import orc.error.NotYetImplementedException
 import orc.error.runtime.SiteException
 
 /**
-  *
   * @author dkitchin
   */
 object WriteJSON extends TotalSite1 with UntypedSite {

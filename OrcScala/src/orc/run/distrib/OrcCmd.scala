@@ -21,11 +21,11 @@ import orc.{ OrcEvent, OrcExecutionOptions }
   *
   * @author jthywiss
   */
-trait OrcCmd extends Serializable
+sealed abstract class OrcCmd extends Serializable
 
-trait OrcLeaderToFollowerCmd extends OrcCmd
-trait OrcFollowerToLeaderCmd extends OrcCmd
-trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
+sealed trait OrcLeaderToFollowerCmd extends OrcCmd
+sealed trait OrcFollowerToLeaderCmd extends OrcCmd
+sealed trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
 
 case class AddPeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress) extends OrcLeaderToFollowerCmd
 case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeaderToFollowerCmd
@@ -40,6 +40,7 @@ case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: Toke
 case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishingToken: PublishingTokenReplacement) extends OrcPeerCmd
 case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
 case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
+case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmd
 case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: Int) extends OrcPeerCmd
 case class DeliverFutureResultCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) extends OrcPeerCmd
 case object EOF extends OrcPeerCmd

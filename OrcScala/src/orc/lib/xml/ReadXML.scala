@@ -22,7 +22,6 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.SiteException
 
 /**
-  *
   * @author dkitchin
   */
 class ReadXML extends TotalSite1 with TypedSite {

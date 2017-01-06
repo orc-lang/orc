@@ -17,11 +17,11 @@ def f(g:[]) = g()
 def f(g:rest) =
   val x = g()
   val y = f(rest)
-  Let(
+  {|
       Ift(x <: 100) >> x
     | Ift(y <: 100) >> y
     | min(x, y)
-  )
+  |}
 
 f([constant(100), constant(50), constant(200), constant(40)])
 

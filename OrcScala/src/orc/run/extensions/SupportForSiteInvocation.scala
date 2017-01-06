@@ -18,8 +18,7 @@ import orc.values.sites.Site
 import orc.error.OrcException
 import orc.error.runtime.JavaException
 
-/**
-  * @author dkitchin
+/** @author dkitchin
   */
 trait SupportForSiteInvocation extends InvocationBehavior {
 

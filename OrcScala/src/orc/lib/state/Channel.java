@@ -92,6 +92,8 @@ public class Channel extends EvalSite implements TypedSite {
                         }
                     }
                 }
+                @Override
+                public boolean nonBlocking() { return true; }
             });
             addMember("put", new SiteAdaptor() {
                 @Override
@@ -116,6 +118,8 @@ public class Channel extends EvalSite implements TypedSite {
                         writer.publish(signal());
                     }
                 }
+                @Override
+                public boolean nonBlocking() { return true; }
             });
             addMember("getD", new SiteAdaptor() {
                 @Override
@@ -132,6 +136,8 @@ public class Channel extends EvalSite implements TypedSite {
                         }
                     }
                 }
+                @Override
+                public boolean nonBlocking() { return true; }
             });
             addMember("getAll", new EvalSite() {
                 @Override
@@ -152,6 +158,8 @@ public class Channel extends EvalSite implements TypedSite {
                 public Object evaluate(final Args args) throws TokenException {
                     return Boolean.valueOf(closed);
                 }
+			    @Override
+			    public boolean nonBlocking() { return true; }
             });
             addMember("close", new SiteAdaptor() {
                 @Override
@@ -169,6 +177,8 @@ public class Channel extends EvalSite implements TypedSite {
                         }
                     }
                 }
+                @Override
+                public boolean nonBlocking() { return true; }
             });
             addMember("closeD", new SiteAdaptor() {
                 @Override
@@ -181,6 +191,8 @@ public class Channel extends EvalSite implements TypedSite {
                         caller.publish(signal());
                     }
                 }
+                @Override
+                public boolean nonBlocking() { return true; }
             });
         }
 
@@ -190,4 +202,13 @@ public class Channel extends EvalSite implements TypedSite {
         }
 
     }
+
+    @Override
+    public boolean nonBlocking() { return true; }
+    @Override
+    public int minPublications() { return 1; }
+    @Override
+    public int maxPublications() { return 1; }
+    @Override
+    public boolean effectFree() { return true; }
 }

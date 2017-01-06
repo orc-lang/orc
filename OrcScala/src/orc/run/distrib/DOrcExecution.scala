@@ -57,7 +57,7 @@ abstract class DOrcExecution(
       case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
       case _ => hereSet
     }
-    Logger.finer(s"currentLocations($v)=$cl")
+    Logger.finest(s"currentLocations($v)=$cl")
     cl
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
@@ -66,7 +66,7 @@ abstract class DOrcExecution(
       case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
       case _ => runtime.allLocations
     }
-    Logger.finer(s"permittedLocations($v)=$pl")
+    Logger.finest(s"permittedLocations($v)=$pl")
     pl
   }
 

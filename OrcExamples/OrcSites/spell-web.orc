@@ -44,6 +44,6 @@ val url = "https://orc.csres.utexas.edu/test-data/Gutenberg_Canterbury-Tales.zip
 BufferedReader(InputStreamReader(unzip(openURL(url)))) >reader>
 skipto(reader, "HERE BIGINNETH THE BOOK OF THE TALES OF CAUNTERBURY.") >>
 reader.readLine() >>
-map(lambda (_) = reader.readLine(), range(1, 19)) >lines>
+map(ignore({ reader.readLine() }), range(1, 19)) >lines>
 unlines(lines).trim().split("\\s+") >words>
 spellCheck(arrayToList(words), 1)

@@ -13,10 +13,8 @@
 
 package orc.lib.comp
 
-import orc.values.sites.TotalSite
-import orc.values.sites.UntypedSite
 import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.ArgumentTypeMismatchException
+import orc.values.sites._
 
 /** Not equals comparison -- delegates to Scala's ==
   */

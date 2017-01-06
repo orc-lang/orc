@@ -35,17 +35,17 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     */
   def receive(): R = ois synchronized {
     val o = ois.readObject().asInstanceOf[R]
-    orc.run.distrib.Logger.fine(s"SocketObjectConnection.receive: Received $o on ${socket}")
+    orc.run.distrib.Logger.finest(s"SocketObjectConnection.receive: Received $o on ${socket}")
     o
   }
 
   /** Put an object in the stream. If the stream is closed, throw.
     */
   def send(obj: S) = oos synchronized {
-    orc.run.distrib.Logger.fine(s"SocketObjectConnection.send: Sending $obj on ${socket}")
+    orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sending $obj on ${socket}")
     oos.writeObject(obj)
     oos.flush()
-    orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
+    //orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
     /* Need to do a TCP push, but can't from Java */
   }
 
@@ -81,11 +81,10 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
 
 }
 
-
 object SocketObjectConnection {
-//  val readTimeout = 0 // milliseconds, 0 = infinite
+  //  val readTimeout = 0 // milliseconds, 0 = infinite
   val closeTimeout = 10 // seconds
-//  val connectTimeout = 10 // seconds
+  //  val connectTimeout = 10 // seconds
 
   def configSocket(socket: Socket) {
     val IPTOS_LOWDELAY = 0x10
@@ -97,11 +96,10 @@ object SocketObjectConnection {
     socket.setPerformancePreferences(1, 2, 0)
     socket.setTrafficClass(IPTOS_LOWDELAY)
     socket.setSoLinger(true, closeTimeout)
-//    socket.setSoTimeout(readTimeout)
+    //    socket.setSoTimeout(readTimeout)
   }
 
 }
-
 
 /** ConnectionListener listens on the given TCP port number for incoming
   * connections (a TCP "passive open"). Accepted connections result in new
@@ -127,7 +125,6 @@ class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
 
 }
 
-
 /** ConnectionInitiator actively opens a TCP connection to the given socket
   * (hostname-port pair).  Upon connection, a SocketObjectConnection is returned
   * to use for communicating with the peer.
@@ -152,6 +149,5 @@ object ConnectionInitiator {
   def apply[R, S](remoteHostname: String, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostname, remotePort))
 
 }
-
 
 private object SocketObjectConnectionLogger extends orc.util.Logger("orc.lib.SocketObjectConnection")

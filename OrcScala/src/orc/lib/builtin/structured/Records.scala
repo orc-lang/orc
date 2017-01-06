@@ -19,16 +19,14 @@
 
 package orc.lib.builtin.structured
 
+import orc.error.compiletime.typing._
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.compiletime.typing.ArgumentTypecheckingException
-import orc.error.compiletime.typing.RecordShapeMismatchException
-import orc.error.compiletime.typing.ExpectedType
-import orc.values.{ OrcRecord, OrcValue, OrcTuple, Field }
-import orc.values.sites._
 import orc.types._
 import orc.util.OptionMapExtension._
+import orc.values._
+import orc.values.sites._
 
-object RecordConstructor extends TotalSite with TypedSite {
+object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Record"
   override def evaluate(args: List[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
@@ -56,7 +54,7 @@ object RecordConstructor extends TotalSite with TypedSite {
   }
 }
 
-object RecordMatcher extends PartialSite with TypedSite {
+object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
   override def name = "RecordMatcher"
 
   override def evaluate(args: List[AnyRef]): Option[AnyRef] =

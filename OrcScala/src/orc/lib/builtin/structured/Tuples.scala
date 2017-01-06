@@ -13,15 +13,13 @@
 
 package orc.lib.builtin.structured
 
+import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.compiletime.typing.TupleSizeException
-import orc.error.compiletime.typing.ArgumentTypecheckingException
-import orc.error.compiletime.typing.ExpectedType
-import orc.values.{ OrcRecord, OrcValue, OrcTuple }
-import orc.values.sites._
 import orc.types._
+import orc.values._
+import orc.values.sites._
 
-object TupleConstructor extends TotalSite with TypedSite {
+object TupleConstructor extends TotalSite with TypedSite with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
   def evaluate(args: List[AnyRef]) = OrcTuple(args)
 
@@ -35,7 +33,7 @@ object TupleConstructor extends TotalSite with TypedSite {
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends PartialSite2 with TypedSite {
+object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite {
   override def name = "TupleArityChecker"
   def eval(x: AnyRef, y: AnyRef) =
     (x, y) match {

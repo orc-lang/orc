@@ -15,10 +15,11 @@ package orc.run.core
 
 import java.util.logging.Level
 
-import orc.{ CaughtEvent, HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime, PublishedEvent }
+import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, OrcRuntime, PublishedEvent }
 import orc.ast.oil.nameless.Expression
 import orc.error.runtime.TokenError
 import orc.run.Logger
+import orc.run.extensions.SupportForCallsIntoOrc
 
 /** An execution is a special toplevel group,
   * associated with the entire program.
@@ -30,13 +31,13 @@ class Execution(
   override val options: OrcExecutionOptions,
   private var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
-  extends Group {
+  extends Group with ExecutionRoot with SupportForCallsIntoOrc {
 
   override val execution = this
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
-//  def node = _node;
+  //  def node = _node;
 
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     notifyOrc(PublishedEvent(v.get))
@@ -44,11 +45,32 @@ class Execution(
   }
 
   override def kill() = {
+    /* Clean up the roots map when this is killed.
+     * This cannot be an event handler because only one handler is allowed to
+     * handle any event.
+     * 
+     * In the past roots contained weak references. However this combined with
+     * the OrcSiteCallTargets resulted in entire group trees being collected all
+     * at once without actually halting, which makes the interpreter hang 
+     * without exiting. 
+     */
+    runtime.removeRoot(this)
     if (!isKilled) notifyOrc(HaltedOrKilledEvent)
     super.kill()
   }
 
   def onHalt() {
+    // It's all the same at this level, so just deligate.
+    onDiscorporate()
+  }
+  def onDiscorporate() {
+    /* Clean up the roots map when this is killed.
+     * This cannot be an event handler because only one handler is allowed to
+     * handle any event.
+     *
+     * See kill for more details. 
+     */
+    runtime.removeRoot(this)
     if (!isKilled) notifyOrc(HaltedOrKilledEvent)
   }
 
@@ -91,6 +113,11 @@ class Execution(
           sb.append(g.toString)
           sb.append('\n')
           g.members map { printGroupMember(_, level + 1, sb) }
+        }
+        case null => {
+          // TODO: Figure out how we ever end up getting null here.
+          sb.append("null")
+          sb.append('\n')
         }
         case _ => {
           sb.append(currMember.toString)
