@@ -144,27 +144,28 @@ sealed abstract class Expression extends NamelessAST
 
   def prettyprint() = this.withNames.prettyprint()
 }
-case class Stop() extends Expression
-case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
-case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
+
+sealed case class Stop() extends Expression
+sealed case class Call(target: Argument, args: List[Argument], typeArgs: Option[List[Type]]) extends Expression
+sealed case class Parallel(left: Expression, right: Expression) extends Expression
+sealed case class Sequence(left: Expression, right: Expression) extends Expression with hasOptionalVariableName
 // Note: recommend reading Graft(f, g) as "graft f into g".
-case class Graft(value: Expression, body: Expression) extends Expression with hasOptionalVariableName
-case class Trim(f: Expression) extends Expression
-case class Otherwise(left: Expression, right: Expression) extends Expression
+sealed case class Graft(value: Expression, body: Expression) extends Expression with hasOptionalVariableName
+sealed case class Trim(f: Expression) extends Expression
+sealed case class Otherwise(left: Expression, right: Expression) extends Expression
 
-case class New(linearization: Class.Linearization) extends Expression
+sealed case class New(linearization: Class.Linearization) extends Expression
 
-case class DeclareClasses(unclosedVars: List[Int], defs: List[Class], body: Expression) extends Expression
+sealed case class DeclareClasses(unclosedVars: List[Int], defs: List[Class], body: Expression) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
-case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
-case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
+sealed case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
+sealed case class DeclareType(t: Type, body: Expression) extends Expression with hasOptionalVariableName
 
-case class HasType(body: Expression, expectedType: Type) extends Expression
-case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
-case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
-case class FieldAccess(obj: Argument, field: Field) extends Expression
+sealed case class HasType(body: Expression, expectedType: Type) extends Expression
+sealed case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression
+sealed case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+sealed case class FieldAccess(obj: Argument, field: Field) extends Expression
 
 sealed abstract class Argument extends Expression
 sealed case class Constant(value: AnyRef) extends Argument
@@ -203,7 +204,7 @@ sealed case class UnboundTypeVariable(name: String) extends Type with hasOptiona
   optionalVariableName = Some(name)
 }
 
-case class Classvar(index: Int)
+sealed case class Classvar(index: Int)
   extends NamelessAST
   with hasFreeVars
   with hasOptionalVariableName {
@@ -211,7 +212,7 @@ case class Classvar(index: Int)
   lazy val freevars: Set[Int] = Set(index)
 }
 
-case class Class(
+sealed case class Class(
   val bindings: Map[Field, Expression])
   extends NamelessAST
   with hasFreeVars
@@ -251,12 +252,13 @@ object Callable {
   }
 }
 
-case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
+sealed case class Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
   def copy(typeFormalArity: Int = typeFormalArity, arity: Int = arity, body: Expression = body, argTypes: Option[List[Type]] = argTypes, returnType: Option[Type] = returnType): Def = {
     Def(typeFormalArity, arity, body, argTypes, returnType)
   }
 }
-case class Site(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
+
+sealed case class Site(typeFormalArity: Int, arity: Int, body: Expression, argTypes: Option[List[Type]], returnType: Option[Type]) extends Callable {
   def copy(typeFormalArity: Int = typeFormalArity, arity: Int = arity, body: Expression = body, argTypes: Option[List[Type]] = argTypes, returnType: Option[Type] = returnType): Site = {
     Site(typeFormalArity, arity, body, argTypes, returnType)
   }

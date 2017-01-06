@@ -79,19 +79,19 @@ sealed trait NamedDeclaration extends Declaration {
   val name: BoundVar
 }
 
-case class Stop() extends Expression
-case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
-case class Parallel(left: Expression, right: Expression) extends Expression
-case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
+sealed case class Stop() extends Expression
+sealed case class Call(target: Argument, args: List[Argument], typeargs: Option[List[Type]]) extends Expression
+sealed case class Parallel(left: Expression, right: Expression) extends Expression
+sealed case class Sequence(left: Expression, x: BoundVar, right: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 // Note: recommend reading Graft(x, f, g) as "graft x to f in g".
-case class Graft(x: BoundVar, value: Expression, body: Expression) extends Expression
+sealed case class Graft(x: BoundVar, value: Expression, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
-case class Trim(expr: Expression) extends Expression
-case class Otherwise(left: Expression, right: Expression) extends Expression
+sealed case class Trim(expr: Expression) extends Expression
+sealed case class Otherwise(left: Expression, right: Expression) extends Expression
 // Callable should contain all Sites or all Defs and not a mix.
-case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression
-case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
+sealed case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression
+sealed case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 sealed case class HasType(body: Expression, expectedType: Type) extends Expression
 sealed case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
@@ -102,7 +102,7 @@ sealed case class VtimeZone(timeOrder: Argument, body: Expression) extends Expre
 /** A reference to a class.
   *
   */
-case class Classvar(name: Var) extends NamedAST
+sealed case class Classvar(name: Var) extends NamedAST
   with hasFreeVars
   with hasFreeTypeVars
   with Substitution[Classvar]
@@ -121,7 +121,7 @@ case class Classvar(name: Var) extends NamedAST
   *
   * The linearization begins with this class and ends with the most general class Object.
   */
-case class Class(
+sealed case class Class(
   val name: BoundVar,
   val self: BoundVar,
   val superVar: BoundVar,
@@ -144,19 +144,19 @@ object Class {
   *
   * The class objects are not normal runtime values and should never be accessed in any way other than New.
   */
-case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
+sealed case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
 
 /** Construct a new class instance
   *
   * This node starts running an all the bindings in the class and returns self.
   */
-case class New(linearization: Class.Linearization) extends Expression
+sealed case class New(linearization: Class.Linearization) extends Expression
 
 /** Read the value from a field future.
   *
   * This will block until the future is bound.
   */
-case class FieldAccess(obj: Argument, field: values.Field) extends Expression
+sealed case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
 /* Match an expression with exactly one hole.
  * Matches as Module(f), where f is a function which takes
@@ -198,7 +198,7 @@ sealed trait Var extends Argument with hasOptionalVariableName
 sealed case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
-class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
+sealed class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
   optionalVariableName = Some(optionalName getOrElse Var.getNextVariableName())
   def productIterator = optionalVariableName.toList.iterator
 }
