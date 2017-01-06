@@ -1,4 +1,4 @@
-{------ Superposed computation
+{- processor-graph-superposables.inc -- A collection of processors to superpose.
  -
  - Several computations that can be superposed on others.
  - 

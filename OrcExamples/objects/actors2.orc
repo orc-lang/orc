@@ -1,7 +1,5 @@
 {- actors.orc -- Building an actor using Orc Objects
  -
- - $Id: actors.orc 3424 2015-02-21 21:20:11Z arthur.peters@gmail.com $
- -
  - Created by amp on Feb 20, 2015 1:06:57 PM
  -}
  

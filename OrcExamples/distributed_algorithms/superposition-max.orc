@@ -1,5 +1,6 @@
-{------ Superposed computation
- - An example of superposing a Lamport clock and a distributed snapshot algorithm on top of another distributed algorithm.
+{- superposition-max.orc -- An example of superposition.
+ - 
+ - An example of superposing a Lamport clock on top of another distributed algorithm.
  -
  - Created by amp in Jan, 2015
  -}

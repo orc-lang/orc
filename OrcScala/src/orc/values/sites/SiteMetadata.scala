@@ -1,5 +1,5 @@
 //
-// Sites.scala -- Scala trait SiteMetadata and associated ADTs
+// SiteMetadata.scala -- Scala trait SiteMetadata and associated ADTs
 // Project OrcScala
 //
 // Created by dkitchin on May 28, 2010.

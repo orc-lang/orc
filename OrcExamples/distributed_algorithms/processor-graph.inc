@@ -1,5 +1,5 @@
-{------ Superposed computation
- - 
+{- processor-graph.inc -- a processor graph framework for Orc
+ -
  - A set of base classes that represent process graphs and allow for superposition.
  - 
  - Created by amp in Jan, 2015

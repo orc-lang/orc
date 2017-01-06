@@ -10,9 +10,8 @@
  - write(v,is) writes value v at the given node.
 -}
 
+-- TODO: Add [A] for all classes in this file. Use A as needed in the members.
 class BBTree {
-  -- type A
-  -- TODO: Use abstract type members when they are available
   def read(List[Integer]) :: Top
   def write(Top, List[Integer]) :: Signal
 }
