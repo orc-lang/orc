@@ -53,7 +53,7 @@ class RemoteGroupProxy(override val execution: Execution,
   }
 
   override def onDiscorporate() {
-    //Logger.entering(getClass.getName, "onHalt")
+    //Logger.entering(getClass.getName, "onDiscorporate")
     if (!isKilled) onDiscorporateFunc()
   }
 
@@ -92,7 +92,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** Remote group members all halted, but there was discorporates, so discorporate this. */
   def discorporate() = synchronized {
-    //Logger.entering(getClass.getName, "halt")
+    //Logger.entering(getClass.getName, "discorporate")
     if (alive) {
       alive = false
       parent.discorporate(this)
