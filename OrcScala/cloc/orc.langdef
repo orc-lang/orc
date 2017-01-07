@@ -1,0 +1,5 @@
+Orc
+    filter remove_haskell_comments >filename<
+    extension orc
+    extension inc
+    3rd_gen_scale 3.5

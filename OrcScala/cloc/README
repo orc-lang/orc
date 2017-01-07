@@ -1,0 +1,9 @@
+This directory contains the CLOC language definition for Orc in the file: orc.langdef.
+
+Use as follows:
+
+cloc --force-lang-def=orc.langdef ...
+
+This makes CLOC only operate on Orc files. If you need to cound more than one language
+you will need to build your own integrated lang-def file since Orc conflicts with PHP
+and Pascal on the .inc suffix.
